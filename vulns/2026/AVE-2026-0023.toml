@@ -1,11 +1,11 @@
 [basic]
-description = "nginx 在配置 alias 指令时若 location 路径末尾未加斜杠，会导致目录穿越漏洞。攻击者可通过在请求路径中添加 ../ 等遍历序列，绕过访问限制读取服务器上任意文件，包括配置文件、源码等敏感信息。该漏洞影响所有使用 alias 指令且配置不当的 nginx 服务器，攻击者无需认证即可远程利用，危害等级高。"
+description = "Nginx 的 alias 指令在配置不当的情况下存在目录穿越漏洞。当 location 路径末尾未添加斜杠且配置 alias 指向文件目录时，远程攻击者可通过在 URL 中附加 ../ 序列绕过路径限制，实现对服务器文件系统中任意文件的越权读取。攻击者可获取系统敏感文件（如 /etc/passwd）、应用源码、数据库配置及密钥凭证等，危害信息安全性。该漏洞影响所有使用 alias 指令且 location 末尾不含斜杠的 Nginx 配置场景，官方建议在 alias 路径末尾补全斜杠或改用 root 指令进行防御。"
 published = "08.10"
-remediation = '升级 nginx 至最新稳定版（≥1.24.0）。检查所有 location 块中 alias 指令的使用，确保 location 路径与 alias 路径末尾斜杠一致，或在 alias 路径后添加 `/`，如 `location /foo { alias /var/www/foo/; }`。推荐优先使用 root 指令替代 alias 以避免路径拼接问题。同时限制 location 范围，添加 `location ~ \.php$ { ... }` 针对脚本执行做白名单。如无法升级，可在 WAF/Nginx 层添加 `if ($uri ~ "\.\.") { return 403; }` 规则阻止路径穿越。'
+remediation = "确保 nginx 配置中 `alias` 指令的路径与 `location` 路径结尾一致：`location /files/` 必须对应 `alias /data/files/`（均以 `/` 结尾），或均不以 `/` 结尾；在 `http` 或 `server` 块中保持 `merge_slashes on;`（默认值）防止路径拼接绕过；升级 nginx 至最新稳定版以获取额外安全加固；对敏感目录添加 `internal;` 指令限制仅内部重定向访问。"
 score = 5
 severity = "MEDIUM"
 sources = ["hwpoc"]
-title = "NGINX nginx 目录穿越任意文件读取漏洞"
+title = "Nginx 目录穿越任意文件读取漏洞"
 updated = "08.10"
 
 [exploit]
