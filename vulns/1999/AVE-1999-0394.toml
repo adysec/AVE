@@ -1,11 +1,11 @@
 [basic]
-description = "HP-UX 10/11、IRIX 3/4/5/6、Solaris 8/9/10 及 SunOS 4.1 等多个 UNIX 系统中的 NIS（网络信息服务）组件 rpc.ypupdated 服务存在远程命令执行漏洞。未经身份认证的攻击者可通过向目标系统的 RPC 服务发送特制请求，利用 ypupdated 服务在处理更新操作时未对用户输入进行充分过滤的缺陷，在远程系统上以 root 权限执行任意命令，完全控制目标主机。CVSS 评分 10.0，危害等级严重。"
+description = "rpc.ypupdated 是 NIS（网络信息服务）中用于自动更新 NIS 映射的 RPC 服务，其存在命令注入漏洞。远程攻击者无需任何身份认证即可向目标系统的 654 端口发送特制的 RPC 请求，利用 ypupdated 在处理 map 参数时未充分过滤用户输入的缺陷，以 root 权限在服务器上执行任意系统命令。该漏洞影响 HP-UX 10/11、IRIX 3/4/5/6、Solaris 8/9/10、SunOS 4.1 及 OpenSolaris 等多种 Unix 操作系统，CVSS 评分 10.0，可导致服务器被完全控制。"
 published = "1995-12-12T05:00:00.000"
-remediation = "立即停止并禁用 rpc.ypupdated 服务（`/etc/init.d/nis stop; chkconfig nis off`），在防火墙层面阻止对 RPC 端口 111 和 ypupdated 动态端口的访问。对仍需要使用 NIS 的环境，迁移至基于 Kerberos 认证的 LDAP 或 FreeIPA，并限制 NIS 域仅对受信网段开放。若系统已达生命周期，建议升级至受支持的操作系统版本。"
+remediation = "立即停止 rpc.ypupdated (NIS) 服务，若无业务依赖则彻底禁用：在 HP-UX 上执行 `/sbin/init.d/nis.server stop`，Solaris 执行 `svcadm disable svc:/network/nis/server`。无法停止时，通过 tcpwrappers (`/etc/hosts.allow`/`/etc/hosts.deny`) 限制仅允许受信 IP 访问，或在防火墙层面封锁 RPC 端口 111 和 ypupdated 动态端口。建议迁移至 LDAP/Kerberos 替代 NIS 认证体系。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "多厂商 NIS rpc.ypupdated 远程命令执行漏洞"
+sources = ["epss"]
+title = "HP-UX / IRIX / Solaris / SunOS NIS rpc.ypupdated 远程命令执行漏洞"
 updated = "2026-06-16T21:47:54.850"
 
 [exploit]
