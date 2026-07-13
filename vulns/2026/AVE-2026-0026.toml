@@ -1,11 +1,11 @@
 [basic]
-description = "海康威视 IVMS 综合安防系统存在 Spring Boot Actuator 配置不当漏洞，其 /env 端点未做身份验证限制，导致攻击者可直接访问该接口获取系统环境变量及配置文件中的数据库账号密码、Redis 密码等敏感凭据。攻击者无需任何认证即可远程利用，获取敏感信息后可进一步渗透内网或控制安防系统，危害较大。建议升级至修复版本或禁用 Actuator 暴露端点。"
+description = "海康威视 iVMS 综合安防系统存在信息泄露漏洞，由于 Spring Boot Actuator 的 env 和 dump 端点未配置适当访问控制，导致未授权访问。远程攻击者可通过访问 /actuator/env 及 /actuator/dump 接口直接获取系统环境变量、数据库连接凭证、用户名与密码等敏感配置信息，可能进一步导致系统被完全控制。该漏洞影响海康威视 iVMS 综合安防系统多个版本，危害严重。"
 published = "08.11"
-remediation = "立即升级海康威视 iVMS-4200 至 V3.10.0.7 及以上版本、iVMS-8700 至 V4.6.1 及以上版本，或 HikCentral Professional 至 V2.5.0 及以上版本。如无法立即升级，可在反向代理层（Nginx/Apache）配置访问控制规则，禁止外部访问 /actuator/、/env、/dump 等 Spring Boot Actuator 端点路径，或通过防火墙限制对 8080/8443 等管理端口的访问来源 IP。"
+remediation = "升级海康威视 iVMS 综合安防系统至官方发布的最新安全版本。在 application.properties 中添加 management.endpoints.web.exposure.exclude=env,dump 禁用 /env 和 /dump 端点，或在 management.endpoints.enabled-by-default=false 基础上仅开启必需端点。在反向代理或防火墙层面配置访问控制策略，严格限制 /env、/dump、/heapdump、/actuator 路径只允许可信管理 IP 访问。立即更换已在环境变量或日志中暴露的所有数据库密码、LDAP 密码、API 密钥等敏感凭证。"
 score = 5
 severity = "MEDIUM"
 sources = ["hwpoc"]
-title = "海康威视 IVMS综合安防系统 敏感信息泄露漏洞"
+title = "海康威视 IVMS综合安防系统 Spring Boot Actuator 信息泄露漏洞"
 updated = "08.11"
 
 [exploit]
