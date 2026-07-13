@@ -1,11 +1,11 @@
 [basic]
-description = "FTP 守护进程（ftpd）的信号处理例程中存在信号处理竞争条件漏洞（CWE-364）。已认证的低权限远程攻击者可通过网络向目标 FTP 服务发送精心构造的请求，利用信号处理过程中的 TOCTOU（检查时间与使用时间）竞争窗口绕过文件访问权限检查，实现服务器上任意文件的读取与写入操作。该漏洞影响早期版本的多款 Unix 系统 FTP 服务软件，CVSS v3.1 评分为 5.4，危害等级中危。需通过限制 FTP 用户权限或升级已修复版本来防范此漏洞。"
+description = "ftpd 守护进程的信号处理例程中存在条件竞争漏洞（Race Condition），攻击者可利用信号处理时序差绕过文件访问控制，实现任意文件读取或写入。该漏洞影响多个 UNIX 系统中的 ftpd 实现，攻击者需与目标建立 FTP 连接并在特定操作窗口内触发竞态条件以完成利用，CVSS 评分 5.4，危害等级中危。"
 published = "1997-05-29T04:00:00.000"
-remediation = "将 BSD ftpd 升级至 FreeBSD 3.0 及以上版本，或安装 FreeBSD 2.2.x 对应的安全补丁。如无法升级，可在 /etc/inetd.conf 中禁用 ftp 服务（注释 ftp 行后重启 inetd），并在防火墙上限制对 TCP 21 端口的访问作为临时缓解措施。"
+remediation = "升级 wu-ftpd 至 2.5.0 或更高版本，该版本修复了信号处理例程中的条件竞争问题。如无法升级，建议禁用 FTP 服务（systemctl disable vsftpd/wu-ftpd）或替换为 vsftpd/ProFTPD 等更安全的 FTP 守护进程。在不必要的情况下，可通过防火墙限制对 21 端口的访问作为临时缓解措施。"
 score = 5.4
 severity = "MEDIUM"
 sources = ["epss"]
-title = "多款 Unix 系统 ftpd 信号处理竞争条件漏洞"
+title = "多厂商 Unix ftpd 信号处理竞态条件漏洞"
 updated = "2026-06-16T21:47:24.893"
 
 [exploit]
