@@ -1,11 +1,11 @@
 [basic]
-description = "Debian GNU/Linux 系统中 cfengine 软件包存在符号链接漏洞，由于程序以不安全的方式创建临时文件，本地攻击者可通过创建符号链接指向目标系统上的任意文件，导致敏感文件被覆盖或篡改。该漏洞影响 Debian GNU/Linux 系统，CVSS 评分 2.1，危害等级低，需拥有本地访问权限才能利用。"
+description = "Debian GNU/Linux 发行版中的 cfengine 软件包存在符号链接攻击漏洞。cfengine 是一款基于主机的配置管理工具，通常以 root 权限运行。由于其在处理临时文件时未充分验证符号链接的真实性，拥有本地账户权限的攻击者可通过在可写目录中创建恶意符号链接（指向 /etc/shadow 等系统关键文件），诱导 cfengine 以 root 权限错误地读取或覆写目标文件，导致敏感信息泄露或系统完整性破坏。该漏洞利用条件为攻击者需具备本地 shell 访问权限。"
 published = "1999-02-16T05:00:00.000"
-remediation = "立即将 cfengine 升级至 1.5.4 或更高版本，该版本修复了处理临时文件时的符号链接跟随问题。如无法升级，确保 cfengine 脚本操作目录（如 /tmp）设置了粘滞位（sticky bit），且运行 cfengine 的用户不以 root 权限执行。限制只有可信用户才能写入 cfengine 配置目录和临时文件路径。"
+remediation = "建议升级 cfengine 至 1.5.4 及以上版本，该版本修复了临时文件创建中的符号链接跟随漏洞。使用 cfengine 管理文件时避免将临时文件写入公共可写目录（如 /tmp），或使用专属临时目录并设置 umask 077 限制访问权限。在 Debian 系统中及时应用 apt-get update && apt-get upgrade 保持软件包更新。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "Debian GNU/Linux cfengine 符号链接漏洞"
+sources = ["avd"]
+title = "Debian GNU/Linux cfengine 符号链接攻击漏洞"
 updated = "2026-06-16T21:48:15.563"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0374"]
 ave_id = "AVE-1999-0026"
 
 [meta]
-collected_at = "2026-07-12T00:00:00Z"
+collected_at = "2026-07-13T00:00:00Z"
 status = "completed"
 
 [references]
