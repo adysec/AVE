@@ -1,11 +1,11 @@
 [basic]
-description = 'NFS（网络文件系统）存在路径遍历漏洞，由于对导出的文件系统边界检查不严，具备挂载访问权限的远程攻击者可通过在访问路径中使用 "cd .." 命令跳出导出的文件系统目录，从而访问服务器上其他任意目录及文件，导致敏感信息泄露。该漏洞影响多种 NFS 实现版本，攻击者只需拥有基本的文件系统访问权限即可利用。'
+description = 'NFS（网络文件系统）存在目录遍历漏洞，远程攻击者可通过向目标系统的NFS共享目录发送特制的"cd .."路径跳转请求，绕过文件系统导出限制，访问导出目录之外的其他任意目录及文件。该漏洞影响多种Unix/Linux系统上的NFS服务，攻击者无需身份认证即可远程利用，造成敏感信息泄露。CVSS评分5.0，危害等级中等。'
 published = "1997-01-01T05:00:00.000"
-remediation = "建议升级至已修复该漏洞的 NFS 服务端版本（Linux 内核 2.2.x + nfs-utils 0.3.3+），其他 Unix 系统请联系厂商获取 1999 年安全补丁。在 /etc/exports 中仅导出子目录而非父目录作为共享点，并启用 root_squash 选项限制 root 权限逃逸。现代系统应迁移至 NFSv4，配合 sec=krb5p 认证增强访问控制。"
+remediation = "升级 NFS 服务端至 NFSv3/v4 版本（如 Linux 内核 2.6+ 自带 nfsd），并检查 /etc/exports 配置文件，确保为每个导出目录显式设置 `fsid=0` 或 `fsid=UUID` 以建立正确的根文件系统边界；同时启用 `root_squash` 选项将远程 root 用户映射为匿名用户，避免提权；启用 `no_subtree_check` 选项减少因子树检查导致的权限绕过；最后在防火墙层面限制仅允许可信网段访问 2049/TCP 和 2049/UDP 端口作为临时缓解措施。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "NFS 目录遍历漏洞"
+sources = ["epss"]
+title = "NFS 导出的文件系统目录遍历漏洞"
 updated = "2026-06-16T21:47:44.540"
 
 [exploit]
