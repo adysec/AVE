@@ -1,11 +1,11 @@
 [basic]
-description = "XFree86 的 xfs（X Font Server）命令存在符号链接漏洞，由于程序在处理临时文件时未对符号链接进行充分校验，本地攻击者可创建恶意符号链接将文件写入受限目录，从而可能导致权限提升或拒绝服务。该漏洞影响使用 XFree86 的多种 Linux 发行版及 BSD 系统，CVSS 评分 7.5，危害等级高。攻击者需具备本地系统访问权限，无需认证即可利用。"
+description = "XFree86 xfs 字体服务器组件在处理文件操作时存在符号链接（symlink）攻击漏洞。由于 xfs 未能充分验证文件路径中的符号链接指向，本地攻击者可通过精心构造的符号链接将文件写入本无权访问的受限目录，进而实现权限提升或触发拒绝服务。该漏洞影响 NetBSD 等 Unix 衍生操作系统，攻击者需具备本地系统访问权限，利用方式简单，危害等级高危（CVSS 7.5）。"
 published = "1999-03-30T05:00:00.000"
-remediation = "升级 XFree86 至 3.3.3 或更高版本以修复符号链接漏洞；确保 xfs 以非特权用户运行，避免使用 root 账户启动 xfs；限制 xfs 日志文件所在目录的写入权限，删除不必要的符号链接；如无法升级，可临时禁用 xfs 服务以防止本地提权攻击。"
+remediation = "升级 XFree86 至已修复 symlink 漏洞的版本（NetBSD 建议跟进 1999 年 3 月后的补丁），并将 xfs 字体服务以非特权用户身份运行于 chroot 隔离目录。临时缓解措施：在 /etc/rc.conf 中关闭 xfs 服务或在内核层为受限目录设置不可变标志（chflags schg），避免本地用户通过符号链接创建文件导致权限提升或拒绝服务。"
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
-title = "XFree86 xfs 符号链接攻击本地权限提升漏洞"
+sources = ["avd"]
+title = "XFree86 xfs 本地符号链接攻击权限提升漏洞"
 updated = "2026-06-16T21:48:23.283"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0434"]
 ave_id = "AVE-1999-0106"
 
 [meta]
-collected_at = "2026-07-12T00:00:00Z"
+collected_at = "2026-07-13T00:00:00Z"
 status = "completed"
 
 [references]
