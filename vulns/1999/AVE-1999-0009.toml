@@ -1,11 +1,11 @@
 [basic]
-description = "GNU C Library（glibc）2.2 之前版本的 tdelete 函数在删除树根节点时返回未指定的值，而非明确返回空指针或指向已删除节点的值。如果开发者未获知 1999 年的文档更新而依赖该返回值进行操作，可能导致悬垂指针访问，进而被攻击者利用造成信息泄露或程序崩溃。该漏洞影响 glibc 2.2 之前所有版本，CVSS 评分 9.8，危害等级严重。建议升级至 glibc 2.2 及以上版本。"
+description = "GNU C 库（glibc）2.2 之前版本的 tdelete 函数在删除树根节点时未明确说明返回值类型，导致开发者无法正确判断操作结果，从而可能访问悬空指针。攻击者可利用此缺陷绕过安全检查或触发程序崩溃，影响所有依赖 glibc 的 Linux 系统及应用。该漏洞源于对返回值未加检查（CWE-252），CVSS 评分 9.8，危害等级严重。"
 published = "2020-10-06T13:15:13.087"
-remediation = "升级 GNU C Library (glibc) 至 2.2 及以上版本，该版本已补充 tdelete 返回值文档说明。开发者应在调用 tdelete 后检查返回值是否为 NULL，避免访问悬垂指针导致 Use-After-Free。无法升级的旧系统应替换为 tfind/tsearch 安全包装函数并做空指针校验。"
+remediation = "升级 GNU C Library (glibc) 至 2.2 及以上版本，该版本已明确定义 tdelete 函数在删除树根节点时的返回值。开发者应在调用 tdelete 后始终检查返回值是否为 NULL，避免使用悬空指针。无法立即升级的应用可通过静态代码扫描工具（如 cppcheck）检测 tdelete 返回值未检查的模式。临时缓解措施可结合内存安全防护机制（如 AddressSanitizer）在开发阶段捕获此类缺陷。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["avd"]
-title = "GNU glibc tdelete 返回值未检查漏洞"
+sources = ["epss"]
+title = "GNU glibc 未加检查的返回值漏洞"
 updated = "2026-06-16T21:47:53.723"
 
 [exploit]
