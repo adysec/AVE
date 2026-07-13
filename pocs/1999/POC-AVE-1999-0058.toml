@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "检测 Microsoft IIS 2.0/3.0/4.0 服务器，通过 Server 头识别版本，并尝试访问默认 ISAPI 扩展（.htr/.idq）确认 ISAPI 扩展接口可用性。攻击者可利用 ISAPI GetExtensionVersion() 的 SYSTEM 权限执行缺陷，通过上传恶意 DLL 实现远程代码执行。"
+id = "POC-AVE-1999-0058"
+name = "Microsoft IIS ISAPI 远程代码执行漏洞 PoC"
+severity = "high"
+tags = ["ave-1999-0058"]
+vuln_id = [
+    "CVE-1999-0412",
+    "AVE-1999-0058",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = [
+    "Microsoft-IIS/2",
+    "Microsoft-IIS/3",
+    "Microsoft-IIS/4",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/scripts/iisadmin/bdir.htr"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "HTTP://",
+    "IIS Administration",
+    "bdir",
+]

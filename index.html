@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AVE（AdySec Vulnerability Exposures）公开漏洞库 - 多源聚合漏洞知识库，支持 AVE/CVE 搜索、PoC/EXP 资产查询与严重性筛选。" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+    <title>AVE 公开漏洞库</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="hero" id="top">
+      <div class="hero-inner">
+        <div class="hero-top">
+          <h1>AVE 公开漏洞库</h1>
+          <nav class="top-nav" aria-label="页面导航">
+            <a class="repo-link" href="https://github.com/adysec/AVE" target="_blank" rel="noopener noreferrer" aria-label="GitHub 仓库">
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            </a>
+          </nav>
+        </div>
+        <p class="hero-lead">AVE（AdySec Vulnerability Exposures）是面向安全运营的多源漏洞知识库，统一输出 AVE 编号与结构化 TOML，并对公开 PoC/EXP 资产进行整理与格式校验。</p>
+        <p class="hero-lead-short">多源聚合漏洞知识库 · AVE/CVE 搜索 · PoC/EXP 查询</p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="dashboard" id="dashboard">
+        <article class="metric"><h3>漏洞总数</h3><p id="m-vulns">127</p></article>
+        <article class="metric"><h3>PoC 数量</h3><p id="m-pocs">33</p></article>
+        <article class="metric"><h3>EXP 数量</h3><p id="m-exps">0</p></article>
+        <article class="metric"><h3>最近推送</h3><p id="m-push">2026-07-10 11:13 UTC</p></article>
+      </section>
+
+      <aside class="panel filters">
+        <h2>搜索</h2>
+        <input id="search" type="search" placeholder="搜索 AVE/CVE/标题/描述" />
+        <select id="severity">
+          <option value="">全部严重性</option>
+          <option value="CRITICAL">CRITICAL</option>
+          <option value="HIGH">HIGH</option>
+          <option value="MEDIUM">MEDIUM</option>
+          <option value="LOW">LOW</option>
+          <option value="INFO">INFO</option>
+          <option value="UNKNOWN">UNKNOWN</option>
+        </select>
+        <div class="filter-actions">
+          <button id="search-btn" type="button">搜索</button>
+        </div>
+        <span id="search-mode" class="search-mode"></span>
+
+        <section class="year-breakdown">
+          <h3>📅 按年份浏览</h3>
+          <div class="year-tabs" id="year-tabs"></div>
+          <div class="year-table-wrap" id="year-stats"></div>
+        </section>
+        <section class="sev-distribution">
+          <h3>严重性分布</h3>
+          <div id="sev-bar" class="sev-bar-container"></div>
+        </section>
+      </aside>
+
+      <section class="panel list-panel" id="vuln-list">
+        <h2>漏洞列表</h2>
+        <div id="status" class="status">初始化中...</div>
+        <div id="spinner" class="spinner" style="display:none;"></div>
+        <details class="project-intro" id="project-intro">
+          <summary><h3>项目说明</h3></summary>
+          <p>AVE（AdySec Vulnerability Exposures）是一个面向安全运营的多源漏洞知识库，统一输出 AVE 编号的结构化 TOML 数据，并整理公开的 PoC/EXP 资产。</p>
+          <p>系统聚合 NVD、阿里云 AVD、GitHub Advisory、MSRC、Tenable、CISA KEV、Red Hat 等来源，经过 AI 结构化处理后发布。</p>
+          <p>漏洞爬取与处理的核心代码暂未开源，当前公开的是漏洞数据、资产文件与展示站点。</p>
+          <p>输入关键词后点击「搜索」，或直接点击年份标签浏览对应年份的全部漏洞。</p>
+          <ul>
+            <li>数据来源：<code>vulns/{year}/*.toml</code>（按年份分目录存储）</li>
+            <li>PoC/EXP 标记：基于仓库中公开文件的真实存在性</li>
+            <li>详情页面：<code>detail.html</code> 展示完整字段信息</li>
+          </ul>
+        </details>
+        <div class="table-wrap">
+          <table class="vuln-table">
+            <thead>
+              <tr>
+                <th data-sort-key="ave_id">AVE <span class="sort-arrow"></span></th>
+                <th data-sort-key="title">标题 <span class="sort-arrow"></span></th>
+                <th data-sort-key="severity">严重性 <span class="sort-arrow"></span></th>
+                <th data-sort-key="published">日期 <span class="sort-arrow"></span></th>
+                <th data-sort-key="score">评分 <span class="sort-arrow"></span></th>
+                <th>PoC</th>
+                <th>EXP</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="list-body"></tbody>
+          </table>
+        </div>
+        <div class="pager" id="pager">
+          <button id="prev-page" type="button">上一页</button>
+          <span id="page-info">第 1 页</span>
+          <button id="next-page" type="button">下一页</button>
+          <span class="page-jump-sep">|</span>
+          <label class="page-jump">
+            跳转 <input id="page-input" type="number" min="1" value="1" aria-label="跳转到第几页" /> 页
+          </label>
+          <button id="jump-page" type="button">GO</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p class="footer-brand">by AdySec &lt;<a href="mailto:admin@adysec.com">admin@adysec.com</a>&gt;</p>
+        <p class="footer-desc">AVE 聚焦漏洞聚合、PoC/EXP 公开资产整理与高危筛选，服务安全运营与漏洞梳理。</p>
+      </div>
+    </footer>
+
+    <script src="assets/app.js"></script>
+  </body>
+</html>

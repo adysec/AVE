@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "检测目标 Web 服务器上是否存在 nph-test-cgi 脚本，该脚本会输出服务器环境变量及文件列表，导致敏感信息泄露"
+id = "POC-AVE-1999-0113"
+name = "CVE-1999-0045 PoC"
+severity = "high"
+tags = ["ave-1999-0113"]
+vuln_id = [
+    "CVE-1999-0045",
+    "AVE-1999-0113",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/nph-test-cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "nph-test-cgi",
+    "SERVER_SOFTWARE",
+    "test-cgi",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-script/nph-test-cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "nph-test-cgi",
+    "SERVER_SOFTWARE",
+    "test-cgi",
+]

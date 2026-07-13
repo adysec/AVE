@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "检测 CDE dtappgather suid 二进制文件是否存在。dtappgather 以 suid root 运行，在 /var/dt/appconfig/appmanager/ 下使用 0777 权限目录创建临时文件，未检查文件是否存在即直接打开，本地攻击者可创建符号链接指向 /etc/shadow 等系统文件，运行 dtappgather 后目标文件权限被修改为 0666，导致本地权限提升。影响 AIX 4.3、HP-UX 10.20/11.0、Solaris 2.6、SCO Unixware 7.0。"
+id = "POC-AVE-1999-0045"
+name = "CDE dtappgather Local Privilege Escalation PoC"
+severity = "high"
+tags = ["ave-1999-0045"]
+vuln_id = [
+    "CVE-1999-0014",
+    "AVE-1999-0045",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+path = "/usr/dt/bin/dtappgather"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+regex = "."
+type = "regex"
+
+[[poc.requests]]
+path = "/usr/dtappgather"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+regex = "."
+type = "regex"

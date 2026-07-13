@@ -1,0 +1,27 @@
+[basic]
+description = "IBM AIX 3.2.5、4.1 及 4.2 版本的 TCP/IP 协议栈存在 SYN 泛洪拒绝服务漏洞。远程攻击者无需身份认证即可向目标系统发送大量 SYN 数据包，发起半连接请求但不完成三次握手（不发送 ACK 应答），耗尽系统用于维护半开连接的内存与连接表资源，导致正常连接请求无法被处理，引发拒绝服务。该漏洞最早于 1996 年被公开利用（工具 bang.c），影响 IBM AIX 系列操作系统。"
+published = "1996-09-19T04:00:00.000"
+remediation = "升级 IBM AIX 至 4.3 或更高版本以启用内置 SYN cookie 保护机制；在无法升级的情况下，通过 `no -o tcp_syncookies=1` 启用 SYN Cookie 缓解攻击；同时在边界防火墙上限制每秒入站 SYN 包速率（如 `iptables -A INPUT -p tcp --syn -m limit --limit 100/s`），并缩短 TCP 半连接超时（`no -o tcp_keepidle=120`）以释放队列资源。"
+score = 5
+severity = "MEDIUM"
+sources = ["avd"]
+title = "IBM AIX TCP SYN Flood 拒绝服务漏洞"
+updated = "2026-06-16T21:47:37.367"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-0116"]
+ave_id = "AVE-1999-0259"
+
+[meta]
+collected_at = "2026-07-13T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://sunsolve.sun.com/pub-cgi/retrieve.pl?doctype=coll&doc=secbull/136",
+    "https://www.exploit-db.com/exploits/343",
+]

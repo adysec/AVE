@@ -1,0 +1,59 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Regenerate data files
+        run: |
+          python3 scripts/generate-vuln-data.py
+          echo "data files regenerated"
+
+      - name: Update Dashboard Metrics
+        run: |
+          VULNS=$(find vulns -name "*.toml" -type f 2>/dev/null | wc -l)
+          POCS=$(find pocs -type f 2>/dev/null | wc -l)
+          EXPS=$(find exploits -type f 2>/dev/null | wc -l)
+          PUSH_TIME=$(date -u "+%Y-%m-%d %H:%M UTC")
+          sed -i 's|<p id="m-vulns">.*</p>|<p id="m-vulns">'"$VULNS"'</p>|' index.html
+          sed -i 's|<p id="m-pocs">.*</p>|<p id="m-pocs">'"$POCS"'</p>|' index.html
+          sed -i 's|<p id="m-exps">.*</p>|<p id="m-exps">'"$EXPS"'</p>|' index.html
+          sed -i 's|<p id="m-push">.*</p>|<p id="m-push">'"$PUSH_TIME"'</p>|' index.html
+          echo "dashboard updated: vulns=${VULNS}, pocs=${POCS}, exps=${EXPS}, push=${PUSH_TIME}"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

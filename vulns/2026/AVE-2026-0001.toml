@@ -1,0 +1,31 @@
+[basic]
+description = "mistune 是 Hsiaoming Yang 开发的 Python Markdown 解析库，其 HTML 渲染器中的 safe_url() 函数用于过滤危险协议（javascript:、data:、vbscript: 等）。该函数在检测协议前缀时未先对 URL 进行百分号解码，导致攻击者可以通过将协议名称中的字符进行百分号编码（如将 javascript: 编码为 javascript%3A）绕过安全过滤。当浏览器解析被绕过后的链接时，会自动解码百分号编码并执行恶意脚本，造成跨站脚本攻击（XSS）。攻击者无需身份认证，只需在评论系统、Wiki 等可提交 Markdown 内容的平台中提交含有恶意编码链接的内容，即可诱导用户点击后执行任意 JavaScript 代码，导致会话劫持、凭证窃取或帐户接管等严重后果。该漏洞影响 mistune 3.2.1 及之前的所有版本。"
+published = "2026-07-08"
+remediation = "升级 mistune 至 3.3.0 或更高版本。该版本已在 safe_url() 函数中对 URL 先执行 urllib.parse.unquote() 百分号解码再检查协议前缀，阻止编码绕过攻击。临时缓解措施：在应用层过滤用户提交的 Markdown 内容，检查并拦截包含 jav%61script、data%3A、vbscri%70t 等编码协议模式的链接；或在 WAF 中添加规则，对含有百分号编码的危险协议关键词的请求进行阻断。"
+score = 6.1
+severity = "MEDIUM"
+sources = ["cnnvd"]
+title = "mistune HTMLRenderer.safe_url() 百分号编码绕过导致跨站脚本漏洞"
+updated = "2026-07-08"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CNNVD-2026-10057356",
+    "GHSA-8ppg-4vv7-9p53",
+    "GHSA-jxhr-4j38-fpxg",
+]
+ave_id = "AVE-2026-0001"
+
+[meta]
+collected_at = "2026-07-12T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/lepture/mistune/security/advisories/GHSA-8ppg-4vv7-9p53",
+    "https://github.com/lepture/mistune/security/advisories/GHSA-jxhr-4j38-fpxg",
+]

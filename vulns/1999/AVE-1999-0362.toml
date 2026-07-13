@@ -1,0 +1,24 @@
+[basic]
+description = "rpc.walld 服务存在未授权访问漏洞，远程攻击者无需认证即可向该服务发送恶意数据包，导致目标系统拒绝服务或执行远程命令。该漏洞还可被利用进行社会工程学攻击。受影响的系统包括运行该 RPC 服务的 Unix/Linux 系统，CVSS 评分 6.8，危害等级中等。禁用或限制 rpc.walld 服务的网络访问可缓解该风险。"
+published = "1994-01-01T05:00:00.000"
+remediation = "立即禁用 rpc.walld 服务：在 System V init 系统上执行 `chkconfig rwalld off && service rwalld stop`，在 systemd 系统上执行 `systemctl disable rwalld --now`。若业务需用 RPC 服务，在 /etc/hosts.allow 和 /etc/hosts.deny 中通过 tcpwrappers 限制仅受信 IP 可访问 portmapper（端口 111），并在防火墙层面使用 `iptables -A INPUT -p tcp --dport 111 -s 受信任段 -j ACCEPT && iptables -A INPUT -p tcp --dport 111 -j DROP` 阻断外部访问。该服务在现代 Unix 系统上极少需要，建议彻底卸载包（如 `apt purge rpcbind` 或 `yum remove rpcbind`）。"
+score = 6.8
+severity = "MEDIUM"
+sources = ["avd"]
+title = "Sun rpc.walld 远程命令执行与拒绝服务漏洞"
+updated = "2026-06-16T21:47:46.403"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-0181"]
+ave_id = "AVE-1999-0362"
+
+[meta]
+collected_at = "2026-07-13T00:00:00Z"
+status = "completed"
+
+[references]
+urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0181"]
