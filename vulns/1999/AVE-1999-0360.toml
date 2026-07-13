@@ -1,12 +1,12 @@
 [basic]
-description = "in.rshd（远程 shell 守护进程）存在认证绕过漏洞，远程攻击者可在未提供用户名（空用户名）的情况下直接通过 rsh 协议登录目标系统并执行任意命令。该漏洞源于 rshd 未对用户名字段进行有效性校验，攻击者利用 rsh 客户端连接时留空用户名字段即可绕过身份认证机制，获得远程命令执行权限。该漏洞影响多款 UNIX 系统，无需认证即可远程利用，危害等级高。"
-published = "1997-01-01T05:00:00.000"
-remediation = "立即禁用 in.rshd/rsh 服务（如 systemctl disable rsh.socket 或从 inetd.conf 中注释掉 shell 服务），全面迁移至 SSH（OpenSSH）替代远程管理。如无法停用，在防火墙上限制 513/tcp 端口仅允许可信 IP 访问，并升级操作系统厂商提供的安全补丁（如 Solaris 补丁 106235、Red Hat 相关 errata）。"
-score = 7.5
-severity = "HIGH"
-sources = ["avd"]
-title = "UNIX in.rshd 空用户名远程代码执行漏洞"
-updated = "2026-06-16T21:47:46.287"
+description = "Solaris 系统的 Calendar Manager Service Daemon (rpc.cmsd) 存在缓冲区溢出漏洞，远程攻击者无需身份认证即可通过向目标系统的 RPC 端口发送特制的畸形请求数据触发该漏洞，成功利用可在目标主机上以 root 权限执行任意代码，完全控制系统。该漏洞影响 Sun Solaris 2.5.1、2.6 及 7.0 等多个版本，危害严重。"
+published = "1997-01-01"
+remediation = "立即禁用 in.rshd 服务（rsh 协议），并改用 SSH（OpenSSH）替代远程命令执行。执行 `systemctl disable rshd`（或 `chkconfig rsh off`）并 `systemctl stop rshd`。在防火墙层面封锁端口 512/tcp（rsh）、513/tcp（rlogin）、514/tcp（rexec）。若因遗留系统必须使用 rsh，升级至打过该漏洞补丁的版本，并在 `/etc/hosts.equiv` 和 `/etc/shosts.equiv` 中严格限制可信任主机列表，同时启用 PAM 认证进行空用户名校验。"
+score = 5
+severity = "MEDIUM"
+sources = ["epss"]
+title = "BSD in.rshd 空用户名远程命令执行漏洞"
+updated = "1997-01-01"
 
 [exploit]
 exp_urls = []
@@ -21,4 +21,4 @@ collected_at = "2026-07-13T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://www.cve.org/CVERecord?id=CVE-1999-0180"]
+urls = []
