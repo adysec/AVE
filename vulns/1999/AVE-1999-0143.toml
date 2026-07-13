@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD 系统 TCP 协议栈在处理 TCP RST（重置）数据包时存在安全缺陷，远程攻击者无需身份认证即可向目标主机发送精心构造的 TCP RST 数据包，触发系统拒绝服务状态，导致目标无法正常处理合法网络连接请求，影响系统可用性。该漏洞攻击条件低，可远程发动，影响运行 FreeBSD 的系统环境。"
+description = "FreeBSD 6.2 的 TCP 协议栈存在 TCP RST 包拒绝服务漏洞，远程攻击者可通过伪造 TCP RST 数据包向已建立的 TCP 连接发送，导致目标系统上的合法 TCP 连接被异常中断。该漏洞无需身份认证即可远程利用，可造成受影响服务的可用性下降，影响范围包括运行 FreeBSD 6.2 的系统，CVSS 评分 5.0，危害等级中危。"
 published = "1998-10-13T04:00:00.000"
-remediation = "升级 FreeBSD 至 6.3 或更高版本，该漏洞已在后续版本中修复。若无法升级，可在网络边界部署防火墙规则过滤伪造的 TCP RST 包，或启用 TCP MD5 签名选项（RFC 2385）以增强 TCP 连接认证。当前 FreeBSD 6.x 已停止维护，建议迁移至 FreeBSD 13.x 或 14.x 长期支持版本以获得持续安全更新。"
+remediation = "升级至 FreeBSD 7.0-RELEASE 或更高版本，该漏洞已在 FreeBSD 6.3-STABLE 分支的 tcp_input.c 补丁中修复。若无法升级，可在 pf 防火墙上添加规则限制每秒入站 RST 包数量：`pass in proto tcp flags R/R` 结合 `max-packets 100/sec` 作为临时缓解。同时建议在系统层面启用 syncookies（sysctl net.inet.tcp.syncookies=1）以降低 RST 欺骗影响。"
 score = 5
 severity = "MEDIUM"
 sources = ["epss"]
-title = "FreeBSD TCP RST Packet 拒绝服务漏洞"
+title = "FreeBSD TCP RST 数据包拒绝服务漏洞"
 updated = "2026-06-16T21:47:28.047"
 
 [exploit]
