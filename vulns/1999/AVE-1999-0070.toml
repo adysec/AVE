@@ -1,11 +1,11 @@
 [basic]
-description = "当 Microsoft SMTP 服务尝试将邮件发送至某台服务器并收到 4xx 临时错误码时，会快速且反复地尝试重新投递该邮件，导致大量连接请求耗尽系统资源，造成拒绝服务攻击。攻击者可通过构造返回 4xx 状态的 SMTP 服务器触发此漏洞。"
+description = "Microsoft Exchange SMTP 服务存在拒绝服务漏洞，当 SMTP 服务向目标邮件服务器投递邮件时若收到 4xx 临时错误响应，会快速且反复地重试发送，导致大量系统资源（CPU、内存、网络连接）被消耗，最终造成邮件服务不可用。攻击者可构造恶意邮件服务器返回 4xx 错误码以触发该漏洞。影响 Microsoft Exchange Server 各版本，CVSS 评分 5.0，危害等级中等。建议升级至最新安全补丁或配置重试策略限制。"
 published = "1999-03-01T05:00:00.000"
-remediation = "升级 Microsoft Exchange Server 至 5.5 Service Pack 3 或更高版本，其中已修复 SMTP 服务对 4xx 错误码的退避重试逻辑。同时可在 SMTP 虚拟服务器属性中配置最大重试次数和重试间隔，限制单次投递的尝试频率以缓解资源消耗。"
+remediation = "建议安装 Microsoft Exchange Server 5.5 Service Pack 2 或更高版本，该更新限制了 SMTP 服务在收到 4xx 错误码时的重试次数和频率。如无法升级，可通过修改 Exchange IMS 配置，减少连接重试间隔并限制并发出站连接数以缓解 DoS 影响。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Microsoft Exchange Server SMTP 服务 4xx 错误码导致拒绝服务漏洞"
+sources = ["avd"]
+title = "Microsoft Exchange SMTP 拒绝服务漏洞"
 updated = "2026-06-16T21:48:21.433"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0419"]
 ave_id = "AVE-1999-0070"
 
 [meta]
-collected_at = "2026-07-12T00:00:00Z"
+collected_at = "2026-07-13T00:00:00Z"
 status = "completed"
 
 [references]
