@@ -1,11 +1,11 @@
 [basic]
-description = "Finger 服务存在信息泄露漏洞，远程攻击者可通过向目标主机的 finger 服务（TCP 79 端口）发送特殊查询请求 `finger .@host`，获取目标系统上所有用户账户列表及详细信息（如用户名、登录状态等），造成敏感信息泄露。该漏洞影响 Unix/Linux 系统中默认开启 finger 服务的版本，攻击无需认证，仅需网络可达即可利用，CVSS 评分 10.0，危害严重。"
+description = "Finger 服务（TCP 79 端口）存在信息泄露漏洞，远程攻击者无需认证即可向目标发送 finger 查询请求（如 finger .@host），获取系统上的用户账户列表及登录状态。该漏洞源于 Finger 协议默认未对查询请求做访问控制，导致攻击者可借此收集有效用户名，为进一步的暴力破解或社会工程学攻击提供基础。影响运行 Finger 服务的 Unix/Linux 系统，CVSS 评分 10.0。"
 published = "1999-01-01T05:00:00.000"
-remediation = "立即禁用 finger 服务（如 inetd 中注释 finger 行），并停止相关守护进程；在边界防火墙上阻断 TCP/79 端口。finger 协议已过时且无安全更新，建议彻底移除 finger 软件包，改用受限的替代方案（如 fingerd 的 tcp_wrappers 封装）或直接弃用此服务。"
+remediation = "立即禁用 finger 服务：在 inetd/xinetd 配置中注释或删除 finger 行并重启服务（`kill -HUP <inetd_pid>`），或执行 `systemctl disable finger`（现代系统）。同时使用防火墙阻断外部对 tcp/79 端口的访问。如确需使用，改用 cfingerd 并限制输出信息量。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "多种Unix系统 Finger 服务信息泄露漏洞"
+sources = ["epss"]
+title = "多个Unix系统 finger服务 远程信息泄露漏洞"
 updated = "2026-06-16T21:47:53.610"
 
 [exploit]
