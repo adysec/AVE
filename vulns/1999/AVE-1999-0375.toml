@@ -1,11 +1,11 @@
 [basic]
-description = "telnet 守护进程的 tgetent() 函数在处理 TERMCAP 环境变量时存在缓冲区溢出漏洞。远程攻击者可通过向目标系统发送特制的 TERMCAP 环境变量触发栈缓冲区溢出，覆盖返回地址并劫持程序执行流，从而获取 root 权限。该漏洞影响 RedHat Linux 6.0 及 Slackware Linux 4.0 等发行版本，CVSS 评分 10.0，危害等级严重。"
+description = "Telnet 守护进程在处理 TERMCAP 环境变量时存在缓冲区溢出漏洞，远程攻击者无需身份认证即可通过向 telnet 服务发送特制的 TERMCAP 变量触发 tgetent() 函数中的栈溢出，从而在目标系统上以 root 权限执行任意代码。该漏洞影响 RedHat Linux 6.0 及 Slackware Linux 4.0 等早期 Linux 发行版，CVSS 评分 10.0，危害等级严重。"
 published = "1997-10-18"
-remediation = "升级 libtermcap 至 2.0.8-15 或更高版本以修复 tgetent() 缓冲区溢出漏洞。对于 RedHat Linux，安装 termcap-2.0.8-15 及以上更新包；对于 Slackware Linux，升级至 4.1 以上版本。如无法升级系统，应禁用 telnet 服务（注释 /etc/inetd.conf 中 telnet 行并重启 inetd），移除 xterm 等 setuid 程序的 suid 位（chmod u-s /usr/X11R6/bin/xterm），并改用 SSH 进行远程管理。在防火墙层面限制 23/tcp 端口的入站访问。"
+remediation = "建议立即升级至 RedHat Linux 6.1 及以上版本，或 Slackware Linux 4.1 及以上版本。如无法升级，建议禁用 telnet 服务（停止 telnetd 并移除 xinetd 中对应配置），改用 SSH 作为远程管理方案。同时排查受影响系统是否已被植入后门，必要时重新安装系统。"
 score = 10.0
 severity = "CRITICAL"
 sources = ["cve"]
-title = "RedHat Linux/Slackware Linux telnetd tgetent 缓冲区溢出漏洞"
+title = "RedHat Linux、Slackware Linux Telnet守护进程缓冲区溢出漏洞"
 updated = "2026-06-16"
 
 [exploit]
@@ -22,7 +22,6 @@ status = "completed"
 
 [references]
 urls = [
-    "https://nvd.nist.gov/vuln/detail/CVE-1999-0192",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0192",
     "https://www.exploit-db.com/exploits/19465",
 ]
