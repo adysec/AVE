@@ -1,11 +1,11 @@
 [basic]
-description = "Sendmail MTA 在处理 SMTP 邮件会话时存在输入验证缺陷，远程攻击者可通过构造恶意的 MAIL FROM 地址和无效的 RCPT TO 地址，使系统将反弹邮件发送到攻击者指定的程序而非用户邮箱，从而以 root 权限执行任意命令。该漏洞影响多个 Sendmail 版本，攻击者无需认证即可远程利用，CVSSv2 评分 10.0，可导致目标系统完全失陷。"
+description = """tags, so I'll provide my final answer within those tags.<value>Sendmail 存在远程命令执行漏洞，远程攻击者可通过 SMTP 协议向目标服务器发送特制邮件，在 "mail from" 字段中填入恶意程序路径，同时构造无效的 "rcpt to" 地址触发邮件退回机制。当邮件系统处理退信时，会以 root 权限执行 "mail from" 中指定的程序，导致攻击者在无需认证的情况下获得目标主机的完全控制权限。该漏洞影响 Sendmail 及基于其代码的衍生邮件服务，CVSS 评分 10.0，危害等级为严重，属于经典的邮件服务远程提权漏洞。"""
 published = "1995-08-17T04:00:00.000"
-remediation = "升级 sendmail 至 8.9.0 及以上版本，此版本彻底移除了邮件回弹时自动执行程序的危险机制。如不能升级，可在 sendmail.cf 中将 O 配置中的 O DontBlameSendmail 设为 appropriate，限制回弹行为。同时在网络边界防火墙阻断入站 SMTP 端口（25/TCP）对非授权主机的访问。建议迁移至 Postfix 或 Exim 等现代 MTA。"
+remediation = "升级 sendmail 至 8.9.0 或更高版本，该版本默认禁止 SMTP 直接投递到程序并强化了地址校验。如无法升级，在 sendmail.cf 中设置 `O PrivacyOptions=restrictmailq,restrictqrun,noexpn,novrfy` 并重启服务作为临时缓解措施。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Sendmail SMTP 远程代码执行漏洞"
+sources = ["epss"]
+title = "Sendmail Sendmail SMTP 远程代码执行漏洞"
 updated = "2026-06-16T21:47:54.237"
 
 [exploit]
