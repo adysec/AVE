@@ -1,15 +1,18 @@
 [basic]
-description = "WinNuke 是 Microsoft Windows 95/NT 系列操作系统 NetBIOS 协议实现中的拒绝服务漏洞。远程攻击者无需身份认证，即可向目标系统的 NetBIOS 端口（139/TCP）发送特制的带外（Out-of-Band，OOB）数据包，触发操作系统内核无法正确处理异常网络数据，导致系统崩溃并显示蓝屏（BSOD）。该漏洞影响 Windows 3.11、Windows 95、Windows NT 3.5.1 及 Windows NT 4.0 等早期版本，是互联网早期最知名的拒绝服务攻击之一。攻击者只需掌握目标 IP 地址即可发起攻击，利用门槛极低。"
-published = "1997-07-01T04:00:00.000"
-remediation = '建议在防火墙或路由器上阻止入站 TCP 端口 137-139 和 445，禁用 NetBIOS over TCP/IP 服务（网络连接属性中取消"Microsoft 网络的文件和打印机共享"绑定）。由于 Windows 3.11/95/NT 4.0 已停止支持，官方不再提供安全更新，根本解决方案是升级到受支持的 Windows 版本或迁移至现代操作系统。'
-score = 5
+description = "Microsoft Windows 3.11/95/NT 3.5.1/NT 4.0 的 TCP/IP 协议栈在处理带外（OOB）数据时存在拒绝服务漏洞，又称 WinNuke。远程攻击者无需身份认证，向目标 TCP 139 端口（NetBIOS）发送设置了 URGENT 标志的恶意数据包，当 URGENT POINTER 指向帧末尾且无正常数据跟随，Windows 内核无法正确处理此异常情况，导致系统蓝屏崩溃（BSOD），需重启恢复。该漏洞影响 Windows 3.11、Windows 95、Windows NT 3.5.1 及 Windows NT 4.0 等广泛使用的版本。"
+published = "1997-07-01"
+remediation = "在边界防火墙或网络设备上阻断入站 TCP 端口 139（NetBIOS Session）和 445（SMB），阻止外部攻击。若无业务需求，在网卡高级设置中禁用 NetBIOS over TCP/IP。对于 Windows NT 4.0，可安装微软官方补丁（MS97-003）缓解此漏洞。受影响的 Windows 版本已全部停止安全更新，建议升级到受支持的现代 Windows 版本。"
+score = 5.0
 severity = "MEDIUM"
-sources = ["epss"]
-title = "Microsoft Windows NetBIOS OOB 数据包远程拒绝服务漏洞 (WinNuke)"
-updated = "2026-06-16T21:47:42.847"
+sources = [
+    "cve",
+    "nvd",
+]
+title = "Microsoft Windows NetBIOS OOB 数据包拒绝服务漏洞"
+updated = "1997-07-01"
 
 [exploit]
-exp_urls = []
+exp_urls = ["https://www.exploit-db.com/exploits/20440"]
 poc_urls = []
 
 [id]
@@ -22,6 +25,7 @@ status = "completed"
 
 [references]
 urls = [
-    "http://www.osvdb.org/1666",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-0153",
     "https://www.exploit-db.com/exploits/20440",
+    "http://www.osvdb.org/1666",
 ]
