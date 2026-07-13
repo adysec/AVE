@@ -1,11 +1,11 @@
 [basic]
-description = "CVE-1999-0007 是 SSLeay（OpenSSL 前身）中 PKCS #1 填充机制的侧信道信息泄露漏洞。远程攻击者无需身份认证即可向 SSL 服务发送特制密文，利用服务器对 PKCS #1 填充校验错误返回差异（错误消息或响应时间），逐字节推导出会话密钥，从而解密 SSL 加密会话，窃取敏感通信内容。该漏洞影响早期使用 SSLeay/OpenSSL 库的 SSL/TLS 实现，属于典型的 padding oracle 攻击场景，危害机密性。"
+description = "该漏洞由贝尔实验室研究员 Daniel Bleichenbacher 于 1998 年发现，涉及 SSL 协议中 RSA PKCS #1 v1.5 填充方式的侧信道攻击。远程攻击者首先截获客户端与服务器之间的加密 SSL 会话，随后向服务器发送约一百万个精心构造的密文，通过观察服务器返回的填充校验错误差异逐步推断出会话密钥，最终解密被截获的加密通信内容。该漏洞影响 SSLeay 加密库及使用 SSL 协议的大量产品，包括 Microsoft Internet Information Server 3.0/4.0、Netscape Enterprise Server、Exchange Server 5.5 等服务器软件。由于攻击需要大量交互查询，服务器 CPU 和网络流量异常上升可作为检测手段。Microsoft 已于安全公告 MS98-002 中发布修补程序更新 SCHANNEL.dll。"
 published = "1998-06-26T04:00:00.000"
-remediation = "立即停止使用 SSLeay，迁移至 OpenSSL 1.1.1 或 3.x LTS 版本（如 OpenSSL 3.0.15+）。对于仍运行旧版 SSL 库的遗留系统，应在 TLS 配置中禁用 SSLv2/SSLv3 协议且仅启用 TLS 1.2+ 加密套件，并限制 PKCS #1 v1.5 填充的使用，改用 RSA-OAEP。"
+remediation = "立即将 SSLeay 升级至 OpenSSL 0.9.6 或更新版本，该版本修复了 PKCS #1 填充预言机信息泄露缺陷。如无法升级，在服务端禁用 SSLv2 协议，仅启用 TLS 1.0+，并配置统一的错误返回消息以防止攻击者通过错误响应区分填充格式。"
 score = 5
 severity = "MEDIUM"
 sources = ["epss"]
-title = "SSLeay SSL PKCS #1 加密会话信息泄露漏洞"
+title = "OpenSSL PKCS#1 填充加密会话信息泄露漏洞"
 updated = "2026-06-16T21:47:19.650"
 
 [exploit]
