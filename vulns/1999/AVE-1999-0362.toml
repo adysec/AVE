@@ -1,11 +1,11 @@
 [basic]
-description = "rpc.walld 服务存在未授权访问漏洞，远程攻击者无需认证即可向该服务发送恶意数据包，导致目标系统拒绝服务或执行远程命令。该漏洞还可被利用进行社会工程学攻击。受影响的系统包括运行该 RPC 服务的 Unix/Linux 系统，CVSS 评分 6.8，危害等级中等。禁用或限制 rpc.walld 服务的网络访问可缓解该风险。"
+description = "rpc.walld（wall daemon）是 Unix 系统中用于向所有在线终端广播消息的 RPC 服务，默认通过 rpc 协议监听网络请求。该服务存在访问控制缺陷，未授权远程攻击者无需认证即可向其发送特制 RPC 请求，向所有登录用户终端广播虚假消息，导致拒绝服务或社会工程攻击。部分实现中攻击者还可利用调试功能或命令行注入执行任意远程命令。该漏洞影响 Solaris、HP-UX 等 Unix 系统。"
 published = "1994-01-01T05:00:00.000"
-remediation = "立即禁用 rpc.walld 服务：在 System V init 系统上执行 `chkconfig rwalld off && service rwalld stop`，在 systemd 系统上执行 `systemctl disable rwalld --now`。若业务需用 RPC 服务，在 /etc/hosts.allow 和 /etc/hosts.deny 中通过 tcpwrappers 限制仅受信 IP 可访问 portmapper（端口 111），并在防火墙层面使用 `iptables -A INPUT -p tcp --dport 111 -s 受信任段 -j ACCEPT && iptables -A INPUT -p tcp --dport 111 -j DROP` 阻断外部访问。该服务在现代 Unix 系统上极少需要，建议彻底卸载包（如 `apt purge rpcbind` 或 `yum remove rpcbind`）。"
+remediation = "禁用 rpc.walld 服务（如不需全局广播功能），或通过 tcpwrappers 在 /etc/hosts.deny 添加 `walld: ALL` 限制访问来源。各 UNIX 厂商（如 Sun、HP、IBM）曾发布对应补丁，建议查阅原厂安全公告获取对应修复包。"
 score = 6.8
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Sun rpc.walld 远程命令执行与拒绝服务漏洞"
+sources = ["epss"]
+title = "Unix rpc.walld 远程命令执行漏洞"
 updated = "2026-06-16T21:47:46.403"
 
 [exploit]
