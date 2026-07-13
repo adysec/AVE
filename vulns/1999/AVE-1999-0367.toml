@@ -1,15 +1,12 @@
 [basic]
-description = "BIND DNS 服务器在编译时启用 -DALLOW_UPDATES 选项后，存在未授权动态更新漏洞。远程攻击者可在无需认证的情况下，向目标 DNS 服务器发送特制的动态更新请求，从而恶意修改或添加 DNS 记录，导致域名劫持、流量重定向等严重后果。该漏洞影响早期版本的 BIND 服务器，CVSS 评分 6.4，危害等级中等，建议禁用动态更新功能或限制可信来源。"
-published = "1997-07-01"
-remediation = "重新编译 BIND 时移除 -DALLOW_UPDATES 编译选项以禁用动态更新功能；若需保留动态更新，在 named.conf 中为每个 zone 配置 allow-update ACL，仅允许 TSIG 签名或可信 IP 地址执行更新操作。建议升级至 BIND 9 及以上版本，其默认不启用该选项。"
+description = "BIND DNS 服务器在编译时启用 -DALLOW_UPDATES 选项后，会允许未经验证的动态 DNS 更新请求。远程攻击者可利用该功能向目标服务器发送恶意动态更新数据包，从而篡改或添加 DNS 记录，导致域名解析劫持、流量重定向等严重后果。该漏洞影响多种 Unix/Linux 系统上运行的 BIND 服务，CVSS 评分 6.4，危害等级中危。"
+published = "1997-07-01T04:00:00.000"
+remediation = "重新编译 BIND 时移除 -DALLOW_UPDATES 编译选项以禁用动态更新功能；如业务需要动态 DNS 更新，请在 named.conf 中使用 allow-update ACL 限定仅允许信任网段（如 10.0.0.0/8）发起更新请求，并配置 TSIG 密钥签名认证确保更新来源合法性；同时升级至 BIND 9.x 或更高版本以获取完整的访问控制和身份验证机制。"
 score = 6.4
 severity = "MEDIUM"
-sources = [
-    "cve",
-    "avd",
-]
-title = "ISC BIND DNS 动态更新未授权漏洞"
-updated = "2026-06-16"
+sources = ["epss"]
+title = "ISC BIND 动态DNS更新不当漏洞"
+updated = "2026-06-16T21:47:46.770"
 
 [exploit]
 exp_urls = []
@@ -24,7 +21,4 @@ collected_at = "2026-07-13T00:00:00Z"
 status = "completed"
 
 [references]
-urls = [
-    "https://nvd.nist.gov/vuln/detail/CVE-1999-0184",
-    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0184",
-]
+urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0184"]
