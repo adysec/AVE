@@ -1,11 +1,11 @@
 [basic]
-description = "SSH 客户端通过 ssh-agent 服务程序管理私钥身份认证时存在凭据保护不足漏洞。同一系统上的其他本地用户可利用进程间通信机制访问 ssh-agent 进程，窃取已加载的 SSH 认证凭据，从而冒充 ssh-agent 用户登录其有权访问的远程账户，导致未授权远程访问。该漏洞影响多种 SSH 实现，危害等级高。"
+description = "SSH 协议中的 ssh-agent 程序存在凭证泄露漏洞，本地攻击者可通过访问 ssh-agent 进程获取已存储的 SSH 私钥及认证凭证，从而伪装成目标用户登录远程系统。该漏洞影响广泛使用 ssh-agent 的各类 SSH 实现环境，攻击者需要已获得目标系统的本地访问权限方可利用，CVSS 评分 8.4，危害等级高。"
 published = "1998-01-22T05:00:00.000"
-remediation = "升级 SSH 至 1.2.14 以上版本（推荐安装 OpenSSH 最新稳定版），该漏洞已在后续版本中修复。在 ssh_config 中设置 ForwardAgent no 禁止默认转发代理，仅在有明确需要时使用 ssh -A 临时启用。使用 ssh-add -c 为密钥添加使用确认机制，每次使用代理密钥前需手动确认。限制 SSH_AUTH_SOCK 套接字文件权限为仅属主可读写（chmod 600），防止其他本地进程通过套接字访问代理。"
+remediation = "升级至支持 SSH2 协议的 OpenSSH_3.0+ 版本并禁用 SSH1 协议（在 sshd_config 中设置 Protocol 2）；同时限制 ssh-agent 的 socket 文件权限（0700）并建议用户在非信任环境中避免使用 ssh-agent 转发功能。"
 score = 8.4
 severity = "HIGH"
 sources = ["epss"]
-title = "SSH ssh-agent 凭据泄露漏洞"
+title = "OpenSSH ssh-agent 凭据窃取漏洞"
 updated = "2026-06-16T21:47:20.890"
 
 [exploit]
