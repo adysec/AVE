@@ -1,33 +1,42 @@
 [info]
 author = "ave"
-description = "检测目标 IIS 服务器 newdsn.exe CGI 脚本文件覆盖漏洞"
+description = "检测目标 IIS 3.0 是否存在可被未授权访问的 newdsn.exe CGI 脚本。该脚本用于 ODBC 数据源管理，远程攻击者无需认证即可通过特制 HTTP 请求创建/覆盖任意文件。本 PoC 仅探测该脚本是否可访问，不执行实际写入操作，属安全无损验证。"
 id = "POC-AVE-1999-0374"
-name = "CVE-1999-0191 IIS newdsn.exe File Overwrite"
+name = "Microsoft IIS 3.0 newdsn.exe 远程文件创建漏洞 PoC"
 severity = "medium"
-tags = [
-    "cve-1999-0191",
-    "iis",
-    "cgi",
-]
+tags = ["ave-1999-0374"]
 vuln_id = [
     "CVE-1999-0191",
     "AVE-1999-0374",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/scripts/tools/newdsn.exe"
+path = "/scripts/newdsn.exe"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "newdsn",
-    "ODBC",
-    "Data Source",
-]
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/msadc/newdsn.exe"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
