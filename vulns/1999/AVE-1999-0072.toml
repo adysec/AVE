@@ -1,11 +1,11 @@
 [basic]
-description = "umapfs（用户映射文件系统）存在权限提升漏洞，本地攻击者可通过运行恶意的 mount_umap 程序伪造用户标识符（UID），从而绕过系统权限检查获取 root 权限。该漏洞需要攻击者拥有本地访问权限并能够执行恶意 mount_umap 程序，影响使用 umapfs 的各类 UNIX 系统。CVSS 评分 7.2，危害等级高。"
+description = "umapfs（用户映射文件系统）存在权限提升漏洞，本地攻击者可通过恶意构造的 mount_umap 程序修改自身用户标识符（UID），从而绕过系统权限检查获取 root 权限。该漏洞影响使用 umapfs 的 UNIX 系统，攻击者需拥有本地访问权限，成功利用后可完全控制受影响系统，危害严重。"
 published = "1999-03-17T05:00:00.000"
-remediation = "立即将系统升级至厂商发布的最新稳定版本（如 Linux 内核 ≥2.2.x），该漏洞已在 1999 年的内核更新中修复。如无法升级，卸载 umapfs 内核模块（`rmmod umapfs`）并移除 `mount_umap` 的 setuid 位（`chmod u-s /sbin/mount_umap`），同时将 `mount_umap` 列入禁止执行的访问控制列表，防止非授权用户调用。"
+remediation = "立即移除 mount_umap 程序的 setuid-root 权限（chmod u-s /usr/sbin/mount_umap），如不使用 umapfs 文件系统可直接卸载该组件。联系操作系统厂商确认是否有对应安全补丁，升级到已修复 umapfs 漏洞的版本。在不影响业务的前提下，禁用 umapfs 内核模块支持以防止恶意加载。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "CMU Coda umapfs 本地权限提升漏洞"
+sources = ["avd"]
+title = "BSD umapfs 本地权限提升漏洞"
 updated = "2026-06-16T21:48:21.550"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0420"]
 ave_id = "AVE-1999-0072"
 
 [meta]
-collected_at = "2026-07-12T00:00:00Z"
+collected_at = "2026-07-13T00:00:00Z"
 status = "completed"
 
 [references]
