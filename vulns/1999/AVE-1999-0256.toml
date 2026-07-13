@@ -1,11 +1,11 @@
 [basic]
-description = "IBM AIX 3.2.5 的 rlogin 实现中存在认证绕过漏洞，由于未对 `-froot` 参数进行充分的权限校验，导致远程攻击者可通过在 rlogin 命令中附加 `-froot` 参数直接以 root 权限登录目标系统，实现完全未授权的权限提升。该漏洞影响 IBM AIX 3.2.5 版本，CVSS 评分 10.0，危害等级严重。"
+description = "IBM AIX 3.2.5 系统中的 rlogin 实现在处理 -froot 参数时存在授权绕过漏洞，远程攻击者或本地用户无需有效认证即可通过向 rlogin 命令传递 -froot 参数获取 root 权限。该漏洞允许低权限用户或未经认证的远程攻击者完全控制系统，危害等级严重。受影响版本包括 IBM AIX 3.2.5 及可能受影响的同类 rlogin 实现。"
 published = "1994-05-23T04:00:00.000"
-remediation = "升级 AIX 至 4.1 及以上版本以修复 rlogin 认证绕过漏洞。如无法升级，禁用 rlogin 服务（`chsubserver -r -d rlogind`）并改用 SSH（`sshd`）进行远程管理。在 `/etc/hosts.equiv` 和 `~/.rhosts` 中移除不可信主机，限制 root 远程登录。"
+remediation = "立即升级至 IBM AIX 7.3 或 7.2 最新 Technology Level，rlogin 协议已在现代 AIX 版本中默认禁用。如无法升级，在 /etc/inetd.conf 中注释掉 login/shell/exec 行并重启 inetd 以关闭 r-commands 服务；使用 SSH 替代 rlogin，并在 /etc/ssh/sshd_config 设置 PermitRootLogin no 禁止 root 直接登录；在 /etc/hosts.equiv 和 ~root/.rhosts 中删除 + 通配符条目。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "IBM AIX 3.2.5 login 命令权限提升漏洞"
+sources = ["epss"]
+title = "IBM AIX login 命令权限提升漏洞"
 updated = "2026-06-16T21:47:36.820"
 
 [exploit]
