@@ -1,11 +1,11 @@
 [basic]
-description = "Ghostscript 的 -dSAFER 安全沙盒存在绕过漏洞，由于对危险操作符（如 .system、.popen 等）的过滤不完善，远程攻击者可向目标系统提交特制 PostScript 文件，绕过 -dSAFER 限制后调用底层操作系统命令，进而实现任意代码执行。该漏洞影响了 Ghostscript 多个版本，利用方式简单，危害严重。"
+description = "Ghostscript PostScript 解释器在启用 -dSAFER 安全选项时存在沙箱绕过漏洞，远程攻击者可构造特制的 PostScript 文件（如嵌入恶意 .eps 或 .ps 图片的文档），诱导用户或服务端程序解析即可触发，绕过 -dSAFER 对文件读写、命令执行等危险操作的限制，在目标系统上执行任意命令。该漏洞广泛影响各类 Ghostscript 发行版，常见于图像处理、文档转换服务调用中，CVSS 评分 7.5，危害等级高。"
 published = "1995-08-31T04:00:00.000"
-remediation = "立即升级 Ghostscript 至 10.04.0 或更高版本，新版的 -dSAFER 沙盒模式已加固，可有效阻止 PostScript 代码中的文件写入/读取及命令执行。如无法升级，可在调用 gs 时额外添加 -dNOSAFER 禁止参数，并在操作系统层面通过 seccomp/AppArmor/SELinux 限制 Ghostscript 子进程的系统调用权限，同时禁止处理来自不可信来源的 PostScript/PDF 文件。"
+remediation = "升级 Ghostscript 至 9.50 及以上版本（SAFER 模式默认启用且大幅增强），使用 `-dSAFER` 参数运行。在无法升级时，结合 seccomp-bpf 或 AppArmor/SELinux 策略限制 Ghostscript 进程的文件读写和命令执行权限，避免直接处理来源不可信的 PostScript/PDF 文件。"
 score = 7.5
 severity = "HIGH"
-sources = ["avd"]
-title = "Artifex Ghostscript 安全沙箱绕过远程代码执行漏洞"
+sources = ["epss"]
+title = "Artifex Ghostscript -dSAFER 远程代码执行漏洞"
 updated = "2026-06-16T21:47:43.100"
 
 [exploit]
