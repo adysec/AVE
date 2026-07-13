@@ -1,11 +1,11 @@
 [basic]
-description = "Solaris 系统中的 portmapper 组件存在代理劫持漏洞，攻击者可通过向目标系统的 portmapper 发送特制请求，利用其代理功能将服务请求重定向，使请求看似来自本地主机，从而绕过基于源 IP 地址的认证机制。此漏洞可被用于绕过 NFS 导出限制远程挂载文件系统，影响运行 NFS 服务的多个 Unix 系统版本，CVSS 评分 7.5，危害等级高。"
+description = "Solaris 等 UNIX 系统中运行的 portmapper（端口映射服务）存在访问控制绕过漏洞。远程攻击者可通过向目标系统的 portmapper 发送特制的服务请求，使其充当代理将请求重定向至本地主机，从而绕过源 IP 认证机制。攻击者利用此漏洞可绕过 NFS 导出限制远程挂载文件系统，获取敏感文件访问权限。该漏洞无需认证即可远程利用，影响面广泛，CVSS 评分 7.5，危害等级高。"
 published = "1992-06-04T04:00:00.000"
-remediation = '升级 SunOS/Solaris 至厂商已发布补丁的版本；在 /etc/hosts.deny 中添加 "portmap:ALL" 并在 /etc/hosts.allow 中仅放行可信 IP；通过 iptables 或 ipfilter 限制 111/TCP 和 111/UDP 端口仅允许内部信任网段访问；对 NFS 导出目录使用更严格的访问控制，避免基于源端口号做认证决策。'
+remediation = "在防火墙上限制对 TCP/UDP 111 端口的访问，仅允许受信任主机连接 rpcbind 服务。对于 NFS 导出，添加 `-secure` 选项并要求仅从保留端口连接。升级使用支持 RPCSEC_GSS 认证的现代操作系统版本（如 Solaris 10+ 或 Linux 发行版），并启用 iptables/nftables 规则过滤对 rpcbind 的访问。如 NFS 非必要，可通过 `/etc/init.d/nfs` stop 禁用相关服务。"
 score = 7.5
 severity = "HIGH"
-sources = ["avd"]
-title = "Sun SunOS Portmapper 代理认证绕过漏洞"
+sources = ["epss"]
+title = "Sun SunOS RPC Portmapper 代理重定向认证绕过漏洞"
 updated = "2026-06-16T21:47:44.800"
 
 [exploit]
