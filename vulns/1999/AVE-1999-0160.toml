@@ -1,11 +1,11 @@
 [basic]
-description = "BSD 行式打印机守护进程（lpd）存在远程命令执行漏洞，攻击者可通过向目标主机的打印机服务（默认端口 515）发送特制的请求，利用 lpd 协议对用户输入处理不当的缺陷，实现任意文件创建、删除及远程命令执行。该漏洞影响多个 Unix/Linux 发行版中运行的 BSD lpd 服务，CVSS 评分 5.1，危害等级中危。厂商已发布相关安全补丁。"
+description = "BSD 行式打印机守护进程（lpd）存在远程代码执行漏洞，源于其对打印任务处理过程中缺乏充分的访问控制与输入验证。远程攻击者无需认证即可向运行 lpd 服务的目标系统发送特制的打印请求，实现任意文件创建、删除或远程命令执行。该漏洞影响 Linux 及 BSD 系列操作系统。"
 published = "1997-10-02T04:00:00.000"
-remediation = "立即停止并卸载 BSD lpd 服务（`systemctl stop lpd && apt remove lpr lpd`），将打印系统迁移至 CUPS（Common Unix Printing System）作为替代方案。同时在防火墙层面使用 iptables 限制 TCP/515 端口的入站流量，仅允许受信任网段访问：`iptables -A INPUT -p tcp --dport 515 -s 可信IP段 -j ACCEPT && iptables -A INPUT -p tcp --dport 515 -j DROP`。若不需网络打印功能，建议直接屏蔽该端口并从 inetd/xinetd 中注释 lpd 条目。"
+remediation = "禁用 lpd 服务（`killall lpd` 并移除启动项），升级到已修复版本，或使用 TCP Wrapper 限制端口 515 仅允许受信主机访问；对于不需要网络打印的系统，建议直接卸载 lpd 替代为 CUPS 或 LPRng 等现代打印系统。"
 score = 5.1
 severity = "MEDIUM"
 sources = ["epss"]
-title = "BSD lpd 远程代码执行漏洞"
+title = "BSD Line Printer Daemon (lpd) 远程代码执行漏洞"
 updated = "2026-06-16T21:47:29.180"
 
 [exploit]
