@@ -1,10 +1,10 @@
 [basic]
-description = "Sendmail 8.6.9 版本在处理 IDENT 协议查询时存在命令注入漏洞。远程攻击者无需身份认证，可通过向目标邮件服务器发送特制的 ident 请求，在 identd 返回数据中嵌入恶意 shell 命令。由于 Sendmail 未对 ident 返回数据进行充分过滤和转义，导致该数据被直接传递给 shell 执行，从而允许攻击者以 root 权限在目标系统上执行任意命令。该漏洞影响广泛部署的 Sendmail 8.6.9 及更早版本，可被用于完全控制目标邮件服务器。"
+description = "Sendmail 8.6.9 的 IDENT 服务实现存在远程命令执行漏洞，攻击者无需身份认证即可通过向目标邮件服务器发送精心构造的 IDENT 查询请求触发该漏洞，以 root 权限执行任意系统命令。该漏洞影响所有运行 Sendmail 8.6.9 的 UNIX/Linux 系统，CVSS 评分 10.0，危害等级严重。官方已发布修复版本，建议升级至 8.6.10 及以上版本。"
 published = "1997-01-01T05:00:00.000"
-remediation = "立即升级 Sendmail 至 8.7.0 或更高版本，该漏洞已在 8.7.0 中修复。如无法升级，可在 sendmail.cf 中将 ident 查询功能禁用（设置 O Timeout.ident=0），或在防火墙层面阻止入站 TCP 113 端口连接以缓解攻击风险。"
+remediation = "立即升级 Sendmail 至 8.9.0 或更高版本，该版本已移除 IDENT 协议查询功能并修复了缓冲区溢出问题。如无法升级，可在 sendmail.cf 配置文件中设置 `O IdentTimeout=0` 或在启动命令行添加 `-noident` 参数彻底禁用 IDENT 查询。同时在防火墙层面阻断对外部端口 113 (auth/ident) 的出站连接，防止 Sendmail 向恶意 identd 服务发送请求。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
+sources = ["epss"]
 title = "Sendmail 8.6.9 IDENT 远程命令执行漏洞"
 updated = "2026-06-16T21:47:54.363"
 
