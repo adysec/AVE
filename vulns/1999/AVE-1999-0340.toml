@@ -1,12 +1,12 @@
 [basic]
-description = "NFS（网络文件系统）协议存在身份认证绕过漏洞，远程攻击者可通过伪造 UID（用户标识符）向 NFS 服务器发起请求，绕过正常文件访问权限检查，实现对目标系统上任意文件的读取与写入操作。该漏洞影响早期 Unix/Linux 系统中广泛部署的 NFS 服务，攻击者无需任何身份凭证即可完全控制文件系统，造成敏感信息泄露或系统破坏。"
-published = "1997-07-01T04:00:00.000"
-remediation = "在 /etc/exports 中使用 root_squash 和 all_squash 选项限制权限，并指定可访问的客户端 IP 网段；升级至 NFSv4 及以上版本，配置 sec=krb5 启用 Kerberos 认证；在防火墙上限制 NFS 端口（TCP/UDP 2049）仅对受信任内网开放。"
-score = 10
-severity = "CRITICAL"
-sources = ["avd"]
-title = "Sun NFS 未授权文件读写漏洞"
-updated = "2026-06-16T21:47:44.920"
+description = "NFS（网络文件系统）协议存在认证缺陷，其基于 UID（用户 ID）的访问控制机制未对客户端身份进行有效验证。远程攻击者无需合法凭据，仅需在 NFS 请求中伪造特权用户（如 root）的 UID 值，即可绕过文件权限检查，实现对目标系统上任意文件的读取与写入操作。该漏洞影响广泛部署的 NFS 服务实现，CVSS v2 评分 10.0，危害等级严重，可导致敏感数据泄露、系统文件篡改乃至完全控制服务器。由于 NFS 协议设计阶段未内置强认证机制，此问题属于架构性安全缺陷。"
+published = "1997-07-01"
+remediation = "升级 NFS 服务端至 NFSv4 版本，配置 /etc/exports 中启用 root_squash 和 all_squash 选项强制将远程用户映射为匿名用户，避免直接绕过权限检查；同时使用 sec=krb5 或 sec=krb5p 启用 Kerberos 认证，防止客户端伪造 UID/GID。在无法升级的场景下，应在防火墙层面限制 NFS 端口（2049/TCP/UDP）仅允许受信 IP 段访问，并使用 exports 的 rw/ro 和 subnet 限制作为临时缓解。"
+score = 5
+severity = "MEDIUM"
+sources = ["epss"]
+title = "NFS 虚假UID认证绕过漏洞"
+updated = "1997-07-01"
 
 [exploit]
 exp_urls = []
@@ -21,4 +21,4 @@ collected_at = "2026-07-13T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0169"]
+urls = []
