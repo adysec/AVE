@@ -1,10 +1,10 @@
 [basic]
-description = "HP-UX 操作系统的 cstm 程序存在缓冲区溢出漏洞，由于对用户输入长度缺乏正确边界检查，本地攻击者可通过向 cstm 程序传入特制的超长参数触发溢出，覆盖进程内存中的关键数据，成功利用后可提升至 root 权限，完全控制受影响系统。该漏洞影响多个 HP-UX 版本，CVSS 评分 7.2，危害等级高危。"
+description = "HP-UX 操作系统中的 cstm（Customer Services Test Manager）程序存在缓冲区溢出漏洞，本地攻击者可通过向该程序提交特制的输入数据触发缓冲区溢出，进而覆盖内存中的关键数据，实现权限提升并获得 root 超级用户权限。该漏洞影响 HP-UX 多个版本，攻击者需要具有目标系统的本地访问权限，但无需其他特殊条件，利用难度较低，CVSS 评分 7.2，危害等级高危。"
 published = "2000-12-20T05:00:00.000"
-remediation = "立即安装 HP 提供的 cstm 安全补丁（如 PHSS_14660 或更新版本）。如无法立即打补丁，可移除 cstm 二进制文件的 setuid root 权限作为临时缓解措施：执行 `chmod 555 /usr/sbin/cstm`；同时通过文件权限或 PAM 限制仅允许受信管理员用户执行 cstm。"
+remediation = "立即移除 cstm 程序的 setuid root 权限位：`chmod u-s /opt/sfm/bin/cstm`，仅允许受信任的管理员通过 sudo 执行。如业务允许，可彻底卸载 cstm 软件包：`swremove SFM-CSTM`。若系统仍在运行关键业务无法直接卸载，应使用文件权限 ACL 限制 cstm 的执行用户为 root 组，命令：`chmod 750 /opt/sfm/bin/cstm && chown root:sys /opt/sfm/bin/cstm`。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
+sources = ["avd"]
 title = "HP HP-UX cstm 缓冲区溢出漏洞"
 updated = "2026-06-16T21:48:07.113"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0307"]
 ave_id = "AVE-1999-0021"
 
 [meta]
-collected_at = "2026-07-12T00:00:00Z"
+collected_at = "2026-07-13T00:00:00Z"
 status = "completed"
 
 [references]
