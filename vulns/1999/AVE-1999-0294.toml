@@ -1,11 +1,11 @@
 [basic]
-description = "QMail 1.0 存在拒绝服务漏洞，远程攻击者可通过 SMTP 协议的 RCPT 命令指定大量收件人地址，导致邮件服务器处理队列溢出或资源耗尽，从而使 QMail 服务崩溃或无法响应正常请求。该漏洞影响 Dan Bernstein QMail 1.0 及早期版本，攻击条件低、无需认证即可远程触发，但触发后仅造成服务不可用，不影响服务器数据完整性。"
+description = "QMail 1.0.3 存在拒绝服务漏洞，远程攻击者可通过 SMTP RCPT 命令指定大量收件人地址，导致邮件服务器处理过程中消耗过多系统资源，造成服务响应缓慢或崩溃。该漏洞影响 QMail 1.0.3 版本，无需身份认证即可利用，攻击门槛低。厂商至今未发布官方补丁。"
 published = "1997-06-01T04:00:00.000"
-remediation = "升级至 netqmail 1.06 或更新版本（如 qmail-ldap），该版本已对单次 SMTP 会话的 RCPT 命令收件人数进行限制，防止资源耗尽。如无法立即升级，可在 MTA 前端代理（如 Nginx Mail Proxy 或 HAProxy）层面限制每个连接的 RCPT 命令次数为 100 以内，或使用 iptables 限制单位时间内来自同一源的 SMTP 连接数作为临时缓解措施。"
+remediation = "升级 QMail 至 1.03 及以上版本，该版本修复了 RCPT 命令大量收件人导致的拒绝服务问题；若无升级条件，可在 SMTP 代理层限制单次会话 RCPT TO 命令数量不超过 100 个，并在 qmail-smtpd 前添加 tcpserver 的并发连接限制（如 `tcpserver -c 50`）。"
 score = 2.1
 severity = "LOW"
-sources = ["avd"]
-title = "Dan Bernstein QMail RCPT 命令拒绝服务漏洞"
+sources = ["epss"]
+title = "Dan Bernstein QMail RCPT 拒绝服务漏洞"
 updated = "2026-06-16T21:47:41.470"
 
 [exploit]
