@@ -1,11 +1,11 @@
 [basic]
-description = "Linux Kernel 2.0.x 版本中的 ping 命令在处理带 -R（记录路由）选项的数据包时存在缺陷，本地攻击者可通过向目标系统发送特制的大尺寸 ICMP 数据包触发该漏洞，导致系统内核资源耗尽或崩溃，造成拒绝服务。该漏洞影响 Linux Kernel 2.0.38 及更早版本，攻击者拥有本地普通用户权限即可利用，无需认证。"
+description = "Linux Kernel 2.0.3x 及更早版本中的 ping 命令存在拒绝服务漏洞。当本地用户使用 -R（记录路由）选项发送超大数据包时，ping 命令在处理 IP 首部选项时未能正确验证数据包长度，导致内核缓冲区处理异常，从而引发系统崩溃或服务不可用。该漏洞影响 Linux Kernel 2.0.x 全系列版本，攻击者只需拥有本地普通用户权限即可触发，无需特殊授权。"
 published = "1999-12-08T05:00:00.000"
-remediation = "建议将 Linux 内核升级至 2.0.39 或更高版本（RedHat 用户升级 kernel 至 2.0.39-1 及以上 RPM 包，Debian 用户升级至 2.0.39 对应内核镜像）。如无法立即升级，可通过设置 `net.ipv4.icmp_echo_ignore_all=1`（sysctl 临时生效并写入 /etc/sysctl.conf 持久化）禁用 ICMP Echo 响应，或在防火墙/路由器上丢弃带 IP Record Route（-R）选项的 ICMP 包作为临时缓解措施。"
+remediation = "升级 Linux 内核至 2.2.x 或更高版本，该系列已修复 ping -R 大包处理的缓冲区问题。临时缓解措施：移除 ping 命令的 SUID 权限（chmod u-s /bin/ping），限制仅有 root 用户可执行，防止本地非授权用户利用该选项触发拒绝服务。"
 score = 5
 severity = "MEDIUM"
 sources = ["cve"]
-title = "Linux Kernel ping 命令拒绝服务漏洞"
+title = "Linux Kernel ping 命令大包拒绝服务漏洞"
 updated = "2026-06-16T21:49:27.963"
 
 [exploit]
