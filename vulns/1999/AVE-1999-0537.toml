@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD 内核中的 mmap 内存映射函数存在安全漏洞，未能正确检查文件的不可修改（immutable）和仅追加（append-only）标志位。本地攻击者可通过 mmap 创建文件的可写内存映射，绕过操作系统的文件保护机制，直接修改本应受保护的只读或仅可追加文件的内容，导致权限提升和数据完整性破坏。该漏洞影响 FreeBSD 及 NetBSD 操作系统，CVSS v2 评分 10.0，危害等级严重。"
+description = "FreeBSD 操作系统内核中的 mmap 内存映射函数存在文件属性绕过漏洞，本地攻击者可通过调用 mmap 系统接口，绕过文件系统的保护机制，修改被设置为仅追加（append-only）或不可变（immutable）属性的文件内容。攻击者需要具备目标系统的本地账户权限，通过编写恶意程序调用 mmap 对受保护文件进行写入操作，可导致篡改系统关键配置文件、日志文件或安全策略，破坏系统完整性。该漏洞影响多个 FreeBSD 版本，CVSS 评分 10.0，危害等级严重。"
 published = "1998-02-20T05:00:00.000"
-remediation = "升级 FreeBSD 至 2.2.8 及以上版本，或应用内核补丁修改 vm_mmap.c 中 mmap 系统调用，使其在建立可写共享映射 (MAP_SHARED|PROT_WRITE) 时检查文件标志位，拒绝映射设置了 UF_IMMUTABLE/SF_IMMUTABLE/UF_APPEND/SF_APPEND 的文件。同时提升内核安全级别 (sysctl kern.securelevel) 至 1 以上以防止普通用户修改文件标志。"
+remediation = "建议升级至 NetBSD 1.4+ 或 FreeBSD 3.0+ 版本，其中已修复 mmap(2) 系统调用对不可变/仅追加文件的权限检查缺陷。对于 NetBSD 1.3/1.3.1，可应用的补丁（来自 ftp://ftp.NetBSD.ORG/pub/NetBSD/misc/security/patches/19980509-mmap）。如无法升级临时缓解措施，可将系统 securelevel 提升至 1 以上并避免在多进程间对设定了 append-only/immutable 标志的文件使用共享可写 mmap。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "FreeBSD mmap 函数安全特性绕过漏洞"
+sources = ["epss"]
+title = "FreeBSD mmap 函数访问控制绕过漏洞"
 updated = "2026-06-16T21:48:09.107"
 
 [exploit]
@@ -17,8 +17,19 @@ aliases = ["CVE-1999-0323"]
 ave_id = "AVE-1999-0537"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
-urls = []
+urls = [
+    "https://github.com/CVEProject/cvelistV5/blob/b8581edcbd9fb1606112c43470d0a7cb92a751f8/cves/1999/0xxx/CVE-1999-0323.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0323",
+    "https://github.com/yarencheng/cve-devops-playground/blob/9074597bd191efd66c2a6bf1f5d8e60bc4801a90/content/CVE-1999-0323.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f6ced4f7862026f4207c9708deb4edf129c83fc5/CVE/data/1999/CVE-1999-0323.json",
+    "https://github.com/github/advisory-database/blob/057c97aa60eb958a2d272c7164e35c156db63b6c/advisories/unreviewed/2022/05/GHSA-r5jc-68gw-7fmq/GHSA-r5jc-68gw-7fmq.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x83000/82264/info.html",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0323.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--c2ea8a31-4149-4cb6-8c91-11842551ba1b.json",
+    "https://github.com/Ethishh/securin_assessment/blob/e6ce9197b6593ae46f3f5646d268181eea6cbb31/cve_sync.log",
+    "https://github.com/zephyros1603/RadiantProcessors/blob/7d44cb1cd4b9e088fbe463f1b19be50a04c2efe8/Backend/RAG/data/allitems.txt",
+]
