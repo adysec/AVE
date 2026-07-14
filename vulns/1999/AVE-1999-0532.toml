@@ -1,11 +1,11 @@
 [basic]
-description = "SunOS/Solaris 系统的 rpc.cmsd（日历管理服务守护进程）存在权限处理不当漏洞，未经身份认证的远程攻击者可利用该服务对文件系统的非授权访问能力，通过覆盖系统任意文件实现对目标主机的 root 权限获取。该漏洞影响 SunOS 5.x 及 Solaris 2.x 等版本，CVSS 评分 9.3，危害等级严重。攻击者无需任何身份认证即可远程触发，利用难度较低，可导致系统完全受控。Sun 已于当年发布安全补丁修复此漏洞。"
+description = "SunOS/Solaris 系统的 rpc.cmsd（日历管理服务守护进程）存在任意文件覆写漏洞。rpc.cmsd 以 root 权限运行，由于对用户提交的 RPC 参数缺乏充分的路径验证，未经身份认证的远程攻击者可通过向目标系统的日历管理服务发送特制 RPC 请求，覆写任意系统文件，从而获取 root 访问权限。该漏洞影响 SunOS 5.3 至 5.5.1（Solaris 2.3 至 2.5.1）版本，CVSS 评分 9.3，危害等级严重。"
 published = "1998-03-01T05:00:00.000"
-remediation = "安装 Sun Security Bulletin #166 对应版本的 SunOS 补丁（适用于 SunOS 5.3/5.4/5.5/5.5.1），或直接禁用 rpc.cmsd 服务：执行 `/etc/init.d/calendar stop` 停止服务，并在 `/etc/inetd.conf` 中注释 `calendar` 相关行后重启 inetd。如仍在使用老旧 SunOS/Solaris 系统，建议升级到受支持的 Oracle Solaris 11 以上版本以彻底消除风险。"
+remediation = "针对 SunOS/Solaris 2.x 系统，安装 Sun Security Bulletin #166 提供的对应版本补丁：Solaris 2.3 安装 101318 补丁、Solaris 2.4 安装 101945 补丁、Solaris 2.5 安装 103093 补丁、Solaris 2.5.1 安装 103094 补丁。如业务不需要日历管理服务，可停止 rpc.cmsd 守护进程（/etc/init.d/calendar stop）并注释 rpc 绑定条目作为临时缓解。对于仍在运行的遗留系统，建议迁移至 Oracle Solaris 11 及以上受支持版本。"
 score = 9.3
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Sun SunOS rpc.cmsd 任意文件覆盖致权限提升漏洞"
+sources = ["epss"]
+title = "Sun SunOS rpc.cmsd 任意文件覆盖提权漏洞"
 updated = "2026-06-16T21:48:08.750"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0320"]
 ave_id = "AVE-1999-0532"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
