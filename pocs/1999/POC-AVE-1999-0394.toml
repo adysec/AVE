@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "向目标 rpcbind（TCP 111）发送 PMAPPROC_DUMP 请求，检测 rpc.ypupdated（程序号 100028）是否注册于端口映射服务中。若已注册，说明目标运行 NIS 更新服务，存在公开的远程命令执行漏洞（ExploitDB 20259），攻击者可利用 shell 元字符注入以 root 权限执行任意命令。"
+id = "POC-AVE-1999-0394"
+name = "CVE-1999-0208 rpc.ypupdated NIS 远程命令执行 PoC"
+severity = "critical"
+tags = ["cve-1999-0208", "ave-1999-0394"]
+vuln_id = [
+    "CVE-1999-0208",
+    "AVE-1999-0394",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "{{Hostname}}:111"
+protocol = "tcp"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "regex"
+regex = ["\\x00\\x01\\x86\\xbc"]
+
+[poc.requests.raw]
+content = "80000028000000000000000000000002000186a0000000020000000400000000000000000000000000000000"
+type = "tcp"
