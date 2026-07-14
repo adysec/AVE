@@ -1,11 +1,11 @@
 [basic]
-description = "X Windows 系统中的认证机制存在可猜测的 magic cookie（魔法令牌）漏洞。X Window System 采用基于共享密钥的访问控制机制，其中 magic cookie 作为客户端连接到 X 服务器的凭据。由于 cookie 生成算法存在弱随机性问题，远程攻击者可通过暴力枚举方式猜测出有效的认证令牌，从而绕过身份认证直接连接到目标系统的 X 服务器端口（默认 TCP 6000+）。成功利用后，攻击者可获取目标用户 X 会话的完全控制权，包括但不限于捕获键盘输入、截取屏幕内容、注入按键事件以及通过 xterm 等终端模拟器执行任意命令。该漏洞影响运行 X Window System 的多款 Unix/Linux 操作系统（包括 Solaris、IRIX 等），无需任何身份认证即可远程利用，CVSS v2.0 评分 10.0，危害等级严重。"
+description = "X Window System 的 MIT-MAGIC-COOKIE-1 认证机制存在安全缺陷，系统生成的身份认证令牌（magic cookie）使用弱随机数算法，可被远程攻击者通过暴力破解或推测方式获取有效令牌。攻击者成功绕过 X 服务器访问控制后，可通过 xterm 等 X 客户端在目标系统上以当前用户权限执行任意命令。该漏洞影响大量运行 X11 协议的操作系统，CVSS v2 评分 10.0，危害等级严重。"
 published = "1995-11-01T05:00:00.000"
-remediation = "升级 X11 至 R6.3 及以上版本（或 IRIX 6.5 以上），确保使用 /dev/random 等真随机源生成 cookie。启用 SSH X11 Forwarding（ForwardX11Trusted Yes），禁止 X11 直接暴露于网络。在防火墙上限制 TCP 6000 端口的入站访问，仅允许受信任来源连接。使用 xauth 结合 MIT-MAGIC-COOKIE-1 认证机制，避免使用 xhost + 开放访问。"
+remediation = "升级 XFree86 至 3.3.3 及以上版本，或启用 xdm 的 XDMCP 禁用选项；使用 ssh -X 隧道转发 X11 连接以绕过直接网络暴露；在 hosts.allow 中限制仅允许可信来源的 X11 连接。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "X.Org X Window System 可猜测 Magic Cookie 远程代码执行漏洞"
+sources = ["epss"]
+title = "X.Org X Window System 认证令牌可猜测远程代码执行漏洞"
 updated = "2026-06-16T21:47:59.007"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0241"]
 ave_id = "AVE-1999-0426"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0241"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0241",
+    "https://github.com/CVEProject/cvelistV5/blob/ab6ab436962e16237b21ed9d4458dafc38c692fc/cves/1999/0xxx/CVE-1999-0241.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37da04e8698400cbfe936368ce494fc186159eb4/CVE/data/1999/CVE-1999-0241.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0241.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0241",
+    "https://github.com/olbat/nvdcve/blob/d21eb36f6164170df89822577def7df5351966d2/nvdcve/CVE-1999-0241.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/97009c469920f4d8991128f84d19644c3badca15/CVE-1999/CVE-1999-02xx/CVE-1999-0241.json",
+    "https://github.com/justakazh/CVE_Database/blob/06bd07f32c89b43f30d59ff450dfbb661e471cbe/1999/CVE-1999-0241.json",
+    "https://github.com/opencve/opencve-kb/blob/14b23583f5abe84d534fce992127ea0c118b7a95/1999/CVE-1999-0241.json",
+    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0241.json",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/e75163879b5629a697822216993d714626893061/api/1999/CVE-1999-0241.json",
+]
