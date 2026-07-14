@@ -1,24 +1,21 @@
 [basic]
-description = "泛微 E-cology OA 系统存在 XML 外部实体注入（XXE）漏洞。系统在处理 XML 数据时未正确禁用外部实体解析，未经身份认证的远程攻击者可通过构造包含恶意外部实体的 XML 请求包触发该漏洞。成功利用可导致攻击者读取服务器任意敏感文件、发起 SSRF 内网探测，造成敏感信息泄露。该漏洞利用难度低、影响范围广，危害严重，建议立即升级至安全版本修复。"
-published = "2023-05-19"
-remediation = "升级泛微 E-cology 至官方最新安全版本。对于 E9 版本安装安全补丁 v10.80；对于 E8 版本升级至 v10.80；对于 E7 及更早版本升级至 v6.51。如无法立即升级，在 WAF 或反向代理中禁用对 /rest/ofs/RequestInfoByXml 接口的外部访问，并配置 XML 解析器禁用外部实体解析和 DTD 处理。"
-score = 8.8
+description = "泛微 E-cology 协作管理系统的 XML 解析器未禁用外部实体解析功能，存在 XML 外部实体注入 (XXE) 漏洞。攻击者可通过向 /rest/ofs/ReceiveCCRequestByXml 和 /rest/ofs/deleteUserRequestInfoByXml 接口发送特制 XML 数据包，利用外部实体引用实现任意文件读取、内网端口探测、SSRF 攻击。未经身份认证的远程攻击者可读取服务器敏感文件（如 /etc/passwd、Web 配置文件），探测内网拓扑或发起对内网服务的请求。该漏洞影响泛微 E-cology 9.0 及部分低版本，危害等级高危。"
+published = "2023-07-20"
+remediation = '升级至泛微官方发布的 E-cology 9.0 安全补丁（2023年6月安全更新版本），该补丁已修复 XML 解析器的外部实体加载问题。如无法立即升级，在 Nginx 或 WAF 层面配置规则拦截包含 <!DOCTYPE 和 <!ENTITY 声明的外部实体注入请求，同时禁用 XML 解析器的外部实体解析功能（设置 DocumentBuilderFactory 的 setExpandEntityReferences(false) 和 setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)）作为临时缓解措施。'
+score = 7.5
 severity = "HIGH"
-sources = [
-    "hwpoc",
-    "cve",
-]
-title = "泛微 E-cology XML外部实体注入漏洞"
-updated = "2023-05-19"
+sources = ["hwpoc"]
+title = "泛微 E-cology XXE 外部实体注入漏洞"
+updated = "2023-08-04"
 
 [exploit]
 exp_urls = []
-poc_urls = []
+poc_urls = ["https://github.com/wudijun/QVD-2023-16177"]
 
 [id]
 aliases = [
     "HWPOC-2023-0038dedc",
-    "CVE-2023-2806",
+    "QVD-2023-16177",
 ]
 ave_id = "AVE-2026-0038"
 
@@ -28,8 +25,6 @@ status = "completed"
 
 [references]
 urls = [
-    "https://github.com/Strangenees/e-cology/blob/main/main.md",
-    "https://vuldb.com/?id.229411",
-    "https://vuldb.com/?ctiid.229411",
-    "https://nvd.nist.gov/vuln/detail/CVE-2023-2806",
+    "https://github.com/wudijun/QVD-2023-16177",
+    "https://www.anquanke.com/tag/QVD-2023-16177",
 ]
