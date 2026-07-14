@@ -1,10 +1,10 @@
 [basic]
-description = "Webcom CGI Guestbook 组件中的 wguest.exe 和 rguest.exe 程序存在任意文件读取漏洞，本质上是由于对用户输入的 template 参数缺乏有效的过滤与验证。远程攻击者无需身份认证，仅需通过向目标系统发送特制的 HTTP 请求并构造恶意 template 参数，即可读取服务器上的任意文件（如 /etc/passwd 等敏感文件），导致信息泄露。该漏洞影响 WebCom datakommunikation Guestbook 0.1 及可能更早版本，危害等级中危，建议用户升级或移除相关 CGI 程序以规避风险。"
+description = "Webcom CGI Guestbook 中的 wguest.exe 及 rguest.exe 程序存在任意文件读取漏洞。远程攻击者无需认证即可通过向 template 参数传入恶意文件路径（如包含 ../ 的路径遍历字符串），绕过程序对输入参数的过滤检查，读取目标服务器上的任意文件（如 /etc/passwd、配置文件等）。该漏洞影响 WebCom datakommunikation Guestbook 0.1 版本，CVSS 评分 5.0，危害等级中等。成功利用可导致系统敏感信息泄露，为后续攻击提供铺垫。"
 published = "1999-04-01T05:00:00.000"
-remediation = "立即删除服务器上的 wguest.exe 和 rguest.exe 文件以彻底根除漏洞；如果业务需要保留访客留言功能，请更换为受维护的现代留言板程序（如基于 PHP 且做好输入过滤的替代方案）。临时缓解措施：在 Web 服务器配置（如 .htaccess 或 httpd.conf）中添加规则，阻止包含 wguest.exe 或 rguest.exe 的 URL 请求，并在反向代理层过滤 template 参数中的 ../ 路径遍历字符串。"
+remediation = "立即删除或替换 Webcom CGI Guestbook 程序 wguest.exe 和 rguest.exe，该软件已停止维护且无安全更新。建议迁移至现代 Guestbook 方案，同时在 Web 服务器层面禁用 CGI 脚本对任意文件路径的 template 参数传递，配置 URL 重写规则拦截类似请求。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
+sources = ["avd"]
 title = "Webcom CGI Guestbook 任意文件读取漏洞"
 updated = "2026-06-16T21:48:27.433"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0467"]
 ave_id = "AVE-1999-0128"
 
 [meta]
-collected_at = "2026-07-12T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
