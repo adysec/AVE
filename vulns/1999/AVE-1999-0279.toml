@@ -1,12 +1,12 @@
 [basic]
-description = "Sendmail 守护进程存在本地权限提升漏洞，本地攻击者可通过启动 Sendmail 的 daemon 模式获取 root 权限。该漏洞源于 Sendmail 在启动时未正确限制权限，允许普通用户将 Sendmail 以守护进程模式运行并继承超级用户特权，从而实现权限提升。受影响版本包括 BSD 2、Sendmail 8.x、FreeBSD 2.1.x、HP-UX 10.x、AIX 4、RedHat 4 等多个操作系统上的 Sendmail 实现。"
-published = "1996-11-16"
-remediation = "升级 Sendmail 至 8.9.0 或更高版本，该版本通过限制守护进程模式的本地启动权限修复此漏洞。RedHat 4 用户安装 erg0910 更新包；AIX 4 用户升级至 sendmail 8.8.6 以上版本；FreeBSD 2.1.x 用户升级至 ports 中已修复版本；HP-UX 10.x 用户升级 sendmail 或安装 HP 安全补丁。临时缓解措施：移除 sendmail 二进制文件的 setuid root 权限（chmod 6555 /usr/lib/sendmail），或限制本地用户通过 SMTP 端口启动守护进程。"
+description = "Sendmail 在处理守护进程模式启动时存在本地权限提升漏洞。由于 Sendmail 二进制文件设置了 setuid root 权限，本地攻击者可以通过启动 Sendmail 守护进程模式，利用其与 setuid 相关的缺陷获取 root 权限。该漏洞影响 BSD 2、Sendmail 8.x、FreeBSD 2.1.x、HP-UX 10.x、AIX 4、RedHat 4 等多个 Unix 系操作系统，CVSS 评分 7.2，危害等级高。"
+published = "1996-11-16T05:00:00.000"
+remediation = "升级 Sendmail 至 8.9.0 或更高版本，该版本重构了 daemon 模式权限检查，禁止普通用户以 root 权限启动 daemon。各受影响操作系统（BSD/FreeBSD/HP-UX/AIX/RedHat）厂商均已发布对应安全补丁，可联系厂商获取。临时缓解措施：移除 sendmail 二进制文件的 setuid root 位（`chmod u-s /usr/sbin/sendmail`），但会影响正常邮件投递功能。"
 score = 7.2
 severity = "HIGH"
-sources = ["epss"]
-title = "Sendmail 本地特权提升漏洞"
-updated = "2026-06-16"
+sources = ["exploitdb"]
+title = "Sendmail 守护进程本地权限提升漏洞"
+updated = "2026-06-16T21:47:39.340"
 
 [exploit]
 exp_urls = []
@@ -17,11 +17,21 @@ aliases = ["CVE-1999-0130"]
 ave_id = "AVE-1999-0279"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/716",
     "https://www.exploit-db.com/exploits/19556",
+    "https://github.com/trickest/cve/blob/34851454a7b07498072de47d56f63daa4a4f524d/1999/CVE-1999-0130.md",
+    "https://github.com/CVEProject/cvelistV5/blob/ab669d9fb37e52ed0619cb2b8265d34528fbe875/cves/1999/0xxx/CVE-1999-0130.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0130",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2ed73314b4d66512efbb22e0644e615bc00001f2/CVE/data/1999/CVE-1999-0130.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0130.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0130.json",
+    "https://github.com/opencve/opencve-kb/blob/2d2ea2d13a3a7facfa195486d4f9782c62a06518/1999/CVE-1999-0130.json",
+    "https://github.com/olbat/nvdcve/blob/d21eb36f6164170df89822577def7df5351966d2/nvdcve/CVE-1999-0130.json",
+    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0130.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/1b69cf2313f68e29acceed58f52f6109cd37bb04/CVE-1999/CVE-1999-01xx/CVE-1999-0130.json",
 ]
