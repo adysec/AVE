@@ -1,11 +1,11 @@
 [basic]
-description = "GNU bash 1.14 及其相关版本的提示符解析功能存在命令注入漏洞，本地攻击者通过创建包含恶意命令字符串的特制目录名，当其他用户（如 root）使用 bash 进入该目录时，shell 在解析提示符过程中会执行嵌入目录名的代码。该漏洞利用条件为攻击者拥有本地账户并可在文件系统中创建目录，成功利用后可导致权限提升或以目标用户身份执行任意命令。该漏洞属于 CWE-94 代码注入类型，CVSS 评分 4.6。"
+description = "GNU Bash 提示符解析功能存在代码注入漏洞（CWE-94）。Bash 在处理 PS1 环境变量中的转义序列时，会执行路径名中嵌入的命令。本地攻击者可通过创建一个包含恶意命令名称的特制目录，当其他用户（如 root）进入该目录时，Bash 在渲染提示符过程中自动解析并执行该目录名中的代码，从而实现本地权限提升。此漏洞影响 Bash 1.14 至 4.2 等多个版本，CVSS 评分 4.6，危害等级中危。"
 published = "1999-04-20T04:00:00.000"
-remediation = '升级 GNU Bash 至 2.0 及以上版本（该漏洞在 Bash 2.0 中修复），或安装对应操作系统的安全补丁。如无法升级，确保不使用包含目录名的 `\w`、`\W` 等 prompt 转义序列在不可信目录中执行 shell，并避免在多用户环境下共享系统账号。'
+remediation = '升级 GNU bash 至 2.0 及以上版本（1999 年后发布的所有版本已内置修复）。受影响系统多为老旧 Linux 发行版，可通过包管理器更新：Red Hat 类系统运行 `rpm -Uvh bash-2.0-1.i386.rpm`，Debian 类运行 `apt-get install --only-upgrade bash`。无法升级的临时缓解措施：在 `PS1` 环境变量中避免使用 `\w`（完整路径）和 `\W`（当前目录名）转义序列，改用固定提示符，减少受陷用户在共享目录触发命令注入的风险。'
 score = 4.6
 severity = "MEDIUM"
-sources = ["cve"]
-title = 'The user wants me to generate a Chinese title for CVE-1999-0491. Let me analyze the information: - Vulnerability: CVE-1999-0491 - Original title: bash 代码执行漏洞 - NVD: The prompt parsing in bash allows a local user to execute commands as another user by creating a directory with the name of the command to execute. - CVSS: 4.6 - CWE: CWE-94 (Code Injection) - ExploitDB: GNU GNU bash 1.14 - Path Embedded Code Execution The format should be: "厂商 产品 漏洞类型（中文）" So: - 厂商: GNU (or GNU Project) - 产品: bash - 漏洞类型: 路径嵌入式代码执行漏洞 (Path Embedded Code Execution) or 代码执行漏洞 A good title would be: "GNU bash 路径嵌入式代码执行漏洞" or "GNU bash 代码执行漏洞" Let me think about this more carefully. The vulnerability is about prompt parsing in bash that allows local users to execute commands as another user by creating a directory with the name of the command to execute. The ExploitDB entry calls it "Path Embedded Code Execution". So "路径嵌入式代码执行漏洞" seems appropriate, or simply "代码执行漏洞". I'
+sources = ["avd"]
+title = "GNU Bash 命令提示符解析本地代码执行漏洞"
 updated = "2026-06-16T21:48:30.617"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0491"]
 ave_id = "AVE-1999-0166"
 
 [meta]
-collected_at = "2026-07-12T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
