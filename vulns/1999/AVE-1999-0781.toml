@@ -1,0 +1,38 @@
+[basic]
+description = "ICMP（互联网控制报文协议）地址掩码和时间戳响应可被任意主机触发，远程攻击者无需认证即可向目标系统发送ICMP地址掩码请求或时间戳请求报文，从而获取目标网络的子网掩码、路由信息及系统时间等敏感数据。该漏洞广泛影响早期Linux内核版本及大量Unix类系统，攻击者可利用收集到的网络拓扑信息进行后续精准渗透攻击，属于信息泄露类漏洞，CVSS评分4.0，危害等级中危。通过操作系统层面禁用ICMP地址掩码和时间戳响应即可有效缓解。"
+published = "1997-08-01T04:00:00.000"
+remediation = "在 `/etc/sysctl.conf` 中设置 `net.ipv4.icmp_echo_ignore_broadcasts=1` 并执行 `sysctl -p` 生效。使用 iptables 屏蔽入站 ICMP 时间戳请求 (`iptables -A INPUT -p icmp --icmp-type 13 -j DROP`) 和地址掩码请求 (`iptables -A INPUT -p icmp --icmp-type 17 -j DROP`)。如用 firewalld，执行 `firewall-cmd --permanent --direct --add-rule ipv4 filter INPUT 0 -p icmp --icmp-type timestamp-request -j DROP`。"
+score = 4
+severity = "MEDIUM"
+sources = ["avd"]
+title = "Linux Kernel ICMP 时间戳和网络掩码信息泄露漏洞"
+updated = "2026-06-16T21:48:34.703"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-0524"]
+ave_id = "AVE-1999-0781"
+
+[meta]
+collected_at = "2026-07-14T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://descriptions.securescout.com/tc/11010",
+    "http://descriptions.securescout.com/tc/11011",
+    "http://kb.juniper.net/InfoCenter/index?page=content&id=JSA10705",
+    "http://kb.vmware.com/selfservice/microsites/search.do?cmd=displayKC&externalId=1434",
+    "http://www.osvdb.org/95",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/306",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/322",
+    "https://kc.mcafee.com/corporate/index?page=content&id=SB10053",
+    "https://support.f5.com/csp/article/K15277",
+    "https://github.com/noraj/ChronoLeak",
+    "https://github.com/threatlabindonesia/CVE-1999-0524-ICMP-Timestamp-and-Address-Mask-Request-Exploit",
+    "https://github.com/b1tsec/CVE-1999-0524",
+    "https://github.com/Ransc0rp1on/ICMP-Timestamp-POC",
+]
