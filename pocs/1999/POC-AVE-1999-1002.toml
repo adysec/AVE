@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "检测 IRIX 系统上 nph-publish CGI 脚本是否存在。nph-publish 1.2 之前版本存在目录遍历漏洞，远程攻击者可通过 .. 序列覆盖任意文件。仅检测端点是否存在，不执行利用操作。"
+id = "POC-AVE-1999-1002"
+name = "CVE-1999-1177 PoC"
+severity = "high"
+tags = ["ave-1999-1002"]
+vuln_id = [
+    "CVE-1999-1177",
+    "AVE-1999-1002",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/nph-publish"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "nph-publish",
+    "IRIX",
+    "SGI",
+    "publish",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    403,
+]
+type = "status"
