@@ -1,0 +1,32 @@
+[basic]
+description = "Apollo 配置中心 Portal 在 2.5.0 版本之前存在未授权访问漏洞。当目标环境启用了 configView.memberOnly.envs 配置时，低权限认证用户可直接向 /envs/{env}/releases/{releaseId} 接口发送请求，通过构造有效的 release ID 绕过权限校验，获取其未被授权的应用或命名空间的配置发布数据。该接口未调用 UserPermissionValidator.shouldHideConfigToCurrentUser 进行权限检查，导致敏感配置信息泄露。攻击者需拥有 Portal 的低权限账号并知晓目标 release ID，攻击门槛较低。"
+published = "2026-07-12"
+remediation = "升级 Apollo Portal 至 2.5.0 或更高版本，该版本已修复未授权访问问题。修复提交为 apolloconfig/apollo@362735d，对应 PR #5378。如无法立即升级，可启用 configView.memberOnly.envs 配置并严格限制环境访问权限，同时在网关或反向代理层对 GET /envs/{env}/releases/{releaseId} 接口添加额外的身份校验中间件。"
+score = 6.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Apollo Portal 配置中心未授权访问漏洞"
+updated = "2026-07-13"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2025-32781",
+    "GHSA-jxpj-9j24-w337",
+]
+ave_id = "AVE-2025-0004"
+
+[meta]
+collected_at = "2026-07-14T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/apolloconfig/apollo/security/advisories/GHSA-jxpj-9j24-w337",
+    "https://github.com/apolloconfig/apollo/pull/5378",
+    "https://github.com/apolloconfig/apollo/commit/362735ded4f13b62f6ab9df135d7096066e8e291",
+    "https://github.com/apolloconfig/apollo/releases/tag/v2.5.0",
+]
