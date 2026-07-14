@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证目标 Apache 0.8.x/1.0.x 或 NCSA httpd 1.x 服务器是否存在 test-cgi 目录泄露漏洞，通过向 /cgi-bin/test-cgi 发送 HTTP GET 请求，检测响应中是否包含目录列表信息"
+description = "PoC/EXP for verification"
 id = "POC-AVE-1999-0175"
-name = "Apache NCSA HTTPd test-cgi Directory Listing PoC"
+name = "Apache NCSA HTTPd test-cgi 目录遍历信息泄露 PoC"
 severity = "medium"
 tags = ["ave-1999-0175"]
 vuln_id = [
@@ -15,15 +15,22 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/test-cgi"
+path = "/cgi-bin/test-cgi"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "test-cgi",
-    "Directory",
-    "<title>",
-]
+words = ["QUERY_STRING"]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/test-cgi?test=1"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["QUERY_STRING"]
