@@ -1,11 +1,11 @@
 [basic]
-description = "rpc.ypupdated 是 NIS（网络信息服务）中用于自动更新 NIS 映射的 RPC 服务，其存在命令注入漏洞。远程攻击者无需任何身份认证即可向目标系统的 654 端口发送特制的 RPC 请求，利用 ypupdated 在处理 map 参数时未充分过滤用户输入的缺陷，以 root 权限在服务器上执行任意系统命令。该漏洞影响 HP-UX 10/11、IRIX 3/4/5/6、Solaris 8/9/10、SunOS 4.1 及 OpenSolaris 等多种 Unix 操作系统，CVSS 评分 10.0，可导致服务器被完全控制。"
+description = "rpc.ypupdated 是 NIS（网络信息服务）中的一个 RPC 服务，存在命令注入漏洞。远程攻击者无需认证即可向目标系统发送特制 RPC 请求，利用 ypupdated 服务对用户输入处理不当的缺陷，以 root 权限执行任意命令。该漏洞影响 HP-UX 10/11、IRIX 3/4/5/6、Solaris 8/9/10、OpenSolaris 及 SunOS 4.1 等多个 UNIX 系统，CVSS 评分 10.0，危害等级严重，公开的 ExploitDB 利用代码可导致目标主机完全受控。"
 published = "1995-12-12T05:00:00.000"
-remediation = "立即停止 rpc.ypupdated (NIS) 服务，若无业务依赖则彻底禁用：在 HP-UX 上执行 `/sbin/init.d/nis.server stop`，Solaris 执行 `svcadm disable svc:/network/nis/server`。无法停止时，通过 tcpwrappers (`/etc/hosts.allow`/`/etc/hosts.deny`) 限制仅允许受信 IP 访问，或在防火墙层面封锁 RPC 端口 111 和 ypupdated 动态端口。建议迁移至 LDAP/Kerberos 替代 NIS 认证体系。"
+remediation = "立即停止 rpc.ypupdated 服务（`/etc/init.d/nis.server stop` 或 `killall ypupdated`），并在启动脚本中注释掉相关行以防止重启后自动运行；在防火墙层面阻断对 RPC 端口映射服务（TCP/UDP 111）及 ypupdated 动态端口的入站访问；如业务必须使用 NIS，升级到受支持的操作系统版本并启用安全增强配置（如基于 SSH 的 NIS 隧道），或迁移至 LDAP/Kerberos 替代方案。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "HP-UX / IRIX / Solaris / SunOS NIS rpc.ypupdated 远程命令执行漏洞"
+sources = ["exploitdb"]
+title = "多款Unix系统 rpc.ypupdated NIS服务 远程命令执行漏洞"
 updated = "2026-06-16T21:47:54.850"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0208"]
 ave_id = "AVE-1999-0394"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
