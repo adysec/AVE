@@ -1,12 +1,12 @@
 [basic]
-description = "基于 BSD/Qualcomm 的 qpopper POP3 服务器在处理 PASS 命令时存在缓冲区溢出漏洞。远程攻击者无需身份认证，通过向目标服务器的 110 端口发送超长 PASS 命令参数即可触发缓冲区溢出，进而覆盖内存中的关键数据结构，最终以 root 权限执行任意代码。该漏洞广泛影响早期 Linux/Unix 系统中部署的 qpopper 版本，攻击复杂度低，危害严重。"
-published = "1998-07-14T04:00:00.000"
-remediation = "立即升级 qpopper 至 2.5 或更高版本。SGI IRIX 用户应安装 SGI 安全公告 19980801-01-I 中提供的补丁。如无法升级，可在 inetd 配置中注释掉 pop3 服务行并重启 inetd/xinetd 来临时禁用 POP3 服务，或通过 TCP Wrappers (hosts.deny) 限制对 110 端口的访问作为临时缓解措施。"
+description = "Qualcomm qpopper 2.4 及之前版本的 POP3 服务器存在缓冲区溢出漏洞，远程攻击者无需身份认证，通过向目标服务器发送超长的 PASS 命令参数即可触发该漏洞，导致任意代码执行并以 root 权限完全控制系统。该漏洞无需特殊权限即可远程利用，危害严重。"
+published = "1998-07-14"
+remediation = "升级 qpopper 至 2.5 及以上版本，该版本修复了 PASS 命令处理中的缓冲区边界检查缺陷。若无法升级，在 inetd/xinetd 配置中对 qpopper 服务启用 TCP wrapper 访问控制（hosts.allow/hosts.deny），限制允许连接 POP 服务的源 IP 范围。对于已停止维护的旧系统，建议迁移至现代 POP3/IMAP 服务器（如 Dovecot），并禁用不再安全的 POP3 协议。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["epss"]
-title = "Qualcomm qpopper POP3 服务器远程缓冲区溢出漏洞"
-updated = "2026-06-16T21:47:19.097"
+sources = ["cve"]
+title = "Qualcomm qpopper POP3 服务器缓冲区溢出远程代码执行漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,11 +17,8 @@ aliases = ["CVE-1999-0006"]
 ave_id = "AVE-1999-0028"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
-urls = [
-    "http://www.securityfocus.com/bid/133",
-    "https://www.exploit-db.com/exploits/19110",
-]
+urls = ["http://www.securityfocus.com/bid/133"]
