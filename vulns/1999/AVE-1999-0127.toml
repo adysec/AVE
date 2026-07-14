@@ -1,12 +1,12 @@
 [basic]
-description = "NetBSD 1.3.3 及之前版本中，SVR4 兼容子系统的 /dev/wabi 特殊设备文件存在访问控制缺陷。由于该设备文件未对本地用户进行充分的权限校验，拥有本地访问权限的攻击者可利用该设备文件直接读写关联磁盘上的任意文件，从而获取敏感信息或实现权限提升。该漏洞影响 NetBSD 1.3.3 及更早版本，CVSS 评分 7.2，危害等级高。"
-published = "1999-04-21T04:00:00.000"
-remediation = "立即升级 NetBSD 至 1.4 或更高版本以移除有漏洞的 /dev/wabi 设备文件。若无法升级，以 root 身份执行 chmod 600 /dev/wabi 限制访问权限，或直接删除该设备文件 (rm -f /dev/wabi)，同时卸载 SVR4 Wabi 模拟模块作为临时缓解措施。"
+description = "NetBSD 1.3.3 及之前版本的 SVR4 兼容层中 /dev/wabi 设备文件主设备编号配置错误，i386 平台错误使用主编号 3（实际应为 2），导致设备文件指向错误的磁盘设备。本地攻击者可利用此缺陷读取或写入磁盘关联的任意文件，造成敏感信息泄露及系统权限提升。利用该漏洞需具备本地系统访问权限。"
+published = "1999-04-21"
+remediation = "升级至 NetBSD 1.4 及以上版本（NetBSD-current 19990420 之后已修复），或应用官方补丁 19990419-SVR4_MAKEDEV 后重新运行 SVR4_MAKEDEV 脚本重建 /dev/wabi 设备。临时缓解措施：以 root 执行 rm -f /emul/svr4/dev/wabi && mknod /emul/svr4/dev/wabi c 2 2 && chmod 666 /emul/svr4/dev/wabi，将设备主编号从 3 修正为 2。如不需要 SVR4 兼容，建议移除 /emul/svr4 模拟层。"
 score = 7.2
 severity = "HIGH"
 sources = ["cve"]
-title = "NetBSD SVR4 /dev/wabi 本地任意文件读写漏洞"
-updated = "2026-06-16T21:48:27.303"
+title = "NetBSD SVR4 /dev/wabi 设备文件本地任意文件读写漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,8 @@ aliases = ["CVE-1999-0466"]
 ave_id = "AVE-1999-0127"
 
 [meta]
-collected_at = "2026-07-12T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["http://www.osvdb.org/905"]
+urls = ["https://nvd.nist.gov/vuln/detail/CVE-1999-0466"]
