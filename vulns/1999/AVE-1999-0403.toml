@@ -1,11 +1,11 @@
 [basic]
-description = "Linux 系统的 inetd 超级服务守护进程存在拒绝服务漏洞。远程攻击者无需身份认证即可向目标系统发送特制的 TCP SYN 和 RST 数据包，导致 inetd 进程崩溃或无法正常响应请求，进而造成系统网络服务不可用。该漏洞影响多个 Linux 发行版本，CVSS v2.0 评分 5.0，危害等级中危，攻击复杂度低，且无需用户交互。"
+description = "Linux Kernel 2.6.20.1 版本的 inetd 超级服务守护进程存在拒绝服务漏洞，远程攻击者可向目标主机发送特制的 SYN 和 RST 数据包，导致 inetd 服务异常终止或资源耗尽，无法正常响应合法连接请求。该漏洞影响运行 inetd 服务的 Linux 系统，攻击者无需认证即可实施攻击，且无需目标系统上存在特定监听服务。利用方式简单，通过发送大量伪造的 TCP SYN/RST 包即可触发，属于典型的网络层拒绝服务攻击。"
 published = "1997-11-01T05:00:00.000"
-remediation = "建议将传统 inetd 替换为 xinetd（如 `apt-get install xinetd`）或升级到最新的 inetd 版本，并配置 TCP 包装器（hosts.allow/hosts.deny）限制连接来源。同时可在防火墙添加规则丢弃异常 SYN/RST 包作为缓解。现代 Linux 发行版已默认使用 xinetd 或 systemd socket 激活，不受此漏洞影响。"
+remediation = "建议将 legacy inetd 替换为 xinetd，并在配置中设置 per_source = 5、cps = 25 30、max_load = 3 以限制并发连接和速率。或者迁移至 systemd socket 激活机制，利用内核 SYN cookies（sysctl -w net.ipv4.tcp_syncookies=1）和 iptables/nftables 限制入站 SYN 包速率（如 iptables -A INPUT -p tcp --syn -m limit --limit 10/s -j ACCEPT）。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Linux Kernel inetd SYN/RST 数据包拒绝服务漏洞"
+sources = ["epss"]
+title = "Linux Kernel inetd SYN/RST Packet 拒绝服务漏洞"
 updated = "2026-06-16T21:47:55.917"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0216"]
 ave_id = "AVE-1999-0403"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0216"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0216",
+    "https://github.com/CVEProject/cvelistV5/blob/c8abbfc77cc703e2fd85623576b0f07a0c8427eb/cves/1999/0xxx/CVE-1999-0216.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0216",
+    "https://github.com/aquasecurity/vuln-list-redhat/blob/ce91429859b5110820b1d31a41b0b1a3c67d9603/csaf-vex/1999/cve-1999-0216.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/9074597bd191efd66c2a6bf1f5d8e60bc4801a90/content/CVE-1999-0216.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/62aa382b460e7aee53e2fc9ebcfd565bebdac259/CVE/data/1999/CVE-1999-0216.json",
+    "https://github.com/github/advisory-database/blob/8954696320cbff8f7d95f98854cf0e72222fc646/advisories/unreviewed/2022/04/GHSA-g7qq-2qq9-j34m/GHSA-g7qq-2qq9-j34m.json",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/olbat/nvdcve/blob/d21eb36f6164170df89822577def7df5351966d2/nvdcve/CVE-1999-0216.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--2bbcf0ff-3ba8-4c91-aea6-e3d5fdb0e178.json",
+    "https://github.com/Christopher0129/security-knowledge-base/blob/ecec748afe5bbe2fcd2fd04b00fb46bc827b2c5d/system-vulnerabilities/linux.md",
+]
