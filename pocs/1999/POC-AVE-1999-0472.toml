@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测 Sun Java Web Server 1.1 Beta 是否未正确配置 .jhtml 文件处理方式，直接返回原始 Java 源代码而非执行结果。通过访问 .jhtml 文件并检查响应中是否包含 Java 代码特征（如 import、class、page 指令等）来判断漏洞是否存在。"
+description = "检测 Sun Java Web Server 1.1 Beta 是否存在 .jhtml 源代码泄露漏洞，通过请求 .jhtml 文件验证是否返回未解析的源代码"
 id = "POC-AVE-1999-0472"
-name = "CVE-1999-0283 PoC"
+name = "Sun Java Web Server .jhtml Source Code Disclosure PoC"
 severity = "critical"
 tags = ["ave-1999-0472"]
 vuln_id = [
@@ -11,24 +11,19 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
 path = "/{{BaseURL}}/index.jhtml"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
-
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "<%@",
+    "<%",
+    "java",
     "import",
-    "class ",
-    "<html>",
 ]
