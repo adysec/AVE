@@ -1,11 +1,11 @@
 [basic]
-description = "Solaris/SunOS 系统中的 NFS mount 守护进程在处理超长导出列表（超过 256 字符）时存在访问控制绕过漏洞。当导出列表超出长度限制时，权限校验机制失效，导致任意远程攻击者可通过标准 NFS 挂载命令访问本应受限的 NFS 共享目录。该漏洞影响 Solaris/SunOS 系统，CVSS 评分 5.0，中危等级。攻击者无需认证即可通过网络利用此漏洞获取未授权文件访问权限。"
+description = "SunOS/Solaris 系统中 NFS mount 守护进程存在访问控制绕过漏洞。当 NFS 导出列表条目超过 256 字符时，守护进程未能正确处理超长字符串，导致所有访问控制检查失效。远程攻击者无需任何身份认证即可挂载本应受限的 NFS 目录，从而非法访问敏感文件。该漏洞影响 SunOS 4.x 及 Solaris 早期版本，CVSS 评分 5.0，危害等级中危。"
 published = "1994-02-14T05:00:00.000"
-remediation = "立即升级受影响的 SunOS/Solaris 系统至厂商已修复版本（如 Solaris 2.5.1 及以上），或安装 Sun 安全补丁 105950-01。若无法升级，应在 /etc/exports 中为每条 NFS 共享显式限制可访问主机（如使用 rw=host 选项禁止通配符），并在 inetd.conf 中禁用 mountd 或使用 tcpwrappers 限制 mountd 访问来源。同时建议在边界防火墙上阻断 NFS 相关端口（2049/TCP/UDP、111/TCP/UDP）。"
+remediation = "安装 Sun 针对对应操作系统版本的安全补丁：SunOS 4.1.3/4.1.3_U1 安装补丁 101945-xx，Solaris 2.3 安装补丁 101358-xx，Solaris 2.4 安装补丁 101945-xx。无法立即打补丁时，将 /etc/exports 中每条导出条目控制在 256 字符以内，使用主机名/IP 而非 netgroup 进行访问控制，并在 NFS 服务端防火墙限制仅允许可信网络访问 portmap（111/tcp,111/udp）和 nfsd（2049/tcp,2049/udp）。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Sun Solaris NFS mountd 未授权目录挂载漏洞"
+sources = ["epss"]
+title = "Sun Solaris NFS mountd 导出列表过长致权限绕过漏洞"
 updated = "2026-06-16T21:47:55.270"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0211"]
 ave_id = "AVE-1999-0397"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
