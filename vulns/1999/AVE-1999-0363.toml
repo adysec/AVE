@@ -1,12 +1,12 @@
 [basic]
-description = "Samba 1.9.19 存在远程缓冲区溢出漏洞，未经身份认证的攻击者可通过向 Samba 服务器发送精心构造的超长密码数据包，触发服务端缓冲区溢出，导致远程代码执行或以 Smb 服务权限执行任意指令。该漏洞影响 Samba 1.9.19 及更早版本，攻击者无需任何凭证即可利用，危害严重。"
-published = "1997-09-30"
-remediation = "升级 Samba 至 2.0.0 或更高版本，该漏洞已在 Samba 2.0.x 系列中得到修复。对于无法升级的旧系统，可通过在 smb.conf 中限制匿名连接并启用主机白名单（hosts allow）来降低暴露面，同时在防火墙层面限制 137-139 和 445 端口的入站访问。"
-score = 5
-severity = "MEDIUM"
-sources = ["epss"]
-title = """Let me analyze the vulnerability CVE-1999-0182. The known information tells me: - 漏洞编号: CVE-1999-0182 - 原标题: Samba 1.9.19 - 长密码缓冲区溢出 - exploitdb: Samba 1.9.19 - 'Password' Remote Buffer Overflow So this is a Samba vulnerability, specifically a buffer overflow in the password handling of Samba 1.9.19. The format should be: 厂商 产品 漏洞类型 - 厂商: Samba 团队/Samba (Samba is the vendor/product name) - 产品: Samba - 漏洞类型: 长密码缓冲区溢出 → 远程缓冲区溢出漏洞 So the title should be: "Samba 长密码远程缓冲区溢出漏洞" Wait, let me reconsider. The format is "厂商 产品 漏洞类型". Looking at the example: "Microsoft Windows TCP/IP 远程代码执行漏洞" So it's "Vendor Product Vulnerability Type" For Samba: - The product is "Samba" - The vendor could be "Samba" team, but typically we just say "Samba 1.9.19" or "Samba" - Vulnerability type: "远程缓冲区溢出漏洞" (remote buffer overflow) Let me think about this more carefully. The example shows "Microsoft Windows TCP/IP 远程代码执行漏洞" - the vendor Microsoft, the product Windows TCP/IP, the vuln type is remote code execution. For CVE-1999-0182: - Vendor: Samba (or the Samba Team, but typically just "Samba") - Product: Samba 1.9.19 - Vulnerability type: 远程缓冲区溢出漏洞 (remote buffer overflow, specifically in password handling) So: "Samba Samba 1.9.19 远程缓冲区溢出漏洞" - but having "Samba" twice seems redundant. Actually looking at the example more carefully: "Microsoft Windows TCP/IP" - "Microsoft" is vendor, "Windows TCP/IP" is product. So it's not "Microsoft Windows Windows TCP/IP". For Samba, the product name could be "Samba" itself. So: "Samba Samba 远程缓冲区溢出漏洞" is awkward. Let me look at how similar vulnerabilities are titled. The exploitdb says "Samba 1.9.19 - 'Password' Remote Buffer Overflow". I think a good title would be: "Samba 1.9.19 长密码远程缓冲区溢出漏洞" This follows the pattern: vendor could be implicit when the product name is Samba itself. Or we could say "S"""
-updated = "1997-09-30"
+description = "Samba 1.9.19 及更早版本存在远程缓冲区溢出漏洞，未经认证的远程攻击者可通过向 Samba 服务发送特制的超长密码字符串触发该漏洞，导致缓冲区溢出，从而在目标系统上以 root 权限执行任意代码。该漏洞影响运行 Samba 1.9.19 的 Unix/Linux 系统，无需认证即可远程利用，CVSS 评分 10.0，危害等级严重。"
+published = "1997-09-30T04:00:00.000"
+remediation = "立即升级 Samba 至 2.0.0 及以上版本（1.9.19 系列已停止维护，2.0.0 修复了该缓冲区溢出问题）。如无法立即升级，可在 smb.conf 中设置 hosts allow/deny 限制可访问 SMB 服务的源 IP 范围，并在防火墙层面屏蔽 TCP 端口 139 和 445 的外部访问以临时缓解风险。现代 Linux 发行版应直接使用系统包管理器更新至当前受支持版本。"
+score = 10
+severity = "CRITICAL"
+sources = ["exploitdb"]
+title = "Samba Samba 1.9.19 远程缓冲区溢出漏洞"
+updated = "2026-06-16T21:47:46.523"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,21 @@ aliases = ["CVE-1999-0182"]
 ave_id = "AVE-1999-0363"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://www.exploit-db.com/exploits/20308"]
+urls = [
+    "http://www.ciac.org/ciac/bulletins/h-110.shtml",
+    "https://www.exploit-db.com/exploits/20308",
+    "https://github.com/trickest/cve/blob/34851454a7b07498072de47d56f63daa4a4f524d/1999/CVE-1999-0182.md",
+    "https://github.com/CVEProject/cvelistV5/blob/1421f0a4349d5d46275cadd9c7c62349edf9c8bb/cves/1999/0xxx/CVE-1999-0182.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0182",
+    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0182.json",
+    "https://github.com/entrysky/mageni/blob/c58dcc9bc43b7fb267bb10a8083ada356fbc81d1/plugins/2020/samba/gb_samba_CVE-1999-0182.nasl",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2f876a2c24d5ccd5bbd081f09e801e580536456a/CVE/data/1999/CVE-1999-0182.json",
+    "https://github.com/eldondev/Snort/blob/34bdcf6a7a638b55c7c04f77ef1efa526ad08e33/doc/signatures/292.txt",
+    "https://github.com/github/advisory-database/blob/49899a53e9c2e620c99e0234afe3c50e512ad851/advisories/unreviewed/2022/04/GHSA-vc5j-x9w7-frw6/GHSA-vc5j-x9w7-frw6.json",
+    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/snort/drop-rules/exploit.rules",
+    "https://github.com/jbeasl7/openvas-feed-sync-local/blob/02ed2a2b96fc19fd49a4be810f3493abb776ec4e/openvas-feeds/nvt-feed/2020/samba/gb_samba_CVE-1999-0182.nasl",
+]
