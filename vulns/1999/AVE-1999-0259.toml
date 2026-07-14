@@ -1,11 +1,11 @@
 [basic]
-description = "IBM AIX 3.2.5/4.1/4.2 存在 TCP SYN Flood 拒绝服务漏洞。远程攻击者可通过向目标系统发送大量伪造源地址的 SYN 连接请求包，但不完成三次握手的 ACK 确认，导致目标系统耗尽其半开连接队列资源，使得合法连接无法建立，造成拒绝服务。该漏洞影响 IBM AIX 3.2.5、4.1 和 4.2 版本，利用门槛低，仅需普通网络访问即可发起攻击，属于经典的 TCP 协议层资源耗尽型拒绝服务攻击。"
+description = "TCP SYN Flood 是一种经典的拒绝服务攻击方式，攻击者利用 TCP 三次握手机制，向目标服务器发送大量伪造源地址的 SYN 请求包，服务器为每个请求分配资源并返回 SYN+ACK 包，但因无法收到最终的 ACK 确认包而导致连接半开状态持续占用系统资源，最终耗尽服务器连接队列，导致正常用户无法访问服务。该漏洞影响 IBM AIX 3.2.5/4.1/4.2 等早期操作系统版本，攻击者无需认证即可发起攻击，是网络层拒绝服务攻击的典型代表。"
 published = "1996-09-19T04:00:00.000"
-remediation = "升级 AIX 系统至 4.3.3 或更高版本，该版本及以上已内置 SYN flood 防护机制。运行 `no -o tcp_syncookies=1` 开启 SYN Cookie 保护，并执行 `no -o tcp_syn_rcvd_timeout=15` 缩短半连接超时时间。同时建议在网络边界部署防火墙并启用 SYN 阈值限制或 TCP 拦截功能，以缓解大量 SYN 报文冲击。"
+remediation = "启用 TCP SYN Cookies（如 Linux 设置 net.ipv4.tcp_syncookies=1）；缩短 SYN 超时时间（如设置 net.ipv4.tcp_synack_retries=1）；增大半连接队列（如设置 net.ipv4.tcp_max_syn_backlog=1024）。AIX 系统应安装对应补丁程序 APAR IX73380，并在边界防火墙上限制单位时间内新连接速率。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "IBM AIX SYN Packet 拒绝服务漏洞"
+sources = ["exploitdb"]
+title = "多种厂商 TCP/IP SYN Flood 拒绝服务漏洞"
 updated = "2026-06-16T21:47:37.367"
 
 [exploit]
@@ -17,11 +17,21 @@ aliases = ["CVE-1999-0116"]
 ave_id = "AVE-1999-0259"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://sunsolve.sun.com/pub-cgi/retrieve.pl?doctype=coll&doc=secbull/136",
     "https://www.exploit-db.com/exploits/343",
+    "https://github.com/CVEProject/cvelistV5/blob/297eb115816d3735806f02ee33bb4d2d53ecd5c6/cves/1999/0xxx/CVE-1999-0116.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0116",
+    "https://github.com/nbrito/research/blob/f070ce78f917d962de8df74cc7a841f1cbbcfa00/ddos/1996/CVE-1999-0116/README.md",
+    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0116.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/9074597bd191efd66c2a6bf1f5d8e60bc4801a90/content/CVE-1999-0116.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2ed73314b4d66512efbb22e0644e615bc00001f2/CVE/data/1999/CVE-1999-0116.json",
+    "https://github.com/github/advisory-database/blob/49899a53e9c2e620c99e0234afe3c50e512ad851/advisories/unreviewed/2022/05/GHSA-qfp8-p689-pjw7/GHSA-qfp8-p689-pjw7.json",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2009/CVE-2009-2318.json",
+    "https://github.com/olbat/nvdcve/blob/d21eb36f6164170df89822577def7df5351966d2/nvdcve/CVE-2007-6040.json",
 ]
