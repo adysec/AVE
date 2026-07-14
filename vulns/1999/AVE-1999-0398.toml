@@ -1,11 +1,11 @@
 [basic]
-description = "Solaris SunOS 系统中的 rpc.mountd 服务存在信息泄露漏洞。该服务在处理远程文件系统挂载请求时生成的错误消息中包含服务器上文件及目录的路径信息，未经认证的远程攻击者无需任何权限即可通过向目标系统的 RPC 端口发送特制的 mount 请求，利用错误消息中返回的路径信息枚举服务器上的文件系统结构，从而获取敏感信息。该漏洞影响多个 Solaris/SunOS 版本，CVSS 评分 7.8，危害等级高。"
+description = "Solaris/SunOS 系统中 RPC 服务 rpc.mountd 存在信息泄露漏洞。远程攻击者可通过向目标系统发送特制的 RPC 请求触发该服务返回详细错误信息，从而枚举服务器上的文件系统结构和文件是否存在。该漏洞影响 Solaris 及 SunOS 多个版本，攻击者无需身份认证即可远程利用，为后续攻击收集目标信息。官方已发布安全补丁修复此漏洞。"
 published = "1998-04-29T04:00:00.000"
-remediation = "建议升级到 SunOS 5.5.1 及以上版本，或安装 Sun 安全补丁 103600-03 (SPARC) / 103601-03 (x86)。如无法升级，可在 /etc/init.d/nfs.server 中注释 rpc.mountd 启动行以禁用该服务，或在防火墙层面限制对 RPC 端口 (111/tcp, 111/udp) 的访问，仅允许可信主机连接。"
+remediation = '安装 Sun Security Bulletin #168 (1998年发布) 对应的操作系统补丁，更新至已修复该问题的 Solaris 版本。如无法打补丁，可在 /etc/hosts.deny 中添加 "mountd: ALL" 并用 /etc/hosts.allow 按需放行可信主机，同时在防火墙上限制对 rpc.mountd (端口 2049 及 rpcbind 端口 111) 的访问。若不需要 NFS 服务，可停止并禁用 mountd 服务。'
 score = 7.8
 severity = "HIGH"
-sources = ["avd"]
-title = "Sun Solaris rpc.mountd 信息泄露漏洞"
+sources = ["epss"]
+title = "Sun Solaris rpc.mountd 错误信息泄露漏洞"
 updated = "2026-06-16T21:47:55.403"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0212"]
 ave_id = "AVE-1999-0398"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
