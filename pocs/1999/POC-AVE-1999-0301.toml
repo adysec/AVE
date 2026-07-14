@@ -1,10 +1,16 @@
 [info]
 author = "AVE"
-description = "检测 GlimpseHTTP/WebGlimpse 中 aglimpse CGI 程序是否因未过滤管道符而存在远程命令注入漏洞，通过向 aglimpse 接口传递含管道符的查询参数触发系统命令执行"
+description = "检测 GlimpseHTTP/WebGlimpse aglimpse CGI 远程命令执行漏洞(CVE-1999-0147)。aglimpse CGI 脚本未过滤管道符(|) shell 元字符，攻击者可在 URL 路径中注入任意 shell 命令实现远程命令执行。验证方式：访问含管道符和 id 命令的 aglimpse CGI 路径，检查响应中是否包含命令执行输出(uid=)。"
 id = "POC-AVE-1999-0301"
-name = "Glimpse HTTP/WebGlimpse aglimpse CGI 远程命令执行 PoC"
+name = "CVE-1999-0147 PoC"
 severity = "high"
-tags = ["ave-1999-0301"]
+tags = [
+    "cve-1999-0147",
+    "ave-1999-0301",
+    "glimpse",
+    "command-injection",
+    "cgi",
+]
 vuln_id = [
     "CVE-1999-0147",
     "AVE-1999-0301",
@@ -15,10 +21,11 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/aglimpse"
+path = "/cgi-bin/aglimpse"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = ["uid="]
