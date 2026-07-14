@@ -1,7 +1,7 @@
 [basic]
-description = "Unix 系统中关键系统文件或目录存在权限配置不当漏洞，远程未授权的攻击者可利用该缺陷通过网络访问方式读取、修改或执行系统关键文件（如口令文件、系统配置文件等），导致目标系统机密性、完整性和可用性完全沦陷。该漏洞影响多个 Unix 衍生操作系统，CVSS v2 评分 10.0，危害等级严重。建议立即检查并修正系统关键文件与目录的权限设置，遵循最小权限原则进行修复。"
+description = "Unix/Linux 系统中关键文件或目录权限设置不当的安全问题。当 /etc/passwd、/etc/shadow 等系统关键文件或目录权限过于宽松（如全局可写）时，本地攻击者可利用不安全的权限配置读取敏感信息、修改系统文件或植入恶意代码，从而实现权限提升或完全控制系统。该漏洞源于未遵循最小权限原则进行配置，影响所有 Unix/Linux 衍生系统，攻击者只需本地访问权限即可利用，无需认证，危害严重。"
 published = "1999-01-01T05:00:00.000"
-remediation = "立即检查 /etc/passwd、/etc/shadow、/etc/ssh/sshd_config 等关键系统文件的权限：/etc/passwd 应为 644（属主 root），/etc/shadow 应为 640 或 600（属主 root），/etc/ssh/sshd_config 应为 600（属主 root）。使用 `find / -perm -0002 -type f` 检查是否存在全局可写文件，用 `find / -perm -0022 -type d` 检查目录权限。对权限异常的文件执行 `chmod` 修正，并对关键目录（如 /etc、/usr/bin、/usr/sbin）执行 `chown root:root` 恢复正确属主。定期使用 `auditd` 或 `tripwire` 等文件完整性工具监控权限变更。"
+remediation = "立即检查并修复系统关键文件和目录的权限：使用 `chmod 644 /etc/passwd /etc/group` 和 `chmod 600 /etc/shadow /etc/gshadow` 恢复标准权限。对 `/bin`、`/sbin`、`/usr/bin` 等目录使用 `chmod 755`。建议定期运行 `rpm -Va`（RPM 系）或 `debsums`（Debian 系）审计文件权限异常。同时排查是否存在被提权的后门账户或 SUID 异常文件（`find / -perm -4000`）。"
 score = 10
 severity = "CRITICAL"
 sources = ["avd"]
