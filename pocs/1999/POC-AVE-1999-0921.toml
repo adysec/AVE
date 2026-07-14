@@ -1,0 +1,53 @@
+[info]
+author = "AVE"
+description = "检测 Webmin 0.5 之前版本是否存在登录暴力破解漏洞，通过发送登录请求验证服务器是否对失败登录次数进行限制"
+id = "POC-AVE-1999-0921"
+name = "Webmin 密码暴力破解漏洞 PoC"
+severity = "high"
+tags = ["cve-1999-1074"]
+vuln_id = [
+    "CVE-1999-1074",
+    "AVE-1999-0921",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/session_login.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=admin&pass=wrongpass"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Login failed",
+    "Failed",
+    "error",
+    "incorrect",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Webmin",
+    "Login",
+    "Please enter",
+    "session_login",
+]
