@@ -1,11 +1,11 @@
 [basic]
-description = "Linux Perl 发行版中的 suidperl 组件未正确检查文件系统的 nosuid 挂载选项，允许本地用户通过将 setuid 脚本放置在可挂载的文件系统（如 CD-ROM 或软盘）上执行，从而绕过安全限制提升至 root 权限。该漏洞影响多款 Linux 发行版（如 SUSE Linux），攻击者需具备本地访问及挂载文件系统的能力，危害等级高。"
+description = "Linux Perl 中的 suidperl 组件在解析 setuid 脚本时未检查文件系统的 nosuid 挂载选项，本地攻击者可将特制 setuid Perl 脚本放置于可挂载文件系统（如 CD-ROM 或软盘）上，通过诱使目标系统挂载并执行该脚本触发漏洞。成功利用后可获取 root 权限执行任意代码，实现本地权限提升。该漏洞影响 SUSE Linux 等多个发行版，CVSS 评分 7.2，危害等级高。"
 published = "1999-03-17T05:00:00.000"
-remediation = "升级 Perl 至 5.004 或更高版本，该版本已修复 suidperl 忽略 nosuid 挂载选项的问题；现代系统应升级至 Perl 5.12+（已彻底移除 suidperl）。在 /etc/fstab 中为可移动文件系统（如 cdrom、floppy）添加 nosuid 挂载选项。临时缓解措施可移除 suidperl 的 setuid 位：chmod u-s /usr/bin/suidperl。"
+remediation = "升级 Perl 至 5.004_04 或更高版本，该版本已修复 suidperl 对 nosuid 挂载选项的检查逻辑。作为临时缓解措施，执行 `chmod u-s /usr/bin/suidperl` 移除 suidperl 的 setuid 权限位，并将所有可移动文件系统（如 CD-ROM、软盘）以 `nosuid` 选项挂载，防止攻击者通过可移动介质提权至 root。长期建议迁移至 suidperl 已被彻底移除的 Perl 5.26+ 版本。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Linux Perl suidperl 权限提升漏洞"
+sources = ["avd"]
+title = "Linux Perl suidperl 本地权限提升漏洞"
 updated = "2026-06-16T21:48:26.813"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0462"]
 ave_id = "AVE-1999-0126"
 
 [meta]
-collected_at = "2026-07-12T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
