@@ -1,10 +1,10 @@
 [info]
 author = "ave"
-description = "Matt Wright FormMail 1.x CGI 程序存在跨站请求伪造漏洞，远程攻击者可构造 HTML 表单自动向目标服务器 /cgi-bin/formmail.pl 提交恶意 POST 请求，利用 recipient 参数绕过源主机限制执行邮件中继发送伪造邮件。此 PoC 验证目标上 FormMail 脚本是否可被远程调用。"
+description = "检测 Matt Wright FormMail CGI 脚本是否存在且可被跨站滥用为开放邮件中继。发送 GET 请求访问 FormMail.cgi，若服务器返回 CGI 表单内容或可被外部提交邮件参数，则确认漏洞存在。"
 id = "POC-AVE-1999-0344"
-name = "Matt Wright FormMail 1.x CSRF/CGI Relay PoC"
+name = "CVE-1999-0173 PoC"
 severity = "medium"
-tags = ["ave-1999-0344"]
+tags = ["cve-1999-0173"]
 vuln_id = [
     "CVE-1999-0173",
     "AVE-1999-0344",
@@ -14,24 +14,20 @@ vuln_id = [
 logic = "any"
 
 [[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}/cgi-bin/formmail.pl"
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/FormMail.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "recipient=test@test.com&subject=Security+Test&message=CSRF+verification&redirect=no"
+content = ""
 type = "raw"
-
-[poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "Thank",
-    "thank",
+    "recipient",
     "FormMail",
-    "formmail",
+    'action="/cgi-bin/FormMail',
 ]
