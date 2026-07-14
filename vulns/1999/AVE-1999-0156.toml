@@ -1,11 +1,11 @@
 [basic]
-description = "OpenBSD 的 FFS（快速文件系统）与 EXT2FS（第二扩展文件系统）实现中未对 nlink（硬链接数）字段进行有效校验，当文件系统包含异常的 nlink 值时，内核在处理过程中会触发崩溃，导致拒绝服务。本地攻击者可通过挂载特制的文件系统映像或触发异常的硬链接计数值来利用此漏洞。该漏洞影响 OpenBSD 操作系统，CVSS 评分 2.1，危害等级低。"
+description = "OpenBSD 的 FFS 和 EXT2FS 文件系统实现中存在拒绝服务漏洞。由于内核在处理文件 nlink 值（硬链接计数）时未做边界检查，当本地用户创建超过 65535 个硬链接时，nlink 值会溢出并触发内核崩溃，导致系统拒绝服务。攻击者需要本地 shell 权限即可利用，无需特殊权限。该漏洞影响早期版本的 OpenBSD 操作系统。"
 published = "1999-02-25T05:00:00.000"
-remediation = "立即将 OpenBSD 升级至 2.5 或更高版本，该版本修复了 FFS 和 EXT2FS 文件系统中 nlink 值处理不当导致系统崩溃的问题。若无法立即升级，可在 /etc/fstab 中对非关键分区禁用 ext2fs 挂载，并限制本地用户访问权限作为临时缓解措施。"
+remediation = "升级 OpenBSD 至 2.5 或更高版本，或应用 2.4 errata 第 001 号（EXT2FS 补丁）和第 004 号（FFS link 补丁）源码补丁后重新编译内核。临时缓解措施可限制不可信用户的本地登录权限。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "OpenBSD FFS 和 EXT2FS 文件系统拒绝服务漏洞"
+sources = ["avd"]
+title = "OpenBSD FFS和EXT2FS文件系统nlink值处理拒绝服务漏洞"
 updated = "2026-06-16T21:48:29.640"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0483"]
 ave_id = "AVE-1999-0156"
 
 [meta]
-collected_at = "2026-07-12T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
