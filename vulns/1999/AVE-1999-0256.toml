@@ -1,11 +1,11 @@
 [basic]
-description = "IBM AIX 3.2.5 系统中的 rlogin 实现在处理 -froot 参数时存在授权绕过漏洞，远程攻击者或本地用户无需有效认证即可通过向 rlogin 命令传递 -froot 参数获取 root 权限。该漏洞允许低权限用户或未经认证的远程攻击者完全控制系统，危害等级严重。受影响版本包括 IBM AIX 3.2.5 及可能受影响的同类 rlogin 实现。"
+description = "IBM AIX 3.2.5 的 rlogin 实现中存在参数注入漏洞（CWE-88），当向 rlogin 命令传入 `-froot` 参数时，未经授权的本地攻击者可利用该参数绕过正常的身份认证机制，以 root 权限直接登录目标系统，实现权限提升。该漏洞源于程序未对命令行参数进行有效过滤和消毒，攻击者无需知道目标用户密码即可获取系统最高控制权。该漏洞影响 IBM AIX 3.2.5 版本，CVSS 评分 10.0，危害等级严重。"
 published = "1994-05-23T04:00:00.000"
-remediation = "立即升级至 IBM AIX 7.3 或 7.2 最新 Technology Level，rlogin 协议已在现代 AIX 版本中默认禁用。如无法升级，在 /etc/inetd.conf 中注释掉 login/shell/exec 行并重启 inetd 以关闭 r-commands 服务；使用 SSH 替代 rlogin，并在 /etc/ssh/sshd_config 设置 PermitRootLogin no 禁止 root 直接登录；在 /etc/hosts.equiv 和 ~root/.rhosts 中删除 + 通配符条目。"
+remediation = "建议立即升级 IBM AIX 至 4.1.0 及以上版本（该漏洞已在 AIX 4.x 中修复），或安装对应 APAR 补丁。同时禁用 rlogin/rsh/r-commands 系列服务（注释 /etc/inetd.conf 中相关行并重启 inetd），迁移至 OpenSSH 替代远程管理。限制 root 远程登录，在 /etc/securetty 中移除不必要的终端，并启用 PAM 认证机制。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "IBM AIX login 命令权限提升漏洞"
+sources = ["exploitdb"]
+title = "IBM AIX rlogin 权限提升漏洞"
 updated = "2026-06-16T21:47:36.820"
 
 [exploit]
@@ -17,11 +17,21 @@ aliases = ["CVE-1999-0113"]
 ave_id = "AVE-1999-0256"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-14T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/458",
     "https://www.exploit-db.com/exploits/19348",
+    "https://github.com/CVEProject/cvelistV5/blob/297eb115816d3735806f02ee33bb4d2d53ecd5c6/cves/1999/0xxx/CVE-1999-0113.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0113",
+    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0113.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/9074597bd191efd66c2a6bf1f5d8e60bc4801a90/content/CVE-1999-0113.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2ed73314b4d66512efbb22e0644e615bc00001f2/CVE/data/1999/CVE-1999-0113.json",
+    "https://github.com/eldondev/Snort/blob/34bdcf6a7a638b55c7c04f77ef1efa526ad08e33/doc/signatures/604.txt",
+    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/rlogin_froot.nasl",
+    "https://github.com/bailehang/snort_2.2.0/blob/34f8a3a85f15645aea53d6e0d46863c7c57e43ef/doc/signatures/609.txt",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/murahari1/recon-tool/blob/f63a205225373d0d87b081758c11899777970b0f/README.md",
 ]
