@@ -1,11 +1,11 @@
 [basic]
-description = "NetBSD 在多宿主主机（配置多个网络接口连接不同子网）上存在 ARP 逻辑缺陷，远程攻击者可向目标主机的一个网络接口发送特制 ARP 数据包，该数据包会非法修改另一网络接口上的 ARP 缓存条目，导致跨网络 ARP 欺骗和中间人攻击。攻击者无需认证即可利用此漏洞劫持不同网段间的流量，影响网络隔离性和数据机密性。受影响的系统包括运行 NetBSD 的多宿主主机配置。"
+description = "NetBSD 在多宿主主机（连接多个网络的系统）上存在 ARP 缓存投毒漏洞。当系统配置了多个网络接口并连接到不同子网时，从一个网络接口接收到的 ARP 数据包能够修改另一个网络接口上的 ARP 缓存条目，导致跨网络的 ARP 欺骗攻击。远程攻击者可通过向目标系统发送伪造的 ARP 响应包，将流量重定向至攻击者控制的地址，实现中间人攻击或拒绝服务。该漏洞影响多宿主配置下的 NetBSD 系统，CVSS 评分 6.4，危害等级中危。"
 published = "1999-05-01T04:00:00.000"
-remediation = "建议升级 NetBSD 至 1.4.2 及以上版本，该版本修复了多宿主主机 ARP 跨接口污染问题。如无法升级，可在各网络接口分别设置静态 ARP 表项 (`arp -s`) 绑定关键网关和主机的 MAC 地址，同时启用内核参数 `net.inet.arp.allow_multicast=0` 过滤非法 ARP 响应，并在边界防火墙上限制非授权 ARP 数据包进入子网。"
+remediation = "升级 NetBSD 至 1.4.1 及以上版本，该版本修复了多宿主主机上 ARP 表项跨网修改的问题。如无法升级，可通过 sysctl -w net.inet.arp.allow_all=0 禁用跨接口 ARP 学习，或在各网络接口上启用 ARP 过滤（ifconfig xx0 arpfilter），同时为关键网关配置静态 ARP 条目（arp -s）防止 ARP 欺骗攻击。"
 score = 6.4
 severity = "MEDIUM"
-sources = ["cve"]
-title = "NetBSD 多宿主主机ARP表项跨网络修改漏洞"
+sources = ["avd"]
+title = "NetBSD 多宿主主机 ARP 缓存投毒漏洞"
 updated = "2026-06-16T21:49:00.467"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0763"]
 ave_id = "AVE-1999-0480"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
