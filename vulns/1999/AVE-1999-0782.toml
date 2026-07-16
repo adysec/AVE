@@ -1,11 +1,11 @@
 [basic]
-description = "IP 路由跟踪功能默认允许来自任意主机的探测请求，远程攻击者无需认证即可通过发送 TTL 递增的 ICMP 或 UDP 数据包逐跳探测目标网络的路由路径，从而获取网络拓扑结构、内部 IP 地址段及中间网关信息。此类信息泄露可为后续定向攻击提供侦察支撑，扩大攻击面。建议在网络边界配置防火墙规则限制 ICMP 时间超时响应，或禁用不必要的路由跟踪响应来缓解该风险。"
+description = "该漏洞源于系统对 IP 路由跟踪（traceroute）功能的访问控制不当，未限制可发起 traceroute 请求的源地址范围。未经身份认证的远程攻击者可从任意主机向目标系统发送 traceroute 数据包，无需凭据即可获取目标网络的路径信息和中间路由节点，从而暴露内部网络拓扑结构。该漏洞影响配置不当的操作系统及网络设备，攻击者仅需目标系统网络可达即可利用，通过标准 traceroute 工具即可完成探测，为后续针对性攻击提供网络情报支持。"
 published = "1997-01-01T05:00:00.000"
-remediation = "在网络边界防火墙或路由器上配置访问控制列表（ACL），过滤入站 ICMP Time Exceeded 报文（ICMP type 11），或直接禁用从外网发起的 traceroute 请求（UDP 端口 33434-33534、ICMP Echo 及 TCP 高端口探测）。在 Linux 系统可设置 `sysctl -w net.ipv4.icmp_ignore_bogus_error_responses=1` 降低信息泄露风险。"
+remediation = "在受影响的路由器上禁用源路由功能，并通过访问控制列表（ACL）限制 ICMP traceroute 的访问来源。首先在全局配置模式下执行 no ip source-route 禁用 IP 源路由，然后在入站接口上应用 ACL 阻止未经授权的主机发送 traceroute 请求，仅允许受信任的管理网段发起。同时将设备升级至 Cisco 已修复此问题的 IOS 版本，或在防火墙层面阻断外部对 ICMP type 11（time exceeded）的流量，以进一步降低网络拓扑被外部探测的风险。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "多种厂商 IP 协议 Traceroute 路由跟踪信息泄露漏洞"
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9086,"outputTokens":16,"totalTokens":10766}}'
 updated = "2026-06-16T21:48:34.923"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0525"]
 ave_id = "AVE-1999-0782"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://www.cve.org/CVERecord?id=CVE-1999-0525"]
+urls = [
+    "https://www.cve.org/CVERecord?id=CVE-1999-0525",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0525.md",
+    "https://github.com/CVEProject/cvelistV5/blob/1ce36d0de2f3ddd1d56c222c398df994c8c331b1/cves/1999/0xxx/CVE-1999-0525.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0525",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f581b54f28a314b57ac171b83d3b2d21db7414a0/CVE/data/1999/CVE-1999-0525.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0525.md",
+    "https://github.com/github/advisory-database/blob/11845a9fe6e6b4d82150d9fd8a4257b88a244a45/advisories/unreviewed/2022/04/GHSA-qvxm-qx8p-cvx4/GHSA-qvxm-qx8p-cvx4.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0525.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x87000/86047/info.html",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154300_154400.json",
+]
