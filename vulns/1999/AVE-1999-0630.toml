@@ -1,12 +1,12 @@
 [basic]
-description = "远程攻击者通过发送包含大量邮件头部的消息，可导致 Sendmail 8.8.x 和 8.9.2 版本发生拒绝服务。该漏洞利用简单，无需认证即可远程触发，大量邮件头部会耗尽服务器处理资源，影响邮件服务的正常可用性。"
-published = "1999-01-01"
-remediation = "升级至 Sendmail 8.9.3 或更高版本；若无法升级，对 8.9.2 版本应用官方补丁，在 site.config.m4 中添加 `APPENDDEF(confENVDEF, -D_FFR_MAX_HEADER_LINES=1)` 后重新编译，并在 sendmail.cf 中设置 `O MaxHeaderLines=1000/990` 限制邮件头部行数和单行长度，防止大量头部导致的拒绝服务。"
-score = 5.0
+description = "Sendmail 8.8.x 及 8.9.2 版本在处理邮件头时存在拒绝服务漏洞。远程攻击者无需身份认证即可通过向目标邮件服务器发送包含大量邮件头的特制邮件消息，触发 Sendmail 的邮件头预扫描（headers prescan）过程消耗过度资源，导致服务崩溃或无法响应正常请求，造成拒绝服务。CVSS 评分 5.0，危害等级中危。"
+published = "1999-01-01T05:00:00.000"
+remediation = "升级至 Sendmail 8.9.3 或更高版本，该版本修复了 headers prescan 处理逻辑中的缺陷。若无法升级，可在 sendmail.cf 中限制每个邮件的最大头部数量（MaxHeadersLength 参数），并在 MTA 层面配置 rate limiting 限制单连接请求频率以缓解 DoS 攻击。"
+score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Eric Allman Sendmail 8.8/8.9.2 拒绝服务漏洞"
-updated = "2026-06-16"
+sources = ["exploitdb"]
+title = "Eric Allman Sendmail 头扫描拒绝服务漏洞"
+updated = "2026-06-16T21:48:18.040"
 
 [exploit]
 exp_urls = []
@@ -24,4 +24,14 @@ status = "completed"
 urls = [
     "http://marc.info/?l=bugtraq&m=91694391227372&w=2",
     "https://www.exploit-db.com/exploits/23167",
+    "https://github.com/CVEProject/cvelistV5/blob/f4ffb7bcd93209aa53a757a7ebdf17fe2a18eb33/cves/1999/0xxx/CVE-1999-0393.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0393",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0393.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a75ebb477762f54f32c38d85ec939339ec2712e5/CVE/data/1999/CVE-1999-0393.json",
+    "https://github.com/github/advisory-database/blob/e434c1da6464de3012c6c1eff8c0e19ef9669023/advisories/unreviewed/2022/04/GHSA-34q2-7xrv-pfcm/GHSA-34q2-7xrv-pfcm.json",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/S/sendmail_parsing_redirection.nasl",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0393.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153100_153200.json",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_4.list.dict",
 ]
