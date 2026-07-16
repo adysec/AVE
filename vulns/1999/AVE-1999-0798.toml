@@ -1,29 +1,32 @@
 [basic]
-description = "DNS 区域传输（Zone Transfer）功能存在访问控制缺陷，未对请求来源进行身份验证和授权检查，远程攻击者可通过向目标 DNS 服务器发送 AXFR 请求获取该服务器管理的全部域名解析记录。攻击仅需目标 DNS 服务器未限制区域传输来源地址。成功利用后可泄露内部网络主机名、IP 地址映射等敏感信息，暴露网络拓扑结构，为后续渗透攻击提供信息支撑。该漏洞广泛影响未正确配置访问控制列表的 DNS 服务器（如 BIND、Microsoft DNS 等）。"
-published = "1997-07-01T04:00:00.000"
-remediation = '在 DNS 服务器（BIND/Windows DNS）上配置区域传输（Zone Transfer）仅允许指定的授权从 DNS 服务器 IP，禁止对任意主机开放。具体操作为在 named.conf 中使用 `allow-transfer { 从服务器 IP; };` 或在 Windows DNS 管理器的"区域传送"选项卡中勾选"只允许到下列服务器"并添加授权 IP。'
-score = 5
+description = "DNS 区域传输（Zone Transfer）是 DNS 主从服务器间同步域名数据库的标准机制。当 DNS 服务器未正确限制区域传输的发起来源时，任意远程攻击者均可通过发送 AXFR 查询请求获取该域名的全部 DNS 记录，包括 A/AAAA 记录、MX 邮件交换记录、CNAME 别名记录、NS 名称服务器记录及 TXT 文本记录等。攻击者利用这些信息可绘制目标网络的完整拓扑结构，识别关键服务器 IP 地址，为后续针对性攻击（如 DDoS 放大攻击、钓鱼攻击）提供情报支撑。该漏洞通常由 DNS 服务器配置不当导致，影响 BIND、Microsoft DNS Server 等主流 DNS 服务软件。"
+published = "1997-07-01"
+remediation = "限制区域传输仅允许授权的从服务器 IP 地址，在 BIND 中使用 allow-transfer 配置项或设置成 none，并启用 TSIG 签名认证机制增强传输安全性，定期审计 DNS 服务器日志监控异常 AXFR 请求。"
+score = 5.0
 severity = "MEDIUM"
-sources = ["avd"]
-title = "通用DNS服务区域传输漏洞"
-updated = "2026-06-16T21:48:35.650"
+sources = ["cve"]
+title = "DNS 服务器区域传输未授权访问信息泄露漏洞"
+updated = "2026-07-16"
 
 [exploit]
 exp_urls = []
-poc_urls = []
+poc_urls = [
+    "https://github.com/websecnl/Bulk_CVE-1999-0532_Scanner",
+    "https://github.com/Rodney-O-C-Melby/dns-zone-transfer-test",
+]
 
 [id]
 aliases = ["CVE-1999-0532"]
 ave_id = "AVE-1999-0798"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://www.cve.org/CVERecord?id=CVE-1999-0532",
-    "http://www.us-cert.gov/ncas/alerts/TA15-103A",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-0532",
     "https://github.com/websecnl/Bulk_CVE-1999-0532_Scanner",
     "https://github.com/Rodney-O-C-Melby/dns-zone-transfer-test",
     "https://github.com/SleepTheGod/dns-zone-audit",
