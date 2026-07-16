@@ -1,11 +1,11 @@
 [basic]
-description = "NetBSD 系统 ARP 协议实现存在安全缺陷，远程攻击者可向目标网络发送伪造的 ARP 数据包，覆盖系统本应受保护的静态 ARP 缓存条目。攻击者利用此漏洞可实施中间人攻击或拒绝服务攻击，劫持或阻断目标主机与网络中其他设备的正常通信。该漏洞影响 NetBSD 系统，CVSS 评分 6.4。"
+description = "NetBSD 内核 ARP 协议实现存在设计缺陷，远程攻击者可通过向目标系统发送特制的 ARP 数据包覆盖静态 ARP 缓存条目。该漏洞源于 ARP 协议未对静态条目进行写保护，攻击者可在同一广播域内伪造 IP-MAC 地址映射关系，导致目标系统的网络流量被重定向至攻击者控制的设备，进而实现中间人攻击、数据窃听或会话劫持。该漏洞影响 NetBSD 操作系统，攻击者无需认证即可利用，CVSS 评分 6.4，危害等级中危。"
 published = "1999-05-01T04:00:00.000"
-remediation = "立即升级 NetBSD 至 1.4.1 或更高版本（1999 年 5 月已发布修复补丁），该版本内核已禁止 ARP 包覆盖静态 ARP 条目。如无法升级，可通过 `arp -s` 配合 `-f` 参数将静态 ARP 条目写入 `/etc/ethers` 并设置只读权限，同时在交换机上配置端口安全 (port security) 和动态 ARP 检测 (DAI) 以限制 ARP 欺骗攻击。"
+remediation = "升级到 NetBSD 1.4 或更高版本（1.4 及 1.4_BETA 在 1999-05-05 之后已修复），或从 NetBSD FTP 服务器获取并应用 19990505-arp 补丁。如无法升级，可在网卡层面限制 ARP 学习范围，避免来自非本网段的 ARP 包覆盖静态条目。"
 score = 6.4
 severity = "MEDIUM"
-sources = ["cve"]
-title = "NetBSD NetBSD ARP 静态条目覆盖漏洞"
+sources = ["avd"]
+title = "NetBSD ARP 静态条目覆盖漏洞"
 updated = "2026-06-16T21:49:00.597"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0764"]
 ave_id = "AVE-1999-0481"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
