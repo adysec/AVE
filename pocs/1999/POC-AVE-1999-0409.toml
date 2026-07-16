@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "检测目标 Cobalt RaQ2 服务器是否开放了无需认证的软件包安装接口。Cobalt RaQ2 管理界面默认运行在 81 端口，其默认配置允许远程攻击者直接访问包管理功能安装任意软件包，导致服务器被完全控制。"
+id = "POC-AVE-1999-0409"
+name = "Cobalt RaQ2 默认配置远程代码执行 PoC"
+severity = "critical"
+tags = ["ave-1999-0409"]
+vuln_id = [
+    "CVE-1999-0722",
+    "AVE-1999-0409",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}:81/admin/install.pkg"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Package Installation",
+    "Install Package",
+    "pkg_install",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}:81/admin/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Cobalt",
+    "RaQ",
+    "RaQ2",
+]
