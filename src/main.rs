@@ -700,7 +700,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // ── Stats ──
     let data_size: u64 = WalkDir::new(&data_dir)
         .into_iter()
-        .flatten()
+        .filter_map(|e| match e {
+            Ok(entry) => Some(entry),
+            Err(err) => {
+                eprintln!("⚠️  WalkDir error in data/: {}", err);
+                None
+            }
+        })
         .filter(|e| e.file_type().is_file())
         .map(|e| e.metadata().map(|m| m.len()).unwrap_or(0))
         .sum();
