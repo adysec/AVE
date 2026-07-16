@@ -1,11 +1,11 @@
 [basic]
-description = "Cobalt RaQ 微服务器存在敏感信息泄露漏洞。当管理员通过交互式 shell 登录系统后，产生的历史记录文件（如 .bash_history）被设置为世界可读权限，且存储于 Web 服务器可访问目录中。远程攻击者无需身份认证，仅通过 HTTP 请求即可直接读取这些文件，获取系统操作历史、密码等敏感配置信息，造成信息泄露。"
+description = "Cobalt RaQ 微型服务器存在信息泄露漏洞，当用户通过交互式 Shell 会话登录系统时，生成的会话历史文件（如 .bash_history）默认权限为世界可读，且位于 Web 服务器可访问的目录下。远程攻击者无需身份认证即可通过 Web 服务器直接读取这些文件，获取敏感信息（如命令历史、密码等），进而可能导致服务器被完全控制。该漏洞影响 Cobalt RaQ 系列微型服务器产品。"
 published = "1999-02-25T05:00:00.000"
-remediation = '在 /etc/profile 或 /etc/bashrc 中设置 umask 027 确保新建文件默认权限为 640；将 .bash_history 等敏感文件的权限修改为 600（仅所有者可读写）；配置 Apache 禁止访问以点开头的隐藏文件（在 httpd.conf 中添加 LocationMatch "\.\." 拒绝规则）。如仍在使用 Cobalt RaQ 设备，建议迁移至受支持的 Linux 发行版。'
+remediation = "修改 /etc/profile 或 /etc/bashrc 中的 umask 设置为 077，确保新建文件默认仅属主可读写。同时配置 Apache 的 &lt;FilesMatch&gt; 规则拒绝访问 .bash_history 等点号开头的隐藏文件，并清理已存在的历史文件权限为 600。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Cobalt Networks Cobalt RaQ 历史命令文件信息泄露漏洞"
+sources = ["epss"]
+title = "Cobalt RaQ 微服务器 shell 历史记录文件信息泄露漏洞"
 updated = "2026-06-16T21:48:19.997"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0408"]
 ave_id = "AVE-1999-0052"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["http://www.securityfocus.com/bid/337"]
+urls = [
+    "http://www.securityfocus.com/bid/337",
+    "https://github.com/CVEProject/cvelistV5/blob/f4ffb7bcd93209aa53a757a7ebdf17fe2a18eb33/cves/1999/0xxx/CVE-1999-0408.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0408",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0408.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bcb2bc8aed064ca80cf72b28e99ae813ae48a2c2/CVE/data/1999/CVE-1999-0408.json",
+    "https://github.com/github/advisory-database/blob/e434c1da6464de3012c6c1eff8c0e19ef9669023/advisories/unreviewed/2022/04/GHSA-xx49-8f9w-5r74/GHSA-xx49-8f9w-5r74.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0408.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153300_153400.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--79fb0f29-9144-486d-9073-fd90218349d6.json",
+]
