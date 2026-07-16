@@ -1,11 +1,11 @@
 [basic]
-description = "Oracle Solaris 10/11.2 系统中的 INETD 服务存在进程表耗尽漏洞。远程攻击者可通过向目标系统上的网络服务发起大量并发连接，填充系统的进程表条目，导致合法用户无法创建新进程或访问服务，从而造成拒绝服务。该漏洞利用方式简单，无需身份认证即可发起攻击，影响 Oracle Solaris 10 及 11.2 版本，CVSS 评分 5.0，危害等级中危。"
+description = "Unix 系统存在进程表攻击漏洞，远程攻击者可通过向目标系统发起大量网络服务连接请求，耗尽系统进程表资源，导致系统无法接受新的连接请求，从而引发拒绝服务。该漏洞利用方式简单，无需认证即可实施攻击，影响各类 Unix 操作系统。攻击者只需建立大量并发连接即可触发，属于典型的资源耗尽型拒绝服务漏洞。"
 published = "1999-02-22T05:00:00.000"
-remediation = "将 inetd 替换为 xinetd 并启用连接速率限制（cps 参数），如 cps = 25 30 表示每秒最多 25 连接、超过后禁用 30 秒。Oracle Solaris 用户应升级至 Solaris 11.4，使用 inetadm 命令为各服务设置 max_con_rate（最大并发连接数）和 max_copies（最大进程副本数），并结合 SMF 资源控制框架限制服务占用的 CPU/内存。同时在网络层使用防火墙（ipf/ipfilter）限制单 IP 的并发连接数。若暂时无法升级，可在 /etc/default/inetd 中设置 INETD_CONN_LIMIT=50 限制 inetd 子进程总数。"
+remediation = "建议将 inetd 替换为 xinetd，并在配置中添加连接速率限制，如 `cps = 25 30` 和 `per_source = 5`；同时通过 `/etc/system` 或 `ulimit` 调大系统进程表上限（如 `max_nprocs`），并使用 TCP Wrappers（`/etc/hosts.allow`）限制仅允许可信来源 IP 连接网络服务。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Oracle Solaris INETD 拒绝服务漏洞"
+sources = ["epss"]
+title = "Oracle Solaris INETD 进程表拒绝服务漏洞"
 updated = "2026-06-16T21:48:15.993"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0377"]
 ave_id = "AVE-1999-0031"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["http://www.securitytracker.com/id/1033881"]
+urls = [
+    "http://www.securitytracker.com/id/1033881",
+    "https://github.com/CVEProject/cvelistV5/blob/d92a0abc5d3abac6dcdfabfef6fd71c158e0fd8b/cves/1999/0xxx/CVE-1999-0377.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0377",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0377.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8c57fab4f71bd6fdcec1202e5361e2a9805c4950/CVE/data/1999/CVE-1999-0377.json",
+    "https://github.com/github/advisory-database/blob/6eca843f42fd99fea8c9b630931afac7c9d4576c/advisories/unreviewed/2022/04/GHSA-w9p9-j3v6-q4vf/GHSA-w9p9-j3v6-q4vf.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0377.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x78000/77236/info.html",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153300_153400.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000542.txt",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+]
