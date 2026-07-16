@@ -630,14 +630,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("📎 Found {} PoC files", total_pocs);
     println!("📎 Found {} EXP files", total_exps);
 
-    // ── Write static asset index (relative paths, no GitHub API dependency) ──
-    let (poc_rel, exp_rel) = build_asset_index_relative(&repo_root);
-    let asset_index = serde_json::json!({"poc": poc_rel, "exp": exp_rel});
-    write_json_compact(&data_dir.join("asset-index.json"), &asset_index)?;
-    let total_poc_rel: usize = poc_rel.values().map(|v| v.len()).sum();
-    let total_exp_rel: usize = exp_rel.values().map(|v| v.len()).sum();
-    println!("📋 asset-index.json written ({} PoC, {} EXP)", total_poc_rel, total_exp_rel);
-
     // ── Enrich cards with asset URLs ──
     cards.par_iter_mut().for_each(|card| {
         card.repo_poc_urls = poc_by_ave.get(&card.ave_id).cloned().unwrap_or_default();
@@ -672,6 +664,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let index_dir = data_dir.join("index");
     let pages_root = data_dir.join("pages");
     fs::create_dir_all(&index_dir)?;
+
+    // ── Write static asset index (relative paths, no GitHub API dependency) ──
+    let (poc_rel, exp_rel) = build_asset_index_relative(&repo_root);
+    let asset_index = serde_json::json!({"poc": poc_rel, "exp": exp_rel});
+    write_json_compact(&data_dir.join("asset-index.json"), &asset_index)?;
+    let total_poc_rel: usize = poc_rel.values().map(|v| v.len()).sum();
+    let total_exp_rel: usize = exp_rel.values().map(|v| v.len()).sum();
+    println!("📋 asset-index.json written ({} PoC, {} EXP)", total_poc_rel, total_exp_rel);
 
     // ── Clean up old combined search-index.json (v2 format) ──
     let old_index = data_dir.join("search-index.json");

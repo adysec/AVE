@@ -1,31 +1,25 @@
-[basic]
-description = "BMC PATROL 4.4 及更早版本的 PATROL Agent 在 TCP 端口 3181 上监听并接收管理控制台发来的管理帧，但其在处理部分管理协议帧时未对来源身份进行充分的认证校验，导致远程攻击者可在未提供有效凭据的情况下伪造控制帧与 Agent 建立会话，从而绕过访问控制机制，执行任意代理操作、读取主机监控信息或下发恶意指令，造成敏感信息泄露与主机被非授权管理的严重后果。攻击仅需网络可达 Agent 端口即可发起，无需本地访问权限。"
-published = "1999-04-09T04:00:00.000"
-remediation = "升级 BMC PATROL 至官方修复版本（4.5.00 及以上），在管理控制台启用代理认证与访问控制列表（ACL），禁止未授权主机连接 PATROL Agent 端口（默认 3181/TCP），并在网络边界防火墙限制仅允许受信任管理网段访问 Agent，以缓解远程伪造帧绕过认证的风险。"
-score = 10
-severity = "CRITICAL"
-sources = ["avd"]
-title = "BMC Patrol 远程攻击者访问控制绕过漏洞"
-updated = "2026-06-16T21:49:05.163"
-
-[exploit]
-exp_urls = []
-poc_urls = []
-
+[id] needs to come first. I need to ensure all five required sections are present (id, basic, references, exploit, meta) with proper field names and values. For this 1999-era vulnerability, there's no modern patch available, so the remediation should focus on network-level protections and configuration changes rather than version upgrades.Now let me check the existing AVE database to see if this AVE number already exists and look for any additional context:No existing AVE files. Based on the NVD data confirming CVE-1999-0801 (BMC Patrol frame spoofing, CVSS 10.0), here is the fixed TOML:
 [id]
-aliases = ["CVE-1999-0801"]
 ave_id = "AVE-1999-0800"
-
-[meta]
-collected_at = "2026-07-16T00:00:00Z"
-status = "completed"
-
+aliases = ["CVE-1999-0801"]
+[basic]
+title = "BMC Patrol 代理权限访问控制漏洞（帧伪造）"
+description = "BMC Patrol 系统的远程代理（agent）在接收管理端通信数据时缺乏严格的源身份验证机制。未经身份认证的远程攻击者可通过伪造（spoofing）特制数据帧的方式，伪装为合法管理端与目标 agent 建立通信连接，从而绕过正常的访问控制流程并获取未授权的 agent 访问权限。该漏洞可利用条件极低（无需认证、攻击复杂度低、可远程触发），一旦成功利用将导致受影响主机完整性、机密性与可用性全面受损，攻击者可读取或修改监控配置、中断监控流程。CVSS v2 评分高达 10.0，危害等级为最高危，影响运行 BMC Patrol 代理的基础设施主机。"
+severity = "CRITICAL"
+score = 10.0
+sources = ["cve", "avd"]
+published = "1999-04-09"
+updated = "2026-06-16"
+remediation = "由于该漏洞年代较早，建议升级至 BMC 发布的修复版本（参考 BMC 官方安全公告）。如无法立即升级，应在网络边界防火墙或路由器上配置访问控制列表（ACL），仅允许受信任的管理主机 IP 连接至 Patrol agent 监听端口；同时启用主机级访问控制，限制 agent 仅接受来自可信管理服务器的连接请求，阻断远程攻击者的伪造帧连接尝试。"
 [references]
 urls = [
-    "http://www.iss.net/security_center/static/2075.php",
-    "http://www.securityfocus.com/archive/1/13204",
-    "https://github.com/CVEProject/cvelistV5/blob/10323cb4135457b41074412d623aa2116c4e1200/cves/1999/0xxx/CVE-1999-0801.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4efc2590fd3e232024591793a186ed6577aaac2a/CVE/data/1999/CVE-1999-0801.json",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0801.json",
-    "https://github.com/olbat/nvdcve/blob/763b4dfa75aa1890a155aad1b583fdcab8111c49/nvdcve/CVE-1999-0801.json",
+"http://www.iss.net/security_center/static/2075.php",
+"http://www.securityfocus.com/archive/1/13204",
+"https://nvd.nist.gov/vuln/detail/CVE-1999-0801"
 ]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-16T00:00:00Z"
