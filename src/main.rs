@@ -361,10 +361,39 @@ fn build_asset_index(repo_root: &Path) -> (HashMap<String, Vec<String>>, HashMap
 // ── Sort key ───────────────────────────────────────────────────────────
 
 fn sort_cards(cards: &mut [VulnCard]) {
+    // Pre-validate dates and warn once per unique bad date
+    let mut bad_dates: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for card in cards.iter() {
+        if !card.published.is_empty() && parse_published_ts(&card.published) == 0 {
+            // Only warn for truly unparseable dates (not empty, not short like "08.08")
+            if card.published.len() > 5 || !card.published.contains('.') {
+                bad_dates
+                    .entry(card.published.clone())
+                    .or_default()
+                    .push(card.ave_id.clone());
+            }
+        }
+    }
+    for (date, ids) in &bad_dates {
+        if ids.len() <= 3 {
+            eprintln!(
+                "⚠️  Invalid published date '{}' for {}",
+                date,
+                ids.join(", ")
+            );
+        } else {
+            eprintln!(
+                "⚠️  Invalid published date '{}' for {} (and {} more)",
+                date,
+                ids.iter().take(3).cloned().collect::<Vec<_>>().join(", "),
+                ids.len() - 3
+            );
+        }
+    }
+
     cards.sort_by(|a, b| {
-        // newest published first
-        let ts_a = parse_published_ts(&a.published, &a.ave_id);
-        let ts_b = parse_published_ts(&b.published, &b.ave_id);
+        let ts_a = parse_published_ts(&a.published);
+        let ts_b = parse_published_ts(&b.published);
         ts_b
             .cmp(&ts_a)
             .then_with(|| b.ave_id.cmp(&a.ave_id))
@@ -372,35 +401,37 @@ fn sort_cards(cards: &mut [VulnCard]) {
 }
 
 /// Parse a published date string to a Unix timestamp.
-/// Tries multiple common formats: ISO 8601 with/without time, with/without fractional seconds.
-fn parse_published_ts(published: &str, ave_id: &str) -> i64 {
+/// Tries multiple common formats: ISO 8601 with/without time, with/without fractional seconds, with Z suffix.
+fn parse_published_ts(published: &str) -> i64 {
     if published.is_empty() {
         return 0;
     }
+    // Strip trailing Z (UTC indicator)
+    let cleaned = published.strip_suffix('Z').unwrap_or(published);
     // Try full datetime with fractional seconds: "2024-01-15T12:00:00.000"
-    if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(published, "%Y-%m-%dT%H:%M:%S%.3f")
-        .or_else(|_| chrono::NaiveDateTime::parse_from_str(published, "%Y-%m-%dT%H:%M:%S%.f"))
+    if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(cleaned, "%Y-%m-%dT%H:%M:%S%.3f")
+        .or_else(|_| chrono::NaiveDateTime::parse_from_str(cleaned, "%Y-%m-%dT%H:%M:%S%.f"))
     {
         return dt.and_utc().timestamp();
     }
     // Try full datetime without fractional seconds: "2024-01-15T12:00:00" or "2024-01-15 12:00:00"
-    if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(published, "%Y-%m-%dT%H:%M:%S")
-        .or_else(|_| chrono::NaiveDateTime::parse_from_str(published, "%Y-%m-%d %H:%M:%S"))
+    if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(cleaned, "%Y-%m-%dT%H:%M:%S")
+        .or_else(|_| chrono::NaiveDateTime::parse_from_str(cleaned, "%Y-%m-%d %H:%M:%S"))
     {
         return dt.and_utc().timestamp();
     }
     // Try date only: "2024-01-15"
-    if let Ok(d) = chrono::NaiveDate::parse_from_str(published, "%Y-%m-%d") {
+    if let Ok(d) = chrono::NaiveDate::parse_from_str(cleaned, "%Y-%m-%d") {
         return d
             .and_hms_opt(0, 0, 0)
             .unwrap()
             .and_utc()
             .timestamp();
     }
-    eprintln!(
-        "⚠️  Invalid published date '{}' for {}",
-        published, ave_id
-    );
+    // Silently skip obviously non-date values like "08.08" (month.day only)
+    if published.len() <= 5 && published.contains('.') {
+        return 0;
+    }
     0
 }
 
