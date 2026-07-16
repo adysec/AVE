@@ -180,8 +180,20 @@ fn to_index_entry(card: &VulnCard) -> IndexEntry {
 // ── Parse one TOML file ────────────────────────────────────────────────
 
 fn parse_toml(path: &Path, repo_root: &Path) -> Option<VulnCard> {
-    let content = fs::read_to_string(path).ok()?;
-    let data: TomlVuln = toml::from_str(&content).ok()?;
+    let content = match fs::read_to_string(path) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("⚠️  Failed to read {}: {}", path.display(), e);
+            return None;
+        }
+    };
+    let data: TomlVuln = match toml::from_str(&content) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("⚠️  Failed to parse TOML {}: {}", path.display(), e);
+            return None;
+        }
+    };
 
     // Determine AVE ID: filename first, then fall back to [id] ave_id
     let stem = path.file_stem()?.to_str()?;
@@ -189,9 +201,29 @@ fn parse_toml(path: &Path, repo_root: &Path) -> Option<VulnCard> {
     if ave_id.is_none() {
         ave_id = extract_ave_id(&data.id.ave_id);
     }
-    let ave_id = ave_id?;
+    let ave_id = match ave_id {
+        Some(id) => id,
+        None => {
+            eprintln!(
+                "⚠️  No valid AVE ID in file: {} (stem: {}, id.ave_id: {})",
+                path.display(),
+                stem,
+                data.id.ave_id
+            );
+            return None;
+        }
+    };
 
-    let rel_to_vulns = path.strip_prefix(repo_root.join("vulns")).ok()?;
+    let rel_to_vulns = match path.strip_prefix(repo_root.join("vulns")) {
+        Ok(r) => r,
+        Err(_) => {
+            eprintln!(
+                "⚠️  Path not under vulns/ directory: {}",
+                path.display()
+            );
+            return None;
+        }
+    };
     let file_name = rel_to_vulns.to_str()?.to_string();
 
     let cve_id = first_cve(&data.id.aliases);
@@ -271,7 +303,16 @@ fn build_asset_index(repo_root: &Path) -> (HashMap<String, Vec<String>>, HashMap
             }
             let stem = entry.path().file_stem().and_then(|s| s.to_str()).unwrap_or("");
             if let Some(ave) = extract_ave_id(stem) {
-                let rel = entry.path().strip_prefix(repo_root).unwrap();
+                let rel = match entry.path().strip_prefix(repo_root) {
+                    Ok(r) => r,
+                    Err(_) => {
+                        eprintln!(
+                            "⚠️  Path not under repo root: {}",
+                            entry.path().display()
+                        );
+                        continue;
+                    }
+                };
                 let raw = format!(
                     "https://raw.githubusercontent.com/{}/{}/{}/{}",
                     GH_OWNER,
@@ -513,44 +554,48 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    // ── Per-year processing (parallel writes) ──
-    let years_meta: Vec<YearMeta> = year_groups
-        .par_iter()
-        .map(|(year, year_cards)| {
-            let year_pages = pages_root.join(year);
-            fs::create_dir_all(&year_pages).unwrap();
+    // ── Per-year processing ──
+    let mut years_meta: Vec<YearMeta> = Vec::new();
+    for (year, year_cards) in &year_groups {
+        let year_pages = pages_root.join(year);
+        fs::create_dir_all(&year_pages).map_err(|e| {
+            eprintln!("❌ Failed to create directory {}: {}", year_pages.display(), e);
+            e
+        })?;
 
-            // 1. Per-year search index (compact arrays)
-            let index_entries: Vec<IndexEntry> =
-                year_cards.iter().map(|c| to_index_entry(c)).collect();
-            let index_path = index_dir.join(format!("{}.json", year));
-            let index_size = write_json_compact(&index_path, &index_entries).unwrap();
+        // 1. Per-year search index (compact arrays)
+        let index_entries: Vec<IndexEntry> =
+            year_cards.iter().map(|c| to_index_entry(c)).collect();
+        let index_path = index_dir.join(format!("{}.json", year));
+        let index_size = write_json_compact(&index_path, &index_entries).map_err(|e| {
+            eprintln!("❌ Failed to write index {}: {}", index_path.display(), e);
+            e
+        })?;
 
-            // 2. Per-year page files
-            let num_pages =
-                std::cmp::max(1, (year_cards.len() + PAGE_SIZE - 1) / PAGE_SIZE);
-            for page_num in 1..=num_pages {
-                let start = (page_num - 1) * PAGE_SIZE;
-                let end = (start + PAGE_SIZE).min(year_cards.len());
-                let page_cards: Vec<&VulnCard> = year_cards[start..end].iter().copied().collect();
-                write_json_compact(&year_pages.join(format!("{}.json", page_num)), &page_cards)
-                    .unwrap();
-            }
+        // 2. Per-year page files
+        let num_pages =
+            std::cmp::max(1, (year_cards.len() + PAGE_SIZE - 1) / PAGE_SIZE);
+        for page_num in 1..=num_pages {
+            let start = (page_num - 1) * PAGE_SIZE;
+            let end = (start + PAGE_SIZE).min(year_cards.len());
+            let page_cards: Vec<&VulnCard> = year_cards[start..end].iter().copied().collect();
+            let page_path = year_pages.join(format!("{}.json", page_num));
+            write_json_compact(&page_path, &page_cards).map_err(|e| {
+                eprintln!("❌ Failed to write page {}: {}", page_path.display(), e);
+                e
+            })?;
+        }
 
-            YearMeta {
-                year: year.clone(),
-                count: year_cards.len(),
-                pages: num_pages,
-                index_size,
-            }
-        })
-        .collect();
+        years_meta.push(YearMeta {
+            year: year.clone(),
+            count: year_cards.len(),
+            pages: num_pages,
+            index_size,
+        });
 
-    // Print per-year summary (sequential, for ordered output)
-    for meta in &years_meta {
         println!(
             "  📁 {}: {} entries, {} pages, {} bytes index",
-            meta.year, meta.count, meta.pages, meta.index_size
+            year, year_cards.len(), num_pages, index_size
         );
     }
 
