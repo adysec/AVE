@@ -61,7 +61,16 @@ def parse_toml(path: Path) -> dict | None:
     exploit = data.get("exploit", {})
     meta = data.get("meta", {})
 
+    # ── Determine AVE ID: filename first, then fall back to [id] ave_id ──
     ave_id = extract_ave_id(path.stem) or ""
+    if not ave_id:
+        ave_id = extract_ave_id(ident.get("ave_id", "")) or ""
+
+    # Skip entries without a valid AVE ID
+    if not ave_id:
+        print(f"⚠️  Skipping {path}: no valid AVE ID found")
+        return None
+
     rel_to_vulns = path.relative_to(REPO_ROOT / "vulns")
     file_name = str(rel_to_vulns)
 
@@ -195,7 +204,11 @@ def main():
     # ── Group by year ──
     year_groups = OrderedDict()
     for card in cards:
-        year = card["ave_id"].split("-")[1]  # e.g. "2026"
+        parts = card["ave_id"].split("-")
+        if len(parts) < 2:
+            print(f"⚠️  Skipping malformed AVE ID: {card['ave_id']}")
+            continue
+        year = parts[1]  # e.g. "2026"
         year_groups.setdefault(year, []).append(card)
 
     # ── Output directories ──

@@ -1,12 +1,15 @@
 [basic]
-description = "Windows NT 4.0 SP4 的 KnownDLLs 缓存机制存在安全漏洞，本地攻击者可通过修改 KnownDLLs 列表，将系统 DLL 路径指向恶意程序，从而在系统下次加载该 DLL 时以管理员权限执行恶意代码。该漏洞需要本地用户权限才能利用，攻击条件较为局限，但一旦成功可完全控制受影响系统。"
-published = "1999-02-20T05:00:00.000"
-remediation = "安装 Windows NT 4.0 Service Pack 5 或更高版本以修复 KnownDLLs 缓存权限漏洞。由于 Windows NT 4.0 已停止支持，建议将系统升级至仍在安全更新周期内的 Windows Server 版本，同时在组策略中限制交互式用户对系统目录的写入权限作为临时缓解。"
+description = "Windows NT 4.0 中 KnownDLLs 列表的默认权限配置不当，允许本地用户修改该列表并将其指向恶意 DLL 文件。当系统或应用程序加载被篡改的 KnownDLLs 条目时，恶意 DLL 将在 SYSTEM 账户上下文中执行，导致攻击者获得管理员权限。利用此漏洞需要攻击者拥有本地系统访问权限，无需用户交互即可完成提权。"
+published = "1999-02-20"
+remediation = '立即安装 Microsoft 安全公告 MS99-006 提供的热修复补丁，该补丁将 KnownDLLs 列表的默认权限修改为只读，阻止普通用户篡改系统 DLL 映射。如无法安装补丁，可修改注册表：将 HKLM\System\CurrentControlSet\Control\Session Manager\ProtectionMode 设为 REG_DWORD 值 1，以启用系统基对象保护。同时应限制非管理员用户的交互式登录权限，降低本地提权风险。'
 score = 4.6
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Microsoft Windows NT 4.0 SP4 KnownDLLs 本地权限提升漏洞"
-updated = "2026-06-16T21:48:15.863"
+sources = [
+    "cve",
+    "epss",
+]
+title = "Microsoft Windows NT 4.0 KnownDLLs 本地权限提升漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,11 +20,11 @@ aliases = ["CVE-1999-0376"]
 ave_id = "AVE-1999-0029"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://docs.microsoft.com/en-us/security-updates/securitybulletins/1999/ms99-006",
-    "https://www.exploit-db.com/exploits/19198",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-0376",
 ]
