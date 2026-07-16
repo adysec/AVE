@@ -1,4 +1,4 @@
-use chrono::Utc;
+use chrono::{NaiveDate, NaiveDateTime, Utc};
 use rayon::prelude::*;
 use regex::Regex;
 use serde::Serialize;
@@ -363,30 +363,39 @@ fn build_asset_index(repo_root: &Path) -> (HashMap<String, Vec<String>>, HashMap
 fn sort_cards(cards: &mut [VulnCard]) {
     cards.sort_by(|a, b| {
         // newest published first
-        let ts_a = a
-            .published
-            .parse::<chrono::NaiveDateTime>()
-            .map(|d| d.and_utc().timestamp())
-            .unwrap_or_else(|_| {
-                if !a.published.is_empty() {
-                    eprintln!("⚠️  Invalid published date '{}' for {}", a.published, a.ave_id);
-                }
-                0
-            });
-        let ts_b = b
-            .published
-            .parse::<chrono::NaiveDateTime>()
-            .map(|d| d.and_utc().timestamp())
-            .unwrap_or_else(|_| {
-                if !b.published.is_empty() {
-                    eprintln!("⚠️  Invalid published date '{}' for {}", b.published, b.ave_id);
-                }
-                0
-            });
+        let ts_a = parse_published_ts(&a.published, &a.ave_id);
+        let ts_b = parse_published_ts(&b.published, &b.ave_id);
         ts_b
             .cmp(&ts_a)
             .then_with(|| b.ave_id.cmp(&a.ave_id))
     });
+}
+
+/// Parse a published date string to a Unix timestamp.
+/// Tries NaiveDateTime (ISO 8601 with time), then NaiveDate (YYYY-MM-DD).
+fn parse_published_ts(published: &str, ave_id: &str) -> i64 {
+    if published.is_empty() {
+        return 0;
+    }
+    // Try full datetime first: "2024-01-15T12:00:00" or "2024-01-15 12:00:00"
+    if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(published, "%Y-%m-%dT%H:%M:%S")
+        .or_else(|_| chrono::NaiveDateTime::parse_from_str(published, "%Y-%m-%d %H:%M:%S"))
+    {
+        return dt.and_utc().timestamp();
+    }
+    // Try date only: "2024-01-15"
+    if let Ok(d) = chrono::NaiveDate::parse_from_str(published, "%Y-%m-%d") {
+        return d
+            .and_hms_opt(0, 0, 0)
+            .unwrap()
+            .and_utc()
+            .timestamp();
+    }
+    eprintln!(
+        "⚠️  Invalid published date '{}' for {}",
+        published, ave_id
+    );
+    0
 }
 
 // ── Write JSON helper ──────────────────────────────────────────────────
