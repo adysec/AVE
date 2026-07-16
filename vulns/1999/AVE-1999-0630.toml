@@ -1,12 +1,12 @@
 [basic]
-description = "Eric Allman Sendmail 8.8 及 8.9.2 版本在处理特制邮件头时存在拒绝服务漏洞。邮件头预扫描（headers prescan）函数未能正确处理恶意构造的邮件头字段，远程攻击者无需身份认证即可通过向目标服务器的 SMTP 端口（25）发送精心构造的邮件触发该漏洞，导致 sendmail 进程进入死循环或崩溃，造成邮件服务不可用。该漏洞影响 Sendmail 8.8 全线版本及 8.9.2 版本，利用门槛低，已公开利用代码。"
+description = "远程攻击者通过发送包含大量邮件头部的消息，可导致 Sendmail 8.8.x 和 8.9.2 版本发生拒绝服务。该漏洞利用简单，无需认证即可远程触发，大量邮件头部会耗尽服务器处理资源，影响邮件服务的正常可用性。"
 published = "1999-01-01"
-remediation = "升级至 Sendmail 8.9.3 或更高版本，该版本修复了邮件头预扫描过程中的缓冲区处理缺陷。若无法升级，可在 sendmail.cf 中通过设置 MaxHeadersLength 和 MaxMimeHeaderLength 参数限制单封邮件头总大小（建议不超过 32768 字节）作为临时缓解措施。"
-score = 5
+remediation = "升级至 Sendmail 8.9.3 或更高版本；若无法升级，对 8.9.2 版本应用官方补丁，在 site.config.m4 中添加 `APPENDDEF(confENVDEF, -D_FFR_MAX_HEADER_LINES=1)` 后重新编译，并在 sendmail.cf 中设置 `O MaxHeaderLines=1000/990` 限制邮件头部行数和单行长度，防止大量头部导致的拒绝服务。"
+score = 5.0
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Eric Allman Sendmail 8.8/8.9.2 Header Prescan 拒绝服务漏洞"
-updated = "1999-01-01"
+sources = ["cve"]
+title = "Eric Allman Sendmail 8.8/8.9.2 拒绝服务漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,11 @@ aliases = ["CVE-1999-0393"]
 ave_id = "AVE-1999-0630"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://www.exploit-db.com/exploits/23167"]
+urls = [
+    "http://marc.info/?l=bugtraq&m=91694391227372&w=2",
+    "https://www.exploit-db.com/exploits/23167",
+]
