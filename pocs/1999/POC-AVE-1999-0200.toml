@@ -1,10 +1,15 @@
 [info]
-author = "ave"
-description = "检测 ColdFusion Server 4.0 的 openfile.cfm 端点是否存在未授权访问，该端点允许远程攻击者上传、读取、删除和执行服务器上的任意文件。"
+author = "AVE"
+description = "检测目标 Allaire ColdFusion Server 4.0 及更早版本中 ExprCalc.cfm 表达式计算器页面是否存在，该页面可通过 OpenFilePath 参数实现路径遍历，导致任意文件读取、删除和上传。"
 id = "POC-AVE-1999-0200"
-name = "Allaire ColdFusion Server 4.0 任意文件上传与执行漏洞 PoC"
+name = "Allaire ColdFusion Server 4.0 Expression Evaluator Arbitrary File Access PoC"
 severity = "high"
-tags = ["ave-1999-0200"]
+tags = [
+    "ave-1999-0200",
+    "cve-1999-0477",
+    "coldfusion",
+    "path-traversal",
+]
 vuln_id = [
     "CVE-1999-0477",
     "AVE-1999-0200",
@@ -15,22 +20,17 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/openfile.cfm"
+path = "/{{BaseURL}}/cfdocs/expeval/ExprCalc.cfm"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "openfile",
-    "ColdFusion",
-    "Expression",
-]
+status = [200]
+type = "status"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/exprcalc.cfm"
+path = "/{{BaseURL}}/cfdocs/expeval/openfile.cfm"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -38,7 +38,7 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "exprcalc",
-    "ColdFusion",
-    "Expression",
+    "uploadfile",
+    "DirPath",
+    "deletefile",
 ]
