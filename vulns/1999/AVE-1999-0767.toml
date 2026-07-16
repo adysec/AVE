@@ -1,11 +1,11 @@
 [basic]
-description = "Linux Kernel 2.0/2.1 存在 ICMP Smurf 拒绝服务漏洞。攻击者通过向网络广播地址发送源地址伪造为目标的 ICMP Echo 请求数据包，导致该网络中所有主机同时向目标发送大量 ICMP 应答，形成流量放大攻击，造成目标系统网络带宽耗尽而拒绝服务。该攻击需要目标网络允许定向广播包且主机数较多，效果显著，影响 Linux 及多种 UNIX 系统。"
+description = "Smurf 攻击是一种分布式拒绝服务攻击方式，攻击者向目标网络的广播地址发送源地址伪造为受害者的 ICMP Echo Request 数据包，导致该网络内所有主机同时向受害者发送 ICMP Echo Reply 响应，造成流量放大效应，最终耗尽受害者带宽和系统资源。该漏洞影响 Linux Kernel 2.0/2.1、Digital UNIX 4.0D、FreeBSD 2.2.4、HP-UX 10.20/11.0、IBM AIX 3.2.5、NetBSD 1.2、Solaris 2.5.1 等多个操作系统版本，攻击者无需认证即可远程触发，CVSS 评分 5.0，危害等级中等。缓解措施包括在边界路由器上禁用 directed broadcast 功能以及配置 ICMP 流量过滤。"
 published = "1998-01-05T05:00:00.000"
-remediation = "升级 Linux 内核至 2.2 及以上版本，或设置内核参数 `net.ipv4.icmp_echo_ignore_broadcasts=1` 以及 `net.ipv4.icmp_ignore_bogus_error_responses=1`；在边界路由器上执行 `no ip directed-broadcast` 禁用定向广播转发，并在网络出口过滤 ICMP 回显请求。若为 Cisco 设备，在接口配置 `ip directed-broadcast` 为 `disabled`。"
+remediation = "在路由器上配置 `no ip directed-broadcast` 禁止转发定向广播包，并在网络边界过滤 ICMP echo request 广播流量。在 Linux 系统中执行 `echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts` 忽略 ICMP 广播请求，或在内核参数中设置 `net.ipv4.icmp_echo_ignore_broadcasts=1`。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Linux Kernel 2.0/2.1 ICMP Smurf 拒绝服务漏洞"
+sources = ["exploitdb"]
+title = "多款Unix系统 ICMP广播放大 拒绝服务漏洞"
 updated = "2026-06-16T21:48:33.307"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0513"]
 ave_id = "AVE-1999-0767"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
