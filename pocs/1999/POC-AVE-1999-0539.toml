@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "该漏洞为本地文件类符号链接攻击，fwluser 脚本创建临时文件时使用可预测路径且未做安全校验。本 PoC 采用 file 协议对目标系统上的 fwluser 脚本进行安全无损检测，检查其是否使用固定的不安全临时文件路径（如 /tmp 下可预测命名的文件），若存在则说明存在被本地攻击者通过预建符号链接写入任意文件的风险。"
+id = "POC-AVE-1999-0539"
+name = "CVE-1999-0803 AIX eNetwork Firewall fwluser 不安全临时文件创建 PoC"
+severity = "low"
+tags = ["ave-1999-0539"]
+vuln_id = [
+    "CVE-1999-0803",
+    "AVE-1999-0539",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+path = "/usr/sbin/fwluser"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "mktemp",
+    "TMPDIR",
+    "/tmp/",
+]
+
+[[poc.requests]]
+path = "/etc/fwl/fwluser"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "mktemp",
+    "TMPDIR",
+    "/tmp/",
+]
