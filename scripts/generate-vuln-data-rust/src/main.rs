@@ -521,8 +521,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             for page_num in 1..=num_pages {
                 let start = (page_num - 1) * PAGE_SIZE;
                 let end = (start + PAGE_SIZE).min(year_cards.len());
-                let page_cards = &year_cards[start..end];
-                write_json_compact(&year_pages.join(format!("{}.json", page_num)), page_cards)
+                let page_cards: Vec<&VulnCard> = year_cards[start..end].iter().copied().collect();
+                write_json_compact(&year_pages.join(format!("{}.json", page_num)), &page_cards)
                     .unwrap();
             }
 
