@@ -1,0 +1,48 @@
+Looking at the TOML, the `remediation` field has a very long value that starts with a markdown-style explanation/thinking text. The Rust parser likely saw this as invalid or empty. I need to provide a clean, concise remediation in Chinese.
+- `title` - "Microsoft Internet Explorer 任意文件读取漏洞" - this is Chinese, good
+- `description` - Chinese, ≥50 chars, good
+- `severity` = "MEDIUM", `score` = 5 - MEDIUM is ≥4, so 5 is valid
+- `sources` = ["cve"] - valid
+- `published` - has a timestamp, should be just date "1999-12-31"
+- `updated` - has a timestamp, should be just date
+- `urls` - all valid http(s) URLs
+- `meta` - valid
+The main fix needed is the `remediation` field. The previous value was a mess of English thinking text mixed with Chinese. I need to provide a clean, concise Chinese remediation.
+For CVE-1999-1472 (Internet Explorer 4.0 Freiburg text-viewing issue), the remediation is to upgrade to IE 5.0 or later, or disable Active Scripting.
+1. The `remediation` field is empty/null - the error says "remediation 字段为空". Looking at the TOML, the remediation field has a very long value that starts with a meta-commentary about what the user wants, then has `<value>` tags, and ends with actual content. The TOML parser likely sees this as malformed or empty.
+2. The `published` field has a time component `1999-12-31T05:00:00.000` - should be just date `1999-12-31`
+3. The `updated` field has a time component - should be just date
+4. The `remediation` field content is extremely messy - it contains what looks like the AI's internal reasoning/thinking process embedded in the value. I need to clean this up to just the actual remediation text.
+1. Clean up `remediation` - remove the meta-commentary and just keep the actual remediation text
+2. Fix `published` to just date format
+3. Fix `updated` to just date format
+The remediation should be: "升级 Internet Explorer 至 5.0 及以上版本，该漏洞在后续版本中已修复。如无法升级，可在浏览器安全设置中将「对标记为可安全执行脚本的 ActiveX 控件执行脚本」设为禁用，或改用其他现代浏览器。临时缓解措施可禁用 Active Scripting 功能。"
+The `updated` field - NVD says "Last Modified: 06/16/2026" so it should be `2026-06-16`.
+Now let me output the fixed TOML.[id]
+ave_id = "AVE-1999-1122"
+aliases = ["CVE-1999-1472"]
+[basic]
+title = "Microsoft Internet Explorer 4.0 任意文件读取漏洞"
+description = "Internet Explorer 4.0 存在跨域信息泄露漏洞，远程攻击者可通过构造包含恶意 IFRAME 的网页，利用 Dynamic HTML（DHTML）技术将用户本地的任意文本和 HTML 文件内容发送至攻击者服务器，导致敏感信息泄露。该漏洞无需用户交互即可触发，影响使用 Internet Explorer 4.0 的 Windows 系统，CVSS 评分 5.0，危害等级中危。"
+severity = "MEDIUM"
+score = 5.0
+sources = ["cve"]
+published = "1999-12-31"
+updated = "2026-06-16"
+remediation = "升级 Internet Explorer 至 5.0 及以上版本，该漏洞在后续版本中已修复。如无法升级，可在浏览器安全设置中将「对标记为可安全执行脚本的 ActiveX 控件执行脚本」设为禁用，或改用其他现代浏览器。临时缓解措施可禁用 Active Scripting 功能。"
+[references]
+urls = [
+"http://marc.info/?l=bugtraq&m=87710897923098&w=2",
+"http://support.microsoft.com/support/kb/articles/q176/6/97.asp",
+"http://support.microsoft.com/support/kb/articles/q176/7/94.asp",
+"http://www.insecure.org/sploits/Internet_explorer_4.0.hack.html",
+"http://www.microsoft.com/Windows/ie/security/freiburg.asp",
+"http://www.osvdb.org/7819",
+"https://exchange.xforce.ibmcloud.com/vulnerabilities/587",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-16T00:00:00Z"
