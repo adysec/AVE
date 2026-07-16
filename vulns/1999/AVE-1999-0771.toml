@@ -1,15 +1,12 @@
 [basic]
-description = 'HP-UX 系统的 SNMP 服务未修改默认 community 名称（如"public"）或设置为空值，导致远程攻击者无需认证即可通过 SNMP 协议读取目标系统的大量敏感信息，包括网络配置、用户列表、运行进程等。该漏洞影响 HP-UX 多个版本，攻击门槛低，只需知晓目标 IP 地址即可发起信息泄露攻击，严重威胁系统机密性。建议将 SNMP community 字符串修改为复杂非默认值或禁用 SNMP 服务。'
-published = "1997-01-01"
-remediation = "将 SNMP 团体字串从默认值（public/private）修改为自定义强密码，在 SNMP 代理配置文件（如 /etc/SnmpAgent.d/snmpd.conf 或 /etc/snmp/snmpd.conf）中修改 community 字段；同时配置防火墙和 ACL 限制 SNMP（UDP 161/162）的访问来源 IP，仅允许受信管理主机访问。若无法立即修复，可在边界防火墙上阻断外部对 SNMP 端口的访问作为临时缓解。"
+description = 'HP-UX 系统上的 SNMP 服务使用了默认、为空或缺失的团体名（如常见的 "public"），导致攻击者无需有效凭证即可访问 SNMP 代理。该漏洞影响启用了 SNMP 服务且未修改默认配置的 HP-UX 主机，攻击条件为攻击者能通过网络访问目标主机的 UDP 161 端口。利用方式是通过发送带有默认团体名的 SNMP 请求，读取系统信息、网络配置、用户账户等敏感数据，可能造成信息泄露，CVSS 评分 5.9，危害等级为中。'
+published = "1997-01-01T05:00:00.000"
+remediation = "修改 SNMP community name 为复杂强密码，禁止使用默认值 public 或空字符串；如业务无需 SNMP 服务，直接禁用或卸载相关 SNMP 代理进程；在网络层面通过防火墙或 ACL 限制 UDP 161 端口的访问源，仅允许受信任的管理主机访问；升级至操作系统厂商发布的安全补丁版本，确保 SNMP 配置符合最小权限原则。"
 score = 5.9
 severity = "MEDIUM"
-sources = [
-    "cve",
-    "avd",
-]
-title = "惠普 HP-UX SNMP 默认团体名信息泄露漏洞"
-updated = "2026-06-16"
+sources = ["epss"]
+title = "HP-UX SNMP 默认团体字符串信息泄露漏洞"
+updated = "2026-06-16T21:48:33.790"
 
 [exploit]
 exp_urls = []
@@ -20,11 +17,23 @@ aliases = ["CVE-1999-0517"]
 ave_id = "AVE-1999-0771"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0517",
     "https://www.broadcom.com/support/fibre-channel-networking/security-advisories/brocade-security-advisory-2017-244",
+    "https://www.broadcom.com/support/fibre-channel-networking/security-advisories/brocade-security-advisory-2017-244/",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0517.md",
+    "https://github.com/CVEProject/cvelistV5/blob/10323cb4135457b41074412d623aa2116c4e1200/cves/1999/0xxx/CVE-1999-0517.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0517",
+    "https://github.com/ycdxsb/PocOrExp_in_Github/blob/0e18153fbb4123e7b766fcd8c28227fcde5a3816/1999/README.md",
+    "https://github.com/cisagov/vulnrichment/blob/5a9570703da14a2b5eac448afa9c83878dd7f663/1999/0xxx/CVE-1999-0517.json",
+    "https://github.com/e-m-b-a/emba/blob/968abdc74763b43a3cdd216fbb1950cab484f982/config/msf_cve-db.txt",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/cd275183e69131386d0c86c5a1716b6a67ff7687/references/CVE-1999-0517-2023-09-21-1730",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0517.md",
+    "https://github.com/github/advisory-database/blob/cdec8f567bb266b7b6813bda45223a258023f538/advisories/unreviewed/2022/04/GHSA-wvmj-jgmg-4ghq/GHSA-wvmj-jgmg-4ghq.json",
+    "https://github.com/jacobdjwilson/awesome-annual-security-reports/blob/f0f80f6f91645a9b6c6e9d7233a009a7ac3a809a/Markdown%20Conversions/2025/Edgescan-Vulnerability-Statistics-Report-2025.md",
+    "https://github.com/ialejandrozalles/InvestigacionAplicacionCVE-1999-0517",
 ]
