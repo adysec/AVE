@@ -1,0 +1,62 @@
+name: Daily Cargo Update & Build
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # 每天 UTC 00:00
+  workflow_dispatch:       # 也支持手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  update-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            generate-vuln-data-rust/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('generate-vuln-data-rust/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Cargo update
+        run: |
+          cd generate-vuln-data-rust
+          cargo update
+          echo "dependencies updated"
+
+      - name: Cargo build
+        run: |
+          cd generate-vuln-data-rust
+          cargo build --release
+          echo "build completed"
+
+      - name: Copy binary
+        run: |
+          mkdir -p generate-vuln-data-rust/bin
+          cp generate-vuln-data-rust/target/release/generate-vuln-data generate-vuln-data-rust/bin/generate-vuln-data
+          chmod +x generate-vuln-data-rust/bin/generate-vuln-data
+          echo "binary copied to generate-vuln-data-rust/bin/"
+
+      - name: Commit & Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add generate-vuln-data-rust/Cargo.lock generate-vuln-data-rust/bin/generate-vuln-data
+          if git diff --cached --quiet; then
+            echo "no changes to commit"
+          else
+            git commit -m "chore: daily cargo update & rebuild binary"
+            git push
+            echo "changes committed and pushed"
+          fi
