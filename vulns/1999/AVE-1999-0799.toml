@@ -1,11 +1,11 @@
 [basic]
-description = "DNS 服务器存在反查询（Inverse Query）信息泄露漏洞，远程攻击者可通过向目标 DNS 服务器发送特制的反查询请求，绕过正常访问控制获取内网主机名与 IP 地址对应关系等网络拓扑敏感信息。攻击者利用泄漏的信息可进一步实施针对性渗透攻击，扩大攻击面。该漏洞影响多种未禁用反查询功能的 DNS 服务器软件，CVSS 评分 7.5，危害等级高。建议禁用反查询功能或升级至不受影响的版本。"
+description = "DNS 服务器在处理反向查询（inverse query，即根据 IP 地址反查主机名）时存在安全配置缺陷，默认允许外部客户端发起此类查询。远程攻击者无需身份认证，只需向目标 DNS 服务器发送特制的反向查询请求，即可探测内网主机名与 IP 地址的对应关系，从而收集网络拓扑与资产信息，辅助后续定向攻击。该漏洞影响配置了 DNS 服务且未禁用反向查询功能的各类服务器，攻击条件仅为网络可达目标 53 端口，利用方式简单、无需特殊权限，可被广泛用于信息侦察。"
 published = "1997-07-01T04:00:00.000"
-remediation = "升级 DNS 服务器软件至最新受支持版本（如 BIND 升级至 9.16.x 或更高版本），并在 named.conf 中使用 allow-query 指令限制反向查询区域仅允许内部可信网络访问；同时设置 allow-recursion 为内部网络地址范围，禁止外部客户端发起递归查询。如使用 Microsoft DNS，升级至受支持的 Windows Server 版本，在 DNS 控制台中限制区域传输与递归查询范围。此外在防火墙上限制 TCP/UDP 53 端口的来源 IP，仅允许已知 DNS 客户端和下游 DNS 服务器访问。临时缓解措施可关闭递归查询功能。"
+remediation = "升级 BIND 至 8.2.2-P5 及以上版本（或迁移至 BIND 9.x），并在 named.conf 中将 allow-recursion 限制为仅可信内网、关闭 zone 反查询转发；在边界防火墙阻断外部 53/UDP 的递归与反查询请求作为临时缓解。"
 score = 7.5
 severity = "HIGH"
-sources = ["avd"]
-title = "DNS服务器反查询漏洞"
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9088,"outputTokens":16,"totalTokens":10768}}'
 updated = "2026-06-16T21:48:35.763"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0533"]
 ave_id = "AVE-1999-0799"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0533"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0533",
+    "https://github.com/CVEProject/cvelistV5/blob/442e3d0f3c777e02c70fc200a453fe1f1f8a2431/cves/1999/0xxx/CVE-1999-0533.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0533",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0533.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/19ba23eb6f8fe22cdd9a46164160f96a7cf3fffd/CVE/data/1999/CVE-1999-0533.json",
+    "https://github.com/github/advisory-database/blob/51a0e15452743e596ced46bb3f156961c52df5bb/advisories/unreviewed/2022/04/GHSA-pppp-2244-385q/GHSA-pppp-2244-385q.json",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0533.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--d46adc43-9aa0-41f0-a73d-91f47f39cb2f.json",
+    "https://github.com/Ethishh/securin_assessment/blob/e6ce9197b6593ae46f3f5646d268181eea6cbb31/cve_sync.log",
+    "https://github.com/zephyros1603/RadiantProcessors/blob/7d44cb1cd4b9e088fbe463f1b19be50a04c2efe8/Backend/RAG/data/allitems.txt",
+]
