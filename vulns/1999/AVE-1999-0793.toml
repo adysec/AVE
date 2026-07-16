@@ -1,11 +1,11 @@
 [basic]
-description = "系统网卡工作于混杂模式（Promiscuous Mode）时，会接收并处理所有经过的网络数据包而不加过滤，使得攻击者能够借助 tcpdump、Wireshark 等嗅探工具窃听网络流量，从中提取明文传输的敏感信息（如账号密码、通信内容等）。该漏洞通常需要攻击者已获得目标系统的本地访问权限或物理接入同一广播域网络方可利用，属于信息泄露类威胁。"
+description = "系统网卡被设置为混杂模式（Promiscuous Mode），使网络接口接收所有经过的数据包而非仅发往本机的流量。攻击者在已获得系统本地访问权限后，可利用此配置进行网络嗅探，捕获同一网段内其他主机的通信内容，包括明文传输的密码、会话令牌等敏感信息。该漏洞属于信息泄露类型，危害程度取决于网络环境的安全隔离级别。"
 published = "1999-01-01T05:00:00.000"
-remediation = "检查所有网络接口，使用 `ifconfig -a` (Linux) 或 `Get-NetAdapterAdvancedProperty` (Windows) 确认无接口处于混杂模式。将网络环境从共享式集线器升级为交换机，并启用端口安全功能。部署网络流量加密 (如 TLS/IPsec)，防止嗅探窃听。配置 IDS 监控异常大量 promiscuous 模式网卡。对服务器禁用不必要的网络嗅探工具和驱动。"
+remediation = "使用 ifconfig 或 ip link 命令检查并关闭网卡的混杂模式（如 ip link set eth0 promisc off），排查系统中是否存在未授权的嗅探程序（如 tcpdump、Wireshark、dsniff 等）并终止清除。加强本地账户权限管理，限制普通用户对网络接口的控制权，采用交换机端口隔离与 VLAN 划分减少同网段广播暴露，对敏感通信全程启用 SSH、TLS 等加密协议以防止明文数据被截获。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "多款操作系统网络接口混杂模式数据包嗅探信息泄露漏洞"
+sources = ["epss"]
+title = "系统网络接口混杂模式数据包嗅探漏洞"
 updated = "2026-06-16T21:48:35.503"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0530"]
 ave_id = "AVE-1999-0793"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/778"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/778",
+    "https://github.com/CVEProject/cvelistV5/blob/9ce0ab809ed6d308ca08d3162931575004660698/cves/1999/0xxx/CVE-1999-0530.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0530",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0530.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f581b54f28a314b57ac171b83d3b2d21db7414a0/CVE/data/1999/CVE-1999-0530.json",
+    "https://github.com/github/advisory-database/blob/11845a9fe6e6b4d82150d9fd8a4257b88a244a45/advisories/unreviewed/2022/04/GHSA-7mx7-673f-gx44/GHSA-7mx7-673f-gx44.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0530.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/zephyros1603/RadiantProcessors/blob/7d44cb1cd4b9e088fbe463f1b19be50a04c2efe8/Backend/RAG/data/allitems.txt",
+    "https://github.com/olbat/nvdcve/blob/763b4dfa75aa1890a155aad1b583fdcab8111c49/nvdcve/CVE-1999-0530.json",
+]
