@@ -1,11 +1,11 @@
 [basic]
-description = "ICMP（互联网控制报文协议）地址掩码和时间戳响应可被任意主机触发，远程攻击者无需认证即可向目标系统发送ICMP地址掩码请求或时间戳请求报文，从而获取目标网络的子网掩码、路由信息及系统时间等敏感数据。该漏洞广泛影响早期Linux内核版本及大量Unix类系统，攻击者可利用收集到的网络拓扑信息进行后续精准渗透攻击，属于信息泄露类漏洞，CVSS评分4.0，危害等级中危。通过操作系统层面禁用ICMP地址掩码和时间戳响应即可有效缓解。"
+description = "CVE-1999-0524 是 Linux 内核中 ICMP 协议实现存在的信息泄露缺陷。目标系统默认允许任意远程主机向其发送 ICMP 掩码请求（Type 17/18）与 ICMP 时间戳请求（Type 13/14），并在未做来源限制的情况下返回本机的子网掩码、当前时间戳及发送时间戳等网络配置信息。攻击者在无需身份认证的条件下，只需向目标主机发送特制的 ICMP 请求报文即可获取上述信息，从而辅助推断目标网络拓扑、子网划分及系统时钟，为后续针对性攻击提供侦察依据。该漏洞影响启用了相关 ICMP 响应功能的 Linux 内核系统，虽属中危信息泄露，但在内网探测与隐蔽侦察场景中具有一定利用价值。"
 published = "1997-08-01T04:00:00.000"
-remediation = "在 `/etc/sysctl.conf` 中设置 `net.ipv4.icmp_echo_ignore_broadcasts=1` 并执行 `sysctl -p` 生效。使用 iptables 屏蔽入站 ICMP 时间戳请求 (`iptables -A INPUT -p icmp --icmp-type 13 -j DROP`) 和地址掩码请求 (`iptables -A INPUT -p icmp --icmp-type 17 -j DROP`)。如用 firewalld，执行 `firewall-cmd --permanent --direct --add-rule ipv4 filter INPUT 0 -p icmp --icmp-type timestamp-request -j DROP`。"
+remediation = "升级 Linux 内核至发行版提供的最新安全版本，并在 sysctl.conf 中设置 net.ipv4.icmp_echo_ignore_broadcasts=1 以禁用对广播地址的 ICMP 响应。同时通过 iptables 或 nftables 添加规则阻断外部主机发来的 ICMP timestamp 请求（类型 13）和 ICMP address mask 请求（类型 17），例如使用 iptables -A INPUT -p icmp --icmp-type timestamp-request -j DROP 和 iptables -A INPUT -p icmp --icmp-type address-mask-request -j DROP。如无法立即升级内核，可在防火墙层限制 ICMP 类型 13 和 17 的入站流量作为临时缓解。"
 score = 4
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Linux Kernel ICMP 时间戳和网络掩码信息泄露漏洞"
+sources = ["epss"]
+title = "Linux Kernel 远程主机 ICMP 信息泄露漏洞"
 updated = "2026-06-16T21:48:34.703"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0524"]
 ave_id = "AVE-1999-0781"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
@@ -31,8 +31,19 @@ urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/322",
     "https://kc.mcafee.com/corporate/index?page=content&id=SB10053",
     "https://support.f5.com/csp/article/K15277",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0524.md",
+    "https://github.com/CVEProject/cvelistV5/blob/1ce36d0de2f3ddd1d56c222c398df994c8c331b1/cves/1999/0xxx/CVE-1999-0524.json",
+    "https://github.com/ycdxsb/PocOrExp_in_Github/blob/0e18153fbb4123e7b766fcd8c28227fcde5a3816/1999/README.md",
+    "https://github.com/Indie365/cbl-mariner/blob/80d864c0a617439675510c037c8a4589aa596fbb/SPECS/kernel-hci/CVE-1999-0524.nopatch",
+    "https://github.com/fleetdm/fleet/blob/2d49b61ff5c6af212f5b41f22f2fb25deebaa4a6/server/vulnerabilities/nvd/cpe_matching_rules.go",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f581b54f28a314b57ac171b83d3b2d21db7414a0/SSVC/data/1999/CVE-1999-0524.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/cd275183e69131386d0c86c5a1716b6a67ff7687/references/CVE-1999-0524-2025-03-17-1422",
+    "https://github.com/openembedded/openembedded-core/blob/171af3b2915dd076c8d1b205ff75eac1ebd5a586/meta/conf/distro/include/cve-extra-exclusions.inc",
+    "https://github.com/openbmc/docs/blob/cf706722293b681fbcbb852eee05a9ae045ac635/security/network-security-considerations.md",
+    "https://github.com/0xMarcio/cve/blob/f24db61575bca326440113bfa8e6a6aa18028087/1999/CVE-1999-0524.md",
     "https://github.com/noraj/ChronoLeak",
     "https://github.com/threatlabindonesia/CVE-1999-0524-ICMP-Timestamp-and-Address-Mask-Request-Exploit",
+    "https://github.com/biontdv/CVE-1999-0524-POC",
     "https://github.com/b1tsec/CVE-1999-0524",
     "https://github.com/Ransc0rp1on/ICMP-Timestamp-POC",
 ]
