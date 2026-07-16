@@ -27,14 +27,25 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
         with:
-          python-version: '3.12'
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            generate-vuln-data-rust/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('generate-vuln-data-rust/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
 
       - name: Regenerate data files
         run: |
-          python3 scripts/generate-vuln-data.py
+          cd generate-vuln-data-rust
+          cargo build --release
+          ./target/release/generate-vuln-data
           echo "data files regenerated"
 
       - name: Update Dashboard Metrics
