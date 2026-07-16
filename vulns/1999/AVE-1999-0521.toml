@@ -1,11 +1,11 @@
 [basic]
-description = "SSH Communications Security SSH 1.2.27 版本中的认证代理存在符号链接跟随漏洞。本地攻击者可通过在 UNIX 域套接字路径上创建恶意符号链接，诱使 SSH 认证代理跟随该链接操作非预期的文件，导致认证信息泄露或权限提升。该漏洞需要攻击者拥有本地系统访问权限才能利用，影响 SSH 1.2.27 版本及可能的相关实现。"
+description = "SSH 1.2.27 认证代理中存在符号链接竞争（symlink race）漏洞。当 SSH 服务端以 root 权限运行并启用认证代理转发（authentication agent forwarding）时，会在 /tmp/ssh-{用户名}/ 目录下创建 UNIX 域套接字，套接字文件名基于当前进程 PID 生成且可预测。服务端在创建该套接字时未验证路径是否存在符号链接，直接跟随符号链接写入文件。攻击者可在 sshd 创建套接字之前，提前在该目录下建立指向敏感文件（如 /etc/nologin）的符号链接，导致服务端以 root 权限在符号链接指向的位置创建套接字文件，从而覆盖系统关键文件或拒绝合法用户登录。该漏洞影响 SSH Communications Security SSH 1.2.27，CVSS v2 评分 2.1，危害等级较低。"
 published = "1999-09-17T04:00:00.000"
-remediation = "升级至 SSH 2.0 或更高版本（如 OpenSSH），SSH 1.x 协议已停止维护且存在多项安全缺陷。如无法升级，确保认证代理 socket 目录（如 /tmp/ssh-*）权限设置为 700，并禁止在多用户环境下转发代理连接。建议全面迁移至 OpenSSH 以获取持续安全更新。"
+remediation = "立即升级 SSH Communications Security SSH 至 1.2.27 之后的安全修复版本，或迁移至 OpenSSH 替代。临时缓解措施：在 sshd_config 中禁用 AuthenticationAgentForwarding 选项，重启 SSH 服务；同时清理 /tmp/ssh-* 目录下的所有预创建符号链接，确保该目录仅由真实用户所有且权限为 0700，防止攻击者提前创建恶意链接覆盖 /etc/nologin 等关键系统文件。"
 score = 2.1
 severity = "LOW"
 sources = ["avd"]
-title = "SSH Communications Security SSH 认证代理符号链接文件创建漏洞"
+title = "SSH Communications Security SSH 1.2.27 身份验证套接字符号链接跟随漏洞"
 updated = "2026-06-16T21:49:03.440"
 
 [exploit]
