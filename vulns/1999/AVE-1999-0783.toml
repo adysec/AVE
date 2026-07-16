@@ -1,12 +1,12 @@
 [basic]
-description = "某些 X 服务器产品默认配置不安全，通过 'xhost +' 命令开启了访问控制，导致任何远程 X 客户端均可连接到服务器。这种配置允许攻击者监控键盘输入或注入 X 事件，通常足以获取运行 X 服务器的用户权限。该漏洞源于便捷性考虑下的不安全配置，不是严格控制允许主机列表。"
-published = "1997-07-01"
-remediation = "禁用 xhost + 配置，使用 Xauthority 机制配置安全密钥文件，SSH 用户可将允许主机列表设置为 127.0.0.1 以确保隧道安全。"
-score = 5
-severity = "MEDIUM"
-sources = ["avd"]
-title = "X 服务器 Xhost + 访问控制开启漏洞（CVE-1999-0526)"
-updated = "1997-07-01"
+description = 'tags.<value>X Window System（X11）服务器存在访问控制配置不当漏洞。当管理员执行 "xhost +" 命令或类似操作禁用 X 服务器的访问控制机制后，未经身份认证的远程攻击者可直接连接至目标系统的 X 服务，进而查看屏幕内容、记录键盘输入、执行任意命令，完全控制用户桌面会话。该漏洞影响配置有 X11 服务的 Unix/Linux 工作站和服务器，攻击者无需凭据即可在图形界面下实施窃密与破坏操作。修复方案为启用 X 服务器的访问控制列表（ACL），通过 "xhost -" 恢复默认限制或使用 SSH 隧道加密 X11 转发。'
+published = "1997-07-01T04:00:00.000"
+remediation = "立即在 X server 所在主机执行 `xhost -` 或 `xhost -+` 撤销 `xhost +` 造成的全局开放访问控制，改用 `~/.Xauthority` 中的 MIT-MAGIC-COOKIE 密钥进行认证，对远程显示场景使用 `ssh -X` 或 `ssh -Y` 建立加密隧道并在允许列表中仅保留 `127.0.0.1`，同时执行 `chmod 600 ~/.Xauthority` 收紧密钥文件权限，杜绝无参数的 `xhost +`。"
+score = 10
+severity = "CRITICAL"
+sources = ["epss"]
+title = "X.Org X11 服务器未授权访问漏洞"
+updated = "2026-06-16T21:48:35.033"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0526"]
 ave_id = "AVE-1999-0783"
 
 [meta]
-collected_at = "2026-07-14T04:55:44.767932791+00:00"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["http://www.kb.cert.org/vuls/id/704969"]
+urls = [
+    "http://www.kb.cert.org/vuls/id/704969",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0526.md",
+    "https://github.com/CVEProject/cvelistV5/blob/37cec437f4ca5dbafb8ef4c4921c71da1b289b8f/cves/1999/0xxx/CVE-1999-0526.json",
+    "https://github.com/BrianWGray/cmty-nexpose-checks/blob/13b1c2f4cca654217a136c8eec10f7f6e18f35b8/cmty-x11-cve-1999-0526.vck",
+    "https://github.com/lvbibir/lvbibir.github.io/blob/563f70566900245eb0ea2d9afc1f1d378e9a0ed5/content/posts/tech/cve-1999-0526.md",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0526",
+    "https://github.com/demisto/content/blob/f0f3f1996ab0ab86cf0719cf8b65d7b5741a97bb/Packs/GreyNoise/.secrets-ignore",
+    "https://github.com/e-m-b-a/emba/blob/968abdc74763b43a3cdd216fbb1950cab484f982/config/msf_cve-db.txt",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f581b54f28a314b57ac171b83d3b2d21db7414a0/CVE/data/1999/CVE-1999-0526.json",
+    "https://github.com/MrWQ/vulnerability-paper/blob/fcbdb421b62aef6ccac59a1887d94687f4faf9d6/bugs/%E7%AB%AF%E5%8F%A3%E6%BC%8F%E6%B4%9E%E5%85%A8%E9%9B%86.md",
+    "https://github.com/github/advisory-database/blob/11845a9fe6e6b4d82150d9fd8a4257b88a244a45/advisories/unreviewed/2022/04/GHSA-fv34-2r8h-94mm/GHSA-fv34-2r8h-94mm.json",
+]
