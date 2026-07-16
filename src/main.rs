@@ -165,12 +165,17 @@ struct VulnCard {
 type IndexEntry = [serde_json::Value; 8];
 
 fn to_index_entry(card: &VulnCard) -> IndexEntry {
+    let score_val = if card.score.is_finite() {
+        serde_json::Number::from_f64(card.score).unwrap_or_else(|| 0.into())
+    } else {
+        0.into()
+    };
     [
         serde_json::Value::String(card.ave_id.clone()),
         serde_json::Value::String(card.cve_id.clone()),
         serde_json::Value::String(card.title.clone()),
         serde_json::Value::String(card.severity.clone()),
-        serde_json::Value::Number(serde_json::Number::from_f64(card.score).unwrap_or_else(|| 0.into())),
+        serde_json::Value::Number(score_val),
         serde_json::Value::String(card.published.clone()),
         serde_json::Value::Number((card.has_poc as u8).into()),
         serde_json::Value::Number((card.has_exp as u8).into()),
@@ -224,7 +229,16 @@ fn parse_toml(path: &Path, repo_root: &Path) -> Option<VulnCard> {
             return None;
         }
     };
-    let file_name = rel_to_vulns.to_str()?.to_string();
+    let file_name = match rel_to_vulns.to_str() {
+        Some(s) => s.to_string(),
+        None => {
+            eprintln!(
+                "⚠️  Non-UTF-8 path: {}",
+                rel_to_vulns.display()
+            );
+            return None;
+        }
+    };
 
     let cve_id = first_cve(&data.id.aliases);
 
@@ -252,6 +266,15 @@ fn parse_toml(path: &Path, repo_root: &Path) -> Option<VulnCard> {
     } else {
         data.info.score
     };
+    // Guard against NaN / Infinity which serde_json cannot serialize
+    if score.is_nan() || score.is_infinite() {
+        eprintln!(
+            "⚠️  Invalid score ({}) in {} — defaulting to 0.0",
+            score,
+            path.display()
+        );
+    }
+    let score = if score.is_finite() { score } else { 0.0 };
     let sources = if data.basic.sources.is_empty() {
         data.info.sources.clone()
     } else {
@@ -337,12 +360,22 @@ fn sort_cards(cards: &mut [VulnCard]) {
             .published
             .parse::<chrono::NaiveDateTime>()
             .map(|d| d.and_utc().timestamp())
-            .unwrap_or(0);
+            .unwrap_or_else(|_| {
+                if !a.published.is_empty() {
+                    eprintln!("⚠️  Invalid published date '{}' for {}", a.published, a.ave_id);
+                }
+                0
+            });
         let ts_b = b
             .published
             .parse::<chrono::NaiveDateTime>()
             .map(|d| d.and_utc().timestamp())
-            .unwrap_or(0);
+            .unwrap_or_else(|_| {
+                if !b.published.is_empty() {
+                    eprintln!("⚠️  Invalid published date '{}' for {}", b.published, b.ave_id);
+                }
+                0
+            });
         ts_b
             .cmp(&ts_a)
             .then_with(|| b.ave_id.cmp(&a.ave_id))
@@ -425,22 +458,39 @@ struct Manifest {
 
 fn find_repo_root() -> Option<PathBuf> {
     // 1. Try current working directory
-    let cwd = std::env::current_dir().ok()?;
-    if cwd.join("vulns").is_dir() {
-        return Some(cwd);
+    if let Ok(cwd) = std::env::current_dir() {
+        if cwd.join("vulns").is_dir() {
+            return Some(cwd);
+        }
     }
 
     // 2. Walk up from the binary's location
-    let exe = std::env::current_exe().ok()?;
-    let mut path: PathBuf = exe.canonicalize().ok()?;
-    // The binary is at scripts/generate-vuln-data-rust/target/release/generate-vuln-data
-    // Walk up until we find vulns/
-    for _ in 0..10 {
-        path = path.parent()?.to_path_buf();
-        if path.join("vulns").is_dir() {
-            return Some(path);
+    if let Ok(exe) = std::env::current_exe() {
+        if let Ok(mut path) = exe.canonicalize() {
+            for _ in 0..10 {
+                if let Some(parent) = path.parent() {
+                    path = parent.to_path_buf();
+                    if path.join("vulns").is_dir() {
+                        return Some(path);
+                    }
+                } else {
+                    break;
+                }
+            }
         }
     }
+
+    // 3. Try common CI paths
+    for candidate in &[
+        "/home/runner/work/AVE/AVE",
+        "/root/ave/output",
+    ] {
+        let p = Path::new(candidate);
+        if p.join("vulns").is_dir() {
+            return Some(p.to_path_buf());
+        }
+    }
+
     None
 }
 
