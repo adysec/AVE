@@ -1,12 +1,12 @@
 [basic]
-description = "匿名 FTP 账户对系统关键数据设置了不恰当的访问权限。攻击者无需身份验证即可通过匿名方式登录目标FTP服务器，向FTP根目录写入文件（该目录被设置为全局可写）、下载真实的系统密码文件（如/etc/passwd）、或覆盖ls等可执行命令程序。一旦攻击成功，攻击者可在服务器上植入恶意程序、获取系统级权限，甚至完全控制服务器。该漏洞源于FTP服务对匿名用户权限控制不足，影响所有默认开启匿名访问且权限配置不当的FTP服务器。"
-published = "1999-01-01"
-remediation = "检查并修正匿名FTP目录权限，将根目录权限设置为非全局可写（如chmod 755），确保/etc/passwd等敏感文件对匿名用户不可读，将/bin/ls等系统二进制文件设置为不可写（chmod 555）；在FTP服务配置中禁用匿名登录（如vsftpd设置为anonymous_enable=NO）或启用chroot限制用户根目录（chroot_local_user=YES）；升级FTP服务器软件至最新安全版本；在防火墙层面限制FTP端口（TCP 21）仅允许受信IP访问。"
-score = 10.0
+description = "FTP 服务在配置为匿名访问时，若系统关键数据与目录的权限设置不当，将导致严重的安全风险。攻击条件为攻击者无需身份认证即可连接目标 FTP 服务器的匿名账户。其利用方式包括：根目录被设置为全局可写，攻击者可上传或覆盖文件；服务器可获取真实的系统密码文件（如 /etc/passwd），造成凭据泄露；甚至可执行命令（如 ls）被恶意覆盖，进而实现任意代码执行。该漏洞影响所有配置不当的匿名 FTP 服务，CVSS 评分达到 10.0，危害等级为严重，攻击者仅需网络可达目标 FTP 端口即可远程利用。"
+published = "1999-01-01T05:00:00.000"
+remediation = "严格限制匿名 FTP 目录权限，确保根目录及子目录不可被匿名用户写入；移除或加密 /etc/passwd 等敏感文件；禁止匿名用户覆盖 ls 等可执行命令；建议升级到支持 chroot 的 FTP 服务器（如 vsftpd、ProFTPD），将匿名用户限制在隔离目录内。"
+score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "FTP 服务器 匿名账户系统关键数据权限配置不当漏洞"
-updated = "2026-06-16"
+sources = ["epss"]
+title = "FTP 匿名访问 系统权限安全漏洞"
+updated = "2026-06-16T21:48:35.170"
 
 [exploit]
 exp_urls = []
@@ -17,12 +17,20 @@ aliases = ["CVE-1999-0527"]
 ave_id = "AVE-1999-0787"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "https://nvd.nist.gov/vuln/detail/CVE-1999-0527",
-    "https://cve.org/CVERecord?id=CVE-1999-0527",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6253",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0527.md",
+    "https://github.com/CVEProject/cvelistV5/blob/37cec437f4ca5dbafb8ef4c4921c71da1b289b8f/cves/1999/0xxx/CVE-1999-0527.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0527",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f581b54f28a314b57ac171b83d3b2d21db7414a0/CVE/data/1999/CVE-1999-0527.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0527.md",
+    "https://github.com/github/advisory-database/blob/11845a9fe6e6b4d82150d9fd8a4257b88a244a45/advisories/unreviewed/2022/04/GHSA-h958-q9ch-hq7c/GHSA-h958-q9ch-hq7c.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0527.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x87000/86063/info.html",
+    "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/ftp_root.nasl",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
 ]
