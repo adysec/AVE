@@ -1,17 +1,17 @@
 [info]
-author = "AVE"
-description = "检测目标 IIS 服务器是否存在 ISAPI 扩展权限提升漏洞。通过向目标发送 HTTP 请求并检查响应头的 Server 字段，识别 Microsoft IIS 2.0/3.0/4.0 版本。若检测到受影响版本，则存在通过 ISAPI 扩展以 SYSTEM 权限执行任意代码的风险。"
+author = "ave"
+description = "检测目标服务器是否运行 Microsoft IIS 2.0/3.0/4.0，这些版本存在 ISAPI 扩展处理漏洞（CVE-1999-0412），当服务器以 SYSTEM 权限运行并加载 ISAPI 扩展时，攻击者可利用 GetExtensionVersion() 缺陷以 SYSTEM 权限执行任意命令"
 id = "POC-AVE-1999-0058"
-name = "Microsoft IIS ISAPI GetExtensionVersion 远程代码执行漏洞 PoC"
+name = "Microsoft IIS ISAPI GetExtensionVersion 检测 PoC"
 severity = "high"
-tags = ["cve-1999-0412"]
+tags = ["ave-1999-0058"]
 vuln_id = [
     "CVE-1999-0412",
     "AVE-1999-0058",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
@@ -26,4 +26,18 @@ words = [
     "Microsoft-IIS/2",
     "Microsoft-IIS/3",
     "Microsoft-IIS/4",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/scripts/iisadmin/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "IIS Admin",
+    "iisadmin",
 ]
