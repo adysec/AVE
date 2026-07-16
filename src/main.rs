@@ -320,7 +320,14 @@ fn build_asset_index(repo_root: &Path) -> (HashMap<String, Vec<String>>, HashMap
         if !base.is_dir() {
             continue;
         }
-        for entry in WalkDir::new(&base).sort_by_file_name().into_iter().flatten() {
+        for entry in WalkDir::new(&base).sort_by_file_name().into_iter() {
+            let entry = match entry {
+                Ok(e) => e,
+                Err(err) => {
+                    eprintln!("⚠️  WalkDir error in {}: {}", base.display(), err);
+                    continue;
+                }
+            };
             if !entry.file_type().is_file() {
                 continue;
             }
@@ -512,7 +519,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let toml_paths: Vec<PathBuf> = WalkDir::new(&vulns_dir)
         .sort_by_file_name()
         .into_iter()
-        .flatten()
+        .filter_map(|entry| match entry {
+            Ok(e) => Some(e),
+            Err(err) => {
+                eprintln!("⚠️  WalkDir error in vulns/: {}", err);
+                None
+            }
+        })
         .filter(|e| {
             e.file_type().is_file()
                 && e.path()
@@ -587,8 +600,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .max_depth(1)
             .sort_by_file_name()
             .into_iter()
-            .flatten()
         {
+            let entry = match entry {
+                Ok(e) => e,
+                Err(err) => {
+                    eprintln!("⚠️  WalkDir error in pages/: {}", err);
+                    continue;
+                }
+            };
             if entry.file_type().is_file() {
                 if let Some(name) = entry.file_name().to_str() {
                     if name
