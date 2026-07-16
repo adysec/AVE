@@ -1,12 +1,12 @@
 [basic]
-description = "wget 1.5.3 在处理文件下载权限设置时存在符号链接遍历漏洞。当 wget 将下载文件写入目标路径时，若该路径存在符号链接，程序会直接循链接修改实际目标文件的权限而非符号链接本身。远程攻击者可通过诱导用户在已布置符号链接的目录中下载文件，导致未经授权地修改系统敏感文件的访问权限，破坏文件安全策略。该漏洞利用条件简单，无需身份认证即可触发。"
-published = "1999-01-02T05:00:00.000"
-remediation = "升级 wget 至 1.6 及以上版本，该版本不再跟随符号链接修改目标文件权限。如无法升级，避免在共享目录或符号链接敏感场景下使用 wget 递归下载（-r），或改用 curl 替代 wget 进行文件下载操作。"
-score = 5
+description = "wget 1.5.3 在处理文件权限修改时存在符号链接跟随漏洞。当 wget 使用 chmod 修改下载文件的权限时，如果目标路径是一个符号链接，wget 会错误地跟随该链接并修改链接指向的实际文件的权限，而非符号链接本身的权限。攻击者可以在目标目录中预先创建指向敏感文件（如 /etc/passwd）的符号链接，诱使 wget 修改这些文件的权限，导致本地权限提升或敏感文件被非授权访问。该漏洞影响所有使用 wget 1.5.3 的用户，攻击条件为攻击者需在目标目录有写权限以创建符号链接。"
+published = "1999-01-02"
+remediation = "升级到 wget 1.6 及以上版本，该版本已修复符号链接跟随问题。对于无法升级的系统，应避免在不可信目录中使用 wget 下载文件，或在使用前手动检查目标路径是否存在符号链接。作为临时缓解措施，可在下载前清理目标目录中的未知符号链接。"
+score = 5.0
 severity = "MEDIUM"
-sources = ["avd"]
-title = "GNU wget 符号链接权限修改漏洞"
-updated = "2026-06-16T21:48:19.250"
+sources = ["cve"]
+title = "GNU Wget 符号链接权限修改漏洞"
+updated = "2024-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,11 @@ aliases = ["CVE-1999-0402"]
 ave_id = "AVE-1999-0642"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0402"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0402",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-0402",
+]
