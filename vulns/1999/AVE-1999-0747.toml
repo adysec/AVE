@@ -1,12 +1,15 @@
 [basic]
-description = "Windows NT 4.0 内核权限管理存在缺陷，NtOpenProcessToken 函数未能正确校验调用者的权限级别，导致低权限本地用户可通过调用该函数强制获取令牌访问权限，从而提升至系统管理员权限。此漏洞（又称 GetAdmin）影响 Windows NT 4.0 所有版本，攻击者需拥有本地系统访问权限，CVSS 评分 7.2，危害等级高。"
-published = "1997-01-01T05:00:00.000"
-remediation = "建议立即安装 Microsoft 针对 GetAdmin 漏洞发布的 Windows NT 4.0 安全补丁（可从 Microsoft 安全公告 MS99-009 获取）。由于 Windows NT 4.0 已停止支持，强烈建议升级至受支持的 Windows Server 版本，并遵循最小权限原则，限制用户仅拥有完成工作所需的最低权限。"
+description = "Windows NT 4.0 内核存在权限验证绕过漏洞（GetAdmin），本地用户可通过强制 NtOpenProcessToken 函数调用成功获取任意进程令牌，从而绕过系统权限检查获得管理员权限。该漏洞源于操作系统对进程令牌访问控制检查不充分，攻击者只需拥有本地登录权限即可利用，无需任何用户交互。受影响版本为 Windows NT 4.0，CVSS 评分 7.2，危害等级高。"
+published = "1997-01-01"
+remediation = "安装 Microsoft 发布的安全补丁（KB Q146965）修复 NtOpenProcessToken 权限检查绕过问题。由于 Windows NT 4.0 已停止支持且不再接收安全更新，建议升级至受支持的 Windows 版本（如 Windows Server 2003 或更高版本）。对无法升级的系统，应限制本地用户登录权限并启用安全策略审计。"
 score = 7.2
 severity = "HIGH"
-sources = ["avd"]
+sources = [
+    "cve",
+    "nvd",
+]
 title = "Microsoft Windows NT 4.0 权限提升漏洞"
-updated = "2026-06-16T21:48:31.363"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,8 +20,11 @@ aliases = ["CVE-1999-0496"]
 ave_id = "AVE-1999-0747"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["http://support.microsoft.com/default.aspx?scid=kb%3B%5BLN%5D%3BQ146965"]
+urls = [
+    "http://support.microsoft.com/default.aspx?scid=kb%3B%5BLN%5D%3BQ146965",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-0496",
+]
