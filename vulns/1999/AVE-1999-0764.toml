@@ -1,11 +1,11 @@
 [basic]
-description = "路由器或防火墙未正确过滤源路由选项（Loose Source Routing 及 Strict Source Routing），允许来自任意主机的源路由数据包通过。攻击者可通过伪造 IP 数据包中的源路由选项，指定数据包经由特定路径传输，从而绕过防火墙规则、ACL 访问控制列表等安全策略，实现网络扫描、流量拦截或内网渗透。该漏洞影响多种路由器及防火墙设备，CVSS 评分 7.5，危害等级高危。建议在网络边界设备上禁用 IP 源路由功能并配置相应的访问控制策略以缓解风险。"
+description = "IP 源路由选项（Loose Source and Record Route / Strict Source Routing）允许数据包发送方指定途经路径。当路由器或防火墙未正确过滤携带源路由选项的 IP 数据包时，远程攻击者可绕过正常的路由策略和访问控制规则，伪造可信源地址，将数据包强制路由至本不可达的内部网络，进而实施网络探测、中间人攻击或越权访问。该漏洞无需身份认证即可远程利用，CVSS v2.0 评分 7.5，危害等级高。缓解措施包括在网络边界设备上禁用 IP 源路由选项的转发。"
 published = "1997-01-01T05:00:00.000"
-remediation = "在 Cisco IOS 设备上执行全局配置命令 `no ip source-route` 禁用源路由转发；在 Linux 系统中设置 `echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route` 并写入 `/etc/sysctl.conf`；在防火墙策略中丢弃带有 LSRR/SSRR 选项的 IP 数据包（如 iptables 匹配 `--ip-option`）。升级至厂商最新固件以确保默认关闭该特性。"
+remediation = '在路由器或防火墙上禁用 IP 源路由功能：Cisco 设备使用 `no ip source-route` 命令，Linux 系统设置 `net.ipv4.conf.all.accept_source_route=0`，Windows 系统将注册表 `HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\DisableIPSourceRouting` 设为 2。同时确保边界 ACL 过滤源路由选项（IP Option 3）的数据包。'
 score = 7.5
 severity = "HIGH"
-sources = ["avd"]
-title = "多厂商路由器或防火墙源路由数据包过滤绕过漏洞"
+sources = ["epss"]
+title = "路由器或防火墙 IP源路由绕过漏洞"
 updated = "2026-06-16T21:48:32.890"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0510"]
 ave_id = "AVE-1999-0764"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://www.cve.org/CVERecord?id=CVE-1999-0510"]
+urls = [
+    "https://www.cve.org/CVERecord?id=CVE-1999-0510",
+    "https://github.com/CVEProject/cvelistV5/blob/2f8583cd0e244c401900c481a78c07fe5535c09f/cves/1999/0xxx/CVE-1999-0510.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0510",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0510.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1e2d061a60b9c6823d20cc72e51f709fadad54d2/CVE/data/1999/CVE-1999-0510.json",
+    "https://github.com/github/advisory-database/blob/8d306744aeef0a134e581249fd492603b0e6795d/advisories/unreviewed/2022/04/GHSA-5f97-65cc-4xfc/GHSA-5f97-65cc-4xfc.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0510.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/Ethishh/securin_assessment/blob/e6ce9197b6593ae46f3f5646d268181eea6cbb31/cve_sync.log",
+    "https://github.com/zephyros1603/RadiantProcessors/blob/7d44cb1cd4b9e088fbe463f1b19be50a04c2efe8/Backend/RAG/data/allitems.txt",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x84000/83214/info.html",
+]
