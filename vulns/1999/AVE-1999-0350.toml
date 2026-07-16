@@ -1,11 +1,11 @@
 [basic]
-description = "KDE K-Mail 在处理临时用户目录时存在符号链接（symlink）攻击漏洞。本地攻击者可通过在临时目录中创建恶意的符号链接，诱导 K-Mail 以高权限向攻击者控制的位置写入文件，从而实现权限提升。该漏洞影响 KDE 1.1/1.1.2、Caldera kdenetwork 1.1.1-1、Caldera OpenLinux 1.3/2.2 及 RedHat Linux 6.0 等版本，CVSS 评分 4.6，危害等级中危。攻击者需拥有本地系统访问权限方可利用。"
+description = "KDE K-Mail 在处理临时用户目录时存在符号链接（symlink）竞争条件漏洞，具有本地访问权限的攻击者可通过在临时目录中创建恶意符号链接，当 K-Mail 以更高权限写入临时文件时，攻击者可因此劫持文件写入操作，覆盖或创建任意系统文件，从而实现本地权限提升。该漏洞影响 KDE 1.1/1.1.1、Caldera OpenLinux 1.3/2.2 及 RedHat Linux 6.0 等系统。"
 published = "2000-01-04T05:00:00.000"
-remediation = "升级 KDE 至 2.0 及以上版本（该版本重构了临时文件处理机制，采用 mkstemp 代替可预测路径）；对应发行版适用：RedHat Linux 升级至 6.0 以上 errata 内核/kdebase 包，Caldera OpenLinux 升级至 2.3 以上。临时缓解措施：为邮件用户设置私有临时目录环境变量（如 TMPDIR=/tmp/kmail-$USER）并限制目录权限为 0700。"
+remediation = "升级 KDE 至 2.0 及以上版本，K-Mail 在新版中已修复不安全的临时文件创建方式。如无法升级，可将 umask 设为 077 并使用 `export TMPDIR=/tmp/kmail-$USER` 为每个用户分配独立临时目录，降低 symlink 攻击风险。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["cve"]
-title = "KDE K-Mail 符号链接攻击本地权限提升漏洞"
+sources = ["avd"]
+title = "KDE K-Mail 符号链接本地权限提升漏洞"
 updated = "2026-06-16T21:48:56.883"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0735"]
 ave_id = "AVE-1999-0350"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,4 +25,14 @@ urls = [
     "http://www.redhat.com/support/errata/RHSA1999015_01.html",
     "http://www.securityfocus.com/bid/300",
     "https://www.exploit-db.com/exploits/19240",
+    "https://github.com/CVEProject/cvelistV5/blob/f4ffb7bcd93209aa53a757a7ebdf17fe2a18eb33/cves/1999/0xxx/CVE-1999-0735.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0735",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0735.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a75ebb477762f54f32c38d85ec939339ec2712e5/CVE/data/1999/CVE-1999-0735.json",
+    "https://github.com/github/advisory-database/blob/e434c1da6464de3012c6c1eff8c0e19ef9669023/advisories/unreviewed/2022/04/GHSA-6q2m-wvf7-77h8/GHSA-6q2m-wvf7-77h8.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0735.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
+    "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_gainpre.txt",
+    "https://github.com/VulnerabilityHistoryProject/mega-foss/blob/4829eeb7b0101570abbc87d2a697f2c0c2f4e5c3/src/cve/graphql/trial.json",
 ]
