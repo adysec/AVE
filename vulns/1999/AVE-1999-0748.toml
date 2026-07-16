@@ -1,11 +1,11 @@
 [basic]
-description = "Anonymous FTP 服务配置不当，允许任意用户无需密码即可通过匿名方式登录 FTP 服务器。远程攻击者可使用 FTP 客户端连接目标服务器的 21 端口，以 `anonymous` 账号直接登录，无需有效凭据即可读取或下载服务器上的文件，可能导致敏感信息泄露。若服务器同时开放写权限，攻击者还可能上传恶意文件。该漏洞影响所有启用了匿名 FTP 功能的服务器，危害程度取决于所存储数据的敏感性。"
+description = "FTP 服务器启用了匿名登录功能，远程攻击者无需身份认证即可使用 anonymous 或 ftp 账号连接目标 FTP 服务，导致服务器上的文件被任意读取、下载或上传。该漏洞允许未授权访问敏感数据，若结合写权限还可用于上传恶意文件。攻击条件仅需目标开放 21 端口且允许匿名登录，利用门槛极低。"
 published = "1999-01-01T05:00:00.000"
-remediation = '如业务不需要匿名 FTP 服务，修改 FTP 服务器配置 (如 vsftpd 的 anonymous_enable=NO，IIS 取消勾选"允许匿名连接") 并重启服务；如确需使用，应启用 chroot 限制访问目录为只读公共目录，并迁移至 SFTP/SCP 等加密传输协议。'
+remediation = "禁止匿名 FTP 登录：在 FTP 服务器配置中将 anonymous 用户禁用，或设置 /etc/ftpusers 文件禁止匿名访问；若业务需要保留匿名服务，应使用 chroot 限制文件系统访问范围、设置只读权限并启用日志审计；建议用 SFTP/FTPS 替代明文 FTP 协议。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "FTP 服务器匿名登录漏洞"
+sources = ["epss"]
+title = "FTP服务 匿名登录配置不当漏洞"
 updated = "2026-06-16T21:48:31.483"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0497"]
 ave_id = "AVE-1999-0748"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0497"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0497",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0497.md",
+    "https://github.com/CVEProject/cvelistV5/blob/122439703ba8729c2a612b649ea87112305b8e28/cves/1999/0xxx/CVE-1999-0497.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0497",
+    "https://github.com/e-m-b-a/emba/blob/968abdc74763b43a3cdd216fbb1950cab484f982/config/msf_cve-db.txt",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bc69cd1e5221f68ef56bd10c5c61adf76a19f0fc/CVE/data/1999/CVE-1999-0497.json",
+    "https://github.com/DefectDojo/django-DefectDojo/blob/d9905eb7656178d3e59e0bf8f1d53a9ee9e50186/unittests/scans/openvas/many_vuln.xml",
+    "https://github.com/0xMarcio/cve/blob/a5ee56580623b0ed40e39c2c083edd8b799653e9/1999/CVE-1999-0497.md",
+    "https://github.com/github/advisory-database/blob/18de81c56daca1c9e33223f0b95bdb8312a1ca75/advisories/unreviewed/2022/04/GHSA-q5hp-pm99-c5x6/GHSA-q5hp-pm99-c5x6.json",
+    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/ftp_anonymous.nasl",
+    "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/2018/gb_ftp_anonymous_detect.nasl",
+]
