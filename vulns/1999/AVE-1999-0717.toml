@@ -1,12 +1,12 @@
 [basic]
-description = "Linux、IRIX 及 Wietse Venema 实现的 rpcbind（RPC 端口映射服务）存在认证缺陷，远程攻击者无需任何身份验证即可向目标系统发送伪造源地址的 RPC 请求，从而在 rpcbind 中插入或删除服务条目，导致服务注册信息被篡改，可能进一步用于中间人攻击或劫持 RPC 调用。该漏洞影响多个 Unix 类系统的 rpcbind 组件，CVSS v2 评分 10.0，危害严重。"
-published = "1999-01-28T05:00:00.000"
-remediation = "立即升级 rpcbind 软件包至最新版本（Linux 发行版如 Red Hat 可使用 `yum update rpcbind`，Debian/Ubuntu 使用 `apt upgrade rpcbind`）。同时配置 iptables 防火墙规则仅允许信任 IP 访问 UDP/TCP 111 端口，或在 `/etc/hosts.allow` 中添加 `portmap: 信任网段`、`/etc/hosts.deny` 中添加 `portmap: ALL` 限制来源。如无需使用 NFS/RPC 服务，建议直接关闭 rpcbind 服务（`systemctl disable rpcbind && systemctl stop rpcbind`）。"
-score = 10
+description = "rpcbind（端口映射服务）存在认证缺陷漏洞，远程攻击者可通过伪造源地址向目标系统的 rpcbind 服务发送恶意请求，从而插入或删除 RPC 服务注册条目，破坏服务映射表或劫持 RPC 服务通信。该漏洞影响 Linux、IRIX 及 Wietse Venema 实现的 rpcbind 等多个版本，攻击者无需身份认证即可远程利用，CVSS 评分 10.0，危害等级严重。"
+published = "1999-01-28"
+remediation = "升级 rpcbind 至已修复版本以解决源地址欺骗漏洞。在防火墙层面限制对 UDP/TCP 111 端口的访问，仅允许可信来源 IP 连接。配置 TCP Wrappers（/etc/hosts.allow 和 /etc/hosts.deny）限制 rpcbind 的访问来源。如非必要，可在服务配置中禁用 rpcbind 服务。"
+score = 10.0
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Linux/Unix rpcbind 远程代码执行漏洞"
-updated = "2026-06-16T21:48:26.697"
+sources = ["cve"]
+title = "Linux rpcbind 远程源地址欺骗漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,11 @@ aliases = ["CVE-1999-0461"]
 ave_id = "AVE-1999-0717"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://www.cve.org/CVERecord?id=CVE-1999-0461"]
+urls = [
+    "https://www.cve.org/CVERecord?id=CVE-1999-0461",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-0461",
+]
