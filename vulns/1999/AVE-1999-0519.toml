@@ -1,11 +1,11 @@
 [basic]
-description = "Solaris 2.6 动态链接器在处理 LD_PROFILE 环境变量时存在符号链接攻击漏洞。本地攻击者可利用该环境变量结合符号链接（symlink）攻击，在系统上创建任意文件，可能导致权限提升或数据破坏。该漏洞需要本地用户权限才能利用，攻击复杂度较低。受影响版本为 Solaris 2.6，CVSS 评分 4.6，危害等级中等。"
+description = "Solaris 2.6 动态链接器在处理 LD_PROFILE 环境变量时存在不安全文件创建漏洞。本地攻击者可通过结合符号链接攻击，在运行 setuid 或 setgid 程序时触发动态链接器以特权身份创建恶意文件，从而可能导致权限提升或系统文件被覆写。攻击前提是拥有本地 shell 访问权限，利用难度较低。该漏洞影响 Solaris 2.6 操作系统。"
 published = "1999-09-22T04:00:00.000"
-remediation = "立即安装 Sun 针对 Solaris 2.6 发行的安全补丁 105490-01（SPARC）或 105491-01（x86）；建议升级至 Solaris 10 或 11，这些版本已修复动态链接器的 LD_PROFILE 处理逻辑。临时缓解措施：在 /etc/system 中添加 set ld.so:ld_profile=0 禁用 LD_PROFILE 功能，或移除动态链接器（ld.so/ld.config）的 setuid 权限。"
+remediation = "建议升级至 Solaris 7 及以上版本（该漏洞在 Solaris 7 中已修复），或安装 Sun 安全补丁 106541-13 及后续版本。如无法立即升级，可通过限制普通用户设置 LD_PROFILE 环境变量（在 /etc/system 中配置并重启）作为临时缓解措施，或移除 prof(1) 的 setuid 权限。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Sun Solaris 2.6 动态链接器 LD_PROFILE 符号链接本地文件创建漏洞"
+sources = ["avd"]
+title = "Sun Solaris 动态链接器 LD_PROFILE 本地文件创建漏洞"
 updated = "2026-06-16T21:49:03.317"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0786"]
 ave_id = "AVE-1999-0519"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
