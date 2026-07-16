@@ -1,11 +1,11 @@
 [basic]
-description = "TFTP（简单文件传输协议）服务未正确限制文件访问目录，导致远程攻击者无需身份认证即可通过读取任意文件路径绕过目录限制，获取目标系统中 /etc/passwd 等敏感信息。该漏洞广泛影响早期运行 TFTP 服务的 UNIX/Linux 及嵌入式系统。攻击者只需能够访问 TFTP 端口（默认 69/UDP）即可利用，攻击条件简单且危害严重。"
+description = "TFTP（Trivial File Transfer Protocol）服务未配置为在受限目录中运行，导致远程攻击者无需身份认证即可通过TFTP协议读取目标系统中任意可访问文件，包括密码文件、配置文件等敏感信息。该漏洞广泛影响早期Unix/Linux系统及嵌入式设备中默认配置的TFTP服务，攻击者只需知道目标IP地址并发送TFTP读取请求即可实施信息窃取，利用难度极低。"
 published = "1991-09-27T04:00:00.000"
-remediation = "将 TFTP 配置为 chroot/jail 隔离模式运行，使用 -s 参数指定安全根目录（如 /tftpboot），确保服务无法访问目录外的系统文件；通过防火墙规则限制仅允许可信来源访问 UDP 69 端口；如业务不需要，直接停用 TFTP 服务并改用 SFTP/SCP 等安全传输协议。"
+remediation = "将 TFTP 服务配置为在 chroot 隔离目录中运行（如 /tftpboot），限制文件访问范围；在防火墙上禁止 TFTP 端口（UDP 69）对外开放，仅允许受信 IP 访问；如非必要，建议停用 TFTP 改用 SFTP/SCP 等加密文件传输协议。确保 TFTP 进程以低权限用户（如 nobody）运行，避免以 root 权限执行。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "TFTP未限制目录路径遍历漏洞"
+sources = ["epss"]
+title = "TFTP 路径限制绕过信息泄露漏洞"
 updated = "2026-06-16T21:48:31.613"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0498"]
 ave_id = "AVE-1999-0749"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
