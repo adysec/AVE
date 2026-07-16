@@ -1,9 +1,3 @@
-const GH = {
-  owner: "adysec",
-  repo: "AVE",
-  branch: "main",
-};
-
 /* ── 工具函数 ── */
 
 function setStatus(text) {
@@ -100,34 +94,26 @@ function renderSources(el, sources) {
 
 /* ── 获取仓库资产索引 (PoC/EXP 文件) ── */
 async function loadAssetIndex() {
-  const tree = await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/git/trees/${GH.branch}?recursive=1`, {
-    headers: { Accept: "application/vnd.github+json" },
-  });
-  if (!tree.ok) throw new Error(`获取仓库文件索引失败：HTTP ${tree.status}`);
-  const data = await tree.json();
+  const resp = await fetch("assets/data/asset-index.json", { cache: "no-cache" });
+  if (!resp.ok) throw new Error(`获取资产索引失败：HTTP ${resp.status}`);
+  const data = await resp.json();
 
-  const pocUrlsByAve = new Map();   // ave -> [{url, path}]
+  const pocUrlsByAve = new Map();
   const expUrlsByAve = new Map();
 
-  for (const node of data.tree || []) {
-    if (node.type !== "blob" || !node.path) continue;
-    if (!node.path.startsWith("pocs/") && !node.path.startsWith("exploits/")) continue;
-
-    const ave = extractAveId(node.path.split("/").pop());
-    if (!ave) continue;
-    const raw = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/${node.path}`;
-    const html = `https://github.com/${GH.owner}/${GH.repo}/blob/${GH.branch}/${node.path}`;
-    const entry = { url: raw, html, path: node.path };
-
-    if (node.path.startsWith("pocs/")) {
-      const arr = pocUrlsByAve.get(ave) || [];
-      arr.push(entry);
-      pocUrlsByAve.set(ave, arr);
-    } else {
-      const arr = expUrlsByAve.get(ave) || [];
-      arr.push(entry);
-      expUrlsByAve.set(ave, arr);
-    }
+  for (const [ave, paths] of Object.entries(data.poc || {})) {
+    pocUrlsByAve.set(ave, paths.map(p => ({
+      url: p,
+      html: p,
+      path: p,
+    })));
+  }
+  for (const [ave, paths] of Object.entries(data.exp || {})) {
+    expUrlsByAve.set(ave, paths.map(p => ({
+      url: p,
+      html: p,
+      path: p,
+    })));
   }
 
   return { pocUrlsByAve, expUrlsByAve };
@@ -143,18 +129,16 @@ async function loadToml(fileName) {
     if (yearMatch) vulnPath = `${yearMatch[1]}/${vulnPath}`;
   }
 
-  const raw = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/vulns/${vulnPath}`;
-  const html = `https://github.com/${GH.owner}/${GH.repo}/blob/${GH.branch}/vulns/${vulnPath}`;
-  const res = await fetch(raw, { cache: "no-cache" });
+  const res = await fetch(`vulns/${vulnPath}`, { cache: "no-cache" });
   if (!res.ok) throw new Error(`获取 TOML 失败：HTTP ${res.status}`);
   const text = await res.text();
-  return { text, raw, html, safeName };
+  return { text, raw: `vulns/${vulnPath}`, html: `vulns/${vulnPath}`, safeName };
 }
 
 /* ── 加载 PoC/EXP TOML 文件内容 ── */
-async function loadAssetToml(url) {
+async function loadAssetToml(path) {
   try {
-    const res = await fetch(url, { cache: "no-cache" });
+    const res = await fetch(path, { cache: "no-cache" });
     if (!res.ok) return null;
     return await res.text();
   } catch {

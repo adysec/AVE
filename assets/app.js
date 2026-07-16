@@ -2,12 +2,6 @@
 // AVE 公开漏洞库 — 列表页面逻辑
 // ═══════════════════════════════════════════════════════════════════════════
 
-const GH = {
-  owner: "adysec",
-  repo: "AVE",
-  branch: "main",
-};
-
 const PAGE_SIZE = 15;
 const DATA_BASE = "assets/data";
 
@@ -339,7 +333,7 @@ function expandYearEntry(arr) {
     has_poc: arr[6] === 1,
     has_exp: arr[7] === 1,
     file_name: inferFileName(arr[0]),
-    raw_url: `https://github.com/${GH.owner}/${GH.repo}/blob/${GH.branch}/vulns/${inferFileName(arr[0])}`,
+    raw_url: `vulns/${inferFileName(arr[0])}`,
     updated: "",
     description: "",
     aliases: [],
@@ -360,37 +354,8 @@ function matchCompactEntry(arr, keyword, severity) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  GitHub API helpers (fallback)
+//  Static asset index (PoC/EXP per AVE ID)
 // ═══════════════════════════════════════════════════════════════════════════
-
-async function gh(url) {
-  const res = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
-  if (!res.ok) {
-    let msg = `GitHub API ${res.status}`;
-    if (res.status === 403) {
-      const remaining = res.headers.get("X-RateLimit-Remaining");
-      const reset = res.headers.get("X-RateLimit-Reset");
-      if (remaining === "0" && reset) {
-        const wait = Math.max(0, Math.ceil((Number(reset) * 1000 - Date.now()) / 60000));
-        msg += `：API 速率限制已达，约 ${wait} 分钟后恢复。`;
-      } else {
-        msg += "：权限不足或访问被拒绝。";
-      }
-    } else if (res.status === 401) {
-      msg += "：未认证访问。GitHub API 需要认证，请稍后再试或配置 Token。";
-    } else {
-      msg += `: ${url}`;
-    }
-    const err = new Error(msg);
-    err.status = res.status;
-    throw err;
-  }
-  return res.json();
-}
-
-async function fetchText(item) {
-  return (await fetch(item.download_url, { cache: "no-cache" })).text();
-}
 
 function extractAveId(value) {
   const m = String(value || "").match(/AVE-\d{4}-\d+/i);
@@ -409,36 +374,24 @@ async function ensureApiAssetIndex() {
   if (state.apiAssetIndexFailed) return null;
 
   try {
-    const tree = await gh(`https://api.github.com/repos/${GH.owner}/${GH.repo}/git/trees/${GH.branch}?recursive=1`);
+    const resp = await fetch(`${DATA_BASE}/asset-index.json`);
+    if (!resp.ok) throw new Error(`asset-index.json HTTP ${resp.status}`);
+    const data = await resp.json();
+
     const pocUrlsByAve = new Map();
     const expUrlsByAve = new Map();
 
-    for (const node of tree.tree || []) {
-      if (node.type !== "blob" || !node.path) continue;
-      if (!node.path.startsWith("pocs/") && !node.path.startsWith("exploits/")) continue;
-
-      const ave = extractAveId(node.path.split("/").pop());
-      if (!ave) continue;
-
-      const raw = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/${node.path}`;
-      if (node.path.startsWith("pocs/")) {
-        const arr = pocUrlsByAve.get(ave) || [];
-        arr.push(raw);
-        pocUrlsByAve.set(ave, arr);
-      } else {
-        const arr = expUrlsByAve.get(ave) || [];
-        arr.push(raw);
-        expUrlsByAve.set(ave, arr);
-      }
+    for (const [ave, paths] of Object.entries(data.poc || {})) {
+      pocUrlsByAve.set(ave, paths);
+    }
+    for (const [ave, paths] of Object.entries(data.exp || {})) {
+      expUrlsByAve.set(ave, paths);
     }
 
     state.apiAssetIndex = { pocUrlsByAve, expUrlsByAve };
     return state.apiAssetIndex;
   } catch (e) {
     state.apiAssetIndexFailed = true;
-    if (e.status === 403) {
-      setStatus("⚠ PoC/EXP 资产索引因 API 限流暂时不可用，列表仍可正常浏览。");
-    }
     return null;
   }
 }
@@ -544,59 +497,6 @@ function toCard(item, text, assetIndex) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  API-based data fetching (fallback)
-// ═══════════════════════════════════════════════════════════════════════════
-
-async function searchViaCodeApi(keyword, page) {
-  let q = `repo:${GH.owner}/${GH.repo} path:vulns extension:toml`;
-  if (keyword && keyword.trim()) q += ` ${keyword.trim()}`;
-  const data = await gh(`https://api.github.com/search/code?q=${enc(q)}&per_page=${PAGE_SIZE}&page=${page}`);
-  state.total = Math.min(data.total_count || 0, 1000);
-  state.totalPages = Math.max(1, Math.ceil(state.total / PAGE_SIZE));
-  return data.items || [];
-}
-
-async function ensureTreeCache() {
-  if (state.treeCache) return state.treeCache;
-  if (state.treeCacheFailed) return [];
-
-  try {
-    const tree = await gh(`https://api.github.com/repos/${GH.owner}/${GH.repo}/git/trees/${GH.branch}?recursive=1`);
-    const all = (tree.tree || [])
-      .filter((n) => n.type === "blob")
-      .filter((n) => n.path && n.path.startsWith("vulns/") && n.path.endsWith(".toml"))
-      .map((n) => {
-        const name = n.path.split("/").pop();
-        const stem = name.replace(/\.toml$/i, "");
-        const relPath = n.path.replace(/^vulns\//, '');
-        return { name, stem, rel_path: relPath, html_url: `https://github.com/${GH.owner}/${GH.repo}/blob/${GH.branch}/${n.path}`, download_url: `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/${n.path}` };
-      })
-      .sort((a, b) => b.name.localeCompare(a.name));
-    state.treeCache = all;
-    return all;
-  } catch (e) {
-    state.treeCacheFailed = true;
-    throw e;
-  }
-}
-
-async function searchViaTreeFallback(keyword, page) {
-  if (state.treeCacheFailed) throw new Error("GitHub API 速率限制已达，无法获取列表数据。请稍后再试。");
-  const all = await ensureTreeCache();
-  const kw = (keyword || "").trim().toLowerCase();
-  const filtered = kw ? all.filter((i) => i.name.toLowerCase().includes(kw) || i.stem.toLowerCase().includes(kw) || (i.rel_path && i.rel_path.toLowerCase().includes(kw))) : all;
-  state.total = filtered.length;
-  state.totalPages = Math.max(1, Math.ceil(state.total / PAGE_SIZE));
-  return filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-}
-
-async function fetchListPage(keyword, page) {
-  let lastErr = null;
-  try { return await searchViaCodeApi(keyword, page); } catch (e) { lastErr = e; }
-  try { return await searchViaTreeFallback(keyword, page); } catch (e2) { throw lastErr && lastErr.message.includes("API 速率限制") ? lastErr : e2; }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
 //  Chunked static data loading & search (version 2) + Year-split (version 3)
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -623,7 +523,7 @@ async function initChunkedData() {
     console.log(`[AVE] v2 分块数据加载成功：${state.total} 条`);
     return true;
   } catch (e) {
-    console.warn("[AVE] 分块数据加载失败，将回退到 GitHub API：", e.message);
+    console.warn("[AVE] 分块数据加载失败：", e.message);
     state.useChunked = false;
     state.chunkedFailed = true;
     return false;
@@ -872,7 +772,7 @@ async function lazyCachePage(pageNum) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  API-based page loading (fallback)
+//  API-based page loading (fallback — static data only)
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function runPageApi(page) {
@@ -880,39 +780,11 @@ async function runPageApi(page) {
   state.page = Math.max(1, page);
   state.loaded = false;
   showLoading(true);
-  setStatus("正在调用 GitHub API 搜索...");
+  setStatus("静态数据加载失败，无法获取列表。");
 
-  let rawList, assetIndex;
-  try {
-    rawList = await fetchListPage(state.keyword, state.page);
-    if (token !== loadToken) return;
-    assetIndex = await ensureApiAssetIndex();
-    if (token !== loadToken) return;
-  } catch (e) {
-    showLoading(false);
-    renderError(`⚠ ${e.message}`);
-    setStatus(`搜索失败：${e.message}`);
-    return;
-  }
-
-  const cards = [];
-  for (const item of rawList) {
-    let text;
-    try { text = await fetchText(item); } catch { continue; }
-    cards.push(toCard(item, text, assetIndex));
-  }
-  if (token !== loadToken) return;
-
-  state.lastCards = sortCards(cards);
-  const finalCards = filterBySeverity(state.lastCards);
-  state.loaded = true;
-  renderList(finalCards);
-  renderPager();
-  renderSeverityBar(finalCards);
-  updateSortIndicators();
-  saveUrlState();
   showLoading(false);
-  setStatus(`已显示第 ${state.page} 页（共 ${state.total} 条），来源：GitHub API。`);
+  renderError("⚠ 静态数据加载失败，请刷新页面重试。");
+  setStatus("静态数据加载失败，请刷新页面重试。");
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

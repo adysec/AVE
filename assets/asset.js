@@ -1,9 +1,3 @@
-const GH = {
-  owner: "adysec",
-  repo: "AVE",
-  branch: "main",
-};
-
 /* ── 工具函数 ── */
 
 function setStatus(text) {
@@ -291,11 +285,8 @@ function render(tomlText, filePath, type) {
   }
 
   // ── 链接 ──
-  const rawUrl = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/${filePath}`;
-  const htmlUrl = `https://github.com/${GH.owner}/${GH.repo}/blob/${GH.branch}/${filePath}`;
-
-  document.getElementById('a-raw').href = rawUrl;
-  document.getElementById('a-github').href = htmlUrl;
+  document.getElementById('a-raw').href = filePath;
+  document.getElementById('a-github').href = filePath;
 
   document.getElementById('detail-card').style.display = 'block';
 }
@@ -312,9 +303,8 @@ async function boot() {
 
   setStatus('正在加载 PoC/EXP ...');
 
-  const rawUrl = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/${file}`;
   try {
-    const res = await fetch(rawUrl, { cache: 'no-cache' });
+    const res = await fetch(file, { cache: 'no-cache' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     render(text, file, type);

@@ -358,6 +358,39 @@ fn build_asset_index(repo_root: &Path) -> (HashMap<String, Vec<String>>, HashMap
     (poc_urls, exp_urls)
 }
 
+fn build_asset_index_relative(repo_root: &Path) -> (HashMap<String, Vec<String>>, HashMap<String, Vec<String>>) {
+    let mut poc: HashMap<String, Vec<String>> = HashMap::new();
+    let mut exp: HashMap<String, Vec<String>> = HashMap::new();
+
+    for (base, storage) in [
+        (repo_root.join("pocs"), &mut poc),
+        (repo_root.join("exploits"), &mut exp),
+    ] {
+        if !base.is_dir() {
+            continue;
+        }
+        for entry in WalkDir::new(&base).sort_by_file_name().into_iter() {
+            let entry = match entry {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+            if !entry.file_type().is_file() {
+                continue;
+            }
+            let stem = entry.path().file_stem().and_then(|s| s.to_str()).unwrap_or("");
+            if let Some(ave) = extract_ave_id(stem) {
+                let rel = match entry.path().strip_prefix(repo_root) {
+                    Ok(r) => r.to_string_lossy().to_string(),
+                    Err(_) => continue,
+                };
+                storage.entry(ave).or_default().push(rel);
+            }
+        }
+    }
+
+    (poc, exp)
+}
+
 // ── Sort key ───────────────────────────────────────────────────────────
 
 fn sort_cards(cards: &mut [VulnCard]) {
@@ -596,6 +629,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let total_exps: usize = exp_by_ave.values().map(|v| v.len()).sum();
     println!("📎 Found {} PoC files", total_pocs);
     println!("📎 Found {} EXP files", total_exps);
+
+    // ── Write static asset index (relative paths, no GitHub API dependency) ──
+    let (poc_rel, exp_rel) = build_asset_index_relative(&repo_root);
+    let asset_index = serde_json::json!({"poc": poc_rel, "exp": exp_rel});
+    write_json_compact(&data_dir.join("asset-index.json"), &asset_index)?;
+    let total_poc_rel: usize = poc_rel.values().map(|v| v.len()).sum();
+    let total_exp_rel: usize = exp_rel.values().map(|v| v.len()).sum();
+    println!("📋 asset-index.json written ({} PoC, {} EXP)", total_poc_rel, total_exp_rel);
 
     // ── Enrich cards with asset URLs ──
     cards.par_iter_mut().for_each(|card| {
