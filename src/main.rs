@@ -372,12 +372,18 @@ fn sort_cards(cards: &mut [VulnCard]) {
 }
 
 /// Parse a published date string to a Unix timestamp.
-/// Tries NaiveDateTime (ISO 8601 with time), then NaiveDate (YYYY-MM-DD).
+/// Tries multiple common formats: ISO 8601 with/without time, with/without fractional seconds.
 fn parse_published_ts(published: &str, ave_id: &str) -> i64 {
     if published.is_empty() {
         return 0;
     }
-    // Try full datetime first: "2024-01-15T12:00:00" or "2024-01-15 12:00:00"
+    // Try full datetime with fractional seconds: "2024-01-15T12:00:00.000"
+    if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(published, "%Y-%m-%dT%H:%M:%S%.3f")
+        .or_else(|_| chrono::NaiveDateTime::parse_from_str(published, "%Y-%m-%dT%H:%M:%S%.f"))
+    {
+        return dt.and_utc().timestamp();
+    }
+    // Try full datetime without fractional seconds: "2024-01-15T12:00:00" or "2024-01-15 12:00:00"
     if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(published, "%Y-%m-%dT%H:%M:%S")
         .or_else(|_| chrono::NaiveDateTime::parse_from_str(published, "%Y-%m-%d %H:%M:%S"))
     {
