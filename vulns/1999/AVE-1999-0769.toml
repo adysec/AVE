@@ -1,11 +1,11 @@
 [basic]
-description = 'Unix 系统的 /etc/hosts.equiv 及用户目录下的 .rhosts 文件用于配置远程信任关系，若其中使用了通配符"+"或配置过于宽松，将允许任意远程主机以任意用户名免密码登录目标系统，造成未授权远程访问权限提升漏洞。攻击者无需任何凭证即可通过 rlogin、rsh、rcp 等 r 系列服务直接获取目标主机的用户级甚至 root 级访问权限。该漏洞影响所有支持 r 系列服务的 Unix 系统，危害等级严重。'
+description = "` tags.<value>Unix 系统 `/etc/hosts.equiv` 文件错误配置导致不受限制的远程信任关系漏洞。当系统管理员在该文件中写入通配符 `+` 时，系统会信任所有远程主机，允许任何远程用户无需密码或凭据即可通过 rsh、rlogin、rcp 等不安全的 r-命令服务以本地同名用户身份登录目标系统。该漏洞影响所有使用 r-命令套件及 `/etc/hosts.equiv`/`.rhosts` 信任机制的 Unix/Linux 系统（包括 AIX、Solaris、HP-UX、BSD 及各类 Linux 发行版）。攻击者只需从任意远程主机发起连接即可直接登录并获取系统完全控制权，CVSS v2 评分为 10.0（严重等级），向量为 AV:N/AC:L/Au:N/C:C/I:C/A:C。修复方法为删除 `/etc/hosts.equiv` 中的 `+` 行，仅保留明确信任的主机名或 IP，禁用 r-命令服务，并以 SSH 替代不安全的 r-命令。"
 published = "1999-01-01T05:00:00.000"
-remediation = '立即检查并编辑 /etc/hosts.equiv 文件，删除其中单独的 "+" 行，改用具体的主机名+用户名对（如 "hostA userB"）替代通配符。对于 SSH 已部署的环境，禁用 rsh/rlogin/rExec 服务（注释或删除 inetd.conf 中的 shell/login/exec 条目，重启 inetd 或 xinetd），并通过 /etc/ssh/sshd_config 启用 PubkeyAuthentication 强制使用密钥认证。如业务必须保留 r-commands，则确保每台主机在 /etc/hosts.equiv 中仅列出受信特定主机，同时配合 hosts.allow/hosts.deny 做 IP 级访问控制。'
+remediation = "立即检查并编辑 /etc/hosts.equiv 与每个用户的 ~/.rhosts 文件，删除其中单独的「+」符号及「+ +」这类允许任意主机任意用户登录的条目，仅保留受信任的特定主机名与用户名；若无需 rsh/rlogin/rexec 等基于信任的服务，应停用 inetd/xinetd 中对应的 r-services 或直接卸载相关软件包，并以 ssh 替代；同时在边界防火墙封锁 512/513/514 端口作为缓解措施。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Unix /etc/hosts.equiv 信任关系配置不当权限提升漏洞"
+sources = ["epss"]
+title = "Unix /etc/hosts.equiv 远程信任关系权限提升漏洞"
 updated = "2026-06-16T21:48:33.550"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0515"]
 ave_id = "AVE-1999-0769"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0515"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0515",
+    "https://github.com/CVEProject/cvelistV5/blob/10323cb4135457b41074412d623aa2116c4e1200/cves/1999/0xxx/CVE-1999-0515.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0515",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0515.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4efc2590fd3e232024591793a186ed6577aaac2a/CVE/data/1999/CVE-1999-0515.json",
+    "https://github.com/github/advisory-database/blob/cdec8f567bb266b7b6813bda45223a258023f538/advisories/unreviewed/2022/04/GHSA-jmw9-2v63-7gm2/GHSA-jmw9-2v63-7gm2.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0515.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153100_153200.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000432.txt",
+    "https://github.com/zephyros1603/RadiantProcessors/blob/7d44cb1cd4b9e088fbe463f1b19be50a04c2efe8/Backend/RAG/data/allitems.txt",
+    "https://github.com/olbat/nvdcve/blob/763b4dfa75aa1890a155aad1b583fdcab8111c49/nvdcve/CVE-1999-0515.json",
+]

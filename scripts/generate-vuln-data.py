@@ -138,6 +138,26 @@ def build_asset_index():
     return poc_urls, exp_urls
 
 
+def build_asset_index_relative():
+    """Build asset index using relative paths (no GitHub URLs)."""
+    poc: dict[str, list[str]] = {}
+    exp: dict[str, list[str]] = {}
+
+    for base, storage in [(REPO_ROOT / "pocs", poc), (REPO_ROOT / "exploits", exp)]:
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*")):
+            if not path.is_file():
+                continue
+            ave = extract_ave_id(path.stem)
+            if not ave:
+                continue
+            rel = str(path.relative_to(REPO_ROOT))
+            storage.setdefault(ave, []).append(rel)
+
+    return poc, exp
+
+
 # ── Sort key: newest published first, then AVE ID descending ────────────
 
 def make_sort_key(c):
@@ -189,6 +209,15 @@ def main():
     poc_by_ave, exp_by_ave = build_asset_index()
     print(f"📎 Found {sum(len(v) for v in poc_by_ave.values())} PoC files")
     print(f"📎 Found {sum(len(v) for v in exp_by_ave.values())} EXP files")
+
+    # ── Write static asset index (relative paths, no GitHub API dependency) ──
+    poc_rel, exp_rel = build_asset_index_relative()
+    asset_index = {"poc": poc_rel, "exp": exp_rel}
+    (data_dir / "asset-index.json").write_text(
+        json.dumps(asset_index, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    print(f"📋 asset-index.json written ({sum(len(v) for v in poc_rel.values())} PoC, {sum(len(v) for v in exp_rel.values())} EXP)")
 
     # ── Enrich ──
     for card in cards:
