@@ -1,11 +1,11 @@
 [basic]
-description = "该漏洞存在于 Windows SMB 服务的文件共享功能中，远程攻击者无需身份认证即可通过向 SMB 共享路径发送包含 `..`（点点）序列的特制请求，利用目录遍历攻击突破文件系统访问限制，实现越权读取或访问目标系统上的任意文件。该漏洞影响 Windows NT 4.0 及 Windows 95/98 等早期版本，CVSS 评分 10.0，危害等级严重。微软已在后续安全更新中修复此漏洞。"
+description = 'SMB（Server Message Block）协议共享中存在路径遍历漏洞。由于服务端在处理SMB共享访问请求时未对".."（点点）目录跳转序列进行充分过滤和校验，未经身份认证的远程攻击者可通过在SMB共享路径中构造包含"../"的目录遍历序列，突破共享根目录限制，访问目标文件系统中的任意文件，导致敏感信息泄露。该漏洞影响范围广泛，CVSS v2.0评分为10.0，危害等级严重，攻击者无需认证即可通过网络远程利用。'
 published = "1999-01-01T05:00:00.000"
-remediation = "安装 Microsoft 安全公告 MS98-014/ MS99-014 对应补丁，禁止匿名 SMB 枚举（将注册表项 RestrictAnonymous 设为 1），并限制共享目录权限为最小必要范围。如无法打补丁，在防火墙阻断 SMB 端口 139/445 入站流量作为临时缓解。"
+remediation = "升级 Samba 至 2.0.6 或更高版本，该版本修复了 SMB 共享中路径遍历（..）导致文件系统越权访问的问题。如无法升级，在 smb.conf 中为每个共享设置 `valid users` 限制访问用户，并使用 `wide links = no` 和 `follow symlinks = no` 禁用符号链接跟随作为临时缓解措施。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Microsoft Windows SMB 共享目录遍历漏洞"
+sources = ["epss"]
+title = "Microsoft Windows SMB 目录遍历漏洞"
 updated = "2026-06-16T21:48:31.207"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0495"]
 ave_id = "AVE-1999-0746"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
