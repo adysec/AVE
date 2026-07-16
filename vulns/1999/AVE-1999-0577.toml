@@ -1,11 +1,11 @@
 [basic]
-description = "Cfingerd（finger协议守护进程实现）存在特权管理不当漏洞。当启用 ALLOW_EXECUTION 选项时，系统未能在代表用户执行程序前正确丢弃 root 权限，导致本地攻击者可通过请求服务执行任意程序来获取 root 权限，进而完全控制目标系统。该漏洞影响运行 Cfingerd 的各类 Unix/Linux 系统，CVSS 评分 7.2，危害等级高。"
+description = "Cfingerd 是一款用于替代系统 finger 守护进程的服务程序，当管理员在配置中启用 ALLOW_EXECUTION 选项时，程序会在代表用户执行指定程序前未能正确地降低（drop）自身权限。由于权限处理不当，本地已登录的普通用户可利用该缺陷，通过触发 Cfingerd 以用户身份执行程序的操作，使被执行的程序在仍保留 root 特权的情况下运行，从而提升自身权限至 root，完全控制受影响主机。该漏洞仅影响启用了 ALLOW_EXECUTION 功能的 Cfingerd 安装，攻击前提是攻击者已具备目标系统的本地账户访问权限。"
 published = "1999-08-10T04:00:00.000"
-remediation = "立即升级 cfingerd 至 1.4.0 或更高版本（当前最新为 1.4.3），该版本已修复执行外部程序时未正确丢弃 root 权限的安全缺陷。如无法升级，在 cfingerd.conf 中将 ALLOW_EXECUTION 设置为 false 以禁用该功能，作为临时缓解措施。"
+remediation = "升级 Cfingerd 至修复该权限提升问题的版本（建议升级到 1.4.3 及以上），或编辑配置文件 cfingerd.conf 将 ALLOW_EXECUTION 选项设为禁用（no）以关闭该功能。若无法立即升级，可暂时移除 setuid root 权限（chmod u-s /usr/sbin/cfingerd）作为缓解措施，并限制仅可信本地用户访问 finger 服务。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Cfingerd ALLOW_EXECUTION 本地权限提升漏洞"
+sources = ["avd"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9134,"outputTokens":18,"totalTokens":10816}}'
 updated = "2026-06-16T21:49:06.607"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0813"]
 ave_id = "AVE-1999-0577"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0813"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0813",
+    "https://github.com/CVEProject/cvelistV5/blob/442e3d0f3c777e02c70fc200a453fe1f1f8a2431/cves/1999/0xxx/CVE-1999-0813.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0813",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0813.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/19ba23eb6f8fe22cdd9a46164160f96a7cf3fffd/CVE/data/1999/CVE-1999-0813.json",
+    "https://github.com/github/advisory-database/blob/51a0e15452743e596ced46bb3f156961c52df5bb/advisories/unreviewed/2022/04/GHSA-hqpc-mh2m-mmv8/GHSA-hqpc-mh2m-mmv8.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0813.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88407/info.html",
+    "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/1999/19990814.data",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153600_153700.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+]
