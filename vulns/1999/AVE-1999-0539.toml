@@ -1,12 +1,12 @@
 [basic]
-description = "IBM AIX eNetwork Firewall 3.2 及 3.3 版本中的 fwluser 脚本存在不安全临时文件创建漏洞。具有本地访问权限的攻击者可通过符号链接（symlink）攻击，诱使脚本以提升的权限向任意系统文件写入恶意内容，从而覆盖关键配置文件或获取更高权限。该漏洞需攻击者拥有本地账户，利用难度较低，影响系统完整性与可用性。"
+description = "IBM AIX eNetwork Firewall 的 fwluser 脚本在创建临时文件时使用了可预测的文件名路径，未采用安全的随机命名机制，导致本地攻击者可通过预创建符号链接的方式，诱使脚本以 root 或特权用户身份向任意文件写入内容，进而可能造成本地权限提升或破坏系统文件。该漏洞攻击条件为攻击者需具备本地普通用户权限并能够预测或抢占临时文件路径。"
 published = "1999-05-25T04:00:00.000"
-remediation = "tags.<value>IBM AIX eNetwork Firewall 3.2/3.3 已停止支持且 IBM 未对 APAR IR39562 发布正式补丁，建议立即迁移至受支持的防火墙产品。如必须继续使用，应限制本地用户 shell 访问权限，将 /tmp 目录以 nosuid 选项挂载并确保粘滞位生效，同时修改 fwluser 脚本使用 mktemp 命令替代可预测临时文件名以防止符号链接劫持。"
+remediation = "升级 IBM AIX eNetwork Firewall 至包含修复的版本，或向 IBM 申请对应 APAR 补丁；临时缓解可将 fwluser 脚本中创建临时文件的逻辑改为使用 mktemp 生成随机路径并以 600 权限限定属主访问，避免可预测的临时文件路径被符号链接劫持。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
+sources = ["avd"]
 title = "IBM AIX eNetwork Firewall 不安全临时文件创建漏洞"
-updated = "2026-06-16T21:49:05.407"
+updated = "2026-07-16T00:00:00Z"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0803"]
 ave_id = "AVE-1999-0539"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,4 +25,7 @@ urls = [
     "http://marc.info/?l=bugtraq&m=92765973207648&w=2",
     "http://www.osvdb.org/962",
     "https://www.exploit-db.com/exploits/19229",
+    "https://github.com/CVEProject/cvelistV5/blob/10323cb4135457b41074412d623aa2116c4e1200/cves/1999/0xxx/CVE-1999-0803.json",
+    "https://github.com/github/advisory-database/blob/cdec8f567bb266b7b6813bda45223a258023f538/advisories/unreviewed/2022/04/GHSA-59f5-phf9-mq45/GHSA-59f5-phf9-mq45.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0803.json",
 ]
