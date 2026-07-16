@@ -1,12 +1,12 @@
 [basic]
-description = "Host SMTP Server 在处理大量 RCPT TO 命令时存在拒绝服务漏洞。远程攻击者可在同一 SMTP 连接中发送大量 RCPT TO 命令，耗尽服务器资源导致邮件服务崩溃或响应缓慢。该漏洞影响 Sendmail 等主流 SMTP 应用程序，攻击者无需认证即可发起攻击，属于典型的资源消耗型拒绝服务攻击。"
-published = "1999-03-08T05:00:00.000"
-remediation = "升级 Sendmail 至 8.9.0 或更高版本，该版本引入了 MaxRecipientsPerMessage 配置选项可用于限制单次连接的收件人数量；同时在 sendmail.mc 中添加 define(`confMAX_RCPTS_PER_MESSAGE', `10') 限制每封邮件收件人数，并启用 smrsh 限制可执行程序列表，以缓解恶意发件人通过大量 RCPT TO 命令耗尽服务器资源的风险。"
+description = "该漏洞存在于 SMTP 服务器（如 Sendmail）中，远程攻击者可在同一连接中发送大量 RCPT TO 命令，耗尽服务器资源导致拒绝服务。攻击无需身份认证，仅需能连接目标 SMTP 端口（通常为 25/TCP）。影响运行 Sendmail 等 SMTP 软件的主机，CVSS 评分 6.4，危害等级中危。"
+published = "1999-03-08"
+remediation = "升级 Sendmail 至 8.9.0 或更高版本，该版本引入了连接限制机制。在 sendmail.cf 中设置 MaxRecipientsPerMessage=N（如 100）限制单次 SMTP 连接的 RCPT TO 数量。同时配置 access 文件拒绝来源异常的发件 IP，或在 MTA 层面启用 rate limiting 限制同一来源的并发连接数。"
 score = 6.4
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Sendmail SMTP 远程拒绝服务漏洞"
-updated = "2026-06-16T21:48:21.327"
+sources = ["cve"]
+title = "Sendmail SMTP 服务拒绝服务漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0418"]
 ave_id = "AVE-1999-0069"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
