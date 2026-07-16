@@ -1,11 +1,11 @@
 [basic]
-description = "Trn Usenet 新闻阅读器存在本地符号链接（symlink）安全漏洞。本地攻击者可在临时目录中部署恶意符号链接，当其他用户运行 Trn 时，程序会错误地跟随链接执行文件操作，导致攻击者能够覆盖目标用户的任意文件。该漏洞需本地系统访问权限方可触发，CVSS 评分 2.1，危害等级低。"
+description = "Trn 新闻阅读器存在本地符号链接漏洞，本地用户可通过创建符号链接指向其他用户文件，在特定条件下覆盖目标文件内容。该漏洞源于程序在处理临时文件时未对符号链接进行充分校验，攻击者需要拥有本地系统访问权限，利用难度较低但影响范围有限（仅影响同系统用户），CVSS 评分 2.1 危害等级低。"
 published = "1999-08-20T04:00:00.000"
-remediation = "建议升级 Trn 到 3.6 或更高版本（若仍使用），或改用 slrn、tin 等仍受维护的新闻阅读器。临时缓解措施：为临时目录设置粘滞位（chmod +t /tmp），设置 umask 077，并以普通用户而非 setuid 权限运行 trn。"
+remediation = "升级 Trn 至修复了不安全临时文件创建的版本（trn 4.0-test77 之后版本），或在 Linux 内核中通过 fs.protected_symlinks=1 启用符号链接保护（sysctl -w fs.protected_symlinks=1）。如无法升级，建议将 /tmp 挂载为 noexec,nosuid 并使用 private /tmp 模式（systemd 默认启用），同时在 cron 中定期清理 /tmp 下的 Trn 临时文件。使用 tmpfiles.d 或 pam_namespace 对每位用户隔离临时目录可彻底阻断此类攻击。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "Trn 本地符号链接文件覆盖漏洞"
+sources = ["avd"]
+title = "Trn 本地用户符号链接覆盖其他用户文件漏洞"
 updated = "2026-06-16T21:48:57.870"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0743"]
 ave_id = "AVE-1999-0364"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/3144"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/3144",
+    "https://github.com/CVEProject/cvelistV5/blob/4e6f80460dd56d97b6079eb72c9467b9a961ce1b/cves/1999/0xxx/CVE-1999-0743.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0743",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0743.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a75ebb477762f54f32c38d85ec939339ec2712e5/CVE/data/1999/CVE-1999-0743.json",
+    "https://github.com/github/advisory-database/blob/e434c1da6464de3012c6c1eff8c0e19ef9669023/advisories/unreviewed/2022/04/GHSA-w5gh-xpm5-prq2/GHSA-w5gh-xpm5-prq2.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0743.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88064/info.html",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153500_153600.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--f7f02ce6-65e9-4ce7-aacb-b8528cfb6e7e.json",
+]
