@@ -210,15 +210,6 @@ def main():
     print(f"📎 Found {sum(len(v) for v in poc_by_ave.values())} PoC files")
     print(f"📎 Found {sum(len(v) for v in exp_by_ave.values())} EXP files")
 
-    # ── Write static asset index (relative paths, no GitHub API dependency) ──
-    poc_rel, exp_rel = build_asset_index_relative()
-    asset_index = {"poc": poc_rel, "exp": exp_rel}
-    (data_dir / "asset-index.json").write_text(
-        json.dumps(asset_index, ensure_ascii=False, separators=(",", ":")),
-        encoding="utf-8",
-    )
-    print(f"📋 asset-index.json written ({sum(len(v) for v in poc_rel.values())} PoC, {sum(len(v) for v in exp_rel.values())} EXP)")
-
     # ── Enrich ──
     for card in cards:
         ave = card["ave_id"]
@@ -245,6 +236,15 @@ def main():
     index_dir = data_dir / "index"
     pages_root = data_dir / "pages"
     index_dir.mkdir(parents=True, exist_ok=True)
+
+    # ── Write static asset index (relative paths, no GitHub API dependency) ──
+    poc_rel, exp_rel = build_asset_index_relative()
+    asset_index = {"poc": poc_rel, "exp": exp_rel}
+    (data_dir / "asset-index.json").write_text(
+        json.dumps(asset_index, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    print(f"📋 asset-index.json written ({sum(len(v) for v in poc_rel.values())} PoC, {sum(len(v) for v in exp_rel.values())} EXP)")
 
     # ── Clean up old combined search-index.json (v2 format) ──
     old_index = data_dir / "search-index.json"

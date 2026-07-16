@@ -34,12 +34,6 @@ const state = {
   searchResults: [],      // accumulated cards during global streaming search
   streamDone: 0,          // years completed in current stream
   streamTotal: 0,         // total years being searched
-
-  // ── Fallback to GitHub API ──
-  treeCache: null,
-  treeCacheFailed: false,
-  apiAssetIndex: null,
-  apiAssetIndexFailed: false,
 };
 
 let loadToken = 0;
@@ -47,8 +41,6 @@ let loadToken = 0;
 // ═══════════════════════════════════════════════════════════════════════════
 //  Helpers
 // ═══════════════════════════════════════════════════════════════════════════
-
-function enc(s) { return encodeURIComponent(s); }
 
 function sevClass(s) {
   return ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO", "UNKNOWN"].includes(s) ? s : "UNKNOWN";
@@ -351,149 +343,6 @@ function matchCompactEntry(arr, keyword, severity) {
   }
   if (severity && arr[3] !== severity) return false;
   return true;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  Static asset index (PoC/EXP per AVE ID)
-// ═══════════════════════════════════════════════════════════════════════════
-
-function extractAveId(value) {
-  const m = String(value || "").match(/AVE-\d{4}-\d+/i);
-  return m ? m[0].toUpperCase() : "";
-}
-
-function getRepoAssetUrls(index, aveId, type) {
-  if (!index || !aveId) return [];
-  if (type === "poc") return index.pocUrlsByAve.get(aveId) || [];
-  if (type === "exp") return index.expUrlsByAve.get(aveId) || [];
-  return [];
-}
-
-async function ensureApiAssetIndex() {
-  if (state.apiAssetIndex) return state.apiAssetIndex;
-  if (state.apiAssetIndexFailed) return null;
-
-  try {
-    const resp = await fetch(`${DATA_BASE}/asset-index.json`);
-    if (!resp.ok) throw new Error(`asset-index.json HTTP ${resp.status}`);
-    const data = await resp.json();
-
-    const pocUrlsByAve = new Map();
-    const expUrlsByAve = new Map();
-
-    for (const [ave, paths] of Object.entries(data.poc || {})) {
-      pocUrlsByAve.set(ave, paths);
-    }
-    for (const [ave, paths] of Object.entries(data.exp || {})) {
-      expUrlsByAve.set(ave, paths);
-    }
-
-    state.apiAssetIndex = { pocUrlsByAve, expUrlsByAve };
-    return state.apiAssetIndex;
-  } catch (e) {
-    state.apiAssetIndexFailed = true;
-    return null;
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  Card builder (fallback: TOML regex → card)
-// ═══════════════════════════════════════════════════════════════════════════
-
-function severityFromToml(text) {
-  const m = text.match(/^severity\s*=\s*"([A-Za-z]+)"/m);
-  return (m?.[1] || "UNKNOWN").toUpperCase();
-}
-
-function scoreFromToml(text) {
-  const m = text.match(/^score\s*=\s*([0-9]+(?:\.[0-9]+)?)/m);
-  return m ? Number(m[1]) : 0;
-}
-
-function titleFromToml(text, fallback) {
-  const m = text.match(/^title\s*=\s*"([^"]*)"/m);
-  return m?.[1] || fallback;
-}
-
-function descFromToml(text) {
-  const m = text.match(/^description\s*=\s*"([^"]*)"/m);
-  if (m?.[1]) return m[1];
-  const ml = text.match(/^description\s*=\s*"""([\s\S]*?)"""/m);
-  return ml?.[1]?.trim() || "";
-}
-
-function linksFromToml(text, key) {
-  const arrRe = new RegExp(`^${key}\\s*=\\s*\\[(.*?)\\]`, "ms");
-  const oneRe = new RegExp(`^${key}\\s*=\\s*\"([^\"]+)\"`, "m");
-  const one = text.match(oneRe);
-  if (one?.[1]) return [one[1]];
-  const arr = text.match(arrRe);
-  if (!arr?.[1]) return [];
-  const out = [];
-  const strRe = /"([^"]+)"/g;
-  let m;
-  while ((m = strRe.exec(arr[1])) !== null) out.push(m[1]);
-  return out;
-}
-
-function textField(text, key, fallback = "") {
-  const one = text.match(new RegExp(`^${key}\\s*=\\s*\"([^\"]*)\"`, "m"));
-  if (one?.[1] !== undefined) return one[1];
-  const multi = text.match(new RegExp(`^${key}\\s*=\\s*\"\"\"([\\s\\S]*?)\"\"\"`, "m"));
-  if (multi?.[1] !== undefined) return multi[1].trim();
-  return fallback;
-}
-
-function listField(text, key) {
-  return linksFromToml(text, key);
-}
-
-function extractCveId(text) {
-  const aliases = listField(text, "aliases");
-  for (const a of aliases) {
-    if (/^CVE-\d{4}-\d+/i.test(a)) return a.toUpperCase();
-  }
-  return "无";
-}
-
-function getVulnRelPath(item) {
-  if (item.path) return item.path.replace(/^vulns\//, '');
-  if (item.rel_path) return item.rel_path;
-  return item.name;
-}
-
-function toCard(item, text, assetIndex) {
-  const ave = item.name.replace(/\.toml$/i, "");
-  const cve = extractCveId(text);
-  const pocs = linksFromToml(text, "poc_urls");
-  const exps = linksFromToml(text, "exp_urls");
-  const repoPocs = getRepoAssetUrls(assetIndex, ave, "poc");
-  const repoExps = getRepoAssetUrls(assetIndex, ave, "exp");
-
-  return {
-    ave_id: ave,
-    file_name: getVulnRelPath(item),
-    cve_id: cve,
-    title: titleFromToml(text, ave),
-    description: descFromToml(text),
-    severity: severityFromToml(text),
-    score: scoreFromToml(text),
-    aliases: listField(text, "aliases"),
-    sources: listField(text, "sources"),
-    published: textField(text, "published", ""),
-    updated: textField(text, "updated", ""),
-    remediation: textField(text, "remediation", ""),
-    status: textField(text, "status", ""),
-    collected_at: textField(text, "collected_at", ""),
-    references: linksFromToml(text, "urls"),
-    poc_urls: pocs,
-    exp_urls: exps,
-    repo_poc_urls: repoPocs,
-    repo_exp_urls: repoExps,
-    has_poc: repoPocs.length > 0,
-    has_exp: repoExps.length > 0,
-    raw_url: item.html_url,
-  };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

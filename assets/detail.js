@@ -283,7 +283,7 @@ function render(toml, fileName, rawUrl, htmlUrl, assetIndex) {
       const div = document.createElement("div");
       div.className = "asset-file";
       div.innerHTML = `<a href="asset.html?file=${encodeURIComponent(entry.path)}&type=exp" class="asset-link">${entry.path.replace(/^exploits\//, '')}</a> ` +
-        `<a href="${entry.url}" target="_blank" rel="noopener noreferrer" class="asset-raw" title="查看原始内容">📄</a>`;
+        `<a href="${entry.path}" target="_blank" rel="noopener noreferrer" class="asset-raw" title="查看原始内容">📄</a>`;
       expContainer.appendChild(div);
     }
   } else {
