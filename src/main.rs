@@ -1,4 +1,4 @@
-use chrono::{NaiveDate, NaiveDateTime, Utc};
+use chrono::Utc;
 use rayon::prelude::*;
 use regex::Regex;
 use serde::Serialize;
