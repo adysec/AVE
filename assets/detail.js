@@ -254,9 +254,9 @@ function render(toml, fileName, rawUrl, htmlUrl, assetIndex) {
       const div = document.createElement("div");
       div.className = "asset-file";
       div.innerHTML = `<a href="asset.html?file=${encodeURIComponent(entry.path)}&type=poc" class="asset-link">${entry.path.replace(/^pocs\//, '')}</a> ` +
-        `<a href="${entry.url}" target="_blank" rel="noopener noreferrer" class="asset-raw" title="查看原始内容">📄</a>`;
+        `<a href="${entry.path}" target="_blank" rel="noopener noreferrer" class="asset-raw" title="查看原始内容">📄</a>`;
       // 异步加载 PoC TOML 摘要
-      loadAssetToml(entry.url).then(tomlText => {
+      loadAssetToml(entry.path).then(tomlText => {
         if (tomlText) {
           const info = pocInfo(tomlText);
           if (info.name || info.desc) {
