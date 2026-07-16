@@ -310,16 +310,6 @@ fn sort_cards(cards: &mut [VulnCard]) {
 
 // ── Write JSON helper ──────────────────────────────────────────────────
 
-fn write_json(path: &Path, value: &impl Serialize) -> std::io::Result<usize> {
-    let json = serde_json::to_string(value)?;
-    let len = json.len();
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    fs::write(path, &json)?;
-    Ok(len)
-}
-
 fn write_json_compact(path: &Path, value: &impl Serialize) -> std::io::Result<usize> {
     let mut json = serde_json::to_string(value)?;
     // serde_json doesn't have a built-in compact mode that strips spaces
@@ -392,13 +382,34 @@ struct Manifest {
     years: Vec<YearMeta>,
 }
 
+fn find_repo_root() -> Option<PathBuf> {
+    // 1. Try current working directory
+    let cwd = std::env::current_dir().ok()?;
+    if cwd.join("vulns").is_dir() {
+        return Some(cwd);
+    }
+
+    // 2. Walk up from the binary's location
+    let exe = std::env::current_exe().ok()?;
+    let mut path: PathBuf = exe.canonicalize().ok()?;
+    // The binary is at scripts/generate-vuln-data-rust/target/release/generate-vuln-data
+    // Walk up until we find vulns/
+    for _ in 0..10 {
+        path = path.parent()?.to_path_buf();
+        if path.join("vulns").is_dir() {
+            return Some(path);
+        }
+    }
+    None
+}
+
 // ── Main ───────────────────────────────────────────────────────────────
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let repo_root = PathBuf::from(
-        std::env::current_dir()?
-            .canonicalize()?,
-    );
+    let repo_root = find_repo_root().unwrap_or_else(|| {
+        eprintln!("❌ Cannot find repo root (vulns/ directory not found)");
+        std::process::exit(1);
+    });
 
     let vulns_dir = repo_root.join("vulns");
     if !vulns_dir.is_dir() {
