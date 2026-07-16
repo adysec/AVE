@@ -1,0 +1,49 @@
+[info]
+author = "AVE"
+description = "检测目标 Web 服务器是否托管了利用 IE 4.0 Freiburg 漏洞的恶意页面，该页面通过 1x1 像素 IFRAME 加载 file:// 协议本地文件，利用 DHTML 读取文件内容并外传"
+id = "POC-AVE-1999-1122"
+name = "CVE-1999-1472 Internet Explorer 4.0 Freiburg 任意文件读取 PoC"
+severity = "medium"
+tags = [
+    "cve-1999-1472",
+    "ie4",
+    "information-disclosure",
+]
+vuln_id = [
+    "CVE-1999-1472",
+    "AVE-1999-1122",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ie4_hack.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "MyFrame1",
+    "file://",
+    "outerHTML",
+    "Jabadoo",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ie4demo.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "IFRAME",
+    "file://",
+    "DHTML",
+]
