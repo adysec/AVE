@@ -1,12 +1,12 @@
 [basic]
-description = "DataLynx suGuard 1.0 存在本地权限提升漏洞。本地普通用户可利用 suGuard 程序中存在的安全缺陷，通过特制操作绕过其访问控制机制，获取系统超级用户权限。攻击者成功利用后可完全控制受影响系统，执行任意提权操作，对系统机密性、完整性和可用性构成严重威胁。"
-published = "1999-01-01"
-remediation = "升级 DataLynx suGuard 至最新版本（厂商已不再维护，建议迁移至其他受支持的 suid 权限管理工具）。临时缓解措施：编辑 suGuard 脚本，将调用 ps 命令改为绝对路径 /bin/ps，并在脚本开头显式设置 PATH 为系统安全路径（如 PATH=/bin:/usr/bin），同时限制普通用户对 PATH 变量的修改权限。"
-score = 5
+description = "DataLynx suGuard 1.0 存在本地权限提升漏洞。该程序在执行 ps 命令时信任 PATH 环境变量，未对程序路径进行绝对路径引用，导致本地攻击者可通过修改 PATH 环境变量将恶意程序替换为 ps，从而以 root 权限执行任意命令。攻击者需具备本地系统访问权限，利用难度较低，危害较高。"
+published = "1999-01-01T05:00:00.000"
+remediation = "将 suGuard 中对 ps 命令的调用路径从相对路径改为绝对路径（如 /bin/ps 或 /usr/bin/ps），或在执行前将 PATH 环境变量重置为安全值（如 /bin:/usr/bin），防止攻击者通过篡改 PATH 劫持命令执行。建议立即停止使用已停止维护的 DataLynx suGuard，迁移到持续更新的替代方案（如 sudo 或 doas）。"
+score = 4.6
 severity = "MEDIUM"
-sources = ["avd"]
-title = "DataLynx suGuard 本地权限提升漏洞"
-updated = "1999-01-01"
+sources = ["exploitdb"]
+title = "DataLynx suGuard 1.0 本地权限提升漏洞"
+updated = "2026-06-16T21:48:17.403"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,21 @@ aliases = ["CVE-1999-0388"]
 ave_id = "AVE-1999-0622"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://www.exploit-db.com/exploits/19146"]
+urls = [
+    "http://www.osvdb.org/3186",
+    "https://www.exploit-db.com/exploits/19146",
+    "https://github.com/CVEProject/cvelistV5/blob/f4ffb7bcd93209aa53a757a7ebdf17fe2a18eb33/cves/1999/0xxx/CVE-1999-0388.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0388",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0388.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a75ebb477762f54f32c38d85ec939339ec2712e5/CVE/data/1999/CVE-1999-0388.json",
+    "https://github.com/github/advisory-database/blob/e434c1da6464de3012c6c1eff8c0e19ef9669023/advisories/unreviewed/2022/04/GHSA-ggpc-mwvf-qx65/GHSA-ggpc-mwvf-qx65.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/bc3b224aa865bb4a5c31d7720dca83e446e475e2/1999/CVE-1999-0388.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_5.list.dict",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--1c737c62-180c-407a-8f21-cd64a33a52c3.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+]
