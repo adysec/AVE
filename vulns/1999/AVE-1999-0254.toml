@@ -1,11 +1,11 @@
 [basic]
-description = "HP CDE（Common Desktop Environment）存在安全配置缺陷，root 用户的 PATH 环境变量中包含了当前工作目录。本地攻击者可在特定目录（如 /tmp）中放置恶意可执行程序，当 root 用户通过 CDE 执行命令时，系统会优先从当前目录加载同名恶意程序，从而导致权限提升。该漏洞影响 HP CDE 组件，攻击者需具备本地系统访问权限，CVSS 评分 7.2，危害等级高。"
+description = 'HP CDE（Common Desktop Environment）在设置 root 用户环境变量 PATH 时错误地将当前目录 "." 包含在内，导致本地攻击者可在任意目录中放置与系统命令同名的恶意程序，当 root 用户通过 su 或登录进入该目录并执行未指定路径的命令时，恶意程序将以 root 权限自动执行，实现本地提权。该漏洞影响 HP-UX 系统中运行 CDE 的版本，需要攻击者拥有本地 shell 访问权限，CVSS 评分 7.2，危害等级高。'
 published = "1999-07-01T04:00:00.000"
-remediation = "修改 root 用户的 PATH 环境变量，移除其中的点号（.）或空路径条目，确保仅包含绝对路径（如 /usr/bin:/usr/sbin:/bin:/sbin）。同时检查 /etc/default/login、/etc/profile、/.profile 及 CDE 启动脚本 $CDIR/config/* 中是否存在不安全的 PATH 配置。建议升级 HP CDE 至最新补丁版本（如 HP-UX 11.0 及后续版本已修复此问题）。对于仍运行老旧 HP-UX 的系统，应立即应用 HP 安全补丁 PHSS_19923 或对应平台的等效补丁。"
+remediation = '编辑 root 用户的 .profile、.login 或 CDE 系统级配置文件 /etc/dt/config/Xsession.d/ 下的相关脚本，移除 PATH 中的当前目录（即删除 "." 或空路径项），确保 PATH 仅包含绝对路径的系统目录（如 /usr/bin:/usr/sbin）。同时建议修改 CDE 启动脚本中 PATH 的拼接方式，使用完整路径调用命令，消除当前目录隐式搜索带来的提权风险。'
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "HP CDE root 用户的 PATH 环境变量包含当前目录漏洞"
+sources = ["avd"]
+title = "HP CDE 将当前目录加入 root 的 PATH 环境变量导致权限提升漏洞"
 updated = "2026-06-16T21:48:51.300"
 
 [exploit]
@@ -17,11 +17,21 @@ aliases = ["CVE-1999-0690"]
 ave_id = "AVE-1999-0254"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-16T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.ciac.org/ciac/bulletins/j-053.shtml",
     "http://www1.itrc.hp.com/service/cki/docDisplay.do?docId=HPSBUX9907-100",
+    "https://github.com/CVEProject/cvelistV5/blob/d92a0abc5d3abac6dcdfabfef6fd71c158e0fd8b/cves/1999/0xxx/CVE-1999-0690.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0690",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0690.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/58eef6eedd760f280b47bfb4c94db9995b29c5a0/CVE/data/1999/CVE-1999-0690.json",
+    "https://github.com/github/advisory-database/blob/6eca843f42fd99fea8c9b630931afac7c9d4576c/advisories/unreviewed/2022/04/GHSA-rf75-mr45-vgcx/GHSA-rf75-mr45-vgcx.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cwe_details/cwe_details_300_400.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0690.json",
+    "https://github.com/Team-Atlanta/aixcc-asc-atlantis/blob/785c446f980e12155935db586aa30c3b54adcc86/crs/src/crs-patch/smith/smith/lib/cwe/raw/CWE-427.txt",
+    "https://github.com/CyberSecAI/CWE-Expert/blob/f634e911e6c24a1ad8b9619383e2ab3eb2d9ebd4/CWE_corpus/markdown/4_cwe_trimmed_top25.md.txt",
+    "https://github.com/ws-researcher/CAEA/blob/098ddb07c83845feda3d1b1d56ef634927954af4/KGA/dataSet/ICNS/entN_ids_1",
 ]
