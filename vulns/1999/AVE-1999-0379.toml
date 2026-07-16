@@ -1,11 +1,11 @@
 [basic]
-description = "SuSE Linux 6.2 及之前版本以及 Slackware Linux 3.2/3.6 中 in.identd 服务存在默认配置缺陷，该服务在处理请求时设置了 120 秒的请求间隔等待时间，远程攻击者可利用此机制向目标系统发送大量连接请求，耗尽系统资源，导致拒绝服务。该漏洞影响多个 Linux 发行版本，危害等级中等。"
+description = "SuSE Linux 6.2 及 Slackware Linux 3.2/3.6 中 in.identd（ident 协议守护进程）采用默认配置，在处理每个请求后会等待 120 秒才响应。远程攻击者无需身份认证，只需向目标主机的 ident 服务端口（113）建立大量 TCP 连接并发送请求，即可耗尽服务端的连接资源与处理能力，使 in.identd 无法响应后续正常请求，造成拒绝服务。该漏洞影响上述版本中默认启用的 ident 服务，攻击条件仅需网络可达目标端口，无需本地权限，属于远程可触发的可用性破坏型漏洞。"
 published = "1999-08-16T04:00:00.000"
-remediation = "升级 SuSE Linux 至 6.3 或更高版本，或禁用 in.identd 服务（`/etc/init.d/identd stop && chkconfig identd off`）。如必须使用 identd，修改配置文件降低请求间隔时间或添加连接速率限制，防止远程攻击者利用 120 秒等待间隔耗尽连接资源造成拒绝服务。"
+remediation = "建议升级到 SuSE Linux 6.3 及以上版本或 Slackware 4.0 及以上版本，其中 in.identd 已修正请求处理间隔。如无法立即升级，可编辑 /etc/inetd.conf 将 identd 启动参数改为带连接数限制的模式（如 in.identd -i -t120 -o -e -l），或在 /etc/hosts.deny 中限制仅信任网段访问 ident 服务（113/tcp），并考虑在边界防火墙屏蔽对外 113 端口作为临时缓解。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "SuSE Linux in.identd 拒绝服务漏洞"
+sources = ["exploitdb"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"inputTokens":10842,"outputTokens":37,"totalTokens":10879}}'
 updated = "2026-06-16T21:48:58.247"
 
 [exploit]
@@ -24,4 +24,14 @@ status = "completed"
 urls = [
     "http://www.securityfocus.com/bid/587",
     "https://www.exploit-db.com/exploits/19463",
+    "https://github.com/CVEProject/cvelistV5/blob/442e3d0f3c777e02c70fc200a453fe1f1f8a2431/cves/1999/0xxx/CVE-1999-0746.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0746",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0746.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/19ba23eb6f8fe22cdd9a46164160f96a7cf3fffd/CVE/data/1999/CVE-1999-0746.json",
+    "https://github.com/github/advisory-database/blob/51a0e15452743e596ced46bb3f156961c52df5bb/advisories/unreviewed/2022/04/GHSA-868p-j55q-vf55/GHSA-868p-j55q-vf55.json",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/suse_identd.nasl",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153500_153600.json",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
 ]
