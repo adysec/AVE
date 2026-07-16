@@ -1,0 +1,28 @@
+[basic]
+description = "Perl 5.004_04 及更早版本在使用 -e 选项执行脚本时，通过 mktemp 生成临时文件名 /tmp/perl-ea 后接进程 PID，然后以 O_WRONLY|O_CREAT|O_TRUNC 标志打开该文件，但未使用 O_EXCL 标志防止竞态条件。本地攻击者可通过监视目标进程 PID，在文件创建前抢先创建同名符号链接指向任意文件，诱使 Perl 以当前用户权限覆盖或破坏目标文件内容。该漏洞可被用于篡改 /etc/ftpusers、/etc/shadow 等关键系统文件，导致本地权限提升或数据破坏。"
+published = "1999-12-31"
+remediation = "升级至 Perl 5.004_05 或更高版本，该版本在 perl.c 中将 open() 调用添加 O_EXCL 标志，防止符号链接竞争攻击。如无法升级，应避免在不可信环境中使用 perl -e 执行脚本，或使用 File::Temp 模块的安全临时文件创建功能替代直接写入 /tmp 目录。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["cve"]
+title = "Perl 符号链接任意文件写入漏洞"
+updated = "2026-06-16"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-1386"]
+ave_id = "AVE-1999-1095"
+
+[meta]
+collected_at = "2026-07-16T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://marc.info/?l=bugtraq&m=88932165406213&w=2",
+    "http://www.iss.net/security_center/static/7243.php",
+    "http://www.redhat.com/support/errata/rh50-errata-general.html#perl",
+]
