@@ -1,0 +1,24 @@
+[info]
+author = "ave"
+description = """验证 Debian man-db zsoelim 符号链接攻击文件覆写漏洞。zsoelim 在处理手册页 .so 请求时以可预测文件名 /tmp/zman0<pid>aaa 创建临时文件且无条件跟随符号链接，本地攻击者可预先创建符号链接覆写任意文件导致权限提升或拒绝服务。本 PoC 检测系统中是否存在 zsoelim 程序以确认漏洞组件已安装。完整利用方法：perl -e 'for($i=1000;$i<5000;$i++){symlink "/etc/nologin", "/tmp/zman0${i}aaa";}' 后运行 man 命令触发。"""
+id = "POC-AVE-1999-0520"
+name = "CVE-1999-0730 PoC"
+severity = "high"
+tags = ["ave-1999-0520"]
+vuln_id = [
+    "CVE-1999-0730",
+    "AVE-1999-0520",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/usr/bin/zsoelim"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+regex = ".+"
+type = "regex"
