@@ -1,12 +1,12 @@
 [basic]
-description = "NFS（网络文件系统）服务存在访问控制配置缺陷，管理员错误地将根目录（/）或密码文件等系统关键数据导出为全局可读，导致同一网络中的任意攻击者无需身份认证即可通过 NFS 协议远程挂载并读取这些敏感信息。该漏洞直接影响 Unix/Linux 系统中 NFS 服务的配置安全性，攻击门槛极低，可导致系统全部数据泄露。建议限制 NFS 导出范围并启用访问控制列表。"
-published = "1999-01-01T05:00:00.000"
-remediation = "限制 NFS 导出的目录范围，仅导出必要目录而非根目录或敏感路径；在 /etc/exports 中使用 `root_squash` 选项压缩 root 权限，并指定允许访问的客户端 IP 或网段（如 `rw,root_squash,192.168.1.0/24`）；同时配置防火墙仅放行受信任来源的 NFS 端口（2049/TCP/UDP）。"
-score = 10
+description = "NFS（网络文件系统）服务器配置不当，将包含系统关键数据的目录（如根目录 / 或 /etc/passwd 等敏感文件）以过高权限导出至任意网络主机，导致未授权访问。远程攻击者无需身份认证即可通过挂载该 NFS 共享目录，直接读取或篡改目标服务器上的敏感系统文件，进而获取服务器权限并造成权限提升。该漏洞影响运行 NFS 服务且未对导出目录设置严格访问控制列表（export options）的 Unix/Linux 系统，CVSS 评分为 10.0，危害等级严重。"
+published = "1999-01-01"
+remediation = "在 /etc/exports 中移除全局可读的条目（如 / 或 /etc），仅导出特定子目录并添加客户端 IP 限制（如 /data 192.168.1.0/24(rw,root_squash)），同时设置 root_squash 阻止远程 root 以本地 root 权限访问，重启 nfs-server 服务生效。"
+score = 10.0
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Unix NFS 服务端 Export 配置不当权限提升漏洞"
-updated = "2026-06-16T21:48:37.323"
+sources = ["cve"]
+title = "Unix/Linux NFS 服务关键目录不安全导出权限提升漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,11 @@ aliases = ["CVE-1999-0554"]
 ave_id = "AVE-1999-0816"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0554"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0554",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-0554",
+]
