@@ -1,11 +1,11 @@
 [basic]
-description = "BIND 域名解析服务在处理 NAPTR 资源记录时存在拒绝服务漏洞。远程攻击者可通过向运行 BIND named 服务的 Solaris 系统发送特制的 DNS NAPTR 查询请求，导致域名解析服务进程崩溃或停止响应，造成目标系统无法正常提供域名解析服务，影响网络服务的正常运行。"
+description = "Sun Solaris 操作系统自带的 BIND 域名服务（named）存在拒绝服务漏洞，其根源在于对 NAPTR（命名权威指针）类型 DNS 记录的处理逻辑存在缺陷。远程攻击者无需身份认证，只需向运行 named 服务的目标主机发送特制的包含畸形 NAPTR 记录的 DNS 查询请求，即可触发服务异常并导致 named 进程崩溃或停止响应，从而造成 DNS 服务不可用。该漏洞影响配置了 BIND named 且启用 NAPTR 记录解析的 Solaris 系统，攻击条件仅为攻击者能够与目标主机的 DNS 服务（通常为 UDP/TCP 53 端口）进行网络连通，利用方式简单、可远程发起，会对依赖该 DNS 服务的网络环境造成拒绝服务影响。"
 published = "1999-11-10T05:00:00.000"
-remediation = "升级 BIND 至 8.2.2 或更高版本以修复 NAPTR 记录处理缺陷，防止恶意查询导致 named 进程崩溃退出。Solaris 7 用户应安装 Sun Security Bulletin #194 中提供的补丁；Caldera OpenLinux 用户应应用 CSSA-1999-034.1 安全更新。如无法立即升级，可在防火墙上限制对 DNS 服务器的外部递归查询来源，降低攻击面。"
+remediation = "升级 Solaris 系统至已修复该 BIND 缺陷的补丁集群（如 Solaris 2.6 的 105708、Solaris 7 的 106655 等对应版本），或升级 BIND 至 8.2.2-P5 及以上版本。临时缓解措施：在 named 配置中限制递归查询来源，并通过防火墙阻断外部对 53 端口的 naptr 查询访问。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "ISC BIND NAPTR 记录处理拒绝服务漏洞"
+sources = ["avd"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9096,"outputTokens":18,"totalTokens":10778}}'
 updated = "2026-06-16T21:49:11.407"
 
 [exploit]
@@ -17,11 +17,21 @@ aliases = ["CVE-1999-0851"]
 ave_id = "AVE-1999-0651"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://sunsolve.sun.com/pub-cgi/retrieve.pl?doctype=coll&doc=secbull/194",
     "http://www.securityfocus.com/bid/788",
+    "https://github.com/CVEProject/cvelistV5/blob/8cc4bd87e08227d0a597e9249036a66efd1a35dd/cves/1999/0xxx/CVE-1999-0851.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0851",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0851.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a5bae259b1f96bb239cbfd83cd9b28dd6d9df406/CVE/data/1999/CVE-1999-0851.json",
+    "https://github.com/github/advisory-database/blob/2e86ccb45bad26f6ff984e676f6d08b925d0e6ee/advisories/unreviewed/2022/05/GHSA-ghhr-vgwv-v39j/GHSA-ghhr-vgwv-v39j.json",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/bind_vulnerable.nasl",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0851.json",
+    "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/1999/19991116.data",
 ]
