@@ -1,12 +1,12 @@
 [basic]
-description = "Windows NT 系统的 SUBST.exe 工具存在驱动器映射残留漏洞。本地用户可利用 SUBST 命令将盘符映射到指定文件夹，当该用户注销后系统未自动卸载该映射，导致后续登录用户访问同一盘符时可能被重定向到攻击者预先设置的恶意目录。本地攻击者借此可诱导其他用户访问被篡改的路径，实现权限提升或信息窃取。该漏洞影响 Windows NT 系列系统，需本地用户权限利用。"
+description = "微软 Windows NT 4.0 自带的 SUBST 命令允许普通用户将本地路径映射为驱动器盘符。由于该工具未对映射对象实施充分的访问控制校验，已登录的本地用户可利用此功能将他人的用户配置文件或受保护目录挂载为可见盘符，从而在未经授权的情况下访问其他用户的数据，造成本地权限提升与信息泄露。"
 published = "1999-11-30"
-remediation = "升级至 Windows 2000 或更高版本操作系统，不再使用已停止支持的 Windows NT 4.0。若无法升级，可通过组策略或修改注册表限制 subst.exe 命令的执行权限，仅允许 Administrators 组成员使用该命令，并在系统登录和注销脚本中强制清理持久化盘符映射，避免残留映射被后续登录用户利用。"
+remediation = "升级到已修复该问题的 Windows NT 4.0 Service Pack 6a 或更高版本；如暂无法升级，可通过组策略禁用普通用户对 SUBST 命令的执行权限，并在用户注销时通过登录脚本调用 SUBST /D 强制卸载所有映射的驱动器盘符，避免残留映射被后续用户访问。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Microsoft Windows NT Subst 驱动器映射本地权限提升漏洞"
-updated = "2026-06-16"
+sources = ["avd"]
+title = "微软 Windows NT SUBST 工具权限提升漏洞"
+updated = "2026-07-17"
 
 [exploit]
 exp_urls = []
@@ -17,11 +17,12 @@ aliases = ["CVE-1999-0824"]
 ave_id = "AVE-1999-0596"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/833",
-    "https://nvd.nist.gov/vuln/detail/CVE-1999-0824",
+    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/0xxx/CVE-1999-0824.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0824.json",
 ]
