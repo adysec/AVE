@@ -1,10 +1,10 @@
 [info]
-author = "AVE"
-description = "检测 Microsoft MDAC RDS DataFactory 远程代码执行漏洞（CVE-1999-1011），通过 HTTP GET 请求 /msadc/msadcs.dll 端点，若响应 Content-Type 为 application/x-varg 则确认 RDS 组件存在且可被远程访问"
+author = "ave"
+description = "检测目标服务器是否暴露了 Microsoft Data Access Components (MDAC) 远程数据服务 (RDS) DataFactory 组件的不安全方法接口。该漏洞影响运行 IIS 3.x/4.x 及 MDAC 2.1 的 Windows 系统，未经身份认证的远程攻击者可通过构造恶意 HTTP 请求调用 RDS 危险方法，以系统权限执行任意命令。"
 id = "POC-AVE-1999-1683"
-name = "CVE-1999-1011 PoC"
+name = "Microsoft MDAC RDS Remote Command Execution PoC"
 severity = "critical"
-tags = ["cve-1999-1011"]
+tags = ["ave-1999-1683"]
 vuln_id = [
     "CVE-1999-1011",
     "AVE-1999-1683",
@@ -15,14 +15,10 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/msadc/msadcs.dll"
+path = "/msadc/msadcs.dll"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-part = "header"
-type = "word"
-words = ["application/x-varg"]
+status = [200]
+type = "status"
