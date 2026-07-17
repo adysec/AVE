@@ -1,12 +1,12 @@
 [basic]
-description = "daytime 服务（TCP/UDP 13 端口）用于返回系统当前日期和时间，属于诊断类服务。该服务默认开启且无需认证，远程攻击者可利用其进行信息收集（获取目标系统时间），同时由于响应数据包大于请求数据包，可用作 DDoS 反射放大攻击的放大源。此外，运行不必要的网络服务会增大攻击面，增加主机被入侵的风险。建议在互联网边界防火墙及不需要该服务的服务器上禁用 daytime 服务。"
-published = "1999-01-01"
-remediation = '建议立即关闭 daytime 服务：编辑 /etc/inetd.conf 注释或删除 "daytime" 行，然后重启 inetd（`systemctl restart inetd`）。使用 systemd 的系统执行 `systemctl mask daytime.socket daytime.service`。在边界防火墙上阻断对 TCP/UDP 13 端口的入站和出站流量作为纵深防御。'
-score = 5.0
+description = "CVE-1999-0638 涉及 Unix 系统上运行的多个网络服务存在远程安全漏洞。其中 daytime 服务（端口 13）在目标主机上处于开启状态，该服务会响应 TCP/UDP 请求并返回当前系统时间字符串。攻击条件为攻击者能够与暴露该服务的目标主机建立网络连接，利用方式是通过向 daytime 服务发送探测请求以确认服务存活并收集目标系统信息，从而辅助后续侦察与攻击。该漏洞本身危害较低，主要影响运行了不必要网络服务的 Unix 系统，暴露了多余的服务端口，增加了攻击面。"
+published = "1999-01-01T05:00:00.000"
+remediation = "在 inetd/xinetd 配置中注释掉 daytime 服务条目（如 /etc/inetd.conf 中的 daytime stream tcp nowait 行并执行 kill -HUP 重启 inetd），或使用防火墙规则（如 iptables -A INPUT -p tcp --dport 13 -j DROP）屏蔽 TCP/UDP 13 端口，关闭不必要的 daytime 服务以减小信息泄露与攻击面。"
+score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Unix系统 daytime服务信息泄露漏洞"
-updated = "2026-06-16"
+sources = ["epss"]
+title = "Unix Daytime 服务暴露漏洞"
+updated = "2026-06-16T21:48:46.270"
 
 [exploit]
 exp_urls = []
@@ -17,11 +17,20 @@ aliases = ["CVE-1999-0638"]
 ave_id = "AVE-1999-0952"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://www.cve.org/CVERecord?id=CVE-1999-0638",
-    "https://nvd.nist.gov/vuln/detail/CVE-1999-0638",
+    "https://github.com/CVEProject/cvelistV5/blob/84f82928c38b4d0e02149dbde07f5affc7f46f43/cves/1999/0xxx/CVE-1999-0638.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0638",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0638.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cc528fa33408da88ea19cf3d01d2185cd0ffe95a/CVE/data/1999/CVE-1999-0638.json",
+    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-vpq5-qv66-5v8c/GHSA-vpq5-qv66-5v8c.json",
+    "https://github.com/scipag/AttackToolKit/blob/78bf88564956b8f18a37659dc3d345093e95a136/plugins/Daytime%20service%20tcp%20detection.plugin",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0638.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x84000/83127/info.html",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153200_153300.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
 ]
