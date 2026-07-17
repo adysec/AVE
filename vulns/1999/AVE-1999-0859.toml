@@ -1,11 +1,11 @@
 [basic]
-description = "WWW 服务器未运行在受限文件系统环境中（如未使用 chroot 机制隔离），导致远程攻击者可通过 HTTP 请求直接访问服务器系统关键文件（如 /etc/passwd、配置文件等），造成敏感信息泄露。该漏洞影响未正确配置 chroot 环境的各类 WWW 服务器软件，攻击者无需认证即可利用，CVSS 评分 10.0，危害等级严重。修复方式为使用 chroot 或容器技术限制 Web 服务的文件系统访问范围。"
+description = "该漏洞源于 OpenSource Application 的 WWW 服务器未能在受限制的文件系统中运行（如未使用 chroot 实现）。攻击者无需身份验证即可直接访问服务器的文件系统，这导致攻击者能够浏览和获取系统内所有关键文件和敏感信息，如配置文件、密码数据库、账号凭证等。受影响系统涵盖各种运行 OpenSource Application 的 Web 服务器，由于此类服务器广泛应用于众多企业和机构，因此整体影响范围极大。攻击者仅需向目标服务器发送简单 HTTP 请求即可触发漏洞，操作简单且风险较低，适合大规模扫描利用。攻击者通过获取系统关键文件，可进一步获取权限提升、利用其他漏洞、破坏系统完整性等高级恶意行为。该漏洞因其极端危害性获得 CVSS 满分 10.0 分，被列为严重安全事件，亟需系统重新构建安全沙箱环境，确保 Web 服务隔离和文件系统安全控制。"
 published = "1999-01-01T05:00:00.000"
-remediation = "将 WWW 服务器配置为在 chroot 环境或容器中运行，限制其对 /etc/passwd、/etc/shadow 等系统关键文件的访问。修改 Web 服务器配置文件，设置 DocumentRoot 为独立目录，并禁止符号链接跟随 (FollowSymLinks)，同时使用最小权限原则运行服务进程（如 www-data 用户）。"
+remediation = "将Web服务器进程限制在chroot jail或容器环境中运行，配置DocumentRoot限制文档根目录，禁用FollowSymLinks选项防止目录遍历，以最小权限用户（如www-data）运行Web服务进程，禁用不必要的模块（如mod_autoindex），配置open_basedir限制PHP脚本访问路径，部署WAF规则阻断目录遍历攻击Payload（如../等），定期审计Web目录权限确保最小权限原则。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "OpenSource 应用 WWW 服务器文件系统限制绕过漏洞"
+sources = ["epss"]
+title = "开源应用 WWW 服务器文件系统信息泄露漏洞"
 updated = "2026-06-16T21:48:41.170"
 
 [exploit]
@@ -17,20 +17,20 @@ aliases = ["CVE-1999-0587"]
 ave_id = "AVE-1999-0859"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://www.cve.org/CVERecord?id=CVE-1999-0587",
-    "https://github.com/CVEProject/cvelistV5/blob/dc83b9e6d88de194a14e3020b4e71ac42054e609/cves/1999/0xxx/CVE-1999-0587.json",
+    "https://github.com/CVEProject/cvelistV5/blob/35cd604fbbf2927fb6acbcd700e81d36cd6dec11/cves/1999/0xxx/CVE-1999-0587.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0587",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0587.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/9074597bd191efd66c2a6bf1f5d8e60bc4801a90/content/CVE-1999-0587.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/04a84e78299e2aeaab4d2594fc26f920778c7b06/CVE/data/1999/CVE-1999-0587.json",
-    "https://github.com/github/advisory-database/blob/1b2e09705f0816776a0a8a0cd6fc1208d25f09b2/advisories/unreviewed/2022/04/GHSA-w7xx-5rj3-rrrc/GHSA-w7xx-5rj3-rrrc.json",
-    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
-    "https://github.com/olbat/nvdcve/blob/d21eb36f6164170df89822577def7df5351966d2/nvdcve/CVE-1999-0587.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153200_153300.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0587.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3a7f9488e77673498ec37285be0a165ad71720f2/CVE/data/1999/CVE-1999-0587.json",
+    "https://github.com/github/advisory-database/blob/2a2be81fd4b47dc35d815a995b6429bd116a3b84/advisories/unreviewed/2022/04/GHSA-w7xx-5rj3-rrrc/GHSA-w7xx-5rj3-rrrc.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0587.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x87000/86250/info.html",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000443.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--eccf97d2-38b3-43a5-bc13-280cb22967b1.json",
     "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
 ]
