@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD 系统中的 Seyon（Muhammad M. Saggaf 开发的终端通信程序，版本 2.14b 及更早版本）在调用 xterm 和 seyon-emu 命令时使用了相对路径搜索机制，未对 PATH 环境变量进行安全校验。本地攻击者可构造恶意的 PATH 变量，将包含同名恶意可执行文件的目录注入到搜索路径前端，诱使 Seyon 程序执行攻击者控制的恶意程序，从而实现本地权限提升。该漏洞仅需本地访问权限即可利用，条件为用户具有修改 PATH 环境变量的能力，影响所有安装了该版本 Seyon 的 FreeBSD 系统。厂商未提供官方补丁，建议卸载或升级至不受影响的版本。"
+description = "FreeBSD 系统中的 Seyon 终端仿真程序（版本 2.14b 及之前）存在权限提升漏洞。该程序在运行时通过 PATH 环境变量查找并调用 xterm 与 seyon-emu 等外部命令，但未使用绝对路径，而是依赖相对搜索。本地已登录的普通用户可通过修改自身 PATH 变量，将恶意构造的同名可执行文件置于搜索路径前列，使 Seyon 在后续调用时执行该恶意程序，从而继承 Seyon 的运行权限并提升至更高权限（如 root）。该漏洞影响运行受影响版本 Seyon 的 FreeBSD 系统，攻击条件为本地用户访问权限及对 PATH 变量的可控修改能力，利用方式即构造恶意 xterm/seyon-emu 程序并劫持 PATH 完成提权。"
 published = "1999-12-01T05:00:00.000"
-remediation = "立即卸载或禁用 seyon 程序（该软件已长期停止维护），并使用现代替代工具如 minicom 或 cu 代替串口通信功能。若必须保留 seyon，在启动前应确保 PATH 环境变量仅包含受信任的系统目录（如 /bin、/usr/bin），并使用 chflags 或文件权限限制 seyon 二进制文件的 SUID/SGID 位，防止其以提升权限运行 xterm 或 seyon-emu。"
+remediation = "升级 FreeBSD 中的 seyon 至修复版本 2.14c 或随系统 ports 同步的最新版（pkg upgrade seyon 或重新编译 ports/comms/seyon）。如无法立即升级，应将 seyon 及其辅助程序 xterm、seyon-emu 安装到固定绝对路径，并以 root 运行 setuid 脚本时清理并设置受限 PATH（如 /bin:/usr/bin），同时移除 seyon 的 setuid 位（chmod u-s $(which seyon)）作为临时缓解措施。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["avd"]
-title = "FreeBSD Seyon 本地权限提升漏洞"
+sources = ["exploitdb"]
+title = "FreeBSD seyon 权限提升漏洞"
 updated = "2026-06-16T21:49:07.583"
 
 [exploit]
@@ -25,11 +25,11 @@ urls = [
     "http://www.osvdb.org/5996",
     "http://www.securityfocus.com/bid/838",
     "https://www.exploit-db.com/exploits/19609",
-    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/0xxx/CVE-1999-0820.json",
+    "https://github.com/CVEProject/cvelistV5/blob/770e8f09ce14e637a09c7c619e10772aa6172bea/cves/1999/0xxx/CVE-1999-0820.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0820",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0820.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3950bef6f70c411ea08c8b2f1665dbd7d38277bd/CVE/data/1999/CVE-1999-0820.json",
-    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-7v47-cj5p-r739/GHSA-7v47-cj5p-r739.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0820.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/12e9f9121122940a38e93216069cda4e01d5b051/CVE/data/1999/CVE-1999-0820.json",
+    "https://github.com/github/advisory-database/blob/2a2be81fd4b47dc35d815a995b6429bd116a3b84/advisories/unreviewed/2022/04/GHSA-7v47-cj5p-r739/GHSA-7v47-cj5p-r739.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0820.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
     "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
