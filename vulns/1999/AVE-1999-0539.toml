@@ -1,12 +1,12 @@
 [basic]
-description = "IBM AIX eNetwork Firewall 的 fwluser 脚本在创建临时文件时使用了可预测的文件名路径，未采用安全的随机命名机制，导致本地攻击者可通过预创建符号链接的方式，诱使脚本以 root 或特权用户身份向任意文件写入内容，进而可能造成本地权限提升或破坏系统文件。该漏洞攻击条件为攻击者需具备本地普通用户权限并能够预测或抢占临时文件路径。"
+description = "IBM AIX eNetwork Firewall 3.2 与 3.3 版本中的 fwluser 脚本在创建临时文件时未采取安全的文件创建方式，存在不安全临时文件创建漏洞。本地已登录的普通用户可利用符号链接（symlink）攻击手段，在脚本写入临时文件的过程中将链接指向任意系统文件，从而以脚本运行权限覆盖或写入目标文件内容。该漏洞影响运行上述版本防火墙软件的 AIX 系统，攻击条件为攻击者需具备本地账户并能在脚本执行期间实施符号链接替换，利用方式相对简单，CVSS 基础评分 2.1，危害等级较低，但可能导致本地文件被篡改或权限提升。"
 published = "1999-05-25T04:00:00.000"
-remediation = "升级 IBM AIX eNetwork Firewall 至包含修复的版本，或向 IBM 申请对应 APAR 补丁；临时缓解可将 fwluser 脚本中创建临时文件的逻辑改为使用 mktemp 生成随机路径并以 600 权限限定属主访问，避免可预测的临时文件路径被符号链接劫持。"
+remediation = "建议升级至 IBM AIX eNetwork Firewall 3.4 或更高版本（已修复该临时文件竞争条件）。若无法升级，请为 /tmp 目录启用粘滞位（chmod +t /tmp），并限制 fwluser 脚本的写入权限（chmod 755 /usr/lpp/fw/bin/fwluser），同时在防火墙层面禁止非受信本地用户登录。"
 score = 2.1
 severity = "LOW"
-sources = ["avd"]
+sources = ["exploitdb"]
 title = "IBM AIX eNetwork Firewall 不安全临时文件创建漏洞"
-updated = "2026-07-16T00:00:00Z"
+updated = "2026-06-16T21:49:05.407"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0803"]
 ave_id = "AVE-1999-0539"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,7 +25,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=92765973207648&w=2",
     "http://www.osvdb.org/962",
     "https://www.exploit-db.com/exploits/19229",
-    "https://github.com/CVEProject/cvelistV5/blob/10323cb4135457b41074412d623aa2116c4e1200/cves/1999/0xxx/CVE-1999-0803.json",
-    "https://github.com/github/advisory-database/blob/cdec8f567bb266b7b6813bda45223a258023f538/advisories/unreviewed/2022/04/GHSA-59f5-phf9-mq45/GHSA-59f5-phf9-mq45.json",
+    "https://github.com/CVEProject/cvelistV5/blob/770e8f09ce14e637a09c7c619e10772aa6172bea/cves/1999/0xxx/CVE-1999-0803.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0803",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0803.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e1298ff7aafe81b936ca67ecef34c3124d6c72f0/CVE/data/1999/CVE-1999-0803.json",
+    "https://github.com/github/advisory-database/blob/2a2be81fd4b47dc35d815a995b6429bd116a3b84/advisories/unreviewed/2022/04/GHSA-59f5-phf9-mq45/GHSA-59f5-phf9-mq45.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0803.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--53295666-d1a4-44a0-9681-9213e3b76b09.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
 ]
