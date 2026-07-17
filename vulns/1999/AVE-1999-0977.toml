@@ -1,11 +1,11 @@
 [basic]
-description = "Linux 系统的 ugidd RPC 接口在设计上存在信息泄露漏洞，远程攻击者无需身份认证即可向目标系统的 RPC 服务发送特制的 UID 查询请求，利用 ugidd 将 UID 映射为本地用户名和组名的功能，从而枚举系统上的有效用户名列表。该漏洞可被攻击者用于信息收集阶段，为后续针对性攻击（如密码爆破、社会工程学）提供基础信息。受影响系统包括运行 RPC ugidd 服务的各类 Linux 发行版。"
+description = "CVE-1999-0656 涉及 Linux 内核的 ugidd RPC 接口。该接口在设计上允许远程攻击者通过指定任意的 UID，由 ugidd 服务将其映射为本地的用户和组名称，从而枚举出系统中有效的用户名。其影响范围为运行了 ugidd RPC 服务的 Linux 系统，攻击条件为攻击者能够与目标主机的 ugidd RPC 服务建立网络连接，无需身份认证即可发起请求。利用方式上，攻击者持续提交不同的 UID 值，根据服务返回的本地用户名判断该 UID 是否对应真实账户，进而收集用户清单，为后续定向攻击提供情报。"
 published = "1999-01-01T05:00:00.000"
-remediation = "建议立即停止 ugidd RPC 服务：`systemctl stop ugidd && systemctl disable ugidd`（如已改用 `rpc.ugidd` 则对应处理）。在 `/etc/hosts.deny` 添加 `ugidd: ALL` 并使用 TCP Wrappers 限制 RPC 访问来源。升级至现代 Linux 发行版（内核 2.6+ 后已移除该服务），若业务必须保留，则在防火墙限制对 RPC 端口（111/TCP/UDP）的访问，仅允许受信 IP 段连接。"
+remediation = "禁用 ugidd RPC 服务：在 /etc/inetd.conf 或 systemd 中注释掉 ugidd 相关条目并重启服务；若使用 NFS，改用更安全的 rpc.idmapd 并升级到修复该问题的内核版本（2.2.x 以上）。同时在边界防火墙屏蔽 111 端口（portmapper）及 ugidd 所用端口，禁止不可信网络访问 RPC 服务作为缓解措施。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Linux Kernel ugidd RPC 接口远程用户名枚举漏洞"
+sources = ["epss"]
+title = "Linux Kernel ugidd RPC 用户信息枚举漏洞"
 updated = "2026-06-16T21:48:47.460"
 
 [exploit]
@@ -17,11 +17,21 @@ aliases = ["CVE-1999-0656"]
 ave_id = "AVE-1999-0977"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://ca.com/au/securityadvisor/vulninfo/Vuln.aspx?ID=1638",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/348",
+    "https://github.com/CVEProject/cvelistV5/blob/95f8b2e8ab6c838f9b0978cec9af313a676dee63/cves/1999/0xxx/CVE-1999-0656.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0656",
+    "https://github.com/wmhcarteresq/azurelinux/blob/bfd36df1487511735dbd5fade66b0b613c89b46a/SPECS/kernel/CVE-1999-0656.nopatch",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2a1a519e4e9d3e489c2169e3db04269b559dd18e/CVE/data/1999/CVE-1999-0656.json",
+    "https://github.com/openbmc/openbmc/blob/11c31a44fb748171baca403be9347d7c6597c891/upstream-layers/openembedded-core/meta/recipes-kernel/linux/cve-exclusion.inc",
+    "https://github.com/github/advisory-database/blob/3c5965e4a3ad0d0b437f880f71224c9e3d8d5fd5/advisories/unreviewed/2022/04/GHSA-75cj-jpmc-wm6c/GHSA-75cj-jpmc-wm6c.json",
+    "https://github.com/open-edge-platform/edge-microvisor-toolkit/blob/2aba0cab57e82b169691c27926b7e95381165db3/SPECS/kernel/kernel.spec",
+    "https://github.com/Indie365/cbl-mariner/blob/80d864c0a617439675510c037c8a4589aa596fbb/SPECS/kernel-hci/CVE-1999-0656.nopatch",
+    "https://github.com/Xilinx/meta-xilinx/blob/63094feee6c1c310f62bd3a9957a64ed52f1fdc1/meta-xilinx-core/recipes-kernel/linux/cve-exclusion-linux-xlnx.inc",
+    "https://github.com/opencomputeproject/OCP-HM-MegaRAC_Community_Edition/blob/a7584dca1fb709e557b9393ecfcaa2df00e00788/poky/meta/conf/distro/include/cve-extra-exclusions.inc",
 ]
