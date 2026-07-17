@@ -1,15 +1,12 @@
 [basic]
-description = "Windows NT 4.0 和 Windows 2000 系统中，NT Alerter（警报器）和 Messenger（信使）服务默认处于运行状态，扩大了系统攻击面。远程攻击者可利用这些服务进行信息收集、发送恶意消息触发缓冲区溢出，或在局域网环境下实施拒绝服务攻击，可能导致权限提升、敏感信息泄露或系统崩溃。"
-published = "1999-01-01"
-remediation = "在服务管理器中停止并禁用 Messenger 和 Alerter 服务，同时在防火墙层面阻止 NetBIOS 相关端口（TCP/UDP 137-139、445）。若为域环境需通过组策略统一禁用这两项服务，以减小攻击面。"
-score = 10.0
+description = "Microsoft Windows NT 4.0 与 Windows 2000 系统中默认运行 NT Alerter（警报器）与 Messenger（信使）服务，二者用于在局域网内发送弹出式管理警报与消息，且无需身份认证即可被远程或本地调用。攻击者在已获取较低权限的本地或网络账户后，可利用这些服务将特制消息发送给目标主机，借助服务以较高权限上下文执行相关操作，从而实现本地权限提升。该漏洞影响启用上述服务的 Windows NT/2000 主机，攻击条件为攻击者需先获得目标系统的有效登录凭据或局域网络访问权限，利用方式是通过调用 Alerter/Messenger 服务的接口发送恶意消息以绕过正常权限限制。"
+published = "1999-01-01T05:00:00.000"
+remediation = '安装 Microsoft 针对 Windows NT 4.0 和 Windows 2000 发布的安全补丁 KB189271，并将 Alerter 和 Messenger 服务启动类型设置为"已禁用"；若业务必需，可在组策略中通过"网络安全：LanMan 身份验证级别"限制远程访问，或关闭 TCP 139、445 端口阻止 net send 消息传递。'
+score = 10
 severity = "CRITICAL"
-sources = [
-    "cve",
-    "nvd",
-]
-title = "Microsoft Windows NT/2000 NT Alerter 与 Messenger 服务默认运行漏洞"
-updated = "2026-06-16"
+sources = ["epss"]
+title = "Microsoft Windows 2000/NT NT Alerter 服务权限提升漏洞"
+updated = "2026-06-16T21:48:45.567"
 
 [exploit]
 exp_urls = []
@@ -20,8 +17,20 @@ aliases = ["CVE-1999-0630"]
 ave_id = "AVE-1999-0933"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["http://support.microsoft.com/support/kb/articles/q189/2/71.asp"]
+urls = [
+    "http://support.microsoft.com/support/kb/articles/q189/2/71.asp",
+    "https://github.com/CVEProject/cvelistV5/blob/1ef693821096ed2e21366dae590c013e3dc540aa/cves/1999/0xxx/CVE-1999-0630.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0630",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0630.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6d3a932c05085f06507d23e5a0893fa8fe64ce42/CVE/data/1999/CVE-1999-0630.json",
+    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-vrmc-8g42-jfcf/GHSA-vrmc-8g42-jfcf.json",
+    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/S/smb_svc_alerter.nasl",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0630.json",
+    "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/smb_svc_messenger.nasl",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--b10d3823-9a42-4e49-90e2-4307b6b967bb.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+]
