@@ -1,11 +1,11 @@
 [basic]
-description = 'ISC BIND 8.2 及 8.2.1 版本的域名服务进程 named 存在文件描述符管理缺陷，远程攻击者可通过向目标系统发送大量特制的 DNS 查询请求，消耗超过 "fdmax" 限制的文件描述符数量，导致 named 进程耗尽系统资源而崩溃，造成拒绝服务。该漏洞影响运行 ISC BIND 8.2/8.2.1 的系统，包括 IRIX 6.5.17 和 Solaris 7.0 等平台，CVSS 评分 5.0，危害等级中危。'
+description = "ISC BIND 8.2/8.2.1 中存在一个文件描述符耗尽漏洞。BIND 服务在处理网络请求时使用系统文件描述符作为资源，fdmax 表示最大允许的描述符数量。当攻击者向 BIND 服务发送大量网络连接或查询请求，导致消耗超过 fdmax 的文件描述符限制时，BIND named 服务将无法继续正常处理新的请求，从而导致服务瘫痪、DNS 解析失败等拒绝服务问题。该漏洞影响 Windows、Linux 等系统运行 BIND 服务的用户。"
 published = "1999-11-10T05:00:00.000"
-remediation = "升级到 ISC BIND 8.2.2 及以上版本，该版本修复了 fdmax 文件描述符耗尽导致的拒绝服务问题。若无法升级，可在系统层面限制 named 进程可打开的文件描述符数量（ulimit -n），并监控系统日志中异常的连接请求。"
+remediation = "升级 ISC BIND 至 8.2.2 或更高版本，该版本修复了 fdmax 文件描述符耗尽导致的拒绝服务问题。鉴于 BIND 8 系列已停止维护，建议迁移至 BIND 9.x 最新稳定版。如无法立即升级，可在系统层面通过 ulimit 限制 named 进程最大文件描述符数量作为临时缓解。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "ISC BIND 8.2/8.2.1 拒绝服务漏洞"
+sources = ["avd"]
+title = "ISC BIND 8.2/8.2.1 named fdmax 文件描述符耗尽拒绝服务漏洞"
 updated = "2026-06-16T21:49:11.040"
 
 [exploit]
@@ -17,12 +17,11 @@ aliases = ["CVE-1999-0848"]
 ave_id = "AVE-1999-0647"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://sunsolve.sun.com/pub-cgi/retrieve.pl?doctype=coll&doc=secbull/194",
     "http://www.securityfocus.com/bid/788",
-    "https://www.exploit-db.com/exploits/19615",
 ]
