@@ -1,12 +1,12 @@
 [basic]
-description = "netstat 服务（TCP 端口 15）默认开放且未限制访问来源，远程攻击者无需认证即可向目标系统的 netstat 服务发送查询请求，获取当前网络连接状态、路由表、网络接口及协议统计信息。该服务的信息泄露特性使攻击者能够收集内网拓扑结构、活跃连接和服务部署情况，为后续网络嗅探、中间人攻击或针对性渗透提供情报支撑。受影响系统包括运行 netstat 服务的各类 Unix/Linux 发行版。"
-published = "1999-01-01T05:00:00.000"
-remediation = "关闭系统上不必要的 netstat 服务，在 inetd.conf 中注释或删除 netstat 行后重启 inetd 进程；对外部网络在防火墙层面阻断对 netstat 端口（默认 15/tcp）的访问；若需保留本地使用，可移除 setuid 权限并将 netstat 的访问限制为仅 root 用户。"
-score = 5
+description = "系统中 netstat 远程统计服务（如 rpc.rstatd、rpc.rwhod）处于启用状态，未经身份验证的远程攻击者可通过 RPC 协议直接获取目标主机的网络连接状态、路由表、接口统计等敏感系统信息，从而为后续攻击提供侦察数据，增加系统被进一步入侵的风险。攻击条件为目标系统在 inetd 或 xinetd 中启用了上述 RPC 服务且未做访问限制。"
+published = "1999-01-01"
+remediation = "在 Unix/Linux 系统中，应立即停止不必要的 netstat 远程服务（如 rpc.rstatd、rpc.rwhod 等），并通过以下方式修复：在 /etc/inetd.conf 中注释掉或删除 rstatd、rusersd 等相关 RPC 服务行，执行 killall -HUP inetd 或 systemctl restart inetd 重新加载配置；若不需要远程统计服务，使用 rpcinfo -p 确认相关端口已关闭；如系统支持 xinetd，可在 /etc/xinetd.d/ 目录下禁用对应服务；同时通过 hosts.allow 与 hosts.deny 或 iptables 防火墙规则限制对 RPC 端口的访问。此外，升级到发行版供应商提供的最新安全补丁，并定期审计 /etc/inetd.conf、/etc/xinetd.conf 及 RPC 服务注册情况，确保仅运行必需的守护进程。"
+score = 5.0
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Unix Netstat 服务信息泄露漏洞"
-updated = "2026-06-16T21:48:46.887"
+sources = ["cve"]
+title = "Unix/Linux 系统 RPC netstat 远程服务信息泄露漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0650"]
 ave_id = "AVE-1999-0969"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/72"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/72",
+    "https://github.com/CVEProject/cvelistV5/blob/d3c24daa4de56d2cb70c1fd2d4f8d5a03642400e/cves/1999/0xxx/CVE-1999-0650.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0650",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0650.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2a1a519e4e9d3e489c2169e3db04269b559dd18e/CVE/data/1999/CVE-1999-0650.json",
+    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/netstat.nasl",
+    "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/sw_netstat_service_detect.nasl",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0650.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153200_153300.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--7f35a0bd-87d1-458f-8271-68949f5bf145.json",
+]
