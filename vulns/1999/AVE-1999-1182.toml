@@ -1,45 +1,38 @@
-1. title: might be missing security vulnerability keywords
-2. description: is empty
-3. references: has no valid URLs
-The TOML has the following structure:
-- id: ave_id = "AVE-1999-1182", aliases = ["CVE-1999-0836"]
-- basic:
-- title = "SCO Unixware 7.0/7.0.1/7.1/7.1.1 - 'uidadmin' Exploit"
-- description = ""
-- published = ""
-- remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
-- score = 5
-- severity = "MEDIUM"
-- sources = ["avd"]
-- updated = ""
-- exploit:
-- exp_urls = []
-- poc_urls = []
-- meta:
-- collected_at = "2026-07-17T03:34:53.473450300+00:00"
-- status = "completed"
-- references:
-- urls = []
-I need to fix these issues by:
-1. Finding accurate information about CVE-1999-0836 (which is about the uidadmin exploit in SCO Unixware 7.x)
-2. Writing proper Chinese title, description, remediation
-3. Adding valid URLs in references
-ave_id = "AVE-1999-1182"
-aliases = ["CVE-1999-0836"]
 [basic]
-title = "SCO UnixWare uidadmin 符号链接本地文件篡改漏洞"
-description = "SCO UnixWare 7.0/7.0.1/7.1/7.1.1 中的 uidadmin 程序存在符号链接攻击漏洞。由于该程序在处理文件时未正确校验目标路径，本地攻击者可通过预先创建指向任意文件的符号链接，诱使以高权限运行的 uidadmin 写入或修改该目标文件，从而实现对系统任意文件的越权篡改，可能导致权限提升或系统被完全控制。攻击条件为攻击者需具备本地账户访问权限。"
-severity = "HIGH"
-score = 10.0
-sources = ["avd"]
-published = "1998-12-02"
-updated = "2026-06-16"
-remediation = "安装 SCO 官方安全公告 SB-99.22a 提供的补丁；在补丁应用前，可临时移除 uidadmin 的 setuid 权限，或限制本地用户对该程序的执行权限，并加强临时目录的访问控制以缓解符号链接攻击风险。"
-[references]
-urls = ["ftp://ftp.sco.com/SSE/security_bulletins/SB-99.22a", "http://www.securityfocus.com/bid/842", "http://www.securityfocus.com/templates/archive.pike?list=1&msg=19991202160111.20553.qmail%40nwcst282.netaddress.usa.net"]
+description = "SCO UnixWare 7.0/7.0.1/7.1/7.1.1 系统中的 uidadmin 工具存在符号链接（symlink）攻击漏洞。本地低权限用户可通过创建指向敏感系统文件的符号链接，诱使以 root 权限运行的 uidadmin 进程写入该链接所指向的文件，从而修改任意系统文件并实现本地权限提升至 root。该漏洞影响 SCO UnixWare 7.x 多个版本，攻击者需具备本地登录权限方可利用成功。"
+published = "1998-12-02T05:00:00.000"
+remediation = "升级到 SCO UnixWare 7.1.1 并应用 SCO 官方安全补丁（ptf7619d 等），或通过 `pkgupdate` 安装对应安全补丁包。如暂无法升级，可用 `chmod 0750 /usr/sbin/uidadmin` 移除 setuid 位并限制仅 root 可执行，同时用 `chroot`/文件系统挂载 `nosuid` 作为临时缓解措施，并审计 `/etc/passwd`、`/etc/shadow` 等敏感文件权限防止被符号链接篡改。"
+score = 10
+severity = "CRITICAL"
+sources = ["exploitdb"]
+title = "SCO Unixware 7.0/7.1 uidadmin 本地权限提升漏洞"
+updated = "2026-06-16T21:49:09.557"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-0836"]
+ave_id = "AVE-1999-1182"
+
 [meta]
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-17T03:34:53.473450300+00:00"
+
+[references]
+urls = [
+    "http://www.securityfocus.com/bid/842",
+    "http://www.securityfocus.com/templates/archive.pike?list=1&msg=19991202160111.20553.qmail%40nwcst282.netaddress.usa.net",
+    "https://www.exploit-db.com/exploits/19654",
+    "https://github.com/CVEProject/cvelistV5/blob/8cc4bd87e08227d0a597e9249036a66efd1a35dd/cves/1999/0xxx/CVE-1999-0836.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0836",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0836.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3a7f9488e77673498ec37285be0a165ad71720f2/CVE/data/1999/CVE-1999-0836.json",
+    "https://github.com/github/advisory-database/blob/2a2be81fd4b47dc35d815a995b6429bd116a3b84/advisories/unreviewed/2022/05/GHSA-7fhw-cm9m-7vr5/GHSA-7fhw-cm9m-7vr5.json",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154200_154300.json",
+    "https://github.com/olbat/nvdcve/blob/178b809924783e13787d17bb1b1fd55ad3b8639b/nvdcve/CVE-1999-0836.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--ba8ea328-8d8b-4208-8a08-fae237a7b5da.json",
+]
