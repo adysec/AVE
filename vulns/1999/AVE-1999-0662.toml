@@ -1,11 +1,11 @@
 [basic]
-description = "PostgreSQL RPM 发行版中存在不安全的目录权限漏洞，本地攻击者可通过读取未受保护的明文密码文件获取敏感凭据，进而实现权限提升。该漏洞影响早期 PostgreSQL 版本，攻击者需具有本地系统访问权限。由于密码文件以明文形式存储且目录权限设置不当，低权限用户可轻松读取并利用该信息提升至更高权限。"
+description = "PostgreSQL RPM 软件包在安装时对相关目录设置了不安全的文件权限，导致本地普通用户能够访问到以明文形式存储的密码文件。攻击者只需在已获得目标系统本地访问权限的前提下，读取该明文密码文件即可获取高权限账户凭据，进而实现权限提升。该漏洞影响通过 RPM 方式分发的 PostgreSQL 数据库实例，攻击条件要求攻击者已能在目标主机上以低权限账户执行操作。由于利用方式简单且无需身份认证，该漏洞被归类为本地权限提升类安全问题。PostgreSQL 官方后续版本已修复此目录权限配置问题，建议相关用户及时更新并确保敏感文件权限设置正确。"
 published = "1999-12-02T05:00:00.000"
-remediation = "将 PostgreSQL 数据目录（PGDATA）权限设为 700（仅属主可读写执行），pg_passwd 密码文件权限设为 600。升级至 PostgreSQL 6.5.3 及以上版本，启用 md5 密码认证替代明文存储，并在 postgresql.conf 中将 password_encryption 设为 md5，同时转换现有密码为 md5 哈希。"
+remediation = "升级到修复了该权限问题的 PostgreSQL RPM 包版本（如 6.5.3 及以上），并使用 rpm -Uvh 重新安装。执行 chmod 700 /var/lib/pgsql 及 chown postgres:postgres 修正数据目录属主与权限，将 pg_hba.conf 及含明文口令的密码文件权限设为 600 且仅允许 postgres 用户读取，避免本地其他用户访问。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "PostgreSQL RPM 发行版不安全的目录权限导致本地权限提升漏洞"
+sources = ["avd"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9105,"outputTokens":18,"totalTokens":10787}}'
 updated = "2026-06-16T21:49:12.743"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0862"]
 ave_id = "AVE-1999-0662"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0862"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0862",
+    "https://github.com/CVEProject/cvelistV5/blob/5a67adc3536b9edff12a57c2de9cd5aa5d12653d/cves/1999/0xxx/CVE-1999-0862.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0862",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0862.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9e7373a0dc9acbc4f26666870ca31dd641df9b83/CVE/data/1999/CVE-1999-0862.json",
+    "https://github.com/github/advisory-database/blob/2e86ccb45bad26f6ff984e676f6d08b925d0e6ee/advisories/unreviewed/2022/04/GHSA-p674-c6w9-wwgg/GHSA-p674-c6w9-wwgg.json",
+    "https://github.com/marcellodesales/aibbp-reverse-engineer/blob/960f610d597aae9fec1cc5f03c68679be00c222d/reverse_engineer/invicti/vulnerabilities/db/vulnerabilities/vdb/1999/0xxx/cve-1999-0862.yaml",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/olbat/nvdcve/blob/178b809924783e13787d17bb1b1fd55ad3b8639b/nvdcve/CVE-1999-0862.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
+]
