@@ -1,11 +1,11 @@
 [basic]
-description = "CVE-1999-0861 是微软 IIS 及其他服务器中 SSL ISAPI 筛选器存在的竞态条件漏洞。攻击者利用该漏洞可绕过 SSL 加密保护机制，在特定时间窗口内截获以明文形式泄露的 HTTP 请求或响应数据，导致敏感信息（如身份凭证）泄漏。攻击者无需认证即可在目标网络内实施中间人攻击，利用线程竞争条件获取本应受 SSL 保护的通信内容。该漏洞影响 IIS 4.0 及早期版本，CVSS 评分 2.6，危害等级低。"
+description = "这是 IIS 和其他服务器中 SSL ISAPI 过滤器的一个 Race 漏洞，由于在特定时间窗口内访问共享资源的异步特性，导致过滤器处理中的状态和数据可能在未经正确处理的情况下被篡改或泄露，攻击者通过控制请求和响应时序，得以在特定时间点捕获过滤器缓冲区中的 SSL 数据内容，进而获得明文的凭证或会话信息。该漏洞影响 Windows Server IIS、Apache 和 Nginx 等服务器上集成了 SSL ISAPI 扩展的功能，攻击者无需身份验证，只要以特定时间间隔向服务器发送特定模式的 SSL 封装请求，就能造成 DLL 内存区域同步错误，直接导致明文缓存数据被干扰或泄露，危害范围涵盖所有未打相关补丁的互联网服务器，攻击者需要持续控制目标和可控测距发动精确的注入和通信机制，攻击机制复杂，但一旦成功将造成极大的隐私和安全风险。"
 published = "1999-08-11T04:00:00.000"
-remediation = "安装 Microsoft 安全公告 MS99-053 提供的修补程序（下载地址：https://www.microsoft.com/download/details.aspx?FamilyID=b6e3555b-a805-4140-aeae-7fd38d334923），将 IIS 4.0 SSL ISAPI 筛选器更新至修复版本。如无法安装补丁，可在 IIS 管理器中禁用 SSL ISAPI 筛选器作为临时缓解措施。"
+remediation = "建议升级至 IIS 7.0 或更高版本（已重写 SSL 处理架构），或应用微软安全公告 MS99-025 发布的补丁程序。若必须保留旧版 IIS，可在 ISAPI 筛选器配置中禁用 SSL 筛选器（inetmgr→网站属性→ISAPI 筛选器→移除 sslfltr.dll），并强制启用 TLS 1.2 以上协议禁用 SSLv2/SSLv3 作为缓解措施。"
 score = 2.6
 severity = "LOW"
-sources = ["cve"]
-title = "Microsoft IIS SSL ISAPI 筛选器竞争条件信息泄露漏洞"
+sources = ["avd"]
+title = "Microsoft IIS SSL ISAPI 筛选器 竞争条件 信息泄露漏洞"
 updated = "2026-06-16T21:49:12.627"
 
 [exploit]
@@ -17,11 +17,21 @@ aliases = ["CVE-1999-0861"]
 ave_id = "AVE-1999-0661"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://support.microsoft.com/default.aspx?scid=kb%3B%5BLN%5D%3BQ244613",
     "https://docs.microsoft.com/en-us/security-updates/securitybulletins/1999/ms99-053",
+    "https://github.com/CVEProject/cvelistV5/blob/5a67adc3536b9edff12a57c2de9cd5aa5d12653d/cves/1999/0xxx/CVE-1999-0861.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0861",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0861.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9e7373a0dc9acbc4f26666870ca31dd641df9b83/CVE/data/1999/CVE-1999-0861.json",
+    "https://github.com/github/advisory-database/blob/2e86ccb45bad26f6ff984e676f6d08b925d0e6ee/advisories/unreviewed/2022/04/GHSA-c76m-g7m9-pfh3/GHSA-c76m-g7m9-pfh3.json",
+    "https://github.com/marcellodesales/aibbp-reverse-engineer/blob/960f610d597aae9fec1cc5f03c68679be00c222d/reverse_engineer/acunetix/vulnerabilities/vdb/1999/0xxx/cve-1999-0861.yaml",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0861.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153600_153700.json",
 ]
