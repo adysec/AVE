@@ -1,11 +1,14 @@
 [basic]
-description = "rpc.ruserd（rusers 服务）是 UNIX 系统中用于查询在线用户信息的 RPC 服务，存在信息泄露漏洞。远程攻击者无需认证即可通过网络向目标系统的 rpc.ruserd 服务发送查询请求，获取当前登录系统的有效用户名列表。这些泄露的用户名信息可被攻击者用于后续暴力破解密码、社会工程学攻击等针对性攻击，扩大了攻击面。该漏洞影响多种 UNIX 及 Linux 系统。"
+description = "rusers（rpc.ruserd）RPC 服务在 Unix/Linux 系统上以未认证方式运行，允许网络上的任何实体无需凭据即可枚举系统当前已登录用户列表。攻击者通过 RPC 协议（TCP/UDP 512/513/514 端口）即可远程获取用户名等敏感信息，为后续针对特定用户的暴力破解、社会工程学攻击提供目标列表。该协议自诞生以来设计上缺乏身份验证机制，属于过时且不安全的遗留服务，现代系统默认已不再启用。"
 published = "1997-01-01"
-remediation = "如非业务需要，建议直接卸载或禁用 rpc.ruserd 服务（`chkconfig rusersd off` 或 `systemctl disable rpc-rusersd`）。如必须使用，请通过 TCP Wrappers 编辑 `/etc/hosts.deny` 添加 `rusersd: ALL` 并在 `/etc/hosts.allow` 中仅放行业务 IP；同时在防火墙限制对 111 (portmap) 端口的访问。"
+remediation = "禁用或卸载 rpc.ruserd/rusers 服务，该协议为过时服务且会泄露系统用户信息。在 /etc/inetd.conf 或 xinetd 配置中注释或删除 rusersd 相关条目后重启 inetd/xinetd；如为独立守护进程则执行 systemctl stop rpc.ruserd && systemctl disable rpc.ruserd 或 service rpc.ruserd stop。同时通过 iptables 或防火墙阻断 TCP 512/513/514 端口的入站访问。如系统仍依赖此协议，应升级至现代 Unix/Linux 发行版，新版系统默认不再启用 rpc.ruserd。"
 score = 5.0
 severity = "MEDIUM"
-sources = ["avd"]
-title = "多个Unix厂商 RPC rusersd 服务信息泄露漏洞"
+sources = [
+    "cve",
+    "nvd",
+]
+title = "Unix/Linux rusers 服务未授权泄露系统用户信息"
 updated = "2026-06-16"
 
 [exploit]
@@ -17,11 +20,16 @@ aliases = ["CVE-1999-0626"]
 ave_id = "AVE-1999-0920"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://www.cve.org/CVERecord?id=CVE-1999-0626",
-    "https://nvd.nist.gov/vuln/detail/CVE-1999-0626",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0626.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4d7236390d3d65194e590e3c8620543620af3984/cves/1999/0xxx/CVE-1999-0626.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0626",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6d3a932c05085f06507d23e5a0893fa8fe64ce42/CVE/data/1999/CVE-1999-0626.json",
+    "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/2011/secpod_nfs_rpc_rusersd_username_enum_vuln.nasl",
+    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/R/rpc_rusers.nasl",
 ]
