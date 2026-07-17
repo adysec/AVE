@@ -1,11 +1,11 @@
 [basic]
-description = "Solaris (SunOS 4.1.4) 系统中的 arp(8c) 命令存在本地文件读取漏洞。当使用 -f 参数指定文件路径时，arp 命令会解析该文件内容，并将无法正确解析的行作为错误信息输出到终端，导致本地攻击者可利用此特性读取系统上任意文件的内容（如 /etc/shadow 等敏感文件）。该漏洞需要本地用户权限方可利用，影响 SunOS 4.1.4 及可能的相关版本，CVSS 评分 2.1，危害等级低。"
+description = "SunOS 4.1.4 系统中的 arp(8c) 命令在处理 -f 参数指定的文件时存在信息泄露缺陷。该命令原本用于批量设置 ARP 表项，但在解析文件过程中，对于无法正确解析的行会将其内容直接输出到标准输出。本地已登录的普通用户可利用此特性，通过向 arp -f 传入包含敏感文件（如 /etc/passwd、配置文件等）内容的路径，使文件中无法被 ARP 条目格式正确解析的行原样回显，从而读取本无权访问的文件内容。该漏洞影响 SunOS 4.1.4 系统，攻击条件为攻击者需在目标主机上拥有本地账户并执行 arp 命令，利用方式简单，无需特殊权限或远程网络访问，属本地低危信息泄露类漏洞。"
 published = "1999-12-01T05:00:00.000"
-remediation = "建议升级到受支持的 Oracle Solaris 版本（如 Solaris 10 或 11）以彻底修复该漏洞。若无法升级，可移除 arp 命令的 setuid 权限：执行 `chmod u-s /usr/etc/arp`，防止普通用户以特权运行 arp 触发文件读取。也可通过系统权限配置或 RBAC 限制 arp 命令仅限管理员用户执行，作为临时缓解措施。"
+remediation = "升级至 Sun Solaris 2.6 或更高版本（已修复该 arp 漏洞），或应用 Sun 官方发布的安全补丁 105781-01（针对 SunOS 4.1.4）。若暂无法升级，可通过限制 arp 命令执行权限（chmod 700 /usr/sbin/arp）仅限 root 执行，或通过文件系统权限限制普通用户读取敏感文件作为临时缓解措施。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "Sun Solaris arp 本地信息泄露漏洞"
+sources = ["exploitdb"]
+title = "Sun Microsystems Solaris 系统拨号协议 arp(8c) 命令信息泄露漏洞"
 updated = "2026-06-16T21:49:12.377"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0859"]
 ave_id = "AVE-1999-0658"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,4 +25,14 @@ urls = [
     "http://www.osvdb.org/6994",
     "http://www.securityfocus.com/bid/837",
     "https://www.exploit-db.com/exploits/19232",
+    "https://github.com/CVEProject/cvelistV5/blob/64fd197c5b8f3e4f9493cb07798bdca54583505c/cves/1999/0xxx/CVE-1999-0859.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0859",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0859.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f71c1815da5fc1872d1d999eebe8b28a9e3854c7/CVE/data/1999/CVE-1999-0859.json",
+    "https://github.com/github/advisory-database/blob/2e86ccb45bad26f6ff984e676f6d08b925d0e6ee/advisories/unreviewed/2022/04/GHSA-2x9f-j2ww-5cp9/GHSA-2x9f-j2ww-5cp9.json",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/837/info.html",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0859.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--6b09661c-7e0c-40a8-8b6d-64fe7ae4f801.json",
 ]

