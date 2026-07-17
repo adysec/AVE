@@ -1,11 +1,11 @@
 [basic]
-description = "Seyon 终端模拟器 2.1 版本中存在本地权限提升漏洞。由于程序未对 -emulator 参数传入的程序路径进行有效验证，本地攻击者可指定恶意程序作为终端模拟器执行，从而获取目标系统的 root 权限。该漏洞影响 FreeBSD 及 RedHat Linux 4.0/5.1 等系统，CVSS 评分 4.6，需拥有本地访问权限方能利用。"
+description = "FreeBSD 系统下运行的 Seyon 终端模拟器（2.1 rev. 4b i586-Linux 版本）存在本地权限提升漏洞。其原因在于程序在解析命令行 `-emulator` 参数时未对用户输入进行充分校验与边界检查，攻击者在本地系统中可构造一个恶意的模拟器程序，并通过 `-emulator` 参数将其路径传递给 seyon。当具有特权（setuid）的 seyon 程序启动时，会加载并执行该恶意程序，从而使本地普通用户以 seyon 的特权身份运行任意代码，实现本地权限提升。该漏洞影响使用受影响版本 seyon 且以特权方式安装的 FreeBSD 系统，攻击需具备本地登录权限并能在目标主机上放置可执行文件，利用方式简单，仅需构造恶意程序并指定 `-emulator` 参数即可触发。"
 published = "1999-11-08T05:00:00.000"
-remediation = "移除 seyon 二进制文件的 setuid/setgid 权限：`chmod 755 $(which seyon)`，消除本地用户以特权启动任意程序的攻击面。建议彻底卸载 seyon（`apt-get remove seyon` 或 `pkg_delete seyon`），改用现代终端通信软件如 minicom 或 picocom。对于仍须使用的遗留系统，限制 seyon 可执行文件的属组并通过文件系统 ACL 控制访问。"
+remediation = "升级 FreeBSD 至当前安全维护版本（stable/14 或 stable/15），受影响的 seyon 2.1 rev. 4b 已在后续版本中移除或修复。临时缓解措施：通过 pkg delete seyon 卸载 seyon 终端模拟器，或通过 chmod 取消其 setuid/setgid 位（chmod -s /usr/local/bin/seyon），限制普通用户执行权限。对于仍运行旧版 FreeBSD 的系统，可应用补丁禁用 -emulator 参数传递或限制该参数仅接受绝对路径且不允许 Shell 元字符，防止攻击者注入恶意程序路径。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["cve"]
-title = "FreeBSD Seyon 2.1 本地溢出漏洞"
+sources = ["avd"]
+title = "FreeBSD Seyon 终端仿真程序本地权限提升漏洞"
 updated = "2026-06-16T21:49:07.710"
 
 [exploit]
@@ -17,11 +17,21 @@ aliases = ["CVE-1999-0821"]
 ave_id = "AVE-1999-0587"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/838",
     "https://www.exploit-db.com/exploits/252",
+    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/0xxx/CVE-1999-0821.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0821",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0821.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3950bef6f70c411ea08c8b2f1665dbd7d38277bd/CVE/data/1999/CVE-1999-0821.json",
+    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-27fc-7vgc-cg5g/GHSA-27fc-7vgc-cg5g.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0821.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/838/info.html",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
 ]
