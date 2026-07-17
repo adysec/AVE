@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "验证 SCO UnixWare 7.x 的 uidadmin 工具是否存在符号链接攻击漏洞。本地低权限用户可在调用 uidadmin 前创建指向敏感文件的符号链接，诱使以 root 权限运行的 uidadmin 进程写入目标文件。本 PoC 通过 file 协议检测 /etc/passwd 是否包含越权写入的标记内容，以确认攻击者能否借助 root 权限的 uidadmin 进程修改本不应被改写的敏感文件。"
+id = "POC-AVE-1999-1182"
+name = "CVE-1999-0836 SCO UnixWare uidadmin 本地符号链接攻击 PoC"
+severity = "critical"
+tags = ["ave-1999-1182"]
+vuln_id = [
+    "CVE-1999-0836",
+    "AVE-1999-1182",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/etc/passwd"
+protocol = "file"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
