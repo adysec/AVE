@@ -1,11 +1,11 @@
 [basic]
-description = "ISC BIND 8.2/8.2.1 中存在一个文件描述符耗尽漏洞。BIND 服务在处理网络请求时使用系统文件描述符作为资源，fdmax 表示最大允许的描述符数量。当攻击者向 BIND 服务发送大量网络连接或查询请求，导致消耗超过 fdmax 的文件描述符限制时，BIND named 服务将无法继续正常处理新的请求，从而导致服务瘫痪、DNS 解析失败等拒绝服务问题。该漏洞影响 Windows、Linux 等系统运行 BIND 服务的用户。"
+description = 'ISC BIND 8.2.x 版本在处理 DNS NXT 记录时存在资源管理缺陷，未经身份认证的远程攻击者可通过向 DNS 服务器发送大量包含特制 NXT 记录的查询或响应，导致 named 进程持续打开新文件描述符而未能及时释放。当打开的文件描述符数量超过 "fdmax" 限制时，BIND 服务器将无法再接受新的 DNS 查询请求，最终导致拒绝服务。该漏洞影响 ISC BIND 8.2.2 及更早版本，同时影响 IRIX 6.5.17 和 Solaris 7.0 系统上运行的 BIND 服务。攻击者只需能够向目标 DNS 服务器发送网络数据包即可触发此漏洞，无需身份验证，利用门槛低。CVSS v2 评分为 5.0，危害等级为中危。ISC 已发布 BIND 8.2.3-P2 及后续版本修复此问题，建议受影响用户升级至安全版本。'
 published = "1999-11-10T05:00:00.000"
-remediation = "升级 ISC BIND 至 8.2.2 或更高版本，该版本修复了 fdmax 文件描述符耗尽导致的拒绝服务问题。鉴于 BIND 8 系列已停止维护，建议迁移至 BIND 9.x 最新稳定版。如无法立即升级，可在系统层面通过 ulimit 限制 named 进程最大文件描述符数量作为临时缓解。"
+remediation = "升级 ISC BIND 到 8.2.3 或更高版本（或迁移至 BIND 9.x），该版本修复了 fdmax 文件描述符耗尽导致的拒绝服务问题。如暂时无法升级，可在 named.conf 中限制监听地址、通过防火墙限制仅允许可信递归客户端访问 53 端口，并配置 rndc 限制查询来源以降低被耗尽 fdmax 的风险。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "ISC BIND 8.2/8.2.1 named fdmax 文件描述符耗尽拒绝服务漏洞"
+sources = ["exploitdb"]
+title = "ISC BIND 8.2.2 NXT 记录处理 fdmax 拒绝服务漏洞"
 updated = "2026-06-16T21:49:11.040"
 
 [exploit]
@@ -24,4 +24,15 @@ status = "completed"
 urls = [
     "http://sunsolve.sun.com/pub-cgi/retrieve.pl?doctype=coll&doc=secbull/194",
     "http://www.securityfocus.com/bid/788",
+    "https://www.exploit-db.com/exploits/19615",
+    "https://github.com/CVEProject/cvelistV5/blob/8cc4bd87e08227d0a597e9249036a66efd1a35dd/cves/1999/0xxx/CVE-1999-0848.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0848",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0848.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a5bae259b1f96bb239cbfd83cd9b28dd6d9df406/CVE/data/1999/CVE-1999-0848.json",
+    "https://github.com/github/advisory-database/blob/2e86ccb45bad26f6ff984e676f6d08b925d0e6ee/advisories/unreviewed/2022/05/GHSA-pvjg-h4mg-c3q7/GHSA-pvjg-h4mg-c3q7.json",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/bind_vulnerable.nasl",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0848.json",
+    "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/1999/19991116.data",
 ]
