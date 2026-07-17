@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "Yamaha MidiPlug 1.1 b-j 存在本地缓冲区溢出漏洞，通过向 EMBED 标签的 Text 变量传递超长字符串可触发溢出。PoC 生成包含恶意 EMBED 标签的 HTML 页面，当用户在 IE 中打开该页面时触发漏洞。"
+id = "POC-AVE-1999-0740"
+name = "Yamaha MidiPlug EMBED Tag Text Variable Buffer Overflow PoC"
+severity = "medium"
+tags = [
+    "cve-1999-0946",
+    "buffer-overflow",
+    "midiplug",
+    "embed",
+]
+vuln_id = [
+    "CVE-1999-0946",
+    "AVE-1999-0740",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/midiplug-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "EMBED",
+    "TEXT",
+    "audio/midi",
+]
