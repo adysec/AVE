@@ -1,79 +1,39 @@
-1. Quality score: 80/100 - CRITICAL: remediation field is missing
-The remediation field is empty or improperly formatted.
-Looking at the current file, I can see:
-- `remediation` field is present but seems to have a malformed value - it appears to be a multi-line string with embedded CDATA/XML-like tags and text.
-- The CDATA contains text that looks like a search result for remediation, but it's not properly formatted as TOML.
-The vulnerability is: CVE-1999-0718 - IBM GINA for NT 1.0 - Local Privilege Escalation
-- Affects: IBM GINA for NT 1.0
-- Description: Allows local users to gain administrator privileges by changing the GroupMapping registry key during OS/2 domain authentication of Windows NT users.
-- CVSS Score: 6.2 (MEDIUM)
-- Severity: MEDIUM (but score is 6.2, which is actually HIGH according to the rules - let me check: HIGH≥7.0, so 6.2 should be MEDIUM)
-Wait, looking at the schema:
-- CRITICAL≥9.0
-- HIGH≥7.0
-- MEDIUM≥4.0
-- LOW<4.0
-So 6.2 should indeed be MEDIUM, which matches.
-1. First let me check the GitHub advisory database to see if there's more context there
-2. Let me also try to search for IBM GINA vulnerabilities on the web
-- CVE-1999-0718 (CVE-1999-0718)
-- IBM GINA, when used for OS/2 domain authentication of Windows NT users, allows local users to gain administrator privileges by changing the GroupMapping registry key.
-- CVSS 2.0 Score: 6.2 MEDIUM (AV:L/AC:H/Au:N/C:C/I:C/A:C)
-- Published: 03/12/2001
-- Modified: 06/16/2026
-- References include:
-- http://www.ntbugtraq.com/default.asp?pid=36&sid=1&A2=ind9908&L=ntbugtraq&F=&S=&P=5534
-- http://www.securityfocus.com/bid/608
-- https://exchange.xforce.ibmcloud.com/vulnerabilities/3166
-- CWE: CWE-Other (NVD-CWE-Other)
-- Affected: n/a product from n/a vendor
-Now let me look at the Exploit-DB exploit for remediation details. The exploit shows the specific registry key modification:
-```
-Modify the following Registry key:
-HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IBMNeTNT\GroupMapping
-to include
-Value Name: GroupName (where group name is the name of the group to add the the administrators group)
-Data Type: Reg_SZ
-String: Administrators
-Reboot the host.
-```
-Now I need to fix the remediation field. The current remediation field in the TOML has XML/HTML tags and contains what looks like a search query result rather than proper remediation advice. I need to write a proper Chinese remediation suggestion.
-Based on the exploit details and the vulnerability, the remediation should include:
-1. Registry key permission fix - set ACL on GroupMapping registry key to restrict modification to administrators only
-2. Disable or uninstall IBM GINA for NT if not needed
-3. Upgrade to a newer version of IBM GINA if available
-4. Apply OS/2 domain authentication configuration fixes
-ave_id = "AVE-1999-0317"
-aliases = ["CVE-1999-0718"]
 [basic]
-title = "IBM GINA for NT 本地权限提升漏洞"
-description = "IBM GINA for NT 1.0 在用于 Windows NT 用户的 OS/2 域认证时存在本地权限提升漏洞。攻击者需具备本地用户访问权限，通过修改注册表中的 GroupMapping 键值，可篡改组映射关系从而获取管理员权限。该漏洞影响 IBM GINA for NT 1.0 版本，CVSS 评分 6.2，属于本地权限提升类漏洞，攻击者需具备本地系统访问权限才能利用，通过篡改注册表键值实现权限提升。"
-severity = "MEDIUM"
-score = 6.2
-sources = ["cve", "exploitdb"]
+description = "IBM GINA for NT 1.0 在作为 Windows NT 用户进行 OS/2 域认证时存在权限提升漏洞。该组件会在本地注册表中维护用于域用户到本地组映射的 GroupMapping 注册表项，且未对此注册表项施加充分的访问控制。已在本机拥有普通用户权限的本地攻击者，可通过修改（或篡改）该 GroupMapping 注册表键值，将自身账号映射至管理员组，从而绕过正常的权限分配机制，非法获取本地管理员（administrator）权限。受影响范围为使用 IBM GINA 1.0 并启用 OS/2 域认证方式的 Windows NT 系统，攻击者需具备目标主机的本地登录权限及对相关注册表项的写权限方可实施利用。"
 published = "2001-03-12T05:00:00.000"
+remediation = '立即升级 IBM GINA for NT 至修复版本（1.0 之后的补丁版本），或停用该 GINA 组件改用标准 Windows NT 登录认证；通过注册表编辑器对 HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon 下的 GroupMapping 项设置仅 Administrators 拥有完全控制权限、普通用户仅只读，并启用 NTFS 权限审计以阻止本地用户篡改。'
+score = 6.2
+severity = "MEDIUM"
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1728,"inputTokens":9087,"outputTokens":16,"totalTokens":10831}}'
 updated = "2026-06-16T21:48:54.707"
-remediation = "设置注册表键 HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\IBMNeTNT\\GroupMapping 的 ACL 权限，仅允许管理员修改；若不再使用 OS/2 域认证，建议卸载 IBM GINA 并恢复默认 Windows GINA；无官方补丁时可通过组策略限制普通用户对该注册表项的写入权限作为缓解措施。"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-0718"]
+ave_id = "AVE-1999-0317"
+
+[meta]
+collected_at = "2026-07-17T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://www.ntbugtraq.com/default.asp?pid=36&sid=1&A2=ind9908&L=ntbugtraq&F=&S=&P=5534",
-"http://www.securityfocus.com/bid/608",
-"https://exchange.xforce.ibmcloud.com/vulnerabilities/3166",
-"https://www.exploit-db.com/exploits/19472",
-"https://github.com/CVEProject/cvelistV5/blob/1ce36d0de2f3ddd1d56c222c398df994c8c331b1/cves/1999/0xxx/CVE-1999-0718.json",
-"https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0718",
-"https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0718.md",
-"https://github.com/Patrowl/PatrowlHearsData/blob/cd1e3d0adf029810963282884bd6480e52b853ac/CVE/data/1999/CVE-1999-0718.json",
-"https://github.com/github/advisory-database/blob/11845a9fe6e6b4d82150d9fd8a4257b88a244a45/advisories/unreviewed/2022/04/GHSA-xwfv-fh69-vfc3/GHSA-xwfv-fh69-vfc3.json",
-"https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-"https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0718.json",
-"https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/608/info.html",
-"https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150600_150700.json",
-"https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
+    "http://www.ntbugtraq.com/default.asp?pid=36&sid=1&A2=ind9908&L=ntbugtraq&F=&S=&P=5534",
+    "http://www.securityfocus.com/bid/608",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/3166",
+    "https://www.exploit-db.com/exploits/19472",
+    "https://github.com/CVEProject/cvelistV5/blob/64d76d92cfbd9c4de4a352a59a2e52cadebc3afd/cves/1999/0xxx/CVE-1999-0718.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/89b3a1c34ab26afed5cfe4fc54b61cecbf09d3c2/CVE/data/1999/CVE-1999-0718.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0718",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0718.json",
+    "https://github.com/olbat/nvdcve/blob/178b809924783e13787d17bb1b1fd55ad3b8639b/nvdcve/CVE-1999-0718.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/ec2efce98d544aa857266906f720ae32e42b21be/CVE-1999/CVE-1999-07xx/CVE-1999-0718.json",
+    "https://github.com/opencve/opencve-kb/blob/3b50720431dce1650cc5e5fe96631e7b01e9d02e/1999/CVE-1999-0718.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/1999/0xxx/CVE-1999-0718.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/1999/0xxx/CVE-1999-0718.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0718.md",
 ]
-[exploit]
-poc_urls = ["https://www.exploit-db.com/exploits/19472"]
-exp_urls = ["https://www.exploit-db.com/exploits/19472"]
-[meta]
-status = "completed"
-collected_at = "2026-07-16T00:00:00Z"
