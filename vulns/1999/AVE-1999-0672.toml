@@ -1,11 +1,11 @@
 [basic]
-description = "Falcon Web Server 存在目录遍历漏洞，远程攻击者无需身份认证即可通过在 URL 中注入 `../` 等路径穿越序列，突破 Web 根目录限制，读取服务器上任意文件，包括配置文件、密码文件等敏感信息。该漏洞利用难度低，攻击者可批量扫描受影响版本服务器实施数据窃取。"
+description = 'Falcon Web Server 存在目录遍历（任意文件读取）漏洞，其原理是服务器未对请求路径中的".."（点点）序列进行充分过滤与规范化校验。远程攻击者无需认证，只需向目标服务器发送包含"../"或"..\"等目录回溯序列的特制 HTTP 请求，即可突破 Web 根目录限制，访问文件系统上的任意文件，如配置文件、密码文件等敏感数据。该漏洞影响运行 Falcon web server 的服务器，攻击条件仅需网络可达目标服务且能构造恶意 URL，利用方式简单，通过普通浏览器或脚本即可发起。'
 published = "1999-10-26T04:00:00.000"
-remediation = '立即停止使用 Falcon Web Server，迁移至 Apache HTTP Server 或 Nginx 等仍在维护的 Web 服务器。如无法立即迁移，应在前置反向代理（如 Nginx）上添加规则过滤请求路径中的连续 "../" 序列，同时对 URL 进行归一化解码后再做路径校验，阻止对敏感目录的访问。临时缓解期间仅开放必要 HTTP 端口，并限制 Web 服务的文件根目录权限。'
+remediation = "升级到 Apache Tomcat 3.1 或更高版本（Falcon web server 的后续产品），新版本已修复 URL 路径中 .. 序列未经过滤即可访问任意文件的问题。将 Web 根目录配置为仅包含所需静态文件的最小目录，并使用操作系统权限限制 Web 服务器进程对敏感目录的访问。在防火墙或反向代理层面过滤含 .. 和 %2e%2e 的请求 URL，阻止路径遍历请求到达后端服务器。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Falcon Web Server 任意文件读取漏洞"
+sources = ["avd"]
+title = "Falcon Web Server 目录穿越任意文件读取漏洞"
 updated = "2026-06-16T21:49:15.097"
 
 [exploit]
@@ -17,11 +17,21 @@ aliases = ["CVE-1999-0881"]
 ave_id = "AVE-1999-0672"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.osvdb.org/1127",
     "http://www.securityfocus.com/bid/743",
+    "https://github.com/CVEProject/cvelistV5/blob/84f82928c38b4d0e02149dbde07f5affc7f46f43/cves/1999/0xxx/CVE-1999-0881.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0881",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0881.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2a1a519e4e9d3e489c2169e3db04269b559dd18e/CVE/data/1999/CVE-1999-0881.json",
+    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-6g75-g2fr-4679/GHSA-6g75-g2fr-4679.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0881.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153600_153700.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--6e8b595c-1d14-4bb7-b7ad-18a4e7227e38.json",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/1416b7a6d565eaad58120f39e515a982fc4d5afe/1999.tsv",
 ]
