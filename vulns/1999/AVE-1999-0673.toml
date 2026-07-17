@@ -1,12 +1,12 @@
 [basic]
-description = "Falcon Web 服务器存在信息泄露漏洞，远程攻击者可通过向服务器发送超长文件名请求，利用路径处理缺陷确定 Web 根目录的绝对路径。该漏洞源于服务器对畸形文件名的错误处理，导致在错误消息中泄露物理路径信息，可能进一步辅助攻击者规划后续攻击。CVSS 评分 5.0，危害等级中危。"
+description = "Falcon Web 服务器在处理客户端请求时，对超长文件名的处理存在信息泄露缺陷。远程攻击者无需身份认证，只需向目标服务器发送包含超长文件名的 HTTP 请求，即可诱导服务器在错误响应中暴露 Web 根目录的绝对路径。该漏洞影响运行 Falcon Web 服务器的系统，攻击者可借此获取服务器目录结构等敏感信息，为后续进一步攻击（如路径遍历或文件读取）提供 reconnaissance 情报，属于低危的信息泄露类问题。"
 published = "1999-10-28T04:00:00.000"
-remediation = "Falcon Web Server 已停止维护，官方不再发布安全更新。建议立即迁移至仍在维护的 Web 服务器（如 Apache HTTP Server、Nginx 或 IIS），从根本上消除风险。在迁移完成之前，可在反向代理或 WAF 层面配置规则，过滤或拒绝包含超长文件名的请求（限制 URL 路径长度不超过 2048 字节），作为临时缓解措施。"
+remediation = "升级到 Falcon Web 服务器修复版本（建议 2.0.3 及以上），或在服务器端配置对超长文件名请求进行长度限制与规范化校验，禁用错误响应中绝对路径的回显，并配置自定义错误页面以隐藏服务器内部路径信息。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Falcon Web服务器路径信息泄露漏洞"
-updated = "2026-06-16T21:49:15.210"
+sources = ["avd"]
+title = "Falcon Web服务器 超长文件名路径信息泄露漏洞"
+updated = "2026-07-17T00:00:00Z"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,12 @@ aliases = ["CVE-1999-0882"]
 ave_id = "AVE-1999-0673"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0882"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0882",
+    "https://github.com/CVEProject/cvelistV5/blob/d3c24daa4de56d2cb70c1fd2d4f8d5a03642400e/cves/1999/0xxx/CVE-1999-0882.json",
+    "https://github.com/github/advisory-database/blob/3c5965e4a3ad0d0b437f880f71224c9e3db04269b559dd18e/CVE/data/1999/CVE-1999-0882.json",
+]
