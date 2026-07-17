@@ -1,11 +1,11 @@
 [basic]
-description = "rpc.rquotad（远程磁盘配额守护进程）是基于 RPC 协议的过时服务，默认通过端口映射器注册，允许任意远程用户无需认证即可查询目标系统的用户磁盘配额信息。攻击者可通过 RPC 扫描探测该服务，从而获取系统用户名列表及配额使用情况，为后续密码爆破或权限提升攻击收集侦察信息。该协议缺乏安全认证与加密机制，属于不安全配置问题而非软件缺陷，应当禁用。"
+description = "CVE-1999-0625 描述的是主机上 rpc.rquotad 远程磁盘配额守护进程服务处于运行状态的安全配置问题。rpc.rquotad 是 Unix/Linux 系统上用于 NFS 网络文件系统远程磁盘配额管理的 RPC 服务，该协议设计年代较早，未对远程请求实施严格的身份认证与访问控制。当系统启用该服务并使其处于运行状态时，未经身份验证的远程攻击者可通过网络向目标主机的 rpc.rquotad 端口发送特制 RPC 请求，获取系统用户的磁盘配额信息，甚至在某些条件下利用该服务进行本地权限提升或作为后续攻击的跳板。该漏洞本质上属于安全配置缺陷而非软件代码漏洞，NVD 将其 CVSS 评分设为 0.0 分（严重级别 LOW）。受影响范围主要为启用了 NFS 服务的 Unix/Linux 主机，攻击者无需事先认证即可在低复杂度条件下完成利用。根据 NVD 评估建议，rpc.rquotad 是一种不安全且已过时的协议，用户应禁用该服务或阻止相关 RPC 端口的网络访问以消除风险。"
 published = "1999-01-01T05:00:00.000"
-remediation = "建议立即禁用 rpc.rquotad 服务：在 Linux 中执行 `systemctl stop rpc-rquotad && systemctl disable rpc-rquotad`（或 `killall rpc.rquotad`）；在 /etc/inetd.conf 中注释掉 rquotad 行并重启 inetd。同时配置 iptables 防火墙规则限制对 RPC 端口 111 和 2049 的外部访问，仅允许受信 IP 段。如在共享存储场景中必需，替换为 NFSv4 内建配额管理，不再依赖独立 rquotad 服务。"
+remediation = "建议在不需要磁盘配额服务的系统上停止并禁用 rpc.rquotad 服务（如执行 `chkconfig rpc.rquotad off` 并 `kill` 相关进程），或通过防火墙/主机策略限制 111 及 1022 等 RPC 端口仅对受信任内网开放，升级到已默认关闭该服务的 Linux 发行版最新补丁版本（如 RHEL/CentOS 更新 nfs-utils 至厂商最新版）。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "UNIX rpc.rquotad 远程权限提升漏洞"
+sources = ["epss"]
+title = "Unix rpc.rquotad 远程配额服务配置安全隐患漏洞"
 updated = "2026-06-16T21:48:44.947"
 
 [exploit]
@@ -17,20 +17,20 @@ aliases = ["CVE-1999-0625"]
 ave_id = "AVE-1999-0918"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://www.cve.org/CVERecord?id=CVE-1999-0625",
-    "https://github.com/CVEProject/cvelistV5/blob/297eb115816d3735806f02ee33bb4d2d53ecd5c6/cves/1999/0xxx/CVE-1999-0625.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4d7236390d3d65194e590e3c8620543620af3984/cves/1999/0xxx/CVE-1999-0625.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0625",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0625.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/9074597bd191efd66c2a6bf1f5d8e60bc4801a90/content/CVE-1999-0625.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2ed73314b4d66512efbb22e0644e615bc00001f2/CVE/data/1999/CVE-1999-0625.json",
-    "https://github.com/github/advisory-database/blob/49899a53e9c2e620c99e0234afe3c50e512ad851/advisories/unreviewed/2022/04/GHSA-r8qg-5ffw-4wgf/GHSA-r8qg-5ffw-4wgf.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0625.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6d3a932c05085f06507d23e5a0893fa8fe64ce42/CVE/data/1999/CVE-1999-0625.json",
+    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-r8qg-5ffw-4wgf/GHSA-r8qg-5ffw-4wgf.json",
     "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
-    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/R/rpc_rquotad.nasl",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0625.json",
+    "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/rpc_rquotad.nasl",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x84000/83127/info.html",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/1b69cf2313f68e29acceed58f52f6109cd37bb04/CVE-1999/CVE-1999-06xx/CVE-1999-0625.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
 ]
