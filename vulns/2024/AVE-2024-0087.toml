@@ -1,0 +1,24 @@
+[basic]
+description = "BladeX 开源快速开发框架 SpringBlade 的日志模块 `/api/blade-log/usual/list` 接口在处理 `updatexml` 等查询参数时未对用户输入进行充分过滤与参数化，存在 SQL 注入漏洞。攻击者在已持有有效 `Blade-Auth` 身份认证令牌（bearer token）的前提下，可通过构造包含 `updatexml(1,concat(0x7e,user(),0x7e),1)=1` 等报错注入载荷的 GET 请求，将恶意 SQL 片段拼接至后端数据库查询语句中。成功利用可泄露数据库当前用户、版本及敏感业务数据，甚至可能进一步实现数据篡改与权限提升，影响所有部署该 vulnerable 接口版本的 SpringBlade 系统。"
+published = "0808"
+remediation = "升级 SpringBlade 至最新版本，在 blade-log 模块的 UsualController 中将 SQL 拼接改为 MyBatis Plus 参数化查询（使用 `#{}` 占位符替代 `${}` 拼接），对 `updatexml` 等危险函数输入进行过滤；如无法立即升级，在 Nginx/网关层对 `/api/blade-log/usual/list` 接口添加 WAF 规则拦截 SQL 注入 payload。"
+score = 5
+severity = "MEDIUM"
+sources = ["hwpoc"]
+title = "BladeX SpringBlade SQL注入漏洞"
+updated = "0808"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["HWPOC-2024-00f24817"]
+ave_id = "AVE-2024-0087"
+
+[meta]
+collected_at = "2026-07-17T00:00:00Z"
+status = "completed"
+
+[references]
+urls = []
