@@ -1,54 +1,27 @@
-1. The `remediation` field is empty or has issues (rated as a critical error)
-Looking at the current TOML structure, it doesn't follow the required 5-segment schema (id, basic, references, exploit, meta). The current structure has:
-- [basic] - with title, description, severity, score, sources, published, updated, remediation
-- [exploit] - with exp_urls and poc_urls
-- [id] - with aliases and ave_id
-- [meta] - with collected_at and status
-- [references] - with urls
-The schema requirements specify exactly:
-1. [id] - ave_id, aliases
-2. [basic] - title, description, severity, score, sources, published, updated, remediation
-3. [references] - urls
-4. [exploit] - poc_urls, exp_urls
-5. [meta] - status, collected_at
-But the current structure is scattered across multiple sections. Let me also check the validation rules:
-1. `severity` 与 `score` 匹配：CRITICAL≥9 / HIGH≥7 / MEDIUM≥4 / LOW<4
-- Current: severity = "LOW", score = 2.1 - this is correct since LOW < 4
-2. The `remediation` field is empty/ illformed - this is a critical error
-3. The TOML schema is violated - fields are in wrong sections
-1. Fix the remediation field - it needs to be a specific, actionable fix in Chinese, at least 20 characters, including upgrade version, configuration changes, and mitigation measures
-2. Fix the schema - the TOML is not in the correct 5-segment format
-3. Translate title and description to Chinese if not already done
-4. Refine references to ensure they're accurate and relevant
-ave_id = "AVE-1999-0659"
-aliases = ["CVE-1999-0860"]
 [basic]
-title = "Sun Solaris 7.0 chkperm 符号链接权限提升漏洞"
-description = "Solaris 7.0 系统 chkperm 工具存在本地权限提升漏洞。本地攻击者可通过设置 VMSYS 环境变量并利用符号链接劫持技术读取 bin 用户权限的文件。该漏洞源于 chkperm 未能正确验证环境变量路径的安全性，导致攻击者能够劫持文件访问操作。攻击者需拥有本地系统访问权限方可利用此漏洞。"
-severity = "LOW"
+description = "Solaris 操作系统中的 chkperm 工具存在安全漏洞，本地攻击者可通过设置 VMSYS 环境变量并结合符号链接攻击，以 bin 用户权限读取系统上的任意文件，导致敏感信息泄露。攻击条件为拥有本地系统访问权限。"
+published = "1999-12-01"
+remediation = "建议升级到不受影响的 Solaris 版本或安装 Sun 官方提供的安全补丁。如无法升级，应限制不可信用户对系统的本地访问权限，并监控 chkperm 工具的异常使用行为。"
 score = 2.1
-sources = ["exploitdb"]
-published = "1999-12-01T05:00:00.000"
-updated = "2026-06-16T21:49:12.507"
-remediation = "安装 Solaris 10（2022 年 8 月安全补丁集）或 Solaris 11，并应用 2024 年 6 月安全更新包。此外，修改 /etc/security_ctx/policy 文件禁用 VMSYS 环境变量，并在权限配置中限制 bin 目录的符号链接访问权限"
-[references]
-urls = [
-"http://www.securityfocus.com/bid/837",
-"https://www.exploit-db.com/exploits/19235",
-"https://github.com/CVEProject/cvelistV5/blob/64fd197c5b8f3e4f9493cb07798bdca54583505c/cves/1999/0xxx/CVE-1999-0860.json",
-"https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0860",
-"https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0860.md",
-"https://github.com/Patrowl/PatrowlHearsData/blob/f71c1815da5fc1872d1d999eebe8b28a9e3854c7/CVE/data/1999/CVE-1999-0860.json",
-"https://github.com/github/advisory-database/blob/2e86ccb45bad26f6ff984e676f6d08b925d0e6ee/advisories/unreviewed/2022/04/GHSA-45mx-vcm9-272w/GHSA-45mx-vcm9-272w.json",
-"https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
-"https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/837/info.html",
-"https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0860.json",
-"https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
-"https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000908.txt",
+severity = "LOW"
+sources = [
+    "cve",
+    "avd",
 ]
+title = "Sun Solaris chkperm 符号链接攻击致敏感文件泄露漏洞"
+updated = "2026-06-16"
+
 [exploit]
 exp_urls = []
 poc_urls = []
+
+[id]
+aliases = ["CVE-1999-0860"]
+ave_id = "AVE-1999-0659"
+
 [meta]
+collected_at = "2026-07-17T08:46:31.379853350+00:00"
 status = "completed"
-collected_at = "2026-07-17T00:00:00Z"
+
+[references]
+urls = ["http://www.securityfocus.com/bid/837"]
