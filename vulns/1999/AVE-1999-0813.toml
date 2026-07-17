@@ -1,12 +1,12 @@
 [basic]
-description = "Windows NT 操作系统存在自动登录配置缺陷，系统在注册表中以明文存储管理员密码。本地攻击者可通过读取注册表键值获取管理员凭据，进而获得系统完全控制权限。该漏洞影响 Windows NT 4.0 及更早版本，需要攻击者具有本地访问权限，CVSS 评分 7.2，危害等级高。"
+description = 'Windows NT 系统在配置启用自动登录（AutoAdminLogon）功能后，会在系统重启时自动以管理员或指定用户身份登录，且登录凭据以明文形式存储于注册表 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon 的 DefaultPassword 项中。攻击者在能够物理接触设备或获取注册表读取权限的情况下，可直接提取明文口令并获得系统级访问权限，无需任何认证即可完全控制主机。该配置缺陷使得本地安全边界失效，影响所有启用了自动登录的 Windows NT 工作站与服务器。'
 published = "1999-01-01T05:00:00.000"
-remediation = '在注册表编辑器中定位到 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon，删除 DefaultPassword 键值并将 AutoAdminLogon 键值设为 0；安装 Windows NT 4.0 Service Pack 6a 并使用 Syskey 工具 (Syskey.exe) 为 SAM 数据库提供额外加密保护；开启屏幕保护密码和 Ctrl+Alt+Del 安全登录要求。如业务允许，建议升级至 Windows 2000 或更高版本操作系统。'
+remediation = '禁用 Windows NT 自动登录：运行 regedit，进入 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon，将 AutoAdminLogon 设为 0，并删除 DefaultPassword、DefaultUserName、DefaultDomainName 中的明文凭据；为管理员账户设置强口令，或通过组策略/域控强制交互式登录。建议升级至 Windows 2000 及后续版本以规避该配置风险。'
 score = 7.2
 severity = "HIGH"
-sources = ["avd"]
-title = "Microsoft Windows NT 重启后管理员自动登录漏洞"
-updated = "2026-06-16T21:48:36.850"
+sources = ["epss"]
+title = "Microsoft Windows NT 自动以管理员身份登录后无需认证访问漏洞"
+updated = "2026-07-17T00:00:00Z"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,13 @@ aliases = ["CVE-1999-0549"]
 ave_id = "AVE-1999-0813"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0549"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0549",
+    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/0xxx/CVE-1999-0549.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0549.json",
+    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-w9wr-9v9x-q549/GHSA-w9wr-9v9x-q549.json",
+]
