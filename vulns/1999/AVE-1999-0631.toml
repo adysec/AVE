@@ -1,11 +1,11 @@
 [basic]
-description = "该漏洞存在于 Solaris 7.0 操作系统中的 CDE（Common Desktop Environment）邮件工具 dtmail/mailtool 中。攻击者通过向邮件客户端发送包含超长 MIME Content-Type 头的恶意邮件，触发邮件工具在处理邮件头部信息时出现的缓冲区溢出漏洞。由于该工具对输入缓冲区大小验证不足，溢出会导致控制流破坏，攻击者可借此劫持程序控制权，在本地权限范围内提升至根用户权限，最终实现对目标系统的完全控制。该漏洞仅限本地用户利用，攻击者需通过恶意邮件触发溢出，但无需其他权限，即可绕过系统保护机制获得最高访问权限。"
+description = "Solaris 7.0 CDE dtmail/mailtool 组件存在缓冲区溢出漏洞，本地攻击者可通过构造过长的 MIME Content-Type 头部字段触发栈溢出，从而提升权限至 root。该漏洞源于 mailtool 对 MIME 类型字符串长度缺乏边界检查，导致栈缓冲区被覆盖并劫持控制流。影响范围为运行 CDE 桌面环境的 Solaris 7.0 系统，攻击条件需具备本地账户访问权限，利用方式为本地提权，CVSS 评分 7.2（高危）。"
 published = "1999-11-30T05:00:00.000"
-remediation = "立即升级到受支持的 Solaris 版本（如 Solaris 11），该版本已修复 CDE mailtool 缓冲区溢出漏洞。如无法升级，可移除 mailtool 和 dtmail 的 setuid root 权限（chmod u-s /usr/dt/bin/dtmail /usr/dt/bin/mailtool），并限制仅授权用户可执行 CDE 邮件工具，以消除本地提权风险。"
+remediation = "建议立即安装 Solaris 7.0 MR 5 补丁或更高版本，升级到 Solaris 8/9/10，这些版本均已修复此 CDE dtmail/mailtool 缓冲区溢出漏洞。如果无法立即升级到已修复的版本，请通过编辑 /etc/dtmail/config 文件禁用 dtmail 服务，或在防火墙中禁用 CDE 网络服务作为临时缓解措施。在应用任何补丁之前，请确保停止 dtmail 服务以避免攻击。"
 score = 7.2
 severity = "HIGH"
-sources = ["avd"]
-title = '{"_meta":{},"stopReason":"end_turn","usage":{"inputTokens":10815,"outputTokens":31,"totalTokens":10846}}'
+sources = ["exploitdb"]
+title = "Sun Solaris CDE dtmail 缓冲区溢出漏洞"
 updated = "2026-06-16T21:49:10.190"
 
 [exploit]
@@ -28,9 +28,9 @@ urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/3732",
     "https://www.exploit-db.com/exploits/19648",
     "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0841.md",
-    "https://github.com/CVEProject/cvelistV5/blob/35cd604fbbf2927fb6acbcd700e81d36cd6dec11/cves/1999/0xxx/CVE-1999-0841.json",
+    "https://github.com/CVEProject/cvelistV5/blob/8cc4bd87e08227d0a597e9249036a66efd1a35dd/cves/1999/0xxx/CVE-1999-0841.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0841",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/12e9f9121122940a38e93216069cda4e01d5b051/CVE/data/1999/CVE-1999-0841.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3a7f9488e77673498ec37285be0a165ad71720f2/CVE/data/1999/CVE-1999-0841.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0841.md",
     "https://github.com/github/advisory-database/blob/2a2be81fd4b47dc35d815a995b6429bd116a3b84/advisories/unreviewed/2022/04/GHSA-9g6g-hfwc-8mcg/GHSA-9g6g-hfwc-8mcg.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/832/info.html",
