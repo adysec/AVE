@@ -1,0 +1,46 @@
+1. The `remediation` field is effectively empty - it contains a lot of thinking/reasoning text but no actual clean remediation value
+2. I need to fix the remediation to be a clean, concise Chinese string
+- `[basic]` section has all fields
+- `[exploit]` section exists
+- `[id]` section exists
+- `[meta]` section exists
+- `[references]` section exists
+The main issue is the remediation field contains garbage text (the AI's thinking process). I need to provide a clean remediation.
+Now I'm looking at the vulnerability details - it's a privilege escalation issue in AcuShop Salesbuilder with a world-writable .sbstart file. I'll write a remediation that focuses on fixing the file permissions and, since this is a 1999 product, suggesting decommissioning as the primary solution.From the NVD page, I can see:
+- Description: ".sbstart startup script in AcuShop Salesbuilder is world writable, which allows local users to gain privileges by appending commands to the file."
+- CVSS 2.0: 7.2 HIGH (AV:L/AC:L/Au:N/C:C/I:C/A:C)
+- Published: 07/30/1999
+- CWE: NVD-CWE-Other
+The product is "AcuShop Salesbuilder" and the issue is a world-writable `.sbstart` startup script.
+Now let me fix the TOML. The main issues:
+1. The remediation field is full of garbage text - needs to be cleaned up
+2. The title could be improved with vendor name prefixFor remediation, I'll write a clean Chinese string about fixing file permissions and potentially stopping using this discontinued product.
+- `score = 7.2` - this is correct per NVD
+- `severity = "HIGH"` - matches (HIGH ≥ 7)
+- Description is in Chinese and >50 chars ✓
+- Title is in Chinese ✓
+The references look fine - they are the authoritative sources from NVD.
+Now I need to clean up the remediation field to remove the garbage text and write a proper Chinese response about addressing the world-writable script permissions, then output the corrected TOML.The file write failed. Let me check if the directory exists.Let me try to output the TOML directly to the user instead of writing to a file, since the skill says to output pure TOML text.[id]
+ave_id = "AVE-1999-1170"
+aliases = ["CVE-1999-1536"]
+[basic]
+title = "AcuShop Salesbuilder 启动脚本权限提升漏洞"
+description = "AcuShop Salesbuilder 产品的启动脚本 .sbstart 文件权限被设置为全局可写（world-writable），本地攻击者可向该脚本追加恶意命令，当系统以高权限执行该脚本时即可获得提升的权限，导致完整的本地权限提升攻击。"
+severity = "HIGH"
+score = 7.2
+sources = ["cve"]
+published = "1999-07-30"
+updated = "2026-06-16"
+remediation = "立即使用 chmod 命令将 .sbstart 文件权限修改为 700 或 755，确保仅文件所有者可写；同时审查该文件的所有者与所属组，避免以 root 权限运行 SalesBuilder 服务。若产品已停止维护，建议停止使用 AcuShop Salesbuilder 并迁移至受支持的替代产品。"
+[references]
+urls = [
+"http://marc.info/?l=bugtraq&m=93347785827287&w=2",
+"http://www.osvdb.org/13557",
+"http://www.securityfocus.com/bid/560",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-17T00:00:00Z"
