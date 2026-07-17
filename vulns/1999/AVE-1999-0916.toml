@@ -1,11 +1,11 @@
 [basic]
-description = "rstatd（远程统计服务）是基于 RPC 协议运行的系统服务，默认监听在端口 111/TCP 或 111/UDP，向未经身份认证的远程攻击者提供系统性能统计数据（包括 CPU 负载、磁盘 I/O、内存使用等敏感信息）。该服务本身不提供任何访问控制机制，攻击者无需任何凭证即可通过 rpcinfo 或 rstat 协议查询目标系统，导致系统运行状态信息泄露。泄露的信息可被用于识别系统负载模式、辅助后续精准攻击。此外，常见 rstatd 实现（如 SunOS、Linux 等）历史上存在缓冲区溢出漏洞，远程攻击者可利用特制 RPC 请求触发拒绝服务甚至远程代码执行。该漏洞影响所有运行 rstatd 服务的 UNIX/Linux 系统，属于高危暴露风险。"
+description = "rstat/rstatd 远程统计服务存在权限提升漏洞，该服务在 Unix/Linux 系统中用于远程监控系统性能统计信息（如 CPU 负载、内存使用、磁盘 I/O 等）。攻击者可利用该服务配置不当或权限配置不当的缺陷，通过滥用 rstatd 服务的特权操作获取系统敏感信息或提升权限。该漏洞影响运行 rstatd 服务的 Unix/Linux 系统（如 SunOS、Solaris、Linux 等），攻击者无需认证即可远程访问该服务获取系统敏感统计信息，配合其他漏洞可进一步提升权限至 root 权限。建议禁用不必要的 rstatd 服务或配置严格的访问控制列表限制访问来源。"
 published = "1999-01-01T05:00:00.000"
-remediation = "禁用 rstat/rstatd 服务，执行 `chkconfig rstatd off`（SysV）或 `systemctl disable rstatd && systemctl stop rstatd`（systemd），并在防火墙中封禁端口 111 (TCP/UDP，portmapper) 和 rstatd 使用的随机 UDP 端口范围，阻止外部 RPC 查询。"
+remediation = "建议禁用或卸载系统中不必要的 rstat/rstatd（rstatd 守护进程），通过修改 /etc/inetd.conf 或 systemd 服务配置注释掉 rstatd 相关条目并重启服务，同时使用防火墙限制 772/773/775 等 rpc.rstatd 端口仅允许受信任内网访问，以杜绝该服务暴露带来的信息泄露与权限提升风险。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Sun Microsystems RPC rstatd 服务权限提升漏洞"
+sources = ["epss"]
+title = "SunOS rstat 服务特权提升漏洞"
 updated = "2026-06-16T21:48:44.800"
 
 [exploit]
@@ -17,18 +17,18 @@ aliases = ["CVE-1999-0624"]
 ave_id = "AVE-1999-0916"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://www.cve.org/CVERecord?id=CVE-1999-0624",
-    "https://github.com/trickest/cve/blob/34851454a7b07498072de47d56f63daa4a4f524d/1999/CVE-1999-0624.md",
-    "https://github.com/CVEProject/cvelistV5/blob/297eb115816d3735806f02ee33bb4d2d53ecd5c6/cves/1999/0xxx/CVE-1999-0624.json",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0624.md",
+    "https://github.com/CVEProject/cvelistV5/blob/a23c9152c0ce51f4625e88e1e6abe715ca2d7579/cves/1999/0xxx/CVE-1999-0624.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0624",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0624.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2ed73314b4d66512efbb22e0644e615bc00001f2/CVE/data/1999/CVE-1999-0624.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6d3a932c05085f06507d23e5a0893fa8fe64ce42/CVE/data/1999/CVE-1999-0624.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0624.md",
+    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-44f4-mv9h-2724/GHSA-44f4-mv9h-2724.json",
     "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/2011/secpod_rpc_rstatd_udp.nasl",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0624.json",
     "https://github.com/LubyRuffy/plugins/blob/f873b19f27c95eaf2993ca4acde5cb7965d2ee3f/2011/secpod_rpc_rstatd_tcp.nasl",
