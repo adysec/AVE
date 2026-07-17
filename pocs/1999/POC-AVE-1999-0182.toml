@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "通过直接访问 SoftCart.exe CGI 程序验证是否存在配置错误导致的信息泄露。若服务器直接暴露 SoftCart.exe 且响应中包含配置信息或敏感数据，则表明存在漏洞。"
+id = "POC-AVE-1999-0182"
+name = "SoftCart CGI 程序配置错误信息泄露 PoC"
+severity = "medium"
+tags = ["ave-1999-0182"]
+vuln_id = [
+    "CVE-1999-0609",
+    "AVE-1999-0182",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/SoftCart.exe"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "SoftCart",
+    "merchant",
+    "config",
+    "order",
+]
