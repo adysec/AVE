@@ -1,11 +1,11 @@
 [basic]
-description = "Windows NT 系统的 HKEY_CLASSES_ROOT 注册表项存在权限配置不当漏洞，系统关键权限设置不合理，授予了非授权用户过高的访问级别。本地攻击者可利用该缺陷修改系统文件关联或执行配置篡改，进而实现权限提升。该漏洞影响 Windows NT 全系列版本，CVSS 评分 10.0，危害等级严重。"
+description = "Windows NT 系统的 HKEY_CLASSES_ROOT 注册表根键被配置了不恰当的、涉及系统关键的访问权限。该注册表项存放着文件类型关联、COM 组件及 OLE 对象等关键系统配置，正常应仅允许管理员修改。由于权限设置过于宽松，本地已登录的普通用户或低权限用户可对该项及其子项进行写入、修改甚至删除操作。攻击者在具备本地登录权限的条件下，可通过 regedit 等工具或调用注册表 API 篡改关联的程序路径或 COM 对象，进而实现权限提升、持久化驻留或破坏系统稳定性，影响所有受此错误权限配置影响的 Windows NT 系统。"
 published = "1999-01-01T05:00:00.000"
-remediation = "使用 regedt32 修改 HKEY_CLASSES_ROOT 权限，将 Everyone 组的权限从「完全控制」降为「读取」，移除不必要的用户和组。安装 Windows NT 4.0 Service Pack 6a 及后续安全更新以限制关键注册表项的默认访问权限。"
+remediation = '重置 HKEY_CLASSES_ROOT 注册表项的访问控制列表为默认权限：仅 Administrators 组和 SYSTEM 账户拥有完全控制权限，Users 组和 Everyone 仅保留读取权限。可使用 regini.exe 工具通过注册表配置文件批量修复，命令为：regini fix_hkcr_perms.txt，其中配置文件内容为 \HKEY_CLASSES_ROOT 1 [administrators 全控] [system 全控] [users 读取] [everyone 读取]。若无法立即修复，可将注册表项权限导出备份后通过 regedit 手动修改，并在防火墙和组策略中限制对注册表的远程访问。建议升级到受支持的 Windows 版本以彻底消除此漏洞。'
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Microsoft Windows NT 注册表权限配置不当漏洞"
+sources = ["epss"]
+title = "微软 Windows NT 注册表 HKEY_CLASSES_ROOT 权限配置不当漏洞"
 updated = "2026-06-16T21:48:40.473"
 
 [exploit]
@@ -17,18 +17,18 @@ aliases = ["CVE-1999-0581"]
 ave_id = "AVE-1999-0848"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://www.cve.org/CVERecord?id=CVE-1999-0581",
-    "https://github.com/trickest/cve/blob/34851454a7b07498072de47d56f63daa4a4f524d/1999/CVE-1999-0581.md",
-    "https://github.com/CVEProject/cvelistV5/blob/dc83b9e6d88de194a14e3020b4e71ac42054e609/cves/1999/0xxx/CVE-1999-0581.json",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0581.md",
+    "https://github.com/CVEProject/cvelistV5/blob/770e8f09ce14e637a09c7c619e10772aa6172bea/cves/1999/0xxx/CVE-1999-0581.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0581",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0581.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/04a84e78299e2aeaab4d2594fc26f920778c7b06/CVE/data/1999/CVE-1999-0581.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e1298ff7aafe81b936ca67ecef34c3124d6c72f0/CVE/data/1999/CVE-1999-0581.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0581.md",
+    "https://github.com/github/advisory-database/blob/2a2be81fd4b47dc35d815a995b6429bd116a3b84/advisories/unreviewed/2022/04/GHSA-3rwh-j2p9-wp9q/GHSA-3rwh-j2p9-wp9q.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0581.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x87000/86236/info.html",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
