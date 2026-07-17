@@ -1,11 +1,11 @@
 [basic]
-description = "Unix 系统中存在用户权限配置缺陷，系统管理员在创建用户时可能将非 root 用户的 UID 设置为 0（超级用户标识），导致该用户账号拥有与 root 同等的最高系统权限。本地攻击者可通过登录或切换至该具备 root 权限的账户，实现对系统的完全控制，包括读取/修改任意文件、安装后门、提权执行任意命令等操作。该漏洞影响早期多数 Unix 及类 Unix 操作系统版本，通常由管理员配置不当或系统被植入后门账号导致。"
+description = "Unix 系统中存在权限配置不当漏洞：某个非 root 名称的账户被错误地分配了 UID 0（即 root 用户标识符）。由于操作系统以 UID 而非用户名为依据判定特权，该账户因此拥有与 root 等同的超级用户权限。影响范围涵盖所有采用传统 UID 权限模型的 Unix 及类 Unix 系统。攻击条件为攻击者已获得该异常账户凭据或利用其他途径登录该账户。利用方式上，攻击者可直接以该账户执行任意系统管理操作（如读取/修改敏感文件、创建后门、提权持久化），等效于完全控制整台主机，危害等级严重（CVSS 10.0）。"
 published = "1999-01-01T05:00:00.000"
-remediation = "检查 /etc/passwd 中所有 UID 为 0 的账号，除 root 外立即删除或修改其 UID。建议使用 sudo 机制分配管理员权限，禁止共享 UID 0 账号，并定期审计系统账号权限配置。"
+remediation = "立即在系统中检查所有用户账户的UID分配，删除所有不应该拥有UID 0的非root账户，并重新创建root账户以彻底恢复系统权限控制机制。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Unix 操作系统非 root 账户 UID 0 权限提升漏洞"
+sources = ["epss"]
+title = "Unix系统 非 root 账户 UID 0 权限提升漏洞"
 updated = "2026-06-16T21:48:38.127"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0555"]
 ave_id = "AVE-1999-0817"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://www.cve.org/CVERecord?id=CVE-1999-0555"]
+urls = [
+    "https://www.cve.org/CVERecord?id=CVE-1999-0555",
+    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/0xxx/CVE-1999-0555.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0555",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0555.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3950bef6f70c411ea08c8b2f1665dbd7d38277bd/CVE/data/1999/CVE-1999-0555.json",
+    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-68gv-9r74-xmm7/GHSA-68gv-9r74-xmm7.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0555.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x87000/86050/info.html",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--6aea9a46-be07-4e3a-9755-ac4aac4c4ebb.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/zephyros1603/RadiantProcessors/blob/7d44cb1cd4b9e088fbe463f1b19be50a04c2efe8/Backend/RAG/data/allitems.txt",
+]
