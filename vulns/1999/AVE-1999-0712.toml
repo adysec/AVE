@@ -1,11 +1,14 @@
 [basic]
-description = "FreeBSD 3.0、3.1 及 3.2 版本的虚拟文件系统名称缓存（vfs_cache）存在缺陷，本地已登录用户可通过在系统中大量打开文件，使 vfs_cache 缓存条目无限制增长，耗尽内核内存资源，最终导致系统拒绝服务（DoS）。该漏洞影响上述 FreeBSD 版本，攻击条件为攻击者需在目标主机上拥有本地普通用户权限，利用方式是通过编写脚本或程序持续打开大量文件触发缓存膨胀，造成系统性能严重下降或崩溃，CVSS 评分为 2.1，危害等级低。"
-published = "1999-09-22T04:00:00.000"
-remediation = "升级到 FreeBSD 3.3-RELEASE 或更高版本以修复 vfs_cache 缺陷；若无法立即升级，可通过重新编译内核并应用 FreeBSD 官方发布的 vfs_cache 源码补丁（sys/kern/vfs_cache.c），或限制普通用户可打开的文件数量（调低 kern.maxfilesperproc 并配置 login.conf 的 openfiles 上限）作为临时缓解措施。"
+description = "FreeBSD 操作系统的 VFS 文件系统缓存（vfs_cache）机制存在资源耗尽缺陷。具有本地账户权限的攻击者可以通过在系统中打开大量文件描述符来消耗内核文件缓存资源和文件表项，导致系统缓存溢出或文件表耗尽，从而使合法用户无法正常创建或访问文件，造成服务拒绝。该漏洞影响 FreeBSD 2.x 及 3.x 早期版本，攻击条件为攻击者已拥有本地 shell 访问权限且系统未施加文件描述符数量限制。"
+published = "1999-09-22"
+remediation = "将受影响的 FreeBSD 系统升级到 3.3-RELEASE 或更高版本，该版本已修复 vfs_cache 文件描述符资源耗尽缺陷。如暂无法升级，可通过 login.conf 中配置 openfiles 参数限制普通用户可同时打开的文件描述符数量，并收紧本地账户权限，减少非授权用户获取 shell 的机会，以此作为临时缓解措施。"
 score = 2.1
 severity = "LOW"
-sources = ["exploitdb"]
-title = "FreeBSD VFS 缓存拒绝服务漏洞"
+sources = [
+    "cve",
+    "avd",
+]
+title = "FreeBSD vfs_cache 拒绝服务漏洞"
 updated = "2026-06-16T21:49:18.920"
 
 [exploit]
@@ -24,15 +27,5 @@ status = "completed"
 urls = [
     "http://www.osvdb.org/1079",
     "http://www.securityfocus.com/bid/653",
-    "https://www.exploit-db.com/exploits/19505",
-    "https://github.com/CVEProject/cvelistV5/blob/1ef693821096ed2e21366dae590c013e3dc540aa/cves/1999/0xxx/CVE-1999-0912.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0912",
-    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0912.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/cc528fa33408da88ea19cf3d01d2185cd0ffe95a/CVE/data/1999/CVE-1999-0912.json",
-    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-v9fp-3459-p6h9/GHSA-v9fp-3459-p6h9.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0912.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--e8b6fcd2-5de0-4574-af1e-6c0154e87a86.json",
-    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
-    "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_dos.txt",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-0912",
 ]
