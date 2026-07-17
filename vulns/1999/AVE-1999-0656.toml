@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD 3.3 系统中的 gdc 程序存在符号链接（Symlink）漏洞。由于该程序在处理临时文件时未充分验证文件路径，本地攻击者可通过创建恶意的符号链接文件，诱导 gdc 程序在操作时跟随该链接，从而以当前用户权限修改或覆盖任意系统文件，导致文件完整性受损。该漏洞攻击复杂度低，但需要本地访问权限，CVSS 评分 2.1，危害等级低。"
+description = "FreeBSD 3.3 系统自带的 gdc 程序在运行过程中未对符号链接进行安全校验，存在符号链接竞争（symlink attack）漏洞。本地已登录的普通用户可利用该缺陷，在程序以较高权限写入临时文件或配置文件时，预先创建指向受保护文件的符号链接，诱使 gdc 程序通过链接覆盖或修改本无权访问的系统文件或其他用户文件，从而提升本地权限或破坏系统完整性。该漏洞影响 FreeBSD 3.3 版本中默认安装的 gdc 程序，攻击前提是攻击者需在目标主机上拥有本地账户并能在程序运行期间实施符号链接操作，属于本地提权类安全问题。"
 published = "1999-12-01T05:00:00.000"
-remediation = "升级 FreeBSD 至 3.4 及以上版本，其中修复了临时文件创建不安全的问题。如无法升级，可移除 gdc 的 setuid 权限：`chmod u-s /usr/bin/gdc`，或限制可执行 gdc 的用户组为受信任用户。"
+remediation = "升级 FreeBSD 至 3.4 及以上版本（该漏洞已在 FreeBSD 3.4 中修复），或移除 gdc 程序的 setuid/setgid 权限位（chmod u-s /usr/bin/gdc），限制普通用户对 gdc 临时目录的写权限以防止符号链接劫持。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "FreeBSD gdc 符号链接漏洞"
+sources = ["exploitdb"]
+title = "FreeBSD 3.3 gdc 程序符号链接漏洞"
 updated = "2026-06-16T21:49:12.140"
 
 [exploit]
@@ -17,11 +17,21 @@ aliases = ["CVE-1999-0857"]
 ave_id = "AVE-1999-0656"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/835",
     "https://www.exploit-db.com/exploits/19650",
+    "https://github.com/CVEProject/cvelistV5/blob/8cc4bd87e08227d0a597e9249036a66efd1a35dd/cves/1999/0xxx/CVE-1999-0857.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0857",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0857.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a5bae259b1f96bb239cbfd83cd9b28dd6d9df406/CVE/data/1999/CVE-1999-0857.json",
+    "https://github.com/github/advisory-database/blob/2e86ccb45bad26f6ff984e676f6d08b925d0e6ee/advisories/unreviewed/2022/04/GHSA-p372-4582-3p84/GHSA-p372-4582-3p84.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0857.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/eadba179b68570c488f1a812e4ac71e19ff05906/1999.tsv",
 ]
