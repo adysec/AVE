@@ -1,0 +1,24 @@
+[info]
+author = "ave"
+description = "SSH Communications Security SSH 1.2.27 的 ssh-agent 认证代理在启动时会在用户指定路径创建 UNIX 域套接字文件。若攻击者在套接字目标路径预先放置指向任意敏感文件（如 /etc/passwd 或 ~/.rhosts）的符号链接，ssh-agent 会以当前用户权限跟随该符号链接创建或截断目标文件。本 PoC 验证本地环境下 ssh-agent 是否会跟随预先布置的符号链接创建套接字，从而确认符号链接跟随漏洞的存在。"
+id = "POC-AVE-1999-0521"
+name = "CVE-1999-0787 SSH ssh-agent UNIX 域套接字符号链接跟随 PoC"
+severity = "low"
+tags = ["ave-1999-0521"]
+vuln_id = [
+    "CVE-1999-0787",
+    "AVE-1999-0521",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "{{BaseURL}}/.ssh-agent-sock-test"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["root:"]
