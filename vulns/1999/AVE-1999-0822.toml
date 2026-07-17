@@ -1,11 +1,11 @@
 [basic]
-description = "Microsoft IIS 服务器存在服务器端包含（SSI）功能安全缺陷，默认启用了 #exec 指令执行权限。远程攻击者可通过上传包含恶意 #exec 指令的 .shtml/.stm 文件至可写目录，触发目标服务器执行任意系统命令，导致完全控制服务器。该漏洞影响 IIS 4.0 及早期版本，CVSS 评分 10.0，危害等级严重。微软官方已发布安全公告并建议禁用 SSI #exec 功能。"
+description = 'Microsoft IIS 服务器默认启用了服务器端包含（SSI）文件中的 #exec 指令功能。该漏洞原理在于 Web 服务器在处理 .shtml 等 SSI 页面时，允许攻击者通过构造包含 `<!--#exec cmd="..." -->` 的页面或请求，在服务端执行任意系统命令。受影响范围为开启了 SSI 且未禁用 #exec 的 Microsoft IIS 版本（如 IIS 4.0/5.0 早期默认配置）。攻击条件为：目标站点允许上传或托管 SSI 文件、或存在可被用户控制的 SSI 解析路径，且攻击者能够向服务器提交包含恶意 #exec 指令的请求。利用方式为：攻击者将含 #exec 指令的 SSI 内容提交至目标，诱导服务器解析执行，从而在主机上以 Web 服务账户权限运行命令，可能导致信息泄露、权限提升或进一步入侵。'
 published = "1999-01-01T05:00:00.000"
-remediation = "建议立即升级至 IIS 4.0 及以上版本并安装微软发布的安全补丁（如 MS99-023）。配置层面：在 IIS 管理器中禁用 SSI 的 #exec 指令，或完全关闭服务器端包含 (SSI) 功能。临时缓解：在防火墙层面限制对 Web 服务器的非必要访问，并监控异常 SSI 请求日志。"
+remediation = "在 IIS 管理器的网站属性中禁用 Server Side Include (SSI) 执行权限，或通过修改 MetaBase.xml 将 SSIEnable 设为 False。若必须使用 SSI，应删除所有 .stm/.shtml 文件中的 #exec 和 #include 指令，并在 Internet 服务管理器中将这些扩展名映射到静态文件处理器而非 ssinc.dll，同时升级到 IIS 6.0 及以上版本以获得更严格的安全默认配置。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Microsoft IIS 服务器端包含远程代码执行漏洞"
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9114,"outputTokens":20,"totalTokens":10798}}'
 updated = "2026-06-16T21:48:38.580"
 
 [exploit]
@@ -17,18 +17,18 @@ aliases = ["CVE-1999-0561"]
 ave_id = "AVE-1999-0822"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://www.cve.org/CVERecord?id=CVE-1999-0561",
-    "https://github.com/trickest/cve/blob/34851454a7b07498072de47d56f63daa4a4f524d/1999/CVE-1999-0561.md",
-    "https://github.com/CVEProject/cvelistV5/blob/c8abbfc77cc703e2fd85623576b0f07a0c8427eb/cves/1999/0xxx/CVE-1999-0561.json",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0561.md",
+    "https://github.com/CVEProject/cvelistV5/blob/abfccbe3a11aa2b9dde2cfba5a12ba6256820a51/cves/1999/0xxx/CVE-1999-0561.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0561",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/ce91429859b5110820b1d31a41b0b1a3c67d9603/csaf-vex/1999/cve-1999-0561.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/62aa382b460e7aee53e2fc9ebcfd565bebdac259/CVE/data/1999/CVE-1999-0561.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2a20296d4b03dbd5c5991115b8296a9f2b947592/CVE/data/1999/CVE-1999-0561.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0561.md",
+    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-56f4-vjr2-wrvq/GHSA-56f4-vjr2-wrvq.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0561.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x87000/86059/info.html",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
