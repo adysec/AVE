@@ -1,11 +1,11 @@
 [basic]
-description = "回声服务（Echo Service）运行于 TCP/UDP 端口 7，该服务将接收到的任意数据原样返回给发送方。攻击者可利用此服务进行信息收集，探测目标系统存活状态；更严重的是，攻击者可伪造源地址利用 UDP 回声服务发起反射放大型拒绝服务攻击，大量响应数据包会涌向被伪造的目标地址，导致目标带宽或资源耗尽。该漏洞影响默认开启该服务的所有旧版本操作系统。修复建议为禁用回声服务或通过防火墙阻止外部对端口 7 的访问。"
+description = "CVE-1999-0635 指目标系统启用了 TCP/UDP 7 号端口的回声（echo）服务。该服务会原样回显接收到的任意数据，属于多余且危险的网络服务。攻击者在无需身份认证的情况下，即可向该端口发送数据触发回显，进而可用于反射放大攻击或探测网络拓扑。其影响范围为所有默认开启 echo 服务的主机（如部分老旧 Unix/Linux 及 Windows 系统），增大了被拒绝服务攻击利用的风险。修复方式为禁用或关闭系统的 echo 服务。"
 published = "1999-01-01T05:00:00.000"
-remediation = "立即禁用回声服务（echo service）：在 Unix/Linux 系统中注释 `/etc/inetd.conf` 中的 echo 行并重启 inetd，或执行 `systemctl disable echo-dgram echo-stream` 禁用 systemd socket；在 Windows 系统中通过服务管理器停止并禁用 Simple TCP/IP Services 或使用 `sc stop echo` 命令。同时在边界防火墙上封禁 UDP/TCP 7 端口以防止反射放大攻击。"
+remediation = "在 /etc/inetd.conf 或 xinetd.d/echo 配置文件中注释或删除 echo 服务（端口 7/tcp 和 7/udp）条目，执行 systemctl restart inetd 或 systemctl restart xinetd 使配置生效。若系统使用 systemd，可直接执行 systemctl disable --now echo.service 禁用并停止该服务。如无法立即禁用服务，可通过防火墙规则（iptables -A INPUT -p tcp --dport 7 -j DROP）封禁端口 7 的外部访问作为临时缓解措施。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "多种操作系统 Echo 服务运行反射放大拒绝服务漏洞"
+sources = ["epss"]
+title = "通用网络系统 回声服务 未授权服务运行安全漏洞"
 updated = "2026-06-16T21:48:45.917"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-1999-0635"]
 ave_id = "AVE-1999-0946"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://lists.grok.org.uk/pipermail/full-disclosure/2006-January/041434.html",
     "http://secunia.com/advisories/18514",
-    "https://github.com/trickest/cve/blob/34851454a7b07498072de47d56f63daa4a4f524d/1999/CVE-1999-0635.md",
-    "https://github.com/CVEProject/cvelistV5/blob/1421f0a4349d5d46275cadd9c7c62349edf9c8bb/cves/1999/0xxx/CVE-1999-0635.json",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0635.md",
+    "https://github.com/CVEProject/cvelistV5/blob/1ef693821096ed2e21366dae590c013e3dc540aa/cves/1999/0xxx/CVE-1999-0635.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0635",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0635.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2f876a2c24d5ccd5bbd081f09e801e580536456a/CVE/data/1999/CVE-1999-0635.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cc528fa33408da88ea19cf3d01d2185cd0ffe95a/CVE/data/1999/CVE-1999-0635.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0635.md",
     "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/echo.nasl",
+    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-wghh-7w72-v3r8/GHSA-wghh-7w72-v3r8.json",
     "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0635.json",
-    "https://github.com/entrysky/mageni/blob/c58dcc9bc43b7fb267bb10a8083ada356fbc81d1/plugins/2009/echo_udp.nasl",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x84000/83127/info.html",
 ]
