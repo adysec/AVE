@@ -1,11 +1,11 @@
 [basic]
-description = "ypserv（NIS 网络信息服务守护进程）存在访问控制缺陷，允许本地管理员直接修改系统密码表文件（passwd/shadow）。攻击者利用该漏洞可绕过正常认证机制创建或更改用户密码，从而获取未授权系统访问权限。该漏洞影响采用 NIS 认证架构的 Unix/Linux 系统，CVSS 评分 7.2，危害等级高。"
+description = "CVE-1999-0902 是 NIS（网络信息服务）服务端程序 ypserv 存在的一个权限控制缺陷。该漏洞的原理是 ypserv 在处理 NIS 密码表（如 passwd）相关操作时，未能对本地用户的操作权限进行严格校验，导致具有本地系统管理员（root 或等效权限）身份的用户可以绕过正常的管理流程，直接修改或篡改 NIS 域内的密码表数据。其影响范围为部署了 ypserv 提供 NIS 服务的类 Unix 系统（如 Solaris、Linux 等使用 NIS 进行集中账号管理的服务器），攻击条件要求攻击者已获得目标主机的本地管理员权限，利用方式是本地管理员借助该缺陷直接读写 NIS 密码映射表，从而可伪造或重置其他用户的凭据，破坏账号系统的完整性与安全性。"
 published = "1999-10-23T04:00:00.000"
-remediation = "升级 ypserv 至操作系统厂商提供的最新修补版本，在 /var/yp/securenets 中严格限定可信客户端 IP 范围，并配置 TCP Wrappers（/etc/hosts.allow 和 /etc/hosts.deny）对 ypserv 端口进行访问控制。由于 NIS 协议本身无加密认证机制，建议将认证系统迁移至 LDAP 或 Kerberos 以彻底消除风险。"
+remediation = "建议升级到包含修复的 ypserv 新版本（如 2.3 及以上，随系统发行版安全更新发布）。在无法立即升级时，限制 ypserv 守护进程仅监听受信任的内部网络接口，通过防火墙规则（如 iptables）禁止非授权主机访问 111 端口及 NIS 端口范围，并收紧本地管理员权限、启用 NIS 主从同步校验以降低被篡改密码表的风险。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Sun NIS ypserv 权限许可与访问控制漏洞"
+sources = ["avd"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1728,"inputTokens":9036,"outputTokens":17,"totalTokens":10781}}'
 updated = "2026-06-16T21:49:17.677"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0902"]
 ave_id = "AVE-1999-0701"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0902"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0902",
+    "https://github.com/CVEProject/cvelistV5/blob/4911ecf62ee3ece187fa403d342ac371a208a06f/cves/1999/0xxx/CVE-1999-0902.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0902",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0902.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e28f1b2cbe9256d47132558d422c401a0de0ac99/CVE/data/1999/CVE-1999-0902.json",
+    "https://github.com/github/advisory-database/blob/a19aba8d63d33f084c63def59eb8feb23a95b044/advisories/unreviewed/2022/04/GHSA-r774-h43h-88gg/GHSA-r774-h43h-88gg.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0902.json",
+    "https://github.com/microsoft/AzureLinuxVulnerabilityData/blob/c677135c5a44ecff201a46de647ea5bfab7c1598/osv/AZL-7456.json",
+    "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/1999/19991027.data",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--4dd129e1-1deb-4829-a342-fdffb82aeae6.json",
+]
