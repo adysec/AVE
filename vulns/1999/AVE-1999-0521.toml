@@ -1,23 +1,26 @@
 [basic]
-description = "SSH 1.2.27 认证代理中存在符号链接竞争（symlink race）漏洞。当 SSH 服务端以 root 权限运行并启用认证代理转发（authentication agent forwarding）时，会在 /tmp/ssh-{用户名}/ 目录下创建 UNIX 域套接字，套接字文件名基于当前进程 PID 生成且可预测。服务端在创建该套接字时未验证路径是否存在符号链接，直接跟随符号链接写入文件。攻击者可在 sshd 创建套接字之前，提前在该目录下建立指向敏感文件（如 /etc/nologin）的符号链接，导致服务端以 root 权限在符号链接指向的位置创建套接字文件，从而覆盖系统关键文件或拒绝合法用户登录。该漏洞影响 SSH Communications Security SSH 1.2.27，CVSS v2 评分 2.1，危害等级较低。"
-published = "1999-09-17T04:00:00.000"
-remediation = "立即升级 SSH Communications Security SSH 至 1.2.27 之后的安全修复版本，或迁移至 OpenSSH 替代。临时缓解措施：在 sshd_config 中禁用 AuthenticationAgentForwarding 选项，重启 SSH 服务；同时清理 /tmp/ssh-* 目录下的所有预创建符号链接，确保该目录仅由真实用户所有且权限为 0700，防止攻击者提前创建恶意链接覆盖 /etc/nologin 等关键系统文件。"
+description = "SSH Communications Security SSH 1.2.27 版本的 ssh-agent 认证代理在处理 UNIX 域套接字时存在符号链接跟随漏洞。当代理启动时会创建认证套接字文件，若攻击者事先在套接字路径位置放置指向敏感文件的符号链接，代理会以自身权限跟随该链接创建或覆盖目标文件。该漏洞影响本地多用户系统，攻击者需具备在套接字目录创建符号链接的权限，利用竞争条件可实现任意文件创建或权限提升，CVSS 评分为 2.1（低危）。"
+published = "1999-09-17"
+remediation = "建议将 SSH 升级至 1.2.28 或更高版本，该版本已修复认证代理盲目跟随符号链接的问题。如暂时无法升级，请勿在不可信或他人可写目录下启动 ssh-agent，并将套接字目录（如 /tmp）设置为严格权限（chmod 700）以限制其他用户创建符号链接，作为临时缓解措施。"
 score = 2.1
 severity = "LOW"
-sources = ["avd"]
-title = "SSH Communications Security SSH 1.2.27 身份验证套接字符号链接跟随漏洞"
-updated = "2026-06-16T21:49:03.440"
+sources = [
+    "exploitdb",
+    "cve",
+]
+title = "SSH Communications Security SSH 1.2.27 认证代理UNIX域套接字符号链接漏洞"
+updated = "2026-07-17"
 
 [exploit]
 exp_urls = []
-poc_urls = []
+poc_urls = ["https://www.exploit-db.com/exploits/19510"]
 
 [id]
 aliases = ["CVE-1999-0787"]
 ave_id = "AVE-1999-0521"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +29,4 @@ urls = [
     "http://marc.info/?l=bugtraq&m=93832856804415&w=2",
     "http://www.securityfocus.com/bid/660",
     "https://www.exploit-db.com/exploits/19510",
-    "https://github.com/CVEProject/cvelistV5/blob/7af4f92412aedbb5d40436f8e5560c660110d48c/cves/1999/0xxx/CVE-1999-0787.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0787",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0787.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bc69cd1e5221f68ef56bd10c5c61adf76a19f0fc/CVE/data/1999/CVE-1999-0787.json",
-    "https://github.com/github/advisory-database/blob/5164f1de7b3f58f6409a5df271b515e5969e7d38/advisories/unreviewed/2022/04/GHSA-93v8-gx5g-v586/GHSA-93v8-gx5g-v586.json",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0787.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--76e0f930-9120-4d0c-b52e-6cf26ac3a600.json",
-    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/c77faccf7cf2fb75741042a2f81e7d733860667d/1999.tsv",
 ]
