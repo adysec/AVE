@@ -1,11 +1,11 @@
 [basic]
-description = "IBM AIX 系统中 rexd 服务存在远程命令执行漏洞。rexd 是远程执行守护进程，其认证机制仅依赖客户端声称的主机名或 IP 地址，缺乏有效的身份验证措施。远程攻击者无需任何凭证即可利用该缺陷，绕过认证直接向目标系统发送执行命令的请求，导致任意系统命令执行。该漏洞影响启用 rexd 服务的 AIX 系统，攻击者可以利用此漏洞完全控制受影响的服务器。"
+description = "AIX 系统上的 rexd（远程执行守护进程）服务默认启用，该服务使用基于主机名/IP 地址的弱认证机制，未对用户身份进行加密验证。远程攻击者可通过伪造源地址或利用信任关系绕过认证，直接向目标系统发送执行命令请求，导致任意命令执行。该漏洞影响多个 AIX 版本，攻击者无需身份认证即可远程利用，危害严重。建议禁用 rexd 服务或配置严格访问控制列表。"
 published = "1992-03-01T05:00:00.000"
-remediation = "立即停止 rexd 服务并禁用自启动：在 /etc/inetd.conf 中注释 rexd 行，执行 refresh -s inetd 重读配置。在防火墙层面阻止对 RPC portmapper（端口 111）和 rexd 相关端口的未授权访问。如非业务必要，建议彻底卸载 rsh-server 软件包以避免该服务被意外重新启用。"
+remediation = "关闭并禁用 AIX 系统的 rexd 服务（执行 `stopsrc -s rexd` 并将 `/etc/inetd.conf` 中 rexd 行注释掉后重启 inetd），或在防火墙/TCP Wrapper 的 `/etc/hosts.allow`、`/etc/hosts.deny` 中限制仅可信主机可访问 512 端口，禁止将 rexd 暴露于不可信网络。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "IBM AIX rexd 弱认证远程命令执行漏洞"
+sources = ["epss"]
+title = "AIX rexd 服务认证弱漏洞"
 updated = "2026-06-16T21:48:45.213"
 
 [exploit]
@@ -17,20 +17,20 @@ aliases = ["CVE-1999-0627"]
 ave_id = "AVE-1999-0927"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0627",
-    "https://github.com/CVEProject/cvelistV5/blob/ab669d9fb37e52ed0619cb2b8265d34528fbe875/cves/1999/0xxx/CVE-1999-0627.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4d7236390d3d65194e590e3c8620543620af3984/cves/1999/0xxx/CVE-1999-0627.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0627",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0627.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/9074597bd191efd66c2a6bf1f5d8e60bc4801a90/content/CVE-1999-0627.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2ed73314b4d66512efbb22e0644e615bc00001f2/CVE/data/1999/CVE-1999-0627.json",
-    "https://github.com/github/advisory-database/blob/49899a53e9c2e620c99e0234afe3c50e512ad851/advisories/unreviewed/2022/04/GHSA-3jw7-6432-3rpc/GHSA-3jw7-6432-3rpc.json",
-    "https://github.com/NetBSD/pkgsrc-wip/blob/9e4b769742ed57395763142c26029c2f9910f15b/sara/PLIST",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0627.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6d3a932c05085f06507d23e5a0893fa8fe64ce42/CVE/data/1999/CVE-1999-0627.json",
+    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-3jw7-6432-3rpc/GHSA-3jw7-6432-3rpc.json",
+    "https://github.com/NetBSD/pkgsrc-wip/blob/c422e48dc56726d2d6118a1549ab8a7864e96b47/sara/PLIST",
     "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/R/rpc_rexd.nasl",
-    "https://github.com/olbat/nvdcve/blob/d21eb36f6164170df89822577def7df5351966d2/nvdcve/CVE-1999-0627.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/berez23/canvas/blob/cb306a9d8b1d8a743049a29164e6d324f8dabbfa/exploits/remote/unix/rexd/rexd.py",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--c23ad3c1-73a9-4c28-89b9-830a2ebc7be7.json",
 ]
