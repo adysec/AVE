@@ -1,12 +1,12 @@
 [basic]
-description = "目标系统运行了不必要的 NFS（网络文件系统）服务，虽然未导入或导出任何文件系统，但开放的 NFS 端口（2049/TCP 和 2049/UDP）可能被远程攻击者通过端口扫描发现并利用，导致系统信息泄露或攻击面扩大。攻击者可尝试枚举共享资源或利用 NFS 协议相关缺陷发起进一步攻击。建议关闭非必要的 NFS 服务以缩小攻击面。"
-published = "1999-01-01T05:00:00.000"
-remediation = "立即停止并禁用不必要的 NFS 服务：在 Linux 上执行 `systemctl stop nfs-server && systemctl disable nfs-server`，在 Solaris 上执行 `svcadm disable nfs/server`。如需保留 NFS 功能，在 `/etc/exports` 中严格限制可导出目录及访问客户端（如 `192.168.0.0/16(rw)`），并使用 `exportfs -ra` 生效。同时配置 iptables 或防火墙仅允许可信 IP 访问端口 2049(TCP/UDP) 和 111(TCP/UDP)。"
-score = 10
+description = "目标 Linux 系统上运行着一个多余的 NFS 服务器进程（如 nfsd），但该服务器并未实际导入或导出任何文件系统。由于 NFS 服务默认会在 TCP/UDP 111 端口（rpcbind）及 2049 端口（nfsd）上监听，即使没有导出共享目录，攻击者仍可通过网络远程连接到这些端口，枚举 RPC 服务信息、查询 NFS 导出列表或探测 mountd 等辅助进程，从而获取目标系统文件共享配置、潜在敏感目录路径等内部信息。攻击者无需任何认证凭据即可在局域网或互联网（若防火墙未限制）上完成探测，信息泄露程度取决于系统 NFS 相关进程的具体配置与运行状态。"
+published = "1999-01-01"
+remediation = "停止并禁用主机上未实际使用、未导入或导出任何文件系统的多余 NFS 服务进程（nfsd、mountd、rpc.statd 等），通过修改 /etc/exports 仅保留必要共享条目并执行 exportfs -r 重新加载，使用 systemctl disable nfs-server 禁止开机自启，同时在防火墙中限制 TCP/UDP 111 及 2049 端口仅对受信任网段开放，并安装操作系统最新安全补丁。"
+score = 10.0
 severity = "CRITICAL"
-sources = ["avd"]
-title = "多款 NFS 服务器实现多余服务运行信息泄露漏洞"
-updated = "2026-06-16T21:48:36.730"
+sources = ["cve"]
+title = "Linux NFS 服务器未授权运行信息泄露漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,11 @@ aliases = ["CVE-1999-0548"]
 ave_id = "AVE-1999-0812"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0548"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0548",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0548.json",
+]
