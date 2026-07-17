@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "验证目标系统是否存在 FreeBSD Seyon 终端仿真程序的本地缓冲区溢出漏洞。该漏洞源于 seyon 在处理命令行 -emulator 参数时未做长度校验，本地用户可通过传入特制恶意程序路径覆盖栈返回地址并提升权限至 root。PoC 通过检测 seyon 二进制文件存在性及 setgid 属性来判断系统是否受影响。"
+id = "POC-AVE-1999-0587"
+name = "CVE-1999-0821 FreeBSD Seyon Local Overflow PoC"
+severity = "medium"
+tags = ["ave-1999-0587"]
+vuln_id = [
+    "CVE-1999-0821",
+    "AVE-1999-0587",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/seyon"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Seyon"]
