@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD 3.3 系统自带的 gdc 程序在运行过程中未对符号链接进行安全校验，存在符号链接竞争（symlink attack）漏洞。本地已登录的普通用户可利用该缺陷，在程序以较高权限写入临时文件或配置文件时，预先创建指向受保护文件的符号链接，诱使 gdc 程序通过链接覆盖或修改本无权访问的系统文件或其他用户文件，从而提升本地权限或破坏系统完整性。该漏洞影响 FreeBSD 3.3 版本中默认安装的 gdc 程序，攻击前提是攻击者需在目标主机上拥有本地账户并能在程序运行期间实施符号链接操作，属于本地提权类安全问题。"
+description = "FreeBSD 3.3 系统中的 gdc 程序存在符号链接（symlink）竞态漏洞。该程序在运行时以不安全的方式创建或写入临时文件，本地已登录的普通用户可通过预先创建指向敏感文件（如 /etc/passwd 或其他用户文件）的符号链接，使 gdc 在后续操作中误写入目标文件，从而篡改系统文件或越权修改其他用户的数据。该漏洞影响本地已获得 shell 访问权限的低权限用户，攻击条件为攻击者需能在目标系统上本地执行命令并控制当前工作目录下的文件创建行为，利用方式仅需在运行 gdc 前构造恶意符号链接即可完成文件篡改，无法直接实现远程攻击或权限提升，危害等级较低。"
 published = "1999-12-01T05:00:00.000"
-remediation = "升级 FreeBSD 至 3.4 及以上版本（该漏洞已在 FreeBSD 3.4 中修复），或移除 gdc 程序的 setuid/setgid 权限位（chmod u-s /usr/bin/gdc），限制普通用户对 gdc 临时目录的写权限以防止符号链接劫持。"
+remediation = "升级到已修复该问题的 FreeBSD 3.3-STABLE 后续版本或 FreeBSD 3.4 及以上版本（通过 /usr/sbin/sysinstall 或 `freebsd-update` 更新系统并重新编译 base 系统）。如无法立即升级，可临时移除或限制 gdc 程序的 setuid 权限（`chmod u-s /usr/bin/gdc`），或限定普通用户对该程序所在目录及临时目录的写权限，以缓解本地符号链接攻击风险。"
 score = 2.1
 severity = "LOW"
-sources = ["exploitdb"]
-title = "FreeBSD 3.3 gdc 程序符号链接漏洞"
+sources = ["avd"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9129,"outputTokens":22,"totalTokens":10815}}'
 updated = "2026-06-16T21:49:12.140"
 
 [exploit]
@@ -24,10 +24,10 @@ status = "completed"
 urls = [
     "http://www.securityfocus.com/bid/835",
     "https://www.exploit-db.com/exploits/19650",
-    "https://github.com/CVEProject/cvelistV5/blob/8cc4bd87e08227d0a597e9249036a66efd1a35dd/cves/1999/0xxx/CVE-1999-0857.json",
+    "https://github.com/CVEProject/cvelistV5/blob/64fd197c5b8f3e4f9493cb07798bdca54583505c/cves/1999/0xxx/CVE-1999-0857.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0857",
     "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0857.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/a5bae259b1f96bb239cbfd83cd9b28dd6d9df406/CVE/data/1999/CVE-1999-0857.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f71c1815da5fc1872d1d999eebe8b28a9e3854c7/CVE/data/1999/CVE-1999-0857.json",
     "https://github.com/github/advisory-database/blob/2e86ccb45bad26f6ff984e676f6d08b925d0e6ee/advisories/unreviewed/2022/04/GHSA-p372-4582-3p84/GHSA-p372-4582-3p84.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0857.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
