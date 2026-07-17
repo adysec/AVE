@@ -1,11 +1,11 @@
 [basic]
-description = "rexec（远程执行）服务是一种未加密的远程命令执行协议，运行在 TCP 512 端口，使用主机名和 .rhosts 文件进行基于主机的认证。攻击者可通过伪造信任主机 IP 地址或利用 .rhosts 配置缺陷绕过认证，在目标系统上以当前用户权限执行任意命令，实现权限提升。该服务默认不启用加密，明文传输密码，容易被中间人攻击窃听。该漏洞 CVSS 评分 10.0，危害等级严重，建议禁用 rexec 服务并改用 SSH。"
+description = "CVE-1999-0618是一个针对主机rexec（远程执行）服务的安全漏洞，该服务允许在Unix/Linux系统中进行远程命令执行。此漏洞存在权限提升问题，攻击者可通过向目标主机发送恶意rexec请求，获取更高权限或直接执行任意命令。该漏洞影响所有启用rexec服务的主机，包括历史遗留Unix/Linux系统。攻击者无需身份验证即可触发漏洞，利用rexec服务通常具有root权限，一旦被利用，攻击者可完全控制受影响系统。尽管现代操作系统已逐渐废弃此服务，但历史遗留系统仍存在风险。此类权限提升漏洞可能导致系统完全失控，后果非常严重。"
 published = "1999-01-01T05:00:00.000"
-remediation = "立即禁用 rexec 服务（通常为 /etc/inetd.conf 中注释 exec 行或 systemctl stop rexec），并使用 SSH（OpenSSH）替代所有远程执行需求。检查系统是否仍在运行 rexecd/in.rexecd 进程并予以停止卸载。"
+remediation = "立即禁用 rexec 服务：在 Linux/Unix 系统中执行 `systemctl stop rexec && systemctl disable rexec`（或从 inetd/xinetd 配置中注释掉 rexec 行并重启服务）。在 /etc/hosts.equiv 和 .rhosts 文件中移除所有信任条目。使用 SSH（OpenSSH）替代 rexec 进行远程命令执行，确保 `/etc/ssh/sshd_config` 中 `PermitRootLogin` 设为 `without-password` 或 `no`，并禁用 `rhostsRSAAuthentication` 和 `HostbasedAuthentication`。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Unix rexec 服务权限提升漏洞"
+sources = ["epss"]
+title = "BSD rexec 服务权限提升漏洞"
 updated = "2026-06-16T21:48:44.510"
 
 [exploit]
@@ -17,20 +17,20 @@ aliases = ["CVE-1999-0618"]
 ave_id = "AVE-1999-0904"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://www.cve.org/CVERecord?id=CVE-1999-0618",
-    "https://github.com/CVEProject/cvelistV5/blob/5917e2b15694e167c1fd9ad85775b2bdfc5fe29c/cves/1999/0xxx/CVE-1999-0618.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a23c9152c0ce51f4625e88e1e6abe715ca2d7579/cves/1999/0xxx/CVE-1999-0618.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0618",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-0618.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/9074597bd191efd66c2a6bf1f5d8e60bc4801a90/content/CVE-1999-0618.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/a55bddfc5dd568e972e08b703ab596ed3580b7ba/CVE/data/1999/CVE-1999-0618.json",
-    "https://github.com/DefectDojo/django-DefectDojo/blob/619e5656f308396a3cc3a7f039c6426ae98baa17/unittests/scans/openvas/many_vuln.xml",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/rexecd.nasl",
-    "https://github.com/github/advisory-database/blob/49899a53e9c2e620c99e0234afe3c50e512ad851/advisories/unreviewed/2022/04/GHSA-jw99-fq4j-hx93/GHSA-jw99-fq4j-hx93.json",
-    "https://github.com/ornl-sava/nv/blob/8cbf2a775f3c35accff96fe30217e9afff65410e/data/metasploitable.2.0.nbe",
-    "https://github.com/olbat/nvdcve/blob/d21eb36f6164170df89822577def7df5351966d2/nvdcve/CVE-1999-0618.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0618.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6d3a932c05085f06507d23e5a0893fa8fe64ce42/CVE/data/1999/CVE-1999-0618.json",
+    "https://github.com/DefectDojo/django-DefectDojo/blob/d9905eb7656178d3e59e0bf8f1d53a9ee9e50186/unittests/scans/openvas/many_vuln.xml",
+    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-jw99-fq4j-hx93/GHSA-jw99-fq4j-hx93.json",
+    "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/2009/rexecd.nasl",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0618.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x84000/83127/info.html",
 ]
