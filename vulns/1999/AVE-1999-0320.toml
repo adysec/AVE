@@ -1,12 +1,12 @@
 [basic]
-description = "GNU glibc 2.1/2.1.1 版本中的 pt_chown 命令存在本地权限提升漏洞。该漏洞的原理是 pt_chown 程序在修改 TTY 终端设备所有权时缺乏严格的权限验证，允许本地用户更改属于其他用户的终端设备权限。攻击者作为系统本地低权限用户，可利用此漏洞将 TTY 设备的写权限授予自己或其他用户，进而窃取同一终端上的会话数据、注入命令或实施进一步攻击，最终实现从普通用户到特权用户的权限提升。该漏洞影响使用受影响 glibc 版本的 Linux 系统，CVSS 评分 4.6，危害等级为中危。"
-published = "1999-08-23T04:00:00.000"
-remediation = "立即将 GNU glibc 升级至 2.1.2 及以上版本（或发行版对应安全补丁），补丁移除了 pt_chown 的 setuid root 权限并修正 TTY 设备归属逻辑。若无法立即升级，可在系统中移除或重命名 /usr/libexec/pt_chown（或对应路径）并关闭其 setuid 位（chmod u-s），改用 devpts 文件系统挂载伪终端，以临时缓解本地提权风险。"
+description = "glibc 2.1.1 及之前版本中的 pt_chown 辅助程序被安装为 setuid root，本地普通用户可利用该程序在伪终端（PTY）设备上修改属主与权限，从而获取其他用户的控制终端访问权限，实现本地权限提升。攻击者需具备本地登录权限，通过精心构造的请求使 pt_chown 错误地将 TTY 设备归属到攻击者的 UID，进而读取或注入其他用户的终端会话内容。"
+published = "1999-08-23"
+remediation = "将系统 glibc 升级至 2.1.2 或更高版本，该版本已移除 pt_chown 的 setuid 权限，消除本地用户借由 pt_chown 篡改其他用户 TTY 设备进而提权的风险。如短期内无法升级，应立即执行 chmod u-s /usr/lib/pt_chown 去掉 setuid 位，或在确认无依赖后删除该二进制文件作为临时缓解措施。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9177,"outputTokens":53,"totalTokens":10894}}'
-updated = "2026-06-16T21:48:54.947"
+sources = ["epss"]
+title = "glibc pt_chown 权限提升漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0720"]
 ave_id = "AVE-1999-0320"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,5 @@ urls = [
     "http://www.securityfocus.com/bid/597",
     "http://www.securityfocus.com/templates/archive.pike?list=1&msg=lcamtuf.4.05.9907041223290.355-300000%40nimue.ids.pl",
     "https://www.exploit-db.com/exploits/19467",
-    "https://github.com/CVEProject/cvelistV5/blob/1ce36d0de2f3ddd1d56c222c398df994c8c331b1/cves/1999/0xxx/CVE-1999-0720.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0720",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0720.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f581b54f28a314b57ac171b83d3b2d21db7414a0/CVE/data/1999/CVE-1999-0720.json",
-    "https://github.com/github/advisory-database/blob/11845a9fe6e6b4d82150d9fd8a4257b88a244a45/advisories/unreviewed/2022/04/GHSA-xcvw-xrwf-77hv/GHSA-xcvw-xrwf-77hv.json",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0720.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--6fad8cd3-dc98-433e-82ae-44582e520fb1.json",
-    "https://github.com/shamedgh/confine/blob/a75dad3ad336e6258a42cd1ce4af061eea68ed76/cve.files/cveToFile.json.type.csv",
+    "https://github.com/CVEProject/cvelistV5/blob/64d76d92cfbd9c4de4a352a59a2e52cadebc3afd/cves/1999/0xxx/CVE-1999-0720.json",
 ]
