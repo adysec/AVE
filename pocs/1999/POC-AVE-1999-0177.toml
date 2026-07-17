@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测 EZMall 2000 购物车系统因 mall2000.cgi 配置不当而导致的订单日志信息泄露。错误配置使 order.log 等文件位于 Web 可访问目录下，可能泄露客户姓名、信用卡号、地址等敏感信息。"
+description = "EZMall 2000 购物车 CGI 程序 mall2000.cgi 因错误配置可能泄露敏感私有信息（如客户订单、日志）。通过直接请求该 CGI 路径及其常见日志文件（mall_log_files/order.log），观察响应是否包含私有数据来验证漏洞。"
 id = "POC-AVE-1999-0177"
-name = "EZMall 2000 mall2000.cgi 配置不当信息泄露 PoC"
+name = "CVE-1999-0606 EZMall 2000 mall2000.cgi 信息泄露 PoC"
 severity = "medium"
 tags = ["ave-1999-0177"]
 vuln_id = [
@@ -15,31 +15,42 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/mall_log_files/order.log"
+path = "/cgi-bin/mall2000.cgi"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "ORDER",
-    "Credit",
-    "Name",
-    "Address",
+    "order",
+    "credit",
+    "email",
+    "name",
+    "address",
+    "phone",
 ]
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/mall2000.cgi"
+path = "/cgi-bin/mall_log_files/order.log"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "mall2000",
     "order",
-    "config",
+    "credit",
+    "email",
+    "name",
+    "address",
+    "phone",
 ]
