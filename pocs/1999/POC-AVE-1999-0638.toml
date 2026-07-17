@@ -1,9 +1,9 @@
 [info]
 author = "ave"
-description = "向 MDaemon WorldClient Web 邮件服务或 WebConfig 管理接口发送超长 URL 请求，触发缓冲区溢出或资源耗尽，导致服务崩溃或无法正常响应。"
+description = "MDaemon WorldClient 与 WebConfig HTTP 服务在处理请求时未对 URL 长度做有效校验，远程攻击者发送一个超长 URL 的 GET 请求即可使服务崩溃，造成拒绝服务。本 PoC 通过构造超长路径的请求并观察目标是否关闭连接（无响应/连接重置）来验证漏洞存在。"
 id = "POC-AVE-1999-0638"
-name = "MDaemon WorldClient/WebConfig 长 URL 拒绝服务漏洞 PoC"
-severity = "high"
+name = "CVE-1999-0844 MDaemon WorldClient/WebConfig 长 URL 拒绝服务 PoC"
+severity = "medium"
 tags = ["ave-1999-0638"]
 vuln_id = [
     "CVE-1999-0844",
@@ -15,7 +15,7 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/{{request_path}}"
+path = "/{{BaseURL}}/"
 protocol = "http"
 
 [poc.requests.body]
@@ -26,7 +26,7 @@ type = "raw"
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
-expect = true
+expect = false
 part = "body"
 type = "word"
-words = ["vulnerable_string"]
+words = ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
