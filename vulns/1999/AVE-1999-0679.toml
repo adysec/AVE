@@ -1,11 +1,11 @@
 [basic]
-description = "Oracle 8 8.1.5 版本的智能代理组件存在安全漏洞，影响 Oracle Intelligent Agent 组件中的 dbsnmp 二进制程序。该漏洞源于 dbsnmp 通过 ORACLE_HOME 环境变量定位 nmiconf.tcl 配置脚本的可利用性，攻击者可通过设置恶意 ORACLE_HOME 环境变量，将控制权移交给自身的 TCL 脚本，从而实现局部权限提升。攻击者仅需具备目标系统的本地访问权限即可触发该漏洞，导致被攻击系统被完全接管。该漏洞影响 Oracle 8 及更高版本的 Intelligent Agent，攻击者可利用此漏洞获取更高权限，包括潜在的数据库权限，从而严重威胁 Oracle 8 数据库的安全性和完整性。"
+description = "Oracle 8i Intelligent Agent 中的 dbsnmp 组件存在本地权限提升漏洞。攻击者可通过设置 ORACLE_HOME 环境变量，使 dbsnmp 进程在查找 nmiconf.tcl 脚本时加载攻击者指定的恶意路径，从而获得系统更高权限。该漏洞影响 Oracle 8 和 8.1.5 版本，攻击者需要具备本地登录系统权限后才能利用此漏洞进行提权攻击，CVSS 评分为 4.6，危害等级为中等。"
 published = "1999-08-16T04:00:00.000"
-remediation = "升级至 Oracle 8.1.6 或更高版本以修复 dbsnmp 对 ORACLE_HOME 环境变量的信任问题。如无法立即升级，应限制 dbsnmp 可执行文件的权限（chmod 750 并归属专用低权账户），禁止普通用户设置 ORACLE_HOME，并通过 sudo 仅授权必要命令运行 dbsnmp，避免本地用户借 nmiconf.tcl 路径加载获取提权。"
+remediation = "建议将 Oracle 8.1.5 升级至 Oracle 8.1.7 或更高版本，以修复 Intelligent Agent 中 dbsnmp 因信任 ORACLE_HOME 环境变量导致的本地权限提升漏洞。如短期内无法升级，可临时修改 dbsnmp 脚本，将 nmiconf.tcl 的路径写死为绝对路径，避免通过环境变量查找；同时限制数据库服务器上的本地用户访问权限，仅授予必要的操作系统账户，减少本地攻击面。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "Oracle Intelligent Agent 本地权限提升漏洞"
+sources = ["avd"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"inputTokens":16348,"outputTokens":37,"totalTokens":16385}}'
 updated = "2026-06-16T21:49:15.940"
 
 [exploit]
@@ -24,11 +24,11 @@ status = "completed"
 urls = [
     "http://www.securityfocus.com/bid/585",
     "https://www.exploit-db.com/exploits/19461",
-    "https://github.com/CVEProject/cvelistV5/blob/a23c9152c0ce51f4625e88e1e6abe715ca2d7579/cves/1999/0xxx/CVE-1999-0888.json",
+    "https://github.com/CVEProject/cvelistV5/blob/6719fd7854f40dff0ff13642969f1c4a3c1e227a/cves/1999/0xxx/CVE-1999-0888.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0888",
     "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0888.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2853180ecaf9d7461fd6bb98e4528ce223cae51d/CVE/data/1999/CVE-1999-0888.json",
-    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-w5qw-2qqp-q5cr/GHSA-w5qw-2qqp-q5cr.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e54d5f68d5b83411d51ab3df8f5c1b120360f139/CVE/data/1999/CVE-1999-0888.json",
+    "https://github.com/github/advisory-database/blob/3c5965e4a3ad0d0b437f880f71224c9e3d8d5fd5/advisories/unreviewed/2022/04/GHSA-w5qw-2qqp-q5cr/GHSA-w5qw-2qqp-q5cr.json",
     "https://github.com/marcellodesales/aibbp-reverse-engineer/blob/960f610d597aae9fec1cc5f03c68679be00c222d/reverse_engineer/acunetix/vulnerabilities/vdb/1999/0xxx/cve-1999-0888.yaml",
     "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
