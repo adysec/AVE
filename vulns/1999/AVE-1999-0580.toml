@@ -1,12 +1,12 @@
 [basic]
-description = "Solaris 7.0 系统中的 kcms_configure 工具存在基于栈的缓冲区溢出漏洞。本地攻击者可通过设置超长的 NETPATH 环境变量，在调用 kcms_configure 时触发缓冲区溢出，从而覆盖进程内存空间中的关键数据，实现权限提升并获取 root 权限。该漏洞利用条件简单，仅需本地 Shell 访问权限即可触发，影响 Solaris 7.0 系统。"
+description = "Sun Solaris 7.0（含 SPARC 与 x86 平台）中 /usr/openwin/bin/kcms_configure 程序在处理 Kodak Color Management System（KCMS）配置文件参数时存在本地缓冲区溢出缺陷。该程序默认以 setuid root 权限安装，本地普通用户可通过构造超长的命令行参数或恶意 KCMS 配置文件触发溢出，覆盖返回地址并执行任意代码，从而将权限提升至 root。攻击条件为攻击者需拥有目标主机的本地登录权限，且目标系统未移除该程序的 setuid 位。"
 published = "1999-11-20T05:00:00.000"
-remediation = "Solaris 7.0（SunOS 5.7）已停止官方支持多年，建议立即升级至受支持的 Oracle Solaris 11.4 版本以获得完整安全补丁。若短期内无法升级操作系统，应立即执行以下缓解措施：使用 chmod 命令移除 kcms_configure 二进制文件的 SUID/SGID 位（chmod u-s /usr/lib/kcs/kcms_configure），并限制该文件的访问权限至仅 root 用户可读写执行（chmod 700 /usr/lib/kcs/kcms_configure）。同时在系统层面设置 NETPATH 环境变量的最大长度限制，防止通过超长环境变量触发缓冲区溢出。建议在防火墙层面禁止非授权用户对相关配置工具的访问，并定期审计系统中 /usr/lib/kcs 目录下所有二进制文件的权限设置。"
+remediation = "建议升级到 Sun 官方发布的 Solaris 7 修补版本，安装对应补丁簇（SPARC 平台补丁 107794、x86 平台补丁 107797），或应用 Sun Alert 缺陷修复包。如暂无法打补丁，可临时移除 kcms_configure 的 setuid root 权限（执行 chmod u-s /usr/openwin/bin/kcms_configure），并限制普通用户对该 KCMS 配置文件目录的写入访问作为缓解措施。"
 score = 7.2
 severity = "HIGH"
-sources = ["avd"]
-title = "Sun Solaris kcms_configure 本地缓冲区溢出提权漏洞"
-updated = "2026-06-16T21:49:07.333"
+sources = ["exploitdb"]
+title = "Sun Solaris 7.0 kcms_configure 本地缓冲区溢出导致权限提升漏洞"
+updated = "2026-07-17T00:00:00Z"
 
 [exploit]
 exp_urls = []
@@ -23,16 +23,8 @@ status = "completed"
 [references]
 urls = [
     "http://www.securityfocus.com/bid/831",
-    "http://www.securityfocus.com/templates/archive.pike?list=1&msg=38433B7F5A.53F4SHADOWPENGUIN%40fox.nightland.net",
     "https://www.exploit-db.com/exploits/19647",
-    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/0xxx/CVE-1999-0818.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0818",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0818.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3950bef6f70c411ea08c8b2f1665dbd7d38277bd/CVE/data/1999/CVE-1999-0818.json",
-    "https://github.com/github/advisory-database/blob/51a0e15452743e596ced46bb3f156961c52df5bb/advisories/unreviewed/2022/04/GHSA-5w4x-2jc2-hr7r/GHSA-5w4x-2jc2-hr7r.json",
+    "https://github.com/CVEProject/cvelistV5/blob/770e8f09ce14e637a09c7c619e10772aa6172bea/cves/1999/0xxx/CVE-1999-0818.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e1298ff7aafe81b936ca67ecef34c3124d6c72f0/CVE/data/1999/CVE-1999-0818.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0818.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--cb83b2d2-d46b-4c74-8848-c50b8c6c83da.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/831/info.html",
-    "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_overflow.txt",
 ]
