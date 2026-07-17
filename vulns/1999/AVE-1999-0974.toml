@@ -1,11 +1,11 @@
 [basic]
-description = "NIS+（Network Information Service Plus）是 Sun Microsystems 开发的网络目录服务，用于集中管理用户账户、主机名和密码等敏感信息。该漏洞源于目标系统上运行的 NIS+ 服务未配置适当的访问控制机制，远程攻击者无需任何身份认证即可通过网络向 NIS+ 服务发起查询请求，获取系统中的密码哈希、网络配置和用户信息等敏感数据，严重时可导致攻击者完全控制目标系统。CVSS v2 评分为 10.0，危害等级严重。"
+description = "CVE-1999-0653 涉及 Unix 系统中与 NIS+（网络信息服务增强版）相关的组件服务存在远程安全漏洞。该漏洞的原理是目标主机上运行了存在安全隐患的 NIS+ 组件服务，攻击者可在未经过身份认证的情况下，通过网络远程探测并连接该服务，进而获取敏感的系统信息服务（如用户、主机名映射等），为后续提权或横向移动创造条件。其影响范围涵盖运行 NIS+ 服务的各类 Unix 及类 Unix 系统，攻击条件为攻击者能够与目标的 NIS+ 服务端口建立网络连接，利用方式主要是远程枚举或滥用该服务暴露的信息以辅助进一步入侵。"
 published = "1999-01-01T05:00:00.000"
-remediation = "立即停止并禁用 NIS+ 相关服务（如 rpc.nisd），在防火墙上阻止对 RPC 端口映射服务 (TCP/UDP 111) 和 NIS+ 相关端口的入站访问。如业务需要，建议迁移至 LDAP/Kerberos 作为替代方案，并对 NIS+ 服务实施严格的主机访问控制列表 (hosts.allow/hosts.deny)。"
+remediation = "在受影响的 Unix 主机上停止并禁用 NIS+ 服务（执行 `svcadm disable nisplus` 或注释 `/etc/nsswitch.conf` 中 nisplus 条目后停用 rpc.nisd），将 NIS+ 端口（如 32771 等）及 SunRPC 端口映射器 111 端口通过防火墙/iptables 仅对可信管理网段开放，改用更安全的 LDAP 目录服务替代 NIS+，并升级操作系统到厂商已移除 NIS+ 默认启用的最新补丁版本（如 Solaris 10 最新 Recommended Patch Cluster 或迁移至 Solaris 11）。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "Sun NIS+ 服务远程未授权访问漏洞"
+sources = ["epss"]
+title = "Unix 操作系统 NIS+ 组件服务远程安全漏洞"
 updated = "2026-06-16T21:48:47.190"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0653"]
 ave_id = "AVE-1999-0974"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://www.cve.org/CVERecord?id=CVE-1999-0653"]
+urls = [
+    "https://www.cve.org/CVERecord?id=CVE-1999-0653",
+    "https://github.com/CVEProject/cvelistV5/blob/d3c24daa4de56d2cb70c1fd2d4f8d5a03642400e/cves/1999/0xxx/CVE-1999-0653.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0653",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0653.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2a1a519e4e9d3e489c2169e3db04269b559dd18e/CVE/data/1999/CVE-1999-0653.json",
+    "https://github.com/github/advisory-database/blob/3c5965e4a3ad0d0b437f880f71224c9e3d8d5fd5/advisories/unreviewed/2022/04/GHSA-m56v-p7mx-f4wp/GHSA-m56v-p7mx-f4wp.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0653.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/HxOpSec/phantomscan/blob/e11e1633e92a49e4696cc9c01fd59f95e0fb7756/src/modules/vuln_scan.cpp",
+    "https://github.com/olbat/nvdcve/blob/178b809924783e13787d17bb1b1fd55ad3b8639b/nvdcve/CVE-1999-0653.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+]
