@@ -1,15 +1,10 @@
 [info]
-author = "AVE"
-description = "检测 Debian GNU/Linux 2.1 Apache HTTPd 是否因 ServerRoot 默认指向 /usr/doc 目录而允许远程访问服务器文档文件"
+author = "ave"
+description = "验证目标 Debian Apache 服务器是否存在 /usr/doc 目录遍历导致的信息泄露漏洞。通过 HTTP GET 请求访问 /doc/ 路径，若返回包含文档文件列表或内容，则判定存在漏洞。"
 id = "POC-AVE-1999-1016"
-name = "Debian GNU/Linux Apache HTTPd 默认配置信息泄露 PoC"
+name = "Debian Apache HTTP Server /usr/doc 目录信息泄露 PoC"
 severity = "medium"
-tags = [
-    "cve-1999-0678",
-    "debian",
-    "apache",
-    "information-disclosure",
-]
+tags = ["ave-1999-1016"]
 vuln_id = [
     "CVE-1999-0678",
     "AVE-1999-1016",
@@ -25,15 +20,26 @@ protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "Apache",
+    "manual",
+    "documentation",
+    "doc",
+]
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/usr/doc/"
+path = "/{{BaseURL}}/doc/manual/"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "Apache",
+    "manual",
+    "documentation",
+]
