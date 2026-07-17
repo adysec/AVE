@@ -1,12 +1,15 @@
 [basic]
-description = "ISC BIND（Berkeley Internet Name Domain）是一款广泛使用的DNS服务器软件。其named守护进程在处理特制的maxdname（最大域名长度）请求时存在拒绝服务漏洞，远程攻击者无需认证即可向目标服务器发送精心构造的域名查询数据包，触发边界条件检查异常导致named进程崩溃。该漏洞影响ISC BIND 8.2.1及之前版本，攻击者利用此漏洞可合法阻断目标DNS服务，影响网络解析功能。厂商已发布补丁，建议升级至8.2.2及以上版本。"
-published = "1999-11-10T05:00:00.000"
-remediation = "立即升级 ISC BIND 至 8.2.2 及以上版本，该版本已修复 maxdname 导致的拒绝服务问题。长期建议迁移至 BIND 9.x 系列，因 BIND 8 系列已停止维护。若无法升级，可在 named.conf 中限制 recursive 查询来源 IP 范围，减少攻击面。"
-score = 5
+description = "ISC BIND 域名服务器软件在处理 maxdname 相关逻辑时存在拒绝服务问题。攻击者无需身份验证即可向目标 BIND named 服务发送包含过长域名的 DNS 查询或响应相关数据，触发缓冲区或整数处理异常，导致 named 进程崩溃或卡死，造成 DNS 解析服务中断。该漏洞影响 ISC BIND 8.2.1 及更早版本，可在网络可达条件下远程触发，主要危害是可用性受损，企业与公网 DNS 环境中可能导致大范围名称解析失败。"
+published = "1999-11-10"
+remediation = "将 ISC BIND 升级至 8.2.2 或更高已修复版本；无法立即升级时，在 named.conf 中限制域名处理相关长度并启用 check-names 等严格校验作为临时缓解，并限制对 named 的网络访问面。"
+score = 5.0
 severity = "MEDIUM"
-sources = ["cve"]
-title = "ISC BIND 域名服务器拒绝服务漏洞"
-updated = "2026-06-16T21:49:11.170"
+sources = [
+    "avd",
+    "nvd",
+]
+title = "ISC BIND maxdname 拒绝服务漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,11 +20,16 @@ aliases = ["CVE-1999-0849"]
 ave_id = "AVE-1999-0649"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://sunsolve.sun.com/pub-cgi/retrieve.pl?doctype=coll&doc=secbull/194",
     "http://www.securityfocus.com/bid/788",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-0849",
+    "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-1999-0849",
+    "https://github.com/CVEProject/cvelistV5/blob/8cc4bd87e08227d0a597e9249036a66efd1a35dd/cves/1999/0xxx/CVE-1999-0849.json",
+    "https://github.com/github/advisory-database/blob/2e86ccb45bad26f6ff984e676f6d08b925d0e6ee/advisories/unreviewed/2022/05/GHSA-4hq8-3ffh-25xf/GHSA-4hq8-3ffh-25xf.json",
+    "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/bind_vulnerable.nasl",
 ]
