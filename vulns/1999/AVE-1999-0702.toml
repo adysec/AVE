@@ -1,11 +1,11 @@
 [basic]
-description = "AIX 操作系统数据包过滤模块中的 genfilt 函数存在端口范围过滤缺陷，当目标端口号大于 32767 时，genfilt 无法正确过滤相关流量。远程攻击者可利用该漏洞通过高端口绕过系统配置的包过滤规则，实现未授权访问，影响 IBM AIX 系统的网络安全策略有效性。CVSS 评分 7.5，危害等级高危。"
+description = "IBM AIX 操作系统的数据包过滤模块（Packet Filtering Module）中的 genfilt 命令存在访问控制逻辑缺陷。该漏洞源于 genfilt 在处理目标端口大于 32767 的过滤规则时，无法正确识别并过滤发往此类高位端口的网络流量，导致本应被拒绝的报文绕过防火墙规则成功抵达目标服务。影响范围为运行存在缺陷版本 AIX 且启用了基于 genfilt 的数据包过滤功能的主机。攻击条件为攻击者需能够向目标系统发送网络数据包，且目标系统配置了针对高位端口（>32767）的拒绝/限制规则。利用方式是通过向目标主机的高位端口（如 32768 及以上）发送特制流量，由于过滤失效，攻击者可以绕过预期的访问控制策略，进而探测或访问本应被屏蔽的本地服务，可能造成未授权访问与信息泄露。"
 published = "1999-10-26T04:00:00.000"
-remediation = "立即安装 IBM APAR IX82821 对应的系统补丁（适用于 AIX 4.3.x/5.x）。如无法安装补丁，应避免在 genfilt 规则中依赖大于 32767 的目标端口进行过滤，改用 AIX IPsec 过滤或第三方防火墙替代 genfilt 实现高端口过滤策略。对于仍在运行的旧版 AIX 系统，建议迁移至受支持的 AIX 7.x 版本并使用原生 iptables 过滤功能。"
+remediation = "建议立即将 IBM AIX 系统升级至已修复该缺陷的补丁版本（IBM 官方针对 genfilt 数据包过滤模块发布的 APAR 补丁，如 4.3.3 及以上已修正版本），并通过 installp 安装对应维护包。若无法立即升级，可在 Packet Filtering Module 中绕过 genfilt 改用 ipfilter 或防火墙规则，并临时在边界防火墙显式拒绝目标端口大于 32767 的入站流量作为缓解措施。"
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
-title = "IBM AIX 数据包过滤模块 genfilt 端口过滤绕过漏洞"
+sources = ["avd"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1728,"inputTokens":9072,"outputTokens":23,"totalTokens":10823}}'
 updated = "2026-06-16T21:49:17.797"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0903"]
 ave_id = "AVE-1999-0702"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0903"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0903",
+    "https://github.com/CVEProject/cvelistV5/blob/0e4e2425598fefb3de3071f42b9b8bdfa153b170/cves/1999/0xxx/CVE-1999-0903.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0903",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0903.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6cc69bd737a75cf8d608267baabc212a8abe28cf/CVE/data/1999/CVE-1999-0903.json",
+    "https://github.com/github/advisory-database/blob/f87f315ba7f3426dac3aefaf005ec6f425142619/advisories/unreviewed/2022/04/GHSA-fmhc-m7qr-cvhx/GHSA-fmhc-m7qr-cvhx.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0903.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153700_153800.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000833.txt",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/olbat/nvdcve/blob/178b809924783e13787d17bb1b1fd55ad3b8639b/nvdcve/CVE-1999-0903.json",
+]
