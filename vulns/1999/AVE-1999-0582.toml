@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD 系统下 Seyon 2.14b 版本存在相对路径处理不当漏洞。当 Seyon 执行 xterm 和 seyon-emu 命令时，未指定绝对路径而是依赖 PATH 环境变量查找可执行文件。本地攻击者可通过修改 PATH 环境变量，在其中植入恶意的 xterm 或 seyon-emu 程序，诱导 Seyon 以用户权限执行恶意代码，从而实现权限提升。该漏洞需攻击者拥有本地访问权限方可利用，且 Seyon 进程所运行的 shell 必须来源于 setuid 环境。"
+description = "FreeBSD 系统中的 Seyon（Muhammad M. Saggaf 开发的终端通信程序，版本 2.14b 及更早版本）在调用 xterm 和 seyon-emu 命令时使用了相对路径搜索机制，未对 PATH 环境变量进行安全校验。本地攻击者可构造恶意的 PATH 变量，将包含同名恶意可执行文件的目录注入到搜索路径前端，诱使 Seyon 程序执行攻击者控制的恶意程序，从而实现本地权限提升。该漏洞仅需本地访问权限即可利用，条件为用户具有修改 PATH 环境变量的能力，影响所有安装了该版本 Seyon 的 FreeBSD 系统。厂商未提供官方补丁，建议卸载或升级至不受影响的版本。"
 published = "1999-12-01T05:00:00.000"
-remediation = "建议立即升级 seyon 至已修复该路径遍历问题的版本（参考 FreeBSD-SA-99:07 安全公告）。通过绝对路径调用 xterm 和 seyon-emu 命令，避免依赖 PATH 环境变量。如无法升级，可移除 seyon 二进制文件的 setuid 权限位（`chmod u-s /usr/local/bin/seyon`）或直接卸载该软件，改用 modem-manager 等替代方案。"
+remediation = "立即卸载或禁用 seyon 程序（该软件已长期停止维护），并使用现代替代工具如 minicom 或 cu 代替串口通信功能。若必须保留 seyon，在启动前应确保 PATH 环境变量仅包含受信任的系统目录（如 /bin、/usr/bin），并使用 chflags 或文件权限限制 seyon 二进制文件的 SUID/SGID 位，防止其以提升权限运行 xterm 或 seyon-emu。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["cve"]
-title = "FreeBSD Seyon PATH环境变量本地权限提升漏洞"
+sources = ["avd"]
+title = "FreeBSD Seyon 本地权限提升漏洞"
 updated = "2026-06-16T21:49:07.583"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0820"]
 ave_id = "AVE-1999-0582"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,4 +25,14 @@ urls = [
     "http://www.osvdb.org/5996",
     "http://www.securityfocus.com/bid/838",
     "https://www.exploit-db.com/exploits/19609",
+    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/0xxx/CVE-1999-0820.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0820",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0820.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3950bef6f70c411ea08c8b2f1665dbd7d38277bd/CVE/data/1999/CVE-1999-0820.json",
+    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-7v47-cj5p-r739/GHSA-7v47-cj5p-r739.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0820.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--34ed89a5-13a4-40b5-ab43-cb02d577bbb7.json",
+    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
 ]
