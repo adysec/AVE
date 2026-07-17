@@ -1,11 +1,11 @@
 [basic]
-description = "rsh/rlogin 服务默认不加密传输所有数据，包括用户凭据和命令内容，且其基于 IP 地址的信任认证机制极易被伪造。攻击者可通过网络嗅探截获明文凭据，或通过 IP 欺骗绕过信任认证直接远程登录目标主机执行任意命令。该问题影响所有运行 rsh/rlogin 服务的 Unix/Linux 系统，CVSS 评分 7.5，危害等级高。修复方法为禁用 rsh/rlogin 服务，改用 SSH 等加密协议。"
+description = "CVE-1999-0651 指类 Unix 系统中 rsh（远程 shell）与 rlogin（远程登录）服务被不必要地开启所导致的安全隐患。该漏洞原理在于 rsh/rlogin 依赖基于 IP 地址或 .rhosts 文件的弱信任机制进行身份认证，缺乏强加密与口令保护。影响范围为运行 rshd、rlogind 等服务的 Unix/Linux 主机，攻击者在可网络访问目标且能通过伪造源地址或利用信任关系绕过认证的条件下，可远程以合法用户身份登录并执行命令，造成未授权访问与远程命令执行风险。建议关闭相关服务并改用 SSH 等安全协议。"
 published = "1999-01-01T05:00:00.000"
-remediation = "禁用 rsh/rlogin 服务：在 inetd/xinetd 配置中注释或删除 shell/login 服务条目，执行 `systemctl disable rsh.socket rlogin.socket`（systemd 系统）或重启 inetd 服务。使用 SSH 替代 rsh/rlogin 进行远程管理，在防火墙上阻断端口 513/tcp（rlogin）和 514/tcp（rsh）。"
+remediation = "立即在 /etc/inetd.conf 或 systemd 中禁用 rsh、rlogin、rexec 服务（执行 `systemctl disable rsh.socket rlogin.socket rexec.socket` 并注释对应行后重启 inetd），改用 SSH 进行远程登录。若业务必须保留，应在边界防火墙阻断 TCP 512/513/514 端口，并配置 /etc/hosts.equiv 与 ~/.rhosts 为空以限制信任主机。"
 score = 7.5
 severity = "HIGH"
-sources = ["avd"]
-title = "Unix R系列服务远程未授权访问漏洞"
+sources = ["epss"]
+title = "Unix rsh/rlogin 服务远程安全漏洞"
 updated = "2026-06-16T21:48:47.017"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0651"]
 ave_id = "AVE-1999-0971"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/2995"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/2995",
+    "https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/1999/CVE-1999-0651.md",
+    "https://github.com/CVEProject/cvelistV5/blob/d3c24daa4de56d2cb70c1fd2d4f8d5a03642400e/cves/1999/0xxx/CVE-1999-0651.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0651",
+    "https://github.com/e-m-b-a/emba/blob/3849d89b6731bff3e36872357ae52027b0bfe6c1/config/msf_cve-db.txt",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2a1a519e4e9d3e489c2169e3db04269b559dd18e/CVE/data/1999/CVE-1999-0651.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0651.md",
+    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/rsh.nasl",
+    "https://github.com/github/advisory-database/blob/3c5965e4a3ad0d0b437f880f71224c9e3d8d5fd5/advisories/unreviewed/2022/04/GHSA-3393-gh57-mr75/GHSA-3393-gh57-mr75.json",
+    "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/2011/secpod_rlogin.nasl",
+    "https://github.com/Chudry/Xerror/blob/07ec57cabcd27cdb47c89af452bdf4ed07207347/cve_2_MSF_exploit_Mapping/msf_module_result/msf_module_cve.txt",
+]
