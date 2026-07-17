@@ -1,12 +1,12 @@
 [basic]
-description = "Microsoft Windows NT 4.0 及其 Service Pack 版本存在空会话（Null Session）安全漏洞。远程攻击者无需身份认证即可通过 NetBIOS 会话与目标系统建立空连接，进而远程访问 Windows 注册表，读取系统敏感配置信息（如用户账户、共享资源、安全策略等）。该漏洞源于 Windows NT 默认允许匿名用户通过 IPC$ 管道建立空会话并访问注册表，攻击条件低，无需任何凭据即可实施信息收集，为后续渗透攻击提供便利。CVSS v2.0 评分 7.5，危害等级高。"
-published = "1997-01-01"
-remediation = '安装 Windows NT 4.0 Service Pack 6a 或更高版本，同时在注册表 HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\LSA 中将 RestrictAnonymous 值设为 1（禁止枚举 SAM 账户）或 2（禁止所有匿名连接），并禁用 NetBIOS over TCP/IP 以降低空会话利用风险。'
-score = 5
-severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "Microsoft Windows NT 4.0 空会话管理信息泄露漏洞"
-updated = "1997-01-01"
+description = "Microsoft Windows NT 4.0（含 SP1 至 SP5）的注册表允许未通过身份认证的远程用户借助空会话（Null Session）建立匿名连接并远程访问注册表数据，而无需具备管理员权限。该漏洞影响所有启用默认安全配置、开放 139/445 端口且允许空会话连接的 Windows NT 4.0 系统。攻击者只需与目标主机建立空会话（无需用户名与口令），即可通过远程注册表服务读取、枚举甚至修改敏感配置信息，进而获取系统账户、共享及服务配置等关键信息，为进一步的权限提升与入侵创造条件。"
+published = "1997-01-01T05:00:00.000"
+remediation = '安装 Microsoft Windows NT 4.0 Service Pack 4 及以上版本补丁，在注册表 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\LSA 中将 RestrictAnonymous 设为 1（或 2）以禁止空会话枚举，并停止/禁用"Remote Registry"服务（将启动类型改为禁用），同时在边界防火墙阻断 TCP 139/445 端口的入站连接作为临时缓解。'
+score = 7.5
+severity = "HIGH"
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"inputTokens":10853,"outputTokens":21,"totalTokens":10874}}'
+updated = "2026-06-16T21:48:38.693"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,21 @@ aliases = ["CVE-1999-0562"]
 ave_id = "AVE-1999-0825"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://www.exploit-db.com/exploits/19372"]
+urls = [
+    "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A1023",
+    "https://www.exploit-db.com/exploits/19372",
+    "https://github.com/CVEProject/cvelistV5/blob/abfccbe3a11aa2b9dde2cfba5a12ba6256820a51/cves/1999/0xxx/CVE-1999-0562.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0562",
+    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0562.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2a20296d4b03dbd5c5991115b8296a9f2b947592/CVE/data/1999/CVE-1999-0562.json",
+    "https://github.com/Azure/Azure-Sentinel/blob/29e1987d1015171e4c9687edfd31170902b59c7a/Sample%20Data/Custom/beSECURE_ScanResults_CL.json",
+    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/smb_registry_access.nasl",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/olbat/nvdcve/blob/763b4dfa75aa1890a155aad1b583fdcab8111c49/nvdcve/CVE-1999-0562.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--f335152f-46ff-480a-9493-351c891d7140.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x7000/6830/info.html",
+]
