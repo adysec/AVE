@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "Microsoft Internet Explorer 4.01 的文件上传控件存在不安全设计，恶意网页中的脚本可将任意本地文件路径粘贴到上传控件，从而在用户浏览页面时读取并上传目标系统上的任意文件。本 PoC 通过构造含恶意脚本的 HTML 页面验证该控件是否可被脚本填充文件路径，属于客户端验证，无法直接远程读取文件内容，仅检测控件行为。"
+id = "POC-AVE-1999-1214"
+name = "CVE-1999-0870 Internet Explorer 4.01 任意文件读取 PoC"
+severity = "low"
+tags = ["ave-1999-1214"]
+vuln_id = [
+    "CVE-1999-0870",
+    "AVE-1999-1214",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ie-fileupload-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "fileupload",
+    "INPUT",
+    "TYPE=FILE",
+]
