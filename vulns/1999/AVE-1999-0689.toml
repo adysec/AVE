@@ -1,11 +1,11 @@
 [basic]
-description = "SCO OpenServer 5.0.5 中的 userOsa 组件存在符号链接（symlink）竞争条件漏洞。该工具在处理临时文件时未正确验证文件路径，攻击者可利用这一时序问题将操作重定向至任意系统文件，通过创建指向敏感文件的符号链接实现文件损坏或覆写。该漏洞影响 SCO OpenServer 5.0.5 版本，CVSS v3 评分为 5.5（MEDIUM），CVSS v2 评分为 2.1（LOW）。攻击条件要求攻击者已在目标系统上拥有本地账户权限，无需额外特权即可利用，攻击成功后可导致文件完整性破坏、敏感数据篡改，甚至进一步引发权限提升或拒绝服务。SCO 官方已通过安全更新修复了此漏洞，建议受影响用户升级至补丁版本。"
+description = "SCO OpenServer 5.0.5 中的 userOsa 程序存在符号链接漏洞，本地攻击者可通过创建恶意符号链接欺骗程序写入或覆盖任意文件，导致文件损坏或权限提升。该漏洞影响 SCO OpenServer 5.0.5 版本，攻击者需具备本地用户权限，利用 userOsa 程序处理符号链接时的竞争条件，将符号链接指向敏感系统文件，诱导程序写入恶意数据导致文件损坏或权限提升。CVSS 评分 2.1，属于本地权限提升类低危漏洞，SCO 已发布补丁修复该符号链接竞争条件漏洞。"
 published = "1999-10-11T04:00:00.000"
-remediation = "SCO OpenServer 5.0.5 已停止官方支持，建议迁移至受支持的现代操作系统或升级至 SCO OpenServer 6.0 及以上版本。若短期内无法升级，应修改 userOsa 脚本中文件创建逻辑，改用 mktemp 或 open() 系统调用的 O_EXCL|O_CREAT 标志安全创建临时文件；同时将 umask 设置为 077，并定期清理 /tmp 目录下指向系统关键文件的符号链接。作为临时缓解措施，可在文件系统挂载选项中启用 nodev 与 nosuid，限制普通用户在 /tmp 目录创建设备节点和符号链接，以降低攻击面。"
+remediation = "升级 SCO OpenServer 至 5.0.6 或更高版本，该漏洞已在后续版本中修复。如无法升级，可移除 userOsa 的 setuid 位（chmod u-s /usr/bin/userOsa）或限制可执行该程序的用户组，以阻断符号链接攻击路径。"
 score = 2.1
 severity = "LOW"
-sources = ["exploitdb"]
-title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9152,"outputTokens":20,"totalTokens":10836}}'
+sources = ["avd"]
+title = "SCO OpenServer 5.0.5 userOsa 符号链接漏洞"
 updated = "2026-06-16T21:49:16.557"
 
 [exploit]
@@ -24,12 +24,12 @@ status = "completed"
 urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0893",
     "https://www.exploit-db.com/exploits/19542",
-    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0893.md",
-    "https://github.com/CVEProject/cvelistV5/blob/4d7236390d3d65194e590e3c8620543620af3984/cves/1999/0xxx/CVE-1999-0893.json",
+    "https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/1999/CVE-1999-0893.md",
+    "https://github.com/CVEProject/cvelistV5/blob/8d0ba8eaeba3ff3558e6044a19d5b454dcc12f33/cves/1999/0xxx/CVE-1999-0893.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0893",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/6d3a932c05085f06507d23e5a0893fa8fe64ce42/CVE/data/1999/CVE-1999-0893.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/512c773c61886081b2589de76a8cfde795349819/CVE/data/1999/CVE-1999-0893.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0893.md",
-    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-cqqq-8j4q-wwrq/GHSA-cqqq-8j4q-wwrq.json",
+    "https://github.com/github/advisory-database/blob/3c5965e4a3ad0d0b437f880f71224c9e3d8d5fd5/advisories/unreviewed/2022/04/GHSA-cqqq-8j4q-wwrq/GHSA-cqqq-8j4q-wwrq.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0893.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153700_153800.json",
