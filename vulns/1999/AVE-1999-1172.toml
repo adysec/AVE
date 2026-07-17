@@ -1,0 +1,30 @@
+[basic]
+description = "Cactus Software Shell Lock（shell-lock）是一款将 shell 脚本转换为 ELF 二进制文件的工具，声称可隐藏原始脚本内容并提供 SUID root 执行能力。然而该工具使用极其简单的编码机制（交替加减 0x44 和 0x63）对 shell 脚本进行混淆，任何具有文件读权限的攻击者均可轻易解码还原原始 shell 源码。此外，当使用 shell-lock 生成的二进制文件被设置为 SUID root 时，程序在执行过程中会于 /var/tmp 目录（或 $TMPDIR 环境变量指定位置）创建临时文件并执行。由于临时文件无特殊权限，攻击者可利用竞争条件在程序执行前将其替换为指向 /bin/sh 的软链接，从而以 root 身份执行任意命令，完成本地权限提升。"
+published = "1999-10-04"
+remediation = "Cactus Software 已确认该产品存在设计缺陷，未发布针对此弱编码和 SUID 竞争条件的正式补丁。建议停止使用 shell-lock 作为脚本混淆或 SUID 执行方案，改用 C 语言编写需要特权的程序，或通过 sudo 配置精细的权限控制。如现有环境中仍有 shell-lock 生成的二进制文件，应立即移除 SUID 位（chmod u-s），避免在受保护脚本中存放敏感凭据，并严格限制脚本文件访问权限。"
+score = 2.1
+severity = "LOW"
+sources = ["cve"]
+title = "Cactus Software Shell Lock 弱加密导致源码泄露与权限提升漏洞"
+updated = "2026-06-16"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-1540"]
+ave_id = "AVE-1999-1172"
+
+[meta]
+collected_at = "2026-07-17T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://marc.info/?l=bugtraq&m=93916168802365&w=2",
+    "http://www.atstake.com/research/advisories/1999/shell-lock.txt",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/3356",
+    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/1xxx/CVE-1999-1540.json",
+    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-c58m-4vx5-jf3r/GHSA-c58m-4vx5-jf3r.json",
+]
