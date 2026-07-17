@@ -1,11 +1,11 @@
 [basic]
-description = "部分路由器设备配置不当或存在权限校验缺陷，导致任意远程主机无需认证即可通过特定协议查询并获取路由器的完整路由表信息。攻击者可借此掌握目标网络的拓扑结构、子网划分及可达路径，为后续针对性网络攻击（如中间人攻击、路由劫持）提供侦察基础。该漏洞危害等级高，影响多种主流路由器设备，CVSS 评分 7.5。建议限制 SNMP 等管理协议的访问来源，配置 ACL 规则以限制路由信息查询权限。"
+description = "CVE-1999-0550 是一个路由器信息泄露漏洞，由于路由器未对路由表查询请求进行访问控制，攻击者可通过发送 SNMP GetRequest 等协议报文从任意远程主机获取路由器的完整路由表信息。该漏洞影响早期缺乏安全加固的路由器设备，攻击者无需任何认证凭据即可远程读取路由条目，从而获知网络拓扑结构、内部网络地址分配及流量转发路径等敏感信息。攻击者可利用获取的路由信息进一步实施中间人攻击、流量劫持或针对性网络入侵，对网络基础设施安全构成严重威胁。"
 published = "1997-01-01T05:00:00.000"
-remediation = "在路由器上配置访问控制列表（ACL），仅允许信任的管理网段访问 SNMP、Telnet/SSH 及 Web 管理端口；关闭未使用的 SNMP 服务或将 SNMP 字符串设为只读并改用复杂 community 字符串；禁用路由协议的明文邻居通告（如 Cisco 路由器使用 `no ip route-cache same-interface` 配合 `distribute-list` 过滤路由表查询）。"
+remediation = "立即升级路由器固件至最新版本，在所有接口上启用路由协议认证机制（RIPv2 使用明文/MD5 认证，OSPF 启用 MD5 认证，EIGRP 使用预共享密钥认证），并在面向外部网络的接口上配置访问控制列表（ACL）限制路由更新报文的来源地址，同时通过 `passive-interface` 命令在不需要发送路由更新的接口上禁用路由协议广播，防止攻击者嗅探或伪造路由信息。"
 score = 7.5
 severity = "HIGH"
-sources = ["avd"]
-title = "路由器路由表远程信息泄露漏洞"
+sources = ["epss"]
+title = "路由器路由表信息泄露漏洞"
 updated = "2026-06-16T21:48:36.973"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0550"]
 ave_id = "AVE-1999-0814"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-17T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://www.cve.org/CVERecord?id=CVE-1999-0550"]
+urls = [
+    "https://www.cve.org/CVERecord?id=CVE-1999-0550",
+    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0550.md",
+    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/0xxx/CVE-1999-0550.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0550",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3950bef6f70c411ea08c8b2f1665dbd7d38277bd/CVE/data/1999/CVE-1999-0550.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0550.md",
+    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-wcx3-6934-f759/GHSA-wcx3-6934-f759.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0550.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x87000/86061/info.html",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154300_154400.json",
+]
