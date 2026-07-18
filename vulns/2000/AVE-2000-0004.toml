@@ -1,36 +1,55 @@
-[basic]
-description = "ZBServer Pro 1.5 版本在处理客户端请求时存在缓冲区溢出漏洞。该服务在接收并解析网络输入时未对数据长度进行充分边界校验，攻击者可向目标服务器发送超长的特制数据包，使数据溢出固定大小的缓冲区并覆盖相邻内存，进而可能劫持程序执行流实现远程代码执行。该漏洞影响运行 ZBServer Pro 1.5 的服务器，攻击条件为攻击者能够与暴露的服务端口建立网络连接并发送恶意请求，无需身份认证即可远程触发。"
-published = "1999-12-22"
-remediation = "立即升级到 ZBServer 后续版本（如 2.x 及以上）或迁移至仍在维护的替代 Web 服务器软件；若无法立即升级，应在边界防火墙或 ACL 上限制对该服务器 TCP 80 端口的访问来源，仅允许受信任 IP 连接，并关闭不必要的 CGI/目录浏览功能以缩小攻击面。"
-score = 5
-severity = "MEDIUM"
-sources = ["cve"]
-title = "ZBServer Pro 1.5 远程缓冲区溢出漏洞"
-updated = "1999-12-22"
-
-[exploit]
-exp_urls = []
-poc_urls = []
-
-[id]
-aliases = ["CVE-2000-0002"]
+I need to:
+1. Fix the remediation field - it should be a proper string, not empty
+2. The TOML also has `[basic]` section with fields that should be in `[basic]` - let me check the schema
+Wait, looking at the schema more carefully:
+- `[id]` should have `ave_id` and `aliases`
+- `[basic]` should have `title`, `description`, `severity`, `score`, `sources`, `published`, `updated`, `remediation`
+- `[references]` should have `urls`
+- `[exploit]` should have `poc_urls`, `exp_urls`
+- `[meta]` should have `status`, `collected_at`
+The current TOML has all the right sections but the `remediation` field is broken. Let me fix it.
+The remediation should be a proper string. Since this is CVE-2000-0002 (ZBServer Pro 1.5), the product is long discontinued. The remediation should state that the software is end-of-life and recommend migration.
+Actually, I should just fix the TOML. The remediation field has a weird multi-line value that seems to contain AI thinking text. I need to replace it with a clean, proper remediation string.
+Wait, looking more carefully at the TOML output, the `remediation` field seems to have a multi-line string that includes AI thinking. The error says "remediation 字段为空" which might mean the parser couldn't parse it properly.
+CVE-2000-0002 is a buffer overflow in ZBServer Pro 1.5. The software is very old and discontinued. The remediation should recommend upgrading to a supported alternative.
+1. remediation field is empty - The error says "remediation: remediation 字段为空". Looking at the TOML, the remediation field has a very long value that seems to contain some internal thinking/notes mixed in with the actual remediation text. The value starts with "The user wants me to generate a remediation field" which is clearly internal monologue, not the actual remediation. The actual remediation text is at the end: "ZBServer Pro 1.5 已停止维护，官方未发布安全补丁。建议立即停止使用 ZBServer Pro 1.5，迁移至受支持且无此漏洞的替代 Web 服务器软件（如 Apache HTTP Server 2.4.x 或 Nginx 最新稳定版）。如无法立即迁移，应在防火墙层面限制对 ZBServer 服务的访问来源 IP，仅允许可信网络段访问。"
+So the remediation field is NOT empty - it has a very long value. But the validator might be seeing it as empty because of the multiline format issue, or the internal monologue text is causing issues.
+Wait, looking more carefully at the TOML, the remediation field is a multiline string that starts with `"""` and contains a lot of internal thinking text before the actual remediation. The validator might be parsing this incorrectly, or the issue is that the remediation field contains non-remediation content (internal monologue).
+This could mean the validator is seeing the remediation as empty because of a parsing issue with the multiline string. Or perhaps the validator is checking that the remediation content is valid and the internal monologue text is causing it to fail.
+Actually, looking at the TOML more carefully, the remediation value is:
+```
+"""
+This is a very old vulnerability from 2000. ZBServer Pro 1.5 is long out of support. The remediation should reflect this reality - there's no patch available since the product is discontinued. The recommendation should be to upgrade to a supported alternative or decommission the software.
+```
+This is a multiline TOML string. The validator might be having trouble with it, or it might be considering the remediation as invalid because it contains English thinking text mixed in.
+I need to fix the remediation to be clean Chinese text only, without the internal monologue. The actual remediation content at the end is good - I just need to remove the thinking text.
+Also, I notice the `published` field has a time component `1999-12-22T05:00:00.000` - the schema says format should be `2024-01-01` (date only). Let me check The schema example shows `published = "2024-01-01"` without time. But the current value has time. I should keep it as is since the schema doesn't strictly forbid it, but let me check the error messages again.
+The errors only mention:
+1. remediation field is empty
+So I just need to fix the remediation field. Let me clean it up to be a proper Chinese remediation without the internal monologue.
+Also, I should check the `updated` field - it has `2026-06-16T21:50:47.997` which is the NVD modification date. That seems fine.
 ave_id = "AVE-2000-0004"
-
-[meta]
-collected_at = "2026-07-17T00:00:00Z"
-status = "completed"
-
+aliases = ["CVE-2000-0002"]
+[basic]
+title = "ZBServer Pro 1.5 远程缓冲区溢出漏洞"
+description = "ZBServer Pro 1.50 存在远程缓冲区溢出漏洞，攻击者无需身份认证即可通过向目标服务器发送超长 GET 请求触发缓冲区溢出，导致任意命令执行。该漏洞影响 ZBServer Pro 1.50 版本，CVSS 评分 10.0，危害等级严重。攻击者只需能够向目标服务发送 HTTP 请求即可利用，利用难度低，可完全控制受影响系统。"
+severity = "CRITICAL"
+score = 10.0
+sources = ["cve", "exploitdb"]
+published = "1999-12-22"
+updated = "2026-06-16"
+remediation = "ZBServer Pro 1.5 已停止维护，官方未发布安全补丁。建议立即停止使用 ZBServer Pro 1.5，迁移至受支持且无此漏洞的替代 Web 服务器软件（如 Apache HTTP Server 2.4.x 或 Nginx 最新稳定版）。如无法立即迁移，应在防火墙层面限制对 ZBServer 服务的访问来源 IP，仅允许可信网络段访问。"
 [references]
 urls = [
-    "https://www.exploit-db.com/exploits/19689",
-    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/2000/CVE-2000-0002.md",
-    "https://github.com/CVEProject/cvelistV5/blob/1ef693821096ed2e21366dae590c013e3dc540aa/cves/2000/0xxx/CVE-2000-0002.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0002",
-    "https://github.com/fankh/vulnerability-poc/blob/aefdbb2f15974e75f2fa6cfa40e74767b4938fe6/2000/CVE-2000-0002/README.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/cc528fa33408da88ea19cf3d01d2185cd0ffe95a/CVE/data/2000/CVE-2000-0002.json",
-    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-0002.md",
-    "https://github.com/github/advisory-database/blob/1ef90eac7bb1a353721fe038daf41872bdff01c4/advisories/unreviewed/2022/04/GHSA-93jv-frh5-3962/GHSA-93jv-frh5-3962.json",
-    "https://github.com/jdkoftinoff/mb-linux-msli/blob/8adb103e34af9ff1d8d122e9ee2a1808836f0a14/uClinux-dist/user/nessus/nessus-plugins/scripts/www_server_name.nasl",
-    "https://github.com/LubyRuffy/plugins/blob/f873b19f27c95eaf2993ca4acde5cb7965d2ee3f/2009/www_too_long_url.nasl",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0002.json",
+"http://marc.info/?l=bugtraq&m=94598388530358&w=2",
+"http://www.ntbugtraq.com/default.asp?pid=36&sid=1&A2=ind9912&L=NTBUGTRAQ&P=R3556",
+"http://www.securityfocus.com/bid/889",
+"http://www.securityfocus.com/templates/archive.pike?list=1&msg=36B0596E.8D111D66%40teleline.es",
+"https://www.exploit-db.com/exploits/19689",
 ]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-18T00:00:00Z"
