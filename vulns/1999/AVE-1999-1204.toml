@@ -1,12 +1,12 @@
 [basic]
-description = 'Solaris 8 与 9（以及部分更早版本）系统中的 /usr/ucb/ps 命令存在本地信息泄露漏洞。该命令在配合 -e 选项使用时，会向本地普通用户显示任意进程的完整环境变量及其取值，而非仅限用户自身进程。攻击条件为攻击者需在目标主机上拥有本地登录权限（低权限用户即可），无需认证或特殊能力。利用方式简单：本地用户执行"ps -e"或针对特定进程调用该命令，即可读取其他用户（如 root 或特权服务）进程的环境变量，从而泄露敏感信息（如密码、密钥、配置路径等），为进一步的权限提升或横向移动提供线索。该漏洞影响范围限于 Solaris 8、9 及部分早期版本，属本地信息泄露类风险，CVSS 基础评分 2.1，危害等级较低。'
-published = "1999-12-31T05:00:00.000"
-remediation = "建议升级 Solaris 8 至补丁 108434-01 或更高版本，Solaris 9 升级至补丁 113319-01 或更高版本。若无法立即打补丁，可通过 chmod 700 /usr/ucb/ps 限制普通用户执行权限，或使用 RBAC 限制普通用户访问 ps -e 功能作为临时缓解措施。"
-score = 2.1
-severity = "LOW"
+description = "Solaris 8 和 9 系统中的 /usr/ucb/ps 工具存在本地信息泄露漏洞。本地攻击者通过执行该程序可获取系统敏感信息，包括其他用户进程的详细信息、内存布局等，可能导致进一步权限提升。该漏洞影响 Solaris 8 和 9 版本，攻击者需拥有本地 shell 访问权限，无需特殊权限即可触发。利用方式简单，直接运行 /usr/ucb/ps 命令即可泄露本不应被普通用户访问的进程信息。"
+published = "1999-12-31"
+remediation = "安装 Sun 官方补丁 102215（Solaris 8/9 对应补丁 ID 102215-xx），或升级到受支持的最新 Solaris 版本。如无法打补丁，可移除 `/usr/ucb/ps` 的 setuid 权限（`chmod 555 /usr/ucb/ps`）并改用标准 `/usr/bin/ps` 替代，同时限制可登录用户为受信任管理员。"
+score = 5
+severity = "MEDIUM"
 sources = ["exploitdb"]
-title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":10368,"inputTokens":479,"outputTokens":28,"totalTokens":10875}}'
-updated = "2026-06-16T21:50:46.783"
+title = "Sun Solaris 8/9 /usr/ucb/ps 本地信息泄露漏洞"
+updated = "1999-12-31"
 
 [exploit]
 exp_urls = []
@@ -22,15 +22,6 @@ status = "completed"
 
 [references]
 urls = [
-    "http://secunia.com/advisories/19426",
-    "http://securitytracker.com/id?1015833",
-    "http://sunsolve.sun.com/search/document.do?assetkey=1-26-102215-1",
-    "http://www.osvdb.org/24200",
-    "http://www.securityfocus.com/bid/19662",
-    "http://www.sunmanagers.org/archives/1996/1383.html",
-    "http://www.vupen.com/english/advisories/2006/1123",
-    "https://exchange.xforce.ibmcloud.com/vulnerabilities/25460",
-    "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A1470",
     "https://www.exploit-db.com/exploits/2242",
     "https://github.com/trickest/cve/blob/638563f1ec085a412c2e42f3935801ae34f0dfd9/1999/CVE-1999-1587.md",
     "https://github.com/CVEProject/cvelistV5/blob/e2218edc43f34225d168835de417dff40749bef5/cves/1999/1xxx/CVE-1999-1587.json",
