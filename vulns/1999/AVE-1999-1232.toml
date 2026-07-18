@@ -1,12 +1,12 @@
 [basic]
-description = "Solaris（含 2.5 x86 及 7.0 等版本）系统中运行的 aspppd 守护进程在创建临时通信文件时存在不安全临时文件处理缺陷，会以可预测的固定路径 /tmp/.asppp.fifo 创建 FIFO 管道且未做安全校验。本地已登录的普通用户可在该文件创建前预先放置指向系统关键文件（如 /etc/passwd 或具有 root 属主权限的文件）的符号链接，从而实施符号链接攻击。当 aspppd 以 root 权限运行时，会向该符号链接指向的目标文件写入内容，使本地攻击者能够篡改任意文件并借此提升权限至 root。该漏洞利用条件为攻击者需具备目标系统的本地用户访问权限且 aspppd 以特权身份运行，CVSS 评分 7.2，危害等级为高。"
-published = "1996-12-20T05:00:00.000"
-remediation = "升级 Solaris 系统至 7.0 以上已修复版本，或安装 Sun 官方补丁 106541-xx。临时缓解措施：在 /etc/init.d/aspppd 启动脚本中添加 umask 077 并删除 setuid 权限；如无需拨号服务，执行 /usr/bin/chmod 000 /usr/sbin/aspppd 禁用该程序；确保 /tmp 目录设置粘滞位 (chmod +t /tmp) 防止符号链接攻击。"
-score = 7.2
-severity = "HIGH"
-sources = ["exploitdb"]
-title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9163,"outputTokens":23,"totalTokens":10850}}'
-updated = "2026-06-16T21:49:33.030"
+description = "Solaris 2.5 x86 系统中的 aspppd 守护进程（AppleTalk 会话协议点对点服务）以不安全的方式创建临时文件 /tmp/.asppp.fifo。本地低权限用户可利用符号链接（symlink）攻击，将该临时文件链接至系统中的任意文件，进而对目标文件进行任意修改，最终提权至 root 权限。该漏洞攻击条件简单，无需身份认证，攻击者仅需具备本地基本用户访问权限即可完成利用。受影响版本为运行在 x86 平台上的 Solaris 2.5 系统，CVSSv2 评分为 7.2，危害等级为高。Sun Microsystems 已通过安全补丁修复该问题，建议受影响用户尽快升级至修复版本。"
+published = "1996-12-20"
+remediation = "应用 Sun/Oracle 官方补丁：Solaris 2.5.1 x86 安装补丁 104222-08 或 105710-01，Solaris 2.5 x86 安装补丁 105710-01，补丁将修复 aspppd 创建 /tmp/.asppp.fifo 时以不安全权限（0666）开放的问题，使其改为 0600 权限并由 aspppd 进程自身在安全目录下创建，阻断符号链接攻击路径。同时升级至 Solaris 8 或更高版本以获得完整修复。作为临时缓解措施：关闭 PPP 服务后立即删除 /tmp/.asppp.fifo；在 aspppd 启动脚本中添加检查，若发现该文件为符号链接或存在异常则拒绝启动；通过文件系统挂载选项限制 /tmp 下 FIFO 文件的创建权限；在 /etc/rhosts 上设置严格访问控制，仅允许 root 读写。每次启动 aspppd 前执行 ls -l /tmp/.asppp.fifo 确认其为普通 FIFO 而非符号链接。"
+score = 5
+severity = "MEDIUM"
+sources = ["avd"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9102,"outputTokens":23,"totalTokens":10789}}'
+updated = "1996-12-20"
 
 [exploit]
 exp_urls = []
@@ -17,22 +17,20 @@ aliases = ["CVE-1999-1026"]
 ave_id = "AVE-1999-1232"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "http://marc.info/?l=bugtraq&m=87602167420343&w=2",
-    "http://www.securityfocus.com/bid/292",
     "https://www.exploit-db.com/exploits/19233",
-    "https://github.com/CVEProject/cvelistV5/blob/64d76d92cfbd9c4de4a352a59a2e52cadebc3afd/cves/1999/1xxx/CVE-1999-1026.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/89b3a1c34ab26afed5cfe4fc54b61cecbf09d3c2/CVE/data/1999/CVE-1999-1026.json",
+    "https://github.com/CVEProject/cvelistV5/blob/fe9e77bf3808998cc7ef33bc8a5ea311f35fadb0/cves/1999/1xxx/CVE-1999-1026.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1026",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1026.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c8b0fec8b23470355b47059dbab5d2ebdfa2ac94/CVE/data/1999/CVE-1999-1026.json",
+    "https://github.com/github/advisory-database/blob/90b464bbc2d1b64270a5771429f96b67fbe9e79b/advisories/unreviewed/2022/04/GHSA-fff7-q3gj-wjm6/GHSA-fff7-q3gj-wjm6.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1026.json",
-    "https://github.com/olbat/nvdcve/blob/178b809924783e13787d17bb1b1fd55ad3b8639b/nvdcve/CVE-1999-1026.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/ec2efce98d544aa857266906f720ae32e42b21be/CVE-1999/CVE-1999-10xx/CVE-1999-1026.json",
-    "https://github.com/opencve/opencve-kb/blob/f2000baeea1a59c64d87de15aa744d3fa2dc46eb/1999/CVE-1999-1026.json",
-    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/1999/1xxx/CVE-1999-1026.json",
-    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/1999/1xxx/CVE-1999-1026.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-1026.md",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154600_154700.json",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_0.list.dict",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--aaaedcbc-195c-441d-9583-ccdc7d25a142.json",
+    "https://github.com/Yuning-J/NVDFeatureAnalysis/blob/493a57a415cc110f9945148abd717eeb92f6ca7e/originalDataset/cveIDThreatType/cve_idgainpre",
 ]
