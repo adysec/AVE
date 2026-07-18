@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 Slackware Linux 3.4 pkgtool 在创建并读写临时应答文件时未做安全的原子创建与校验。本地用户可预先在临时目录中创建指向任意系统文件（如 /etc/passwd）的符号链接，当 root 运行 pkgtool 时误将该链接目标当作临时文件读写，从而验证符号链接攻击的可行性与影响范围。"
+id = "POC-AVE-1999-1288"
+name = "CVE-1999-1498 pkgtool 本地符号链接临时文件读写漏洞 PoC"
+severity = "low"
+tags = ["ave-1999-1288"]
+vuln_id = [
+    "CVE-1999-1498",
+    "AVE-1999-1288",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/tmp/pkgtool.reply"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "pkgtool",
+    "reply",
+]
+
+[[poc.requests]]
+path = "/etc/passwd"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
