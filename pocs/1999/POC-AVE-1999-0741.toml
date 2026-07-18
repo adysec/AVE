@@ -1,0 +1,74 @@
+[info]
+author = "ave"
+description = "检测 AN-HTTPd 默认示例 CGI 脚本是否存在，并验证 shell 元字符注入漏洞的攻击面"
+id = "POC-AVE-1999-0741"
+name = "CVE-1999-0947 AN-HTTPd CGI Command Injection PoC"
+severity = "high"
+tags = [
+    "cve-1999-0947",
+    "command-injection",
+    "cgi",
+]
+vuln_id = [
+    "CVE-1999-0947",
+    "AVE-1999-0741",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/test.bat"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "test",
+    "echo",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/test.bat?cmd=AVE_TEST"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+    403,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/input.bat"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+    403,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/envout.bat"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+    403,
+]
+type = "status"
