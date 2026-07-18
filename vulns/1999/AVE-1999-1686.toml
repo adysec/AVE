@@ -1,11 +1,11 @@
 [basic]
-description = 'Matt Wright Guestbook.pl 2.3.1 留言本程序存在服务端包含（SSI）注入漏洞。该程序在处理用户提交的留言内容时，仅通过删除"<!--"和"-->"分隔符之间的文本来过滤 SSI 命令，但 Apache 1.3.9 及部分其他版本支持除"-->"以外的其他 SSI 关闭序列，导致过滤机制可被绕过。远程攻击者可构造包含恶意 SSI 指令的留言内容提交至留言板，当管理员或用户浏览该留言时，恶意指令将在 Web 服务器上下文中被执行，从而实现任意命令执行。该漏洞影响运行于早期 Apache 服务器上的 Guestbook.pl 2.3.1 及可能的其他版本，CVSS 评分 7.5，危害等级为高危。'
+description = 'Matt Wright Guestbook.pl 2.3.1 存在服务器端包含（SSI）注入漏洞。该程序在过滤用户插入的 SSI 指令时，仅移除 "<!--" 与 "-->" 分隔符之间的内容，但 Apache 1.3.9 及部分其他版本允许使用除 "-->" 之外的其他闭合序列，导致过滤机制可被绕过。远程攻击者可通过在留言内容中构造特制的 SSI 语句绕过过滤，在目标服务器上执行任意系统命令。该漏洞影响运行于 Apache 1.3.9 及兼容版本上的 Guestbook.pl 2.3.1，CVSS 评分 7.5，危害等级高。'
 published = "1999-09-13T04:00:00.000"
-remediation = "Guestbook.pl 2.3.1 已停止维护且不再更新，建议立即停用该脚本并替换为受支持的留言本方案（如 Serendipity 或自定义脚本）。若暂时无法替换，可在 Apache 配置中针对留言本目录禁用 SSI（Options -Includes），同时在脚本入口处对所有用户输入执行严格过滤，将 `<`、`>`、`!`、`-` 等特殊字符转义或删除。"
+remediation = "立即升级 Guestbook.pl 至官方最新版本（或改用其他受支持的留言本程序），该版本已正确过滤 SSI 指令而非仅移除 `<!--` 与 `-->` 之间的内容。在 Apache 配置中将 `Options Includes` 改为 `Options IncludesNOEXEC`，禁用 `#exec cmd` 命令执行功能。如无需 SSI 功能，直接移除 `Options +Includes` 指令彻底关闭服务端包含解析。同时将 Apache HTTP Server 从 1.3.9 升级至 2.4.x 系列最新稳定版，新版本对 SSI 结束符解析更严格，可有效防止此类绕过攻击。"
 score = 7.5
 severity = "HIGH"
-sources = ["exploitdb"]
-title = "Matt Wright Guestbook.pl 留言簿脚本服务器端包含注入漏洞"
+sources = ["avd"]
+title = "Matt Wright Guestbook.pl 2.3.1 服务端包含命令执行漏洞"
 updated = "2026-06-16T21:49:36.507"
 
 [exploit]
@@ -27,15 +27,15 @@ urls = [
     "http://www.securityfocus.com/archive/82/27560",
     "http://www.securityfocus.com/bid/776",
     "https://www.exploit-db.com/exploits/9907",
-    "https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/1999/CVE-1999-1053.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/a696b400ff4390123c00eba293b62dc70eb8162e/1999/CVE-1999-1053.json",
-    "https://github.com/rix4uni/cvemapping/blob/0ff91a18c617d1bf9a95dd4270bbd71922824839/1999/CVE-1999-1053/CVE-1999-1053-PoC.py",
+    "https://github.com/trickest/cve/blob/638563f1ec085a412c2e42f3935801ae34f0dfd9/1999/CVE-1999-1053.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/d485cba070085401400930a82dbbf0190ef71f43/1999/CVE-1999-1053.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e2218edc43f34225d168835de417dff40749bef5/cves/1999/1xxx/CVE-1999-1053.json",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/1999/CVE-1999-1053.md",
+    "https://github.com/rix4uni/cvemapping/blob/90a8399ddd69cc2b4891beb4fe35c5ac0c17dcb1/1999/CVE-1999-1053/CVE-1999-1053-PoC.py",
+    "https://github.com/rix4uni/cvemapping/blob/90a8399ddd69cc2b4891beb4fe35c5ac0c17dcb1/1999/CVE-1999-1053/README.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2119b082f4927b0a9c902ed9fe95efb3b301cb81/CVE/data/1999/CVE-1999-1053.json",
+    "https://github.com/ycdxsb/PocOrExp_in_Github/blob/ce051c5d87d321dcc2d516ff01d9defebc1635ba/1999/README.md",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1053",
-    "https://github.com/ycdxsb/PocOrExp_in_Github/blob/4f63844f96b4253b56a8d0db7992ee400731667e/1999/README.md",
     "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/1999/CVE-1999-1053.rules",
-    "https://github.com/CVEProject/cvelistV5/blob/0f25967d744704fe14324ac10f2b57e945aed081/cves/1999/1xxx/CVE-1999-1053.json",
-    "https://github.com/e-m-b-a/emba/blob/ffab8835dab57629dd708bbd389c0fd0b4f23ace/config/msf_cve-db.txt",
-    "https://github.com/diannaofengzi/POC/blob/14d504f7488db9229f6f02be54aab53e3cfee0dc/databases/1999/database/CVE-1999-1053/CVE-1999-1053-PoC-siunam321.md",
-    "https://github.com/gottburgm/Exploits/blob/fd340a05cbec416e89bfae898e27bf5fcb429101/MSFExploits/GUESTBOOK/MSF/SsiExec_infos.txt",
     "https://github.com/siunam321/CVE-1999-1053-PoC",
 ]
