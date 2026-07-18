@@ -1,44 +1,30 @@
-1. The `description` field contains a lot of thinking/reasoning text mixed in, which is causing it to be treated as empty or malformed.
-2. The description has a `<value>` tag and the actual description is embedded in a lot of thinking text.
-1. Cleaning up the description to just the actual Chinese description
-2. Keeping other fields that look correct
-The main fix needed is the description field - it needs to be clean Chinese text without the thinking/analysis wrapper.
-- score = 10, severity = "CRITICAL" → CRITICAL≥9.0 ✓
-- title is in Chinese ✓
-- remediation is in Chinese and detailed ✓
-- description needs to be fixed - currently has thinking text and a `<value>` tag
-- CVE-2000-0059
-- Description: "PHP3 with safe_mode enabled does not properly filter shell metacharacters from commands that are executed by popen, which could allow remote attackers to execute commands."
-- CVSS 2.0: 10.0 HIGH (AV:N/AC:L/Au:N/C:C/I:C/A:C)
-- Published: 01/04/2000
-- Last Modified: 06/16/2026
-- CWE: NVD-CWE-Other
-- Reference: http://www.securityfocus.com/bid/911
-Now let me also check the ExploitDB reference since there's one in the references.Now I have enough information to fix the TOML. The issues are:
-1. The `description` field contains a lot of thinking/analysis text and a `<value>` tag, making it malformed2. The description needs to be clean Chinese text
-- Clean description based on NVD data
-- Keep other fields that are correct
-- Remove the thinking text from description[id]
-ave_id = "AVE-2000-0168"
-aliases = ["CVE-2000-0059"]
 [basic]
-title = "PHP 3.0.13 safe_mode popen 远程命令执行漏洞"
-description = "PHP 3.0.13 在启用 safe_mode 安全模式时，未能对 popen() 函数执行的系统命令中的 shell 元字符进行正确过滤。攻击者可通过构造包含分号、管道符等特殊字符的恶意命令参数，绕过 safe_mode 的 EscapeShellCmd() 安全限制，在目标服务器上执行任意系统命令。该漏洞影响 PHP 3.0.13 及更早版本，无需身份认证即可远程利用，CVSS 评分 10.0，危害等级为严重。"
-severity = "CRITICAL"
-score = 10.0
-sources = ["cve"]
+description = "PHP 3.0 版本中启用了 safe_mode 安全模式，该模式本应通过 EscapeShellCmd() 函数过滤 shell 元字符来限制系统命令执行。然而 popen() 函数未正确调用 EscapeShellCmd() 过滤，导致攻击者可通过向 popen 传递包含 shell 元字符的恶意参数绕过 safe_mode 限制，在目标服务器上以 Web 服务器权限执行任意系统命令。攻击者无需身份认证即可远程利用此漏洞。"
 published = "2000-01-04"
+remediation = "升级 PHP 至 3.0.14 或更高版本，该版本修复了 popen 函数未过滤 shell 元字符的问题。如无法升级，应避免在 PHP 应用中使用 popen 函数处理用户输入，并严格限制 Web 服务器运行权限。"
+score = 10.0
+severity = "CRITICAL"
+sources = [
+    "cve",
+    "exploitdb",
+]
+title = "PHP 3.0 safe_mode 模式下 popen 函数绕过 EscapeShellCmd 过滤导致远程命令执行漏洞"
 updated = "2026-06-16"
-remediation = "PHP 3.x 版本已于 2000 年停止官方维护，建议立即升级至 PHP 7.4+ 或 PHP 8.x 最新稳定版本（推荐 8.2 及以上）。该漏洞在 PHP 4.0.5 版本中已修复。若短期内无法完成迁移，可通过 php.ini 设置 disable_functions 禁用 popen、exec、shell_exec、system、proc_open 等危险函数，同时配置 open_basedir 限制 PHP 可访问的目录范围，并在网络边界防火墙层限制对 PHP 应用的访问。"
+
+[exploit]
+exp_urls = ["https://www.exploit-db.com/exploits/19708"]
+poc_urls = ["https://www.exploit-db.com/exploits/19708"]
+
+[id]
+aliases = ["CVE-2000-0059"]
+ave_id = "AVE-2000-0168"
+
+[meta]
+collected_at = "2026-07-18T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://www.securityfocus.com/bid/911",
-"https://www.exploit-db.com/exploits/19708",
-"https://nvd.nist.gov/vuln/detail/CVE-2000-0059"
+    "http://www.securityfocus.com/bid/911",
+    "https://www.exploit-db.com/exploits/19708",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-18T00:00:00Z"
