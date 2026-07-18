@@ -1,9 +1,9 @@
 [info]
 author = "ave"
-description = "验证 SCO UnixWare 7.x 的 uidadmin 工具是否存在符号链接攻击漏洞。本地低权限用户可在调用 uidadmin 前创建指向敏感文件的符号链接，诱使以 root 权限运行的 uidadmin 进程写入目标文件。本 PoC 通过 file 协议检测 /etc/passwd 是否包含越权写入的标记内容，以确认攻击者能否借助 root 权限的 uidadmin 进程修改本不应被改写的敏感文件。"
+description = "验证 SCO UnixWare 系统中的 uidadmin 程序存在本地权限提升漏洞。该程序在运行时会以 root 权限处理用户可控的文件路径，攻击者可通过创建指向敏感系统文件（如 /etc/passwd）的符号链接，诱使 uidadmin 以 root 身份写入或覆盖目标文件，从而获得 root 权限。"
 id = "POC-AVE-1999-1182"
-name = "CVE-1999-0836 SCO UnixWare uidadmin 本地符号链接攻击 PoC"
-severity = "critical"
+name = "SCO UnixWare uidadmin 本地权限提升漏洞 PoC"
+severity = "high"
 tags = ["ave-1999-1182"]
 vuln_id = [
     "CVE-1999-0836",
@@ -14,16 +14,19 @@ vuln_id = [
 logic = "all"
 
 [[poc.requests]]
-method = "GET"
-path = "/etc/passwd"
-protocol = "file"
+method = "POST"
+path = "/usr/sbin/uidadmin"
+protocol = "http"
 
 [poc.requests.body]
-content = ""
+content = "file=/etc/passwd&link=/etc/passwd"
 type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["root:"]
+words = ["vulnerable"]
