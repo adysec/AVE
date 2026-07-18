@@ -1,12 +1,12 @@
 [basic]
-description = "INN（InterNetNews）新闻服务器的 inndstart 程序存在权限提升漏洞，本地攻击者可通过设置 INNCONF 环境变量指定恶意配置文件，使 inndstart 以提升的权限加载并执行该配置，从而获取系统更高权限。该漏洞影响多个 Linux 发行版中的 INN 软件包，攻击者利用此漏洞可完全控制受影响系统。厂商已发布安全补丁进行修复。"
-published = "1999-05-11"
-remediation = "升级 INN 至 2.2.2 及以上版本，该漏洞已在后续版本中修复。如无法升级，可移除 inndstart 程序的 SUID 位（chmod u-s /usr/bin/inndstart），阻止普通用户通过 INNCONF 环境变量加载恶意配置文件提权。同时限制对 INN 配置目录的写入权限。"
-score = 5
-severity = "MEDIUM"
-sources = ["avd"]
-title = "ISC INN 本地权限提升漏洞"
-updated = "1999-05-11"
+description = "INN（InterNetNews）新闻服务器的 inndstart 程序存在权限提升漏洞。该程序在启动时会信任并读取由环境变量 INNCONF 所指定的配置文件路径，本地已登录的普通用户可通过在运行 inndstart 前自行设置 INNCONF 环境变量，将其指向攻击者可控的恶意配置文件，从而诱导以特权（如 news 用户或 root）身份运行的 inndstart 加载该配置并执行其中的危险指令或参数，最终实现本地权限提升。该漏洞影响使用存在缺陷版本 INN 软件且允许本地用户执行 inndstart 的 Unix/Linux 系统，攻击前提是攻击者需具备目标系统的本地账户访问权限且系统未对 INNCONF 环境变量做安全过滤。"
+published = "1999-05-11T04:00:00.000"
+remediation = "建议升级 INN (InterNetNews) 至 2.2.1 或更高版本，该版本修复了 inndstart 的 INNCONF 环境变量权限提升漏洞。若暂时无法升级，可通过在用户登录脚本或 /etc/profile 中取消设置 INNCONF 环境变量（unset INNCONF），并限制普通用户对 inndstart 的执行权限（chmod 750 /usr/local/news/bin/inndstart）作为临时缓解措施。建议参考 ISC 官方安全公告升级至 INN 2.6.0 或更新版本彻底修复。"
+score = 10
+severity = "CRITICAL"
+sources = ["epss"]
+title = "INN inndstart 权限提升漏洞"
+updated = "2026-06-16T21:48:59.240"
 
 [exploit]
 exp_urls = []
@@ -17,19 +17,21 @@ aliases = ["CVE-1999-0754"]
 ave_id = "AVE-1999-0608"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0754.md",
-    "https://github.com/CVEProject/cvelistV5/blob/ad01ef67b360e9139b8072c8e614b7c7c1f658d2/cves/1999/0xxx/CVE-1999-0754.json",
+    "http://www.redhat.com/corp/support/errata/inn99_05_22.html",
+    "http://www.securityfocus.com/bid/255",
+    "https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/1999/CVE-1999-0754.md",
+    "https://github.com/CVEProject/cvelistV5/blob/e268305fd8644994d337819e469d1f89bafde833/cves/1999/0xxx/CVE-1999-0754.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0754",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1d279cde1e5f7d9e150ca373126c9b35476ad3f5/CVE/data/1999/CVE-1999-0754.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/76af88afbb282d6c9e8ce3b9f6942bcb7e39be57/CVE/data/1999/CVE-1999-0754.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0754.md",
-    "https://github.com/github/advisory-database/blob/18de81c56daca1c9e33223f0b95bdb8312a1ca75/advisories/unreviewed/2022/05/GHSA-c5pf-965c-g6g8/GHSA-c5pf-965c-g6g8.json",
+    "https://github.com/github/advisory-database/blob/d9ad03f9df46533ce9229f9da6bbf66bd77a3f4f/advisories/unreviewed/2022/05/GHSA-c5pf-965c-g6g8/GHSA-c5pf-965c-g6g8.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/255/info.html",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/763b4dfa75aa1890a155aad1b583fdcab8111c49/nvdcve/CVE-1999-0754.json",
+    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-1999-0754.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153400_153500.json",
 ]
