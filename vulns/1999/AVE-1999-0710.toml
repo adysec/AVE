@@ -1,12 +1,12 @@
 [basic]
-description = "Sun Solaris 2.5.1、2.6 及 7.0 的 TCP 流驱动程序存在递归调用 mutex_enter 的缺陷，远程攻击者无需身份认证即可向目标主机发送特制的 TCP 连接请求，触发内核互斥锁被重复加锁，导致系统内核 panic 崩溃，造成拒绝服务。该漏洞无法被用于远程代码执行或数据窃取，但可使受影响系统丧失网络服务能力，影响运行上述版本 Solaris 的服务器与工作站。"
+description = "Sun Solaris 2.5.1/2.6/7.0 的 TCP 流驱动中存在拒绝服务漏洞，远程攻击者可通过 nmap OS 指纹识别选项（-O）向开放端口发送恶意连接，当目标服务进程被终止后，TCP 流驱动中的 mutex_enter 函数发生递归调用，导致系统内核崩溃重启。"
 published = "1999-09-23"
-remediation = "建议升级到已修复该缺陷的 Solaris 补丁集群版本：Solaris 2.5.1 安装补丁 103630-28 及以上，Solaris 2.6 安装补丁 105402-27 及以上，Solaris 7 安装补丁 106726-11 及以上；若暂无法升级，应在网络边界防火墙限制对 Solaris 主机的入站 TCP 连接来源，仅允许可信 IP 访问以降低被远程触发的风险。"
+remediation = "升级 Solaris 系统至不受影响的版本，或安装 Sun 官方发布的安全补丁，限制对 TCP 端口的未授权访问，使用防火墙过滤恶意连接以防止利用 nmap OS 指纹识别触发递归 mutex_enter 调用导致系统崩溃"
 score = 5.0
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Sun Solaris TCP 流驱动程序递归 mutex_enter 拒绝服务漏洞"
-updated = "2026-07-17"
+sources = ["cve"]
+title = "Sun Solaris TCP Stream Driver 递归 mutex_enter 拒绝服务漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,12 +17,11 @@ aliases = ["CVE-1999-0908"]
 ave_id = "AVE-1999-0710"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/655",
     "https://www.exploit-db.com/exploits/19507",
-    "https://exchange.xforce.ibmcloud.com/vulnerabilities/3447",
 ]
