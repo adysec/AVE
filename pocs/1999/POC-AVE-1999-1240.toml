@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "MajorCool 的 mj_key_cache 程序在处理缓存文件时未正确验证符号链接，本地攻击者可通过创建指向敏感文件的恶意符号链接，诱导程序以自身权限修改/覆盖任意文件。本 PoC 通过 file 协议检测目标系统上是否存在可利用的 mj_key_cache 缓存路径及符号链接特征，验证符号链接攻击条件。"
+id = "POC-AVE-1999-1240"
+name = "CVE-1999-0957 MajorCool mj_key_cache 符号链接攻击 PoC"
+severity = "low"
+tags = ["ave-1999-1240"]
+vuln_id = [
+    "CVE-1999-0957",
+    "AVE-1999-1240",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/usr/local/majorcool/mj_key_cache"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "mj_key_cache",
+    "root:",
+    "symlink",
+]
