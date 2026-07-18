@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "PowerScripts PlusMail WebConsole 1.0 的 plusmail CGI 程序（通常位于 /cgi-bin/plusmail）存在弱身份认证缺陷，密码文件权限配置不当。远程攻击者可通过提交 new_login 等参数重置管理员凭据，从而在未授权情况下接管 Web 控制面板并获取特权操作能力。本 PoC 通过探测 plusmail CGI 是否存在并观察其响应以验证目标是否运行受影响的脚本。"
+id = "POC-AVE-2000-0208"
+name = "CVE-2000-0074 PlusMail CGI 弱认证绕过 PoC"
+severity = "high"
+tags = ["ave-2000-0208"]
+vuln_id = [
+    "CVE-2000-0074",
+    "AVE-2000-0208",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/plusmail"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "plusmail",
+    "PowerScripts",
+    "login",
+    "WebConsole",
+]

