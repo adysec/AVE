@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "通过向 IMail IMonitor 服务的 status.cgi 发送 GET 请求，验证目标是否存在远程拒绝服务漏洞。IMonitor 默认监听 8181 端口，status.cgi 用于展示各服务运行状态，大量并发请求将导致服务崩溃。"
+id = "POC-AVE-2000-0047"
+name = "Ipswitch IMail IMonitor status.cgi 远程拒绝服务漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-0047"]
+vuln_id = [
+    "CVE-2000-0056",
+    "AVE-2000-0047",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}:8181/status.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "IMail",
+    "IMONITOR",
+    "Server Status",
+]
