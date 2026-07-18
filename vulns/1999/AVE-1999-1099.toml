@@ -1,11 +1,11 @@
 [basic]
-description = "IBM AIX 4.2.1 及之前版本中的 snap 命令存在不安全的临时文件创建漏洞。snap 命令在执行时会在 /tmp 目录下创建 ibmsupt 目录，且该目录权限设置为全局可读。当以 root 权限执行 snap -a 命令时，系统不会清理或删除该临时目录。本地攻击者可通过在 root 执行 snap -a 之前，在 /tmp/ibmsupt/general/ 目录下预先创建恶意的 passwd 文件，从而劫持系统密码文件，导致敏感信息泄露。该漏洞影响 AIX 4.3.2 之前的所有版本，CVSS 评分 10.0，危害等级严重。"
+description = "IBM AIX 4.2.1 及之前版本中的 snap 命令存在不安全的临时文件创建漏洞。snap 命令在执行时会在 /tmp 目录下创建 ibmsupt 目录，该目录权限设置为世界可读，且执行 snap -a 时不会清理该目录中的旧文件。本地攻击者可利用此漏洞，通过在 root 用户执行 snap -a 之前预先创建 /tmp/ibmsupt/general/passwd 符号链接或文件，诱使 snap 命令将系统 shadow 密码文件写入攻击者可控的位置，从而导致敏感信息泄露。该漏洞影响 AIX 4.2.1 及更早版本，CVSS 评分 10.0，危害等级严重。"
 published = "1999-02-17T05:00:00.000"
-remediation = "升级 AIX 系统至 4.3.2 或更高版本，该版本已修复 snap 命令的临时文件竞争条件漏洞。如无法升级，可手动在 /tmp/ibmsupt 目录创建后立即设置 0700 权限，或使用 chmod 命令限制其可读性；同时建议使用专用临时目录并配置 umask 077 作为临时缓解措施。"
+remediation = "立即升级到AIX 4.3.2或更高版本，移除/tmp/ibmsupt目录并重新建立，设置权限为600，删除任何恶意创建的passwd文件；如无法立即升级，可在命令执行前临时删除/tmp/ibmsupt目录并创建安全的权限目录为940。"
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "IBM AIX snap 不安全的临时文件创建漏洞"
+sources = ["exploitdb"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"inputTokens":16395,"outputTokens":34,"totalTokens":16429}}'
 updated = "2026-06-16T21:50:22.220"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1405"]
 ave_id = "AVE-1999-1099"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,11 +26,11 @@ urls = [
     "http://marc.info/?l=bugtraq&m=91954824614013&w=2",
     "http://www.securityfocus.com/bid/375",
     "https://www.exploit-db.com/exploits/19300",
-    "https://github.com/CVEProject/cvelistV5/blob/ad01ef67b360e9139b8072c8e614b7c7c1f658d2/cves/1999/1xxx/CVE-1999-1405.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e358b3016d8b52194aa099dc1255ebe1441bbafa/cves/1999/1xxx/CVE-1999-1405.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1405",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-1405.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1d279cde1e5f7d9e150ca373126c9b35476ad3f5/CVE/data/1999/CVE-1999-1405.json",
-    "https://github.com/github/advisory-database/blob/18de81c56daca1c9e33223f0b95bdb8312a1ca75/advisories/unreviewed/2022/04/GHSA-gcvv-4h27-hqp8/GHSA-gcvv-4h27-hqp8.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1405.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/94e644a0057439310dc2677c2e4ebd7766be1682/CVE/data/1999/CVE-1999-1405.json",
+    "https://github.com/github/advisory-database/blob/958f1672375e115879b3a6bd13e3638812260c7d/advisories/unreviewed/2022/04/GHSA-gcvv-4h27-hqp8/GHSA-gcvv-4h27-hqp8.json",
     "https://github.com/lcashdol/advisories/blob/32733f854e018593b94f048e59ce3442a76d2767/advisory-9.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1405.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/375/info.html",
