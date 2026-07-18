@@ -1,12 +1,12 @@
 [basic]
-description = "ARCserve NT 代理使用弱 XOR 加密算法对密码进行加密，远程攻击者可通过监听端口 6050 上的认证请求流量，捕获加密后的密码数据包并利用 XOR 加密的脆弱性直接解密还原明文密码。该漏洞影响多个 ARCserve NT 版本，攻击者无需认证即可实施嗅探攻击，成功后可获取系统管理权限，CVSS 评分 10.0，危害等级严重。建议升级至修复版本或使用强加密通信协议。"
-published = "1999-02-21"
-remediation = "立即将 ARCserve NT agent（Cheyenne/CA ARCserve）升级至 1999 年 3 月之后的安全版本，该版本已修复 XOR 弱加密问题并使用强身份验证机制。在防火墙层面将 TCP 端口 6050 限制为仅允许受信任备份服务器 IP 访问，阻止外部攻击者嗅探认证流量。如无法立即升级，可配置 agent 使用 NTLANMAN 认证替代默认的弱加密认证方式作为临时缓解措施。"
+description = "ARCserve NT 代理程序在密码传输时使用脆弱的 XOR 加密算法，导致认证过程中的密码极易被破解。远程攻击者可通过嗅探端口 6050 上的认证请求数据包，捕获经过简单 XOR 运算加密的密码密文，并通过逆向运算还原出明文密码。该漏洞影响所有使用 ARCserve NT 备份代理的系统，攻击者无需身份认证即可在网络层面被动监听流量获取管理员凭据，进而完全控制备份服务器及受管节点。由于 XOR 加密缺乏密钥管理且算法可逆，属于设计层面的根本性缺陷，CVSS 评分 10.0，危害等级极其严重。"
+published = "1999-02-21T05:00:00.000"
+remediation = "升级到 Computer Associates ARCserve Backup 6.61 或更高版本，该版本已修复代理密码传输使用弱 XOR 加密的问题。若无法立即升级，可在防火墙或边界设备上封禁 TCP 6050 端口，禁止来自不可信网络的连接，避免攻击者嗅探认证请求解密密码；同时限制仅允许受信任管理主机访问 ARCserve 代理服务。"
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "CA ARCserve NT 弱密码加密漏洞"
-updated = "2026-06-16"
+sources = ["avd"]
+title = "CA ARCserve NT 密码弱加密漏洞"
+updated = "2026-06-16T21:49:35.950"
 
 [exploit]
 exp_urls = []
@@ -17,11 +17,20 @@ aliases = ["CVE-1999-1049"]
 ave_id = "AVE-1999-0898"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://marc.info/?l=bugtraq&m=91972006211238&w=2",
-    "https://nvd.nist.gov/vuln/detail/CVE-1999-1049",
+    "https://github.com/CVEProject/cvelistV5/blob/e2218edc43f34225d168835de417dff40749bef5/cves/1999/1xxx/CVE-1999-1049.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1049",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1049.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2119b082f4927b0a9c902ed9fe95efb3b301cb81/CVE/data/1999/CVE-1999-1049.json",
+    "https://github.com/github/advisory-database/blob/d94ad47d0f2016e121b6d251f490e890714f8916/advisories/unreviewed/2022/04/GHSA-9729-phqg-qhx6/GHSA-9729-phqg-qhx6.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1049.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88510/info.html",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--c62739a4-d1c3-4ed5-ba06-12f0d9925391.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/44b40554314aa90807d3ddee27488f8c21cbcd40/1999.tsv",
 ]
