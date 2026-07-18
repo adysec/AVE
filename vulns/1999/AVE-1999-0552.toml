@@ -1,11 +1,11 @@
 [basic]
-description = "Novell NetWare 4.11 及更早版本的事务跟踪系统（TTS）存在拒绝服务漏洞，远程攻击者可通过发送大量请求耗尽系统资源，导致服务不可用。该漏洞影响 NetWare 4.11 及更早版本，攻击者无需身份认证即可远程利用，通过持续发送大量事务请求使 TTS 服务过载崩溃，造成系统拒绝服务。CVSS 评分 5.0，属中危级别。"
+description = "Novell NetWare 4.11 及更早版本的事务跟踪系统（Transaction Tracking System，TTS）存在拒绝服务漏洞。TTS 用于在数据库等事务操作中保证数据一致性，但该组件在处理客户端请求时缺乏有效的资源消耗限制。未经身份认证的远程攻击者可通过网络向目标 NetWare 服务器发送大量特殊构造的 TTS 相关请求，耗尽系统资源或触发异常处理，导致服务器无法响应正常服务请求，进而造成拒绝服务。该漏洞影响运行 Novell NetWare 4.11 及更早版本并启用 TTS 服务的系统，攻击仅需网络可达且无需合法凭据，利用门槛较低。"
 published = "2001-03-12T05:00:00.000"
-remediation = "建议立即升级至 Novell Open Enterprise Server (OES) 2015 SP1 或更高版本（基于 SUSE Linux Enterprise Server），或迁移至现代 Linux/Windows 平台。若必须继续使用 NetWare 4.11，请在防火墙层面封锁 TTS 服务端口（默认 524/TCP、4000-4095/TCP），并禁用 TTS 事务跟踪服务以彻底消除攻击面。Novell 已于 2010 年停止 NetWare 4.x 支持，无官方补丁可用，强烈建议尽快完成迁移。若必须维持旧系统运行，请部署网络层速率限制（如 iptables limit 模块限制单 IP 每秒连接数）缓解 DoS 攻击。建议制定 6 个月内完成迁移计划，期间部署网络层 DDoS 防护设备作为临时缓解。建议联系 Micro Focus（现归属 OpenText）确认是否有延长支持方案。由于 NetWare 4.11 早已停止安全更新，建议优先制定迁移计划而非依赖临时缓解。如无法立即迁移，请在网络边界部署 DDoS 缓解设备并限制 TTS 服务仅允许受信 IP 访问。由于漏洞 CVSS 5.0 属中等严重度，建议在 30 天内完成缓解措施部署，6 个月内完成平台迁移。请参考 Micro Focus 官方迁移指南《NetWare to OES Migration Guide》制定详细迁移计划。如需临时缓解，可在 NetWare 服务器控制台执行 `UNLOAD TTS` 卸载 TTS 模块，但会导致事务跟踪功能失效，需评估业务影响后实施。建议联系 Micro Focus 支持确认是否有针对 NetWare 4.11 的延长支持补丁包（Extended Support Patch）。"
-score = 5
+remediation = "建议将 Novell NetWare 升级至 4.11 之后的修复版本（如 NetWare 5.x），或安装 Novell 官方发布的 TTS 服务相关补丁。如无法立即升级，可在边界防火墙/路由器上限制对 NetWare 服务器 524 端口（NCP）及 TTS 相关服务的访问，仅允许受信任内网主机连接，并配置连接速率限制与并发请求上限，以降低远程大量请求触发拒绝服务的风险。"
+score = 5.0
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Novell NetWare Transaction Tracking System 拒绝服务漏洞"
+sources = ["epss"]
+title = "Novell NetWare 4.11 事务跟踪系统拒绝服务漏洞"
 updated = "2026-06-16T21:49:05.650"
 
 [exploit]
@@ -17,21 +17,12 @@ aliases = ["CVE-1999-0805"]
 ave_id = "AVE-1999-0552"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://archives.neohapsis.com/archives/bugtraq/1999_2/0439.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/2184",
-    "https://github.com/CVEProject/cvelistV5/blob/d4a574a76aebe4c90e3ed9125b2a8b9cb55a2a89/cves/1999/0xxx/CVE-1999-0805.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0805",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0805.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/cd1e3d0adf029810963282884bd6480e52b853ac/CVE/data/1999/CVE-1999-0805.json",
-    "https://github.com/github/advisory-database/blob/d20f7de3d08a68f3e39354046037c609e67e8e1a/advisories/unreviewed/2022/04/GHSA-5v4m-rq7q-2xcf/GHSA-5v4m-rq7q-2xcf.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/276/info.html",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0805.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--e28c05ed-afd1-45c6-b356-676c6df704b1.json",
-    "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--e28c05ed-afd1-45c6-b356-676c6df704b1.owl",
-    "https://github.com/olbat/nvdcve/blob/763b4dfa75aa1890a155aad1b583fdcab8111c49/nvdcve/CVE-1999-0805.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0e46881568ba1d1c2011ec61282a082880cda856/cves/1999/0xxx/CVE-1999-0805.json",
 ]
