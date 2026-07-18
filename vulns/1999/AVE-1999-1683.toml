@@ -1,12 +1,12 @@
 [basic]
-description = "Microsoft 数据访问组件（MDAC）中远程数据服务（RDS）DataFactory 组件存在访问控制缺陷（CWE-264），运行 IIS 3.x 或 4.x 及 MDAC 2.1 的系统暴露了不安全的方法接口，未经身份认证的远程攻击者可通过构造恶意请求调用这些危险方法，从而在目标服务器上以系统权限执行任意命令。该漏洞影响 Microsoft IIS 3.0/4.0、MDAC 2.1、Microsoft Index Server 2.0 及 Microsoft Site Server Commerce Edition 3.0 等产品，CVSS v2 评分为满分 10.0，危害等级为严重。攻击者无需任何凭据即可在远程直接利用该漏洞完全控制服务器，造成数据泄露、系统被控等严重后果。Microsoft 在 MS98-004 及 MS99-025 安全公告中发布了对应补丁，建议受影响用户尽快升级修复。"
-published = "1999-07-19T04:00:00.000"
-remediation = "建议立即为 Microsoft Data Access Components (MDAC) 2.1 安装微软安全公告 MS99-025 提供的 RDS 安全补丁，或将 MDAC 升级至 2.1 SP2 及以上版本；在 IIS 中通过配置 URLScan 或移除 /msadc/msadcs.dll 的脚本执行权限，并禁用或删除 RDS DataFactory 组件（将其注册表或 IIS 映射移除），以阻止远程调用 unsafe 方法；若暂不能打补丁，应在边界防火墙阻断对外网暴露 80/443 端口上对 /msadc/ 路径的访问作为临时缓解措施。"
+description = "该漏洞位于微软 IIS 4.0/5.0 所集成的远程数据服务（RDS）组件 DataFactory 中。攻击者可在未授权的情况下，通过向目标服务器发送特制的 HTTP 请求调用 RDS DataFactory 的 CreateObject 方法，从而在服务端实例化任意本地组件（如 MSADC 的 Advanced Data Factory 或 VbBusObj 业务对象），进而以 IWAM 或 SYSTEM 权限执行任意操作系统命令。此漏洞的攻击条件仅需目标开放 Web 服务且未删除或限制 RDS DataFactory 的注册表隐式调用项，即可被远程利用造成服务器完全沦陷。"
+published = "1999-07-19"
+remediation = '按照 Microsoft 安全公告 MS99-025，通过注册表编辑器或 REGDEL 工具删除 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W3SVC\Parameters\ADCLaunch 下的 RDSServer.DataFactory、AdvancedDataFactory 和 VbBusObj.VbBusObjCls 三个键值，以禁用 RDS DataFactory 的隐式远程功能；同时移除服务器上 MDAC 自带的 RDS Sample Pages 目录。若系统仍依赖 RDS，应升级到 MDAC 2.1（全新安装而非从旧版本升级）并在注册表中显式配置允许调用的 Business Objects 键值，禁止未授权访问。'
 score = 10
 severity = "CRITICAL"
-sources = ["exploitdb"]
-title = "Microsoft MDAC RDS 远程命令执行漏洞"
-updated = "2026-06-16T21:49:31.110"
+sources = ["avd"]
+title = "微软 Windows NT IIS RDS DataFactory 远程命令执行漏洞"
+updated = "2026-07-18"
 
 [exploit]
 exp_urls = []
@@ -17,25 +17,14 @@ aliases = ["CVE-1999-1011"]
 ave_id = "AVE-1999-1683"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.ciac.org/ciac/bulletins/j-054.shtml",
     "http://www.osvdb.org/272",
-    "https://docs.microsoft.com/en-us/security-updates/securitybulletins/1998/ms98-004",
     "https://docs.microsoft.com/en-us/security-updates/securitybulletins/1999/ms99-025",
     "https://www.securityfocus.com/bid/529",
     "https://www.exploit-db.com/exploits/19424",
-    "https://github.com/CVEProject/cvelistV5/blob/9fb3a936a0c1d10acf1532bf38ee04d3d8b03656/cves/1999/1xxx/CVE-1999-1011.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1011",
-    "https://github.com/fankh/vulnerability-poc/blob/f21a64bfc34084b4d3430a663d30639c4e59d27f/1999/CVE-1999-1011/README.md",
-    "https://github.com/e-m-b-a/emba/blob/ffab8835dab57629dd708bbd389c0fd0b4f23ace/config/msf_cve-db.txt",
-    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-1011.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/30f77465b94d71209b45a239e791a1fe062c9e8b/CVE/data/1999/CVE-1999-1011.json",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/msadcs_dll.nasl",
-    "https://github.com/swimlane/soc-faker/blob/361c4ae88956878fbd8aaf5975044328556dfecd/socfaker/data/alert_names.txt",
-    "https://github.com/decal/werdlists/blob/81edb463f7f6311c85defefaf75ac9cd58e5cfb9/exploit-info/symantec-attack-signatures.txt",
-    "https://github.com/Chudry/Xerror/blob/07ec57cabcd27cdb47c89af452bdf4ed07207347/xerror/parsing/msf_module_result/msf_module_cve.txt",
 ]
