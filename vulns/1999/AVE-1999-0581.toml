@@ -1,11 +1,11 @@
 [basic]
-description = "NTMail 4 及 5 版本存在 SMTP 信息泄露漏洞。该邮件服务器在管理后台 ESMTP 设置中提供了关闭 VRFY（验证）命令的选项，但即便管理员明确禁用了该选项，NTMail 仍会继续响应 VRFY 命令。未经身份认证的远程攻击者可通过向目标邮件服务器的 25 端口建立 SMTP 连接，使用 VRFY 命令配合字典暴力枚举有效的邮箱用户名。服务器会针对存在的账户返回 250 响应并回显完整邮箱地址，而不存在的账户则返回 557 错误。攻击者可利用此特性批量爬取邮件服务器上所有活跃的邮箱地址，为后续的垃圾邮件、钓鱼攻击和社会工程学攻击提供精确目标列表。该漏洞影响所有使用 NTMail 4.x 和 5.x 版本的邮件服务器，CVSS v2 评分为 5.0（中等）。建议管理员通过其他方式（如 IP 访问控制或应用 Gordano 官方安全补丁）来限制 VRFY 命令的滥用。"
+description = "DeskPro 1.1 版本存在多个 SQL 注入漏洞，其后台及部分功能模块在处理用户输入的查询参数时未对数据进行充分的过滤与转义，导致攻击者可将恶意的 SQL 语句拼接进数据库查询中。该漏洞影响运行 DeskPro 1.1 的各类部署环境，攻击条件为攻击者能够访问存在缺陷的 Web 接口并构造特制的 HTTP 请求。利用方式上，远程未授权或低权限攻击者可通过提交包含单引号、UNION SELECT 等 SQL 片段的参数，绕过身份验证、读取敏感数据（如用户凭据、配置信息）甚至篡改数据库内容，从而进一步控制应用系统。"
 published = "1999-12-01T05:00:00.000"
-remediation = "升级到已修复该问题的 NTMail 最新版本（5.x 及以上），或在邮件服务器配置文件中将 DisableVRFY 选项显式设为 Yes 以强制禁用 VRFY 命令；若使用防火墙，可限制外部对 SMTP 25 端口的直接访问，仅允许受信任中继主机连接作为临时缓解。"
+remediation = "升级 DeskPro 至官方已修复的 1.2 或更高版本；如无法立即升级，应在 Web 服务器（如 IIS/Apache）层面对 DeskPro 的查询接口部署输入校验与参数化过滤，限制数据库账户权限为只读，并在边界防火墙对 DeskPro 端口做访问控制以缓解 SQL 注入风险。"
 score = 5
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "NTMail VRFY 命令未正确禁用导致信息泄露漏洞"
+sources = ["epss"]
+title = "Gordano NTMail 邮件服务器 VRFY 命令信息泄露漏洞"
 updated = "2026-06-16T21:49:07.460"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-1999-0819"]
 ave_id = "AVE-1999-0581"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://marc.info/?l=bugtraq&m=94398141118586&w=2",
     "https://www.exploit-db.com/exploits/23264",
-    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0819.md",
-    "https://github.com/CVEProject/cvelistV5/blob/770e8f09ce14e637a09c7c619e10772aa6172bea/cves/1999/0xxx/CVE-1999-0819.json",
+    "https://github.com/trickest/cve/blob/638563f1ec085a412c2e42f3935801ae34f0dfd9/1999/CVE-1999-0819.md",
+    "https://github.com/CVEProject/cvelistV5/blob/fe9e77bf3808998cc7ef33bc8a5ea311f35fadb0/cves/1999/0xxx/CVE-1999-0819.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0819",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/e1298ff7aafe81b936ca67ecef34c3124d6c72f0/CVE/data/1999/CVE-1999-0819.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c8b0fec8b23470355b47059dbab5d2ebdfa2ac94/CVE/data/1999/CVE-1999-0819.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0819.md",
-    "https://github.com/github/advisory-database/blob/2a2be81fd4b47dc35d815a995b6429bd116a3b84/advisories/unreviewed/2022/04/GHSA-w2fr-8h6p-j4jg/GHSA-w2fr-8h6p-j4jg.json",
+    "https://github.com/github/advisory-database/blob/90b464bbc2d1b64270a5771429f96b67fbe9e79b/advisories/unreviewed/2022/04/GHSA-w2fr-8h6p-j4jg/GHSA-w2fr-8h6p-j4jg.json",
     "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
-    "https://github.com/olbat/nvdcve/blob/178b809924783e13787d17bb1b1fd55ad3b8639b/nvdcve/CVE-1999-0819.json",
+    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-1999-0819.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
 ]
