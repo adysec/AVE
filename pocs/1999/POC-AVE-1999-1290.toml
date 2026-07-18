@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "验证 ISC BIND named 进程符号链接竞争条件漏洞（CVE-1999-1499）。本地攻击者可在 named 以 root 权限运行时，预先创建指向敏感文件的符号链接（named_dump.db 或 named.stats），诱导 root 发送 SIGINT/SIGIOT 信号导致任意文件被覆盖破坏。"
+id = "POC-AVE-1999-1290"
+name = "CVE-1999-1499 PoC"
+severity = "low"
+tags = ["ave-1999-1290"]
+vuln_id = [
+    "CVE-1999-1499",
+    "AVE-1999-1290",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/var/named/named_dump.db"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["named_dump.db"]
+
+[[poc.requests]]
+path = "/var/named/named.stats"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["named.stats"]
+
+[[poc.requests]]
+path = "/tmp/named_dump.db.symlink_test"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["root:"]
