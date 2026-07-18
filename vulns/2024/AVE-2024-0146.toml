@@ -1,0 +1,34 @@
+[basic]
+description = "Bazarr 是一款用于自动下载和管理影视字幕的开源应用。其 `/api/swaggerui/static` 端点（位于 `bazarr/app/ui.py`）未对用户控制的 `filename` 变量进行校验，直接将其传入 `send_file` 函数处理，导致攻击者可通过构造包含路径遍历序列（如 `../../`）的请求参数，读取服务器上的任意文件内容。该漏洞影响所有未升级至 1.3.1 版本的 Bazarr 实例。攻击者仅需网络可达目标服务的 `/api/swaggerui/static` 接口，无需身份认证即可利用，可能泄露配置文件、数据库凭据、密钥等敏感信息，进而造成更大的安全风险。"
+published = "2023-12-15"
+remediation = "将 Bazarr 升级至 1.3.1 或更高版本，该版本已修复 `/api/swaggerui/static` 端点对 `filename` 参数的路径遍历漏洞。如短期内无法升级，可在反向代理（如 Nginx）层中拦截包含 `../` 或路径遍历字符的请求，并限制 `/api/swaggerui/static` 路径仅允许内网管理 IP 访问。同时建议检查服务器上是否存在已泄露的敏感文件，及时更换相关凭据和密钥。"
+score = 7.5
+severity = "HIGH"
+sources = [
+    "hwpoc",
+    "nvd",
+]
+title = "Bazarr swaggerui 静态文件接口任意文件读取漏洞"
+updated = "2023-12-15"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2023-50265",
+    "HWPOC-2024-01ea526e",
+]
+ave_id = "AVE-2024-0146"
+
+[meta]
+collected_at = "2026-07-18T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/morpheus65535/bazarr/releases/tag/v1.3.1",
+    "https://securitylab.github.com/advisories/GHSL-2023-192_GHSL-2023-194_bazarr/",
+    "https://github.com/morpheus65535/bazarr/commit/17add7fbb3ae1919a40d505470d499d46df9ae6b",
+]
