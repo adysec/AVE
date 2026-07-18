@@ -1,11 +1,11 @@
 [basic]
-description = "IBM Network Station Manager NetStation 2.0 R1 存在竞争条件漏洞，本地用户可通过符号链接攻击提升系统权限。该漏洞允许未经身份认证的本地用户在目标系统上执行符号链接操作，利用文件处理中的时间差竞态突破原有权限限制，最终获取更高权限。该漏洞影响 IBM Network Station Manager 部署环境，CVSS 评分 6.2，危害等级中等。"
+description = "IBM Network Station Manager（NetStation）2.0r1 存在竞争条件漏洞，其特权进程在处理临时文件或日志文件时未对文件路径进行严格的符号链接（symlink）检查，导致存在「检查-使用」时间差（TOCTOU）。本地低权限用户可通过在特权进程操作的文件路径处创建符号链接，指向其可控的系统关键文件，在竞争窗口内使特权进程跟随该链接进行写操作，从而覆盖或篡改本应由高权限管理的系统文件，最终实现本地权限提升，获得系统的 root 或管理员级别访问权限。该漏洞影响 IBM Network Station Manager 2.0r1 版本，CVSS v2 评分为 6.2（中危），攻击复杂度较高，需本地账户访问权限即可触发。IBM 建议用户升级至修复版本，并确保特权进程使用 O_NOFOLLOW 等安全机制处理文件操作，防止符号链接攻击。"
 published = "1999-12-27T05:00:00.000"
-remediation = "建议将 IBM Network Station Manager 升级至修复了该符号链接竞争条件漏洞的后续版本（2.0 R2 或厂商发布的相关补丁）。如暂无法升级，应以最小权限原则限制本地普通用户对关键目录的写权限与符号链接创建能力，并监控 /tmp 等临时目录下的异常符号链接行为，避免低权限用户借机提权。"
+remediation = "建议升级到 IBM Network Station Manager 2.0 R2 或更高版本，该版本修复了 NetStation 的竞态条件漏洞。如暂无法升级，应以最小权限运行 NetStation 服务，限制本地用户对临时目录的写入权限，并定期审计 /tmp 等可写目录下的符号链接创建行为，避免攻击者通过符号链接攻击提升权限。"
 score = 6.2
 severity = "MEDIUM"
-sources = ["cve"]
-title = "IBM Network Station Manager 本地用户竞争条件权限提升漏洞"
+sources = ["exploitdb"]
+title = "IBM Network Station Manager 竞争条件权限提升漏洞"
 updated = "2026-06-16T21:50:51.093"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0027"]
 ave_id = "AVE-2000-0025"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/archive/1/39962",
     "http://www.securityfocus.com/bid/900",
     "https://www.exploit-db.com/exploits/19697",
-    "https://github.com/CVEProject/cvelistV5/blob/6bde90e50f9c8511feb5459f87a55fa56411bd2c/cves/2000/0xxx/CVE-2000-0027.json",
+    "https://github.com/CVEProject/cvelistV5/blob/edbb10deb36e9400fcd245fdb6d1781b6f0ae700/cves/2000/0xxx/CVE-2000-0027.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0027",
-    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-2000-0027.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/5d448b12fda744aa8491fddc8705260f2b4289f2/CVE/data/2000/CVE-2000-0027.json",
-    "https://github.com/github/advisory-database/blob/5bd4fceb27857756215e988f4824b12d3de84ec1/advisories/unreviewed/2022/04/GHSA-qv8j-42h3-c36j/GHSA-qv8j-42h3-c36j.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-2000-0027.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/af2c3b5adc3ff9dc412f664a188835d908ce9d5f/CVE/data/2000/CVE-2000-0027.json",
+    "https://github.com/github/advisory-database/blob/d94ad47d0f2016e121b6d251f490e890714f8916/advisories/unreviewed/2022/04/GHSA-qv8j-42h3-c36j/GHSA-qv8j-42h3-c36j.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/178b809924783e13787d17bb1b1fd55ad3b8639b/nvdcve/CVE-2000-0027.json",
+    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-2000-0027.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154000_154100.json",
     "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/fca0a8f0c4e8e363295abb0217269b2593cf1f3b/2000.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/30840c8fa1a16a55410c671ff85fbfa95b4cbcfe/2000.tsv",
 ]
