@@ -1,11 +1,11 @@
 [basic]
-description = "ISC BIND 8.2 及 8.2.1 版本在处理 TCP 会话时存在缺陷，当启用 so_linger 选项时，系统未能正确关闭 TCP 连接，导致大量半开连接耗尽服务器资源。远程攻击者无需认证即可通过发送特制的 TCP 请求触发此漏洞，造成 BIND 服务拒绝服务，影响 DNS 解析服务的正常运行。该漏洞 CVSS 评分 10.0，危害等级严重。"
+description = "ISC BIND 8.2 及 8.2.1 版本在处理 TCP 会话时存在拒绝服务漏洞，因未能正确关闭设置了 SO_LINGER 选项的 TCP 连接（improperly closing TCP sessions via so_linger）。远程攻击者可通过向运行 BIND 的 DNS 服务器发起大量特制的 TCP 会话连接，利用 SO_LINGER 套接字选项触发资源耗尽或非正常会话关闭逻辑，导致 named 守护进程崩溃或停止响应，造成 DNS 服务不可用。该漏洞影响使用 BIND 8.2 与 8.2.1 版本的 DNS 服务器，攻击者仅需网络可达目标 53 端口（TCP）即可实施攻击，无需身份认证，CVSS 评分达 10.0，危害等级严重。"
 published = "1999-11-10T05:00:00.000"
-remediation = "升级 ISC BIND 到 8.2.2 或更高版本，其中修复了 so_linger 处理不当的问题。修改 /etc/bind/options 文件，添加 `options { listen-on port 53; };` 并重启服务。如无法立即升级，可通过 iptables 丢弃异常 TCP 连接作为临时缓解措施。"
+remediation = "立即将 ISC BIND 升级至 8.2.2 或更高版本，该版本已修复 TCP 会话处理中 so_linger 使用不当导致的拒绝服务问题。如无法立即升级，可在 named.conf 中限制允许建立 TCP 区传送连接的客户端（allow-transfer），并在边界防火墙对 DNS 服务器 53 端口的 TCP 连接数做限速与并发限制，作为临时缓解措施。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "ISC BIND 8.2/8.2.1 TCP会话拒绝服务漏洞"
+sources = ["epss"]
+title = "ISC BIND 8.2/8.2.1 TCP Session 拒绝服务漏洞"
 updated = "2026-06-16T21:49:09.680"
 
 [exploit]
@@ -17,18 +17,18 @@ aliases = ["CVE-1999-0837"]
 ave_id = "AVE-1999-1000"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://sunsolve.sun.com/pub-cgi/retrieve.pl?doctype=coll&doc=secbull/194",
     "http://www.securityfocus.com/bid/788",
-    "https://github.com/CVEProject/cvelistV5/blob/770e8f09ce14e637a09c7c619e10772aa6172bea/cves/1999/0xxx/CVE-1999-0837.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a3a08d51f200d453300fca8b852aada6b8c5985a/cves/1999/0xxx/CVE-1999-0837.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0837",
-    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0837.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/e1298ff7aafe81b936ca67ecef34c3124d6c72f0/CVE/data/1999/CVE-1999-0837.json",
-    "https://github.com/github/advisory-database/blob/2a2be81fd4b47dc35d815a995b6429bd116a3b84/advisories/unreviewed/2022/05/GHSA-x45h-gg4p-4cwx/GHSA-x45h-gg4p-4cwx.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0837.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/44e56ab96b4cc04024678e20a1f15145c3b3cc59/CVE/data/1999/CVE-1999-0837.json",
+    "https://github.com/github/advisory-database/blob/b1dd20ab76cf8f3afbe611ea8133362b0532868d/advisories/unreviewed/2022/05/GHSA-x45h-gg4p-4cwx/GHSA-x45h-gg4p-4cwx.json",
     "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
     "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/bind_vulnerable.nasl",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
