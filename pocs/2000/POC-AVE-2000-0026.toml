@@ -1,29 +1,40 @@
 [info]
-author = "ave"
-description = "通过构造恶意 HTML 页面调用 IE 的 external.NavigateAndFind() 方法，尝试绕过跨帧安全策略并读取本地文件，验证目标是否受该跨帧安全绕过漏洞影响。"
+author = "AVE"
+description = "检测目标页面是否包含 Microsoft Internet Explorer 5.0/5.01 的 external.NavigateAndFind() 跨帧安全策略绕过漏洞利用代码。通过 HTTP GET 请求获取目标页面内容，检查响应体中是否出现 external.NavigateAndFind 函数调用，若存在则表明该页面可能包含针对此漏洞的利用代码。"
 id = "POC-AVE-2000-0026"
-name = "CVE-2000-0028 Internet Explorer external.NavigateAndFind 跨帧安全策略绕过 PoC"
+name = "Microsoft Internet Explorer external.NavigateAndFind 跨帧安全策略绕过 PoC"
 severity = "low"
-tags = ["ave-2000-0026"]
+tags = [
+    "cve-2000-0028",
+    "ie-xss",
+    "cross-frame",
+]
 vuln_id = [
     "CVE-2000-0028",
     "AVE-2000-0026",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cve-2000-0028.html"
+path = "/{{BaseURL}}/"
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["external.NavigateAndFind"]
+words = ["NavigateAndFind"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc-navigateandfind.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["NavigateAndFind"]
