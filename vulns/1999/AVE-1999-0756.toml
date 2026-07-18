@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD libc 模块中的 setlocale 函数存在缓冲区溢出漏洞，本地攻击者可通过设置超长 PATH_LOCALE 环境变量触发该漏洞，导致任意代码执行。该漏洞影响多个 FreeBSD 版本，攻击者需拥有本地访问权限，成功利用后可获得目标系统的 root 权限或劫持进程控制流。"
+description = "FreeBSD 系统的 libc 库中 setlocale 函数在处理 PATH_LOCALE 环境变量时存在缓冲区溢出漏洞。本地攻击者可通过构造超长的 PATH_LOCALE 环境变量值，导致堆栈缓冲区溢出，进而执行任意代码获得 root 权限。该漏洞影响 FreeBSD 3.x 早期版本，攻击条件为攻击者拥有本地登录权限或能通过其他方式在目标系统上执行程序并控制其环境变量。"
 published = "2000-01-01T05:00:00.000"
-remediation = "升级至 FreeBSD 4.0 及以上版本（该版本已修复 libc 中 PATH_LOCALE 长度检查缺失问题）；现代系统应升级至最新的受支持 FreeBSD 稳定版（如 13.x 或 14.x）。如无法升级，可通过在系统级脚本中过滤并截断 PATH_LOCALE 环境变量长度（限制 ≤256 字节）作为临缓解措施，并严格限制本地 shell 访问权限。"
+remediation = "立即升级至 FreeBSD 3.4-RELEASE 或更高版本（包括 FreeBSD-SA-00:19 补丁），该补丁修复了 libc 中 setlocale 函数处理 PATH_LOCALE 环境变量时的缓冲区溢出问题。如无法立即升级，可在系统环境变量配置中移除 PATH_LOCALE 变量，或修改启动脚本使用支持边界检查的 locale 设置方式，同时建议检查是否有未授权账户登录痕迹。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "FreeBSD libc setlocale 缓冲区溢出代码执行漏洞"
+sources = ["avd"]
+title = "FreeBSD libc setlocale 函数 PATH_LOCALE 环境变量缓冲区溢出漏洞"
 updated = "2026-06-16T21:49:25.217"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0964"]
 ave_id = "AVE-1999-0756"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["http://www.osvdb.org/6086"]
+urls = [
+    "http://www.osvdb.org/6086",
+    "https://github.com/CVEProject/cvelistV5/blob/20b9340dcaffca733259fb153ac741206a5bbc5f/cves/1999/0xxx/CVE-1999-0964.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0964",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0964.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e90735e3e31fc62018265dfbae313d166e653462/CVE/data/1999/CVE-1999-0964.json",
+    "https://github.com/github/advisory-database/blob/d9ad03f9df46533ce9229f9da6bbf66bd77a3f4f/advisories/unreviewed/2022/04/GHSA-9w6w-73wp-668p/GHSA-9w6w-73wp-668p.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0964.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x84000/83054/info.html",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152000_152100.json",
+    "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_overflow.txt",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/233cd9746ce3c3e9d47fe0335940ddf03b9a0845/1999.tsv",
+]
