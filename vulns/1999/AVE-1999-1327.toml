@@ -1,0 +1,48 @@
+The key issues:
+1. The TOML has duplicate sections (multiple [id], [basic], [exploit], [meta], [references])
+2. remediation field is empty in the final parsed version
+3. Need to produce clean, valid TOML
+1. The TOML has duplicate sections - there are two `[basic]`, two `[id]`, two `[exploit]`, two `[meta]`, two `[references]` sections. This is invalid TOML.
+2. The remediation field is empty according to the error message.
+3. The first `[basic]` section has `remediation` with a weird value `tags.<value>` and then the rest of the TOML is concatenated into the remediation string.
+From NVD:
+- Description: "Buffer overflow in chfn command in HP-UX 9.X through 10.20 allows local users to gain privileges via a long command line argument."
+- CVSS v2.0: 7.2 HIGH, Vector: (AV:L/AC:L/Au:N/C:C/I:C/A:C)
+- Published: 1996-12-13
+- References:
+- http://ciac.llnl.gov/ciac/bulletins/h-16.shtml
+- http://ciac.llnl.gov/ciac/bulletins/h-21.shtml
+- http://marc.info/?l=bugtraq&m=87602167420285&w=2
+- https://exchange.xforce.ibmcloud.com/vulnerabilities/2008
+The correct TOML should have:
+- `[id]` with ave_id = "AVE-1999-1327" and aliases = ["CVE-1999-1089"]
+- `[basic]` with title, description (Chinese), severity, score, sources, published, updated, remediation
+- `[references]` with urls
+- `[exploit]` with poc_urls and exp_urls
+- `[meta]` with status and collected_at
+The remediation needs to be fixed - it should be a concrete Chinese remediation suggestion. From the NVD data, the CIAC bulletins h-16 and h-21 contain patch information. The remediation should mention upgrading to a fixed version of HP-UX beyond 10.20.
+Now let me write the correct TOML. The key issues:
+1. Remove duplicate sections
+2. Fix remediation field (it was empty/concatenated with garbage)
+3. Keep only valid 5 sections
+The remediation from the second `[basic]` section was: "升级到已修复的 HP-UX 版本或应用厂商提供的安全补丁。由于该漏洞影响 HP-UX 9.X 至 10.20 版本，建议升级到 10.20 之后的修复版本，或参考 CIAC 公告 h-16 和 h-21 获取补丁详情。"
+This is actually a valid remediation. The problem was the TOML had duplicate sections and the first `[basic]` had a malformed remediation field.
+ave_id = "AVE-1999-1327"
+aliases = ["CVE-1999-1089"]
+[basic]
+title = "HP-UX chfn 命令缓冲区溢出权限提升漏洞"
+description = "HP-UX 9.X 至 10.20 版本中的 chfn 命令存在缓冲区溢出漏洞。本地攻击者可通过向 chfn 命令行参数传递超长字符串触发栈缓冲区溢出，从而覆盖返回地址并执行任意代码，最终获取 root 权限。该漏洞源于 chfn 程序未对用户输入进行充分长度检查，导致攻击者能够以提升的权限执行恶意指令，完全控制系统。"
+severity = "HIGH"
+score = 7.2
+sources = ["cve"]
+published = "1996-12-13"
+updated = "2026-06-16"
+remediation = "升级到已修复的 HP-UX 版本或应用厂商提供的安全补丁。由于该漏洞影响 HP-UX 9.X 至 10.20 版本，建议升级到 10.20 之后的修复版本，或参考 CIAC 公告 h-16 和 h-21 获取补丁详情。"
+[references]
+urls = ["http://ciac.llnl.gov/ciac/bulletins/h-16.shtml", "http://ciac.llnl.gov/ciac/bulletins/h-21.shtml", "http://marc.info/?l=bugtraq&m=87602167420285&w=2", "https://exchange.xforce.ibmcloud.com/vulnerabilities/2008"]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-19T00:00:00Z"
