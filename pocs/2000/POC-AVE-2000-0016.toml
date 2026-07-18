@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "FreeBSD 下 WindowMaker 附属工具 wmmon 1.0 beta 2 会以特权读取并执行用户主目录中的 .wmmonrc 配置文件。本 PoC 验证目标用户主目录中是否存在 .wmmonrc 配置文件且可被当前用户写入，并检测其中是否包含 run:/command/shell 等可被特权进程执行的危险指令，用于确认本地权限提升风险面。"
+id = "POC-AVE-2000-0016"
+name = "CVE-2000-0018 wmmon .wmmonrc 本地权限提升 PoC"
+severity = "high"
+tags = ["ave-2000-0016"]
+vuln_id = [
+    "CVE-2000-0018",
+    "AVE-2000-0016",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "{{Home}}/.wmmonrc"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "run:",
+    "command",
+    "shell",
+]
