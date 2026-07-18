@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过向目标 Apache HTTP Server 的 CGI 程序并发发送大量 HTTP GET 请求，触发 Mac OS X Server 1.0 内核 panic，验证拒绝服务漏洞存在。参考 ExploitDB 19244 CGI-McPanic 脚本。"
+description = "验证 Apple Mac OS X Server 1.0 上运行的 Apache HTTP 服务器在遭受 CGI 接口高频 GET 请求洪流时是否出现拒绝服务（崩溃/资源耗尽）。通过向目标 CGI 路径并发发送大量请求，观察服务是否停止响应以确认漏洞存在。"
 id = "POC-AVE-1999-1101"
-name = "CVE-1999-1412 PoC"
+name = "CVE-1999-1412 DoS PoC"
 severity = "medium"
 tags = ["ave-1999-1101"]
 vuln_id = [
@@ -11,18 +11,24 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/test-cgi"
+path = "/cgi-bin/test-cgi"
 protocol = "http"
 
-[poc.requests.headers]
-Connection = "keep-alive"
-User-Agent = "AVE/1.0"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
+part = "body"
+status = [
+    500,
+    502,
+    503,
+    504,
+]
 type = "status"
