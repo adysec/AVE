@@ -1,11 +1,11 @@
 [basic]
-description = "PowerScripts PlusMail WebConsole 1.0 的 CGI 程序存在弱身份认证漏洞，远程攻击者无需知晓当前管理员密码即可通过 plusmail 脚本（通常为 /cgi-bin/plusmail）提交 new_login 参数重置管理员用户名和密码。成功利用后，攻击者可通过 Web 控制面板执行邮件列表管理、网站编辑等特权操作，完全接管服务器管理权限。"
+description = "PowerScripts PlusMail WebConsole 1.0 的 CGI 程序存在弱认证漏洞，其密码文件权限设置不当，导致远程攻击者无需有效凭据即可直接访问或修改密码文件，进而获取系统控制权限。攻击者可通过向目标服务器发送特制 HTTP 请求，利用不安全的文件权限读取或覆盖密码文件，从而以管理员身份执行任意命令。该漏洞影响 PlusMail WebConsole 1.0 版本，CVSS 评分 7.5，危害等级高，建议升级至最新版本或严格限制密码文件访问权限。"
 published = "2000-01-11T05:00:00.000"
-remediation = "建议升级到 PowerScripts PlusMail 修复版本（联系厂商获取 1.0 之后的补丁），或停止部署 WebConsole 组件。临时缓解措施：检查并修正密码文件权限（如 chmod 600 并归属 Web 服务专用账户），限制 WebConsole 目录仅允许可信 IP 访问，并通过 Web 服务器配置禁用匿名调用相关 CGI 接口。"
+remediation = "立即修复 PlusMail 密码文件权限，确保 `password.txt` 等敏感文件权限设置为 600 或更严格，仅允许 Web 服务进程所有者读写。同时升级到 PowerScripts PlusMail 最新版本（如厂商已停止维护，建议迁移至其他受支持的邮件 Web 管理方案）。在 Web 服务器（如 Apache）层面配置访问控制，限制 `/cgi-bin/` 目录仅允许授权 IP 访问，并禁用目录列表功能。"
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
-title = "PowerScripts PlusMail WebConsole 1.0 远程身份认证绕过漏洞"
+sources = ["exploitdb"]
+title = "PowerScripts PlusMail WebConsole 弱认证漏洞"
 updated = "2026-06-16T21:50:56.790"
 
 [exploit]
@@ -24,12 +24,12 @@ status = "completed"
 urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-2000-0074",
     "https://www.exploit-db.com/exploits/20801",
-    "https://github.com/CVEProject/cvelistV5/blob/20b9340dcaffca733259fb153ac741206a5bbc5f/cves/2000/0xxx/CVE-2000-0074.json",
+    "https://github.com/CVEProject/cvelistV5/blob/83494e95424aced4cfc65648b3019774f7fc51c3/cves/2000/0xxx/CVE-2000-0074.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0074",
-    "https://github.com/sari3l/Poc-Monitor/blob/0e4e98ec7b0f1d98a296fe76b313a4c7f3ce20fd/2000/CVE-2000-0074.json",
+    "https://github.com/sari3l/Poc-Monitor/blob/0663522afd1997d13db18aa372c96f4306f457f9/2000/CVE-2000-0074.json",
     "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-2000-0074.md",
-    "https://github.com/github/advisory-database/blob/d9ad03f9df46533ce9229f9da6bbf66bd77a3f4f/advisories/unreviewed/2022/04/GHSA-3p8m-qpqj-m94w/GHSA-3p8m-qpqj-m94w.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/e90735e3e31fc62018265dfbae313d166e653462/CVE/data/2000/CVE-2000-0074.json",
+    "https://github.com/github/advisory-database/blob/799c403529fad0f67d5473eea397e9968232a5ec/advisories/unreviewed/2022/04/GHSA-3p8m-qpqj-m94w/GHSA-3p8m-qpqj-m94w.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/03324c0426abad4e55ae7c73b0bba67b9c87e4ea/CVE/data/2000/CVE-2000-0074.json",
     "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/plusmail.nasl",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152100_152200.json",
