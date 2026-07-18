@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD 实现的 T/TCP（事务型 TCP 扩展）存在源地址欺骗缺陷。T/TCP 通过 TAO 机制缓存对端连接状态以加速事务连接，但在建立连接时未对源 IP 地址进行充分验证，远程攻击者可通过伪造此前通信过的合法主机 IP 地址，冒充可信对端跳过正常三次握手直接建立连接。该漏洞影响启用 T/TCP 扩展的 FreeBSD 系统网络服务，攻击者可借此绕过身份认证与连接校验，发起未授权连接、数据注入或会话欺骗等攻击，造成信息泄露或数据被篡改。攻击仅需网络可达且目标启用 T/TCP，无需身份认证，利用门槛较低，CVSS 2.0 评分 7.5。"
+description = "FreeBSD 操作系统实现的 T/TCP（TCP 扩展事务协议，RFC 1644）在处理事务连接时存在设计缺陷，攻击者可通过伪造源 IP 地址和 TCP 序列号构造欺骗性数据包，从而绕过正常的三次握手与连接认证机制，冒充可信主机发起事务请求。该漏洞影响启用了 T/TCP 扩展的 FreeBSD 系统，攻击条件为攻击者需能够向目标主机发送网络数据包且无需通过完整身份认证，利用方式即构造特制 T/TCP 数据包实施地址欺骗，可能导致未授权访问或会话劫持等安全风险。"
 published = "1998-05-01T04:00:00.000"
-remediation = '建议升级 FreeBSD 至已禁用 T/TCP 扩展的版本（如 3.3-RELEASE 及以上），或通过在内核配置中设置 `options TCP_NO_TTCP` 并重新编译内核来关闭 T/TCP 功能；运行时可在 `/etc/rc.conf` 中添加 `tcp_extensions="NO"` 并重启网络服务。如暂无法升级，可在边界防火墙和路由器上过滤伪造源 IP 的 T/TCP 流量作为临时缓解措施。'
+remediation = "升级 FreeBSD 系统到已修复该问题的版本（建议更新至 1999 年 11 月发布的 FreeBSD 3.3-STABLE 或 4.0 及以上版本，应用相关安全补丁）。如无法立即升级，可在内核中禁用 T/TCP 扩展（通过 sysctl 设置 net.inet.tcp.rfc1644=0 关闭 RFC 1644）或在前端防火墙/路由设备上过滤伪造源地址的 T/TCP 连接，作为临时缓解措施。"
 score = 7.5
 severity = "HIGH"
-sources = ["avd"]
-title = "FreeBSD T/TCP 事务扩展模块欺骗攻击漏洞"
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"inputTokens":10766,"outputTokens":18,"totalTokens":10784}}'
 updated = "2026-06-16T21:49:04.550"
 
 [exploit]
@@ -17,20 +17,20 @@ aliases = ["CVE-1999-0796"]
 ave_id = "AVE-1999-1151"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.osvdb.org/6089",
-    "https://github.com/CVEProject/cvelistV5/blob/2f8583cd0e244c401900c481a78c07fe5535c09f/cves/1999/0xxx/CVE-1999-0796.json",
+    "https://github.com/CVEProject/cvelistV5/blob/fe807f4098db5a5ad8dcb41a479197724cb9e789/cves/1999/0xxx/CVE-1999-0796.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0796",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0796.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1e2d061a60b9c6823d20cc72e51f709fadad54d2/CVE/data/1999/CVE-1999-0796.json",
-    "https://github.com/github/advisory-database/blob/808b57c97f3c3a63ccc1ba2e5715700b4df9d9e8/advisories/unreviewed/2022/04/GHSA-2q2r-gmfr-mh6v/GHSA-2q2r-gmfr-mh6v.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0796.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f7f250b0cc5cc23741447612a2f182f04c36db78/CVE/data/1999/CVE-1999-0796.json",
+    "https://github.com/github/advisory-database/blob/f61040ac78eb76aff0a3a68a8a8a4562940d3711/advisories/unreviewed/2022/04/GHSA-2q2r-gmfr-mh6v/GHSA-2q2r-gmfr-mh6v.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0796.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154100_154200.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--4e8e1bc7-3f9d-4b7f-8a7c-1f1589f49db4.json",
     "https://github.com/Ethishh/securin_assessment/blob/e6ce9197b6593ae46f3f5646d268181eea6cbb31/cve_sync.log",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/9a1b0c7a36364fec83d2e28b2b1407ec9af2cb74/1999.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/9d62a17e1fed77f73d80a5cfda0f78f06970e41d/1999.tsv",
 ]
