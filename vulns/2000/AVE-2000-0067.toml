@@ -1,0 +1,67 @@
+[id] - good
+- [meta] - good
+- [references] - good
+Now let me write the fixed TOML. I need to make sure:
+1. Title is proper Chinese text about the vulnerability
+2. Remediation has no placeholders, gives concrete steps
+For the remediation, I should provide specific actionable steps:
+- Upgrade techlib.service.rte to version 1.0.0.4
+- Check the APAR number if I can find it
+- Provide temporary mitigation
+Actually, let me search for the specific IBM APAR number for this vulnerability.The IBM ifix directory doesn't contain the specific fix for techlibss. But from the MARC mailing list post, I found the key information:
+- The fix is in the fileset `techlib.service.rte.1.0.0.4` on the service CD for Jan 2000
+- The APAR number seems to be IY05466 (mentioned in the original TOML remediation)
+Now let me construct the fixed TOML:
+1. Fix title: Replace corrupted JSON with proper Chinese title
+"IBM AIX techlibss 符号链接覆盖文件漏洞"
+2. Fix remediation: Remove placeholder and provide concrete steps
+"升级 techlib.service.rte 文件集至 1.0.0.4 版本（AIX 2000 年 1 月服务 CD 中提供），安装后运行 `lslpp -l techlib.service.rte` 确认版本已更新。临时缓解：以 root 用户执行 `chmod u-s /usr/lib/techlibss` 移除 setuid 权限，并定期审计 /tmp 目录下由该程序创建的临时文件。"
+- Principle: symlink attack via predictable temp file names
+- Impact: file overwrite, privilege escalation, system instability
+- Attack conditions: requires local login
+The description is well over 50 characters and in Chinese.
+Now let me write the final TOML. I need to make sure the order of sections is correct as per the schema: [id], [basic], [references], [exploit], [meta].
+Actually, looking at the original TOML, the order is: [basic], [exploit], [id], [meta], [references]. The schema says the order should be [id], [basic], [references], [exploit], [meta]. But TOML is order-independent for sections, so this shouldn't matter for parsing. However, to be safe and follow the schema, I should reorder.
+Wait, the instructions say "严格 5 段 schema" and the example shows the order as [id], [basic], [references], [exploit], [meta]. Let me follow that order.
+- The `updated` field in the original is "2026-06-16T21:50:57.527" which is the NVD modified date. This is fine.
+- The `published` field is "2000-01-10T05:00:00.000" which matches the MARC post date. This is fine.
+- `collected_at` is "2026-07-18T00:00:00Z" which is today. This is fine.
+For the remediation, I want to make sure it doesn't contain placeholders. The original had "IY05xxx 系列" which is a placeholder. I should replace it with the actual APAR number or the specific fileset version.
+From the MARC post: "The problem is fixed with the fileset 'techlib.service.rte.1.0.0.4' on the service CD for Jan 2000."
+I don't have a confirmed APAR number from reliable sources. The original TOML mentioned IY05466 but I couldn't verify it. Let me just use the fileset version which is confirmed.
+Remediation: "升级 techlib.service.rte 文件集至 1.0.0.4 版本（AIX 2000 年 1 月服务 CD 提供），安装后运行 `lslpp -l techlib.service.rte` 确认版本已更新。临时缓解措施：以 root 用户执行 `chmod u-s /usr/lib/techlibss` 移除 setuid 权限，并定期审计 /tmp 目录下由该程序创建的临时文件，防止本地用户通过符号链接攻击覆盖系统文件。"
+This is concrete and actionable, no placeholders.
+Now let me write the full fixed TOML:Now I have the key information from the MARC mailing list. The fix is in the fileset `techlib.service.rte.1.0.0.4` on the Jan 2000 service CD. Let me fix the two issues: the corrupted title and the placeholder in remediation.
+[id]
+ave_id = "AVE-2000-0067"
+aliases = ["CVE-2000-0080"]
+[basic]
+title = "IBM AIX techlibss 符号链接覆盖文件漏洞"
+description = "IBM AIX 操作系统的 techlibss 工具存在符号链接（symlink）漏洞。该工具在处理临时文件时未对文件路径进行充分验证，本地低权限用户可在临时文件目录中创建指向敏感系统文件的符号链接，诱使 techlibss 在写入临时数据时实际覆盖目标文件，从而导致文件内容被篡改或破坏。攻击者需具备目标系统的本地登录权限方可利用此漏洞，成功利用可导致系统配置文件或关键可执行文件被修改，进而实现权限提升或造成系统不稳定。IBM 已发布安全公告建议管理员修复该工具的临时文件处理机制，避免使用可预测的临时文件名。"
+severity = "LOW"
+score = 2.1
+sources = ["cve"]
+published = "2000-01-10T05:00:00.000"
+updated = "2026-06-16T21:50:57.527"
+remediation = "升级 techlib.service.rte 文件集至 1.0.0.4 版本（AIX 2000 年 1 月服务 CD 提供），安装后运行 `lslpp -l techlib.service.rte` 确认版本已更新。临时缓解措施：以 root 用户执行 `chmod u-s /usr/lib/techlibss` 移除 setuid 权限，并定期审计 /tmp 目录下由该程序创建的临时文件，防止本地用户通过符号链接攻击覆盖系统文件。"
+[references]
+urls = [
+"http://marc.info/?l=bugtraq&m=94757136413681&w=2",
+"http://www.securityfocus.com/bid/931",
+"https://github.com/CVEProject/cvelistV5/blob/e268305fd8644994d337819e469d1f89bafde833/cves/2000/0xxx/CVE-2000-0080.json",
+"https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0080",
+"https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-2000-0080.md",
+"https://github.com/Patrowl/PatrowlHearsData/blob/0ea6b1a1298433599abdd2a4c6b6ce9f09476665/CVE/data/2000/CVE-2000-0080.json",
+"https://github.com/github/advisory-database/blob/d9ad03f9df46533ce9229f9da6bbf66bd77a3f4f/advisories/unreviewed/2022/04/GHSA-c9j2-8536-x27c/GHSA-c9j2-8536-x27c.json",
+"https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-2000-0080.json",
+"https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+"https://github.com/dong-xs/Vul-PAG/blob/7eb3b32094a5270cfd8495366e0e4a7df5a874ce/aspect_prediction/org_pred_diff.txt",
+"https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--a60e0b1a-1795-470b-808a-770d843d8ba2.owl",
+"https://github.com/williamjsmail/piranha/blob/e60f12e6edcde8585ee473f701c2421f6efe72d9/CVE2CAPEC/database/CVE-2000.jsonl",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-18T00:00:00Z"
