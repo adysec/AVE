@@ -1,11 +1,11 @@
 [basic]
-description = "Whois Internic Lookup 程序的 whois.cgi 脚本未正确过滤用户输入的域名参数，远程攻击者可通过在域名参数中注入 shell 元字符（如分号、管道符等）实现命令注入攻击，进而执行任意系统命令。该漏洞影响早期版本的 Whois CGI 程序，攻击者无需身份认证即可利用，CVSS 评分 7.5，危害等级高。"
+description = "Whois Internic Lookup 程序 whois.cgi 存在命令注入漏洞，攻击者可在域名查询输入框中注入 Shell 元字符（如分号、反引号、管道符等），绕过输入验证直接在服务器上执行任意系统命令。该漏洞影响运行该 CGI 程序的所有 Web 服务器，无需身份认证即可远程利用，CVSS 评分 7.5（高危）。攻击者只需构造包含恶意命令的域名参数提交查询请求，即可获得服务器操作系统级别的控制权限，进而窃取数据、植入后门或横向移动。"
 published = "1999-11-09T05:00:00.000"
-remediation = "删除或禁用服务器上 whois.cgi 脚本，或对用户输入中的 `;|&$()` 等 shell 特殊字符进行严格过滤和转义，改用安全的 API 调用替代 system/popen 函数执行 whois 查询。"
+remediation = "立即停用或删除存在漏洞的 whois.cgi 脚本，改用经过安全审计的 Whois 查询工具（如 jwhois、whois 命令行工具）。如必须使用 CGI 接口，需对 domain 参数做严格输入过滤，禁止 `;` `|` `` ` `` `$` `(` `)` 等 shell 元字符，并使用 escapeshellcmd/escapeshellarg 函数处理后再传入系统命令。"
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
-title = "Internic Whois Lookup 程序 whois.cgi 远程代码执行漏洞"
+sources = ["avd"]
+title = "Internic Whois 查找程序代码执行漏洞，攻击者可通过向域名输入非法 shell 元字符在服务器上执行任意命令，这是一个通过构造恶意域名输入实现服务器端代码执行的高危安全问题。"
 updated = "2026-06-16T21:49:27.610"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0983"]
 ave_id = "AVE-1999-0796"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0983"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0983",
+    "https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/1999/CVE-1999-0983.md",
+    "https://github.com/CVEProject/cvelistV5/blob/e244b55bdff85b2483c0e6a7cecd12f8bee0df6e/cves/1999/0xxx/CVE-1999-0983.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0983",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/70f84d5684ed60f7a4d0750993d15c30e4fe3bbf/CVE/data/1999/CVE-1999-0983.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0983.md",
+    "https://github.com/github/advisory-database/blob/958f1672375e115879b3a6bd13e3638812260c7d/advisories/unreviewed/2022/04/GHSA-5ghx-c98m-977p/GHSA-5ghx-c98m-977p.json",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-1999-0983.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x3000/2000/info.html",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+]
