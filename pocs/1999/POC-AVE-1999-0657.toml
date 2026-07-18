@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证目标网络内是否存在可被诱导的恶意 WPAD 服务器，或检测 IE5 客户端是否启用了自动代理发现（WPAD）从而可被远程修改代理配置。通过向目标发起 WPAD 名称解析探测，确认是否存在伪造的 wpad.dat 代理配置文件返回，以判断 WPAD 欺骗风险。"
+id = "POC-AVE-1999-0657"
+name = "CVE-1999-0858 IE5 WPAD 代理配置欺骗 PoC"
+severity = "medium"
+tags = ["ave-1999-0657"]
+vuln_id = [
+    "CVE-1999-0858",
+    "AVE-1999-0657",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/wpad.dat"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT)"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "function",
+    "FindProxyForURL",
+    "PROXY",
+]

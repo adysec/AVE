@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证 Microsoft Internet Explorer 4.01/5.0 注册向导 ActiveX 控件 (regwizc.dll) 缓冲区溢出漏洞。通过 HTTP 服务恶意 HTML 页面，诱导 IE 加载易受攻击的 ActiveX 控件并触发 InvokeRegWizard 方法溢出。"
+description = "验证目标 IE 环境中是否加载存在缓冲区溢出风险的 Registration Wizard ActiveX 控件（regwizc.dll，版本 3.0.0.0，公开方法 InvokeRegWizard）。通过在 HTML 页面中以 OBJECT 标签实例化该控件并尝试调用其 InvokeRegWizard 方法，检测控件是否可被加载及方法是否存在，作为漏洞存在的间接验证。该漏洞为需要用户交互的远程代码执行漏洞。"
 id = "POC-AVE-1999-1196"
-name = "CVE-1999-1578 PoC"
+name = "CVE-1999-1578 Registration Wizard ActiveX 缓冲区溢出 PoC"
 severity = "medium"
 tags = ["ave-1999-1196"]
 vuln_id = [
@@ -15,46 +15,12 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/poc.html"
+path = "/{{BaseURL}}/cve-1999-1578.html"
 protocol = "http"
 
 [poc.requests.body]
-content = """
-<!DOCTYPE html>
-<html>
-<head>
-  <title>CVE-1999-1578 PoC - Registration Wizard ActiveX Buffer Overflow</title>
-  <meta charset="utf-8">
-</head>
-<body>
-  <h1>CVE-1999-1578 PoC Test Page</h1>
-  <p>Testing for vulnerable Registration Wizard ActiveX control (regwizc.dll)</p>
-  <object id="regwiz" classid="clsid:3AF36230-A269-11CF-B77A-00AA004AE837" width="0" height="0"></object>
-  <script>
-    try {
-      var ctrl = document.getElementById('regwiz');
-      if (ctrl && typeof ctrl.InvokeRegWizard === 'function') {
-        document.body.innerHTML += '<p style="color:green">[+] Vulnerable ActiveX control detected: regwizc.dll InvokeRegWizard method available</p>';
-        // PoC only: do NOT trigger overflow, just verify control presence
-        // ctrl.InvokeRegWizard(long_string_to_trigger_overflow);
-      } else {
-        document.body.innerHTML += '<p style="color:red">[-] ActiveX control not found or method unavailable</p>';
-      }
-    } catch (e) {
-      document.body.innerHTML += '<p style="color:red">[-] Error: ' + e.message + '</p>';
-    }
-  </script>
-</body>
-</html>"""
+content = ""
 type = "raw"
-
-[poc.requests.headers]
-Content-Type = "text/html; charset=utf-8"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
 
 [[poc.requests.matchers]]
 expect = true
@@ -63,5 +29,18 @@ type = "word"
 words = [
     "regwizc.dll",
     "InvokeRegWizard",
-    "Vulnerable ActiveX control detected",
 ]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/activex_probe"
+protocol = "http"
+
+[poc.requests.body]
+content = "clsid={C39B6B1C-9579-11D1-8B43-00A0C90312DD}&method=InvokeRegWizard"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
