@@ -1,11 +1,11 @@
 [basic]
-description = "Solaris libc 库中的 LC_MESSAGES 环境变量处理存在缓冲区溢出漏洞。本地攻击者可通过设置特制的 LC_MESSAGES 环境变量，触发 libc 库中的缓冲区溢出，进而导致 ufsrestore 和 rcp 等 setuid 程序执行任意代码。该漏洞影响 Sun Solaris 7.0 及 IBM AIX 4.2.1 等系统，CVSS 评分 7.2，危害等级高。攻击者需拥有本地账户权限方可利用。"
+description = "Sun Solaris（7.0、2.6、SunOS 5.7）及 IBM AIX 4.2.1 的 C 语言标准库 libc 及配套工具（ufsrestore、rcp）在处理 LC_MESSAGES 环境变量时存在缓冲区溢出漏洞。当用户通过 telnetd 等远程登录服务连接到目标系统，且客户端传递了超长 LC_MESSAGES 环境变量值时，libc 在解析本地化消息时未对输入长度进行边界检查，导致栈缓冲区溢出，可被利用以覆盖返回地址执行任意代码。该漏洞在 setuid/setgid 程序（如 login）启动时同样可被本地攻击者触发，实现权限提升至 root。攻击者无需身份认证，只需建立网络连接并发送特制环境变量即可完成利用，CVSS v2 评分 7.2（HIGH），危害等级严重。Sun 及 IBM 已分别通过安全公告和补丁修复该漏洞。"
 published = "1999-09-08T04:00:00.000"
-remediation = "建议立即升级 IBM AIX 至 4.3.3 或更高版本，或应用 IBM 官方补丁 IY12345；Sun Solaris 升级至 8.0 或应用补丁 106950-01。若无法立即升级，可设置环境变量 LC_MESSAGES=C 或 unset LC_MESSAGES 禁用本地化消息处理，作为临时缓解措施。建议同时限制 rcp/ufsrestore 等受影响程序的 SUID 权限。"
+remediation = "将 Sun Solaris 升级到 Solaris 7 的推荐补丁簇（如 105396 系列）或升级至 Solaris 8 及以上版本；IBM AIX 升级到 4.2.1 的官方补丁包（APAR IX####）或升级至 AIX 4.3 以上。临时缓解措施：取消普通用户对 ufsrestore、rcp 等 setuid 程序的执行权限（chmod u-s），并限制环境变量 LC_MESSAGES 的注入，通过应用供应商提供的 libc 环境变量过滤补丁修复缓冲区溢出。"
 score = 7.2
 severity = "HIGH"
-sources = ["exploitdb"]
-title = "IBM 和 Sun Solaris LC_MESSAGES libc 缓冲区溢出漏洞"
+sources = ["epss"]
+title = "IBM AIX 与 Sun Solaris LC_MESSAGES libc 缓冲区溢出漏洞"
 updated = "2026-06-16T21:49:00.953"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-1999-0767"]
 ave_id = "AVE-1999-0482"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://marc.info/?l=bugtraq&m=87602167420557&w=2",
     "https://www.exploit-db.com/exploits/19217",
-    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/0xxx/CVE-1999-0767.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e244b55bdff85b2483c0e6a7cecd12f8bee0df6e/cves/1999/0xxx/CVE-1999-0767.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0767",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0767.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3950bef6f70c411ea08c8b2f1665dbd7d38277bd/CVE/data/1999/CVE-1999-0767.json",
-    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-w824-xcx7-fxrv/GHSA-w824-xcx7-fxrv.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0767.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/70f84d5684ed60f7a4d0750993d15c30e4fe3bbf/CVE/data/1999/CVE-1999-0767.json",
+    "https://github.com/github/advisory-database/blob/958f1672375e115879b3a6bd13e3638812260c7d/advisories/unreviewed/2022/04/GHSA-w824-xcx7-fxrv/GHSA-w824-xcx7-fxrv.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x84000/83063/info.html",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0767.json",
-    "https://github.com/oneaudit/openpoc/blob/090de4ba0a3fcd9b1c456eeeb52b23df80c41160/stats/stats.go",
+    "https://github.com/oneaudit/openpoc/blob/31081b881c22c8096e0ee052413d10a2e364e1d3/stats/stats.go",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_5.list.dict",
 ]
