@@ -1,34 +1,37 @@
 [basic]
-description = "IBM AIX 4.3.2 系统的 ftpd 守护进程在处理 FTP 协议数据时存在缓冲区溢出漏洞。由于 libc 库相关函数对用户输入的长度校验不足，远程攻击者可在未通过身份认证的情况下，向目标 FTP 服务的 21 端口发送超长且特制的命令或参数，触发栈缓冲区溢出并覆盖返回地址，进而在目标系统上以 root 权限执行任意代码。该漏洞影响运行 AIX 4.3.2 且开启 ftpd 服务的系统，攻击仅需网络可达目标即可发起，无需任何身份凭证。"
+description = "IBM AIX 4.3.2 操作系统 ftpd 服务所依赖的 libc 库在处理用户输入时存在缓冲区溢出漏洞，根源在于未进行有效的边界长度检查，导致超长输入可覆盖栈内存。未经身份认证的远程攻击者可通过向目标 FTP 服务发送特制的超长参数触发溢出，破坏程序执行流程进而执行任意代码或造成拒绝服务。攻击者只需能够访问目标 TCP 21 端口即可发起攻击，无需有效凭证，危害等级为严重。"
 published = "1999-09-28"
-remediation = "安装 IBM 官方 APAR 补丁 IY26576，或直接升级至 AIX 4.3.3 或更高版本以彻底修复该缓冲区溢出漏洞。在补丁安装前，可通过编辑 /etc/inetd.conf 注释掉 ftpd 服务条目并重启 inetd 进程临时禁用 FTP 服务；若业务需要 FTP，则通过 TCP Wrappers 配置仅允许可信 IP 地址访问 21 端口，以缩小攻击面。"
+remediation = "升级 IBM AIX 至 4.3.3 或后续已修复版本，并向 IBM 申请安装针对该 ftpd/libc 缓冲区溢出的官方 APAR 补丁（如 IY01919 等系列）。若暂无法升级，可在 /etc/inetd.conf 中注释 ftp 行后执行 refresh -s inetd 临时禁用 ftpd 服务，或通过防火墙限制仅允许可信 IP 访问 TCP 21 端口作为缓解措施。"
 score = 10.0
 severity = "CRITICAL"
-sources = [
-    "cve",
-    "exploitdb",
-]
-title = "IBM AIX ftpd 远程缓冲区溢出漏洞"
-updated = "1999-09-28"
+sources = ["epss"]
+title = "IBM AIX ftpd libc 缓冲区溢出远程代码执行漏洞"
+updated = "2026-07-18"
 
 [exploit]
-exp_urls = []
-poc_urls = ["https://www.exploit-db.com/exploits/19532"]
+exp_urls = ["https://www.exploit-db.com/exploits/19532"]
+poc_urls = [
+    "https://www.exploit-db.com/exploits/19532",
+    "https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/1999/CVE-1999-0789.md",
+]
 
 [id]
 aliases = ["CVE-1999-0789"]
 ave_id = "AVE-1999-0709"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
+    "http://www.ciac.org/ciac/bulletins/j-072.shtml",
+    "http://www.securityfocus.com/bid/679",
     "https://www.exploit-db.com/exploits/19532",
-    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0789.md",
-    "https://github.com/CVEProject/cvelistV5/blob/abfccbe3a11aa2b9dde2cfba5a12ba6256820a51/cves/1999/0xxx/CVE-1999-0789.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/ed6bb242e8dd7e27b54cbf189349b0ad2ae7c304/CVE/data/1999/CVE-1999-0789.json",
-    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-25cr-8qvj-rg6f/GHSA-25cr-8qvj-rg6f.json",
+    "https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/1999/CVE-1999-0789.md",
+    "https://github.com/CVEProject/cvelistV5/blob/8057fa2fdc38632692a6b3f836dd95e1eb8504fd/cves/1999/0xxx/CVE-1999-0789.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9ef5a1e2753195eb4be450895da310f7a8a6524e/CVE/data/1999/CVE-1999-0789.json",
+    "https://github.com/github/advisory-database/blob/f61040ac78eb76aff0a3a68a8a8a4562940d3711/advisories/unreviewed/2022/04/GHSA-25cr-8qvj-rg6f/GHSA-25cr-8qvj-rg6f.json",
     "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/A/aix_ftpd.nasl",
+    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-1999-0789.json",
 ]
