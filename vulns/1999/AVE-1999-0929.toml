@@ -1,36 +1,31 @@
-CVE-1999-1083: Directory traversal vulnerability in Jana proxy web server 1.45 allows remote attackers to read arbitrary files via a .. (dot dot) attack.
-From NVD:
-- CVSS 2.0: 5.0 MEDIUM (AV:N/AC:L/Au:N/C:P/I:N/A:N)
-- Published: 10/08/1999
-- References: http://marc.info/?l=bugtraq&m=95730430727064&w=2, http://www.securityfocus.com/bid/699
-The ExploitDB result (19627) was about DotDotPwn, not specifically about Jana Server. Let me look for a more specific exploit.
-- CVE-1999-1083: Directory traversal vulnerability in Jana proxy web server 1.45 allows remote attackers to read arbitrary files via a .. (dot dot) attack.
-- CVSS 2.0: 5.0 MEDIUM (AV:N/AC:L/Au:N/C:P/I:N/A:N)
-- Published: 10/08/1999
-- References: http://marc.info/?l=bugtraq&m=95730430727064&w=2, http://www.securityfocus.com/bid/699
-The ExploitDB search for19627 returned a DotDotPwn paper, not a Jana Server specific exploit. No specific PoC/EXP found on ExploitDB for this CVE.
-From NVD:
-- CVE-1999-1083: Directory traversal vulnerability in Jana proxy web server 1.45 allows remote attackers to read arbitrary files via a .. (dot dot) attack.
-- CVSS 2.0: 5.0 MEDIUM (AV:N/AC:L/Au:N/C:P/I:N/A:N)
-- Published: 10/08/1999
-- References: http://marc.info/?l=bugtraq&m=95730430727064&w=2, http://www.securityfocus.com/bid/699
-No specific ExploitDB entry found for this CVE. Let me produce the fixed TOML now.Based on NVD data for CVE-1999-1083, here is the fixed TOML:Let me just output the TOML directly as requested.[id]
-ave_id = "AVE-1999-0929"
-aliases = ["CVE-1999-1083"]
 [basic]
-title = "T. Hauck Jana Server 目录遍历漏洞"
-description = "Jana Server（版本1.0/1.45/1.46）是一款基于Windows平台的代理Web服务器，存在目录遍历漏洞。攻击者可通过在HTTP请求中构造包含'..'（点点）序列的路径，绕过服务器的目录限制，读取服务器上的任意文件，包括系统敏感文件和配置文件。该漏洞无需认证即可远程触发，威胁服务器机密性。CVSS v2评分为5.0（中危），向量为AV:N/AC:L/Au:N/C:P/I:N/A:N，表明网络可达、低复杂度、无需认证、仅影响机密性。"
-severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
+description = "Jana Web Server 1.45 及更早版本存在目录遍历漏洞。远程攻击者可通过向目标服务器发送包含 `..`（点点斜线）序列的特制 HTTP 请求，突破路径限制，读取服务器上任意文件，如配置文件、密码文件等敏感信息。该漏洞无需身份认证即可利用，攻击复杂度低，可导致敏感信息泄露。CVSS 评分 5.0，危害等级中危。"
 published = "1999-10-08"
-updated = "1999-10-08"
-remediation = "Jana Server已停止维护，该软件不再提供安全更新。建议用户立即停止使用Jana Server，迁移至其他仍受支持的代理Web服务器软件（如Squid、Nginx等），并对服务器网络访问进行严格限制，避免将该服务暴露在不可信网络中。"
-[references]
-urls = ["http://marc.info/?l=bugtraq&m=95730430727064&w=2", "http://www.securityfocus.com/bid/699"]
+remediation = "Jana Server 已停止维护，建议立即迁移至其他活跃维护的 HTTP 服务器（如 Apache、Nginx）。如暂时无法迁移，可在 Jana 配置中禁用内置 HTTP 服务器组件，仅保留代理功能；同时在反向代理或防火墙层过滤包含 `../` 及 `./` 的 URL 路径请求，并限制对 Jana 服务器的访问来源 IP 为可信网段。"
+score = 5.0
+severity = "MEDIUM"
+sources = [
+    "cve",
+    "avd",
+]
+title = "Jana Server 目录遍历漏洞"
+updated = "2026-06-16"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = ["https://www.exploit-db.com/exploits/19540"]
+
+[id]
+aliases = ["CVE-1999-1083"]
+ave_id = "AVE-1999-0929"
+
 [meta]
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-18T01:23:06.250690779+00:00"
+
+[references]
+urls = [
+    "http://marc.info/?l=bugtraq&m=95730430727064&w=2",
+    "http://www.securityfocus.com/bid/699",
+    "https://www.exploit-db.com/exploits/19540",
+]
