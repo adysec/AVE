@@ -1,11 +1,11 @@
 [basic]
-description = "ISC BIND 8.2.2p1 及之前版本的 DNS 服务器 named 进程在处理 SIG（资源记录签名）资源记录时存在输入验证缺陷。攻击者可通过向目标 DNS 服务器发送包含特制畸形 SIG 记录的恶意 DNS 响应数据包，触发 named 进程异常，导致服务器崩溃或进入无限循环，从而造成 DNS 服务完全不可用，影响范围内所有依赖该 DNS 服务器进行域名解析的系统均会中断服务。该漏洞影响 BIND 8.x 系列至 8.2.2p1 版本，广泛运行于 Linux、Solaris 7、SunOS 5.7 等多种 Unix 及类 Unix 操作系统。由于攻击仅需网络可达即可发起，无需身份认证，远程攻击者利用难度极低。CVSS v2 评分为 10.0，危害等级为高。ISC 已发布补丁版本修复此问题，建议用户升级至 BIND 8.2.2p5 或更高版本。"
+description = "ISC BIND 8.2.2p1 及之前版本的 named 守护进程在处理 DNSSEC SIG 记录时存在输入验证缺陷，远程攻击者可发送包含畸形 SIG 记录的恶意 DNS 查询包，导致 named 进程崩溃或停止响应，造成拒绝服务。该漏洞影响广泛部署的 BIND 8.x 系列 DNS 服务器，攻击者无需认证即可远程触发，仅需向目标 DNS 服务器发送精心构造的包含无效 SIG 记录的数据包即可利用，CVSS 评分 10.0，危害等级为严重。"
 published = "1999-11-10T05:00:00.000"
-remediation = "建议立即将 ISC BIND 升级至 8.2.2-P3 或更高版本以彻底修复该 SIG 记录解析缺陷。若暂时无法升级，可在防火墙或 ACL 上限制对 53 端口（TCP/UDP）的访问，仅允许可信主机查询，并关闭不必要的递归解析功能作为临时缓解措施。"
+remediation = "建议立即安装 BIND 8.2.2p2 或更高版本的安全补丁，以修复 SIG 记录解析缺陷。如无法立即升级，可临时配置 `options { rate-limit {} };` 以限制查询速率，并通过防火墙过滤异常的 SIG 记录流量。"
 score = 10
 severity = "CRITICAL"
-sources = ["avd"]
-title = "ISC BIND DNS服务器畸形SIG记录拒绝服务漏洞"
+sources = ["epss"]
+title = "ISC BIND 域名服务器 SIG 记录拒绝服务漏洞"
 updated = "2026-06-16T21:49:09.437"
 
 [exploit]
@@ -17,17 +17,17 @@ aliases = ["CVE-1999-0835"]
 ave_id = "AVE-1999-0909"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/788",
-    "https://github.com/CVEProject/cvelistV5/blob/abfccbe3a11aa2b9dde2cfba5a12ba6256820a51/cves/1999/0xxx/CVE-1999-0835.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a3a08d51f200d453300fca8b852aada6b8c5985a/cves/1999/0xxx/CVE-1999-0835.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0835",
-    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0835.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/e1298ff7aafe81b936ca67ecef34c3124d6c72f0/CVE/data/1999/CVE-1999-0835.json",
-    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/05/GHSA-r826-x842-4xg9/GHSA-r826-x842-4xg9.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0835.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/44e56ab96b4cc04024678e20a1f15145c3b3cc59/CVE/data/1999/CVE-1999-0835.json",
+    "https://github.com/github/advisory-database/blob/b1dd20ab76cf8f3afbe611ea8133362b0532868d/advisories/unreviewed/2022/05/GHSA-r826-x842-4xg9/GHSA-r826-x842-4xg9.json",
     "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
     "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/bind_vulnerable.nasl",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0835.json",
