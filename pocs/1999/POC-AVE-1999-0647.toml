@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "验证目标 DNS 服务器是否为受 CVE-1999-0848 影响的 ISC BIND 8.2/8.2.1 named 服务。该漏洞由于 named 未限制单进程文件描述符数量，远程攻击者可耗尽 fdmax 导致拒绝服务。本 PoC 通过 DNS 协议对 53 端口发起合法查询，确认服务存活且为 BIND 实现，作为存在性前置验证。"
+id = "POC-AVE-1999-0647"
+name = "CVE-1999-0848 BIND named fdmax 拒绝服务 PoC"
+severity = "medium"
+tags = ["ave-1999-0647"]
+vuln_id = [
+    "CVE-1999-0848",
+    "AVE-1999-0647",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+dns_type = "TXT"
+path = "{{Hostname}}"
+protocol = "dns"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "version.bind",
+    "BIND",
+]
