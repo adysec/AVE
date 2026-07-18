@@ -1,12 +1,12 @@
 [basic]
-description = "微软 Windows NT 4.0 自带的 SUBST 命令允许普通用户将本地路径映射为驱动器盘符。由于该工具未对映射对象实施充分的访问控制校验，已登录的本地用户可利用此功能将他人的用户配置文件或受保护目录挂载为可见盘符，从而在未经授权的情况下访问其他用户的数据，造成本地权限提升与信息泄露。"
-published = "1999-11-30"
-remediation = "升级到已修复该问题的 Windows NT 4.0 Service Pack 6a 或更高版本；如暂无法升级，可通过组策略禁用普通用户对 SUBST 命令的执行权限，并在用户注销时通过登录脚本调用 SUBST /D 强制卸载所有映射的驱动器盘符，避免残留映射被后续用户访问。"
+description = "Windows NT SUBST 命令存在漏洞，用户可使用 SUBST 命令将驱动器号映射到文件夹，且该映射在用户注销后不会自动取消，导致后续登录的用户访问该驱动器号时实际访问的是攻击者指定的文件夹。攻击者可利用此漏洞重定向系统文件夹或用户文件夹，导致权限提升或数据篡改。该漏洞影响 Windows NT 系统，攻击者需拥有本地登录权限且能执行 SUBST 命令，攻击需在攻击者注销后、受害者登录前完成映射配置。CVSS 评分 4.6，属中等危害等级。"
+published = "1999-11-30T05:00:00.000"
+remediation = "建议升级至 Windows NT 4.0 SP6 或更高版本（如 Windows 2000），微软已在 SP6 中修复 SUBST 映射残留漏洞。若无法升级，可通过组策略禁用 SUBST 命令（用户配置→管理模板→Windows 组件→命令提示符→禁用命令提示符），或在用户注销脚本中添加 `subst * /d` 命令强制清除所有驱动器映射作为临时缓解措施。建议通过组策略限制普通用户执行 SUBST 命令权限。建议立即安装微软官方安全补丁（KB239643），或升级至 Windows 2000 SP4 以上版本彻底修复该漏洞。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["avd"]
-title = "微软 Windows NT SUBST 工具权限提升漏洞"
-updated = "2026-07-17"
+sources = ["epss"]
+title = "Microsoft Windows NT Subst.exe 本地权限提升漏洞"
+updated = "2026-06-16T21:49:08.080"
 
 [exploit]
 exp_urls = []
@@ -17,12 +17,20 @@ aliases = ["CVE-1999-0824"]
 ave_id = "AVE-1999-0596"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/833",
-    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/0xxx/CVE-1999-0824.json",
+    "https://github.com/CVEProject/cvelistV5/blob/d08a5c34806fec51f3d6c8b496ad617d8294f215/cves/1999/0xxx/CVE-1999-0824.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0824",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0824.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c8b0fec8b23470355b47059dbab5d2ebdfa2ac94/CVE/data/1999/CVE-1999-0824.json",
+    "https://github.com/github/advisory-database/blob/90b464bbc2d1b64270a5771429f96b67fbe9e79b/advisories/unreviewed/2022/04/GHSA-jfmq-vm3j-98jr/GHSA-jfmq-vm3j-98jr.json",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0824.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153700_153800.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--e2d59cef-34e6-4319-b1ae-0d96d601bd59.json",
 ]
