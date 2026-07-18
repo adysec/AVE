@@ -1,11 +1,11 @@
 [basic]
-description = "SCO UnixWare 7.1 的 pkg 系列命令（如 pkginfo、pkgcat、pkgparam）在处理 dacread 权限时存在缺陷，本地普通用户可借此读取本无权访问的任意文件。攻击前提是攻击者已获得目标系统的本地登录权限，通过构造特定参数调用上述命令即可触发越权文件读取，可能造成系统口令文件、配置文件等敏感信息泄露，属于本地信息泄露类漏洞，影响 UnixWare 7.1 系统的本地数据安全。"
+description = "SCO UnixWare 7.1 的 pkginstall 及相关 pkg 命令（如 pkginfo、pkgcat、pkgparam）在实现存在缓冲区溢出缺陷。当本地用户以超长参数或特制输入调用这些命令时，可能触发缓冲区溢出，进而读取系统中的任意文件（通过 dacread 权限机制），造成敏感信息泄露。该漏洞影响运行 UnixWare 7.1 的本地系统，攻击前提是攻击者需具备目标系统的本地登录权限，通过构造恶意输入调用相关 pkg 命令即可利用。"
 published = "1999-12-02T05:00:00.000"
-remediation = "升级至 SCO UnixWare 7.1.1 或更高版本并安装 SCO 安全补丁补丁包（如 SCO Security Patch Supplement）；或通过 chmod 移除 pkginfo/pkgcat/pkgparam 的 setuid 位并限制 dacread 权限，限制本地用户执行权限作为临时缓解"
+remediation = "建议升级到 SCO UnixWare 7.1.1 或更高版本并应用 SCO 发布的安全补丁（如 osr507 安全补丁包）。无法升级时，可移除 pkginstall、pkgcat、pkginfo、pkgparam 的 setuid 位（chmod -s /usr/sbin/pkginstall /usr/sbin/pkgcat /usr/bin/pkginfo /usr/bin/pkgparam），或通过文件系统 ACL 限制普通用户对这些二进制文件的执行权限，防止本地用户利用 dacread 权限读取任意文件。"
 score = 3.6
 severity = "LOW"
-sources = ["exploitdb"]
-title = "SCO Unixware 7.1 本地缓冲区溢出漏洞"
+sources = ["epss"]
+title = "SCO Unixware 7.1 pkg 命令缓冲区溢出导致本地用户可读取任意文件"
 updated = "2026-06-16T21:49:08.580"
 
 [exploit]
@@ -17,18 +17,18 @@ aliases = ["CVE-1999-0828"]
 ave_id = "AVE-1999-0614"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/853",
     "https://www.exploit-db.com/exploits/19660",
-    "https://github.com/CVEProject/cvelistV5/blob/35cd604fbbf2927fb6acbcd700e81d36cd6dec11/cves/1999/0xxx/CVE-1999-0828.json",
+    "https://github.com/CVEProject/cvelistV5/blob/8d7a64f7f43d1af6189d4f7237515b997555b777/cves/1999/0xxx/CVE-1999-0828.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0828",
-    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0828.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3a7f9488e77673498ec37285be0a165ad71720f2/CVE/data/1999/CVE-1999-0828.json",
-    "https://github.com/github/advisory-database/blob/2a2be81fd4b47dc35d815a995b6429bd116a3b84/advisories/unreviewed/2022/04/GHSA-234r-5236-88h3/GHSA-234r-5236-88h3.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0828.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c8b0fec8b23470355b47059dbab5d2ebdfa2ac94/CVE/data/1999/CVE-1999-0828.json",
+    "https://github.com/github/advisory-database/blob/90b464bbc2d1b64270a5771429f96b67fbe9e79b/advisories/unreviewed/2022/04/GHSA-234r-5236-88h3/GHSA-234r-5236-88h3.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0828.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/853/info.html",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
