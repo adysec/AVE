@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "SGI IRIX 5.3 与 6.2 的 addnetpr（/usr/lib/netaddpr）以 root 权限运行且未安全校验打印机临时文件路径，本地用户可预先创建指向任意系统文件（如 /etc/passwd）的符号链接，诱导程序以 root 身份覆盖该文件内容，从而实现本地权限提升。本 PoC 通过 file 协议检查目标系统上关键可被覆盖文件是否存在，并附公开利用代码链接（EDB-19260）以供本地验证。"
+id = "POC-AVE-1999-1267"
+name = "CVE-1999-1410 SGI IRIX addnetpr/netaddpr 本地符号链接提权 PoC"
+severity = "medium"
+tags = [
+    "cve-1999-1410",
+    "irix",
+    "local-privilege-escalation",
+    "symlink",
+]
+vuln_id = [
+    "CVE-1999-1410",
+    "AVE-1999-1267",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+path = "/etc/passwd"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[references]
+exp_urls = ["https://www.exploit-db.com/exploits/19260"]
+poc_urls = ["https://www.exploit-db.com/exploits/19260"]
