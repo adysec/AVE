@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "检测目标网站是否存在 Make-a-Store OrderPage 购物车应用的隐藏表单字段信息篡改漏洞。该漏洞允许远程用户通过修改页面中隐藏表单字段（如价格、数量等敏感购买信息）来篡改订单内容。"
+id = "POC-AVE-2000-0085"
+name = "Make-a-Store OrderPage 隐藏表单字段信息篡改检测 PoC"
+severity = "high"
+tags = ["ave-2000-0085"]
+vuln_id = [
+    "CVE-2000-0101",
+    "AVE-2000-0085",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/OrderPage"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<input",
+    'type="hidden"',
+    "price",
+    "quantity",
+]
