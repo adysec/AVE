@@ -1,10 +1,14 @@
 [info]
-author = "ave"
-description = "验证目标是否受 IE5 download behavior 任意文件读取漏洞影响。通过构造 HTML 页面并配合服务器端重定向，触发 IE5 的 download behavior 将本地文件（如 boot.ini）作为下载内容返回。由于该漏洞仅影响已淘汰的 IE5 且需目标用户使用 IE5 访问恶意页面，本 PoC 以探针方式验证目标是否托管疑似利用页面/重定向逻辑。"
+author = "AVE"
+description = "Internet Explorer 5 download behavior 组件存在同源绕过漏洞，攻击者可通过服务端HTTP重定向使客户端读取本地任意文件。PoC页面使用#default#download行为调用startDownload方法，通过重定向读取本地文件。"
 id = "POC-AVE-1999-0684"
-name = "CVE-1999-0891 Internet Explorer 5 Download Behavior 任意文件读取 PoC"
+name = "CVE-1999-0891 PoC"
 severity = "medium"
-tags = ["ave-1999-0684"]
+tags = [
+    "cve-1999-0891",
+    "ie5",
+    "download-behavior",
+]
 vuln_id = [
     "CVE-1999-0891",
     "AVE-1999-0684",
@@ -15,37 +19,11 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/"
+path = "/{{BaseURL}}/poc.html"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "Mozilla/4.0 (compatible; MSIE 5.0; Windows 98)"
-
-[[poc.requests.matchers]]
-expect = false
-part = "body"
-type = "word"
-words = [
-    "download",
-    "behavior",
-    "redirect",
-    ".htm",
-    ".html",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/ie5-download-behavior-poc.html"
-protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "Mozilla/4.0 (compatible; MSIE 5.0; Windows 98)"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    200,
-    403,
-    404,
-]
-type = "status"
+part = "body"
+type = "word"
+words = ["startDownload"]
