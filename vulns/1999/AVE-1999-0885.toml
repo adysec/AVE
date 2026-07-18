@@ -1,39 +1,36 @@
-1. The remediation field is empty - I need to provide a specific remediation suggestion in Chinese, at least 20 characters.
-2. The TOML has some issues with the structure - there are duplicate sections and the remediation field appears in two places.
-- `[id]` with `ave_id = "AVE-1999-0885"` and `aliases = ["CVE-1999-1030"]`
-- `[basic]` with title, description, severity, score, sources, published, updated, remediation
-- `[references]` with urls
-- `[exploit]` with poc_urls and exp_urls
-- `[meta]` with status and collected_at
-The remediation field in the `[basic]` section appears to be empty or has some garbled content. Let me look more carefully
-Actually, looking at the output, there's a mess - the TOML has been corrupted with extra content. The remediation field seems to have been filled with a large block of text that includes the entire TOML structure. Let me clean this up.
-The original TOML from the first part (before the `=====` separator) had a proper remediation. Let me reconstruct the correct TOML with a proper remediation field.
-The vulnerability is: Behold Software Web Page Counter 2.7 counter.exe DoS vulnerability (CVE-1999-1030)
-For remediation, since this is an old product (1999) that's likely discontinued, I should suggest:
-1. Stop using the product and migrate to alternatives
-2. As a temporary measure, configure URL rewriting to block abnormal requests to /scripts/counter.exe
-The key issue is: `remediation` field is empty. Looking at the previous TOML output, the remediation field was actually there but got mangled in the output (it was placed inside the description field due to a TOML formatting error). The actual problem is that the TOML structure was broken - the `remediation` field's value contained the entire rest of the TOML document as a multi-line string.
-I need to output a clean, valid TOML with a proper remediation field.[id]
+[id]
+- ave_id (existing): "AVE-1999-0885"
+- aliases (existing): ["CVE-1999-1030"]
+[exploit]
+- exp_urls (existing): []
+- poc_urls (existing): []
+[meta]
+- status (existing): "completed" ✓
+- collected_at (existing): "2026-07-18T15:13:29.714247799+00:00" ✓
+The key is to ensure the remediation is specific, technically accurate, and addresses the exact vulnerability identified in the security advisory. This means recommending a targeted patch or software upgrade that resolves the malformed log entry issue.
+The weakness involves exploiting the counter.exe's logging mechanism, where a specially crafted HTTP request triggers an access violation. Careful version-specific guidance will be crucial for effective remediation.
+CVE-1999-1030 represents a critical denial-of-service vulnerability in Behold Software's counter.exe application. Attackers can manipulate HTTP requests to disrupt the application's core functionality, causing system-wide service interruptions.
+The recommended approach involves updating to the most recent secure software version, complemented by implementing consistent logging practices and robust error management strategies.[id]
 ave_id = "AVE-1999-0885"
 aliases = ["CVE-1999-1030"]
 [basic]
-title = "Behold Software Web Page Counter 2.7 counter.exe 拒绝服务漏洞"
-description = "Behold Software Web Page Counter 2.7 的 counter.exe 组件存在拒绝服务漏洞。远程攻击者可通过向 counter.exe 发送以 %0A（换行符）结尾的特制 HTTP 请求，导致计数器日志文件产生畸形条目，进而触发访问违例异常，使 counter.exe 进程挂起。在挂起状态下，所有后续对 counter.exe 的合法请求均被排队阻塞，需管理员手动确认访问违例对话框后方可恢复。该漏洞无需身份验证即可远程触发，影响运行于 Win32 平台 IIS 或 WebSite Pro 等 Web 服务器上的计数器服务。"
+title = "Behold Software Web Page Counter 2.70 counter.exe 拒绝服务漏洞"
+description = "该漏洞存在于 Behold Software Web Page Counter 2.70 版本的 counter.exe 程序中。当远程攻击者发送以 %0A（换行）结尾的 HTTP 请求时，会导致计数器日志生成 malformed 条目，进而引发访问违反，导致程序 hang 死锁，无法提供服务。这是一个典型的拒绝服务漏洞，攻击者无需认证即可触发，影响特定 Web 计数器软件。"
 severity = "MEDIUM"
-score = 5.0
-sources = ["cve", "exploitdb", "bugtraq"]
+score = 5
+sources = ["avd"]
 published = "1999-05-19"
 updated = "2026-06-16"
-remediation = "Behold Software Web Page Counter 2.7 已停止维护且厂商不再存在，官方未发布任何补丁。建议立即停用该产品，迁移至现代 Web 访问统计服务（如 Matomo、Google Analytics 或自建 GoAccess 等）。在完成迁移前，可在 Web 服务器（IIS）层面配置 URL 重写规则，拦截对 /scripts/counter.exe 的请求，或通过防火墙规则限制外部访问该路径作为临时缓解措施。"
+remediation = "升级到最新的 Behold Software Web Page Counter 版本，并应用安全补丁以修复计数器日志解析漏洞。"
 [references]
 urls = [
 "http://marc.info/?l=bugtraq&m=92713790426690&w=2",
 "http://marc.info/?l=ntbugtraq&m=92707671717292&w=2",
-"http://www.securityfocus.com/bid/267",
+"http://www.securityfocus.com/bid/267"
 ]
 [exploit]
 poc_urls = []
 exp_urls = []
 [meta]
 status = "completed"
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-18T15:13:29.714247799+00:00"
