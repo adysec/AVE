@@ -1,7 +1,7 @@
 [basic]
-description = "Matt Wright 的 FormHandler.cgi 脚本在默认配置下存在任意文件读取漏洞。该脚本允许将任意目录用作附件存储路径，且仅限制对 /etc/ 目录的访问，未能有效阻止目录穿越。远程攻击者在无需身份认证的情况下，可通过构造 reply_message_attach 附件参数，指定目标系统上的任意文件路径，从而越权读取服务器上的敏感文件（如配置文件、密码文件等）。该漏洞影响所有采用默认配置部署该 CGI 脚本的网站，攻击条件仅为目标开启该脚本且可被远程访问，利用方式为发送特制的 HTTP 请求并操控附件参数指向预期之外的文件。"
+description = "Matt Wright FormHandler.cgi 脚本默认配置存在任意文件读取漏洞。由于程序仅限制了对 /etc/ 目录的访问，未对其他目录进行有效过滤，远程攻击者可通过构造特制的 reply_message_attach 附件参数，读取服务器上任意文件，包括敏感配置文件。该漏洞影响使用该 CGI 脚本的 Web 服务器，CVSS 评分 5.0，危害等级中等。建议升级或禁用该脚本以规避风险。"
 published = "1999-11-16T05:00:00.000"
-remediation = "升级 Matt Wright FormHandler.cgi 至官方修复版本（1.12 及以上），并在脚本配置中将 reply_message_attach 附件目录严格限制为 Web 根目录下专用目录，禁止指向 /etc/ 之外的系统路径；同时移除或重命名公开的 formhandler.cgi 脚本，并通过 Web 服务器访问控制（如 .htaccess 拒绝非授权 IP）限制其访问，作为临时缓解措施。"
+remediation = "立即停止使用 Matt Wright 开发的 FormHandler.cgi 脚本，该脚本已停止维护且存在严重安全缺陷。建议迁移至现代 CGI 文件处理方案（如 Perl 的 CGI::Minimal 模块自行实现），并对 attachment 参数做严格白名单校验，仅允许预定义的上传目录，禁止路径穿越字符（如 ../）。如无法立即替换，可在 Web 服务器层面（Apache/Nginx）配置 location 规则拒绝访问 formhandler.cgi，或限制 reply_message_attach 参数仅接受字母数字文件名。"
 score = 5
 severity = "MEDIUM"
 sources = ["avd"]
