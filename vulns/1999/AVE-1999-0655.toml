@@ -1,11 +1,11 @@
 [basic]
-description = "Slackware Linux 7.0 的 login 程序在处理远程登录认证时存在信息泄露漏洞。当用户尝试通过远程方式登录时，若目标账户被锁定或根本不存在，login 程序会返回特定的加密错误信息，而有效账户在同样情况下则不会返回该错误。未经身份认证的远程攻击者可通过反复尝试不同的用户名并观察系统返回的报错差异，从而准确识别出目标系统上存在的有效用户名。该漏洞影响运行 Slackware Linux 7.0 且开放远程登录服务（如 telnet、rlogin）的系统，攻击条件为攻击者能够与目标主机的登录服务建立网络连接，利用方式是通过枚举用户名并比对系统响应差异进行用户枚举，进而为后续口令爆破或定向攻击收集有效账户信息。"
+description = "Slackware 7.0 的 login 程序存在用户枚举漏洞，当尝试登录不存在或被锁定的账户时会返回不同的加密错误提示，远程攻击者可通过观察错误消息差异枚举系统中存在的有效用户账户。该漏洞影响 Slackware 7.0 系统，CVSS 评分 5.0，属中危信息泄露漏洞。攻击者只需远程访问 login 服务即可尝试枚举用户，无需认证即可获取有效用户列表，为后续暴力破解或社会工程学攻击提供便利。"
 published = "1999-12-01T05:00:00.000"
-remediation = "建议将 Slackware 7.0 系统升级至包含修复补丁的后续版本（如通过 slackware.com 获取 security/fixes 中的 login 更新包并运行 installpkg 安装），或手动重新编译安装 shadow/login 工具至已修复版本。作为临时缓解，可在 /etc/login.defs 中调整账户锁定与错误提示策略，并配合防火墙限制对 login 服务的远程访问，避免攻击者通过加密错误差异枚举有效账户。"
+remediation = "建议将 Slackware Linux 升级至 7.1 或更高版本，并更新 login/util-linux 组件以修复该用户枚举缺陷。若无法升级，应修改 login 程序配置，使账户锁定、不存在及密码错误时返回统一的认证失败提示，避免因加密错误信息差异泄露有效用户名；同时结合防火墙限制远程登录来源、启用失败登录次数限制作为临时缓解措施。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = '{"_meta":{},"stopReason":"end_turn","usage":{"inputTokens":10796,"outputTokens":16,"totalTokens":10812}}'
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9135,"outputTokens":17,"totalTokens":10816}}'
 updated = "2026-06-16T21:49:12.007"
 
 [exploit]
@@ -17,17 +17,17 @@ aliases = ["CVE-1999-0856"]
 ave_id = "AVE-1999-0655"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://marc.info/?l=bugtraq&m=94416739411280&w=2",
-    "https://github.com/CVEProject/cvelistV5/blob/64fd197c5b8f3e4f9493cb07798bdca54583505c/cves/1999/0xxx/CVE-1999-0856.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e2218edc43f34225d168835de417dff40749bef5/cves/1999/0xxx/CVE-1999-0856.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0856",
-    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0856.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f71c1815da5fc1872d1d999eebe8b28a9e3854c7/CVE/data/1999/CVE-1999-0856.json",
-    "https://github.com/github/advisory-database/blob/2e86ccb45bad26f6ff984e676f6d08b925d0e6ee/advisories/unreviewed/2022/04/GHSA-mphc-h5cf-cch2/GHSA-mphc-h5cf-cch2.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0856.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2119b082f4927b0a9c902ed9fe95efb3b301cb81/CVE/data/1999/CVE-1999-0856.json",
+    "https://github.com/github/advisory-database/blob/d94ad47d0f2016e121b6d251f490e890714f8916/advisories/unreviewed/2022/04/GHSA-mphc-h5cf-cch2/GHSA-mphc-h5cf-cch2.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0856.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
