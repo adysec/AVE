@@ -1,11 +1,11 @@
 [basic]
-description = "AIX 4.1.5 及 4.2.1 版本中的 named-xfer 工具存在文件覆盖漏洞。系统组成员（system group）可通过向 named-xfer 传递 `-f` 参数配合特制的畸形 zone 文件，覆盖系统关键文件，从而将权限提升至 root。攻击者只需具备 system 组权限即可利用，无需认证，危害较大。IBM 未提供官方补丁，建议禁用或限制 named-xfer 的访问权限。"
+description = "AIX named-xfer 组件存在文件覆盖漏洞，系统组成员可通过 -f 参数指定恶意构造的区域文件，利用 named-xfer 处理区域传输时的权限缺陷覆盖任意系统文件，进而实现本地提权至 root。该漏洞影响 AIX 4.1.5 和 4.2.1 版本，攻击者需具备系统组权限并能访问 named-xfer 程序，通过精心设计的畸形区域文件触发漏洞，CVSS 评分 7.2，属于高危本地提权漏洞。"
 published = "1999-09-23T04:00:00.000"
-remediation = "升级 AIX 系统至 4.3.3 或更高版本，或安装对应 APAR 补丁 (IX86565)。如无法升级，移除 named-xfer 的 setuid root 权限 (chmod u-s /usr/sbin/named-xfer)，并将系统组成员审查清理，确保只有可信任用户属于 system 组。同时限制 named-xfer -f 参数的使用，通过文件权限控制 zone 文件仅允许 root 写入。"
+remediation = "建议升级 AIX 至 IBM 官方修复版本（4.3.2 或更高），或安装 IBM 针对 named-xfer 发布的 APAR 补丁（IX72659）。若无法立即升级，可移除 named-xfer 的 setuid/setgid 权限（chmod u-s,g-s /usr/sbin/named-xfer），并限制 system 组成员，禁止普通用户通过 -f 参数指定任意区域文件路径。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "IBM AIX named-xfer 文件覆盖本地权限提升漏洞"
+sources = ["avd"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9135,"outputTokens":17,"totalTokens":10816}}'
 updated = "2026-06-16T21:49:31.357"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-1999-1013"]
 ave_id = "AVE-1999-0863"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://marc.info/?l=bugtraq&m=93837026726954&w=2",
     "http://www.securityfocus.com/bid/673",
-    "https://github.com/CVEProject/cvelistV5/blob/2765cfa5d0fc39151c354509f5ba2b7abfdb61de/cves/1999/1xxx/CVE-1999-1013.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0e46881568ba1d1c2011ec61282a082880cda856/cves/1999/1xxx/CVE-1999-1013.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1013",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-1013.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/9074597bd191efd66c2a6bf1f5d8e60bc4801a90/content/CVE-1999-1013.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/37da04e8698400cbfe936368ce494fc186159eb4/CVE/data/1999/CVE-1999-1013.json",
-    "https://github.com/github/advisory-database/blob/1b2e09705f0816776a0a8a0cd6fc1208d25f09b2/advisories/unreviewed/2022/04/GHSA-958c-wvqf-f46f/GHSA-958c-wvqf-f46f.json",
-    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1013.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/57cb981038a97031bd95a35a9b10bbed18ca4725/CVE/data/1999/CVE-1999-1013.json",
+    "https://github.com/github/advisory-database/blob/f61040ac78eb76aff0a3a68a8a8a4562940d3711/advisories/unreviewed/2022/04/GHSA-958c-wvqf-f46f/GHSA-958c-wvqf-f46f.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/673/info.html",
-    "https://github.com/olbat/nvdcve/blob/d21eb36f6164170df89822577def7df5351966d2/nvdcve/CVE-1999-1013.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153600_153700.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1013.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/dong-xs/Vul-PAG/blob/7eb3b32094a5270cfd8495366e0e4a7df5a874ce/aspect_prediction/org_pred_diff.txt",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/fd4916152066cf69446b0fbd8f7bb3a97a137e13/1999.tsv",
 ]
