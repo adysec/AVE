@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "检测 Zeus Web Server 管理接口是否使用弱加密算法传输密码。通过访问管理后台登录页面，检查响应中是否包含明文或弱加密（如 base64/简单 XOR）的密码字段，确认存在弱密码加密漏洞。"
+id = "POC-AVE-1999-0676"
+name = "Zeus Web Server 管理接口弱密码加密 PoC"
+severity = "medium"
+tags = ["ave-1999-0676"]
+vuln_id = [
+    "CVE-1999-0884",
+    "AVE-1999-0676",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/admin/login"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "password",
+    "login",
+    "admin",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/admin"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Zeus",
+    "admin",
+    "password",
+]
