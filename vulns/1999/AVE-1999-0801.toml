@@ -1,11 +1,11 @@
 [basic]
-description = "Linux 内核 2.0.3x 版本的 ping 命令在处理带有 -R（record route）选项的特大网络包时存在缺陷，本地攻击者可通过发送超长的带路由记录选项 ICMP 数据包触发该漏洞，导致系统 ping 进程崩溃或内核资源耗尽，从而造成拒绝服务。该漏洞影响 Linux Kernel 2.0.x 至 2.0.38 版本，包括 Debian 2.1、RedHat 5.2 等早期发行版，攻击条件为攻击者已拥有本地用户权限，无需远程网络交互即可复现。"
+description = "Linux 内核 2.0.3x 版本的 ping 命令在处理带有 -R（记录路由）选项的大型数据包时存在拒绝服务漏洞。攻击者可通过发送特制的包含记录路由选项的大尺寸 ICMP 数据包，触发内核缓冲区溢出或整数溢出，导致系统崩溃或服务中断。该漏洞影响 Debian 2.1、RedHat 5.2 等基于 Linux 2.0.x 内核的系统，本地用户即可利用此漏洞造成拒绝服务。"
 published = "1999-12-08T05:00:00.000"
-remediation = "建议将 Linux 内核升级到 2.0.39 及以上版本（Debian 用户升级至 2.0.39 对应的 kernel-image 软件包，RedHat 5.2 用户安装官方提供的 kernel 更新 RPM），该版本已修复 ping 处理带 -R 选项大包时的拒绝服务问题。如无法立即升级内核，可在防火墙或主机安全策略层面禁止普通用户使用 ping 的原始套接字（移除 /bin/ping 的 setuid 权限或限制用户执行 ping），并临时禁用 ICMP 记录路由选项作为缓解措施。"
-score = 5
+remediation = "升级 Linux 内核至 2.0.39 或更高版本（如 2.2.x 系列），该版本已修复 ping -R 大包拒绝服务漏洞。若无法立即升级内核，可通过 iptables 限制 ICMP 包大小：`iptables -A INPUT -p icmp --icmp-type echo-request -m length --length 65535 -j DROP`，或在 sysctl 中禁用 IP 记录路由选项：`echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route`。"
+score = 5.0
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "Linux Kernel 2.0.x ping 记录路由选项拒绝服务漏洞"
+sources = ["avd"]
+title = "Linux 内核 ping 命令记录路由选项拒绝服务漏洞"
 updated = "2026-06-16T21:49:27.963"
 
 [exploit]
@@ -17,18 +17,18 @@ aliases = ["CVE-1999-0986"]
 ave_id = "AVE-1999-0801"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/870",
     "https://www.exploit-db.com/exploits/19675",
-    "https://github.com/CVEProject/cvelistV5/blob/a3f034241443c2295538d03be5945be20fc1cca3/cves/1999/0xxx/CVE-1999-0986.json",
+    "https://github.com/CVEProject/cvelistV5/blob/7cda0b7fa75f17f1e2b56ef076a6f9175f854ab4/cves/1999/0xxx/CVE-1999-0986.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0986",
-    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0986.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/a6294b4e43a4333eb79c2542461b42377b040bdc/CVE/data/1999/CVE-1999-0986.json",
-    "https://github.com/github/advisory-database/blob/ea59c529438222532763b90ba7dc8295b318be99/advisories/unreviewed/2022/04/GHSA-9mjp-wq93-cgg3/GHSA-9mjp-wq93-cgg3.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0986.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4cacb08131e7c4736ad136de17873dbcaeddf850/CVE/data/1999/CVE-1999-0986.json",
+    "https://github.com/github/advisory-database/blob/958f1672375e115879b3a6bd13e3638812260c7d/advisories/unreviewed/2022/04/GHSA-9mjp-wq93-cgg3/GHSA-9mjp-wq93-cgg3.json",
     "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0986.json",
