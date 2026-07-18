@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证 Windows Media Player ActiveX 控件在 IE5 中通过 ErrorCode 属性泄露本地文件存在性信息"
+description = '通过构造包含 Windows Media Player ActiveX 控件 (clsid:6BF52A52-394A-11D3-B153-00C04F79FAA6) 的网页，尝试在客户端加载本地文件（如 C:\autoexec.bat 与不存在文件），利用控件在文件存在/不存在时返回的 errorCode 差异，判断客户端本地文件是否存在，实现远程文件存在性探测。该 PoC 为纯客户端无损验证脚本，不改变目标状态。'
 id = "POC-AVE-1999-0951"
-name = "CVE-1999-1110 PoC"
+name = "CVE-1999-1110 IE5 Windows Media Player ActiveX 文件存在性探测 PoC"
 severity = "medium"
 tags = ["ave-1999-0951"]
 vuln_id = [
@@ -15,18 +15,18 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cve-1999-1110-poc.html"
+path = "/{{BaseURL}}/cve-1999-1110.html"
 protocol = "http"
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "clsid:22D6F312-B0F6-11D0-94AB-0080C74C7E95",
-    "ErrorCode",
-    "-2147220970",
+    "WMP_FileExists",
+    "WMP_FileMissing",
 ]
