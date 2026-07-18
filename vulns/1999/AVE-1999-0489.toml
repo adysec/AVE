@@ -1,11 +1,11 @@
 [basic]
-description = "Linux 系统中的 Vixie Cron 存在环境变量注入漏洞，本地用户可通过设置 MAILTO 环境变量注入恶意参数到 sendmail 命令中，从而执行任意命令并实现权限提升。该漏洞影响 Caldera OpenLinux 2.2、Debian 2.1/2.2 及 RedHat 6.0 等早期 Linux 发行版，CVSS 评分 7.2（高危）。攻击者需具备本地账户权限，通过设置恶意 MAILTO 环境变量并在 cron 任务执行时触发 sendmail 调用，实现任意命令执行提权。厂商已发布补丁修复该环境变量注入漏洞。"
+description = "Vixie Cron 是 Linux 系统中广泛使用的定时任务守护进程。该漏洞源于 Vixie Cron 在处理 MAILTO 环境变量时未对输入参数进行充分验证，本地用户可通过构造特制的 MAILTO 环境变量值，向系统 sendmail 命令注入恶意参数，进而执行任意命令。该漏洞影响 Caldera OpenLinux 2.2、Debian 2.1/2.2 以及 RedHat 6.0 等早期 Linux 发行版，CVSS 评分 7.2。攻击者需具备本地登录权限，通过在 crontab 配置或环境变量中设置恶意 MAILTO 值即可触发，导致权限提升或系统被进一步控制。建议用户升级至修正后的 Vixie Cron 版本，或通过限制本地用户环境变量写入权限来缓解风险。"
 published = "1999-08-25T04:00:00.000"
-remediation = "升级 Vixie Cron 至 3.0.1-74 或更高版本（Red Hat 6.1+、Debian 2.2r3+、Caldera OpenLinux 2.3+ 已修复）；或升级操作系统至 Red Hat 6.1+/Debian 2.2r3+/Caldera OpenLinux 2.3+。临时缓解：在 /etc/cron.allow 中限制可使用 cron 的用户，或在 /etc/cron.deny 中禁止非必要用户使用 cron；限制用户设置 MAILTO 环境变量权限。如无法升级系统，建议迁移至现代维护版本的 Linux 发行版（如 RHEL 9、Debian 12、Ubuntu 22.04+）。"
+remediation = "建议升级 Vixie Cron 至各发行版已修复版本：Debian 用户升级至 cron 3.0pl1-57 及以上，RedHat 用户安装 vixie-cron 更新包，Caldera 用户应用对应的安全补丁。升级后 MAILTO 环境变量将不再被用于拼接 sendmail 命令参数。如无法立即升级，可临时限制普通用户对 crontab 的使用权限（通过 /etc/cron.allow 和 /etc/cron.deny 控制），并加强对 crontab 提交内容的审计。"
 score = 7.2
 severity = "HIGH"
-sources = ["exploitdb"]
-title = "Linux Vixie Cron MAILTO 环境变量本地命令注入漏洞"
+sources = ["epss"]
+title = "Linux Vixie Cron 计划任务 MAILTO 环境变量注入漏洞"
 updated = "2026-06-16T21:49:01.193"
 
 [exploit]
@@ -17,18 +17,18 @@ aliases = ["CVE-1999-0769"]
 ave_id = "AVE-1999-0489"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/611",
     "https://www.exploit-db.com/exploits/19474",
-    "https://github.com/CVEProject/cvelistV5/blob/abfccbe3a11aa2b9dde2cfba5a12ba6256820a51/cves/1999/0xxx/CVE-1999-0769.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e244b55bdff85b2483c0e6a7cecd12f8bee0df6e/cves/1999/0xxx/CVE-1999-0769.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0769",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0769.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2a20296d4b03dbd5c5991115b8296a9f2b947592/CVE/data/1999/CVE-1999-0769.json",
-    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-9qf9-2h54-chr8/GHSA-9qf9-2h54-chr8.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0769.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/70f84d5684ed60f7a4d0750993d15c30e4fe3bbf/CVE/data/1999/CVE-1999-0769.json",
+    "https://github.com/github/advisory-database/blob/958f1672375e115879b3a6bd13e3638812260c7d/advisories/unreviewed/2022/04/GHSA-9qf9-2h54-chr8/GHSA-9qf9-2h54-chr8.json",
     "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153600_153700.json",
     "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/1999/19990830.data",
