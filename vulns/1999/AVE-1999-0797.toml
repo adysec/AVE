@@ -1,11 +1,11 @@
 [basic]
-description = "Matt's Whois 程序的 whois.cgi 脚本存在命令注入漏洞，远程攻击者通过在域名输入参数中注入 shell 元字符（如分号、管道符等），可导致任意命令在服务器端执行。该漏洞影响 Matt's Whois 相关版本，攻击条件简单且无需身份认证，CVSS 评分 7.5，危害等级高。用户应及时升级或替换该程序以消除风险。"
+description = "Matt's Whois 程序的 whois.cgi 脚本存在命令注入漏洞，由于对用户提交的域名参数缺乏有效过滤，远程未授权攻击者可在 Whois 查询输入框中注入 Shell 元字符（如分号、反引号、管道符），将任意系统命令拼接进后端 Shell 执行，导致以 Web 服务器权限实现远程代码执行。该漏洞影响部署了 Matt's Whois 早期版本的 Web 服务器，攻击者无需认证即可远程利用，CVSS 评分 7.5（HIGH），影响服务器完全可控性与数据机密性。建议升级至修复版本或禁用该 CGI 脚本，并对用户输入实施严格的 Shell 元字符过滤与命令参数化处理。"
 published = "1999-11-09T05:00:00.000"
-remediation = "立即停止使用 Matt's Whois 的 whois.cgi 脚本，改用维护中的替代品（如 Whois 3.x 或集成到系统 whois 工具）。如必须继续使用，需对 domain 参数做严格输入过滤，过滤掉 `;&|$` 等 shell 元字符，并对输入进行白名单校验（仅允许域名合法字符）。建议迁移至使用安全系统调用的现代 Whois 前端替代方案。"
+remediation = "建议立即停用 Matt's Whois (whois.cgi) 脚本并替换为现代维护的 WHOIS 查询工具（如 whois 命令行工具或现代 Web 界面）。若必须保留，请在 CGI 脚本中添加严格的输入验证，仅允许字母数字、连字符和点号，过滤所有 Shell 元字符（; | & ` $ ( ) 等），并在 Web 服务器层面配置 WAF 规则拦截包含 Shell 元字符的域名参数请求。"
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
-title = "Matt Whois 远程命令执行漏洞"
+sources = ["avd"]
+title = "Matt Whois whois.cgi 远程代码执行漏洞"
 updated = "2026-06-16T21:49:27.737"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0984"]
 ave_id = "AVE-1999-0797"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0984"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0984",
+    "https://github.com/CVEProject/cvelistV5/blob/e244b55bdff85b2483c0e6a7cecd12f8bee0df6e/cves/1999/0xxx/CVE-1999-0984.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0984",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0984.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/70f84d5684ed60f7a4d0750993d15c30e4fe3bbf/CVE/data/1999/CVE-1999-0984.json",
+    "https://github.com/github/advisory-database/blob/958f1672375e115879b3a6bd13e3638812260c7d/advisories/unreviewed/2022/04/GHSA-3pxm-vvrr-xp9x/GHSA-3pxm-vvrr-xp9x.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0984.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x3000/2000/info.html",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000866.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--90faec46-27e3-4fe5-b159-8cbcd683b515.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+]
