@@ -1,11 +1,11 @@
 [basic]
-description = "Windows NT 系统中 SYSKEY 机制存在密钥流重用漏洞。SYSKEY 用于加密 SAM 数据库中的密码哈希，但由于其在加密过程中重复使用相同的密钥流，攻击者可通过分析多个加密后的密码哈希值，利用密钥流重用特性还原出明文密码。该漏洞影响 Windows NT 4.0 及更早版本，本地攻击者需具备系统访问权限，可通过暴力破解或差分分析手段获取用户凭据，导致系统账户安全受到威胁。"
+description = "Windows NT 在启用 SYSKEY 功能后，对 SAM 数据库中的账户密码哈希进行加密时，错误地重复使用了用于加密的密钥流（keystream）。由于流密码的特性，密钥流的重复使用会导致密文与明文之间的异或关系暴露，攻击者在能够获取到 SAM 加密数据（如通过备份文件、注册表导出或物理访问）的前提下，可利用已知的明文与对应密文推导出密钥流，进而对其它账户的密码哈希进行解密与破解，从而绕过系统身份认证、获取本地账户权限。该漏洞影响启用 SYSKEY 的 Windows NT 系统，攻击条件为攻击者需先获得对 SAM 加密数据的访问能力。"
 published = "1999-12-16T05:00:00.000"
-remediation = '该漏洞影响 Windows NT 4.0 及更早版本且无官方补丁。建议立即升级至 Windows Server 2003 或更高版本操作系统，并启用 Kerberos 认证替代 NTLM；对于仍在使用 NT 的环境，应使用 SYSKEY 的增强模式（Syskey.exe /E）强制使用密码保护，并在注册表 `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa` 中设置 `NoLMHash=1` 禁用 LM Hash 存储以降低风险。'
+remediation = '安装 Microsoft 1999 年 12 月安全公告 MS99-056 补丁程序（KB248183），该补丁修复了 SYSKEY 加密 SAM 密码哈希时重复使用密钥流的漏洞。受影响版本包括 Windows NT Workstation 4.0、Server 4.0、Server 4.0 Enterprise Edition 及 Terminal Server Edition，x86 与 Alpha 架构均需下载对应补丁进行安装；Terminal Server Edition 用户可升级至 Service Pack 6 一并修复此漏洞。同时建议运行 syskey 命令将加密密钥选项设置为"在启动时由用户输入密码"（选项 2）或"仅在软盘上存储启动密钥"（选项 3），防止密钥文件被恶意读取。如无法立即安装补丁，应通过物理访问控制限制未经授权的本地用户接触系统，并定期更改所有用户密码以降低密钥流复用带来的密码破解风险。'
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Microsoft Windows NT SYSKEY 密码哈希加密密钥流重用漏洞"
+sources = ["avd"]
+title = "Microsoft Windows NT SYSKEY密钥流重用导致密码哈希泄露漏洞"
 updated = "2026-06-16T21:49:28.960"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0994"]
 ave_id = "AVE-1999-0826"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://support.microsoft.com/default.aspx?scid=kb%3B%5BLN%5D%3BQ248183",
     "http://www.securityfocus.com/bid/873",
     "https://docs.microsoft.com/en-us/security-updates/securitybulletins/1999/ms99-056",
-    "https://github.com/trickest/cve/blob/34851454a7b07498072de47d56f63daa4a4f524d/1999/CVE-1999-0994.md",
-    "https://github.com/CVEProject/cvelistV5/blob/c8abbfc77cc703e2fd85623576b0f07a0c8427eb/cves/1999/0xxx/CVE-1999-0994.json",
+    "https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/1999/CVE-1999-0994.md",
+    "https://github.com/CVEProject/cvelistV5/blob/e358b3016d8b52194aa099dc1255ebe1441bbafa/cves/1999/0xxx/CVE-1999-0994.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0994",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/ce91429859b5110820b1d31a41b0b1a3c67d9603/csaf-vex/1999/cve-1999-0994.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/24ebb1752fdaa57c8d421b21085e47d359e1300e/CVE/data/1999/CVE-1999-0994.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/94e644a0057439310dc2677c2e4ebd7766be1682/CVE/data/1999/CVE-1999-0994.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0994.md",
-    "https://github.com/github/advisory-database/blob/8954696320cbff8f7d95f98854cf0e72222fc646/advisories/unreviewed/2022/04/GHSA-r7rj-gr4g-8x94/GHSA-r7rj-gr4g-8x94.json",
+    "https://github.com/github/advisory-database/blob/958f1672375e115879b3a6bd13e3638812260c7d/advisories/unreviewed/2022/04/GHSA-r7rj-gr4g-8x94/GHSA-r7rj-gr4g-8x94.json",
     "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0994.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
+    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-1999-0994.json",
 ]
