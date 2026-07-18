@@ -1,11 +1,11 @@
 [basic]
-description = "UNIX 系统下的新闻阅读器 tin 和 rtin 以不安全权限创建临时文件 /tmp/.tin_log，且程序会跟随符号链接进行操作。本地攻击者可通过符号链接攻击，将 /tmp/.tin_log 指向目标文件，从而修改当前用户具有写入权限的其他文件权限，导致本地权限提升或敏感文件被篡改。该漏洞影响各类 UNIX 衍生操作系统，CVSS 评分 5.0，危害等级中危。建议避免使用存在此问题的 tin/rtin 版本，或手动修正临时文件权限。"
+description = "UNIX 系统中的新闻阅读器 tin 和 rtin 在创建 /tmp/.tin_log 日志文件时使用了不安全的文件权限，并且程序会跟随符号链接进行操作。本地攻击者可通过创建指向目标文件的符号链接，诱导 tin/rtin 将日志写入该链接指向的文件，从而修改用户可写文件的权限。该漏洞影响多种 UNIX 系统，攻击者需具备本地访问权限，利用难度较低。"
 published = "2002-01-15T05:00:00.000"
-remediation = "升级 tin/rtin 至 1.5 以上版本，新版本使用 mkstemp() 安全创建临时文件，避免符号链接竞争。如无法升级，在脚本中创建 /tmp/.tin_log 前手动检查并删除已有符号链接，或设置 umask 077 限制文件权限。"
+remediation = "升级 tin/rtin 至 1.4 及以上版本，该版本已修复符号链接跟随问题。如无法升级，确保 /tmp 目录设置了粘滞位（chmod +t /tmp），并移除已存在的 /tmp/.tin_log 文件。建议使用 `mktemp` 替代固定临时文件路径。作为临时缓解，可限制受影响用户对 /tmp/.tin_log 的写入权限。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "tin和rtin UNIX新闻阅读器符号链接漏洞"
+sources = ["avd"]
+title = "UNIX tin和rtin新闻阅读器 符号链接权限漏洞"
 updated = "2026-06-16T21:49:42.177"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1091"]
 ave_id = "AVE-1999-0934"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=87602167419839&w=2",
     "http://marc.info/?l=bugtraq&m=87602167420726&w=2",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/431",
-    "https://github.com/CVEProject/cvelistV5/blob/269e5b2b6ea60fdb4a03411be38d3e381b26e4c4/cves/1999/1xxx/CVE-1999-1091.json",
+    "https://github.com/CVEProject/cvelistV5/blob/d25d3aeab9dc76030f155f9e202a4a7c294f86bf/cves/1999/1xxx/CVE-1999-1091.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1091",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-1091.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/9074597bd191efd66c2a6bf1f5d8e60bc4801a90/content/CVE-1999-1091.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2f876a2c24d5ccd5bbd081f09e801e580536456a/CVE/data/1999/CVE-1999-1091.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1091.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/03324c0426abad4e55ae7c73b0bba67b9c87e4ea/CVE/data/1999/CVE-1999-1091.json",
+    "https://github.com/github/advisory-database/blob/799c403529fad0f67d5473eea397e9968232a5ec/advisories/unreviewed/2022/04/GHSA-5p4h-63fp-mmxg/GHSA-5p4h-63fp-mmxg.json",
     "https://github.com/SAP/fosstars-rating-core/blob/7b172f42f218f6cfad42f81bd9c9ef49de35b919/docs/oss/security/google/tink.md",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1091.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_148200_148300.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--2eb5fb46-4192-4cdd-9ec8-81213bad695e.json",
-    "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--2eb5fb46-4192-4cdd-9ec8-81213bad695e.owl",
+    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-1999-1091.json",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/20d729d7fbfed4f1ebc4b8a4255bac83c7c5af70/1999.tsv",
 ]
