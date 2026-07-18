@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "验证目标 Solaris 主机是否存在受 CVE-1999-1158 影响的本地权限提升漏洞。该漏洞位于 Solaris 2.4/2.3 的 unix_scheme 模块及 2.5.1/2.5 的 PAM 模块，本地用户可通过 passwd、yppasswd、nispasswd 等程序触发缓冲区溢出获取 root 权限。PoC 通过检查漏洞二进制文件是否存在及可访问性进行安全无损验证。"
+id = "POC-AVE-1999-1246"
+name = "CVE-1999-1158 Solaris passwd/yppasswd/nispasswd 本地缓冲区溢出 PoC"
+severity = "high"
+tags = ["ave-1999-1246"]
+vuln_id = [
+    "CVE-1999-1158",
+    "AVE-1999-1246",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+path = "/usr/bin/passwd"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["root:x:0:0"]
+
+[[poc.requests]]
+path = "/usr/bin/yppasswd"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["root:x:0:0"]
+
+[[poc.requests]]
+path = "/usr/bin/nispasswd"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["root:x:0:0"]
