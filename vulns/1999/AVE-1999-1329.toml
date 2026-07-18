@@ -1,0 +1,42 @@
+1. remediation field is empty - The current TOML has `remediation = """\ntags.\n\nActually, wait - the instructions say "最终答案必须放在一对 <value>"""` which is garbled/nonsensical content. I need to provide a proper remediation in Chinese.
+2. The NVD page confirms:
+- CVSS v2.0: 7.2 HIGH, Vector: (AV:L/AC:L/Au:N/C:C/I:C/A:C)
+- Published: 10/06/1997
+- Description: "sort creates temporary files and follows symbolic links, which allows local users to modify arbitrary files that are writable by the user running sort, as observed in updatedb and other programs that use sort."
+- References: 3 marc.info links
+3. The remediation should be specific. For this old vulnerability in sort, the fix involves using mkstemp() or O_NOFOLLOW flag. Since this is a very old CVE (1997), the remediation is about using secure temp file creation. Let me provide a proper Chinese remediation.
+- title: "GNU coreutils sort 临时文件符号链接漏洞" - good, Chinese
+- description: good, Chinese, ≥50 chars
+- severity: HIGH, score: 7.2 - matches (HIGH ≥ 7.0)
+- sources: ["avd"] - should be at least ["cve"] since this is a CVE
+- published: "1997-10-06T04:00:00.000" - should be "1997-10-06" format
+- updated: "2026-06-16T21:49:42.677" - should be "2026-06-16" format
+- remediation: needs fixing
+Wait, looking at the schema more carefully:
+- `published = "2024-01-01"` - date format is YYYY-MM-DD
+- `updated = "2024-06-01"` - date format is YYYY-MM-DD
+So the current published and updated have timestamp format, not just date. Let me fix those too.
+Also, the sources should include "cve" since this is a CVE entry.
+ave_id = "AVE-1999-1329"
+aliases = ["CVE-1999-1095"]
+[basic]
+title = "GNU coreutils sort 临时文件符号链接漏洞"
+description = "sort 命令在创建临时文件时存在符号链接跟随漏洞。当 sort 处理数据时，会在 /tmp 等目录创建临时文件，但未检查目标文件是否为符号链接。本地攻击者可通过预先创建指向其他用户可写文件的符号链接，诱使 sort 覆盖或破坏这些文件。该漏洞在 updatedb 等调用 sort 的程序中尤为明显，影响 Unix/Linux 系统，CVSS 评分 7.2，危害等级高。修复方式包括使用安全的临时文件创建函数（如 mkstemp）或设置 O_NOFOLLOW 标志。"
+severity = "HIGH"
+score = 7.2
+sources = ["cve", "avd"]
+published = "1997-10-06"
+updated = "2026-06-16"
+remediation = "使用 mkstemp() 等安全临时文件创建函数替代 mktemp()，在 open() 调用中设置 O_NOFOLLOW 或 O_EXCL 标志防止符号链接跟随。升级至包含此修复的 coreutils 版本，或应用各发行版提供的安全补丁。"
+[references]
+urls = [
+"http://marc.info/?l=bugtraq&m=87619953510834&w=2",
+"http://marc.info/?l=bugtraq&m=88886870129518&w=2",
+"http://marc.info/?l=bugtraq&m=88890116304676&w=2",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-18T00:00:00Z"
