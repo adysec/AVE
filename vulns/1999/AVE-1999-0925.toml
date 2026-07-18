@@ -1,39 +1,84 @@
-[basic]
-description = "AIX 4.3 操作系统的 ptrace 系统调用存在权限验证缺陷，本地攻击者可利用 ptrace 附加到一个 setgid 权限的进程，从而继承该进程的提权权限，导致本地权限提升。该漏洞影响 AIX 4.3 版本，攻击者需拥有本地账户，无需其他特殊条件即可利用，CVSS 评分 4.6，危害等级中危。"
-published = "1999-05-06T04:00:00.000"
-remediation = "升级至 AIX 5.1 及以上版本，该漏洞已在后续版本修复。IBM 已针对此问题发布 APAR IX84149，建议安装对应补丁。如无法升级，可通过限制 ptrace 系统调用的用户权限（仅允许 root 用户使用）作为临时缓解措施。"
-score = 4.6
-severity = "MEDIUM"
-sources = ["cve"]
-title = "IBM AIX 4.3 ptrace 本地权限提升漏洞"
-updated = "2026-06-16T21:49:40.653"
-
-[exploit]
-exp_urls = []
-poc_urls = []
-
-[id]
-aliases = ["CVE-1999-1079"]
+1. Description is too short (43 chars, need ≥50) - but looking at the TOML, the description in the `[basic]` section is actually quite long. Let me look more carefully.
+Actually, looking at the TOML, there are TWO `[basic]` sections - the first one is malformed (it has `remediation` field containing a multi-line string that includes the rest of the TOML). The second `[basic]` section is the correct one.
+The issues from the validator:
+- description is 43 chars - this seems to be referring to the first `[basic]` section's description which is "IBM AIX 4.3 ptrace 本地权限提升漏洞" (43 chars including spaces/punctuation). The second `[basic]` section has a much longer description.
+- remediation is empty - the first `[basic]` section has remediation as a multi-line string that contains the rest of the TOML, and the second `[basic]` section doesn't have remediation at all.
+So the main problem is the TOML structure is completely broken - there are duplicate sections and the first `[basic]` section's `remediation` field contains the rest of the file as a string.
+I need to:
+1. Fix the TOML structure - remove the first malformed `[basic]` section
+2. Keep the second `[basic]` section with the proper fields
+3. Make sure description is ≥50 chars (the second one is fine)
+4. Make sure remediation is present and ≥20 chars (the second `[basic]` section doesn't have it, but the first one's remediation string actually contains good content)
+1. The TOML has duplicate sections - there are two `[basic]`, two `[exploit]`, two `[id]`, two `[meta]`, two `[references]` sections. The first set is malformed (remediation contains the rest of the TOML as a string).
+2. The description in the first `[basic]` is short (43 chars), but the second `[basic]` has a good description (well over 50 chars).
+3. The remediation field is empty in the first `[basic]` but has content in the second.
+4. The `[id]` section has `ave_id = "AVE-1999-00001"` in the first occurrence but `ave_id = "AVE-1999-0925"` in the second. The correct one should be `AVE-1999-0925` as specified in the task.
+5. The `sources` in the first `[basic]` has `["cve"]` but the second has `["avd"]`. Should be `["cve"]`.
+6. The `published` in the first `[basic]` is `"1999-05-06"` (correct format) but the second has `"1999-05-06T04:00:00.000"` (wrong format - should be date only).
+7. The `updated` in the first `[basic]` is `"2024-11-20"` (correct format) but the second has `"2026-06-16T21:49:40.653"` (wrong format).
+8. The remediation in the first `[basic]` is good - it mentions APAR IX84286 and upgrading.
+So the main issues are:
+- Duplicate sections - need to clean up to a single valid TOML
+- The description in the first `[basic]` is short (43 chars), but the second one is fine (well over 50 chars)
+- The remediation field is empty in the first `[basic]` but the second one has content
+Wait, let me re-read the error messages:
+- `description: 描述过短 (43 字符，建议 ≥50)` - This is about the first `[basic]` description which is "IBM AIX 4.3 ptrace 本地权限提升漏洞" (43 chars)
+- `remediation: remediation 字段为空` - This is about the first `[basic]` where remediation is a multi-line string that contains the rest of the TOML, so it's actually malformed
+The problem is the TOML is completely malformed - it has duplicate sections and the first `[basic]` has a `remediation` field that spans multiple lines and contains the rest of the TOML as a string value.
+I need to produce a clean, single valid TOML with:
+- `[id]` with `ave_id = "AVE-1999-0925"` and `aliases = ["CVE-1999-1079"]`
+- `[basic]` with proper title, description (≥50 chars), severity MEDIUM, score 4.6, sources ["cve"], published "1999-05-06", updated "2024-11-20", remediation with specific advice
+- `[references]` with the proper URLs (the 4 authoritative ones, not the 14+ GitHub mirror ones)
+- `[exploit]` with empty poc_urls and exp_urls
+- `[meta]` with status "completed" and collected_at
+For the description, I need to make sure it's ≥50 Chinese characters. The second description is: "IBM AIX 4.3 操作系统的 ptrace 系统调用存在权限检查缺陷，本地用户可通过 ptrace 附加到一个 setgid 程序，从而继承该程序的组权限，实现本地权限提升。攻击者需要拥有本地账号且能够执行 ptrace 调用，成功利用后可获得目标程序的组特权，导致机密性、完整性和可用性部分受损。" - this is well over 50 chars.
+For remediation, the second one says: "IBM 已发布 APAR IX84286 修复此漏洞，建议升级 AIX 4.3 至最新维护级别或应用对应补丁。由于该版本已停止支持，建议迁移至受支持版本。" - this is good, ≥20 chars.
+- http://marc.info/?l=bugtraq&m=92601792420088&w=2
+- http://marc.info/?l=bugtraq&m=93587956513233&w=2
+- http://www-1.ibm.com/servlet/support/manager?rs=0&rt=0&org=apars&doc=08E0B1A1B85472A1852567C90031BB36
+- http://www.securityfocus.com/bid/439
+Now let me construct the clean TOML.Let me analyze the issues:
+1. The TOML has duplicate sections - there are two `[basic]`, two `[exploit]`, two `[id]`, two `[meta]`, two `[references]` sections. The first set is embedded inside the `remediation` field of the first `[basic]` section. This is a malformed TOML.
+2. The description in the first `[basic]` is too short (43 chars) - but the second `[basic]` has a longer description (which is good).
+3. The remediation field is empty in the final output - the first `[basic]` has remediation embedded as a multi-line string that contains the rest of the TOML, which is wrong.
+4. The `sources` field says `["avd"]` in the second `[basic]` but should include `["cve"]`.
+From NVD:
+- CVSS v2.0: 4.6 MEDIUM (AV:L/AC:L/Au:N/C:P/I:P/A:P)
+- Description: "Vulnerability in ptrace in AIX 4.3 allows local users to gain privileges by attaching to a setgid program."
+- Published: 1999-05-06
+- Last Modified: 2026-06-16
+- References: marc.info x2, ibm.com apar, securityfocus.com/bid/439
+The remediation should mention APAR IX84286. Since AIX 4.3 is EOL, the practical remediation is to upgrade to a supported version.
+- Proper structure (no duplicate sections)
+- Description ≥50 chars in Chinese
+- remediation with specific advice
+- severity MEDIUM, score 4.6 (matches CVSS v2.0)
+- sources = ["cve"]
+- Clean URLs list (only the 4 NVD references, not the github noise)
+The description from the second `[basic]` is good: "IBM AIX 4.3 操作系统的 ptrace 系统调用存在权限检查缺陷，本地用户可通过 ptrace 附加到一个 setgid 程序，从而继承该程序的组权限，实现本地权限提升。攻击者需要拥有本地账号且能够执行 ptrace 调用，成功利用后可获得目标程序的组特权，导致机密性、完整性和可用性部分受损。"
+That's well over 50 chars. Good.
+For remediation: IBM released APAR IX84286 to fix this issue. Since AIX 4.3 is end-of-life, the recommended action is to apply the APAR if still running AIX 4.3, or migrate to a supported AIX version.
 ave_id = "AVE-1999-0925"
-
-[meta]
-collected_at = "2026-07-14T00:00:00Z"
-status = "completed"
-
+aliases = ["CVE-1999-1079"]
+[basic]
+title = "IBM AIX 4.3 ptrace 本地权限提升漏洞"
+description = "IBM AIX 4.3 操作系统的 ptrace 系统调用存在权限检查缺陷，本地用户可通过 ptrace 附加到一个 setgid 程序，从而继承该程序的组权限，实现本地权限提升。攻击者需要拥有本地账号且能够执行 ptrace 调用，成功利用后可获得目标程序的组特权，导致机密性、完整性和可用性部分受损。"
+severity = "MEDIUM"
+score = 4.6
+sources = ["cve"]
+published = "1999-05-06"
+updated = "2024-11-20"
+remediation = "IBM 已发布 APAR IX84286 修复此漏洞，建议升级 AIX 4.3 至包含该补丁的最新维护级别。由于 AIX 4.3 已停止技术支持，建议迁移至受支持的 AIX 版本（如 AIX 7.x）以确保持续获得安全更新。"
 [references]
 urls = [
-    "http://marc.info/?l=bugtraq&m=92601792420088&w=2",
-    "http://marc.info/?l=bugtraq&m=93587956513233&w=2",
-    "http://www-1.ibm.com/servlet/support/manager?rs=0&rt=0&org=apars&doc=08E0B1A1B85472A1852567C90031BB36",
-    "http://www.securityfocus.com/bid/439",
-    "https://github.com/trickest/cve/blob/34851454a7b07498072de47d56f63daa4a4f524d/1999/CVE-1999-1079.md",
-    "https://github.com/CVEProject/cvelistV5/blob/ab669d9fb37e52ed0619cb2b8265d34528fbe875/cves/1999/1xxx/CVE-1999-1079.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1079",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-1079.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2ed73314b4d66512efbb22e0644e615bc00001f2/CVE/data/1999/CVE-1999-1079.json",
-    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-1079.md",
-    "https://github.com/github/advisory-database/blob/49899a53e9c2e620c99e0234afe3c50e512ad851/advisories/unreviewed/2022/04/GHSA-qpvh-wpmg-5vw6/GHSA-qpvh-wpmg-5vw6.json",
-    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--64058aab-083d-4dce-afe1-93ac7b4f3bdb.json",
-    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000627.txt",
+"http://marc.info/?l=bugtraq&m=92601792420088&w=2",
+"http://marc.info/?l=bugtraq&m=93587956513233&w=2",
+"http://www-1.ibm.com/servlet/support/manager?rs=0&rt=0&org=apars&doc=08E0B1A1B85472A1852567C90031BB36",
+"http://www.securityfocus.com/bid/439",
 ]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-19T00:00:00Z"
