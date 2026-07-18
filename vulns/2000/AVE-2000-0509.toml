@@ -1,0 +1,85 @@
+[basic]
+description = "Pragma Systems InterAccess TelnetD Server 4.0 Build 4 存在缓冲区溢出漏洞，远程攻击者可通过向 TelnetD 服务发送超长登录名（login name）触发缓冲区溢出，导致任意命令执行。该漏洞影响 InterAccess TelnetD Server 4.0 Build 4 版本，CVSS 评分 10.0，危害等级严重。攻击者无需身份认证即可远程利用，建议立即升级至安全版本。"
+published = "2000-02-21T05:00:00.000"
+remediation = '''
+[info]
+id = "POC-AVE-2000-00001"
+name = "CVE-2000-0166 PoC"
+author = "AVE"
+severity = "critical"
+tags = ["cve-2000-0166"]
+description = "检测 Pragma Systems InterAccess TelnetD Server 4.0 Build 4 缓冲区溢出漏洞，通过发送超长登录用户名触发"
+vuln_id = ["CVE-2000-0166", "AVE-2000-00001"]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+protocol = "tcp"
+path = "{{Hostname}}:23"
+
+[[poc.requests.raws]]
+type = "send"
+content = "AAAA...AAAA\r\n"  # long username
+
+[[poc.requests.raws]]
+type = "receive"
+
+[[poc.requests.matchers]]
+type = "word"
+words = ["overflow", "crash"]
+expect = true
+```
+
+Hmm, actually I need to be more specific. Let me think about what a reasonable PoC looks like for a telnet buffer overflow.
+
+The vulnerability is triggered by sending a long login name. In telnet, the login prompt asks for username, and if you send a very long string, it overflows the buffer.
+
+Let me create a more realistic PoC.
+
+Actually, I realize I should just output the TOML directly without markdown code blocks, as per the instructions. Let me prepare the full output.
+
+Let me also check - the instruction says "输出后 Rust 层自动校验" so I need to make sure the TOML is valid.
+
+Let me finalize the TOML content.
+
+For the PoC, I'll use a TCP-based approach with a long username string:
+
+The telnet protocol typically sends "Username: " prompt and expects a response. A buffer overflow can be triggered by sending a very long string.
+
+Let me write the PoC:'''
+score = 10
+severity = "CRITICAL"
+sources = ["cve"]
+title = "Pragma Systems InterAccess TelnetD 服务器缓冲区溢出漏洞"
+updated = "2026-06-16T21:51:08.287"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0166"]
+ave_id = "AVE-2000-0509"
+
+[meta]
+collected_at = "2026-07-18T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://marc.info/?l=bugtraq&m=95142756403323&w=2",
+    "http://www.securityfocus.com/bid/995",
+    "http://www.securityfocus.com/templates/archive.pike?list=1&msg=NCBBKFKDOLAGKIAPMILPGEJHCCAA.labs%40ussrback.com",
+    "https://www.exploit-db.com/exploits/19755",
+    "https://github.com/CVEProject/cvelistV5/blob/5546763f2cbf8b9d0a5bd1b009f21d50c3edeb8b/cves/2000/0xxx/CVE-2000-0166.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0166",
+    "https://github.com/fankh/vulnerability-poc/blob/8854c056beab250ba690e2bcc8887feb4c1f8139/2000/CVE-2000-0166/README.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-2000-0166.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1eab609178bfac1fdc1fdc37b8b4d17d9ecf98b7/CVE/data/2000/CVE-2000-0166.json",
+    "https://github.com/github/advisory-database/blob/799c403529fad0f67d5473eea397e9968232a5ec/advisories/unreviewed/2022/04/GHSA-hhr8-x4hv-57hf/GHSA-hhr8-x4hv-57hf.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-2000-0166.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--30da608f-1481-4b5e-afe1-c04543853658.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001181.txt",
+]
