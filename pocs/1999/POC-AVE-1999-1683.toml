@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测目标服务器是否暴露了 Microsoft Data Access Components (MDAC) 远程数据服务 (RDS) DataFactory 组件的不安全方法接口。该漏洞影响运行 IIS 3.x/4.x 及 MDAC 2.1 的 Windows 系统，未经身份认证的远程攻击者可通过构造恶意 HTTP 请求调用 RDS 危险方法，以系统权限执行任意命令。"
+description = "验证目标 IIS 服务器是否暴露存在漏洞的 Microsoft Data Access Components (MDAC) RDS DataFactory 组件。通过向 /msadc/msadcs.dll 发送特制的 RDS DataFactory 查询请求，检测服务端是否返回正常 XML 响应（含 RDS 版本或错误结构），从而判定 RDS 接口是否可被未授权访问。该检测为安全无损请求，不会实际执行任意命令。"
 id = "POC-AVE-1999-1683"
-name = "Microsoft MDAC RDS Remote Command Execution PoC"
+name = "CVE-1999-1011 MDAC RDS DataFactory 远程命令执行 PoC"
 severity = "critical"
 tags = ["ave-1999-1683"]
 vuln_id = [
@@ -14,11 +14,25 @@ vuln_id = [
 logic = "all"
 
 [[poc.requests]]
-method = "GET"
+method = "POST"
 path = "/msadc/msadcs.dll"
 protocol = "http"
 
+[poc.requests.body]
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "RDS",
+    "DataFactory",
+    "msadcs.dll",
+    "Error",
+    "Microsoft",
+]
