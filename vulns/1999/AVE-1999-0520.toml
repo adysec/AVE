@@ -1,12 +1,12 @@
 [basic]
-description = "Debian man-db 软件包中的 zsoelim 程序在处理手册页的 .so 预处理请求时，会在 /tmp 目录下以可预测的文件名（如 /tmp/zman0<进程ID>aaa）创建临时文件。该程序在创建文件前未校验目标路径是否为符号链接，会无条件跟随并写入。本地攻击者可在 man 命令执行前预先创建指向敏感文件（如 /etc/nologin、~/.ssh/authorized_keys 等）的符号链接，当运行 man 命令处理包含 .so 请求的手册页时，zsoelim 将跟随符号链接覆写目标文件，导致任意文件写入、权限提升或拒绝服务。"
-published = "1999-06-12"
-remediation = "升级 Debian man-db 软件包至已修复 zsoelim 符号链接漏洞的版本，或应用 Debian 官方安全补丁。临时缓解措施包括将 /var/cache/man 目录的写权限限制给 root 用户，并避免普通用户运行 man 命令处理不可信来源的手册页，以降低符号链接攻击风险。"
+description = "Debian man-db 软件包中的 zsoelim 程序存在符号链接（symlink）攻击漏洞。zsoelim 在处理文件时未正确验证文件路径，本地攻击者可创建一个指向目标系统敏感文件的符号链接，当 zsoelim 跟随该符号链接处理文件时，将导致目标文件被覆盖，从而造成任意文件写入。攻击条件为本地低权限用户即可触发，无需远程访问。该漏洞影响 Debian man-db 2.3.10 等早期版本，CVSS v2 评分 10.0，危害等级为高危，可能导致权限提升或系统文件被破坏。"
+published = "1999-06-12T04:00:00.000"
+remediation = "升级 man-db 软件包至当前稳定版本（2.9.x 或更高），该漏洞存在于 zsoelim 的符号链接处理逻辑中，新版已修复此问题。执行 apt update && apt upgrade man-db 完成更新。作为临时缓解措施，可移除 zsoelim 的 setuid/setgid 位（chmod u-s,g-s /usr/bin/zsoelim），并避免在受信目录以外使用 man 工具，同时在 /tmp 等临时目录挂载时启用 noexec 和限制符号链接创建。"
 score = 10
 severity = "CRITICAL"
-sources = ["exploitdb"]
-title = "Debian man-db zsoelim 符号链接攻击文件覆写漏洞"
-updated = "2026-06-16"
+sources = ["epss"]
+title = "G. Wilford man 符号链接攻击本地文件覆盖漏洞"
+updated = "2026-06-16T21:48:56.240"
 
 [exploit]
 exp_urls = []
@@ -17,18 +17,18 @@ aliases = ["CVE-1999-0730"]
 ave_id = "AVE-1999-0520"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0730",
     "https://www.exploit-db.com/exploits/19243",
-    "https://github.com/CVEProject/cvelistV5/blob/1ce36d0de2f3ddd1d56c222c398df994c8c331b1/cves/1999/0xxx/CVE-1999-0730.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0f25967d744704fe14324ac10f2b57e945aed081/cves/1999/0xxx/CVE-1999-0730.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0730",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0730.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f581b54f28a314b57ac171b83d3b2d21db7414a0/CVE/data/1999/CVE-1999-0730.json",
-    "https://github.com/github/advisory-database/blob/11845a9fe6e6b4d82150d9fd8a4257b88a244a45/advisories/unreviewed/2022/04/GHSA-9cm4-vwcc-jvg8/GHSA-9cm4-vwcc-jvg8.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0730.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d2eb55660fa7a900eec90103b031be5d6f98d9ec/CVE/data/1999/CVE-1999-0730.json",
+    "https://github.com/github/advisory-database/blob/1dbd44058e428445290bfb1f6fc6ecc0addbfd35/advisories/unreviewed/2022/04/GHSA-9cm4-vwcc-jvg8/GHSA-9cm4-vwcc-jvg8.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0730.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/1999/19990612.data",
