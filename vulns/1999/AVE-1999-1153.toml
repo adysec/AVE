@@ -1,11 +1,11 @@
 [basic]
-description = "SunOS 系统的 NIS（网络信息服务）finger 守护进程存在拒绝服务漏洞。当远程攻击者向目标主机发送大量伪造的 finger 请求时，每个请求都会触发一次 NIS 查询，导致 NIS 服务被海量查询请求淹没，消耗系统资源并最终使服务不可用。该漏洞影响运行 SunOS 且启用 NIS 与 finger 服务的系统，攻击者无需身份认证即可通过网络远程发起攻击，利用方式简单，仅需持续发送大量并发 finger 请求即可造成目标系统拒绝服务。CVSS 评分为 2.6，危害等级较低，但仍可被用于干扰正常的网络信息服务。"
+description = "SunOS 系统的 NIS（网络信息服务）finger 服务存在拒绝服务漏洞。该服务的 finger 守护进程在处理客户端 finger 请求时，每收到一个请求便会向 NIS 服务发起查询。攻击者在未经过身份认证的情况下，可向目标主机连续发送大量 finger 请求，迫使系统产生海量 NIS 查询，从而大量消耗 CPU 与网络资源，最终导致目标系统服务不可用。该漏洞影响运行 SunOS 且启用 NIS 与 finger 服务的系统，本地网络可达的远程攻击者可利用此缺陷实施拒绝服务攻击。"
 published = "1998-06-29T04:00:00.000"
-remediation = "在 SunOS/Solaris 上将 /etc/inetd.conf 中 finger 服务行注释并执行 kill -HUP 重启 inetd 以禁用 fingerd；若业务仍需 finger，用 TCP Wrappers（hosts.allow/hosts.deny）仅允许受信网段访问 TCP 79，并在边界防火墙拒绝外网对 79 端口的访问。同时限制 ypbind/NIS 仅对内网开放，避免 finger 引发大规模 NIS 查询；长期应迁移至已打补丁或已废弃 finger/NIS 的新版 Solaris/现代目录服务。"
+remediation = "升级到 Sun Solaris 2.6 或更高版本并应用 Sun 安全补丁 105785-01 (SPARC) 或 105786-01 (x86)；或在 /etc/inetd.conf 中注释掉 finger 服务并重启 inetd 禁用 finger 服务；或使用 TCP Wrappers (/etc/hosts.allow/deny) 限制 finger 服务仅允许受信任 IP 访问；或在防火墙层面封锁 TCP 79 端口阻断 finger 请求。"
 score = 2.6
 severity = "LOW"
-sources = ["avd"]
-title = "Sun SunOS NIS Finger 拒绝服务漏洞"
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9128,"outputTokens":17,"totalTokens":10809}}'
 updated = "2026-06-16T21:49:04.677"
 
 [exploit]
@@ -17,17 +17,17 @@ aliases = ["CVE-1999-0797"]
 ave_id = "AVE-1999-1153"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.ciac.org/ciac/bulletins/i-070.shtml",
-    "https://github.com/CVEProject/cvelistV5/blob/2f8583cd0e244c401900c481a78c07fe5535c09f/cves/1999/0xxx/CVE-1999-0797.json",
+    "https://github.com/CVEProject/cvelistV5/blob/fe807f4098db5a5ad8dcb41a479197724cb9e789/cves/1999/0xxx/CVE-1999-0797.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0797",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-0797.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4efc2590fd3e232024591793a186ed6577aaac2a/CVE/data/1999/CVE-1999-0797.json",
-    "https://github.com/github/advisory-database/blob/c7f6746ae9afa4dae1cadaddbe4e869f4067fd46/advisories/unreviewed/2022/04/GHSA-pj4v-m2mp-56cp/GHSA-pj4v-m2mp-56cp.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0797.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f7f250b0cc5cc23741447612a2f182f04c36db78/CVE/data/1999/CVE-1999-0797.json",
+    "https://github.com/github/advisory-database/blob/f61040ac78eb76aff0a3a68a8a8a4562940d3711/advisories/unreviewed/2022/04/GHSA-pj4v-m2mp-56cp/GHSA-pj4v-m2mp-56cp.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0797.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88388/info.html",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154100_154200.json",
