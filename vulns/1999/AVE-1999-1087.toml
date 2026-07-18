@@ -1,11 +1,11 @@
 [basic]
-description = "Solaris 2.6 及 2.7 系统中的 /usr/bin/write 工具存在缓冲区溢出漏洞。本地攻击者可通过向终端名称参数传入超长字符串触发缓冲区溢出，从而获取系统最高权限。该漏洞为本地提权漏洞，攻击者需拥有本地账户才能利用，影响 Solaris 2.6 和 2.7 版本，CVSS 评分 7.2，危害等级高。"
+description = "Solaris 2.6 和 2.7 系统中 /usr/bin/write 命令存在缓冲区溢出漏洞。该命令以 setuid root 权限运行，用于向其他用户的终端发送消息，但在处理终端名称参数时未对输入长度进行有效边界检查，导致攻击者可传入超长字符串触发栈溢出。本地低权限用户可利用此漏洞覆盖返回地址并执行任意代码，从而获得 root 权限并完全控制系统。受影响版本包括 Solaris 2.6 和 Solaris 7，CVSS 评分为 7.2，危害等级为高。攻击者需先在目标系统上拥有本地访问权限，方可构造恶意终端名称参数利用该溢出。"
 published = "1999-03-08T05:00:00.000"
-remediation = "该漏洞影响已停止支持的 Solaris 2.6 和 7，Oracle 不再提供安全补丁。建议立即升级到受支持的 Solaris 11 或更高版本；如无法升级，可执行 `chmod 755 /usr/bin/write` 移除 setuid 位以缓解提权风险，或使用 `chmod 0 /usr/bin/write` 完全禁用该命令。"
+remediation = "建议将 Solaris 2.6 升级至补丁 105790-08 及以上，Solaris 7 升级至 106121-08 及以上（通过 SunSolve 或 patchadd 命令安装）。无法立即打补丁前，可用 chmod u-s /usr/bin/write 移除 setuid 位作为临时缓解，并限制非授权本地用户登录。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Sun Solaris /usr/bin/write 本地缓冲区溢出漏洞"
+sources = ["exploitdb"]
+title = "Sun Solaris 2.6/7 /usr/bin/write 本地缓冲区溢出权限提升漏洞"
 updated = "2026-06-16T21:50:17.847"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1371"]
 ave_id = "AVE-1999-1087"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,4 +26,5 @@ urls = [
     "http://www.securiteam.com/exploits/5ZP0O1P35O.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/7546",
     "https://www.exploit-db.com/exploits/256",
+    "https://github.com/CVEProject/cvelistV5/blob/e244b55bdff85b2483c0e6a7cecd12f8bee0df6e/cves/1999/1xxx/CVE-1999-1371.json",
 ]

