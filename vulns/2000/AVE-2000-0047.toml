@@ -1,0 +1,37 @@
+1. Description is empty - The `description` field contains what appears to be a corrupted/wrong value (""""标签之间。等等""" - this looks like a debug/test string). Need to write a proper Chinese description ≥50 characters.
+2. Score/Severity mismatch - score = 5, severity = "MEDIUM". The schema says MEDIUM≥4, so 5 with MEDIUM is actually OK. But wait, the error message says severity/score matching: MEDIUM≥4, so score=5 with MEDIUM passes.
+3. Publishing date format - The `published` field uses a timestamp format when it should be just the date portion in YYYY-MM-DD format, same with the `updated` field which also contains a full timestamp that needs trimming down to just the date.
+Now I'm checking the schema requirements and verifying the fields are correct. The score is 5 which falls within the MEDIUM range (4-7), the remediation advice is detailed at around 93 Chinese characters, and all the required fields are in place. I need to search for more information about this CVE to ensure everything is accurate.Now I have the information I need:
+From NVD:
+- CVE-2000-0056: "IMail IMONITOR status.cgi CGI script allows remote attackers to cause a denial of service with many calls to status.cgi."
+- CVSS v2 Score: 5.0 MEDIUM (AV:N/AC:L/Au:N/C:N/I:N/A:P)
+- Published: 01/05/2000
+From ExploitDB:
+- Title: Ipswitch IMail 5.0.8/6.0/6.1 - IMonitor 'status.cgi' Denial of Service
+- Platform: Windows
+- Date: 2000-01-05
+The vulnerability works by repeatedly calling the IMail Monitor's status.cgi script, which causes the web server to crash with an invalid memory access error. I'm fixing the TOML file to correct the description field, which is currently just an empty string, and adjusting the publication date format to use the standard YYYY-MM-DD format without the time component.
+Generating the TOML file[id]
+ave_id = "AVE-2000-0047"
+aliases = ["CVE-2000-0056"]
+[basic]
+title = "Ipswitch IMail IMonitor status.cgi 远程拒绝服务漏洞"
+description = "Ipswitch IMail 邮件服务器附带的 IMonitor 监控服务内置一个轻量级 Web 服务器（默认监听 8181 端口），其中的 status.cgi CGI 脚本用于展示各项服务的运行状态。该脚本存在拒绝服务漏洞，未经认证的远程攻击者可通过向 status.cgi 发起大量并发请求，导致 IMonitor 服务因无效内存地址访问而崩溃（Dr. Watson 错误），从而无法正常提供服务。此漏洞影响 Ipswitch IMail 5.0.8、6.0 及 6.1 版本。"
+severity = "MEDIUM"
+score = 5.0
+sources = ["cve"]
+published = "2000-01-05"
+updated = "2000-01-05"
+remediation = "升级 Ipswitch IMail 至官方发布的最新安全版本，或联系 Ipswitch 获取安全补丁。临时缓解措施：在防火墙或边界设备上限制对 IMonitor 服务端口（TCP 8181）的外部访问，仅允许可信内网 IP 访问 /imonsrv/status.cgi 路径；或在 Web 服务器层面配置 IP 访问控制列表，阻止外部主机频繁请求该 CGI 脚本。"
+[references]
+urls = [
+"https://nvd.nist.gov/vuln/detail/CVE-2000-0056",
+"http://www.securityfocus.com/bid/914",
+"https://www.exploit-db.com/exploits/19711",
+]
+[exploit]
+poc_urls = ["https://www.exploit-db.com/exploits/19711"]
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-18T00:00:00Z"
