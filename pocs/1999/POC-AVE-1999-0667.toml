@@ -1,10 +1,14 @@
 [info]
 author = "AVE"
-description = "向 IIS 4.0 发送包含大量重复/畸变 Host 标头的 HTTP GET 请求，触发服务器内存泄漏最终耗尽，导致 IIS 服务进程挂起无法响应正常请求。攻击者构造的 Host 标头每个约 200 字节，重复 10000 行以上。"
+description = "检测目标服务器是否为Microsoft IIS 4.0，该版本存在通过发送大量重复Host头导致内存耗尽拒绝服务的漏洞"
 id = "POC-AVE-1999-0667"
-name = "Microsoft IIS 4.0 Malformed HTTP Request Header Flood DoS PoC"
+name = "Microsoft IIS 4.0 HTTP畸形请求标头洪水拒绝服务漏洞 PoC"
 severity = "medium"
-tags = ["ave-1999-0667"]
+tags = [
+    "cve-1999-0867",
+    "dos",
+    "iis",
+]
 vuln_id = [
     "CVE-1999-0867",
     "AVE-1999-0667",
@@ -20,10 +24,6 @@ protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
+part = "header"
 type = "word"
-words = [
-    "timeout",
-    "connection refused",
-    "Service Unavailable",
-]
+words = ["Server: Microsoft-IIS/4.0"]
