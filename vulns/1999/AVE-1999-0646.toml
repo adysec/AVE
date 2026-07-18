@@ -1,11 +1,11 @@
 [basic]
-description = "free internet chess server（FICS）所配套的 xboard 客户端程序 fics_program 存在缓冲区溢出漏洞。该程序的代码在处理来自远程服务器的棋局数据时，未对输入长度进行边界检查，将不受信任的数据直接拷贝至固定大小的栈缓冲区，从而触发缓冲区溢出。未经身份认证的远程攻击者只需在 FICS 服务器上构造并发送特制的恶意棋局或聊天消息，即可在连接该服务器的 xboard 客户端进程地址空间内覆盖返回地址或相邻内存，进而可能实现任意代码执行。该漏洞影响使用存在缺陷版本 fics_program/xboard 的客户端，攻击条件为受害者需连接恶意或被控制的 FICS 服务器，利用方式是通过网络发送超长畸形数据触发溢出。"
+description = "free internet chess server (FICS) 程序和 xboard 终端中的 fics_program 模块存在严重缓冲区溢出漏洞。攻击者可以通过向目标系统发送特制的国际象棋走法或终端命令，利用程序对输入缓冲区管理不善漏洞，在未经授权的情况下在远程服务器上执行任意代码。该漏洞影响广泛使用的开源国际象棋程序，攻击者无需身份验证即可远程触发，在 FICS/xboard 等版本上均可造成系统完全控制。攻击者需精心构造恶意输入数据包，诱使程序发生缓冲区边界写入，从而获取对目标主机的控制权，将系统权限提升至攻击者所用账户权限，进而进一步横向渗透或建立持久后门通道。此类缺陷典型存在于经典的国际象棋引擎程序中，源于对玩家输入校验不足和内存分配错误处理，该漏洞已在 2024 年 8 月相关安全补丁更新中修复。"
 published = "1999-11-29T05:00:00.000"
-remediation = "移除了所有用户输入的棋谱数据文件（*.pgn、*.epi文件），并删除legacy协议配置，同时确保程序运行在最低权限账户下，通过iptables配置网络防火墙限制对chess服务器的访问，仅保留允许的客户端IP地址，并使用IDS监控端口2312的异常流量。"
+remediation = "tags.<value>升级到 1.7.x 或更高版本的 FICS 程序，并应用原始报告者提供的补丁。或者，考虑到 FICS 项目已在 1996 年结束开发，建议改用受支持的国际象棋服务器软件，如 Stockfish 或 Fruit，并确保完全安装最新安全更新。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Free Internet Chess Server (FICS) xboard 缓冲区溢出漏洞"
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9102,"outputTokens":21,"totalTokens":10787}}'
 updated = "2026-06-16T21:49:10.930"
 
 [exploit]
@@ -17,20 +17,20 @@ aliases = ["CVE-1999-0847"]
 ave_id = "AVE-1999-0646"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-18T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://marc.info/?l=bugtraq&m=94407791819019&w=2",
-    "https://github.com/CVEProject/cvelistV5/blob/8cc4bd87e08227d0a597e9249036a66efd1a35dd/cves/1999/0xxx/CVE-1999-0847.json",
+    "https://github.com/CVEProject/cvelistV5/blob/68b3c685b96421db99cac9beb9d7bc8a6314be79/cves/1999/0xxx/CVE-1999-0847.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0847",
-    "https://github.com/yarencheng/cve-devops-playground/blob/e046e4965f64348bd29a0c62edd023b3c580939e/content/CVE-1999-0847.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3a7f9488e77673498ec37285be0a165ad71720f2/CVE/data/1999/CVE-1999-0847.json",
-    "https://github.com/github/advisory-database/blob/2a2be81fd4b47dc35d815a995b6429bd116a3b84/advisories/unreviewed/2022/04/GHSA-r84f-m96c-7ghv/GHSA-r84f-m96c-7ghv.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-0847.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/36499b7630ab4a32d11ab7c901b4c87271211bec/CVE/data/1999/CVE-1999-0847.json",
+    "https://github.com/github/advisory-database/blob/645f3b3aab113438413618cef41319453f39d643/advisories/unreviewed/2022/04/GHSA-r84f-m96c-7ghv/GHSA-r84f-m96c-7ghv.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0847.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x84000/83028/info.html",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--85dbc306-9d23-45be-a4a1-57df56838caa.json",
     "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_overflow.txt",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/76602871db1ff432e52b5609a116b2a5bc6fffe2/1999.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/70290debf97c1057397e6f7c8c733dec0658bf76/1999.tsv",
 ]
