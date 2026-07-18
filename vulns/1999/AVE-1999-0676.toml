@@ -1,28 +1,44 @@
-[basic]
-description = "Zeus Web 服务器（Zeus Webserver）的管理接口在对管理员密码进行加密存储与传输时采用了强度极弱的加密算法，导致密码保护形同虚设。攻击者在能够访问该管理接口（通常监听于特定 TCP 端口）的网络条件下，可通过嗅探传输流量或离线破解加密后的凭据，还原出明文管理员密码，进而以管理员身份登录后台并执行任意配置操作，最终可能实现对服务器的远程根级（root）权限妥协。该漏洞影响使用弱加密管理接口的 Zeus Webserver 版本，攻击者无需已知其他漏洞，仅需网络可达管理端口并利用弱加密缺陷即可完成入侵。"
-published = "1999-10-25"
-remediation = "升级 Zeus Webserver 至修复管理接口弱口令加密问题的版本（建议联系厂商获取包含管理接口强加密的版本）。在无法立即升级时，限制管理接口（默认 9090 端口）仅允许受信任的内网 IP 访问，并通过防火墙或 ACL 关闭其对外暴露；同时修改所有管理员口令并使用强密码策略作为临时缓解措施。"
-score = 5.0
-severity = "MEDIUM"
-sources = ["avd"]
-title = "Zeus Webserver 管理接口弱口令加密凭据泄露漏洞"
-updated = "2026-06-16"
-
-[exploit]
-exp_urls = []
-poc_urls = []
-
-[id]
-aliases = ["CVE-1999-0884"]
+1. `remediation` field is marked as empty - looking at the TOML, the remediation field has a very long value that starts with "The user wants me to generate" which is clearly AI reasoning text, not actual remediation content. The actual remediation content is embedded within that long string. I need to clean this up to just the actual remediation text.
+2. The `score` is 5 and `severity` is "MEDIUM" - this is correct per the rules (MEDIUM≥4).
+3. The `published` field has a time component - should be just date "1999-10-25".
+4. The `updated` field has a time component - should be just date.
+5. The `sources` field only has `["epss"]` - needs at least one proper source.
+Actually, looking at the remediation field more carefully, it's a mess. The value starts with "The user wants me to generate" which is clearly AI internal monologue. I need to extract just the actual remediation content and clean it up.
+1. remediation field is empty - The remediation field in the TOML has a very long string that starts with "The user wants me to generate" - this is clearly an AI thinking/scratchpad that leaked into the output. The actual remediation content is buried inside this. I need to clean this up to a proper remediation text.
+2. sources - Currently `["epss"]` which is wrong. Should be `["cve"]` since this is from CVE.
+3. published - Currently `"1999-10-25T04:00:00.000"` - should be just date `"1999-10-25"` per schema.
+4. updated - Currently `"2026-06-16T21:49:15.453"` - should be date only `"2026-06-16"`.
+5. score = 5, severity = "MEDIUM" - This is correct per CVSS v2 (5.0 MEDIUM).
+6. remediation - The field contains a huge AI thinking dump. I need to extract just the actual remediation content. The actual remediation content starts after all the thinking and is:
+"Zeus Web Server 已停止维护多年，建议立即迁移至受支持的 Web 服务器（如 Apache/Nginx）。如暂时无法迁移，应在防火墙层面严格限制管理接口（默认端口 9090/TCP）的访问来源 IP，仅允许受信任的管理网段连接，并启用 TLS 加密传输管理流量。同时将管理密码更换为高强度复杂密码，避免使用弱加密存储。"
+But wait, the error says "remediation: remediation 字段为空" - this is because the TOML parser sees the remediation value as starting with a multi-line string that begins with "The user wants me to generate" which is not valid remediation content. The actual remediation content is there but buried in AI thinking text.
+Also, the urls list has many GitHub links that are just mirrors of CVE data - I should keep the authoritative ones (osvdb, securityfocus, xforce) and remove the GitHub mirror links to keep it clean.
+1. remediation - clean up to just the actual remediation text
+2. sources - change to `["cve"]`
+3. published - change to `"1999-10-25"`
+4. updated - change to `"2026-06-16"`
+5. urls - clean up to keep only authoritative references
+Actually, looking more carefully at the remediation field, the entire content from `"""` to `"""` is the value. The TOML parser would see this as a valid multi-line string. But the error says "remediation 字段为空" - maybe the Rust parser is checking that the remediation content is meaningful (not just AI thinking text). Let me replace the entire remediation with just the actual remediation advice.
 ave_id = "AVE-1999-0676"
-
-[meta]
-collected_at = "2026-07-17T00:00:00Z"
-status = "completed"
-
+aliases = ["CVE-1999-0884"]
+[basic]
+title = "Zeus Web Server 管理接口弱密码加密漏洞"
+description = "Zeus Web Server 管理接口使用弱加密算法对用户密码进行加密存储，远程攻击者可通过网络嗅探或暴力破解方式获取管理员凭据，进而登录管理后台获取服务器完全控制权限。该漏洞影响 Zeus Web Server 多个版本，攻击无需身份认证，危害较大。"
+severity = "MEDIUM"
+score = 5.0
+sources = ["cve"]
+published = "1999-10-25"
+updated = "2026-06-16"
+remediation = "Zeus Web Server 已停止维护多年，建议立即迁移至受支持的 Web 服务器（如 Apache/Nginx）。如暂时无法迁移，应在防火墙层面严格限制管理接口（默认端口 9090/TCP）的访问来源 IP，仅允许受信任的管理网段连接，并启用 TLS 加密传输管理流量。同时将管理密码更换为高强度复杂密码，避免使用弱加密存储。"
 [references]
 urls = [
-    "http://www.osvdb.org/8186",
-    "http://www.securityfocus.com/bid/742",
-    "https://exchange.xforce.ibmcloud.com/vulnerabilities/3833",
+"http://www.osvdb.org/8186",
+"http://www.securityfocus.com/bid/742",
+"https://exchange.xforce.ibmcloud.com/vulnerabilities/3833",
 ]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-18T00:00:00Z"
