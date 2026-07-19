@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "检测 Matt's Whois 程序的 whois.cgi 脚本是否存在 shell 元字符注入漏洞，通过提交包含命令注入 payload 的 domain 参数验证远程命令执行"
+id = "POC-AVE-1999-0797"
+name = "Matt's Whois whois.cgi 远程命令执行漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-1999-0984",
+    "command-injection",
+    "cgi",
+]
+vuln_id = [
+    "CVE-1999-0984",
+    "AVE-1999-0797",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/whois.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "root:",
+    "bin/bash",
+    "www-data",
+]
