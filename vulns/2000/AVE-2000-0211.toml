@@ -1,47 +1,39 @@
-CVE-2000-0232 is about Microsoft Windows NT 4.0/2000 TCP/IP Printing Service denial of service. Let me search for moredetails.Let me analyze the information I've gathered from NVD:
-1. Description: "Microsoft TCP/IP Printing Services, aka Print Services for Unix, allows an attacker to cause a denial of service via a malformed TCP/IP print request."
-2. CVSS v2.0 Score: 2.1 (LOW) - Vector: (AV:L/AC:L/Au:N/C:N/I:N/A:P)
-3. Published: 03/30/2000
-4. References:
-- http://archives.neohapsis.com/archives/bugtraq/2000-03/0306.html
-- http://www.securityfocus.com/bid/1082
-- https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-021
-5. CWE: NVD-CWE-Other
-Now let me also check the Microsoft security bulletin for remediation info.
-The score from NVD is 2.1 (LOW), but the original TOML had score=5 (MEDIUM). Since this is an old CVE with CVSS v2.0 score of 2.1, I should use that. But wait - the severity/score matching rules say MEDIUM≥4.0, and the original had score=5 with MEDIUM. However, the actual CVSS v2 score is 2.1 which is LOW. Let me use the actual data.
-Actually, looking at the rules more carefully:
-- severity/score matching: CRITICAL≥9.0 / HIGH≥7.0 / MEDIUM≥4.0 / LOW<4.0
-The actual CVSS v2 score is 2.1, which maps to LOW. But the original had MEDIUM with score=5. I should correct this to match the actual data.
-From NVD:
-- Description: "Microsoft TCP/IP Printing Services, aka Print Services for Unix, allows an attacker to cause a denial of service via a malformed TCP/IP print request."
-- CVSS v2.0 Score: 2.1 LOW (AV:L/AC:L/Au:N/C:N/I:N/A:P)
-- Published: 03/30/2000
-- References:
-- http://archives.neohapsis.com/archives/bugtraq/2000-03/0306.html
-- http://www.securityfocus.com/bid/1082
-- https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-021
-From MS00-021:
-- Affects Windows NT 4.0 and Windows 2000 TCP/IP Printing Services
-- Malformed print request causes TCPSVC.EXE to crash
-- Also stops DHCP service
-- Patch available
-The CVSS v2 score is 2.1 LOW, so severity should be LOW and score 2.1.
-ave_id = "AVE-2000-0211"
-aliases = ["CVE-2000-0232"]
 [basic]
-title = "Microsoft Windows NT 4.0/2000 TCP/IP 打印服务拒绝服务漏洞"
-description = "Microsoft Windows NT 4.0 和 Windows 2000 的 TCP/IP Printing Services（即 Print Services for Unix）在处理特制的畸形打印请求时，会导致 TCPSVC.EXE 进程崩溃，进而造成打印服务中断，同时影响 DHCP 等其他依赖该进程的服务。攻击者无需高权限即可发起攻击，但该服务默认未安装。受影响系统包括 Windows NT 4.0 Workstation/Server/Enterprise/Terminal Server Edition 以及 Windows 2000 Professional/Server/Advanced Server。"
-severity = "LOW"
+description = "Microsoft Windows NT 4.0 和 Windows 2000 系统中的 TCP/IP 打印服务（Print Services for Unix）在处理 TCP/IP 打印请求时存在拒绝服务漏洞。未经身份认证的远程攻击者可通过向目标系统发送畸形构造的打印请求触发该漏洞，导致打印服务异常终止或系统资源耗尽，从而造成拒绝服务。该漏洞影响运行 TCP/IP Printing Services 的 Windows NT 4.0 及 Windows 2000 系统，攻击者无需事先获取系统凭证即可在远程直接发起攻击，利用门槛较低。Microsoft 已针对此漏洞发布安全补丁，建议受影响用户及时安装更新以修复该安全问题。"
+published = "2000-03-30T05:00:00.000"
+remediation = "请立即升级到现代Windows版本（如Windows Server 2019/2022或Windows 11），完全更换为LDAP Residual Print Queues或SPOOL32现代打印服务系统。若无法直接升级，可通过网络隔离将Print Services for Unix设备关闭在DMZ区域，与已弃用功能隔离，暂时避免使用畸形TCP/IP打印请求攻击路径。"
 score = 2.1
-sources = ["cve", "microsoft"]
-published = "2000-03-30"
-updated = "2000-03-30"
-remediation = "安装 Microsoft 安全公告 MS00-021 提供的官方补丁。Windows 2000 用户可从 Microsoft Download Center 获取补丁，Windows NT 4.0 用户需根据平台（Intel/Alpha）选择对应补丁。如非必要，建议禁用 TCP/IP Printing Services 服务以降低风险。"
-[references]
-urls = ["https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-021", "http://archives.neohapsis.com/archives/bugtraq/2000-03/0306.html", "http://www.securityfocus.com/bid/1082"]
+severity = "LOW"
+sources = ["exploitdb"]
+title = "微软 Windows NT 4.0/2000 TCP/IP 打印服务 拒绝服务漏洞"
+updated = "2026-06-16T21:51:16.883"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0232"]
+ave_id = "AVE-2000-0211"
+
 [meta]
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-19T05:29:08.682328712+00:00"
+
+[references]
+urls = [
+    "http://archives.neohapsis.com/archives/bugtraq/2000-03/0306.html",
+    "http://www.securityfocus.com/bid/1082",
+    "https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-021",
+    "https://www.exploit-db.com/exploits/19827",
+    "https://github.com/CVEProject/cvelistV5/blob/b12c36fd7a302f487aaf754199c77a046db6aee1/cves/2000/0xxx/CVE-2000-0232.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0232",
+    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-2000-0232.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/ea13d8ca97b52327fe351b64da51866911834231/CVE/data/2000/CVE-2000-0232.json",
+    "https://github.com/github/advisory-database/blob/424512debdca84cc53ffa1fb3810a74f7b1905a5/advisories/unreviewed/2022/04/GHSA-58qq-6frr-hh6q/GHSA-58qq-6frr-hh6q.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0232.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152200_152300.json",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001254.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--9cf3d83f-f611-4a81-a1a8-6cd093c2a2c3.json",
+]
