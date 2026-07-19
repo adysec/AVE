@@ -1,11 +1,11 @@
 [basic]
-description = "Atrium Software Mercur WebView WebMail 服务器存在缓冲区溢出漏洞，远程攻击者可通过构造包含超长 mail_user 参数的 HTTP GET 请求发送至目标服务器，触发缓冲区溢出，导致服务崩溃并拒绝服务。该漏洞影响 Mercur WebView WebMail-Client 1.0 版本，虽无法直接实现远程代码执行，但可造成服务器持续拒绝服务，危害较大。"
+description = "Atrium Software Mercur WebView WebMail 服务器（1.0 版本）在处理 HTTP GET 请求时，对 mail_user 参数未做长度校验，存在缓冲区溢出漏洞。未经身份认证的远程攻击者只需向目标服务器发送包含超长 mail_user 参数的特制 GET 请求，即可触发缓冲区溢出，导致服务崩溃并造成拒绝服务（DoS）。该漏洞影响运行 Mercur WebView WebMail-Client 1.0 的服务器，攻击条件仅需网络可达并能够发送 HTTP 请求，无需任何权限或用户交互，利用方式简单且可被远程自动化发起。"
 published = "2000-03-15T05:00:00.000"
-remediation = "升级到 Atrium Software 发布的 Mercur WebView 修复版本（1.0 之后的补丁版本），彻底修复 mail_user 参数缓冲区溢出；若无法立即升级，应在边界防火墙或反向代理上限制对 WebView WebMail 服务端口的访问，仅允许受信任内网 IP 连接，并配置 Web 服务器（如 IIS/Apache）对请求参数长度设置上限（mail_user 限制为合理字符数），同时在 WAF 中拦截超长 GET 请求，定期重启服务以释放被拒绝连接占用的资源。建议评估迁移至受支持的现代邮件网关产品以彻底消除风险。"
+remediation = "升级到 Atrium Software 发布的 Mercur WebView 修复版本（1.0 之后的安全更新版本），彻底替换存在漏洞的 1.0 版本；若无法升级，应在 Web 服务器或边界防火墙前端对发往 Mercur 服务的 GET 请求中 mail_user 参数的长度进行限制（如截断超过 256 字节的输入），并通过反向代理过滤超长请求头作为临时缓解措施，同时将该服务仅对内网开放以减少暴露面。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Atrium Software Mercur WebView WebMail 缓冲区溢出漏洞"
+sources = ["exploitdb"]
+title = "Atrium Software Mercur WebView WebMail-Client 1.0 缓冲区溢出漏洞"
 updated = "2026-06-16T21:51:17.810"
 
 [exploit]
@@ -26,11 +26,11 @@ urls = [
     "http://www.securityfocus.com/bid/1056",
     "http://www.ussrback.com/labs36.html",
     "https://www.exploit-db.com/exploits/19810",
-    "https://github.com/CVEProject/cvelistV5/blob/ad08212eac84f46206c2da8a50436d48e5ad608c/cves/2000/0xxx/CVE-2000-0239.json",
+    "https://github.com/CVEProject/cvelistV5/blob/b8f7915616bad1c7280e28216588ab0258074928/cves/2000/0xxx/CVE-2000-0239.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0239",
     "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-2000-0239.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/baa4573f2fa6813cfbc3f5cda2f1796a92d64bdf/CVE/data/2000/CVE-2000-0239.json",
-    "https://github.com/github/advisory-database/blob/95e6ff620d5494b93ba2234edfcf6a45187dc0a8/advisories/unreviewed/2022/04/GHSA-5gjw-82fr-pgpf/GHSA-5gjw-82fr-pgpf.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/ea13d8ca97b52327fe351b64da51866911834231/CVE/data/2000/CVE-2000-0239.json",
+    "https://github.com/github/advisory-database/blob/424512debdca84cc53ffa1fb3810a74f7b1905a5/advisories/unreviewed/2022/04/GHSA-5gjw-82fr-pgpf/GHSA-5gjw-82fr-pgpf.json",
     "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/mercure_webview.nasl",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0239.json",
