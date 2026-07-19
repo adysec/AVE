@@ -1,0 +1,109 @@
+[info]
+author = "ave"
+description = "检测 Microsoft Visual InterDev 1.0 / FrontPage 98 Server Extensions 中 dvwssr.dll 缓冲区溢出漏洞（Link View Server-Side Component漏洞）"
+id = "POC-AVE-2000-0806"
+name = "CVE-2000-0260 PoC"
+severity = "high"
+tags = ["ave-2000-0806"]
+vuln_id = [
+    "CVE-2000-0260",
+    "AVE-2000-0806",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/_vti_bin/_vti_aut/dvwssr.dll"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "dvwssr.dll",
+    "FrontPage",
+    "Server Extensions",
+    "Server Error",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/_vti_bin/_vti_aut/dvwssr.dll"
+protocol = "http"
+
+[poc.requests.body]
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Server Error",
+    "Stack overflow",
+    "Buffer overflow",
+    "dvwssr.dll",
+    "Access violation",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/_vti_bin/shtml.dll/_vti_rpc"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "dvwssr.dll",
+    "FrontPage",
+    "server extensions",
+    "RPC",
+]
