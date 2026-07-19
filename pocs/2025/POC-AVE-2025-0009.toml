@@ -1,0 +1,31 @@
+[info]
+author = "ave"
+description = "验证目标 Kubernetes 集群的 ingress-nginx Validating Admission Webhook 是否可被未认证访问并注入恶意配置。攻击者需能访问 Pod 网络，通过向 8443 端口的准入控制器发送特制 AdmissionReview 请求（含恶意 nginx 配置指令，如借助 auth-url 注解加载恶意模块）实现 RCE。本 PoC 仅做无害的准入请求探测以确认端点可达且未认证。"
+id = "POC-AVE-2025-0009"
+name = "CVE-2025-1974 Ingress-NGINX Admission Controller RCE PoC"
+severity = "critical"
+tags = ["ave-2025-0009"]
+vuln_id = [
+    "CVE-2025-1974",
+    "AVE-2025-0009",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admission"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"kind":"AdmissionReview","apiVersion":"admission.k8s.io/v1","request":{"uid":"ave-poc-0001","kind":{"group":"networking.k8s.io","version":"v1","kind":"Ingress"},"resource":{"group":"networking.k8s.io","version":"v1","resource":"ingresses"},"namespace":"default","operation":"CREATE","userInfo":{"username":"system:anonymous","uid":"","groups":["system:unauthenticated"]},"object":{"metadata":{"name":"ave-poc","annotations":{"nginx.ingress.kubernetes.io/auth-url":"http://example.com/"}}}}}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
