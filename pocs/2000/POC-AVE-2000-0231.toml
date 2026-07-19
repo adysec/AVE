@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "验证 Novell NetWare 远程 Web 管理服务（默认端口 8008）是否存在。通过发送超长 URL 请求触发缓冲区溢出。为避免造成拒绝服务，此 PoC 仅安全无损地检测目标服务是否为 NetWare 远程 Web 管理服务，不发送破坏性载荷。"
+id = "POC-AVE-2000-0231"
+name = "Novell NetWare 远程 Web 管理工具缓冲区溢出漏洞 PoC"
+severity = "high"
+tags = ["ave-2000-0231"]
+vuln_id = [
+    "CVE-2000-0257",
+    "AVE-2000-0231",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "NetWare",
+    "Novell",
+]
