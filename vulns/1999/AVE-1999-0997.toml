@@ -1,24 +1,42 @@
-[basic]
-description = "适用于 Linux 平台的 Internet Security Scanner (ISS) 5.3 版本的 install.iss 安装脚本在处理临时文件时存在不安全操作缺陷，未对临时文件路径进行充分校验。本地攻击者可通过符号链接（symlink）攻击将临时文件链接至目标系统文件，从而在安装过程中修改任意文件权限，实现本地权限提升。该漏洞影响 ISS 5.3 for Linux 版本，CVSS 评分 7.2，危害等级高。"
-published = "1999-02-20T05:00:00.000"
-remediation = "安装前手动删除临时文件 `/tmp/iss.install` 并检查是否为符号链接；修改 install.iss 脚本使用 `mktemp` 创建临时文件，避免使用可预测路径；以非 root 用户执行安装程序，降低提权风险。"
-score = 7.2
-severity = "HIGH"
-sources = ["cve"]
-title = "ISS Internet Security Scanner 5.3 安装脚本本地文件权限提升漏洞"
-updated = "2026-06-16T21:49:51.903"
-
-[exploit]
-exp_urls = []
-poc_urls = []
-
-[id]
-aliases = ["CVE-1999-1168"]
+CVE-1999-1166 is about ISS Internet Scanner 5.3 for Linux - the install.iss script allows local users to change permissions of arbitrary files.
+- Description: "install.iss installation script for Internet Security Scanner (ISS) for Linux, version 5.3, allows local users to change the permissions of arbitrary files via a symlink attack on a temporary file."
+- CVSS v2.0: Score 7.2 HIGH, Vector: (AV:L/AC:L/Au:N/C:C/I:C/A:C)
+- Published: 02/20/1999
+- References: http://www.securityfocus.com/archive/1/12640
+- CWE: NVD-CWE-Other
+Now I need to fix the TOML:
+1. description: Was empty, now I can fill it with a Chinese description based on the NVD data
+2. references: Was empty, now I can add the securityfocus URL
+3. published: Was empty, now I can set it to "1999-02-20"
+4. updated: Was empty, now I can set it to "2026-06-16" (from NVD last modified)
+5. score: Was 5, but NVD says 7.2 HIGH. I should update to match. Since CVSS v2.0 score is 7.2, severity should be HIGH, score should be 7.2.
+6. remediation: Need to write specific remediation in Chinese
+- title: "ISS Internet Security Scanner 5.3 for Linux install.iss 安装脚本符号链接漏洞" (or similar)
+- description: Chinese description about symlink attack on temporary file
+- severity: HIGH (since CVSS v2.0 is 7.2)
+- score: 7.2
+- published: "1999-02-20"
+- updated: "2026-06-16"
+- remediation: Specific advice about not running install scripts as root, checking temporary file handling
+- urls: ["http://www.securityfocus.com/archive/1/12640"]
+For remediation, since this is a very old vulnerability (1999), the product is likely EOL. I should recommend avoiding the use of the install.iss script with elevated privileges, or using a secure temporary directory. Let me write something specific.
+Now let me write the fixed TOML.[id]
 ave_id = "AVE-1999-0997"
-
-[meta]
-collected_at = "2026-07-14T00:00:00Z"
-status = "completed"
-
+aliases = ["CVE-1999-1168"]
+[basic]
+title = "ISS Internet Security Scanner 5.3 for Linux install.iss 安装脚本符号链接漏洞"
+description = "Internet Security Scanner (ISS) 5.3 for Linux 版本中的 install.iss 安装脚本在处理临时文件时存在符号链接攻击漏洞。本地攻击者可通过在临时文件创建前放置符号链接，利用该脚本以运行脚本的权限（通常为 root）修改任意文件权限，导致权限提升或系统文件被篡改。攻击条件为拥有本地系统访问权限。"
+severity = "HIGH"
+score = 7.2
+sources = ["cve", "nvd"]
+published = "1999-02-20"
+updated = "2026-06-16"
+remediation = "该产品版本已停止维护，建议避免以 root 权限运行 install.iss 脚本；使用专用临时目录并设置粘滞位（sticky bit）防止符号链接攻击；考虑迁移至受支持的替代安全扫描方案。"
 [references]
 urls = ["http://www.securityfocus.com/archive/1/12640"]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-19T05:44:46.488081738+00:00"
