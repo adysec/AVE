@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "检测 BSD 系统 /proc 文件系统中 /proc/pid/mem 接口是否可被本地用户以读写方式打开，验证是否存在权限检查缺失漏洞（CVE-2000-0094）。若 /proc/1/mem 可被非特权用户读取，则存在本地权限提升风险。"
+id = "POC-AVE-2000-0078"
+name = "FreeBSD/NetBSD/OpenBSD /proc 文件系统本地权限提升 PoC"
+severity = "high"
+tags = [
+    "ave-2000-0078",
+    "cve-2000-0094",
+    "local",
+    "privilege-escalation",
+]
+vuln_id = [
+    "CVE-2000-0094",
+    "AVE-2000-0078",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+path = "/proc/self/mem"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+regex = ".+"
+type = "regex"
+
+[[poc.requests]]
+path = "/proc/1/mem"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+regex = ".+"
+type = "regex"
