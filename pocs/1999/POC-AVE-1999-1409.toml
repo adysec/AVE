@@ -1,10 +1,10 @@
 [info]
 author = "AVE"
-description = "向 OmniHTTPd 服务器的 /cgi-bin/imagemap.exe 发送超长 GET 请求，触发缓冲区溢出，验证漏洞存在。参考 ExploitDB 19566 公开利用。"
+description = "检测 OmniHTTPd 1.1/2.4 Pro 的 CGI 程序 imagemap.exe 是否存在缓冲区溢出漏洞，通过发送超长字符串触发溢出"
 id = "POC-AVE-1999-1409"
-name = "Omnicron OmniHTTPd CGI imagemap.exe 远程缓冲区溢出 PoC"
+name = "CVE-1999-0951 PoC"
 severity = "critical"
-tags = ["ave-1999-1409"]
+tags = ["cve-1999-0951"]
 vuln_id = [
     "CVE-1999-0951",
     "AVE-1999-1409",
@@ -18,17 +18,14 @@ method = "GET"
 path = "/{{BaseURL}}/cgi-bin/imagemap.exe"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
-
 [poc.requests.headers]
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    200,
-    500,
+part = "body"
+type = "word"
+words = [
+    "HTTP/1.1 200",
+    "Content-Type",
 ]
-type = "status"
