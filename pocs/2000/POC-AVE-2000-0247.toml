@@ -1,28 +1,46 @@
 [info]
 author = "ave"
-description = "通过 HTTP GET 请求访问 slxweb.dll 管理程序路径，验证未经身份认证即可触发拒绝服务，导致 Eviewer Web 应用崩溃或中断。"
+description = "验证 SalesLogix eViewer 的 slxweb.dll 管理程序是否可未授权访问。通过请求 /scripts/slxweb.dll/admin 管理接口，若返回响应表明该管理组件存在且未进行身份认证，远程攻击者可发送 command=shutdown 等命令导致拒绝服务。"
 id = "POC-AVE-2000-0247"
-name = "CVE-2000-0278 PoC"
+name = "SalesLogix eViewer slxweb.dll 未授权访问拒绝服务漏洞 PoC"
 severity = "medium"
-tags = ["ave-2000-0247"]
+tags = [
+    "cve-2000-0278",
+    "dos",
+    "saleslogix",
+]
 vuln_id = [
     "CVE-2000-0278",
     "AVE-2000-0247",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/slxweb.dll"
+path = "/{{BaseURL}}/scripts/slxweb.dll/admin"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    200,
-    302,
-    403,
+part = "body"
+type = "word"
+words = [
+    "slxweb",
+    "eViewer",
+    "SalesLogix",
+    "admin",
 ]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
 type = "status"
