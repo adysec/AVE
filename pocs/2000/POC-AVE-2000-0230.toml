@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "检测 Nbase-Xyplex EdgeBlaster 1.0 路由器 Web 管理界面对 FormMail CGI 扫描请求的响应。安全无损验证：仅探测 FormMail CGI 路径是否存在，判断目标是否暴露可被扫描触发拒绝服务的服务端口，不发送破坏性载荷。"
+id = "POC-AVE-2000-0230"
+name = "Nbase-Xyplex EdgeBlaster FormMail CGI 扫描拒绝服务 PoC"
+severity = "medium"
+tags = ["ave-2000-0230"]
+vuln_id = [
+    "CVE-2000-0255",
+    "AVE-2000-0230",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/FormMail.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "FormMail",
+    "form",
+    "cgi-bin",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+    404,
+]
+type = "status"
