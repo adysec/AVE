@@ -1,12 +1,12 @@
 [basic]
-description = "Solaris 2.5 x86 系统中的 aspppd 守护进程（AppleTalk 会话协议点对点服务）以不安全的方式创建临时文件 /tmp/.asppp.fifo。本地低权限用户可利用符号链接（symlink）攻击，将该临时文件链接至系统中的任意文件，进而对目标文件进行任意修改，最终提权至 root 权限。该漏洞攻击条件简单，无需身份认证，攻击者仅需具备本地基本用户访问权限即可完成利用。受影响版本为运行在 x86 平台上的 Solaris 2.5 系统，CVSSv2 评分为 7.2，危害等级为高。Sun Microsystems 已通过安全补丁修复该问题，建议受影响用户尽快升级至修复版本。"
-published = "1996-12-20"
-remediation = "应用 Sun/Oracle 官方补丁：Solaris 2.5.1 x86 安装补丁 104222-08 或 105710-01，Solaris 2.5 x86 安装补丁 105710-01，补丁将修复 aspppd 创建 /tmp/.asppp.fifo 时以不安全权限（0666）开放的问题，使其改为 0600 权限并由 aspppd 进程自身在安全目录下创建，阻断符号链接攻击路径。同时升级至 Solaris 8 或更高版本以获得完整修复。作为临时缓解措施：关闭 PPP 服务后立即删除 /tmp/.asppp.fifo；在 aspppd 启动脚本中添加检查，若发现该文件为符号链接或存在异常则拒绝启动；通过文件系统挂载选项限制 /tmp 下 FIFO 文件的创建权限；在 /etc/rhosts 上设置严格访问控制，仅允许 root 读写。每次启动 aspppd 前执行 ls -l /tmp/.asppp.fifo 确认其为普通 FIFO 而非符号链接。"
-score = 5
-severity = "MEDIUM"
-sources = ["avd"]
-title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9102,"outputTokens":23,"totalTokens":10789}}'
-updated = "1996-12-20"
+description = "Solaris 7.0 (Solaris 2.5 x86) 的 aspppd 守护进程存在不安全的临时文件创建漏洞，攻击者可通过对 /tmp/.asppp.fifo 文件发起符号链接攻击，将任意文件重定向为指向关键系统文件的符号链接，从而实现任意文件修改并提升至 root 权限。该漏洞影响 Solaris 2.5 x86 平台（即 Solaris 7.0），攻击者需具备本地用户权限即可发起攻击，利用方式为在 aspppd 创建临时文件前预先创建指向敏感文件（如 /etc/passwd 或 /etc/shadow）的符号链接，诱导进程以 root 权限写入或修改目标文件，最终导致权限提升至 root。CVSS 评分 7.2，属于高危本地提权漏洞。"
+published = "1996-12-20T05:00:00.000"
+remediation = "建议立即为受影响的 Solaris 2.5 x86 系统打上 Sun 官方补丁包（如 103630 系列 aspppd 补丁），或升级至已修复的 Solaris 2.6 及更高版本。若暂无法打补丁，可临时禁用 aspppd 服务（删除 /etc/rc2.d 中相关启动脚本或停用 aspppd），并以 root 权限手动创建受保护的 /tmp/.asppp.fifo 文件（chmod 600 且归属 root）以阻止符号链接攻击，同时限制普通用户对 /tmp 的写权限作为缓解措施。"
+score = 7.2
+severity = "HIGH"
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"inputTokens":16341,"outputTokens":44,"totalTokens":16385}}'
+updated = "2026-06-16T21:49:33.030"
 
 [exploit]
 exp_urls = []
@@ -17,17 +17,19 @@ aliases = ["CVE-1999-1026"]
 ave_id = "AVE-1999-1232"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
+    "http://marc.info/?l=bugtraq&m=87602167420343&w=2",
+    "http://www.securityfocus.com/bid/292",
     "https://www.exploit-db.com/exploits/19233",
-    "https://github.com/CVEProject/cvelistV5/blob/fe9e77bf3808998cc7ef33bc8a5ea311f35fadb0/cves/1999/1xxx/CVE-1999-1026.json",
+    "https://github.com/CVEProject/cvelistV5/blob/7e65fa522cff0172990568230ff9b719b8650296/cves/1999/1xxx/CVE-1999-1026.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1026",
-    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1026.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/c8b0fec8b23470355b47059dbab5d2ebdfa2ac94/CVE/data/1999/CVE-1999-1026.json",
-    "https://github.com/github/advisory-database/blob/90b464bbc2d1b64270a5771429f96b67fbe9e79b/advisories/unreviewed/2022/04/GHSA-fff7-q3gj-wjm6/GHSA-fff7-q3gj-wjm6.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-1999-1026.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7aedbd0209e609a1924ad29a8dda684737576137/CVE/data/1999/CVE-1999-1026.json",
+    "https://github.com/github/advisory-database/blob/5d945305f2cad48b7bb06af582393a58c31555d3/advisories/unreviewed/2022/04/GHSA-fff7-q3gj-wjm6/GHSA-fff7-q3gj-wjm6.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1026.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154600_154700.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_0.list.dict",
