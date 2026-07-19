@@ -1,38 +1,39 @@
-From NVD:
-- CVE-2000-0234: Cobalt RaQ2 and RaQ3 default configuration in access.conf allows remote attackers to view sensitive contents of a .htaccess file
-- CVSS v2.0: Base Score 5.0 MEDIUM, Vector: (AV:N/AC:L/Au:N/C:P/I:N/A:N)
-- Published: 03/31/2000
-- References:
-- http://www.securityfocus.com/bid/1083
-- http://www.securityfocus.com/templates/advisory.html?id=2150
-- http://www.securityfocus.com/templates/archive.pike?list=1&msg=20000330220757.28456.qmail%40securityfocus.com
-Now let me fix the TOML:
-1. description: Need to write a Chinese description ≥50 characters about the vulnerability. The vulnerability is about Cobalt RaQ2/RaQ3 default access.conf configuration allowing remote attackers to view .htaccess file contents.
-2. references: Need to add the URLs from NVD.
-3. remediation: Need specific remediation advice, not generic. For this old vulnerability, the fix would be to modify the access.conf configuration to restrict access to .htaccess files.
-4. published: Should be "2000-03-31" from NVD data.
-5. updated: Should be "2000-03-31" or similar.
-Description (Chinese, ≥50 chars): "Cobalt RaQ2和RaQ3服务器默认access.conf配置存在安全漏洞，远程攻击者可通过直接访问.htaccess文件获取敏感配置信息，包括认证凭据、访问控制规则等，导致服务器敏感信息泄露。"
-Remediation (Chinese, ≥20 chars): "修改access.conf配置文件，添加对.htaccess文件的访问限制规则，禁止外部直接访问以点号开头的隐藏文件。"
-Score: 5.0, Severity: MEDIUM - this matches (MEDIUM ≥ 4.0)
-For updated, I'll use "2000-03-31" as well since there's no specific update date for the vulnerability itself.
-Actually, I have enough info. Let me write the corrected TOML.[id]
-ave_id = "AVE-2000-0212"
-aliases = ["CVE-2000-0234"]
 [basic]
-title = "Cobalt RaQ2/RaQ3 access.conf 默认配置致 .htaccess 文件信息泄露漏洞"
-description = "Cobalt RaQ2和RaQ3服务器默认的access.conf配置存在安全缺陷，未对.htaccess文件实施访问限制。远程攻击者无需认证即可直接读取目标服务器上的.htaccess文件内容，获取其中存储的认证凭据、目录访问控制规则、重写规则等敏感配置信息，导致服务器敏感数据泄露。"
+description = "Cobalt RaQ 2.0 和 3.0 服务器默认配置中的 access.conf 存在不当设置，允许未经身份认证的远程攻击者查看 .htaccess 文件的敏感内容。该漏洞影响 Cobalt Networks 推出的 RaQ 系列服务器产品，攻击者无需凭据即可通过 Web 请求获取包含认证配置、访问控制规则及目录权限设置的 .htaccess 文件，从而辅助进一步渗透测试与权限提升。"
+published = "2000-03-31T05:00:00.000"
+remediation = '将 Cobalt RaQ 升级到官方发布的修复固件版本（RaQ3 建议更新至 3.0 后续安全版本），或编辑 Apache 的 access.conf，对网站根目录添加 "Files .htaccess" 段并设置 "Order allow,deny / Deny from all" 以禁止对外访问 .htaccess 文件；同时确认全局配置中未将 .htaccess 设为可被 Web 直接读取，重启 httpd 服务生效。在无法升级前，可通过防火墙限制仅内网访问管理端口作为临时缓解。'
+score = 5
 severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
-published = "2000-03-31"
-updated = "2000-03-31"
-remediation = "修改Apache配置文件access.conf，在Directory段中添加<FilesMatch \"^\\.ht\">Order allow,deny</FilesMatch>规则，禁止外部直接访问以.ht开头的隐藏文件。"
-[references]
-urls = ["http://www.securityfocus.com/bid/1083", "http://www.securityfocus.com/templates/advisory.html?id=2150", "http://www.securityfocus.com/templates/archive.pike?list=1&msg=20000330220757.28456.qmail%40securityfocus.com"]
+sources = ["exploitdb"]
+title = "Cobalt RaQ Apache .htaccess 信息泄露漏洞"
+updated = "2026-06-16T21:51:17.167"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0234"]
+ave_id = "AVE-2000-0212"
+
 [meta]
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-19T05:44:04.416822575+00:00"
+
+[references]
+urls = [
+    "http://www.securityfocus.com/bid/1083",
+    "http://www.securityfocus.com/templates/advisory.html?id=2150",
+    "http://www.securityfocus.com/templates/archive.pike?list=1&msg=20000330220757.28456.qmail%40securityfocus.com",
+    "https://www.exploit-db.com/exploits/19828",
+    "https://github.com/CVEProject/cvelistV5/blob/b12c36fd7a302f487aaf754199c77a046db6aee1/cves/2000/0xxx/CVE-2000-0234.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0234",
+    "https://github.com/GuangrenYu/WangYi/blob/db7e4b8b6d2f1d5bfd5908a02b4b5fcac6b3880d/poc_kb/custom/2000/CVE-2000-0234.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/ea13d8ca97b52327fe351b64da51866911834231/CVE/data/2000/CVE-2000-0234.json",
+    "https://github.com/github/advisory-database/blob/424512debdca84cc53ffa1fb3810a74f7b1905a5/advisories/unreviewed/2022/04/GHSA-jfx2-2f7p-cpgv/GHSA-jfx2-2f7p-cpgv.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0234.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152200_152300.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001256.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--d44be1ac-537b-440f-be4c-6ffce5169bf2.json",
+]
