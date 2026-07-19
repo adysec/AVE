@@ -1,39 +1,37 @@
-From NVD:
-- CVE-2000-0221: The Nautica Marlin bridge allows remote attackers to cause a denial of service via a zero length UDP packet to the SNMP port.
-- CVSS v2.0: Base Score 5.0 MEDIUM, Vector: (AV:N/AC:L/Au:N/C:N/I:N/A:P)
-- Published: 02/25/2000
-- Reference: http://www.securityfocus.com/bid/1009
-- CWE: NVD-CWE-Other
-Now let me also search for more information about the vendor/product and remediation.I have the NVD data for CVE-2000-0221. Let me extract the key information:
-- Description: "The Nautica Marlin bridge allows remote attackers to cause a denial of service via a zero length UDP packet to the SNMP port."
-- CVSS v2.0: Base Score 5.0 MEDIUM, Vector: (AV:N/AC:L/Au:N/C:N/I:N/A:P)
-- Published: 02/25/2000
-- Last Modified: 06/16/2026
-- References: http://www.securityfocus.com/bid/1009
-- CWE: NVD-CWE-Other
-Now I need to fix the TOML. The issues are:
-1. description is empty - need to fill with Chinese description ≥50 chars
-2. references has no valid URLs - need to add the securityfocus URL
-3. published is empty - should be 2000-02-25
-4. updated is empty - should be 2000-02-25 (or the last modified date)
-5. remediation is generic - need to make it specific
-For remediation: This is a very old vulnerability (2000) for Nortel Nautica Marlin bridge. The product is likely end-of-life. I should write something specific about disabling SNMP or filtering UDP packets to the SNMP port.
-ave_id = "AVE-2000-0196"
-aliases = ["CVE-2000-0221"]
 [basic]
-title = "Nortel Nautica Marlin 桥接设备 SNMP 服务 UDP 零长度包拒绝服务漏洞"
-description = "Nortel Nautica Marlin 桥接设备中的 SNMP 服务在处理特制的零长度 UDP 数据包时存在缺陷，远程攻击者无需认证即可向 SNMP 端口发送零长度 UDP 报文，导致设备 SNMP 服务崩溃或停止响应，造成拒绝服务。攻击条件简单，仅需网络可达即可触发。"
+description = "Nortel Networks Nautica Marlin 桥接设备（交换机）的 SNMP 服务存在拒绝服务漏洞。该设备在处理送往 SNMP 端口（UDP 161）的 UDP 数据包时，未能正确处理长度为零的畸形数据包。未经身份认证的远程攻击者只需向目标设备的 SNMP 端口发送一个零长度的 UDP 数据包，即可触发该缺陷，导致设备 SNMP 服务崩溃或设备停止正常转发，造成网络服务中断。该漏洞影响运行相关固件的 Nautica Marlin 桥接设备，攻击条件简单，无需认证且可远程利用，属于典型的可用性破坏型漏洞。"
+published = "2000-02-25T05:00:00.000"
+remediation = "建议升级 Nortel Nautica Marlin 桥接设备至厂商发布的安全固件版本（具体版本号请向 Nortel 技术支持确认并刷入最新补丁）。如无法立即升级，可在边界防火墙或 ACL 上过滤发往设备 SNMP UDP 端口（161）的畸形零长度 UDP 报文，并仅允许受信任管理网段访问 SNMP 服务，作为临时缓解措施。"
+score = 5
 severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
-published = "2000-02-25"
-updated = "2000-02-25"
-remediation = "该设备已停止维护，建议升级到不受影响的固件版本；如无法升级，可在网络边界防火墙或 ACL 中过滤发往 SNMP 端口（UDP 161/162）的异常零长度数据包，或禁用不必要的 SNMP 服务。"
-[references]
-urls = ["http://www.securityfocus.com/bid/1009"]
+sources = ["exploitdb"]
+title = "北电网络 Nautica Marlin SNMP服务拒绝服务漏洞"
+updated = "2026-06-16T21:51:15.397"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0221"]
+ave_id = "AVE-2000-0196"
+
 [meta]
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-19T04:37:19.207558864+00:00"
+
+[references]
+urls = [
+    "http://www.securityfocus.com/bid/1009",
+    "https://www.exploit-db.com/exploits/19766",
+    "https://github.com/CVEProject/cvelistV5/blob/bf63c766a0e51c24a528a42a3e26e4fdf58db9e8/cves/2000/0xxx/CVE-2000-0221.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0221",
+    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-2000-0221.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/08f8d33c39c79a3a93a8b5c441facde3f9e3cc7d/CVE/data/2000/CVE-2000-0221.json",
+    "https://github.com/eldondev/Snort/blob/34bdcf6a7a638b55c7c04f77ef1efa526ad08e33/doc/signatures/279.txt",
+    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/snort/drop-rules/dos.rules",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0221.json",
+    "https://github.com/slacker247/GPDA/blob/fa9006d0877a691f1ddffe88799c844a3e8a669a/Sodi/Run/IDSrules/rule.190",
+    "https://github.com/magicsword-io/Magic-SigExplorer/blob/2c28b91b003429a144a687199ee99ebd26f1a343/Magic-SigExplorer/docs/cve_report.md",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+]
