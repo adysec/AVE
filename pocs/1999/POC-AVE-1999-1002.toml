@@ -1,9 +1,9 @@
 [info]
 author = "ave"
-description = "检测 IRIX 系统上 nph-publish CGI 脚本是否存在。nph-publish 1.2 之前版本存在目录遍历漏洞，远程攻击者可通过 .. 序列覆盖任意文件。仅检测端点是否存在，不执行利用操作。"
+description = "该 PoC 通过访问 IRIX 系统的 nph-publish CGI 脚本端点来探测其是否存在。nph-publish 1.2 之前版本存在目录遍历漏洞，攻击者可通过上传路径中的 .. 遍历序列覆盖任意文件。本检测仅验证脆弱 CGI 端点是否暴露，不执行实际文件写入，属于安全无损验证。"
 id = "POC-AVE-1999-1002"
-name = "CVE-1999-1177 PoC"
-severity = "high"
+name = "CVE-1999-1177 nph-publish 目录遍历任意文件写入 PoC"
+severity = "medium"
 tags = ["ave-1999-1002"]
 vuln_id = [
     "CVE-1999-1177",
@@ -15,8 +15,19 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/nph-publish"
+path = "/cgi-bin/nph-publish"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    403,
+]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
@@ -28,11 +39,3 @@ words = [
     "SGI",
     "publish",
 ]
-
-[[poc.requests.matchers]]
-expect = true
-status = [
-    200,
-    403,
-]
-type = "status"
