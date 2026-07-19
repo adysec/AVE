@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "Tcpdump 3.4a 的 ip_print 处理函数在解析零长度头部的 IP 数据包时会陷入无限循环并核心转储。本 PoC 通过构造一个 IP 协议字段为 4（Protocol Four）且头部长度为 0 的恶意数据包，发送给正在监听网络接口的 tcpdump 进程，验证其是否发生拒绝服务崩溃。需配合 scapy 或 tcpreplay 实际发包。"
+id = "POC-AVE-1999-0877"
+name = "CVE-1999-1024 Tcpdump 3.4a ip_print 零长度头部拒绝服务 PoC"
+severity = "high"
+tags = [
+    "cve-1999-1024",
+    "tcpdump",
+    "dos",
+]
+vuln_id = [
+    "CVE-1999-1024",
+    "AVE-1999-0877",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/tmp/tcpdump_crash_test"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["zero_length_header_poc"]
