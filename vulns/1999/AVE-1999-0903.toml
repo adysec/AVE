@@ -1,11 +1,11 @@
 [basic]
-description = "Matt Wright FormHandler.cgi 脚本默认配置存在任意文件读取漏洞。由于程序仅限制了对 /etc/ 目录的访问，未对其他目录进行有效过滤，远程攻击者可通过构造特制的 reply_message_attach 附件参数，读取服务器上任意文件，包括敏感配置文件。该漏洞影响使用该 CGI 脚本的 Web 服务器，CVSS 评分 5.0，危害等级中等。建议升级或禁用该脚本以规避风险。"
+description = "Matt Wright FormHandler.cgi 脚本在默认配置下允许将任意目录作为附件目录，且仅对 /etc/ 目录做了访问限制。远程攻击者可通过 reply_message_attach 附件参数构造包含路径遍历序列（如 ../../../etc/passwd）的请求，读取服务器上的任意文件内容，造成敏感信息泄露。"
 published = "1999-11-16T05:00:00.000"
-remediation = "立即停止使用 Matt Wright 开发的 FormHandler.cgi 脚本，该脚本已停止维护且存在严重安全缺陷。建议迁移至现代 CGI 文件处理方案（如 Perl 的 CGI::Minimal 模块自行实现），并对 attachment 参数做严格白名单校验，仅允许预定义的上传目录，禁止路径穿越字符（如 ../）。如无法立即替换，可在 Web 服务器层面（Apache/Nginx）配置 location 规则拒绝访问 formhandler.cgi，或限制 reply_message_attach 参数仅接受字母数字文件名。"
-score = 5
+remediation = "修改 FormHandler.cgi 脚本的默认配置，将 reply_message_attach 参数允许的附件目录严格限定在 Web 根目录下的专用附件目录，并在代码中显式过滤包含 '../' 等路径遍历序列的输入。同时移除对 /etc/ 目录的单一限制，改为仅允许白名单目录。升级到更新的表单处理脚本或应用官方安全补丁。在 Web 服务器层面对 cgi-bin 目录设置访问控制，仅允许可信来源访问。"
+score = 5.0
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Matt Wright FormHandler.cgi 任意文件读取漏洞"
+sources = ["cve"]
+title = "Matt Wright FormHandler.cgi 路径遍历任意文件读取漏洞"
 updated = "2026-06-16T21:49:36.223"
 
 [exploit]
@@ -17,20 +17,20 @@ aliases = ["CVE-1999-1051"]
 ave_id = "AVE-1999-0903"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/archive/1/34939",
-    "https://github.com/CVEProject/cvelistV5/blob/e2218edc43f34225d168835de417dff40749bef5/cves/1999/1xxx/CVE-1999-1051.json",
+    "https://github.com/CVEProject/cvelistV5/blob/2aa0c2dcb1730150467a1bc57cd9b2ece96310af/cves/1999/1xxx/CVE-1999-1051.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1051",
-    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1051.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2119b082f4927b0a9c902ed9fe95efb3b301cb81/CVE/data/1999/CVE-1999-1051.json",
-    "https://github.com/github/advisory-database/blob/d94ad47d0f2016e121b6d251f490e890714f8916/advisories/unreviewed/2022/04/GHSA-6vh4-w25v-6gh9/GHSA-6vh4-w25v-6gh9.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-1999-1051.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/419b5e73717835e3c91c8f5fe969933e4b2e142e/CVE/data/1999/CVE-1999-1051.json",
+    "https://github.com/github/advisory-database/blob/ce77465efdf58fc31a7a0bc8c83705be48abcedf/advisories/unreviewed/2022/04/GHSA-6vh4-w25v-6gh9/GHSA-6vh4-w25v-6gh9.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88494/info.html",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1051.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/bc3b224aa865bb4a5c31d7720dca83e446e475e2/1999/CVE-1999-1051.json",
     "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/979579ffd61606c64cf772a1e865f5126788e4ec/1999.tsv",
+    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/1999.tsv",
     "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--beb8e606-6327-4a7d-9502-dbb547f2795a.owl",
 ]
