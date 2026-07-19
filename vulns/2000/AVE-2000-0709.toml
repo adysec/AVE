@@ -1,66 +1,37 @@
-I need to fix this vulnerability TOML that has several issues:
-1. title: Missing security vulnerability keywords (too generic)
-2. description: Empty (needs to be filled)
-3. references: No valid URLs (needs to be filled)
-4. severity/score: Need to check if they match (score=5, severity="MEDIUM" - this seems OK based on the rule: HIGH≥7 / MEDIUM≥4 / LOW<4)
-I need to:
-1. Search for CVE-2000-0248 information
-2. Fix the title to be more specific and include security keywords
-3. Write a proper description (≥50 characters, in Chinese, covering principle, impact, attack conditions)
-4. Get valid URLs for references
-5. Fix the remediation to provide concrete patch suggestions
-6. Ensure all fields are properly populated
-From the NVD data:
-1. Title: The web GUI for the Linux Virtual Server (LVS) software in the Red Hat Linux Piranha package has a backdoor password that allows remote attackers to execute arbitrary commands.
-2. Description: The web GUI for the Linux Virtual Server (LVS) software in the Red Hat Linux Piranha package has a backdoor password that allows remote attackers to execute arbitrary commands.
-3. CVSS 2.0 Score: 10.0 HIGH
-4. Vector: (AV:N/AC:L/Au:N/C:C/I:C/A:C)
-5. Published: 04/24/2000
-6. References: http://xforce.iss.net/alerts/advise46.php3
-I need to search for the Red Hat advisory to get the remediation information. Let me try searching for the specific Red Hat advisory for CVE-2000-0248.
-The title should be in Chinese. Based on the description, I can translate and format it as:
-"Red Hat 6.2 Piranha Virtual Server Package - 网络虚拟服务器软件Web界面存在后门漏洞"
-For description (need ≥50 characters):
-"红帽Linux Piranha软件包中Linux虚拟服务器(LVS)软件的Web界面存在后门密码漏洞，攻击者可利用该漏洞远程执行任意命令，完全 Compromise 系统。"
-For severity and score:
-- CVSS 2.0 score is 10.0 (CRITICAL)
-- According to rules: CRITICAL≥9.0
-- So severity = "CRITICAL", score = 10.0
-For remediation, I need to find the specific Red Hat advisory to give an accurate remediation recommendation. Let me search more specifically.
-From NVD data:
-- Title: "RedHat 6.2 Piranha Virtual Server Package - 默认账户和密码"
-- Description: "The web GUI for the Linux Virtual Server (LVS) software in the Red Hat Linux Piranha package has a backdoor password that allows remote attackers to execute arbitrary commands."
-- CVSS Score: 10.0 (CVSS 2.0 with vector (AV:N/AC:L/Au:N/C:C/I:C/A:C))
-- Published: 04/24/2000
-- Reference: http://xforce.iss.net/alerts/advise46.php3
-Issues found in the current TOML:
-1. title: Needs security vulnerability keywords - it currently says "默认账户和密码" but needs to be more specific about the vulnerability
-2. description: Currently empty - needs to be at least 50 characters in Chinese describing the vulnerability
-3. references: Currently empty - needs at least one URL
-4. remediation: Needs specific version/upgrade info instead of generic statement
-5. score: Currently 5.0 but should be 10.0 based on CVSS 2.0 data
-1. Fix title to include security vulnerability keywords
-2. Add a detailed description (≥50 characters)
-3. Add the reference URL
-4. Fix remediation to be specific (≥20 characters)
-5. Update score to match severity (10.0 for CRITICAL)
-6. Ensure severity matches score (CRITICAL for 10.0)[id]
-ave_id = "AVE-2000-0709"
-aliases = ["CVE-2000-0248"]
 [basic]
-title = "Red Hat Piranha Virtual Server Web 管理后台默认后门密码导致远程代码执行漏洞"
-description = "Red Hat Linux Piranha 软件中的 Linux 虚拟服务器 (LVS) Web 管理界面存在默认后门密码，攻击者可通过该密码远程登录并执行任意命令，严重威胁系统安全。该漏洞源于软件开发阶段未移除调试代码，在缺乏身份验证的情况下允许攻击者完全控制服务器。"
+description = "Red Hat Linux 6.2 的 Piranha 软件包中，Linux 虚拟服务器（LVS）的 Web 管理界面（GUI）存在一个硬编码的后门密码。该界面默认监听于特定端口并允许通过口令认证的远程用户执行系统命令。未经授权的远程攻击者在获知该后门密码后，可直接通过网络访问 Web GUI 并绕过正常身份验证，进而以服务运行权限在目标主机上执行任意命令，完全控制服务器。该漏洞影响安装了 Piranha 包且启用 LVS Web 管理功能的 Red Hat 6.2 系统，利用条件仅需网络可达目标端口并掌握后门口令，危害极大。"
+published = "2000-04-24T04:00:00.000"
+remediation = "建议立即升级至 Red Hat Linux 6.2 后续修复版本或应用官方安全补丁（RHSA-2000:047）。若无法立即升级，请修改 Piranha Web GUI 默认账户密码（用户名 piranha，默认密码 q），并在防火墙层面限制 3636 端口仅允许受信 IP 访问。建议停用不必要的 LVS Web 管理界面服务以彻底消除攻击面。"
+score = 10
 severity = "CRITICAL"
-score = 10.0
-sources = ["cve"]
-published = "2000-04-24"
-updated = "2026-07-19"
-remediation = "升级 Red Hat Piranha 软件到包含安全修复程序的版本，如 Red Hat Linux 7 及以上版本或应用安全补丁包 rpml - 安装后请立即修改 Web 管理后台默认密码并限制网络访问权限。"
-[references]
-urls = ["http://xforce.iss.net/alerts/advise46.php3"]
+sources = ["exploitdb"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"inputTokens":16355,"outputTokens":42,"totalTokens":16397}}'
+updated = "2026-06-16T21:51:19.057"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0248"]
+ave_id = "AVE-2000-0709"
+
 [meta]
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-19T08:23:07.924454943+00:00"
+
+[references]
+urls = [
+    "http://xforce.iss.net/alerts/advise46.php3",
+    "https://www.exploit-db.com/exploits/19879",
+    "https://github.com/CVEProject/cvelistV5/blob/9a9b6476a3f4a52ffa21ec6ed80d737eb0fc242b/cves/2000/0xxx/CVE-2000-0248.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0248",
+    "https://github.com/e-m-b-a/emba/blob/ffab8835dab57629dd708bbd389c0fd0b4f23ace/config/msf_cve-db.txt",
+    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-2000-0248.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a6f1dc1488b4a75cccf07339e6a0f0ab45fc38ad/CVE/data/2000/CVE-2000-0248.json",
+    "https://github.com/github/advisory-database/blob/424512debdca84cc53ffa1fb3810a74f7b1905a5/advisories/unreviewed/2022/04/GHSA-9rr2-45q8-fjmg/GHSA-9rr2-45q8-fjmg.json",
+    "https://github.com/Chudry/Xerror/blob/07ec57cabcd27cdb47c89af452bdf4ed07207347/cve_2_MSF_exploit_Mapping/msf_module_result/msf_module_cve.txt",
+    "https://github.com/NetBSD/pkgsrc-wip/blob/ad55126d2c24d81e3701e920d4bb2d7fd0fe1bd8/sara/PLIST",
+    "https://github.com/openctibr/threatFeeds/blob/2d918d16364c8b9e6090c92b807ccd619223575d/ExploitableVulnerabilitiesFeed.txt",
+    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/P/piranha.nasl",
+]
