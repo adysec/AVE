@@ -1,10 +1,10 @@
 [basic]
-description = "Linux 系统中的 kreatecd 工具存在路径信任漏洞，该工具在调用 cdrecord 程序时未对用户提供的路径参数进行充分校验，导致本地攻击者可通过构造恶意路径替换正常 cdrecord 程序，从而以 root 权限执行任意代码。该漏洞影响 Halloween Linux 4.0 及 S.u.S.E. Linux 6.0/6.1/6.2/6.3 等多个发行版本，CVSS 评分 7.2，危害等级高。攻击者需拥有本地系统访问权限方可利用。"
+description = "Linux kreatecd 程序在处理用户输入的路径时存在验证不足的问题。当系统执行 cdrecord 程序时，它会使用用户提供的路径来定位执行文件。这种设计缺陷使得攻击者可以通过精心构造的路径劫持机制，将执行权篡改为特权程序（如 suid root 的 cdrecord），从而获取 root 权限。这种本地权限提升漏洞典型地影响于 Halloween Linux 4.0 及 SuSE Linux 6.0/6.1/6.2/6.3 等版本。攻击者仅需具备本地访问权限即可通过控制 PATH 环境变量或向程序提供恶意路径参数来触发此漏洞，最终获得系统管理员权限。攻击的有效性取决于目标系统的配置和权限设置。相关漏洞 CVSS 评分 7.2，属于中高风险级别，需立即通过修复系统路径验证机制来避免这种特权提升风险。"
 published = "2000-03-16T05:00:00.000"
-remediation = "升级 kreatecd 至不受信任路径影响的版本，或移除 kreatecd 的 setuid 权限位（chmod u-s /usr/bin/kreatecd），确保 cdrecord 程序路径为硬编码绝对路径而非用户可控制的变量。如无法升级，可卸载 kreatecd 软件包或限制可执行用户组。"
+remediation = "立即升级到已修复的 kreatecd 版本（SuSE 6.3 可应用官方 kreatecd 安全更新包），或卸载/移除存在漏洞的 kreatecd 程序。临时缓解措施：将 kreatecd 二进制文件权限设为 0755 并去除 setuid 位（chmod u-s /usr/bin/kreatecd），禁止普通用户以 root 身份执行该程序，直至完成升级。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
+sources = ["exploitdb"]
 title = "S.u.S.E. Linux kreatecd 本地权限提升漏洞"
 updated = "2026-06-16T21:51:16.747"
 
@@ -25,11 +25,11 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-03/0162.html",
     "http://www.securityfocus.com/bid/1061",
     "https://www.exploit-db.com/exploits/19813",
-    "https://github.com/CVEProject/cvelistV5/blob/1d6385d398a2a41185d3cc14943c25f73c724ba3/cves/2000/0xxx/CVE-2000-0231.json",
+    "https://github.com/CVEProject/cvelistV5/blob/b12c36fd7a302f487aaf754199c77a046db6aee1/cves/2000/0xxx/CVE-2000-0231.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0231",
     "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-2000-0231.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/baa4573f2fa6813cfbc3f5cda2f1796a92d64bdf/CVE/data/2000/CVE-2000-0231.json",
-    "https://github.com/github/advisory-database/blob/95e6ff620d5494b93ba2234edfcf6a45187dc0a8/advisories/unreviewed/2022/04/GHSA-3p9r-9j6c-6wxp/GHSA-3p9r-9j6c-6wxp.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/165075bb4c3675993ac058501ff8575bd07a9ca0/CVE/data/2000/CVE-2000-0231.json",
+    "https://github.com/github/advisory-database/blob/424512debdca84cc53ffa1fb3810a74f7b1905a5/advisories/unreviewed/2022/04/GHSA-3p9r-9j6c-6wxp/GHSA-3p9r-9j6c-6wxp.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0231.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152200_152300.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_5.list.dict",
