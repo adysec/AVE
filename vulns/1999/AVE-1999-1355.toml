@@ -1,0 +1,59 @@
+1. Fix the remediation field with specific, actionable Chinese text
+2. Keep all other fields valid
+3. Output pure TOML only
+1. The `remediation` field is empty/contains garbage text - this is the main issue flagged
+2. The TOML has duplicate sections (multiple `[basic]`, `[id]`, etc.) - it's a mess
+3. Need to clean up the URLs - remove the GitHub mirror URLs that aren't authoritative references
+From NVD, I can see:
+- CVSS v2.0: 7.5 HIGH (AV:N/AC:L/Au:N/C:P/I:P/A:P)
+- Published: 1997-05-15 (but the CVE year is 1999, so I'll use 1999-01-01 as a reasonable date)
+- Description: "Ascom Timeplex router allows remote attackers to obtain sensitive information or conduct unauthorized activities by entering debug mode through a sequence of CTRL-D characters."
+- References: http://marc.info/?l=bugtraq&m=87602167420981&w=2 and https://exchange.xforce.ibmcloud.com/vulnerabilities/1824
+The remediation should be practical. Since this is a very old vulnerability (1999), the product is likely end-of-life. I should suggest:
+- Upgrade to latest firmware (if available)
+- Restrict management access via ACLs
+- Disable telnet/debug mode if possible
+- Place behind firewall
+1. Keep only the 5 required sections: [id], [basic], [references], [exploit], [meta]
+2. Fix remediation to be meaningful Chinese text
+3. Clean up URLs to only include authoritative ones
+4. Remove duplicate sections
+For the URLs, I should keep only the authoritative ones:
+- http://marc.info/?l=bugtraq&m=87602167420981&w=2 (Bugtraq mailing list)
+- https://exchange.xforce.ibmcloud.com/vulnerabilities/1824 (X-Force)
+- https://nvd.nist.gov/vuln/detail/CVE-1999-1141 (NVD)
+The GitHub mirror URLs are not authoritative references.
+From NVD:
+- Description: "Ascom Timeplex router allows remote attackers to obtain sensitive information or conduct unauthorized activities by entering debug mode through a sequence of CTRL-D characters."
+- CVSS v2.0: 7.5 HIGH, Vector: (AV:N/AC:L/Au:N/C:P/I:P/A:P)
+- Published: 05/15/1997
+- References: http://marc.info/?l=bugtraq&m=87602167420981&w=2, https://exchange.xforce.ibmcloud.com/vulnerabilities/1824
+The issue is that `remediation` field is empty. I need to add a proper remediation. Since this is an old router vulnerability (1997), the remediation would be:
+- Upgrade to latest firmware
+- Restrict management access
+- Use SSH instead of telnet
+- Place behind firewall
+ave_id = "AVE-1999-1355"
+aliases = ["CVE-1999-1141"]
+[basic]
+title = "Ascom Timeplex 路由器调试模式信息泄露漏洞"
+description = "Ascom Timeplex 路由器存在信息泄露漏洞，远程攻击者可通过向管理端口发送连续的 CTRL-D 字符（ASCII 0x04）进入调试模式，从而获取敏感配置信息或执行未授权操作。攻击无需任何认证，只需网络可达即可利用，CVSS 评分 7.5，危害较大。"
+severity = "HIGH"
+score = 7.5
+sources = ["cve", "nvd"]
+published = "1997-05-15"
+updated = "2026-06-16"
+remediation = "升级路由器固件至最新版本，限制管理接口（Telnet/SSH）的访问来源 IP 地址，使用 ACL 过滤对管理端口的访问，并在网络边界部署防火墙阻止非授权访问。"
+[references]
+urls = [
+"https://nvd.nist.gov/vuln/detail/CVE-1999-1141",
+"http://marc.info/?l=bugtraq&m=87602167420981&w=2",
+"https://exchange.xforce.ibmcloud.com/vulnerabilities/1824",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-19T00:00:00Z"
+</value>
