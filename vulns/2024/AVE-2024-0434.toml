@@ -1,0 +1,24 @@
+[basic]
+description = "易宝 OA 系统的 `/api/system/ExecuteQueryNoneResult` 接口存在 SQL 注入漏洞。该接口在处理 `token` 与 `cmdText` 参数时未对用户输入进行严格的过滤与参数化处理，直接将用户可控的 `cmdText` 拼接到数据库查询语句中执行。未经身份认证的远程攻击者可构造包含恶意 SQL 片段（如 `;WAITFOR DELAY '0:0:10'`）的 POST 请求发送至该接口，利用时间盲注手段探测并提取数据库中的敏感数据，甚至可能导致数据库被非法操控。该漏洞影响部署了相关版本易宝 OA 的服务器，攻击门槛低、无需登录即可触发，危害较为严重。"
+published = "0828"
+remediation = 'remediation = "修复 /api/system/ExecuteQueryNoneResult 接口的 SQL 注入漏洞：使用参数化查询（PreparedStatement）替代字符串拼接 SQL 语句，严格校验并过滤用户输入参数（如 SQL 语句片段、条件参数），禁止直接拼接用户可控数据。数据库账号遵循最小权限原则，仅授予必要的 SELECT/EXECUTE 权限，禁止使用 sa 等高权限账号连接业务库。临时缓解措施：在 WAF/网关层配置 SQL 注入特征规则，拦截包含 UNION SELECT、xp_cmdshell、WAITFOR DELAY 等恶意 Payload 的请求，并限制该接口仅允许内网可信 IP 访问。建议尽快升级至易宝 OA 官方最新修复版本。"'
+score = 5
+severity = "MEDIUM"
+sources = ["hwpoc"]
+title = "易宝 OA ExecuteQueryNoneResult 接口 SQL 注入漏洞"
+updated = "0828"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["HWPOC-2024-05a84e0b"]
+ave_id = "AVE-2024-0434"
+
+[meta]
+collected_at = "2026-07-19T00:00:00Z"
+status = "completed"
+
+[references]
+urls = []
