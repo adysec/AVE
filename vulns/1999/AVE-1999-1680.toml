@@ -1,11 +1,11 @@
 [basic]
-description = "Windows NT 4.0 本地安全权威子系统（LSA）存在输入验证不当漏洞，未经身份认证的远程攻击者可通过向 LsaLookupSids 函数发送构造畸形的安全标识符（SID）请求参数，触发拒绝服务。该函数用于将 SID 解析为对应的账户名称，当接收异常格式的 SID 数据时，LSA 服务可能出现崩溃或无限循环，导致系统无法处理登录和访问控制请求。此漏洞影响 Windows NT 4.0 系统，攻击者无需事先获得任何凭据即可远程利用，成功利用后将导致目标系统服务中断或系统不稳定。该漏洞属于 Improper Input Validation（CWE-20）类型，CVSS 评分为 7.8，危害等级为高。"
+description = "Microsoft Windows NT 4.0 的本地安全权威子系统（LSA）在处理 LsaLookupSids 函数调用时存在输入验证缺陷（CWE-20）。该函数用于根据安全标识符（SID）查找对应的账户信息，但远程攻击者可通过构造畸形、格式不正确的 SID 参数发起请求。由于 LSA 未对传入参数进行充分校验，接收到畸形 SID 后会导致 Local Security Authority Subsystem Service 进程异常崩溃，进而引发目标系统拒绝服务，需重启才能恢复。该漏洞影响运行 Windows NT 4.0 的远程主机，攻击者可未经身份认证通过网络远程触发，无需本地登录权限或用户交互，利用方式即向目标发送包含畸形 SID 参数的 LsaLookupSids 请求。"
 published = "1999-12-16T05:00:00.000"
-remediation = "安装 Microsoft 1999 年 12 月安全更新 MS99-057（KB248185），该补丁已包含于 MS99-056（Syskey Keystream Reuse 补丁包）中，亦可直接通过 Microsoft Download Center 获取独立补丁。受影响版本为 Windows NT Workstation 4.0、Windows NT Server 4.0、Enterprise Edition 及 Terminal Server Edition。如短期内无法立即安装补丁，可在防火墙层面禁用或过滤 NetBIOS 端口（137/139/445），阻断远程攻击者对 LSA 的恶意访问作为临时缓解措施，随后尽快安排补丁部署。"
+remediation = "安装 Microsoft 发布的安全补丁 KB248185，该修复已包含在 MS99-056（Syskey Keystream Reuse）公告的补丁包中。受影响系统包括 Windows NT Workstation 4.0、Windows NT Server 4.0、Windows NT Server 4.0 Enterprise Edition 以及 Windows NT Server 4.0 Terminal Server Edition。已应用 MS99-056 补丁的用户无需额外操作。如短期内无法安装补丁，可在边界防火墙上封锁 NetBIOS 及 TCP 445 端口的访问，以阻断远程攻击者向 LSA 发送畸形 SID 请求的路径。由于 Windows NT 4.0 已停止支持，长期缓解措施为将系统升级至受支持的 Windows 版本。"
 score = 7.8
 severity = "HIGH"
-sources = ["avd"]
-title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1728,"inputTokens":9092,"outputTokens":32,"totalTokens":10852}}'
+sources = ["epss"]
+title = "Microsoft Windows NT 4.0 Local Security Authority 子系统 LsaLookupSids 拒绝服务漏洞"
 updated = "2026-06-16T21:49:29.080"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0995"]
 ave_id = "AVE-1999-1680"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,13 +25,13 @@ urls = [
     "http://support.microsoft.com/default.aspx?scid=kb%3B%5BLN%5D%3BQ248185",
     "http://www.securityfocus.com/bid/875",
     "https://docs.microsoft.com/en-us/security-updates/securitybulletins/1999/ms99-057",
-    "https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/1999/CVE-1999-0995.md",
-    "https://github.com/CVEProject/cvelistV5/blob/e358b3016d8b52194aa099dc1255ebe1441bbafa/cves/1999/0xxx/CVE-1999-0995.json",
+    "https://github.com/trickest/cve/blob/638563f1ec085a412c2e42f3935801ae34f0dfd9/1999/CVE-1999-0995.md",
+    "https://github.com/CVEProject/cvelistV5/blob/bf63c766a0e51c24a528a42a3e26e4fdf58db9e8/cves/1999/0xxx/CVE-1999-0995.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0995",
     "https://github.com/edoardottt/missing-cve-nuclei-templates/blob/36c16d53eb6071e39cfc3cf88e99f1b340ec913b/data/year/1999.txt",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/94e644a0057439310dc2677c2e4ebd7766be1682/CVE/data/1999/CVE-1999-0995.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/08f8d33c39c79a3a93a8b5c441facde3f9e3cc7d/CVE/data/1999/CVE-1999-0995.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0995.md",
-    "https://github.com/github/advisory-database/blob/958f1672375e115879b3a6bd13e3638812260c7d/advisories/unreviewed/2022/04/GHSA-m7p3-89hq-9rch/GHSA-m7p3-89hq-9rch.json",
+    "https://github.com/github/advisory-database/blob/f43f79d7ee652229af6058b1c98133bb5bbc17fb/advisories/unreviewed/2022/04/GHSA-m7p3-89hq-9rch/GHSA-m7p3-89hq-9rch.json",
     "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--fce51a26-ebf8-401d-911b-712877e4db93.json",
