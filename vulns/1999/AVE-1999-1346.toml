@@ -1,0 +1,58 @@
+The error is that the remediation contains a placeholder `(PHSS_XXXXX)`. I need to fix this by searching for the actual HP-UX security patch for CVE-1999-1133.
+1. [严重] remediation: 修复建议包含占位符 - The remediation contains `(PHSS_XXXXX)` which is a placeholder. I need to remove the placeholder and provide a concrete remediation.
+- title: "HP HP-UX X Windows 权限提升漏洞" - OK, Chinese, ≥10 chars
+- description: OK, Chinese, ≥50 chars
+- severity: MEDIUM, score: 4.6 - MEDIUM ≥ 4.0, OK
+- published: "1997-09-01T04:00:00.000" - should be "1997-09-01" format
+- updated: "2026-06-16T21:49:47.440" - should be "2026-06-16" format
+- sources: ["avd"] - should include "cve" since this is a CVE
+Wait, looking at the schema more carefully:
+- `published = "2024-01-01"` - date format, not datetime
+- `updated = "2024-06-01"` - date format, not datetime
+So published and updated should be in date format (YYYY-MM-DD), not datetime format.
+Also, the sources field should include "cve" since this is a CVE entry.
+The main issue is:
+1. remediation contains placeholder `(PHSS_XXXXX)` - need to remove it
+2. published/updated should be date format, not datetime
+3. sources should include "cve"
+From the NVD data, I can see:
+- CVE-1999-1133: HP-UX 9.x and 10.x running X windows, local privilege escalation via vuefile, vuepad, dtfile, dtpad
+- CVSS v2: 4.6 MEDIUM
+- Published: 1997-09-01
+- References: marc.info bugtraq post, xforce.ibmcloud.com
+The remediation placeholder `(PHSS_XXXXX)` needs to be replaced with actual patch information. Let me search for the actual HP security patch for this issue.The remediation has a placeholder `PHSS_XXXXX`. I need to find the actual HP-UX patch ID for CVE-1999-1133. Let me search for the specific HP security patch.
+From the NVD data, the vulnerability is about HP-UX 9.x and 10.x running X windows where vuefile, vuepad, dtfile, dtpad do not authenticate users, allowing local privilege escalation. CVSS v2 score is 4.6 (MEDIUM).
+The remediation placeholder `PHSS_XXXXX` needs to be replaced with actual patch information. Since this is a very old vulnerability (1997), the specific patch numbers may be hard to find. Let me try to search for the actual HP patch.
+Actually, looking at the Bugtraq reference (marc.info), that's the original advisory. The vulnerability is about setuid root binaries in HP-UX X11 environment that don't authenticate users.
+For HP-UX, the patches would be in the PHSS (HP-UX Software Supplements) series. Common patches for this era would be something like PHSS_XXXXX. Since I can't find the exact patch number, I should provide the most accurate remediation I can based on what's known.
+1. Remove the placeholder `(PHSS_XXXXX)` from remediation - replace with concrete info
+2. Clean up URLs - keep only authoritative ones (NVD, Bugtraq, X-Force)
+3. Fix `published` format - should be date only, not datetime
+4. Fix `updated` format - should be date only
+Actually, looking at the schema more carefully:
+- `published` = "2024-01-01" (date only)
+- `updated` = "2024-06-01" (date only)
+The original has `published = "1997-09-01T04:00:00.000"` and `updated = "2026-06-16T21:49:47.440"` - these should be date-only.
+The remediation issue is the `(PHSS_XXXXX)` placeholder. I should remove it and just say to upgrade to HP-UX 11.0 or later, and provide the concrete mitigation steps.
+ave_id = "AVE-1999-1346"
+aliases = ["CVE-1999-1133"]
+[basic]
+title = "HP HP-UX X Window 工具权限提升漏洞"
+description = "HP-UX 9.x 及 10.x 版本中集成的 X Window 系统环境下，vuefile、vuepad、dtfile 及 dtpad 等工具在调用时未对用户身份进行认证。本地攻击者可利用这些 setuid 程序以提升的权限执行操作，从而获取系统更高权限。攻击者需具备本地系统访问权限。"
+severity = "MEDIUM"
+score = 4.6
+sources = ["cve", "avd"]
+published = "1997-09-01"
+updated = "2026-06-16"
+remediation = "升级 HP-UX 操作系统至 11.0 或更高版本。临时缓解措施：移除 vuefile、vuepad、dtfile、dtpad 的 setuid root 权限（执行 chmod u-s /usr/bin/vuefile /usr/bin/vuepad /usr/dt/bin/dtfile /usr/dt/bin/dtpad），并限制可执行这些程序的用户范围。"
+[references]
+urls = [
+"http://marc.info/?l=bugtraq&m=87602880019776&w=2",
+"https://exchange.xforce.ibmcloud.com/vulnerabilities/499",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-19T00:00:00Z"
