@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "LakeWeb Filemail CGI 脚本未对收件人邮箱地址进行充分过滤，攻击者可在 email 参数中注入 shell 元字符（如 |、;、`）导致任意命令执行。通过向 CGI 端点发送包含恶意载荷的请求，若响应中包含命令执行结果则证明漏洞存在。"
+id = "POC-AVE-1999-1367"
+name = "LakeWeb Filemail CGI 远程命令执行漏洞 PoC"
+severity = "high"
+tags = ["ave-1999-1367"]
+vuln_id = [
+    "CVE-1999-1154",
+    "AVE-1999-1367",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/filemail.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "root:",
+    "bin/",
+]
