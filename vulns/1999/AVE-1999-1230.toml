@@ -1,11 +1,11 @@
 [basic]
-description = "SGI IRIX 4.x/5.x 系列操作系统中的 serial_ports 管理程序存在本地权限提升漏洞。该程序在执行 ls 命令时未使用绝对路径，而是信任用户可控的 PATH 环境变量查找可执行文件。本地攻击者可构造恶意的 ls 程序并置于可控目录中，通过篡改 PATH 变量使其优先被执行，诱导 root 用户运行 serial_ports 程序时触发恶意代码，从而以 root 权限执行任意命令。该漏洞影响 SGI IRIX 4.x 和 5.x 版本（含 5.2/5.3），CVSS 评分 6.2（中等严重），属于本地权限提升类漏洞，攻击者需具备本地登录权限并能控制环境变量才能利用。SGI 已发布补丁修复该漏洞，建议升级至修复版本或使用绝对路径调用系统命令。"
+description = "SGI IRIX 4.x 与 5.x 系统中的 serial_ports 管理程序在运行时信任用户自定义的 PATH 环境变量来查找并执行 ls 程序，未做路径校验。本地已登录的低权限用户可在 PATH 中植入伪造的特制 ls 程序（特洛伊木马），当 serial_ports 以 root 权限调用 ls 时便会执行该恶意程序，从而提升至 root 权限。该漏洞影响 SGI IRIX 4.x 及 5.2/5.3 等版本，攻击需本地账户访问权限，利用门槛低、危害为本地提权。"
 published = "1994-10-02T04:00:00.000"
-remediation = "标签中。<value>建议升级至 SGI IRIX 6.5.30 或更高版本（已修复该 PATH 信任漏洞）。若无法升级，请修改 /etc/profile 及用户 ~/.profile，确保 PATH 环境变量以 /usr/bin:/bin 等系统目录开头，移除当前目录（.）及用户可写目录；同时将 /usr/sbin/serial_ports 权限设为 755 且属主 root:sys，禁止普通用户写入 PATH 中目录。临时缓解可禁用 serial_ports 程序的 setuid 位（chmod u-s /usr/sbin/serial_ports）。"
+remediation = "建议升级到已修复该问题的 SGI IRIX 6.2 或更高版本，并安装 SGI 官方安全补丁（如 1999 年发布的相应补丁集）。在无法立即升级时，应以 root 身份将 serial_ports 程序中的 ls 调用路径改为绝对路径 /bin/ls，并收紧该程序 setuid 权限或限制普通用户执行权限，同时检查并清理用户环境中可疑的 PATH 值与伪造的 ls 程序作为临时缓解措施。"
 score = 6.2
 severity = "MEDIUM"
-sources = ["avd"]
-title = "SGI IRIX serial_ports 本地权限提升漏洞"
+sources = ["epss"]
+title = "SGI IRIX serial_ports 程序 PATH 环境变量信任本地权限提升漏洞"
 updated = "2026-06-16T21:49:32.487"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1022"]
 ave_id = "AVE-1999-1230"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/464",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/2111",
     "https://www.exploit-db.com/exploits/19351",
-    "https://github.com/CVEProject/cvelistV5/blob/df06113bb625f86b49f1950d55874a29f8e76a55/cves/1999/1xxx/CVE-1999-1022.json",
+    "https://github.com/CVEProject/cvelistV5/blob/7e65fa522cff0172990568230ff9b719b8650296/cves/1999/1xxx/CVE-1999-1022.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1022",
-    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1022.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/5297adfba5e91ee22e711c26c523b292d427c0d0/CVE/data/1999/CVE-1999-1022.json",
-    "https://github.com/github/advisory-database/blob/90b464bbc2d1b64270a5771429f96b67fbe9e79b/advisories/unreviewed/2022/04/GHSA-29g7-m78g-3fx6/GHSA-29g7-m78g-3fx6.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-1999-1022.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7aedbd0209e609a1924ad29a8dda684737576137/CVE/data/1999/CVE-1999-1022.json",
+    "https://github.com/github/advisory-database/blob/5d945305f2cad48b7bb06af582393a58c31555d3/advisories/unreviewed/2022/04/GHSA-29g7-m78g-3fx6/GHSA-29g7-m78g-3fx6.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1310.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154600_154700.json",
     "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000058.txt",
-    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-1999-1022.json",
+    "https://github.com/olbat/nvdcve/blob/63d4031680b3d3fa77b826660a1e30ffc70ff5cd/nvdcve/CVE-1999-1022.json",
     "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
 ]
