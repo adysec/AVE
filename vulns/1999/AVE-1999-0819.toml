@@ -1,12 +1,12 @@
 [basic]
-description = "UnixWare 操作系统的 pkgtrans 软件包传输工具在处理输入文件时未对符号链接进行充分验证，本地低权限用户可通过创建指向敏感文件（如 /etc/shadow）的符号链接并触发该工具读取，从而绕过访问控制机制获取系统敏感信息。该漏洞影响 SCO UnixWare 7.x 等版本，CVSS 评分为 7.2，危害等级为高危。攻击者需要具有目标系统的本地登录权限才能利用此漏洞，成功利用后可能导致用户凭证泄露、系统配置文件暴露等后果。"
+description = "SCO UnixWare 的 pkgtrans 工具存在符号链接（symlink）攻击漏洞。pkgtrans 在处理文件时未安全校验目标路径是否为符号链接，本地用户可事先在可写目录中创建指向敏感文件（如 /etc/shadow、/etc/passwd 等）的符号链接，再诱导以高权限运行的 pkgtrans 读取该链接，从而越权读取本无权访问的任意文件内容，造成信息泄露乃至权限提升。攻击条件为攻击者需具备本地登录权限且能够在相关目录创建符号链接。CVSS v2 评分 7.2（向量 AV:L/AC:L/Au:N/C:C/I:C/A:C），属高危级别。"
 published = "1999-12-04"
-remediation = "升级到 SCO UnixWare 已修复该问题的补丁版本；若暂无法升级，应避免以特权用户身份运行 pkgtrans 处理不可信目录，并移除工作目录中由低权限用户可控的符号链接，限制 pkgtrans 临时目录的写入权限以防止符号链接劫持。"
+remediation = "升级到 SCO 官方为受影响 UnixWare 版本发布的、修复 pkgtrans 符号链接问题的补丁后的版本。若暂时无法升级，应收紧 /tmp 等公共可写目录权限（设置粘滞位 sticky bit），限制普通用户对 pkgtrans 操作目录的写权限，使用 nosuid 挂载选项，并避免以 root 权限对不可信输入运行 pkgtrans；同时定期审计可写目录中是否存在可疑符号链接。"
 score = 7.2
 severity = "HIGH"
-sources = ["avd"]
-title = "SCO UnixWare pkgtrans 符号链接攻击任意文件读取漏洞"
-updated = "2026-07-18"
+sources = ["cve"]
+title = "SCO UnixWare pkgtrans 符号链接任意文件读取漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,13 +17,17 @@ aliases = ["CVE-1999-0988"]
 ave_id = "AVE-1999-0819"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-0988",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0988",
     "https://www.exploit-db.com/exploits/19661",
-    "https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/1999/CVE-1999-0988.md",
-    "https://github.com/CVEProject/cvelistV5/blob/7cda0b7fa75f17f1e2b56ef076a6f9175f854ab4/cves/1999/0xxx/CVE-1999-0988.json",
+    "https://github.com/trickest/cve/blob/638563f1ec085a412c2e42f3935801ae34f0dfd9/1999/CVE-1999-0988.md",
+    "https://github.com/CVEProject/cvelistV5/blob/ad13a04165adf44a190b93c89d746f49525e5595/cves/1999/0xxx/CVE-1999-0988.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/72b66ad516faec962399c4214c080517aebc4c11/CVE/data/1999/CVE-1999-0988.json",
+    "https://github.com/github/advisory-database/blob/f43f79d7ee652229af6058b1c98133bb5bbc17fb/advisories/unreviewed/2022/04/GHSA-wjmv-3x5x-4vh5/GHSA-wjmv-3x5x-4vh5.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0988.json",
 ]
