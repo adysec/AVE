@@ -1,11 +1,11 @@
 [basic]
-description = "Novell NetWare 目录服务（NDS）安装默认配置存在信息泄露漏洞。未经身份认证的远程攻击者连接到 NetWare 4.x 或 IntranetWare 服务器时，将以未登录状态获得对 NDS 目录树的默认读取权限。该权限从目录树根节点向下继承，使得攻击者无需任何凭据即可使用系统自带的 CX.EXE 和 NLIST.EXE 工具枚举整个目录树结构，获取用户名、组信息、服务器名称及操作系统版本等敏感数据。攻击者可结合上下文切换和不同服务器的连接操作，逐步绘制完整的 NDS 目录拓扑，进而获取潜在用户账户列表作为后续暴力破解的素材。该漏洞影响 Novell NetWare 4.1、4.11 及安装了 NDS 5.99 的系统，影响范围覆盖几乎所有 NetWare 3.x 及以上版本。默认情况下系统未启用入侵检测功能，攻击行为难以被及时发现。修复方案包括禁用 NDS 目录树根节点的公开读取权限、启用根节点入侵检测功能，并确保所有账户设置高强度密码。"
+description = "Novell NetWare 4.1 及 4.11（含 SP5B 补丁）在安装 NDS（Novell Directory Services）5.99 版本时，默认赋予未认证客户端对整个目录树的读取（Read）权限。远程攻击者在无需身份认证的情况下，即可利用系统自带的 CX.EXE 与 NLIST.EXE 等工具连接目标目录树，枚举并读取其中的用户、用户组及其他可读对象等敏感信息。该漏洞影响所有部署了 NDS 5.99 的 Novell NetWare 4.1/4.11 服务器，攻击者仅需网络可达目标服务端口并能运行上述客户端工具即可实施信息泄露，CVSS 评分 7.5，危害等级为高。"
 published = "1998-09-18T04:00:00.000"
-remediation = "在 NDS 管理工具中禁用 NDS 树根部的公共 Read 权限，确保所有用户账户均设置强密码并开启入侵检测功能。如已使用 DSREPAIR 或 DSMAINT 等全局工具，需重新检查并确认 NDS 权限设置未被重置。对于无法修改配置的老旧系统，可通过防火墙限制 SYS:LOGIN 目录下 CX.EXE 和 NLIST.EXE 的远程访问作为临时缓解措施。"
+remediation = "建议升级至 Novell NetWare 5.0 或更高版本（已停止支持），或应用 Novell 发布的 NDS 修补程序（如 NW411SP6A.EXE 及后续补丁）。若无法升级，建议通过防火墙限制 524/TCP 端口仅允许受信任管理网段访问，禁用 CX.EXE 和 NLIST.EXE 客户端工具的网络访问权限，并配置 NDS ACL 移除 [Public] 对树对象的 [Read] 权限，仅授权管理员账户访问敏感对象属性。建议尽快迁移至现代目录服务（如 Microsoft Active Directory 或 OpenLDAP）。"
 score = 7.5
 severity = "HIGH"
-sources = ["avd"]
-title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9190,"outputTokens":27,"totalTokens":10881}}'
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"inputTokens":16371,"outputTokens":31,"totalTokens":16402}}'
 updated = "2026-06-16T21:49:32.213"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1020"]
 ave_id = "AVE-1999-1228"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,11 +26,11 @@ urls = [
     "http://www.securityfocus.com/bid/484",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/1364",
     "https://www.exploit-db.com/exploits/19365",
-    "https://github.com/CVEProject/cvelistV5/blob/73dad9db65989a09e468a4f3a98f0eea36f0346c/cves/1999/1xxx/CVE-1999-1020.json",
+    "https://github.com/CVEProject/cvelistV5/blob/2126251525a2d370ea93bd7affc3a9b71b419b4c/cves/1999/1xxx/CVE-1999-1020.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1020",
-    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1020.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/5297adfba5e91ee22e711c26c523b292d427c0d0/CVE/data/1999/CVE-1999-1020.json",
-    "https://github.com/github/advisory-database/blob/90b464bbc2d1b64270a5771429f96b67fbe9e79b/advisories/unreviewed/2022/04/GHSA-q937-qhpq-5w36/GHSA-q937-qhpq-5w36.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-1999-1020.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7aedbd0209e609a1924ad29a8dda684737576137/CVE/data/1999/CVE-1999-1020.json",
+    "https://github.com/github/advisory-database/blob/5d945305f2cad48b7bb06af582393a58c31555d3/advisories/unreviewed/2022/04/GHSA-q937-qhpq-5w36/GHSA-q937-qhpq-5w36.json",
     "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/pre2008/nds_web_based_browsing.nasl",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1020.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/484/info.html",
