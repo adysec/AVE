@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "检测 HP VirtualVault 虚拟存储系统安全绕过漏洞。攻击者可利用受信任网关代理（TGP）机制，绕过补丁 PHSS_17692 限制，对系统发起非授权访问。通过向虚拟存储服务发送特定协议命令，攻击者可在不具备管理员权限的情况下访问安全敏感数据。验证目标是否存在合法身份验证绕过，对文件进行非授权读写操作。"
+id = "POC-AVE-1999-1609"
+name = "HP VirtualVault 安全绕过漏洞 PoC"
+severity = "critical"
+tags = ["ave-1999-1609"]
+vuln_id = [
+    "CVE-1999-0992",
+    "AVE-1999-1609",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/virtualvault/admin"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "VirtualVault",
+    "admin",
+    "security",
+]
