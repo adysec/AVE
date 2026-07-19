@@ -1,12 +1,15 @@
 [basic]
-description = "Sun Workshop 5.0 Flex License Manager 符号链接漏洞"
-published = "2000-02-21T05:00:00.000"
-remediation = "升级 Sun Workshop 至 5.1 或更高版本，或安装 Sun 官方安全补丁 107888-01。临时缓解措施：限制 lit 程序的执行权限，仅允许受信任用户访问，并使用粘滞位目录防止符号链接攻击。"
+description = "Sun Flex License Manager（FlexLM）中的 lit 程序在处理文件时未对符号链接进行安全检查，会直接跟随符号链接进行操作。本地已登录用户可以创建指向任意系统文件的符号链接，诱使 lit 程序以该程序权限写入或覆盖目标文件，从而修改本无权访问的任意文件内容。该漏洞影响运行 Sun Workshop 5.0 等使用 FlexLM 授权管理组件的 Solaris 系统，攻击前提是攻击者需在目标主机拥有本地账户及执行 lit 程序的权限，属于本地权限提升类漏洞，CVSS 评分较低（约 1.2），危害等级低。"
+published = "2000-02-21"
+remediation = "立即停用或卸载 Sun Workshop 5.0 中的 FlexLM 组件；将 lit 可执行文件去除 setuid 位（chmod u-s /path/to/lit）并限制普通用户对其执行权限；确保 /tmp 等临时目录设置 sticky bit（chmod 1777 /tmp）且仅 root 可写敏感目标文件。若业务仍需许可证服务，迁移到已修复的后续 FlexNet Publisher 或 Oracle Solaris Studio 授权方案，并禁止本地非特权用户在 lit 工作目录创建符号链接；无法升级时，将 lit 从默认 PATH 移除并配合严格本地账户与文件 ACL 作为临时缓解。"
 score = 1.2
 severity = "LOW"
-sources = ["cve"]
-title = "Sun Workshop 5.0 Flex License Manager 本地符号链接漏洞"
-updated = "2026-06-16T21:51:13.927"
+sources = [
+    "exploitdb",
+    "cve",
+]
+title = "Sun FlexLM lit 符号链接本地文件覆盖漏洞"
+updated = "2026-07-19"
 
 [exploit]
 exp_urls = []
@@ -24,14 +27,5 @@ status = "completed"
 urls = [
     "http://www.securityfocus.com/bid/998",
     "https://www.exploit-db.com/exploits/19757",
-    "https://github.com/CVEProject/cvelistV5/blob/aa3114da1227373bef7855dba21bcaa5f0e0ad76/cves/2000/0xxx/CVE-2000-0210.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0210",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-2000-0210.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/b4ddb28f94d250449ab64c1617f45b1f91701fa2/CVE/data/2000/CVE-2000-0210.json",
-    "https://github.com/github/advisory-database/blob/bf2339193e1c10dc2db330718adeb8cc8d88c4dd/advisories/unreviewed/2022/04/GHSA-wgx9-jc59-6fmq/GHSA-wgx9-jc59-6fmq.json",
-    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-2000-0210.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_3.list.dict",
-    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001182.txt",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/345a7ffdeeac75a0ab6dfab93754098e50d98f28/2000.tsv",
+    "https://github.com/CVEProject/cvelistV5/blob/ad13a04165adf44a190b93c89d746f49525e5595/cves/2000/0xxx/CVE-2000-0210.json",
 ]
