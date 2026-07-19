@@ -1,0 +1,76 @@
+1. The description field is empty/invalid - it contains garbage text from a previous failed generation
+2. I need to fix the description with proper Chinese text based on the NVD data
+3. The score is 7.2 with severity HIGH - that's correct (HIGH ≥ 7.0)
+4. I need to clean up the URLs - remove the GitHub mirror links that aren't authoritative references
+5. The published date should be just the date, not datetime
+6. The updated date should be just the date
+From NVD:
+- Description: "Vulnerability in ppl in HP-UX 10.x and earlier allows local users to gain root privileges by forcing ppl to core dump."
+- CVSS v2: 7.2 HIGH, Vector: (AV:L/AC:L/Au:N/C:C/I:C/A:C)
+- Published: 1996-11-03
+- References: ciac.llnl.gov, marc.info (x2), codetalker.com, iss.net
+The description should be about: HP-UX 10.x及更早版本中的ppl程序存在漏洞，本地用户可以通过强制ppl程序产生core dump文件来获取root权限。攻击者利用该漏洞可以完全控制受影响的系统，造成机密性、完整性和可用性的完全丧失。
+Also need to fix:
+- published should be "1996-11-03" (date only, not datetime)
+- updated should be "2026-06-16" (date only)
+- Remove non-authoritative GitHub URLs from references
+1. description field is empty - The original TOML has a broken description that contains garbage text. I need to write a proper Chinese description based on the NVD data.
+From NVD: "Vulnerability in ppl in HP-UX 10.x and earlier allows local users to gain root privileges by forcing ppl to core dump."
+CVSS v2: 7.2 HIGH, Vector: (AV:L/AC:L/Au:N/C:C/I:C/A:C)
+Published: 1996-11-03
+- title: "HP HP-UX ppl 本地权限提升漏洞" - looks good, Chinese, descriptive
+- severity: HIGH, score: 7.2 - matches (HIGH ≥ 7.0)
+- remediation: already has good Chinese content
+- sources: ["avd"] - should be fine
+- published: "1996-11-03T05:00:00.000" - should be "1996-11-03" per schema
+- updated: "2026-06-16T21:49:51.030" - should be "2026-06-16" per schema
+- urls: many GitHub mirror URLs that are not authoritative. I should keep the authoritative ones and remove the noise.
+Wait, the schema says:
+- published = "2024-01-01" (date format)
+- updated = "2024-06-01" (date format)
+So published and updated should be date-only, not datetime.
+1. http://ciac.llnl.gov/ciac/bulletins/h-32.shtml
+2. http://marc.info/?l=bugtraq&m=87602167420102&w=2
+3. http://marc.info/?l=bugtraq&m=87602167420103&w=2
+4. http://www.codetalker.com/advisories/vendor/hp/hpsbux9704-057.html
+5. http://www.iss.net/security_center/static/7438.php
+The GitHub mirror URLs are not authoritative references and should be removed.
+Now let me write the proper description in Chinese (≥50 chars):
+"HP-UX 10.x及更早版本中的ppl程序存在漏洞，本地用户可通过强制ppl程序产生core dump文件的方式获取root权限。该漏洞源于ppl程序对core dump文件的处理缺陷，攻击者无需认证即可利用，完全影响系统的机密性、完整性和可用性。"
+That's well over 50 characters.
+Now let me fix the TOML:
+1. Fix description - add proper Chinese description
+2. Fix published format - change to "1996-11-03"
+3. Fix updated format - change to "2026-06-16"
+4. Clean up URLs - remove GitHub mirror URLs, keep authoritative ones
+- `[id]` must have `ave_id` and `aliases` - OK
+- `[basic]` must have title, description, severity, score, sources, published, updated, remediation - OK
+- `[references]` must have urls - OK
+- `[exploit]` must have poc_urls, exp_urls - OK
+- `[meta]` must have status, collected_at - OK
+The description field is the critical issue. Let me fixit.[id]
+ave_id = "AVE-1999-1371"
+aliases = ["CVE-1999-1161"]
+[basic]
+title = "HP HP-UX ppl 本地权限提升漏洞"
+description = "HP-UX 10.x及更早版本中的ppl程序存在安全漏洞，本地用户可通过强制ppl程序产生core dump文件的方式获取root权限。该漏洞源于ppl程序对core dump文件的处理缺陷，攻击者无需认证即可利用，完全影响系统的机密性、完整性和可用性。"
+severity = "HIGH"
+score = 7.2
+sources = ["avd"]
+published = "1996-11-03"
+updated = "2026-06-16"
+remediation = "立即应用HP安全公告HPSBUX9704-057中提供的补丁程序，或升级至已修复此漏洞的HP-UX版本。如无法升级，可移除ppl程序的setuid权限位（chmod u-s /usr/bin/ppl），以消除本地用户通过强制core dump获取root权限的攻击路径。"
+[references]
+urls = [
+"http://ciac.llnl.gov/ciac/bulletins/h-32.shtml",
+"http://marc.info/?l=bugtraq&m=87602167420102&w=2",
+"http://marc.info/?l=bugtraq&m=87602167420103&w=2",
+"http://www.codetalker.com/advisories/vendor/hp/hpsbux9704-057.html",
+"http://www.iss.net/security_center/static/7438.php",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-19T00:00:00Z"
