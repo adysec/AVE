@@ -1,0 +1,27 @@
+[basic]
+description = "广联达 OA 系统的 ArchiveWebService 接口（路径 /GB/LK/Document/ArchiveService/ArchiveWebService.asmx）在处理 PostArchiveInfo 方法的 SOAP 请求时，未对 XML 输入做安全的实体解析限制，存在 XML 外部实体注入（XXE）漏洞。攻击者可构造包含恶意外部实体声明的 SOAP 报文并发送至该接口，利用 XML 解析器展开 DTD 实体的机制读取服务器本地敏感文件（如配置文件、/etc/passwd），或通过系统实体发起服务端请求伪造（SSRF）探测内网，亦可采用「亿次笑话」实体递归展开方式消耗内存导致拒绝服务。该漏洞利用前提为攻击者可访问目标 ArchiveWebService 服务的 SOAP 端点并能提交特制 XML 请求，危害程度取决于服务端 XML 解析组件配置。"
+published = "2024-07-23"
+remediation = "在 ArchiveWebService 服务所使用的 XML 解析组件中禁用外部实体与外部 DTD 解析（如 .NET 中设置 XmlReaderSettings.DtdProcessing=Prohibit 或 XmlResolver=null），对 SOAP 入站 XML 做白名单结构校验；在边界防火墙和 OA 反向代理上限制 ArchiveWebService.asmx 仅允许受信任内网访问，并升级广联达 OA 至厂商发布的安全修复版本。"
+score = 7.5
+severity = "HIGH"
+sources = ["hwpoc"]
+title = "广联达 OA 系统 ArchiveWebService 接口 XML 外部实体注入漏洞"
+updated = "2024-07-23"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["HWPOC-2024-05a745a7"]
+ave_id = "AVE-2024-0433"
+
+[meta]
+collected_at = "2026-07-19T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://www.cnvd.org.cn/",
+    "https://www.secpulse.com/",
+]
