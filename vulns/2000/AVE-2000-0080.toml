@@ -1,37 +1,28 @@
 [basic]
-description = "Qualcomm qpopper 3.0 的 beta 测试版本在处理 POP3 协议的 LIST 命令时存在缓冲区溢出漏洞。由于程序未对 LIST 命令参数长度做边界校验，本地已登录用户可向服务进程发送超长的 LIST 命令参数，覆盖栈上返回地址，从而执行任意代码并提升至 root 权限。该漏洞影响运行 qpopper 3.0 beta 的邮件服务器，攻击条件为攻击者需先获得本地普通用户访问权限，利用方式即构造超长 LIST 参数触发溢出完成本地提权。"
-published = "2000-01-26T05:00:00.000"
-remediation = "立即升级 qpopper 至 3.1 或更高稳定版本（最新为 4.1），该漏洞已在后续版本中修复。如无法升级，可在 inetd/xinetd 配置中限制 qpopper 仅监听内网 IP，并在防火墙层面限制 POP3 端口（110/TCP）仅允许受信来源访问。同时建议迁移至 Dovecot 等持续维护的邮件服务器软件。作为临时缓解措施，限制本地用户登录服务器可降低被利用风险。"
+description = "Qualcomm qpopper 3.0 beta 系列版本在处理 POP3 LIST 命令时存在缓冲区溢出漏洞。已认证的本地用户可通过向 qpopper 服务发送超长 LIST 命令参数触发栈缓冲区溢出，覆盖返回地址，从而以 qpopper 进程权限执行任意代码，获取系统控制权。攻击者可借此读取其他用户邮件或在服务器上执行任意操作，CVSS 2.0 评分 7.2，危害等级高。"
+published = "2000-01-26"
+remediation = "将 qpopper 升级至 3.0 beta 29 或更高版本，该版本修复了 LIST 命令的缓冲区溢出问题。若无法立即升级，建议限制 POP3 服务的网络访问范围，仅允许可信客户端连接，并在防火墙层面限制对 110 端口的访问。对于已停止维护的 qpopper，建议迁移到 Dovecot 等现代且仍在维护的 POP3 服务器软件。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Qualcomm qpopper 3.0 缓冲区溢出本地权限提升漏洞"
-updated = "2026-06-16T21:50:59.533"
+sources = ["exploitdb"]
+title = "Qualcomm qpopper 3.0 LIST 命令本地缓冲区溢出漏洞"
+updated = "2026-06-16"
 
 [exploit]
-exp_urls = []
+exp_urls = ["https://www.exploit-db.com/exploits/19729"]
 poc_urls = []
 
 [id]
-aliases = ["CVE-2000-0096"]
-ave_id = "AVE-2000-0080"
+aliases = []
+ave_id = "unknown"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/948",
     "https://www.exploit-db.com/exploits/19729",
-    "https://github.com/CVEProject/cvelistV5/blob/e358b3016d8b52194aa099dc1255ebe1441bbafa/cves/2000/0xxx/CVE-2000-0096.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0096",
-    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-2000-0096.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/94e644a0057439310dc2677c2e4ebd7766be1682/CVE/data/2000/CVE-2000-0096.json",
-    "https://github.com/github/advisory-database/blob/958f1672375e115879b3a6bd13e3638812260c7d/advisories/unreviewed/2022/04/GHSA-rp69-5w75-5xrq/GHSA-rp69-5w75-5xrq.json",
-    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/q/qpopper_list.nasl",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--67381bb6-5e61-4ed8-ada4-af1bc2e74f2e.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_0.list.dict",
-    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001116.txt",
+    "https://nvd.nist.gov/vuln/detail/CVE-2000-0096",
 ]
