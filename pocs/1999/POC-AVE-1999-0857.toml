@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证 Disney Go Express Search 组件在用户系统上运行的 HTTP 服务是否存在未授权访问漏洞，通过连接目标主机 HTTP 端口检测是否可访问和篡改搜索信息。"
+description = "Disney Go Express Search 存在信息泄露与篡改漏洞，其原理在于该软件会在用户系统上启动一个本地 HTTP 服务，且未对访问进行有效的身份认证与权限控制。远程攻击者只需连接到运行在用户系统上的该 HTTP 服务，即可读取并修改用户的搜索信息，从而破坏用户搜索数据的机密性与完整性。该漏洞主要影响运行该软件的个人用户系统。"
 id = "POC-AVE-1999-0857"
-name = "Disney Go Express Search 远程攻击漏洞 PoC"
+name = "Disney Go Express Search 远程未授权访问和信息篡改漏洞 PoC"
 severity = "low"
 tags = ["ave-1999-0857"]
 vuln_id = [
@@ -15,19 +15,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/"
+path = "/{{BaseURL}}/search"
 protocol = "http"
 
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "Express",
-    "Search",
-]
+words = ["search"]
