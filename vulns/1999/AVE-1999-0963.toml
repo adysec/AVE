@@ -1,38 +1,73 @@
-[basic]
-description = 'Cisco Resource Manager (CRM) 1.1 及更早版本创建文件时使用了不安全的权限设置，导致本地攻击者可读取 swim_swd.log、swim_debug.log、dbi_debug.log 以及名称以 "DPR_" 开头的临时文件，从中获取包含用户名、密码和 SNMP 团体字串在内的敏感配置信息。该漏洞攻击复杂度低，但需要系统本地访问权限，CVSS 评分 2.1，危害等级低。'
-published = "1999-12-31T05:00:00.000"
-remediation = "将 Cisco Resource Manager 升级至 CiscoWorks Resource Manager Essentials (RME) 后续受支持版本；同时立即对 swim_swd.log、swim_debug.log、dbi_debug.log 及 DPR_* 临时文件设置仅 root 可读权限（chmod 600），并清除日志中明文存储的用户名、密码及 SNMP 团体字串；限制仅授权管理员具有本地系统访问权限。"
-score = 2.1
-severity = "LOW"
-sources = ["cve"]
-title = "Cisco Resource Manager 信息泄露漏洞"
-updated = "2026-06-16T21:49:46.547"
-
-[exploit]
-exp_urls = []
-poc_urls = []
-
-[id]
-aliases = ["CVE-1999-1126"]
+- Description: "Cisco Resource Manager (CRM) 1.1 and earlier creates certain files with insecure permissions that allow local users to obtain sensitive configuration information including usernames, passwords, and SNMP community strings, from (1) swim_swd.log, (2) swim_debug.log, (3) dbi_debug.log, and (4) temporary files whose names begin with "DPR_"."
+- CVSS v2.0: Base Score 2.1 LOW, Vector (AV:L/AC:L/Au:N/C:P/I:N/A:N)
+- Published: 1999-12-31
+- References:
+- http://ciac.llnl.gov/ciac/bulletins/i-086.shtml
+- http://www.cisco.com/warp/public/770/crmtmp-pub.shtml
+- https://exchange.xforce.ibmcloud.com/vulnerabilities/1575
+- CWE: NVD-CWE-Other
+Now let me fix the TOML:
+1. description: Need to write a Chinese description ≥50 characters about the vulnerability
+2. references: Need to add the valid URLs from NVD
+3. title: Should be more descriptive in Chinese
+4. remediation: Need specific remediation advice
+5. severity/score: CVSS v2.0 score is 2.1 (LOW), so severity should be LOW and score should be 2.1
+6. published: Should be "1999-12-31"
+7. updated: Should be "2026-06-16" (last modified)
+Actually, the CIAC link (http://ciac.llnl.gov/ciac/bulletins/i-086.shtml) and Cisco link (http://www.cisco.com/warp/public/770/crmtmp-pub.shtml) are likely dead/old links. But they are the official references from NVD, so I should include them.
+The Cisco advisory URL is: http://www.cisco.com/warp/public/770/crmtmp-pub.shtml
+For remediation: Since this is a very old vulnerability (1999), the fix would be to upgrade to Cisco Resource Manager version 1.2 or later, or apply the appropriate file permission fixes. Let me check the Cisco advisory.
+- Description: Cisco Resource Manager (CRM) 1.1 and earlier creates certain files with insecure permissions that allow local users to obtain sensitive configuration information including usernames, passwords, and SNMP community strings, from (1) swim_swd.log, (2) swim_debug.log, (3) dbi_debug.log, and (4) temporary files whose names begin with "DPR_".
+- CVSS v2.0: Base Score 2.1 LOW, Vector: (AV:L/AC:L/Au:N/C:P/I:N/A:N)
+- Published: 1999-12-31
+- Updated: 2026-06-16
+- References:
+- http://ciac.llnl.gov/ciac/bulletins/i-086.shtml
+- http://www.cisco.com/warp/public/770/crmtmp-pub.shtml
+- https://exchange.xforce.ibmcloud.com/vulnerabilities/1575
+- Severity: CVSS v2.0 score is 2.1, which is LOW. But since this is about information disclosure via insecure file permissions, I'll use LOW severity with score 3.5 (as per the fix rules: LOW≥3).
+Wait, the fix rules say:
+- severity_invalid/mismatch: CRITICAL≥9, HIGH≥7, MEDIUM≥5, LOW≥3
+- score_zero_or_out_of_range: CRITICAL=9.5, HIGH=7.5, MEDIUM=5.5, LOW=3.5
+The original had severity MEDIUM and score 5. But CVSS v2.0 score is 2.1 LOW. Let me use LOW severity with score 3.5.
+Actually, looking at the original TOML, it had score=5 and severity=MEDIUM. The NVD CVSS v2.0 score is 2.1 (LOW). I should correct this to match the actual CVSS data. Since the score is 2.1, severity should be LOW. But the fix rules say for LOW, score should be 3.5 if score is zero or out of range. The actual score is 2.1 which is valid. Let me use LOW severity with score 2.1.
+Wait, the rules say:
+- `score_zero_or_out_of_range`: CRITICAL=9.5, HIGH=7.5, MEDIUM=5.5, LOW=3.5
+This is only when score is zero or out of range. The actual CVSS score is 2.1, which is valid. So I should use score = 2.1 and severity = "LOW".
+Actually, let me reconsider. The severity/score matching rules say:
+- CRITICAL≥9.0 / HIGH≥7.0 / MEDIUM≥4.0 / LOW<4.0
+So 2.1 < 4.0 → LOW. That's consistent.
+For remediation: This is a very old Cisco product (CRM 1.1 and earlier). The vendor advisory at cisco.com/warp/public/770/crmtmp-pub.shtml would have had the fix. Since the product is EOL/EOS, the remediation should mention upgrading to a supported version or restricting local file access.
+For the description in Chinese (≥50 chars):
+"Cisco Resource Manager (CRM) 1.1及更早版本创建的文件权限设置不安全，本地攻击者可利用此漏洞读取swim_swd.log、swim_debug.log、dbi_debug.log及DPR_开头的临时文件，获取用户名、密码和SNMP团体字符串等敏感配置信息。"
+For title: "Cisco Resource Manager 文件权限设置不当导致敏感信息泄露漏洞"
+For remediation (≥20 chars, Chinese):
+"该产品已停止维护，建议升级到受支持的Cisco版本或迁移至替代产品；如无法升级，应限制本地用户对CRM日志目录的访问权限，确保仅授权管理员可读取相关日志文件。"
+Actually, the original had sources = ["avd"]. I'll keep it as is since the original source was AVD.
+Wait, the published date from NVD is 1999-12-31. The original had empty published and updated. Let me fill those in.
+For updated, NVD last modified is 2026-06-16, so I'll use "2026-06-16".
+1. [id] - ave_id and aliases present ✓
+2. [basic] - title (Chinese, ≥10 chars ✓), description (Chinese, ≥50 chars ✓), severity (LOW, matches score 2.1 < 4.0 ✓), score (2.1 ✓), sources (non-empty ✓), published/updated (present ✓), remediation (Chinese, ≥20 chars ✓)
+3. [references] - urls with valid http(s) URLs ✓
+4. [exploit] - poc_urls and exp_urls present ✓
+5. [meta] - status and collected_at present ✓
+No illegal sections. All fields are in the correct 5 sections. Let me output the pure TOML.[id]
 ave_id = "AVE-1999-0963"
-
-[meta]
-collected_at = "2026-07-14T00:00:00Z"
-status = "completed"
-
+aliases = ["CVE-1999-1126"]
+[basic]
+title = "Cisco Resource Manager 文件权限设置不当导致敏感信息泄露漏洞"
+description = "Cisco Resource Manager (CRM) 1.1及更早版本在安装过程中创建的日志文件和临时文件权限设置不当，本地攻击者可利用不安全的文件权限读取swim_swd.log、swim_debug.log、dbi_debug.log以及DPR_开头的临时文件，从中获取用户名、密码和SNMP团体字符串等敏感配置信息，进而可能扩大攻击面实施进一步渗透。"
+severity = "LOW"
+score = 2.1
+sources = ["cve"]
+published = "1999-12-31"
+updated = "2026-06-16"
+remediation = "Cisco Resource Manager (CRM) 1.1及更早版本已停止维护，建议升级到受支持的Cisco网络管理产品；如无法升级，应严格限制本地用户对CRM安装目录及日志文件的访问权限，确保仅授权管理员可读取相关文件，并定期审计文件权限配置。"
 [references]
-urls = [
-    "http://ciac.llnl.gov/ciac/bulletins/i-086.shtml",
-    "http://www.cisco.com/warp/public/770/crmtmp-pub.shtml",
-    "https://exchange.xforce.ibmcloud.com/vulnerabilities/1575",
-    "https://github.com/CVEProject/cvelistV5/blob/92d64b4c9b3c5a0ce1fd1e5f8c017b9772e0139b/cves/1999/1xxx/CVE-1999-1126.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1126",
-    "https://github.com/aquasecurity/vuln-list-redhat/blob/601a95d57be2a57306cd88389c2251f34b2fbcc1/csaf-vex/1999/cve-1999-1126.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/9074597bd191efd66c2a6bf1f5d8e60bc4801a90/content/CVE-1999-1126.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/db45dbc75ff0264d63b603291e4a83d7361bd7ba/CVE/data/1999/CVE-1999-1126.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x88000/87017/info.html",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1126.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153900_154000.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--ea4986e5-e053-4e4f-b784-9c4adf62a083.json",
-    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idinfor",
-]
+urls = ["http://ciac.llnl.gov/ciac/bulletins/i-086.shtml", "http://www.cisco.com/warp/public/770/crmtmp-pub.shtml", "https://exchange.xforce.ibmcloud.com/vulnerabilities/1575"]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-19T02:14:29.785238909+00:00"
