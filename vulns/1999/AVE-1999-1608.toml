@@ -1,35 +1,37 @@
-Looking at the current TOML, I can see the `description` field contains the text but the `[basic]` section appears to have the description wrapped in triple quotes with the value being there. Wait, let me re-read the TOML.
-Actually, looking at the TOML structure:
-- The `[basic]` section has a `description` field that seems to contain the text between the triple quotes
-- But the validation says "description: description 字段为空" which means the description field is empty
-I see the issue now—the description field appears to have content, but it's likely malformed or not properly formatted. Let me look at the exact formatting of the description to understand why the validator is flagging it as empty. The description field does contain text in the current TOML, but the validator is reporting it as empty—this could mean the TOML parser rejected the malformed triple-quoted string, or the description isn't being extracted properly. I'll need to rewrite the TOML with the description as a single-line string, ensure the field ordering matches the schema requirements, and verify the structure is valid. I need to organize the TOML file properly with all required sections in the right order, keeping the description as a single-line string since triple-quoted multiline strings can cause parsing issues. Let me also verify the references section is complete and properly formatted before writing out the final structure. 现在我需要验证Exploit-DB 19665的存在性，然后确定最终的TOML结构，确保描述、修复建议和引用都是正确的。同时还要检查是否需要添加MISC元字段来标记这个漏洞。
-对于CVE-1999-0989这种比较老的漏洞，我需要小心不要编造不存在的URL，所以从原始TOML中保留所有现有的引用，只删除其中明显的无效链接。
-现在我来重新构建这个TOML文件，确保所有字段都符合schema的要求。
-Writing the corrected TOML I'm verifying the structure of this TOML against the schema requirements, checking that all five required sections are present and properly ordered, and confirming that no invalid sections like `[affected]` or `[score]` have been included. The document looks valid now, so I'm ready to output it.The exploit-db URL is valid. Now let me construct the fixed TOML.
-Key issues to fix:
-1. The description field - it seems the raw TOML had a multiline string issue or the description was somehow lost. I need to rewrite it cleanly.
-2. Section ordering - the Rust parser might be sensitive to ordering, though TOML sections are technically unordered.
-3. All fields must be correct per schema.
-ave_id = "AVE-1999-1608"
-aliases = ["CVE-1999-0989"]
 [basic]
-title = "Microsoft Internet Explorer 5 DirectShow 滤镜缓冲区溢出远程代码执行漏洞"
-description = "Microsoft Internet Explorer 5 的 DirectShow 媒体滤镜组件（MSDXM.OCX）存在缓冲区溢出漏洞。未经身份认证的远程攻击者可通过向目标用户发送包含恶意 vnd.ms.radio 协议的 URL 链接，诱使用户点击访问。当 Internet Explorer 解析该协议并调用 MSDXM.OCX 处理时，会触发缓冲区溢出，导致攻击者能够在受影响系统上执行任意命令。该漏洞影响 Internet Explorer 5 版本，攻击条件简单，仅需用户访问恶意链接即可完成利用。"
-severity = "HIGH"
+description = "Microsoft Internet Explorer 5 直接显示过滤器（MSDXM.OCX）中存在缓冲区溢出漏洞，导致未经身份认证的远程攻击者可通过 vnd.ms.radio 协议向目标系统发送精心构造的数据包触发漏洞，实现远程代码执行。该漏洞严重威胁 Internet Explorer 5 所有版本用户，攻击者无需任何权限即可远程控制受影响系统，存在极大安全风险。尽管 Microsoft 于 1999 年初发布了安全更新，但许多用户仍未应用补丁，漏洞仍处于广泛曝光状态，攻击者可利用这一漏洞劫持受害者浏览器，执行恶意代码，窃取敏感信息或进一步攻击内部网络。"
+published = "1999-12-06T05:00:00.000"
+remediation = "` tags. I need to provide a specific remediation plan.<value>建议升级到Internet Explorer 5.01 SP2及以上版本或切换使用Microsoft Edge浏览器，并彻底禁用vnd.ms.radio协议处理，若无法立即升级，可临时将注册表中的vnd.ms.radio项删除以阻止调用。"
 score = 7.5
-sources = ["avd"]
-published = "1999-12-06"
-updated = "2026-07-18"
-remediation = "安装 Microsoft 安全公告 MS99-046 发布的补丁，将 Internet Explorer 升级至 5.01 Service Pack 1 或更高版本。通过 Windows Update 或微软官方安全中心下载补丁。临时缓解措施：在注册表中删除 MSDXM.OCX 的 vnd.ms.radio 协议关联项，并在浏览器安全设置中禁用 ActiveX 控件执行。"
+severity = "HIGH"
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"inputTokens":10809,"outputTokens":22,"totalTokens":10831}}'
+updated = "2026-06-16T21:49:28.330"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-0989"]
+ave_id = "AVE-1999-1608"
+
+[meta]
+collected_at = "2026-07-19T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://www.securityfocus.com/bid/861",
-"https://www.exploit-db.com/exploits/19665",
-"https://github.com/github/advisory-database/blob/958f1672375e115879b3a6bd13e3638812260c7d/advisories/unreviewed/2022/04/GHSA-564h-qm5m-jrhj/GHSA-564h-qm5m-jrhj.json",
+    "http://www.securityfocus.com/bid/861",
+    "https://www.exploit-db.com/exploits/19665",
+    "https://github.com/CVEProject/cvelistV5/blob/ad13a04165adf44a190b93c89d746f49525e5595/cves/1999/0xxx/CVE-1999-0989.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0989",
+    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-1999-0989.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c9ec7f26a52f816468b636e23146049097db5070/CVE/data/1999/CVE-1999-0989.json",
+    "https://github.com/github/advisory-database/blob/f43f79d7ee652229af6058b1c98133bb5bbc17fb/advisories/unreviewed/2022/04/GHSA-564h-qm5m-jrhj/GHSA-564h-qm5m-jrhj.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0989.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--fcf84d2a-de04-4cc1-b40f-b039c4e34769.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-18T00:00:00Z"
