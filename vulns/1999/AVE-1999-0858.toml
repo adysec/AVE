@@ -1,11 +1,11 @@
 [basic]
-description = 'SSH 1.2.27 服务器存在安全策略绕过漏洞，其加密协商机制未严格校验服务器端配置的加密算法策略。攻击者作为 SSH 客户端在连接时可指定使用 "none" 加密算法（即明文传输），即便服务器策略本不允许该算法，服务器仍会接受此协商结果。该漏洞影响 OpenSSH 早期的 SSH 1.2.27 版本，攻击条件为攻击者能够发起 SSH 客户端连接并主动请求 none 加密方式，无需身份认证前提。利用成功后，SSH 会话将以未加密的明文形式传输数据，导致通信内容可被中间人窃听，敏感信息（如凭证、会话数据）面临泄露风险。该漏洞 CVSS 评分为 2.1，危害等级较低。'
+description = 'OpenSSH 1.2.27 版本的 SSH 服务端在密钥协商阶段存在安全策略绕过缺陷。按照服务端安全策略本应禁止客户端使用"none"加密算法（即不加密的明文传输），但受影响的服务器在协商过程中未能正确校验客户端所选加密方式，导致客户端可以强制使用"none"密码套件建立连接。攻击条件为攻击者能够与目标 OpenSSH 1.2.27 服务建立 SSH 连接，并在密钥交换阶段协商加密算法。成功利用后，攻击者与该服务的通信将不经过任何加密保护，导致会话内容以明文方式传输，从而可被中间人监听、窃取凭据或篡改数据，造成机密性破坏。该漏洞影响运行 OpenSSH 1.2.27 的服务器，CVSS 评分 2.1，危害等级较低，但可能削弱 SSH 通信的安全性保障。'
 published = "1999-12-14T05:00:00.000"
-remediation = '升级 OpenSSH 至 1.2.28 或更高版本，该版本已修复允许客户端使用 "none" 加密算法的策略绕过问题。如无法立即升级，可在服务器配置文件 sshd_config 中显式设置 Ciphers 仅允许强加密算法（如 3des-cbc、blowfish-cbc），并禁止 none 加密方式，同时配合防火墙限制仅允许可信 IP 访问 SSH 服务作为临时缓解措施。'
+remediation = '升级 OpenSSH 至 1.2.28 或更高版本（修复了允许客户端使用 "none" 加密算法的策略绕过问题）。若无法立即升级，可在服务端配置文件 sshd_config 中设置 Ciphers 明确限定为已批准的加密算法列表，禁止使用 "none"，并重启 sshd 服务生效。'
 score = 2.1
 severity = "LOW"
-sources = ["avd"]
-title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9114,"outputTokens":15,"totalTokens":10793}}'
+sources = ["epss"]
+title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9117,"outputTokens":19,"totalTokens":10800}}'
 updated = "2026-06-16T21:49:30.990"
 
 [exploit]
@@ -17,20 +17,20 @@ aliases = ["CVE-1999-1010"]
 ave_id = "AVE-1999-0858"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://marc.info/?l=bugtraq&m=94519142415338&w=2",
-    "https://github.com/trickest/cve/blob/cf29b986be3ae7c9144123b101d864868676099e/1999/CVE-1999-1010.md",
-    "https://github.com/CVEProject/cvelistV5/blob/fe807f4098db5a5ad8dcb41a479197724cb9e789/cves/1999/1xxx/CVE-1999-1010.json",
+    "https://github.com/trickest/cve/blob/638563f1ec085a412c2e42f3935801ae34f0dfd9/1999/CVE-1999-1010.md",
+    "https://github.com/CVEProject/cvelistV5/blob/9a9b6476a3f4a52ffa21ec6ed80d737eb0fc242b/cves/1999/1xxx/CVE-1999-1010.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1010",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1010.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-1010.md",
-    "https://github.com/github/advisory-database/blob/f61040ac78eb76aff0a3a68a8a8a4562940d3711/advisories/unreviewed/2022/04/GHSA-wwmx-q2rq-7qgv/GHSA-wwmx-q2rq-7qgv.json",
+    "https://github.com/github/advisory-database/blob/424512debdca84cc53ffa1fb3810a74f7b1905a5/advisories/unreviewed/2022/04/GHSA-wwmx-q2rq-7qgv/GHSA-wwmx-q2rq-7qgv.json",
     "https://github.com/phx/cvescan/blob/d8d463e490d1d2d785179e8ace7ff59c2ea15f1f/README.md",
     "https://github.com/privy-cafe/DollarLinuxClub/blob/57ae5d72b23dd6fe9fc5fca4dd120ffdf9dca123/misc/efnetretards.txt",
-    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-1999-1010.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/6ace77d8f88177c3c838b9b8d872bf7a08773429/CVE-1999/CVE-1999-10xx/CVE-1999-1010.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--0d650879-12f5-4812-85c1-eb23e0c89acc.json",
 ]
