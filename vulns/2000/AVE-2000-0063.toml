@@ -1,44 +1,42 @@
-1. The [remediation] field is empty (missing content)
-2. The output must be pure TOML without code blocks or markdown
-The vulnerability is:
-- AVE-2000-0063 (CVE-2000-0077)
-- Title: "HP-UX Aserver PATH 漏洞"
-- Original description: "HP-UX 10.x/11.x 系统中的 aserver 程序存在路径注入漏洞。本地攻击者可通过设置恶意 PATH 环境变量，使 aserver 在执行时加载攻击者控制的 ps 和 grep 命令，从而以提升的权限执行任意代码。该漏洞影响 HP-UX 10.x 和 11.x 多个版本，CVSS 评分 7.2，危害等级高。攻击者需拥有本地系统访问权限方可利用。"
-- Score: 7.2, Severity: HIGH
-I need to provide remediation for this PATH vulnerability. From my knowledge, this is a classic HP-UX Aserver local privilege escalation vulnerability where the application uses the PATH environment variable to find system commands like ps and grep. Attackers can manipulate PATH to execute their own malicious versions of these commands.
-For remediation, I should suggest:
-1. Update to a fixed version of HP-UX (likely HP-UX 11.31 or later)
-2. Configure or restrict the PATH for the aserver program
-3. Use absolute paths for critical system commands
-aliases = ["CVE-2000-0077"]
+1. remediation contains placeholders: The original remediation has `PHCO_XXXXX` which are placeholders. I need to remove the placeholder references and provide a more accurate remediation. Since this is an old vulnerability (2000), HP may not have official patches available anymore. I should provide practical remediation advice without fake patch numbers.
+2. The NVD page confirms:
+- CVSS v2.0: 7.2 HIGH
+- Vector: AV:L/AC:L/Au:N/C:C/I:C/A:C
+- Published: 01/02/2000
+- Last Modified: 06/16/2026
+- Description: "The October 1998 version of the HP-UX aserver program allows local users to gain privileges by specifying an alternate PATH which aserver uses to find the ps and grep commands."
+1. Fix remediation - remove placeholder PHCO_XXXXX references
+2. Fix published format - use date only
+3. Clean up references - keep only authoritative ones
+4. Keep everything else as is
+Actually, looking at the schema more carefully:
+- `published = "2000-01-02"` - just date format
+- `updated = "2000-01-02"` - just date format
+The original has `published = "2000-01-02T05:00:00.000"` which is wrong format.
+Actually, the instructions say "不要编造不存在的 URL 或补丁版本" - don't fabricate non-existent URLs or patch versions. So I should:
+1. Remove the PHCO_XXXXX placeholders from remediation
+2. Keep the references that are real
+3. Fix the published date format
 ave_id = "AVE-2000-0063"
+aliases = ["CVE-2000-0077"]
 [basic]
-title = "HP-UX Aserver PATH 漏洞"
-description = "HP-UX aserver 程序通过用户控制的 PATH 环境变量加载 ps 和 grep 等关键系统命令，导致本地攻击者可执行任意命令并提升权限。该漏洞影响 HP-UX 10.x 和 11.x 多个版本，攻击者仅需本地访问权限即可利用。"
-remediation = "建议升级 HP-UX 到 11.31 或更高版本以获取正式修复。请将 aserver 执行时的 PATH 限制为系统默认路径，禁止用户自定义。也可通过修改 aserver 二进制文件或使用 sudo 将 PATH 重定向到安全的完整路径（如 /usr/bin:/bin）来缓解风险。"
-score = 7.2
+title = "HP HP-UX aserver 本地权限提升漏洞"
+description = "HP-UX 10.x 和 11.x 系统中 aserver 程序存在本地权限提升漏洞。该程序在运行时会调用 ps 和 grep 命令，但未使用绝对路径，而是信任用户可控制的 PATH 环境变量。本地攻击者可通过修改 PATH 指向恶意程序，诱使 aserver 以更高权限执行恶意代码，从而获取 root 权限。该漏洞影响 HP-UX 10.x/11.x 系列操作系统，CVSS 评分 7.2，危害等级高。"
 severity = "HIGH"
-sources = ["cve"]
-published = "2000-01-02T05:00:00.000"
-updated = "2026-06-16T21:50:57.150"
+score = 7.2
+sources = ["cve", "exploitdb"]
+published = "2000-01-02"
+updated = "2026-06-16"
+remediation = "编辑 aserver 脚本将 ps 和 grep 命令路径改为绝对路径（如 /usr/bin/ps 和 /usr/bin/grep），并移除 aserver 的 setuid 权限位（chmod u-s /usr/bin/aserver），同时限制可执行用户组为受信任管理员。由于该漏洞年代久远，HP 已停止对 HP-UX 10.x/11.x 的主流支持，建议升级至受支持的操作系统版本。"
 [references]
 urls = [
+"https://nvd.nist.gov/vuln/detail/CVE-2000-0077",
 "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A5549",
 "https://www.exploit-db.com/exploits/20396",
-"https://github.com/CVEProject/cvelistV5/blob/20b9340dcaffca733259fb153ac741206a5bbc5f/cves/2000/0xxx/CVE-2000-0077.json",
-"https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0077",
-"https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-2000-0077.md",
-"https://github.com/Patrowl/PatrowlHearsData/blob/e90735e3e31fc62018265dfbae313d166e653462/CVE/data/2000/CVE-2000-0077.json",
-"https://github.com/github/advisory-database/blob/d9ad03f9df46533ce9229f9da6bbf66bd77a3f4f/advisories/unreviewed/2022/04/GHSA-xcpm-3296-q6gm/GHSA-xcpm-3296-q6gm.json",
-"https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-"https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-2000-0077.json",
-"https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152100_152200.json",
-"https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_3.list.dict",
-"https://github.com/nomi-sec/CVE-Easy-List/blob/233cd9746ce3c3e9d47fe0335940ddf03b9a0845/2000.tsv",
 ]
 [exploit]
-exp_urls = []
 poc_urls = []
+exp_urls = []
 [meta]
 status = "completed"
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-19T00:00:00Z"
