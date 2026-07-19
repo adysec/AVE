@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测 SCO UnixWare 7.x 上 ARCserve 代理服务是否存在，验证本地符号链接攻击条件（/tmp 目录可写且 ARCserve 相关临时文件存在）"
+description = "SCO UnixWare 7.x 的 ARCserve 代理在处理 /tmp 目录文件时存在符号链接漏洞，本地攻击者可创建指向敏感文件的符号链接，诱导以 root 权限运行的 ARCserve 进程写入目标文件实现提权。本 PoC 仅做安全无损验证，检查 /tmp 目录是否存在可被 ARCserve 误用的符号链接风险文件。"
 id = "POC-AVE-2000-0199"
-name = "SCO UnixWare ARCserver 本地符号链接漏洞 PoC"
+name = "CVE-2000-0224 ARCserve /tmp Symlink PoC"
 severity = "low"
 tags = ["ave-2000-0199"]
 vuln_id = [
@@ -11,34 +11,18 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
-path = "/tmp/.arcserve"
+path = "/tmp/arcserve.lnk"
 protocol = "file"
 
 [[poc.requests.matchers]]
-expect = true
+expect = false
 part = "body"
 type = "word"
-words = [""]
-
-[[poc.requests]]
-path = "/opt/arcserve/agent"
-protocol = "file"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [""]
-
-[[poc.requests]]
-path = "/usr/lib/arcserve"
-protocol = "file"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [""]
+words = [
+    "arcserve",
+    "symlink",
+    "root",
+]
