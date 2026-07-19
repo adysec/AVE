@@ -1,0 +1,24 @@
+[basic]
+description = "WordPress 的 Dokan Pro 多供应商市场插件存在未授权 SQL 注入漏洞。该漏洞位于处理 Moip 支付 Webhook 回调的接口（POST /wp-admin/admin.php?webhook=dokan-moip）中，插件在未对请求体中的 subscription_code 参数进行充分过滤与转义的情况下，直接将其拼接进数据库查询语句。由于该 Webhook 接口无需身份认证即可访问，攻击者只要能够向目标站点发送特制的 JSON 格式 HTTP 请求，即可在 subscription_code 字段中插入恶意 SQL 片段（如利用子查询结合 sleep() 函数进行时间盲注），从而执行任意 SQL 查询。攻击成功可造成数据库信息泄露、数据被篡改，在部分配置下甚至可能进一步助力权限提升或远程代码执行。受影响范围为安装了存在缺陷版本 Dokan Pro 插件且启用 Moip 支付网关的 WordPress 站点。"
+published = "0807"
+remediation = "立即将 Dokan Pro 插件升级至官方发布的修复版本（3.11.1 及以上），并前往 WordPress 后台「插件」页面完成更新。如暂时无法升级，可在 functions.php 中禁用 dokan-moip webhook 路由，或部署 WAF 规则拦截对 /wp-admin/admin.php?webhook=dokan-moip 的恶意 POST 请求，过滤 subscription_code 参数中的 sleep、select 等 SQL 关键字作为临时缓解。"
+score = 5
+severity = "MEDIUM"
+sources = ["hwpoc"]
+title = "WordPress Dokan Pro 插件未授权 SQL 注入漏洞"
+updated = "0807"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["HWPOC-2024-053bb7c0"]
+ave_id = "AVE-2024-0399"
+
+[meta]
+collected_at = "2026-07-19T00:00:00Z"
+status = "completed"
+
+[references]
+urls = []
