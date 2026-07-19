@@ -1,17 +1,13 @@
 [info]
-author = "ave"
-description = "Microsoft Java Virtual Machine 的 getSystemResourceAsStream 函数允许远程攻击者读取本地任意文件。PoC 通过构造恶意 Java applet 调用该函数尝试读取系统文件，验证目标是否存在未授权文件读取。由于该漏洞依赖已淘汰的 Microsoft VM 与已过时的 applet 运行机制，实际利用需用户访问含恶意代码的页面且目标仍运行 Microsoft VM。"
-id = "POC-AVE-2000-0119"
-name = "CVE-2000-0132 Microsoft VM getSystemResourceAsStream 文件读取 PoC"
+author = "AVE"
+description = "Microsoft Java Virtual Machine getSystemResourceAsStream 信息泄露漏洞验证。通过恶意 Java Applet 利用 ClassLoader.getSystemResourceAsStream() 读取本地文件。"
+id = "POC-AVE-2000-00001"
+name = "CVE-2000-0132 PoC"
 severity = "low"
-tags = [
-    "cve-2000-0132",
-    "microsoft-vm",
-    "file-read",
-]
+tags = ["cve-2000-0132"]
 vuln_id = [
     "CVE-2000-0132",
-    "AVE-2000-0119",
+    "GHSA-4r25-8qgq-j8pv",
 ]
 
 [poc]
@@ -19,13 +15,11 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/poc.class"
+path = "/{{BaseURL}}/Test.class"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = ["CA FE BA BE"]
