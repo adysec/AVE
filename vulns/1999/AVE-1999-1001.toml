@@ -1,11 +1,11 @@
 [basic]
-description = "tags.<value>Cisco IOS 11.2 及更早版本所配套的 Cisco Cache Engine 在实现 Web 缓存控制协议（WCCP）时未引入任何认证机制。WCCP 通过 UDP 2048 端口通信，用于协调缓存引擎与路由器之间的流量重定向。由于协议缺乏身份校验，未经过认证的远程攻击者可向目标路由器的 UDP 2048 端口伪造并发送 WCCP 报文，从而将经过该设备的 HTTP 流量重定向至攻击者可控的任意主机，进而实施中间人劫持、流量监听或钓鱼攻击。该漏洞影响运行 Cisco IOS 11.2 及更早版本且启用 WCCP 功能的 Cisco 网络设备与缓存引擎，攻击只需网络可达目标 UDP 2048 端口，无需本地权限或用户交互，利用门槛低、危害较大。"
+description = "Cisco Cache Engine（用于 Cisco IOS 11.2 及更早版本）中的 Web 缓存控制协议（WCCP）未实施任何身份验证机制，远程攻击者可通过向目标设备的 UDP 端口 2048 发送特制的 WCCP 数据包，将 HTTP 流量重定向至任意主机，从而导致中间人攻击或服务劫持。该漏洞影响大量部署 Cisco 缓存设备的网络环境，CVSS 评分 7.5，危害等级高。官方未发布补丁，建议升级至更高版本 IOS 或配置访问控制列表缓解风险。"
 published = "1999-12-31T05:00:00.000"
-remediation = '升级 Cisco IOS 至 11.3 或更高版本以启用 WCCP 身份验证功能；若暂时无法升级，请在路由器上执行 "no ip wccp" 命令禁用 WCCP 服务，或在防火墙层面阻断 UDP 2048 端口防止未授权流量重定向。'
+remediation = "升级 Cisco IOS 至 12.0 或更高版本，新版 WCCP 支持 MD5 认证配置（`ip wccp web-cache password <口令>`）。如无法升级，在边界路由器上配置 ACL 限制 UDP 2048 端口的源 IP 仅为可信缓存引擎地址。若无需 Web 缓存加速，全局关闭 WCCP（`no ip wccp web-cache`）以彻底消除暴露面。"
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
-title = "Cisco IOS Cache Engine Web Cache Control Protocol 认证漏洞"
+sources = ["avd"]
+title = "Cisco Cache Engine Web缓存控制协议认证绕过漏洞"
 updated = "2026-06-16T21:49:52.753"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1175"]
 ave_id = "AVE-1999-1001"
 
 [meta]
-collected_at = "2026-07-14T00:00:00Z"
+collected_at = "2026-07-19T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,12 +25,12 @@ urls = [
     "http://www.ciac.org/ciac/bulletins/i-054.shtml",
     "http://www.cisco.com/warp/public/770/wccpauth-pub.shtml",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/1577",
-    "https://github.com/trickest/cve/blob/a90de4f84b4783951362f491671e1e9decfc17cb/1999/CVE-1999-1175.md",
-    "https://github.com/CVEProject/cvelistV5/blob/928db9679b69032a137f1c2f3374c28367145ef0/cves/1999/1xxx/CVE-1999-1175.json",
+    "https://github.com/trickest/cve/blob/638563f1ec085a412c2e42f3935801ae34f0dfd9/1999/CVE-1999-1175.md",
+    "https://github.com/CVEProject/cvelistV5/blob/ad08212eac84f46206c2da8a50436d48e5ad608c/cves/1999/1xxx/CVE-1999-1175.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1175",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f6ced4f7862026f4207c9708deb4edf129c83fc5/CVE/data/1999/CVE-1999-1175.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/baa4573f2fa6813cfbc3f5cda2f1796a92d64bdf/CVE/data/1999/CVE-1999-1175.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-1175.md",
-    "https://github.com/github/advisory-database/blob/25a429f7c036c8b0416069b51c2af695a6b890c2/advisories/unreviewed/2022/04/GHSA-2qg5-3mg4-mrr4/GHSA-2qg5-3mg4-mrr4.json",
+    "https://github.com/github/advisory-database/blob/95e6ff620d5494b93ba2234edfcf6a45187dc0a8/advisories/unreviewed/2022/04/GHSA-2qg5-3mg4-mrr4/GHSA-2qg5-3mg4-mrr4.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1175.json",
     "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/C/cisco-sa-19980513-wccp-auth.nasl",
     "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001005.txt",
