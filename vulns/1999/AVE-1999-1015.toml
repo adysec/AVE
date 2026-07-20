@@ -1,11 +1,11 @@
 [basic]
-description = "SSH 2.0.12 及可能其他版本在用户认证过程中存在信息泄露漏洞。服务端对有效用户名与无效用户名的处理逻辑存在差异：有效用户名可多次尝试输入密码，而无效用户名仅提示一次即断开连接。未经认证的远程攻击者可通过发送大量 SSH 认证请求，根据服务器响应模式（是否提示输入密码而非立即拒绝）来枚举目标系统上存在的用户账户名。该漏洞虽不直接导致代码执行或权限提升，但枚举出的有效账户为后续暴力破解、密码喷洒或社会工程攻击提供了精准目标，显著降低了进一步攻击的门槛。"
+description = "SSH 2.0.12 及部分其他版本存在用户名枚举漏洞。当攻击者尝试登录时，服务器对有效用户名会多次提示输入密码，而对无效用户名仅提示一次即拒绝连接。远程攻击者可利用这一行为差异，通过枚举方式探测目标服务器上存在的合法用户账号，为后续暴力破解或针对性攻击提供前提条件。该漏洞影响 SSH 2.0.12 版本，CVSS 评分 5.0，危害等级中危。"
 published = "1999-06-09T04:00:00.000"
-remediation = "升级至 OpenSSH 7.9 及以上版本，该版本对所有用户统一返回相同的密码提示次数，避免通过交互差异枚举有效账号。如无法立即升级，可改用键盘交互认证（KeyboardInteractive）替代密码认证，或在 sshd_config 中设置 `MaxAuthTries 1` 并将 `LogLevel VERBOSE` 以记录异常枚举行为作为临时缓解。"
+remediation = "升级到 SSH 2.1 及以上版本，或迁移至 OpenSSH（2.5+），这些版本统一了有效/无效用户名的密码提示行为，避免泄露用户存在性。如无法升级，可在 sshd_config 中设置 MaxAuthTries 为较小值并启用 LoginGraceTime 限制，同时配合 fail2ban 等工具监控暴力破解尝试。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "SSH SSH 用户枚举漏洞"
+sources = ["epss"]
+title = "OpenSSH 用户枚举漏洞"
 updated = "2026-06-16T21:49:59.880"
 
 [exploit]
@@ -24,14 +24,14 @@ status = "completed"
 urls = [
     "http://www.securityfocus.com/archive/1/14758",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/2276",
-    "https://github.com/CVEProject/cvelistV5/blob/7481e97cf7b60a5b982d99d7dad1ea61174940fb/cves/1999/1xxx/CVE-1999-1231.json",
+    "https://github.com/CVEProject/cvelistV5/blob/50269681ee58c9b5bf7169b73546eef94697389c/cves/1999/1xxx/CVE-1999-1231.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1231",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-1999-1231.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/c1321b1a6b0cb3a4c18f791e2c8443742c0cb0b0/CVE/data/1999/CVE-1999-1231.json",
-    "https://github.com/github/advisory-database/blob/cdfc8886d71af7ef3bdab3e4db46753ff8af6538/advisories/unreviewed/2022/04/GHSA-7g97-5hq7-x7mm/GHSA-7g97-5hq7-x7mm.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1231.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4631642e37ce9ee8b9057e387df4aee61487fb70/CVE/data/1999/CVE-1999-1231.json",
+    "https://github.com/github/advisory-database/blob/f37077e857e7a28bab83d284c23299407fb1af7e/advisories/unreviewed/2022/04/GHSA-7g97-5hq7-x7mm/GHSA-7g97-5hq7-x7mm.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x88000/87557/info.html",
     "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/1999.tsv",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--0457d271-b4c6-4bb2-813d-1cf71d06fee5.json",
     "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000668.txt",
-    "https://github.com/opencve/opencve-kb/blob/7cddb9480dac0125b9b2b00c91d6226d5d995ec7/1999/CVE-1999-1231.json",
+    "https://github.com/opencve/opencve-kb/blob/8c2e4bec18ae978cff0216ba99e60936ec0d2cb7/1999/CVE-1999-1231.json",
 ]
