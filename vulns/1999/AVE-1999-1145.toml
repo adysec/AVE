@@ -1,38 +1,20 @@
-[basic]
-description = "TenFour TFS Gateway 4.0 存在配置缺陷漏洞，该产品在处理消息时因发送方和收件人地址验证逻辑异常而导致无限循环状态。当攻击者发送包含不正确地址信息的消息时，系统会持续以 10 秒为周期尝试返回消息，导致 CPU 资源消耗激增，服务器响应变慢直至服务完全不可用。该漏洞影响范围广泛，任何未正确配置 TFS Gateway 的用户都可能成为目标，攻击者无需任何权限即可远程触发。漏洞原理在于网关未能正确识别和过滤错误地址消息的处理流程，致使程序进入无限重试状态，暴露了系统在异常输入处理方面的严重不足，为攻击者提供了利用 WSGI 协议实现服务拒绝的便利手段，影响企业的网络通讯服务稳定性和用户体验。"
-published = "1999-08-31T04:00:00.000"
-remediation = "升级 TenFour TFS Gateway 至修复了该问题的后续版本（4.0 之后的官方补丁版本）；若无法立即升级，可在网关配置中禁用或修正导致异常的「非默认发送方/接收方地址」处理规则，并将可疑来源 IP 在防火墙处阻断，以减少恶意消息触发网关每 10 秒持续重发所导致的拒绝服务。"
-score = 5
-severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "TenFour TFS Gateway 4.0 拒绝服务漏洞"
-updated = "2026-06-16T21:50:36.357"
-
-[exploit]
-exp_urls = []
-poc_urls = []
-
 [id]
-aliases = ["CVE-1999-1515"]
 ave_id = "AVE-1999-1145"
-
-[meta]
-collected_at = "2026-07-18T00:00:00Z"
-status = "completed"
-
+aliases = ["CVE-1999-1515"]
+[basic]
+title = "TenFour TFS Gateway 4.0 邮件地址解析拒绝服务漏洞"
+description = "TenFour TFS Gateway 4.0 的非默认配置下存在拒绝服务漏洞。当管理员启用了"将完整消息退回发件人"功能后，攻击者可通过 SMTP 端口发送包含无效发件人地址和无效收件人地址的邮件，导致网关每隔 10 秒持续尝试退回该消息，直至管理员手动干预。大量此类消息将耗尽系统资源，造成服务不可用。远程攻击者无需认证即可利用该漏洞，影响 TFS Gateway 4.0 版本。"
+severity = "MEDIUM"
+score = 5.0
+sources = ["cve"]
+published = "1999-08-31"
+updated = "2026-06-16"
+remediation = "TFS Gateway 4.0 已停止维护，建议升级至最新版本或迁移至其他受支持的邮件网关产品。如无法升级，可在配置中关闭"退回整条消息"功能，或限制单条消息的最大重试次数并缩短重试间隔。同时应在邮件网关入口处过滤格式异常的邮件地址，防止攻击者构造无效地址触发持续重试。"
 [references]
-urls = [
-    "http://www.securityfocus.com/bid/613",
-    "https://exchange.xforce.ibmcloud.com/vulnerabilities/3290",
-    "https://www.exploit-db.com/exploits/19477",
-    "https://github.com/CVEProject/cvelistV5/blob/f56f639de76f94fc0aef783754a3de16fea7357b/cves/1999/1xxx/CVE-1999-1515.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1515",
-    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1515.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/be19cdaa6196942fd4096a42a1eaf047a8584298/CVE/data/1999/CVE-1999-1515.json",
-    "https://github.com/github/advisory-database/blob/90b464bbc2d1b64270a5771429f96b67fbe9e79b/advisories/unreviewed/2022/04/GHSA-68q7-2qpc-87mh/GHSA-68q7-2qpc-87mh.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/613/info.html",
-    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-1999-1515.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153600_153700.json",
-    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/d8232fe3e2556046ab374e149ecb1f50a314b074/1999.tsv",
-]
+urls = ["http://www.securityfocus.com/bid/613", "https://exchange.xforce.ibmcloud.com/vulnerabilities/3290", "https://www.exploit-db.com/exploits/19477"]
+[exploit]
+poc_urls = ["https://www.exploit-db.com/exploits/19477"]
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-20T00:00:00Z"
