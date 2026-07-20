@@ -1,10 +1,10 @@
 [info]
-author = "AVE"
-description = "验证 Apple Mac OS X 1.0 Apache HTTP Server CGI 请求洪流拒绝服务漏洞。远程攻击者通过 Apache Benchmark(ab) 发送 32 个并发 HTTP GET 请求到 /cgi-bin/test-cgi，可导致 Apache 生成大量进程耗尽系统资源造成内核恐慌崩溃。"
+author = "ave"
+description = "通过向 Mac OS X 1.0 上 Apache 服务器的 CGI 程序发送大量 HTTP GET 请求，触发进程资源耗尽，验证拒绝服务漏洞 CVE-1999-1412"
 id = "POC-AVE-1999-1101"
-name = "CVE-1999-1412 PoC"
+name = "Apple Mac OS X 1.0 Apache CGI GET Flood DoS PoC"
 severity = "medium"
-tags = ["cve-1999-1412"]
+tags = ["ave-1999-1101"]
 vuln_id = [
     "CVE-1999-1412",
     "AVE-1999-1101",
@@ -18,15 +18,31 @@ method = "GET"
 path = "/{{BaseURL}}/cgi-bin/test-cgi"
 protocol = "http"
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "CGI/1.0",
-    "Document",
-    "test-cgi",
+    "500",
+    "Service Unavailable",
+    "Resource Temporarily Unavailable",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/printenv"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "Service Unavailable",
+    "Resource Temporarily Unavailable",
 ]

