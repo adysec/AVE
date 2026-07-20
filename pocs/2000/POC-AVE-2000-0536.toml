@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "检测 BEA WebLogic 5.1.x JSPServlet 未授权访问漏洞，远程攻击者可通过直接调用 JSPServlet 编译执行任意 JSP 代码"
+id = "POC-AVE-2000-0536"
+name = "BEA WebLogic JSPServlet 远程代码执行 PoC"
+severity = "critical"
+tags = ["ave-2000-0536"]
+vuln_id = [
+    "CVE-2000-0684",
+    "AVE-2000-0536",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/jspservlet/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+    401,
+    403,
+    500,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["WebLogic"]
