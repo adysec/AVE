@@ -1,83 +1,38 @@
-1. `description` field is empty - the TOML has a malformed structure where the description field contains a huge block of text that's actually the entire TOML output from a previous run, mixed with analysis text.
-I need to:
-1. Fix the description field to be a proper Chinese description (≥50 chars)
-2. Clean up the entire TOML to follow the strict 5-section schema
-3. Keep the correct ave_id = "AVE-1999-0953" and aliases = ["CVE-1999-1111"]
-From the NVD data, I can see:
-- Description: "Vulnerability in StackGuard before 1.21 allows remote attackers to bypass the Random and Terminator Canary security mechanisms by using a non-linear attack which directly modifies a pointer to a return address instead of using a buffer overflow to reach the return address entry itself."
-- CVSS v2.0: 7.5 HIGH (AV:N/AC:L/Au:N/C:P/I:P/A:P)
-- Published: 1999-11-09
-- Updated: 2026-06-16
-- References: marc.info, securityfocus.com/bid/786, xforce.ibmcloud.com/vulnerabilities/3524
-The remediation should be specific - upgrade to StackGuard 1.21 which introduced XOR Random Canary.
-Now let me write the clean TOML.The user wants me to fix the TOML for AVE-1999-0953 (CVE-1999-1111). The error is that the `description` field is empty. I need to:
-1. Fix the description field - it's empty in the provided TOML
-2. Ensure all fields are correct
-3. Output pure TOML only
-From the NVD data, the description is:
-"Vulnerability in StackGuard before 1.21 allows remote attackers to bypass the Random and Terminator Canary security mechanisms by using a non-linear attack which directly modifies a pointer to a return address instead of using a buffer overflow to reach the return address entry itself."
-CVSS 2.0: 7.5 HIGH, Vector: (AV:N/AC:L/Au:N/C:P/I:P/A:P)
-The TOML provided has the description field empty. I need to fill it with a Chinese translation of the description.
-- title: "StackGuard 缓冲区溢出安全绕过漏洞" - this is Chinese, good
-- severity: HIGH, score: 7.5 - matches
-- remediation: needs to be ≥20 chars Chinese - the current one is good
-- published: "1999-11-09" - correct
-- updated: "2026-06-16" - from NVD last modified
-- sources: ["cve"] - should be fine, or could add more
-The main issue is the empty description. Let me write a proper Chinese description.
-Also, the TOML has some issues with the structure - there are duplicate sections and the description field is literally empty. Let me clean it up completely.
-Looking at the provided TOML more carefully, it seems like there are two TOML documents concatenated or something. The structure is messy. Let me produce a clean, single TOML document.
-The description needs to be ≥50 characters in Chinese. Let me write one based on the NVD description.
-"StackGuard 1.21之前版本存在安全绕过漏洞。远程攻击者可通过非线性攻击方式，直接修改指向返回地址的指针，而非通过传统缓冲区溢出覆盖返回地址本身，从而绕过 Random 和 Terminator Canary 安全保护机制，导致机密性、完整性和可用性受损。"
-That's well over 50 characters.
-For remediation, the current one says "升级到 StackGuard 1.21 版本，该版本引入了 XOR Random Canary 机制" - this is good, ≥20 chars Chinese.
-The TOML has duplicate sections. Let me produce a clean version.
-Actually, looking at the error message again: "description: description 字段为空" - the description field is literally empty in the provided TOML. I need to fill it with a proper Chinese description.
-From the user's message, the TOML has:
-- `[basic]` section with `description = """` followed by `tags.` and then more content that seems malformed
-- The description field appears to be empty or malformed
-From NVD:
-- Description: "Vulnerability in StackGuard before 1.21 allows remote attackers to bypass the Random and Terminator Canary security mechanisms by using a non-linear attack which directly modifies a pointer to a return address instead of using a buffer overflow to reach the return address entry itself."
-- CVSS 2.0: 7.5 HIGH (AV:N/AC:L/Au:N/C:P/I:P/A:P)
-- Published: 1999-11-09
-- References: marc.info, securityfocus, xforce
-The TOML provided has a lot of garbage in it - the description field is malformed with `"""` followed by `tags.` and then a bunch of other fields mixed in. The user says the description is empty.
-1. Fix the description (it's empty/malformed)
-2. Keep the correct fields
-3. Remove duplicate/illegal sections
-4. Ensure severity/score match (7.5 = HIGH, correct)
-5. Use Chinese for title/description/remediation
-6. Only output pure TOML
-Looking at the provided TOML more carefully, it seems like the user pasted a corrupted TOML where multiple TOML documents got concatenated. Let me extract the correct information:
-AVE ID: AVE-1999-0953
-Aliases: CVE-1999-1111
-Title: StackGuard 缓冲区溢出安全绕过漏洞 (from the corrupted TOML)
-Severity: HIGH
-Score: 7.5
-Published: 1999-11-09
-Updated: 2026-06-16 (from NVD)
-References: marc.info, securityfocus, xforce
-The description field is the main problem. I need to write a proper Chinese description.
-ave_id = "AVE-1999-0953"
-aliases = ["CVE-1999-1111"]
 [basic]
-title = "Immunix StackGuard 缓冲区溢出安全绕过漏洞"
-description = "Immunix StackGuard 1.21之前版本存在安全绕过漏洞。攻击者可通过非线性攻击方式，利用程序中存在的指针覆盖漏洞，先溢出缓冲区修改指针变量使其指向返回地址，再通过该指针直接写入返回地址，从而绕过Random和Terminator Canary安全机制。成功利用此漏洞可导致远程代码执行，完全控制目标系统。"
-severity = "HIGH"
+description = "StackGuard 1.21 之前版本存在缓冲区溢出安全绕过漏洞。攻击者可通过非线性攻击方式直接修改指向返回地址的指针，而非利用缓冲区溢出覆盖返回地址本身，从而绕过 StackGuard 的 Random 和 Terminator Canary 安全机制。该漏洞影响 StackGuard 1.21 之前所有版本，CVSS 评分 7.5，危害等级高。建议用户升级至 StackGuard 1.21 或更高版本以修复此漏洞。"
+published = "1999-11-09T05:00:00.000"
+remediation = "立即升级至 StackGuard 1.21 或更高版本，该版本引入 XOR 随机金丝雀机制，将返回地址与随机金丝雀值绑定，使攻击者无法在不破坏金丝雀的情况下直接修改返回地址指针。软件可从 http://immunix.org/downloads.html#sg1.21 获取。同时建议开发者避免在同一函数中同时使用 gets() 类溢出函数和指针间接写入操作。"
 score = 7.5
-sources = ["cve"]
-published = "1999-11-09"
-updated = "2026-06-16"
-remediation = "升级到 StackGuard 1.21 版本，该版本引入了 XOR Random Canary 机制，将 canary 值与返回地址进行 XOR 绑定，防止攻击者修改返回地址而不破坏 canary 值。"
+severity = "HIGH"
+sources = ["epss"]
+title = "StackGuard 缓冲区溢出安全绕过漏洞"
+updated = "2026-06-16T21:49:44.603"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-1111"]
+ave_id = "AVE-1999-0953"
+
+[meta]
+collected_at = "2026-07-20T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://marc.info/?l=bugtraq&m=94218618329838&w=2",
-"http://www.securityfocus.com/bid/786",
-"https://exchange.xforce.ibmcloud.com/vulnerabilities/3524"
+    "http://marc.info/?l=bugtraq&m=94218618329838&w=2",
+    "http://www.securityfocus.com/bid/786",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/3524",
+    "https://github.com/CVEProject/cvelistV5/blob/e25ede9c3545efaa8ff0b393e30e48edb07502a8/cves/1999/1xxx/CVE-1999-1111.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1111",
+    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-1999-1111.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/248c2167e720df96125f6ac9925793063a207510/CVE/data/1999/CVE-1999-1111.json",
+    "https://github.com/github/advisory-database/blob/cdfc8886d71af7ef3bdab3e4db46753ff8af6538/advisories/unreviewed/2022/04/GHSA-fpjr-9gj6-mc3v/GHSA-fpjr-9gj6-mc3v.json",
+    "https://github.com/olbat/nvdcve/blob/63d4031680b3d3fa77b826660a1e30ffc70ff5cd/nvdcve/CVE-1999-1111.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153800_153900.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000868.txt",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--5fd10034-0e95-458a-8e9d-f6ddb2de6532.json",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-19T00:00:00Z"
