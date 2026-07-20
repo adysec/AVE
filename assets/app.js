@@ -257,7 +257,7 @@ function renderList(cards) {
     actionTd.className = "table-action";
     const detailLink = document.createElement("a");
     detailLink.className = "detail-link";
-    detailLink.href = `detail.html?file=${encodeURIComponent(c.file_name)}`;
+    detailLink.href = `detail.html?ave=${encodeURIComponent(c.ave_id)}`;
     detailLink.target = "_blank";
     detailLink.rel = "noopener noreferrer";
     detailLink.textContent = "查看详情";

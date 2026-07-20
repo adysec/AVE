@@ -253,7 +253,7 @@ function render(toml, fileName, rawUrl, htmlUrl, assetIndex) {
     for (const entry of repoPocs) {
       const div = document.createElement("div");
       div.className = "asset-file";
-      div.innerHTML = `<a href="asset.html?file=${encodeURIComponent(entry.path)}&type=poc" class="asset-link">${entry.path.replace(/^pocs\//, '')}</a> ` +
+      div.innerHTML = `<a href="asset.html?ave=${encodeURIComponent(ave)}&type=poc" class="asset-link">${entry.path.replace(/^pocs\//, '')}</a> ` +
         `<a href="${entry.path}" target="_blank" rel="noopener noreferrer" class="asset-raw" title="查看原始内容">📄</a>`;
       // 异步加载 PoC TOML 摘要
       loadAssetToml(entry.path).then(tomlText => {
@@ -282,7 +282,7 @@ function render(toml, fileName, rawUrl, htmlUrl, assetIndex) {
     for (const entry of repoExps) {
       const div = document.createElement("div");
       div.className = "asset-file";
-      div.innerHTML = `<a href="asset.html?file=${encodeURIComponent(entry.path)}&type=exp" class="asset-link">${entry.path.replace(/^exploits\//, '')}</a> ` +
+      div.innerHTML = `<a href="asset.html?ave=${encodeURIComponent(ave)}&type=exp" class="asset-link">${entry.path.replace(/^exploits\//, '')}</a> ` +
         `<a href="${entry.path}" target="_blank" rel="noopener noreferrer" class="asset-raw" title="查看原始内容">📄</a>`;
       expContainer.appendChild(div);
     }
@@ -304,16 +304,16 @@ function render(toml, fileName, rawUrl, htmlUrl, assetIndex) {
 
 /* ── 启动 ── */
 async function boot() {
-  const file = q("file").trim();
-  if (!file) {
-    setStatus("缺少参数：file");
+  const ave = q("ave").trim();
+  if (!ave) {
+    setStatus("缺少参数：ave");
     return;
   }
 
   setStatus("正在拉取并解析 TOML ...");
   try {
     const assetIndex = await loadAssetIndex();
-    const { text, raw, html, safeName } = await loadToml(file);
+    const { text, raw, html, safeName } = await loadToml(ave);
     render(text, safeName, raw, html, assetIndex);
     setStatus("已完成 TOML 解析。")
   } catch (e) {

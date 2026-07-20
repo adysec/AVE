@@ -95,4 +95,4 @@ PoC/EXP 文件使用 `[info]` + `[poc]` / `[exp]` 结构，`[info]` 中 severity
 
 - 通过 `.github/workflows/pages.yml` 自动部署。
 - push 到 `main` 分支会触发构建与发布。
-- 站点入口为 `index.html`，详情页入口为 `detail.html?file={year}/{AVE-ID}.toml`。
+- 站点入口为 `index.html`，详情页 `detail.html?ave={AVE-ID}`，资产页 `asset.html?ave={AVE-ID}&type={poc|exp}`。

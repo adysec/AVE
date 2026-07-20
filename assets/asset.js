@@ -167,7 +167,7 @@ function render(tomlText, filePath, type) {
       if (/^AVE-\d{4}-\d+/i.test(v)) {
         // Link to detail page
         const a = document.createElement('a');
-        a.href = `detail.html?file=${v}`;
+        a.href = `detail.html?ave=${v}`;
         a.className = 'alias-tag cve';
         a.textContent = v;
         vulnEl.appendChild(a);
@@ -293,17 +293,30 @@ function render(tomlText, filePath, type) {
 
 /* ── 启动 ── */
 async function boot() {
-  const file = q('file').trim();
+  const ave = q('ave').trim();
   const type = q('type') || 'poc';
 
-  if (!file) {
-    setStatus('缺少参数：file');
+  if (!ave) {
+    setStatus('缺少参数：ave');
     return;
   }
 
-  setStatus('正在加载 PoC/EXP ...');
+  setStatus('正在加载资产索引...');
 
   try {
+    const idxResp = await fetch('assets/data/asset-index.json', { cache: 'no-cache' });
+    if (!idxResp.ok) throw new Error(`获取资产索引失败：HTTP ${idxResp.status}`);
+    const indexData = await idxResp.json();
+
+    const paths = (type === 'exp' ? indexData.exp : indexData.poc)?.[ave];
+    if (!paths || !paths.length) {
+      setStatus(`未找到 ${type === 'exp' ? 'EXP' : 'PoC'} 资产：${ave}`);
+      return;
+    }
+
+    const file = paths[0];
+    setStatus('正在加载 PoC/EXP ...');
+
     const res = await fetch(file, { cache: 'no-cache' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
