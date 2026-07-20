@@ -1,59 +1,40 @@
-- CVE-1999-1494: SGI IRIX 5.1, 5.2, 6.0 - colorview local arbitrary file read via -text argument
-- This is an old SGI IRIX vulnerability from the 1990s
-- SGI IRIX is long discontinued
-I need to:
-1. Fix the remediation field - it currently has a long analysis text instead of actual remediation
-2. Keep all other fields as they are (they seem fine)
-3. Output pure TOML
-- title: "SGI IRIX colorview 任意文件读取漏洞" - OK, Chinese, ≥10 chars
-- description: Chinese, ≥50 chars - OK
-- severity: LOW, score: 2.1 - OK (LOW < 4.0)
-- sources: ["epss"] - OK, non-empty
-- published/updated: have values
-- urls: all http(s) - OK
-- meta: has status and collected_at - OK
-- aliases: ["CVE-1999-1494"] - OK
-The main issue is remediation. I need to write a specific remediation in Chinese, ≥20 characters. Since SGI IRIX is discontinued, the practical remediation would be to restrict access to the colorview binary, remove setuid bits, and migrate away from IRIX.
-Actually, looking more carefully at the TOML, I notice:
-1. The `remediation` field has a very long analysis text instead of actual remediation content
-2. The `sources` is `["epss"]` but the vulnerability is from CVE - should probably be `["cve"]` or include it
-But the error only mentions remediation. Let me fix that.
-For the remediation, since SGI IRIX is EOL and discontinued:
-- Remove setuid bit from colorview binary: `chmod u-s /usr/sbin/colorview`
-- Restrict access to authorized users only
-- Migrate to a supported operating system as IRIX is no longer maintained
-ave_id = "AVE-1999-1286"
-aliases = ["CVE-1999-1494"]
 [basic]
-title = "SGI IRIX colorview 任意文件读取漏洞"
-description = "SGI IRIX 操作系统中的 colorview 工具存在任意文件读取漏洞。本地攻击者可通过向 colorview 程序传递 -text 参数，造成程序以特权权限读取系统上的任意文件内容。该漏洞影响 IRIX 5.1、5.2 及 6.0 版本，攻击者需拥有本地系统访问权限即可利用，无需用户交互。CVSS 评分 2.1，危害等级低。"
-severity = "LOW"
+description = "SGI IRIX 操作系统中的 colorview 工具存在任意文件读取漏洞。由于 colorview 在处理 -text 参数时未对用户指定的文件路径进行充分校验，本地攻击者可通过向 colorview 传递特制的 -text 参数读取系统上任意文件，包括敏感配置文件。该漏洞影响 SGI IRIX 5.1、5.2 及 6.0.1 版本，攻击者需拥有本地系统访问权限，CVSS 评分 2.1，危害等级低。"
+published = "1994-08-09T04:00:00.000"
+remediation = "建议立即应用 SGI 于 1995 年发布的安全公告 19950209-01-P 中的官方补丁（ftp://patches.sgi.com/support/free/security/advisories/19950209-01-P）。如无法安装补丁，可移除 colorview 的 setuid/setgid 权限（chmod u-s /usr/sbin/colorview）并严格限制可执行该命令的用户范围。由于 SGI IRIX 已停止支持多年，建议将业务迁移至仍受支持的操作系统平台。"
 score = 2.1
-sources = ["cve"]
-published = "1994-08-09"
-updated = "2026-06-16"
-remediation = "移除 colorview 程序的 setuid 权限位（chmod u-s /usr/sbin/colorview），限制仅授权用户可执行。由于 SGI IRIX 已停止维护，建议迁移至受支持的操作系统。"
+severity = "LOW"
+sources = ["avd"]
+title = "SGI IRIX colorview 任意文件读取漏洞"
+updated = "2026-06-16T21:50:33.680"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-1494"]
+ave_id = "AVE-1999-1286"
+
+[meta]
+collected_at = "2026-07-20T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://www.securityfocus.com/archive/1/675",
-"http://www.securityfocus.com/bid/336",
-"http://www.tryc.on.ca/archives/bugtraq/1995_1/0614.html",
-"https://exchange.xforce.ibmcloud.com/vulnerabilities/2112",
-"https://www.exploit-db.com/exploits/19269",
-"https://github.com/CVEProject/cvelistV5/blob/559e7878a2bcd153513c59154e730dfe23ee3b94/cves/1999/1xxx/CVE-1999-1494.json",
-"https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1494",
-"https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1494.md",
-"https://github.com/Patrowl/PatrowlHearsData/blob/1ed836d32ec0f7204df361b2aedfef822b3e814e/CVE/data/1999/CVE-1999-1494.json",
-"https://github.com/github/advisory-database/blob/fe37e86b4ab6d44c1acc95d76e30f97043bfd67f/advisories/unreviewed/2022/05/GHSA-g63x-c8p3-9qvj/GHSA-g63x-c8p3-9qvj.json",
-"https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154600_154700.json",
-"https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/1999.tsv",
-"https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
-"https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--fe8f4b10-c071-4506-b8ca-39141108af35.json",
-"https://github.com/olbat/nvdcve/blob/39f1db26eec9899ab2f8110ab3b45424c6fe9ec2/nvdcve/CVE-1999-1494.json",
+    "http://www.securityfocus.com/archive/1/675",
+    "http://www.securityfocus.com/bid/336",
+    "http://www.tryc.on.ca/archives/bugtraq/1995_1/0614.html",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/2112",
+    "https://www.exploit-db.com/exploits/19269",
+    "https://github.com/CVEProject/cvelistV5/blob/b172e0393d29bddb2ceeda5ce57e29123589a55b/cves/1999/1xxx/CVE-1999-1494.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1494",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1494.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9a5386d000a40888283d918a46b8928ffcbfca7b/CVE/data/1999/CVE-1999-1494.json",
+    "https://github.com/github/advisory-database/blob/fe37e86b4ab6d44c1acc95d76e30f97043bfd67f/advisories/unreviewed/2022/05/GHSA-g63x-c8p3-9qvj/GHSA-g63x-c8p3-9qvj.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154600_154700.json",
+    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/1999.tsv",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--fe8f4b10-c071-4506-b8ca-39141108af35.json",
+    "https://github.com/olbat/nvdcve/blob/39f1db26eec9899ab2f8110ab3b45424c6fe9ec2/nvdcve/CVE-1999-1494.json",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-20T00:00:00Z"
