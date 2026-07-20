@@ -1,12 +1,12 @@
 [basic]
-description = "该漏洞存在于 MySQL 3.21 版本的 mysqld 组件中，由于服务进程在创建日志文件时将其权限设置为世界可读（world-readable），导致本地用户可直接读取这些日志文件。日志中记录了对用户数据库执行的操作，其中包含以明文或可逆形式存储的密码信息，本地攻击者利用该缺陷即可获取系统中其他用户的认证凭据，进而实施权限提升或横向移动。攻击前提是攻击者已具备目标主机的本地访问权限，危害集中于多用户共享的 MySQL 服务器环境。"
-published = "1998-12-27"
-remediation = "升级到 MySQL 3.23.0 或更高版本，该版本已修复日志文件权限设置不当的问题。在无法立即升级时，作为临时缓解措施，可手动将日志文件权限修改为仅属主可读写，例如执行 chmod 640 /path/to/mysql.log 并确认其属主为运行 mysqld 的用户，同时避免以危险权限重新生成日志。"
+description = "MySQL 3.21 版本的 mysqld 守护进程以全局可读权限创建日志文件，导致添加至用户数据库的用户密码被记录并暴露给所有本地用户。本地攻击者可直接读取日志文件获取用户凭证，进而实现未授权数据库访问。该漏洞影响 MySQL 3.21 版本，CVSS 评分 4.6，危害等级中危。"
+published = "1998-12-27T05:00:00.000"
+remediation = "升级 MySQL 至 3.23 及以上版本，该问题已在后续版本中修复。配置 umask 限制日志文件权限为 640，确保 mysqld 日志目录仅对 mysql 用户和 dba 组可读。在 my.cnf 中设置 log-bin、log-error 等日志文件路径指向权限受限目录，并通过 chmod 640 定期审计日志文件权限。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["cve"]
-title = "MySQL 3.21 mysqld 日志文件权限配置不当信息泄露漏洞"
-updated = "2026-07-19"
+sources = ["epss"]
+title = "MySQL mysqld 日志文件权限配置不当信息泄露漏洞"
+updated = "2026-06-16T21:49:54.387"
 
 [exploit]
 exp_urls = []
@@ -17,12 +17,21 @@ aliases = ["CVE-1999-1188"]
 ave_id = "AVE-1999-1384"
 
 [meta]
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://marc.info/?l=bugtraq&m=91479159617803&w=2",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/1568",
-    "https://nvd.nist.gov/vuln/detail/CVE-1999-1188",
+    "https://github.com/CVEProject/cvelistV5/blob/24df5d59670dfe04b9c86de11fa86df63c0d28f7/cves/1999/1xxx/CVE-1999-1188.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1188",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1188.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/228df6a85079f5c6b1ecdfb3d41be685458438ef/CVE/data/1999/CVE-1999-1188.json",
+    "https://github.com/github/advisory-database/blob/4544d3857250fe21711ce8febf38e8822729678f/advisories/unreviewed/2022/04/GHSA-c8f9-m33j-ppw6/GHSA-c8f9-m33j-ppw6.json",
+    "https://github.com/marcellodesales/aibbp-reverse-engineer/blob/960f610d597aae9fec1cc5f03c68679be00c222d/reverse_engineer/invicti/vulnerabilities/db/vulnerabilities/vdb/1999/1xxx/cve-1999-1188.yaml",
+    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/M/mysql_3_22.nasl",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88627/info.html",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/35c40c2c96029682f9c3da862749763b6c97e1fb/CVE-1999/CVE-1999-11xx/CVE-1999-1188.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000407.txt",
 ]
