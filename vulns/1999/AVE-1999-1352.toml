@@ -1,12 +1,12 @@
 [basic]
-description = "SCO UNIX System V/386 Release 3.2 及其他 SCO 产品在安装时，将 dos 用户的家目录设置为 /tmp，将 asg 用户的家目录设置为 /usr/tmp。由于 /tmp 和 /usr/tmp 目录具有全局可写权限，导致其他本地用户能够通过访问这些共享目录获取对 dos 和 asg 用户账户的未授权访问权限，进而可能提升权限或获取敏感信息。"
-published = "1993-09-17"
-remediation = "建议管理员手动将 dos 和 asg 用户的家目录迁移至非全局可写位置（如 /home/dos 和 /home/asg），并设置适当的目录权限（如 750），限制其他用户的访问。"
-score = 5.0
-severity = "MEDIUM"
-sources = ["avd"]
-title = "SCO UNIX System V/386 及其他 SCO 产品用户目录权限配置不当漏洞"
-updated = "2026-06-16"
+description = "SCO UNIX System V/386 Release 3.2 及其他 SCO 产品（如 Open Desktop、Open Desktop Lite、OpenServer）在安装时错误地将 dos 用户的家目录设置为 /tmp、将 asg 用户的家目录设置为 /usr/tmp。由于 /tmp 与 /usr/tmp 均为允许所有用户写入的世界可写（world-writable）目录，本地其他已登录用户可借此访问这两个账户的目录与文件，进而获取 dos 或 asg 用户的权限，造成权限提升或拒绝服务等安全影响。攻击条件为攻击者需拥有目标系统的本地普通用户账户，并能够向上述世界可写目录写入文件，利用目录权限配置不当即可越权访问相关账户。"
+published = "1993-09-17T04:00:00.000"
+remediation = "将 dos 用户主目录由 /tmp 改为 /usr/dos 并设为 700 权限（chmod 700 /usr/dos；chown dos /usr/dos），将 asg 用户主目录由 /usr/tmp 改为 /usr/asg 并设为 700 权限（chmod 700 /usr/asg；chown asg /usr/asg），同时确保 /tmp、/usr/tmp 仅 root 可写（chmod 1777 并去除组/其他写权限）。建议升级至 SCO OpenServer 5.0.5 及以上已修正该配置的安全补丁版本，并审查 /etc/passwd 确认两账户主目录已更正。"
+score = 10
+severity = "CRITICAL"
+sources = ["epss"]
+title = "SCO UNIX System V/386 弱默认目录权限导致本地权限提升漏洞"
+updated = "2026-06-16T21:49:48.087"
 
 [exploit]
 exp_urls = []
@@ -17,11 +17,21 @@ aliases = ["CVE-1999-1138"]
 ave_id = "AVE-1999-1352"
 
 [meta]
-collected_at = "2026-07-19T03:19:46.126477217+00:00"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.cert.org/advisories/CA-1993-13.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/546",
+    "https://github.com/CVEProject/cvelistV5/blob/d00c4bdddf18e05c46df568e8ae91e7912ce321c/cves/1999/1xxx/CVE-1999-1138.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1138",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9b79b5eac5a874eeb91f0d9e37084feed8b830f5/CVE/data/1999/CVE-1999-1138.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1138.json",
+    "https://github.com/olbat/nvdcve/blob/39f1db26eec9899ab2f8110ab3b45424c6fe9ec2/nvdcve/CVE-1999-1138.json",
+    "https://github.com/opencve/opencve-kb/blob/3bc9583077e9d7007badef726c5b3560d73fb205/1999/CVE-1999-1138.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/7d67702de1c8e6c388afcd41c6fc66f9bddaa76f/CVE-1999/CVE-1999-11xx/CVE-1999-1138.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/1999/1xxx/CVE-1999-1138.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/1999/1xxx/CVE-1999-1138.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1138.md",
 ]
