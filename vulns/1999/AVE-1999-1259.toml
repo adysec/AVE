@@ -1,31 +1,27 @@
 [basic]
-description = "Microsoft IIS 3.0 和 4.0 自带的 showfile.asp 活动服务器页面使用 FileSystemObject（FSO）组件读取文件，但未对传入的 file 参数进行有效过滤与校验。远程攻击者无需身份认证，即可通过构造包含目标文件路径的 file 参数向 showfile.asp 发送 HTTP 请求，越权读取服务器上的任意文件，包括配置文件与敏感文档，造成严重的信息泄露。该漏洞影响所有部署并启用 showfile.asp 的 IIS 3.0/4.0 站点，攻击条件仅为可访问该页面并发送特制请求。"
+description = "Microsoft IIS 3.0及4.0版本中showfile.asp页面使用FileSystemObject（FSO）组件时，未对file查询参数进行充分过滤，远程攻击者可通过目录遍历序列（如../../global.asa）突破Web根目录限制，读取服务器上任意文件，包括ASP源代码及其他用户文件。由于FSO以TextStream方式读取文件，ASP代码在输出时不会被解析执行，效果类似于::$DATA数据流泄露漏洞。在虚拟主机场景下，恶意用户利用该漏洞可查看其他租户的ASP应用源码，导致凭据和业务逻辑等敏感信息泄露。"
 published = "1999-02-11"
-remediation = "删除或重命名存在缺陷的 showfile.asp 页面，禁止匿名访问调用 FileSystemObject 的 ASP 脚本；在 IIS 服务管理器中移除或注销 scrrun.dll 的脚本执行权限以禁用 FSO 组件，并将站点迁移至 IIS 5.0 及以上版本，同时配置 NTFS 权限限制 IUSR 账户仅可读取必要文件。"
+remediation = "删除或禁用服务器上的showfile.asp文件；升级至受支持的Windows Server版本及IIS版本并安装所有安全更新；在IIS管理器中使用URL授权规则限制ASP文件的未授权访问；对用户输入的file参数进行路径规范化校验，拒绝包含目录遍历序列（../）的请求。"
 score = 5.0
 severity = "MEDIUM"
-sources = [
-    "exploitdb",
-    "cve",
-]
-title = "Microsoft IIS 3.0/4.0 showfile.asp 任意文件读取漏洞"
-updated = "2026-07-18"
+sources = ["cve"]
+title = "Microsoft IIS 3.0/4.0 showfile.asp 文件系统对象（FSO）任意文件读取漏洞"
+updated = "2024-06-01"
 
 [exploit]
 exp_urls = []
-poc_urls = ["https://www.exploit-db.com/exploits/19194"]
+poc_urls = []
 
 [id]
 aliases = ["CVE-1999-1375"]
 ave_id = "AVE-1999-1259"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-20T11:12:22.194549738+00:00"
 status = "completed"
 
 [references]
 urls = [
     "http://marc.info/?l=ntbugtraq&m=91877455626320&w=2",
     "http://www.securityfocus.com/bid/230",
-    "https://www.exploit-db.com/exploits/19194",
 ]
