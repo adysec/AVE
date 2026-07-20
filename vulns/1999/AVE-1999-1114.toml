@@ -1,10 +1,10 @@
 [basic]
-description = "thttpd HTTP 服务器 2.03 及更早版本中存在路径规范化缺陷，远程攻击者可通过向目标服务器发送包含多个连续前导斜杠（/）的特制 GET 请求，绕过文件访问限制，读取服务器上的任意文件，包括配置文件、源码等敏感信息。该漏洞攻击复杂度低，无需身份认证，影响范围广泛，可导致敏感信息泄露。"
+description = "thttpd HTTP Server 2.03 及更早版本存在路径遍历漏洞。攻击者无需身份认证即可通过向目标服务器发送包含多个连续前导斜杠（/）的 GET 请求，绕过路径限制读取服务器上的任意文件，如配置文件或系统敏感信息。该漏洞源于服务器对 URI 中斜杠字符的过滤不严，导致路径回溯检查失效，影响范围较广。用户应升级至 thttpd 2.04 或更高版本修复此问题。"
 published = "1999-12-31T05:00:00.000"
-remediation = "升级至 thttpd 2.04 或更高版本（2.04 版本修复了文件名翻译中的路径遍历漏洞）。如无法立即升级，应在反向代理或 WAF 层面规范化 URL 路径，过滤多余斜杠字符，防止攻击者通过多个前导斜杠读取任意文件。"
+remediation = "升级 thttpd 至 2.04 或更高版本（该版本限制路径中不能包含连续前导斜杠）。如无法升级，可在 Web 服务器前部署反向代理（如 Nginx），在代理层过滤含多个连续斜杠的 GET 请求；或在 thttpd 源码 `libhttpd.c` 中 `httpd_parse_request()` 函数增加对连续前导斜杠的拒绝逻辑后重新编译。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
+sources = ["avd"]
 title = "ACME thttpd HTTP Server 任意文件读取漏洞"
 updated = "2026-06-16T21:50:28.777"
 
@@ -28,7 +28,7 @@ urls = [
     "https://github.com/CVEProject/cvelistV5/blob/4035b63c9f7b02a7407eb5dd431d3b6ffb26cebc/cves/1999/1xxx/CVE-1999-1456.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1456",
     "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1456.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/9849013fb49e540f15cffd30644fcdcb875c1d4f/CVE/data/1999/CVE-1999-1456.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2cba6a622b2958fa1ec3a506e7b58871edec19fb/CVE/data/1999/CVE-1999-1456.json",
     "https://github.com/github/advisory-database/blob/de3f834577328e71a123358d1db2b1637bc19e8a/advisories/unreviewed/2022/04/GHSA-j7q2-439r-63fw/GHSA-j7q2-439r-63fw.json",
     "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/thttpd_bug.nasl",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x88000/87939/info.html",
