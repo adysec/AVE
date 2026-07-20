@@ -1,11 +1,11 @@
 [basic]
-description = "Debian GNU/Linux 2.0 系统中的 fsp 软件包（版本 2.71-10）在安装过程中会自动添加匿名 FTP 用户，且未向管理员发出任何通知。这一设计缺陷可能导致运行 wu-ftp 等服务的目标服务器在管理员不知情的情况下自动启用匿名 FTP 访问，使得远程攻击者能够通过匿名方式登录服务器，获取未经授权的文件访问权限。攻击者无需认证即可利用该漏洞，CVSS 评分 7.5，危害等级高。"
+description = "Debian GNU/Linux 2.0 系统中 fsp 软件包（版本 2.71-10）在安装过程中会静默创建匿名 FTP 用户，且未向管理员发出任何通知。该行为导致使用 wu-ftp 等 FTP 服务的服务器在管理员不知情的情况下自动开启匿名 FTP 访问权限，任何远程攻击者均可利用该匿名账户未经认证访问服务器上的文件资源，造成敏感信息泄露。此漏洞源于软件包安装脚本的设计缺陷，影响 Debian GNU/Linux 2.0 系统，CVSS 评分 7.5，危害等级高。"
 published = "1998-11-26T05:00:00.000"
-remediation = "立即卸载 fsp 软件包 (apt-get remove fsp) 或升级至 2.71-10 以上版本。如仍需使用 fsp，安装后手动检查并删除 /etc/ftpusers 中自动添加的 anonymous 条目，同时确保 wu-ftp 配置中禁用匿名访问 (anonymous 行前加 # 注释)。"
+remediation = "立即删除系统中由 fsp 软件包安装脚本自动创建的 ftp 匿名账户（运行 `userdel ftp`），并检查 /etc/passwd 中是否存在多余 ftp 用户条目；升级 fsp 软件包至不再自动创建 ftp 用户的修复版本，或改用 ProFTPd 替代 wu-ftpd（ProFTPd 需要手动配置才能启用匿名 FTP，不受此漏洞影响）；同时检查 wu-ftpd 等 FTP 守护进程配置，确保未意外启用匿名登录。"
 score = 7.5
 severity = "HIGH"
-sources = ["avd"]
-title = "Debian GNU/Linux fsp 软件包匿名FTP访问漏洞"
+sources = ["epss"]
+title = "Debian GNU/Linux fsp 软件包匿名 FTP 未授权访问漏洞"
 updated = "2026-06-16T21:50:23.013"
 
 [exploit]
@@ -28,10 +28,10 @@ urls = [
     "http://marc.info/?l=bugtraq&m=91936850009861&w=2",
     "http://www.iss.net/security_center/static/7574.php",
     "http://www.securityfocus.com/bid/316",
-    "https://github.com/CVEProject/cvelistV5/blob/36911ad057245f7d02822794db0f459d9b4c9b8f/cves/1999/1xxx/CVE-1999-1411.json",
+    "https://github.com/CVEProject/cvelistV5/blob/51c6246292cd60528ab00cc0df9c1fcdee341e7e/cves/1999/1xxx/CVE-1999-1411.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1411",
     "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1411.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3012e5f1cf9bcfe839897275a956236aed334269/CVE/data/1999/CVE-1999-1411.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6c772403a169ecbfd38454bff1a2ab85bf6a7d51/CVE/data/1999/CVE-1999-1411.json",
     "https://github.com/github/advisory-database/blob/664f1b641010bd1f3bc1d11a60ca29d1f4a0e4ca/advisories/unreviewed/2022/04/GHSA-hj3p-73jp-r547/GHSA-hj3p-73jp-r547.json",
     "https://github.com/omniV1/GCU_SWE_2023-2025/blob/7154684734061419b83ad951dd0bce6b4f09240c/recon-tool/results.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1411.json",
