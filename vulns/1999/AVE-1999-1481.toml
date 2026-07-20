@@ -1,11 +1,11 @@
 [basic]
-description = "wu-ftpd 2.4 FTP服务器在处理ABOR（中止文件传输）命令时未能正确丢弃特权，导致文件传输过程中的信号被错误处理。本地用户和可能的远程攻击者可利用此漏洞读取服务器上的任意文件，造成敏感信息泄露。"
+description = "wu-ftpd 2.4 FTP服务器在文件传输过程中处理ABOR（中止传输）命令时存在信号处理逻辑缺陷。当客户端同时关闭数据连接（触发SIGPIPE）和发送带外ABOR命令（触发SIGURG）时，SIGPIPE处理函数dologout()已将有效用户ID设为0并关闭日志文件，此时SIGURG信号通过longjmp跳回主命令循环，导致服务器以root权限继续运行且后续操作不再记录日志，攻击者可借此读取任意文件。"
 published = "1997-07-04"
-remediation = "升级至wu-ftpd 2.6.2及以上版本修复此漏洞；由于wu-ftpd已停止维护，建议迁移至vsftpd或ProFTPD等受支持的FTP服务器软件，并严格限制文件系统访问权限。"
+remediation = "升级到已修复的wu-ftpd版本（如2.6.2或更高），或在dologout()函数开头添加transflag=0语句防止SIGURG信号通过longjmp跳回主循环；若无法升级，应限制FTP用户使用ABOR命令。"
 score = 5.0
 severity = "MEDIUM"
 sources = ["cve"]
-title = "wu-ftpd 任意文件读取漏洞"
+title = "wu-ftpd 2.4 ABOR命令信号处理权限提升漏洞"
 updated = "2026-06-16"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1326"]
 ave_id = "AVE-1999-1481"
 
 [meta]
-collected_at = "2026-07-20T08:06:17.786207151+00:00"
+collected_at = "2026-07-20T11:45:03.170102236+00:00"
 status = "completed"
 
 [references]
