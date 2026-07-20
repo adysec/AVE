@@ -1,11 +1,11 @@
 [basic]
-description = "Solaris 2.6 与 7.0 系统中的 lp 打印命令存在缓冲区溢出漏洞。由于程序在处理 -d 参数时未对用户输入的长度进行边界校验，本地用户可通过在命令行中传入超长的 -d 选项参数，使缓冲区溢出并覆盖相邻内存。攻击者在本地拥有普通用户权限即可利用该漏洞执行任意代码，进而提升权限至 root，完全控制受影响系统。该漏洞仅影响本地已登录用户，无法被远程利用。"
+description = "Solaris 2.6 及 7.0 系统中的 lp 命令存在缓冲区溢出漏洞，当使用超长参数传递给 -d 选项时，可触发栈缓冲区溢出。本地攻击者通过构造特制的 -d 参数执行 lp 命令，能够覆盖返回地址，从而以 root 权限执行任意代码。该漏洞影响 Solaris 2.6 与 7.0 版本，需要本地用户身份才能利用，危害等级高危。"
 published = "2000-04-24T04:00:00.000"
-remediation = "立即应用 Sun Microsystems 针对 Solaris 2.6/7.0 的官方安全补丁（Solaris 7 推荐升级至 106976-08 及更高版本簇，Solaris 2.6 应用对应修订版 lp 补丁），并通过 patchadd 安装后重启相关打印服务。临时缓解措施：用 chmod 去除 /usr/bin/lp 的 setuid root 位（chmod u-s /usr/bin/lp），限制仅授权用户访问打印命令，同时配合 RBAC 将打印操作权限授予受信账户，并审计本地用户执行带超长 -d 参数的 lp 命令的异常行为。"
+remediation = "安装 Sun 官方补丁 106235-01（Solaris 7）或 106236-01（Solaris 2.6），或升级至 Solaris 8 及以上版本。如无法升级，可移除 lp 命令的 setuid 权限：chmod 755 /usr/bin/lp，但会导致普通用户无法使用打印功能。"
 score = 7.2
 severity = "HIGH"
-sources = ["exploitdb"]
-title = "Sun Solaris lp 命令缓冲区溢出漏洞"
+sources = ["cve"]
+title = "Sun Solaris lp -d 选项本地缓冲区溢出漏洞"
 updated = "2026-06-16T21:51:27.727"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0316"]
 ave_id = "AVE-2000-0265"
 
 [meta]
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,11 +25,11 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-04/0191.html",
     "http://www.securityfocus.com/bid/1143",
     "https://www.exploit-db.com/exploits/19878",
-    "https://github.com/CVEProject/cvelistV5/blob/dde4d96d7c1eff197b9a15817af615500736afa7/cves/2000/0xxx/CVE-2000-0316.json",
+    "https://github.com/CVEProject/cvelistV5/blob/712a40967986b700313860b08048435be4fa9839/cves/2000/0xxx/CVE-2000-0316.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0316",
     "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-2000-0316.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/666a3c9c944f5ed9f7d7ff0aa29b047387ce02f3/CVE/data/2000/CVE-2000-0316.json",
-    "https://github.com/github/advisory-database/blob/ce77465efdf58fc31a7a0bc8c83705be48abcedf/advisories/unreviewed/2022/04/GHSA-38cr-66jj-phh5/GHSA-38cr-66jj-phh5.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/24512263eb77d6af2cecd67bd2460f761fc94bea/CVE/data/2000/CVE-2000-0316.json",
+    "https://github.com/github/advisory-database/blob/cdfc8886d71af7ef3bdab3e4db46753ff8af6538/advisories/unreviewed/2022/04/GHSA-38cr-66jj-phh5/GHSA-38cr-66jj-phh5.json",
     "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/S/solaris26_x86_106236.nasl",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0316.json",
     "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/solaris7_x86_107116.nasl",
