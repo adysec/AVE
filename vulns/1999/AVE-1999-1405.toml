@@ -1,15 +1,12 @@
 [basic]
-description = 'Cisco 路由器 9.17 及更早版本存在安全漏洞，远程攻击者可通过构造特定的 IP 源路由数据包绕过设备的安全限制。正常情况下，管理员可通过配置 "no ip source-route" 命令来禁止转发源路由数据包，但由于系统对这类数据包的过滤机制存在缺陷，攻击者可利用 IP 源路由选项人为指定数据包传输路径，从而绕过访问控制列表（ACL）等安全控制措施，访问本应受到限制的网络内部资源，导致敏感信息泄露或网络拓扑暴露。'
-published = "1993-04-22"
-remediation = '在路由器全局配置模式下执行 "no ip source-route" 命令禁用 IP 源路由转发功能，并在受影响接口上应用严格的访问控制列表（ACL）以过滤所有携带源路由选项的数据包。同时应将 Cisco IOS 升级至受影响版本之后的安全版本，以彻底消除该漏洞。'
+description = 'Cisco 路由器 9.17 及更早版本存在安全绕过漏洞，远程攻击者可通过向目标设备发送特制的 IP 源路由数据包，绕过本应通过 "no ip source-route" 命令拒绝的访问限制。该漏洞允许攻击者绕过 ACL 等安全策略，实现未授权网络访问。攻击者只需向目标路由器发送特制 IP 数据包即可触发，无需任何身份认证。该漏洞影响运行 Cisco IOS 9.17 及之前版本的路由器设备。'
+published = "1993-04-22T04:00:00.000"
+remediation = "升级 Cisco IOS 到 9.17 以上版本以修复源路由绕过漏洞。在全局配置模式下执行 `no ip source-route` 命令禁用 IP 源路由功能，并在所有入站接口上配置 `ip verify unicast source reachable-via rx` 防止源地址欺骗。无法升级时，在边界路由器上使用 ACL 过滤源路由选项（IP 协议号 4）的数据包作为临时缓解。"
 score = 7.5
 severity = "HIGH"
-sources = [
-    "nvd",
-    "cve",
-]
+sources = ["epss"]
 title = "Cisco 路由器 IP 源路由安全绕过漏洞"
-updated = "2026-06-16"
+updated = "2026-06-16T21:49:57.987"
 
 [exploit]
 exp_urls = []
@@ -20,7 +17,7 @@ aliases = ["CVE-1999-1216"]
 ave_id = "AVE-1999-1405"
 
 [meta]
-collected_at = "2026-07-19T16:54:00Z"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,4 +25,14 @@ urls = [
     "http://ciac.llnl.gov/ciac/bulletins/d-15.shtml",
     "http://www.cert.org/advisories/CA-1993-07.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/541",
+    "https://github.com/CVEProject/cvelistV5/blob/d3dea9b9f675980a583148876f0551475ad122e1/cves/1999/1xxx/CVE-1999-1216.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1216",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1216.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f9199c6ea2112c9d2536a126688b640a45f0982a/CVE/data/1999/CVE-1999-1216.json",
+    "https://github.com/github/advisory-database/blob/f37077e857e7a28bab83d284c23299407fb1af7e/advisories/unreviewed/2022/04/GHSA-hq37-hh2w-qq3f/GHSA-hq37-hh2w-qq3f.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x88000/87019/info.html",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1216.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000035.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--d21e135a-2e80-4837-8cd7-33a0da206a1c.json",
+    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idbypass",
 ]
