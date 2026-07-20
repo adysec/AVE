@@ -1,0 +1,34 @@
+[info]
+author = "AVE"
+description = "验证 Linux pam_console 模块在用户注销后设备文件描述符残留导致的信息泄露漏洞。通过打开控制台设备文件（如 /dev/tty1）并持续读取其内容，检测是否能在非授权情况下监控其他用户的控制台活动。"
+id = "POC-AVE-2000-0311"
+name = "CVE-2000-0378 PoC"
+severity = "high"
+tags = ["cve-2000-0378"]
+vuln_id = [
+    "CVE-2000-0378",
+    "AVE-2000-0311",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/dev/tty1"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["root:"]
+
+[[poc.requests]]
+path = "/dev/console"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["root:"]
