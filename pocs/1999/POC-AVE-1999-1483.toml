@@ -1,6 +1,6 @@
 [info]
-author = "ave"
-description = "检测 IIS 4.0 FrontPage Server Extensions fpcount.exe 缓冲区溢出漏洞。发送 HTTP 请求检查 fpcount.exe 是否存在，确认存在则表明目标可能存在该漏洞。"
+author = "AVE"
+description = "检测目标服务器上是否存在 fpcount.exe CGI（IIS 4.0 FrontPage Server Extensions 组件），其存在表示可能受缓冲区溢出漏洞影响"
 id = "POC-AVE-1999-1483"
 name = "CVE-1999-1376 PoC"
 severity = "critical"
@@ -11,19 +11,14 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/fpcount.exe"
+path = "/{{BaseURL}}/_vti_bin/fpcount.exe"
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = ["fpcount"]
+status = [502]
+type = "status"
