@@ -1,11 +1,11 @@
 [basic]
-description = "Oracle Webserver（Oracle HTTP Server）2.1 版本在处理 PL/SQL 存储过程请求时存在拒绝服务漏洞。其原理是该服务对客户端发来的 HTTP 请求长度缺乏有效校验，当远程攻击者向运行 PL/SQL 存储过程的接口发送超长（异常长度）的 HTTP GET 请求时，会触发服务端资源耗尽或异常，导致服务崩溃而无法响应后续请求。该漏洞影响范围为部署了 Oracle HTTP Server 2.1 并启用 PL/SQL 存储过程功能的服务器。攻击条件为攻击者无需身份认证，仅需能通过网络访问目标服务器的 HTTP 服务端口即可。利用方式简单，攻击者使用普通 HTTP 客户端构造并发送一个包含超长请求行的 GET 请求即可发起拒绝服务攻击，造成业务中断。"
+description = "Oracle WebServer 2.1 在处理 PL/SQL 存储过程时存在输入验证缺陷，远程攻击者无需身份认证即可向目标服务器发送超长 HTTP GET 请求，触发服务进程崩溃或资源耗尽，导致拒绝服务。该漏洞影响 Oracle HTTP Server 2.1 版本，攻击复杂度低，危害等级中等。"
 published = "1997-07-23T04:00:00.000"
-remediation = "升级到 Oracle HTTP Server 2.1 的后续补丁版本（Oracle8i 8.1.7 及以上自带的 iAS 1.0.2.2 补丁集）以修复 PL/SQL 处理超长 HTTP 请求时的缺陷；在无法立即升级时，可在 Web 服务器前部署反向代理或负载均衡器，限制单个 GET 请求行长度（如不超过 8KB）并设置请求超时，对超长请求直接拒绝以缓解拒绝服务风险。"
+remediation = "升级到 Oracle HTTP Server（Oracle Webserver 的后续产品）或迁移至受支持的 Oracle WebLogic Server。如无法升级，在反向代理或 WAF 层面限制 HTTP GET 请求 URI 长度不超过 2048 字节，并过滤包含超长查询参数的请求。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Oracle HTTP Server 2.1 PL/SQL 存储过程 长 HTTP 请求 拒绝服务漏洞"
+sources = ["epss"]
+title = "Oracle HTTP Server 2.1 PL/SQL 存储过程远程拒绝服务漏洞"
 updated = "2026-06-16T21:49:39.280"
 
 [exploit]
@@ -17,17 +17,17 @@ aliases = ["CVE-1999-1068"]
 ave_id = "AVE-1999-1317"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://marc.info/?l=bugtraq&m=87602661419366&w=2",
-    "https://github.com/CVEProject/cvelistV5/blob/b3f84cd2bd659a86c86b8cfbfca1a01084368c06/cves/1999/1xxx/CVE-1999-1068.json",
+    "https://github.com/CVEProject/cvelistV5/blob/7481e97cf7b60a5b982d99d7dad1ea61174940fb/cves/1999/1xxx/CVE-1999-1068.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1068",
-    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1068.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/af2c3b5adc3ff9dc412f664a188835d908ce9d5f/CVE/data/1999/CVE-1999-1068.json",
-    "https://github.com/github/advisory-database/blob/d94ad47d0f2016e121b6d251f490e890714f8916/advisories/unreviewed/2022/04/GHSA-g6wg-27vg-grv9/GHSA-g6wg-27vg-grv9.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-1999-1068.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c1321b1a6b0cb3a4c18f791e2c8443742c0cb0b0/CVE/data/1999/CVE-1999-1068.json",
+    "https://github.com/github/advisory-database/blob/cdfc8886d71af7ef3bdab3e4db46753ff8af6538/advisories/unreviewed/2022/04/GHSA-g6wg-27vg-grv9/GHSA-g6wg-27vg-grv9.json",
     "https://github.com/marcellodesales/aibbp-reverse-engineer/blob/960f610d597aae9fec1cc5f03c68679be00c222d/reverse_engineer/invicti/vulnerabilities/db/vulnerabilities/vdb/1999/1xxx/cve-1999-1068.yaml",
     "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/O/ows_overflow.nasl",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1068.json",
