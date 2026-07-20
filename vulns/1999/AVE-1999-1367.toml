@@ -1,12 +1,15 @@
 [basic]
-description = "LakeWeb Filemail CGI 脚本存在命令注入漏洞，远程攻击者可通过在收件人电子邮件地址中插入 shell 元字符（如管道符、分号等）触发该漏洞，导致任意命令执行。该漏洞源于程序未对用户输入进行充分过滤，攻击者无需身份认证即可利用，影响使用该 CGI 脚本的 Web 服务器。CVSS 评分 7.5，危害等级高。"
-published = "1998-11-09T05:00:00.000"
-remediation = "立即停止使用 LakeWeb Filemail CGI 脚本，该产品已停止维护且厂商已不存在。如必须使用邮件发送功能，应替换为支持参数化 API 的现代邮件发送方案（如 PHPMailer、Python smtplib），并对用户输入的所有收件人地址进行严格过滤，禁止包含 `|`、`;`、`` ` ``、`$()` 等 shell 元字符。"
+description = "LakeWeb Filemail CGI 脚本对用户输入的 recipient 电子邮件地址字段未做任何过滤，直接拼接传递给后端 shell 命令执行。攻击者可构造包含分号、管道符等 shell 元字符的恶意邮件地址，在服务器上以 Web 服务器权限执行任意系统命令，进而获取敏感信息、植入后门或控制整台服务器。该漏洞无需身份验证，攻击者仅需发送特制 HTTP 请求即可远程触发。"
+published = "1998-11-09"
+remediation = "立即联系厂商获取已修复版本，或在 CGI 脚本中对 recipient 邮箱字段做严格的输入过滤，移除 `;` `|` `&` `` ` `` `$` `()` `{}` `[]` 等 shell 元字符，并对 `@` `.` 等合法字符做白名单校验；建议使用 Perl 的 `quotemeta()` 函数或安全 API 替代直接拼接 shell 命令。如产品已停止维护，建议替换为持续更新维护的邮件发送方案或禁用该 CGI 脚本。"
 score = 7.5
 severity = "HIGH"
-sources = ["avd"]
+sources = [
+    "cve",
+    "epss",
+]
 title = "LakeWeb Filemail CGI 远程命令执行漏洞"
-updated = "2026-06-16T21:49:50.153"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,7 +20,7 @@ aliases = ["CVE-1999-1154"]
 ave_id = "AVE-1999-1367"
 
 [meta]
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +28,4 @@ urls = [
     "http://lakeweb.com/scripts/",
     "http://www.securityfocus.com/archive/1/11175",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/1400",
-    "https://github.com/CVEProject/cvelistV5/blob/58316128f65d22a226717ff1f92ebf2058e46bc6/cves/1999/1xxx/CVE-1999-1154.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1154",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-1999-1154.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/8b7c7b13d1542fc7ddfb9cf48e51f3de3ab5c4ab/CVE/data/1999/CVE-1999-1154.json",
-    "https://github.com/github/advisory-database/blob/95e6ff620d5494b93ba2234edfcf6a45187dc0a8/advisories/unreviewed/2022/04/GHSA-5wq8-m483-vvqc/GHSA-5wq8-m483-vvqc.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88619/info.html",
-    "https://github.com/magicsword-io/Magic-SigExplorer/blob/2c28b91b003429a144a687199ee99ebd26f1a343/Magic-SigExplorer/docs/cve_report.md",
-    "https://github.com/olbat/nvdcve/blob/63d4031680b3d3fa77b826660a1e30ffc70ff5cd/nvdcve/CVE-1999-1154.json",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/979579ffd61606c64cf772a1e865f5126788e4ec/1999.tsv",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154200_154300.json",
 ]
