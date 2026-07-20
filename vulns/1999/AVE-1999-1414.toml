@@ -1,12 +1,12 @@
 [basic]
-description = "rpc.mountd（NFS 挂载守护进程）在处理挂载请求时，会根据被请求导出目录下的文件或目录是否存在而返回不同的错误信息。攻击者可通过向 rpc.mountd 发送针对特定文件或目录的挂载请求，依据返回差异判断目标系统上文件或目录是否存在，从而实现对服务器文件系统的信息探测。该漏洞本身不导致任意文件读取或代码执行，但可被用于辅助后续攻击、枚举敏感文件路径。攻击条件为攻击者需能与目标主机的 RPC 端口（通常为 111 及 NFS 相关端口）进行网络连通。"
-published = "1997-08-24"
-remediation = "对于运行受影响版本 NFS 工具包的 Linux 系统，建议将 nfs-utils 升级至厂商已修复该漏洞的最新版本，较新的发行版中 rpc.mountd 已统一文件不存在的错误返回信息，不再泄露文件是否存在。如当前系统无需提供 NFS 导出服务，可直接禁用 rpc.mountd 守护进程并在防火墙中封锁 TCP 和 UDP 2049 端口及 RPC 端口映射器（端口 111），以彻底消除攻击面。对于 Ultrix 等旧版系统，建议联系厂商获取补丁或迁移至受支持的现代操作系统版本。"
-score = 5.0
+description = "Linux、Ultrix 等操作系统的 rpc.mountd 组件存在信息泄露漏洞。远程攻击者无需身份认证即可通过 mount 请求探测目标服务器上的文件是否存在，因为当文件存在或不存在时，rpc.mountd 返回的错误信息存在差异。攻击者可利用此差异逐一遍历文件路径，从而收集系统敏感文件信息，为后续攻击提供情报支持。"
+published = "1997-08-24T04:00:00.000"
+remediation = "升级 nfs-utils（rpc.mountd）至最新版本，或应用相关补丁消除基于错误信息的路径枚举风险。配置 /etc/exports 使用 `root_squash` 等安全选项并限制可访问网段，同时通过 TCP Wrappers（/etc/hosts.allow）或 iptables 仅允许受信任主机访问 111/RPC 端口。如无需 NFS 服务，建议禁用 rpc.mountd 并删除 NFS 相关服务启动项。"
+score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Linux/Ultrix NFS rpc.mountd 文件存在性信息泄露漏洞"
-updated = "2026-06-16"
+sources = ["epss"]
+title = "Linux rpc.mountd 文件存在性信息泄露漏洞"
+updated = "2026-06-16T21:49:59.137"
 
 [exploit]
 exp_urls = []
@@ -17,12 +17,21 @@ aliases = ["CVE-1999-1225"]
 ave_id = "AVE-1999-1414"
 
 [meta]
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/archive/1/7526",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/347",
-    "https://github.com/CVEProject/cvelistV5/blob/431324351d69005e5e9ea9d116dc965ce92ed482/cves/1999/1xxx/CVE-1999-1225.json",
+    "https://github.com/CVEProject/cvelistV5/blob/d3dea9b9f675980a583148876f0551475ad122e1/cves/1999/1xxx/CVE-1999-1225.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1225",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1225.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3f415771bcfb63723b9c0d3f106f197a1964d0e2/CVE/data/1999/CVE-1999-1225.json",
+    "https://github.com/github/advisory-database/blob/f37077e857e7a28bab83d284c23299407fb1af7e/advisories/unreviewed/2022/04/GHSA-mxgf-fgrv-7jxc/GHSA-mxgf-fgrv-7jxc.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1225.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--7b2b2e98-d8e9-469d-9ea2-cc0e95bcc012.json",
+    "https://github.com/shamedgh/confine/blob/a75dad3ad336e6258a42cd1ce4af061eea68ed76/cve.files/cveToFile.json.type.csv",
+    "https://github.com/Christopher0129/security-knowledge-base/blob/ecec748afe5bbe2fcd2fd04b00fb46bc827b2c5d/system-vulnerabilities/linux.md",
+    "https://github.com/Ethishh/securin_assessment/blob/e6ce9197b6593ae46f3f5646d268181eea6cbb31/cve_sync.log",
 ]
