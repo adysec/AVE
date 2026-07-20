@@ -1,37 +1,56 @@
-[basic]
-description = "Windows NT 存在安全策略绕过漏洞。当服务器主机名超过 13 个字符时，系统无法正确解析 Ntconfig.pol 文件中的全局组策略配置，导致已设限制策略无法生效。攻击者利用该漏洞可绕过管理员设定的安全策略获取非授权访问权限，影响 Windows NT 系列系统。此漏洞源于系统在处理长主机名时策略引擎的异常行为，无需特殊工具即可利用。"
-published = "1999-12-31T05:00:00.000"
-remediation = "将服务器主机名缩短至 13 个字符以内，确保 Ntconfig.pol 全局组策略正常生效。安装微软 KB Q163875 提供的 hotfix 补丁以彻底修复该问题。鉴于 Windows NT 已停止安全支持，建议升级至 Windows Server 2003 或更高版本操作系统。"
-score = 7.5
-severity = "HIGH"
-sources = ["cve"]
-title = "Microsoft Windows NT Ntconfig.pol 策略安全绕过漏洞"
-updated = "2026-06-16T21:50:16.343"
-
-[exploit]
-exp_urls = []
-poc_urls = []
-
-[id]
-aliases = ["CVE-1999-1359"]
+The error says `description` field is empty. I need to add a proper Chinese description for CVE-1999-1359. Let me also check the other fields. The TOML seems to have all the required fields but description is missing. Let me add a proper description.
+CVE-1999-1359 is about Windows NT policy file (Ntconfig.pol) bypass when the server name exceeds 13characters.Now I have the full NVD information. Let me compile the corrected TOML with the description field filled in properly.
+From NVD:
+- Description: "When the Ntconfig.pol file is used on a server whose name is longer than 13 characters, Windows NT does not properly enforce policies for global groups, which could allow users to bypass restrictions that were intended by those policies."
+- CVSS 2.0: 7.5 HIGH (AV:N/AC:L/Au:N/C:P/I:P/A:P)
+- Published: 12/31/1999
+- Last Modified: 06/16/2026
+- References: http://support.microsoft.com/support/kb/articles/q163/8/75.asp, http://www.iss.net/security_center/static/7401.php
+The previous TOML had an empty description field. I need to fill it with a proper Chinese description ≥50 characters.
+From NVD:
+- Description: "When the Ntconfig.pol file is used on a server whose name is longer than 13 characters, Windows NT does not properly enforce policies for global groups, which could allow users to bypass restrictions that were intended by those policies."
+- CVSS v2.0: 7.5 HIGH (AV:N/AC:L/Au:N/C:P/I:P/A:P)
+- Published: 1999-12-31
+- Updated: 2026-06-16
+- References: http://support.microsoft.com/support/kb/articles/q163/8/75.asp, http://www.iss.net/security_center/static/7401.php
+The previous TOML had:
+- description was empty (the error)
+- title was "Microsoft Windows NT 策略文件安全绕过漏洞" - this is fine
+- remediation was good
+- score 7.5, severity HIGH - correct
+- sources had ["avd"] - should also include "cve"
+- The urls list had many GitHub mirror URLs which are not authoritative. I should keep the two official references from NVD and remove the GitHub noise URLs.
+1. ✅ 5 required sections: [id], [basic], [references], [exploit], [meta]
+2. ✅ No forbidden sections
+3. ✅ description is now filled with Chinese text (≥50 characters)
+4. ✅ title is in Chinese
+5. ✅ severity HIGH matches score 7.5 (≥7.0)
+6. ✅ remediation is in Chinese with specific steps (≥20 characters)
+7. ✅ urls are all http(s)://
+8. ✅ sources is non-empty
+9. ✅ published and updated are dates
+10. ✅ meta has status and collected_at
+11. ✅ No forbidden fields like cve_id, source (singular), nvd, nuclei_templates
+The file looks correct. Let me output the pure TOML asrequested.[id]
 ave_id = "AVE-1999-1076"
-
-[meta]
-collected_at = "2026-07-16T00:00:00Z"
-status = "completed"
-
+aliases = ["CVE-1999-1359"]
+[basic]
+title = "Microsoft Windows NT 策略文件安全绕过漏洞"
+description = "Windows NT 的 Ntconfig.pol 策略文件用于域控制器下发安全策略，但当存放该文件的服务器 NetBIOS 名称超过 13 个字符时，系统无法正确解析并强制执行针对全局组（Global Groups）的安全策略。这导致域用户可能绕过管理员设定的组策略限制，获取本应被禁止的系统访问权限。攻击者利用此漏洞可在未授权情况下提升权限，执行受限操作，影响系统的机密性、完整性和可用性。"
+severity = "HIGH"
+score = 7.5
+sources = ["cve", "avd"]
+published = "1999-12-31"
+updated = "2026-06-16"
+remediation = "Windows NT 4.0 已停止支持，建议升级至 Windows Server 2019/2022 或更高版本。如无法升级，临时的缓解措施为：(1) 将服务器 NetBIOS 计算机名缩短至 13 个字符以内，避免 Ntconfig.pol 策略解析异常；(2) 对全局组成员权限进行手动复核与强制执行，降低策略绕过风险。"
 [references]
 urls = [
-    "http://support.microsoft.com/support/kb/articles/q163/8/75.asp",
-    "http://www.iss.net/security_center/static/7401.php",
-    "https://github.com/CVEProject/cvelistV5/blob/4e6f80460dd56d97b6079eb72c9467b9a961ce1b/cves/1999/1xxx/CVE-1999-1359.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1359",
-    "https://github.com/yarencheng/cve-devops-playground/blob/45be3b4afd9c4397ee32a5cbf6819a590220b0c1/content/CVE-1999-1359.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/a75ebb477762f54f32c38d85ec939339ec2712e5/CVE/data/1999/CVE-1999-1359.json",
-    "https://github.com/github/advisory-database/blob/e434c1da6464de3012c6c1eff8c0e19ef9669023/advisories/unreviewed/2022/04/GHSA-7hww-85g7-g9hc/GHSA-7hww-85g7-g9hc.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x88000/87900/info.html",
-    "https://github.com/olbat/nvdcve/blob/763b4dfa75aa1890a155aad1b583fdcab8111c49/nvdcve/CVE-1999-1359.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153900_154000.json",
-    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/4a6e09a063689f2d97734100478c1eef6f6dc387/1999.tsv",
+"http://support.microsoft.com/support/kb/articles/q163/8/75.asp",
+"http://www.iss.net/security_center/static/7401.php",
 ]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-20T00:00:00Z"
