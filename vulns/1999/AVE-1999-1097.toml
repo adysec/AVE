@@ -1,11 +1,11 @@
 [basic]
-description = "基于 BSD 4.4 的多个操作系统（包括 BSDI BSD/OS 4.0、FreeBSD 3.2、NetBSD 1.4 x86 以及 OpenBSD 2.5）在运行于安全级别 1（securelevel 1）时存在 UFS 文件系统保护机制缺陷。系统本应通过 immutable（不可修改）与 append-only（仅追加）标志防止文件被篡改，但拥有 root 权限的本地攻击者可以先卸载目标文件系统，再借助 fsdb 等底层文件系统编辑器直接通过块设备访问并修改磁盘上的文件元数据，从而清除上述保护标志。该漏洞影响所有运行在安全级别 1 的上述 BSD 衍生系统，攻击条件为攻击者需具备本地 root 权限且能卸载文件系统，利用方式是通过设备节点直接编辑文件系统绕过内核级保护，可导致关键系统文件被篡改，危害系统完整性与安全性。"
+description = "在 BSD 4.4 衍生操作系统（含 BSDI BSD/OS 4.0、FreeBSD 3.2、NetBSD 1.4、OpenBSD 2.5）中，安全等级 1 机制用于阻止 root 用户修改设置了不可变（immutable）和仅追加（append-only）标志的文件。然而，具有 root 权限的攻击者可通过卸载文件系统后使用 fsdb 等文件系统编辑器直接操作底层设备，绕过该保护机制清除文件标志位。该漏洞需攻击者已获得本地 root 权限，利用条件苛刻，但本质上绕过了安全等级的核心防护设计。"
 published = "1999-07-02T04:00:00.000"
-remediation = "立即将受影响的 BSD 系统升级至已修复该漏洞的版本：BSDI BSD/OS 升级至 4.1 或更高版本，FreeBSD 升级至 3.2-STABLE 或更高版本，NetBSD 升级至 1.4.1 或更高版本，OpenBSD 升级至 2.6 或更高版本。临时缓解措施：将 UFS secure level 从 1 提升至 2，安全级别 2 会禁止 root 清除文件的 immutable 和 append-only 标志，即使通过卸载文件系统并使用 fsdb 等工具直接修改设备也无法绕过。如暂无法立即升级，应通过 sysctl 或内核启动参数将 kern.securelevel 设为 2，并严格限制物理控制台和 root 账户访问权限，防止未授权人员接触单用户模式。"
+remediation = "将系统安全级别提升至 2（在 /etc/rc.conf 或 /etc/sysctl.conf 中设置 kern_securelevel=2），此时即使 root 也无法通过卸载文件系统绕过 immutable/append-only 保护标志。如有条件，应升级至各 BSD 发行版修复此漏洞的后续版本（如 OpenBSD 2.6+、FreeBSD 4.0+）。"
 score = 2.1
 severity = "LOW"
-sources = ["exploitdb"]
-title = "BSD/OS FreeBSD NetBSD OpenBSD UFS Secure Level 1 安全绕过漏洞"
+sources = ["avd"]
+title = "BSD 系列操作系统 UFS 安全级别绕过漏洞"
 updated = "2026-06-16T21:50:20.763"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1394"]
 ave_id = "AVE-1999-1097"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=93094058620450&w=2",
     "http://www.securityfocus.com/bid/510",
     "https://www.exploit-db.com/exploits/19411",
-    "https://github.com/CVEProject/cvelistV5/blob/7cda0b7fa75f17f1e2b56ef076a6f9175f854ab4/cves/1999/1xxx/CVE-1999-1394.json",
+    "https://github.com/CVEProject/cvelistV5/blob/63f7cdb3d3ebf7bfe8ef6a2325af30a024b23325/cves/1999/1xxx/CVE-1999-1394.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1394",
-    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1394.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4cacb08131e7c4736ad136de17873dbcaeddf850/CVE/data/1999/CVE-1999-1394.json",
-    "https://github.com/github/advisory-database/blob/958f1672375e115879b3a6bd13e3638812260c7d/advisories/unreviewed/2022/04/GHSA-f7wg-pwf9-wgf9/GHSA-f7wg-pwf9-wgf9.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1394.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/175fba1f481a7f7cf5bdb5344d3c0e47af1884ef/CVE/data/1999/CVE-1999-1394.json",
+    "https://github.com/github/advisory-database/blob/fa37ed0317ce1265b487f92916077b9ccbfe3349/advisories/unreviewed/2022/04/GHSA-f7wg-pwf9-wgf9/GHSA-f7wg-pwf9-wgf9.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/510/info.html",
-    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-1999-1394.json",
+    "https://github.com/olbat/nvdcve/blob/39f1db26eec9899ab2f8110ab3b45424c6fe9ec2/nvdcve/CVE-1999-1394.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153500_153600.json",
     "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000688.txt",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/1eac58e77e525b997a47e513089ff82762c04643/1999.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/8eedf1cb11548f43d573399be49eeffcf4f32e25/1999.tsv",
 ]
