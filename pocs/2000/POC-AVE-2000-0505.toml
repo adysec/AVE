@@ -1,0 +1,53 @@
+[info]
+author = "AVE"
+description = "Microsoft Outlook Express 5 存在持久化邮件浏览器链接漏洞(CVE-2000-0653)。远程攻击者可向用户发送特制 HTML 邮件或诱导访问恶意网页，通过 JavaScript 建立与 Outlook Express 窗口的持久化浏览器链接，监视用户的电子邮件内容。PoC 由 Georgi Guninski 发布，通过 window.open 与 about: 协议创建跨窗口访问链接以读取邮件内容。"
+id = "POC-AVE-2000-0505"
+name = "Microsoft Outlook Express 5 Persistent Mail-Browser Link PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0653",
+    "outlook-express",
+    "mail-browser-link",
+    "javascript",
+]
+vuln_id = [
+    "CVE-2000-0653",
+    "CVE-2000-0105",
+    "AVE-2000-0505",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "javascript:alert",
+    "window.open",
+    "mail-browser",
+]
