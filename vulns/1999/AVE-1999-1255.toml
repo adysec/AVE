@@ -1,26 +1,12 @@
 [basic]
-description = "Digital Equipment Corporation（DEC）的 Ultrix 4.0 与 4.1 操作系统中，/usr/bin/chroot 程序由于安装权限配置不当（如设置了危险的 setuid 位），存在本地权限提升漏洞。已登录系统的本地普通用户可借助该不安全的 chroot 程序，绕过文件系统的根目录隔离限制，进而获取 root 等更高权限。该漏洞影响运行 Ultrix 4.0 及 4.1 版本且安装了存在缺陷 chroot 二进制的系统，攻击前提是攻击者需先获得目标主机的本地普通用户访问权限，属于一种本地提权利用方式。"
-published = "1991-05-01T04:00:00.000"
-remediation = '''
-The user wants me to generate a remediation field for CVE-1999-1194 (Digital Ultrix 4.0/4.1 - /usr/bin/chroot Exploit). The remediation should be in Chinese, at least 20 characters, with specific actionable steps like upgrade version, configuration changes, or mitigation measures. No generic "refer to official advisory" language.
-
-Let me search for this vulnerability to find actual remediation information.<skill>
-<name>customize-opencode</name>
-</skill>
-<bash>
-<command>curl -s "https://nvd.nist.gov/vuln/detail/CVE-1999-1194" 2>/dev/null | grep -i -A5 -B5 -i "patch\|patch\|upgrade\|fix\|mitigat\|workaround" | head -50
-</command>
-</bash>
-<bash>
-<command>curl -s "https://www.exploit-db.com/exploits/19221" 2>/dev/null | grep -i -A5 -B5 -i "patch\|fix\|upgrade\|mitigat\|workaround" | head -50
-</command>
-</bash>
-</skill>'''
+description = "Digital Ultrix 4.0 和 4.1 系统中 /usr/bin/chroot 命令因安装权限配置不当，导致本地普通用户可利用该程序获取 root 权限。chroot 机制本用于限制进程的文件系统访问范围，但由于其可执行文件权限设置过于宽松，攻击者在获得低权限本地访问后，可通过 chroot 命令绕过隔离机制并提升至 root 权限，从而完全控制目标系统。该漏洞无需远程网络访问，仅需本地账户即可完成利用。"
+published = "1991-05-01"
+remediation = "修复 /usr/bin/chroot 权限配置：执行 chmod u-s /usr/bin/chroot 移除 setuid 权限位，并设置权限为 chmod 750 /usr/bin/chroot 以限制仅 root 组可执行。Digital 已发布 Ultrix 4.2 及以上版本修复该问题，建议升级至最新补丁集。在无法升级的旧系统上应严格控制本地用户访问权限。"
 score = 7.2
 severity = "HIGH"
-sources = ["avd"]
-title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9170,"outputTokens":25,"totalTokens":10859}}'
-updated = "2026-06-16T21:49:55.120"
+sources = ["cve"]
+title = "Digital Ultrix /usr/bin/chroot 本地权限提升漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -31,7 +17,7 @@ aliases = ["CVE-1999-1194"]
 ave_id = "AVE-1999-1255"
 
 [meta]
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
@@ -39,15 +25,4 @@ urls = [
     "http://www.cert.org/advisories/CA-1991-05.html",
     "http://www.securityfocus.com/bid/17",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/577",
-    "https://www.exploit-db.com/exploits/19041",
-    "https://github.com/CVEProject/cvelistV5/blob/b12c36fd7a302f487aaf754199c77a046db6aee1/cves/1999/1xxx/CVE-1999-1194.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1194",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-1999-1194.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/ea13d8ca97b52327fe351b64da51866911834231/CVE/data/1999/CVE-1999-1194.json",
-    "https://github.com/github/advisory-database/blob/424512debdca84cc53ffa1fb3810a74f7b1905a5/advisories/unreviewed/2022/04/GHSA-3cv5-x72m-qrqh/GHSA-3cv5-x72m-qrqh.json",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1194.json",
-    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000013.txt",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--45a7074a-9619-4909-9de1-1b230d580dbd.json",
-    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
-    "https://github.com/wisoffe/exploits-predict/blob/5a78ced1357472afaaece2c8acf2b8b68f9ede8d/notebooks/02-ik-initial-eda--data-analysis.ipynb",
 ]
