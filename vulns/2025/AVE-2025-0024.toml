@@ -1,0 +1,40 @@
+[basic]
+description = "群晖 Active Backup for Microsoft 365（ABM）存在凭据泄露漏洞。在 ABM 安装配置过程中，群晖中间件服务 SynoOauth（synooauth.synology.com）在处理 OAuth 授权码回调时，会在 HTTP 302 响应的 Location 头中以明文形式泄露 ABM 全局应用注册的 OAuth client_secret。该密钥属于群晖在其自身 Microsoft 租户中注册的 ABM 多租户应用程序的全局凭据，攻击者仅需观察一次中间件的 HTTP 响应即可获取该密钥。利用泄露的 client_id（b4f234da-3a1a-4f4d-a058-23ed08928904）和 client_secret，攻击者可通过 OAuth 客户端凭证授权流程在任意已部署 ABM 的组织 Microsoft 租户中获取访问令牌，进而以应用权限（Group.Read.All、ChannelMessage.Read.All）读取该租户内所有 Teams 频道消息、群组信息及 Outlook 数据，造成跨组织数据泄露。该漏洞影响所有使用 ABM 的组织，安装量超过 120 万，攻击者无需目标租户内的任何权限即可实施利用，危害范围覆盖不同安全边界。Synology 已在服务端修复此问题，用户无需采取额外措施。"
+published = "2025-05-16T09:15:18.257"
+remediation = 'Synology 已在服务端修复该漏洞（旋转了 Active Backup for Microsoft 365 的全局 OAuth 客户端密钥），ABM 作为云托管服务无需用户在 DSM 端执行任何操作。建议用户前往 Microsoft Entra 管理中心审查"Synology Active Backup for M365"企业应用程序权限，确认是否仍需保留 Group.Read.All 和 ChannelMessage.Read.All 等高权限，如不再使用 ABM 则移除该服务主体；同时检查 Entra 登录日志中来自 ABM 客户端 ID（b4f234da-3a1a-4f4d-a058-23ed08928904）的异常调用记录，并监控 Microsoft Graph API 活动日志以排查未经授权的 Teams 频道消息和群组数据访问行为。'
+score = 6.5
+severity = "MEDIUM"
+sources = ["hwpoc"]
+title = "群晖 Active Backup for Microsoft 365 密钥信息泄露漏洞"
+updated = "2026-06-17T09:33:46.653"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-4679"]
+ave_id = "AVE-2025-0024"
+
+[meta]
+collected_at = "2026-07-20T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://www.synology.com/en-global/security/advisory/Synology_SA_25_06",
+    "https://modzero.com/en/blog/when-backups-open-backdoors-synology-active-backup-m365/",
+    "https://modzero.com/static/MZ-25-02_modzero_Synology-Active-Backup-M365.pdf",
+    "https://github.com/trickest/cve/blob/b4f1378756fd26f414d09a97dc81126672830951/2025/CVE-2025-4679.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/f8a21b0c30953d5926478bb080c200645e84a23a/2025/CVE-2025-4679.json",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/0f1885b9ad0c36bab067e4e3d61739350d154cdf/data/2025/CVE-2025-4679-fevar54_CVE-2025-4679-SecureOAuth-Demo---Enfoque-educativo.md",
+    "https://github.com/CVEProject/cvelistV5/blob/712a40967986b700313860b08048435be4fa9839/cves/2025/4xxx/CVE-2025-4679.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/mitre/CVE-2025-4679",
+    "https://github.com/sec-dojo-com/cve-poc/blob/0d273a0b2821f58c8dfa9e9b4a2ad049f300e8ec/pocs/2025/CVE-2025-4679.md",
+    "https://github.com/cisagov/vulnrichment/blob/d2626315618f92c3b6f631256244cb094cbffa68/2025/4xxx/CVE-2025-4679.json",
+    "https://github.com/github/advisory-database/blob/cdfc8886d71af7ef3bdab3e4db46753ff8af6538/advisories/unreviewed/2025/05/GHSA-544f-g2r6-4rv9/GHSA-544f-g2r6-4rv9.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-4679",
+    "https://github.com/kidrek/VigilIntel/blob/cfb2327d8869eaaa4d885703b23a3735545da14f/2025/06/2025-06-30-report.md",
+    "https://github.com/fevar54/CVE-2025-4679-SecureOAuth-Demo---Enfoque-educativo",
+    "https://nvd.nist.gov/vuln/detail/CVE-2025-4679",
+]
