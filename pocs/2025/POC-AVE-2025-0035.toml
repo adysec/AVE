@@ -1,0 +1,73 @@
+[info]
+author = "AVE"
+description = "检测 DataEase 2.10.11 之前版本中 Redshift 数据源 JDBC 连接参数 sslfactory/sslfactoryarg 绕过漏洞。攻击者可通过构造恶意 JDBC URL 利用 Spring ClassPathXmlApplicationContext 加载远程 XML 配置实现后台远程代码执行。通过向多个 API 端点发送请求检测 DataEase 服务及版本信息来判断是否存在漏洞。"
+id = "POC-AVE-2025-0035"
+name = "DataEase Redshift Data Source JDBC Bypass RCE PoC"
+severity = "high"
+tags = [
+    "cve-2025-53004",
+    "dataease",
+    "jdbc-bypass",
+    "rce",
+]
+vuln_id = [
+    "CVE-2025-53004",
+    "AVE-2025-0035",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/system/version"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "dataease",
+    "DataEase",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/auth/login"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "dataease",
+    "DataEase",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "dataease",
+    "DataEase",
+]
