@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证目标 IE/Outlook 环境是否受 Active Setup ActiveX 控件 (asctrls.ocx) 设计缺陷影响。通过构造 HTML 页面调用该 ActiveX 控件尝试加载指定 CAB 文件，若页面成功实例化控件并尝试安装/执行 CAB 内容，则判定漏洞存在。本 PoC 仅做无害的控件加载探测，不执行任意代码。"
+id = "POC-AVE-2000-0272"
+name = "CVE-2000-0329 ActiveX CAB 文件执行 PoC"
+severity = "medium"
+tags = ["ave-2000-0272"]
+vuln_id = [
+    "CVE-2000-0329",
+    "AVE-2000-0272",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cve-2000-0329.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT)"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "asctrls.ocx",
+    "Active Setup",
+    "object",
+    "classid",
+]
