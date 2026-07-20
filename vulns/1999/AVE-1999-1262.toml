@@ -1,15 +1,12 @@
 [basic]
-description = "SGI IRIX 6.4 系统中的 xfsdump 工具存在本地权限提升漏洞。该工具在处理 bck.log 日志文件时未对文件路径进行充分验证，本地攻击者可通过构造符号链接将 bck.log 指向敏感系统文件，利用符号链接攻击使 xfsdump 以 root 权限写入或覆盖关键文件，从而获得系统 root 权限。攻击者需先获得目标系统的本地访问权限方可利用，成功后可完全控制受影响系统。"
-published = "1997-05-07"
-remediation = "升级 SGI IRIX 至 6.5.10 及以上版本，该版本已修复 xfsdump 符号链接问题。如暂无法升级，将 /var/xfsdump 目录权限设为 0755 且属主为 root，移除其他用户写权限，并确保 bck.log 不可被普通用户删除或替换。"
+description = "SGI IRIX 6.4 系统中的 xfsdump 工具存在本地权限提升漏洞。由于 xfsdump 在处理日志文件 bck.log 时未对符号链接进行充分验证，本地攻击者可通过构造恶意符号链接指向系统关键文件（如 /etc/passwd），诱导 xfsdump 以 root 权限覆写目标文件，从而获得超级用户权限。该漏洞利用条件要求攻击者拥有本地用户权限，攻击复杂度较低，影响 SGI IRIX 6.4 版本。"
+published = "1997-05-07T04:00:00.000"
+remediation = "立即移除 xfsdump 的 setuid 权限（chmod u-s /usr/sbin/xfsdump），防止本地普通用户通过符号链接攻击 bck.log 日志文件提权。如业务允许，建议升级至 IRIX 6.5.2 或更高版本并安装 SGI 官方补丁。临时缓解措施可将 xfsdump 限制为仅 root 用户可执行，并启用系统日志文件的粘滞位保护。"
 score = 6.2
 severity = "MEDIUM"
-sources = [
-    "cve",
-    "exploitdb",
-]
-title = "SGI IRIX xfsdump 本地符号链接提权漏洞"
-updated = "2026-06-16"
+sources = ["avd"]
+title = "SGI IRIX xfsdump 本地权限提升漏洞"
+updated = "2026-06-16T21:50:21.323"
 
 [exploit]
 exp_urls = []
@@ -20,7 +17,7 @@ aliases = ["CVE-1999-1398"]
 ave_id = "AVE-1999-1262"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,4 +25,15 @@ urls = [
     "http://marc.info/?l=bugtraq&m=87602167420921&w=2",
     "http://www.insecure.org/sploits/irix.xfsdump.html",
     "http://www.securityfocus.com/bid/472",
+    "https://www.exploit-db.com/exploits/19358",
+    "https://github.com/CVEProject/cvelistV5/blob/41de94138b7cf6e858138ec4e79e16fbec611fa4/cves/1999/1xxx/CVE-1999-1398.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1398",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1398.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/175fba1f481a7f7cf5bdb5344d3c0e47af1884ef/CVE/data/1999/CVE-1999-1398.json",
+    "https://github.com/github/advisory-database/blob/fa37ed0317ce1265b487f92916077b9ccbfe3349/advisories/unreviewed/2022/04/GHSA-r7r6-4c9p-66r6/GHSA-r7r6-4c9p-66r6.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/472/info.html",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--bb778dc8-1640-452d-8f3e-7d15f90931af.json",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_0.list.dict",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000162.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1398.json",
 ]
