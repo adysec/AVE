@@ -1,43 +1,38 @@
-1. The remediation contains a placeholder `PHCO_XXXXX` - this needs to be fixed. Since this is a very old CVE (2000), there's no specific patch version available. I need to provide a concrete remediation without placeholder.
-2. The URLs list has many GitHub mirror links that are not authoritative. I should clean those up to only include authoritative references.
-3. The `published` field has a timestamp format but should be just date `2000-06-02`.
-4. The `updated` field should be just date `2026-06-16`.
-- remediation: Remove the placeholder `PHCO_XXXXX` and provide concrete steps. Since this is an old vulnerability, the remediation should focus on removing the SUID bit from man, applying the vendor patch (without placeholder), or upgrading the OS.
-- published: Change to `2000-06-02`
-- updated: Change to `2026-06-16`
-- urls: Keep only authoritative URLs (securityfocus, exploit-db), remove the many GitHub mirror links
-Now for the remediation, I need to be specific. The man command had a SUID bit that allowed symlink attacks. The concrete remediation would be:
-- Remove the SUID bit from man: `chmod u-s /usr/bin/man`
-- Apply HP patch (the specific patch ID is not publicly documented, so I should not make one up)
-- Upgrade to a patched version of HP-UX
-Actually, looking at the NVD page, there's no specific patch version mentioned. The remediation should be practical and not contain placeholders. Let me write something like:
-"移除 man 命令的 SUID 权限位（chmod u-s /usr/bin/man）以消除本地提权风险；联系 HP 获取针对此漏洞的安全补丁进行安装；或升级 HP-UX 至不受影响的版本。"
-This removes the placeholder and gives concrete, actionable steps.
-For URLs, I should keep only the authoritative ones:
-- http://www.securityfocus.com/bid/1302 (authoritative reference)
-- http://www.securityfocus.com/templates/archive.pike?list=1&msg=Pine.SOL.4.02.10006021014400.4779-100000%40nofud.nwest.attws.com (original advisory)
-- https://www.exploit-db.com/exploits/19990 (exploit)
-The rest are GitHub mirrors of CVE data and are not authoritative references.[id]
-ave_id = "AVE-2000-0391"
-aliases = ["CVE-2000-0468"]
 [basic]
-title = "HP HP-UX man 本地符号链接漏洞"
-description = "HP-UX 10.20 及 11.0 系统中的 man 命令存在符号链接攻击漏洞。本地攻击者可通过在 /tmp 目录下创建恶意的符号链接，诱使 man 命令在处理临时文件时跟随该链接，从而覆盖目标系统上的任意文件。该漏洞利用条件为拥有本地访问权限，影响范围包括 HP-UX 10.20 和 11.0 版本，CVSS 评分 4.6，危害等级中危。"
-severity = "MEDIUM"
+description = "HP-UX 10.20 及 11.0 系统中的 man 命令存在符号链接（symlink）竞争条件漏洞。本地攻击者可通过在 /tmp 目录下创建恶意符号链接，诱使 man 命令以 root 权限向攻击者指定的任意文件写入数据，从而实现本地权限提升或文件覆盖。该漏洞影响 HP-UX 10.20 和 11.0 版本，CVSS 评分 4.6，危害等级中危。攻击者需拥有本地系统访问权限方可利用。"
+published = "2000-06-02T04:00:00.000"
+remediation = "建议安装 HP 官方安全补丁 PHCO_18120 (10.20) 或 PHCO_18121 (11.00)。临时缓解措施：设置环境变量 TMPDIR 指向用户私有的临时目录（如 $HOME/tmp），或限制本地非授信用户登录系统。"
 score = 4.6
-sources = ["cve", "exploitdb"]
-published = "2000-06-02"
-updated = "2026-06-16"
-remediation = "移除 man 命令的 SUID 权限位（chmod u-s /usr/bin/man）以消除本地提权风险；联系 HP 获取针对此漏洞的安全补丁并安装；或升级 HP-UX 至不受影响的版本。"
+severity = "MEDIUM"
+sources = ["cve"]
+title = "HP-UX man 命令符号链接漏洞"
+updated = "2026-06-16T21:51:47.947"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0468"]
+ave_id = "AVE-2000-0391"
+
+[meta]
+collected_at = "2026-07-20T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://www.securityfocus.com/bid/1302",
-"http://www.securityfocus.com/templates/archive.pike?list=1&msg=Pine.SOL.4.02.10006021014400.4779-100000%40nofud.nwest.attws.com",
-"https://www.exploit-db.com/exploits/19990",
+    "http://www.securityfocus.com/bid/1302",
+    "http://www.securityfocus.com/templates/archive.pike?list=1&msg=Pine.SOL.4.02.10006021014400.4779-100000%40nofud.nwest.attws.com",
+    "https://www.exploit-db.com/exploits/19990",
+    "https://github.com/CVEProject/cvelistV5/blob/b5102a7cca13b4c0a0e55e628783c406707da47e/cves/2000/0xxx/CVE-2000-0468.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0468",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-2000-0468.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e55eacb4f05da66af6c788dc1e36dafe4a12a8f8/CVE/data/2000/CVE-2000-0468.json",
+    "https://github.com/github/advisory-database/blob/78550cb05ca9623089e78169330acf979f4b64ca/advisories/unreviewed/2022/04/GHSA-4xc4-j2qx-w95p/GHSA-4xc4-j2qx-w95p.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/olbat/nvdcve/blob/39f1db26eec9899ab2f8110ab3b45424c6fe9ec2/nvdcve/CVE-2000-0468.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
+    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--19a2e879-672d-4af8-bf07-664ff493d956.json",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-20T00:00:00Z"
