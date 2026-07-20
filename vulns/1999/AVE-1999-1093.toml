@@ -1,12 +1,12 @@
 [basic]
-description = "DNS 协议允许远程攻击者利用 UDP DNS 查询中的伪造源地址将 DNS 服务器作为流量放大器，向受害者发送远超攻击者发出流量的放大流量，导致拒绝服务"
-published = "1999-12-31"
-remediation = "在网络边界部署 ingress 过滤（BCP 38）阻止伪造源地址流量，同时限制 DNS 服务器仅对授权客户端开放递归查询，并对 DNS 响应速率进行限制以缓解放大攻击"
-score = 5.0
+description = "DNS 协议存在反射放大攻击漏洞，远程攻击者通过伪造源地址向开放 DNS 解析服务器发送小型 UDP 查询请求，DNS 服务器将放大数十倍的响应数据发送至受害目标，导致其带宽耗尽、服务不可用。该漏洞影响所有采用 UDP 协议的 DNS 服务器，攻击者无需认证即可利用大量开放 DNS 递归解析器实施分布式拒绝服务攻击，长期以来被广泛用于大规模网络攻击。"
+published = "1999-12-31T05:00:00.000"
+remediation = "升级 DNS 服务软件至支持源地址验证及递归控制的最新版本（如 BIND 9+），配置 /etc/named.conf 将 allow-recursion 限定为仅内部授权客户端，启用 response-rate-limiting（RRL）限制每秒响应速率，对外部请求仅提供授权域解析。同时在网络边界实施 BCP 38（RFC 2827）源地址过滤，阻止伪造源 IP 的数据包出站。"
+score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "DNS 服务器 UDP 查询反射放大拒绝服务漏洞"
-updated = "2026-07-16"
+sources = ["avd"]
+title = "DNS 服务器 UDP 反射放大漏洞"
+updated = "2026-06-16T21:50:18.833"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1379"]
 ave_id = "AVE-1999-1093"
 
 [meta]
-collected_at = "2026-07-16T17:13:49.907973589+00:00"
+collected_at = "2026-07-20T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,4 +26,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=93348057829957&w=2",
     "http://marc.info/?l=bugtraq&m=93433758607623&w=2",
     "http://www.iss.net/security_center/static/7238.php",
+    "https://github.com/CVEProject/cvelistV5/blob/851a313c6bc1948d5487aca773aa21ade52b7c28/cves/1999/1xxx/CVE-1999-1379.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1379",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1379.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/929f101fd7b4d4314a4b92f62a8cc2523c6d76f0/CVE/data/1999/CVE-1999-1379.json",
+    "https://github.com/github/advisory-database/blob/491d1a908ffff7b174e17aaac4d0207c13405fa7/advisories/unreviewed/2022/05/GHSA-mgv8-6wqv-cp47/GHSA-mgv8-6wqv-cp47.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cwe_details/cwe_details_800_900.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1379.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001041.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--6a705c6f-dced-47db-9df9-34416d0319c1.json",
+    "https://github.com/CyberSecAI/CWE-Expert/blob/f634e911e6c24a1ad8b9619383e2ab3eb2d9ebd4/CWE_corpus/markdown/9_cwe_trimmed_top25.md.txt",
 ]
