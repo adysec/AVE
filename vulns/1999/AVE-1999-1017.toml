@@ -1,30 +1,37 @@
-1. The `remediation` field is broken - it contains a thinking process/explanation instead of actual remediation text. The actual remediation content is embedded within that thinking text. I need to extract the proper remediation.
-2. Looking at the content, the actual remediation suggestion is: "立即升级至 Windows 2000 及以上受支持版本，Windows NT 4.0 已停止安全更新。如无法升级，在防火墙中限制外部对 445/TCP 端口的访问，并禁用 LSASS 的远程 SAMR 调用。
-3. I'm noticing some structural issues: `sources` is set to `["avd"]` when it should be `["cve"]` based on the schema, and `published` has a full timestamp that needs to be normalized to just the date. Let me check if this vulnerability actually exists in the database before making corrections.
-I should search for CVE-1999-1234 to verify it's a real vulnerability and get accurate details, then fix the TOML structure by removing the thinking from the remediation field, correcting the date format, and ensuring all fields are properly populated.Now I have the confirmed data from NVD. Let me also search for any Microsoft security bulletin for this vulnerability.I have enough information from NVD to fix this TOML. The key issues:
-1. The `remediation` field contains garbage (thinking text instead of actual remediation)
-2. The `published` date format is wrong (should be just the date, not datetime)
-3. The `sources` field should be `["cve"]` not `["avd"]`
-ave_id = "AVE-1999-1017"
-aliases = ["CVE-1999-1234"]
 [basic]
-title = "Microsoft Windows NT 4.0 LSA 本地安全认证子系统拒绝服务漏洞"
-description = "Windows NT 4.0 的本地安全认证子系统服务 LSASS.EXE 存在空指针解引用漏洞。远程攻击者可通过向目标系统的安全账户管理器 SAM 远程过程调用接口发送包含空策略句柄的恶意请求，触发 SamrOpenDomain、SamrEnumDomainUsers 及 SamrQueryDomainInfo 等函数中的空指针访问，导致 LSASS 进程崩溃，造成系统拒绝服务。攻击者无需身份认证即可通过网络远程触发该漏洞，CVSS v2 评分 5.0，危害等级中危。"
+description = "Windows NT 4.0 本地安全认证子系统服务 (LSASS.EXE) 存在空指针解引用漏洞。远程攻击者可通过向 SamrOpenDomain、SamrEnumDomainUsers 及 SamrQueryDomainInfo 等 RPC 调用传递空策略句柄，导致 LSASS 进程崩溃，引发目标系统拒绝服务。该漏洞影响 Windows NT 4.0 全版本，攻击者无需身份认证即可远程触发，CVSS 评分 5.0，危害等级中危。微软尚未发布官方补丁，建议通过防火墙限制对 RPC 端口的访问以缓解风险。"
+published = "1999-10-26T04:00:00.000"
+remediation = '该漏洞源于 LSASS.EXE 在处理 MSRPC 请求时未正确校验空策略句柄所致。Microsoft 在 Windows NT 4.0 生命周期内未发布专门修复此问题的安全更新（SP3/SP4/SP5 及 LSA3-fix 均无效）。建议采取以下措施：(1) 在边界防火墙上阻止对 TCP 135/139/445 和 UDP 137/138/445 端口的入站访问，限制匿名 RPC 调用；(2) 通过本地安全策略将"网络访问：允许匿名 SID/名称转换"设置为"已禁用"；(3) Windows NT 4.0 已于 2004 年终止支持，建议升级至受支持的 Windows 版本（如 Windows Server 2019 或更高版本）以获取持续安全更新。'
+score = 5
 severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
-published = "1999-10-26"
-updated = "2026-06-16"
-remediation = "立即升级至 Windows 2000 或更高版本受支持的操作系统，Windows NT 4.0 已于 2004 年停止全部安全更新支持。如短期内无法完成系统迁移，应在防火墙中限制外部对 445/TCP 及 139/TCP 端口的访问，阻断对 SAMR 接口的远程调用，同时关闭不必要的网络共享服务以缩小攻击面。"
+sources = ["epss"]
+title = "Microsoft Windows NT 4.0 LSA lsass.exe 拒绝服务漏洞"
+updated = "2026-06-16T21:50:00.263"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-1234"]
+ave_id = "AVE-1999-1017"
+
+[meta]
+collected_at = "2026-07-20T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://marc.info/?l=ntbugtraq&m=94096671308565&w=2",
-"https://exchange.xforce.ibmcloud.com/vulnerabilities/3293",
-"https://nvd.nist.gov/vuln/detail/CVE-1999-1234"
+    "http://marc.info/?l=ntbugtraq&m=94096671308565&w=2",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/3293",
+    "https://github.com/trickest/cve/blob/b4f1378756fd26f414d09a97dc81126672830951/1999/CVE-1999-1234.md",
+    "https://github.com/CVEProject/cvelistV5/blob/50269681ee58c9b5bf7169b73546eef94697389c/cves/1999/1xxx/CVE-1999-1234.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1234",
+    "https://github.com/edoardottt/missing-cve-nuclei-templates/blob/115c94bd1da3cc18977d652d6e78c9f4a5dfc13b/data/year/1999.txt",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4631642e37ce9ee8b9057e387df4aee61487fb70/CVE/data/1999/CVE-1999-1234.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-1234.md",
+    "https://github.com/github/advisory-database/blob/f37077e857e7a28bab83d284c23299407fb1af7e/advisories/unreviewed/2022/04/GHSA-mv63-92x5-p264/GHSA-mv63-92x5-p264.json",
+    "https://github.com/uyuni-project/uyuni/blob/98947f5d37413b2879f9f7fc7f4f572dee76789e/testsuite/features/secondary/min_cve_id_new_syntax.feature",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1234.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x88000/87560/info.html",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-20T00:00:00Z"
