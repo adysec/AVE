@@ -1,34 +1,32 @@
 [info]
-author = "ave"
-description = "验证 Apple Mac OS X Server 1.0 上运行的 Apache HTTP 服务器在遭受 CGI 接口高频 GET 请求洪流时是否出现拒绝服务（崩溃/资源耗尽）。通过向目标 CGI 路径并发发送大量请求，观察服务是否停止响应以确认漏洞存在。"
+author = "AVE"
+description = "验证 Apple Mac OS X 1.0 Apache HTTP Server CGI 请求洪流拒绝服务漏洞。远程攻击者通过 Apache Benchmark(ab) 发送 32 个并发 HTTP GET 请求到 /cgi-bin/test-cgi，可导致 Apache 生成大量进程耗尽系统资源造成内核恐慌崩溃。"
 id = "POC-AVE-1999-1101"
-name = "CVE-1999-1412 DoS PoC"
+name = "CVE-1999-1412 PoC"
 severity = "medium"
-tags = ["ave-1999-1101"]
+tags = ["cve-1999-1412"]
 vuln_id = [
     "CVE-1999-1412",
     "AVE-1999-1101",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/cgi-bin/test-cgi"
+path = "/{{BaseURL}}/cgi-bin/test-cgi"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
-status = [
-    500,
-    502,
-    503,
-    504,
+type = "word"
+words = [
+    "CGI/1.0",
+    "Document",
+    "test-cgi",
 ]
-type = "status"
