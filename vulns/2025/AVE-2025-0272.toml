@@ -1,0 +1,47 @@
+1. `remediation` field is empty/invalid - it contains a truncated AI response instead of actual remediation text
+2. `references.urls` is empty - need to find valid URLs
+3. `score` is 5 with `severity` "MEDIUM" - this is actually correct (MEDIUM ≥ 4), but let me check if this is a SQL injection vulnerability - SQL injection in 用友NC without auth is likely HIGH or CRITICAL
+4. `published` and `updated` are "0705" which is not a valid date format
+1. remediation field is empty - The current remediation field has a broken multiline string that starts with `"""` but the content is truncated and malformed. I need to write a proper remediation in Chinese.
+2. references urls is empty - I need to find valid URLs. The NVD search showed CVE-2025-0272 is actually about HCL DevOps Deploy, not 用友NC. So this HWPOC-2025-04b6c5cf is a different vulnerability that doesn't have a CVE assigned. Let me search for more information about this specific vulnerability.
+3. severity/score mismatch - Currently score=5, severity="MEDIUM". Score 5.0 is MEDIUM (≥4.0), so that's actually correct per the rules. But wait, the description says it's a SQL injection with high impact. Let me reconsider the severity.
+Actually, looking at the errors:
+- remediation is empty (the `"""` multiline string is broken/truncated)
+- references urls is empty
+1. remediation is empty - The remediation field contains a truncated/incomplete value. I need to fix it with a proper Chinese remediation suggestion.
+2. references has no URLs - Need to add valid URLs.
+3. published/updated are "0705" - These should be proper date strings like "2025-07-05".
+4. score is 5, severity is "MEDIUM" - MEDIUM requires score ≥4, so 5 is fine for MEDIUM. But wait, the description says it's a SQL injection with high impact. Let me reconsider the severity. SQL injection in an ERP system with no auth required should be CRITICAL or HIGH. But I shouldn't make up data - the original says MEDIUM with score 5. Let me keep it as is since I don't have authoritative CVSS data for this specific vulnerability.
+Actually, looking at the NVD result, CVE-2025-0272 is about HCL DevOps Deploy / HCL Launch HTML injection, which is completely different from the 用友NC SQL injection. So this vulnerability (HWPOC-2025-04b6c5cf) is NOT CVE-2025-0272 - it's a different vulnerability that happens to have a similar ID pattern.
+1. Fix remediation - write a proper Chinese remediation
+2. Fix published/updated - use proper date format
+3. Fix references - I don't have any real URLs for this specific vulnerability. The skill says "不要编造不存在的 URL" so I should leave urls empty or note that no references were found.
+Wait, the error says "references 段中无有效 url" - but the skill also says "不要编造不存在的 URL 或补丁版本". So I should leave urls empty if I can't find any.
+1. remediation - write a proper Chinese remediation
+2. published/updated - fix date format
+3. Keep references empty since I can't find real URLs
+For the remediation, based on the description (用友NC SQL injection in qrySubPurchaseOrgByParentPk), I should suggest:
+- Upgrade to a patched version
+- WAF rules to block malicious SQL injection attempts
+- Input validation/sanitization
+Actually, looking more carefully at the description: "攻击者无需身份认证即可通过 POST 请求向 pk_group 参数注入恶意 SQL 语句，利用 Oracle 数据库的 DBMS_PIPE 等内置函数实现数据窃取、权限提升甚至远程命令执行" - this is clearly a HIGH or CRITICAL severity vulnerability. But the original has score=5, severity=MEDIUM. The skill says severity/score should match: MEDIUM≥4. Score 5 is within MEDIUM range. But the actual impact described is much higher. However, I shouldn't change the severity without authoritative data. Let me keep it as MEDIUM/5.
+Wait, actually the remediation field has a truncated value. Let me fix it properly.
+ave_id = "AVE-2025-0272"
+aliases = ["HWPOC-2025-04b6c5cf"]
+[basic]
+title = "用友 NC qrySubPurchaseOrgByParentPk SQL注入漏洞"
+description = "用友NC系统 `/ebvp/register/qrySubPurchaseOrgByParentPk` 接口存在 SQL 注入漏洞，攻击者无需身份认证即可通过 POST 请求向 `pk_group` 参数注入恶意 SQL 语句，利用 Oracle 数据库的 `DBMS_PIPE` 等内置函数实现数据窃取、权限提升甚至远程命令执行。该漏洞影响用友 NC 全版本，危害等级高，建议用户尽快升级至安全版本或部署 WAF 防护规则。"
+severity = "MEDIUM"
+score = 5.0
+sources = ["hwpoc"]
+published = "2025-07-05"
+updated = "2025-07-05"
+remediation = "升级用友NC至官方发布的安全补丁版本，在Nginx或反向代理层配置WAF规则拦截对 `/ebvp/register/qrySubPurchaseOrgByParentPk` 接口的恶意SQL注入请求，同时对 `pk_group` 等输入参数实施严格的类型校验和参数化查询处理。"
+[references]
+urls = []
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-20T00:00:00Z"
