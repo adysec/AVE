@@ -1,64 +1,40 @@
-1. Check the errors in the fields
-2. Fix the title, description, remediation, severity, and score to meet the requirements
-3. Output only pure TOML without any explanations or code block markers
-4. Use internet search to get accurate information
-From the errors identified:
-- [重要] title: 标题可能缺少安全漏洞相关关键词
-- [严重] remediation: remediation 字段为空
-Current issues I can see:
-1. The `title` field is corrupted - it contains JSON-like output instead of a proper title
-2. The `remediation` field seems to have some stray text at the beginning
-3. The field order doesn't match the schema exactly
-4. Need to ensure severity and score match
-1. [重要] title: 标题缺少安全漏洞相关关键词 - It seems to have a weird JSON value instead of a proper title
-2. [严重] remediation: remediation 字段为空 - Need to provide specific remediation
-3. title/description/remediation: needs to be in Chinese
-From the ExploitDB page, I can see:
-- Vulnerability: "Computalynx CMail 2.3 SP2/2.4 - SMTP Buffer Overflow"
-- Description: There's a buffer overflow in the CMail SMTP service (long MAIL FROM:) that may allow an attacker to execute arbitrary code on the target server.
-- Exploit: Remote buffer overflow on the MAIL FROM command
-- Platform: Windows
-- CVSS: 10.0 (Critical)
-1. title: Should be something like "Computalynx CMail 2.3 SP2/2.4 SMTP缓冲区溢出漏洞"
-2. description: Need to write in Chinese, ≥50字
-3. remediation: Need to provide specific remediation steps
-4. Check severity/score relationship: score=10, severity="CRITICAL" - this is correct (CRITICAL≥9)
-1. title: "Computalynx CMail 2.3 SP2/2.4 SMTP缓冲区溢出漏洞"
-2. description: "Computalynx CMail 2.3 SP2 和 2.4 版本的SMTP服务器在处理MAIL FROM命令时存在缓冲区溢出漏洞。远程攻击者可通过向SMTP端口发送超长的MAIL FROM参数触发堆栈缓冲区溢出，进而在服务器上下文中执行任意代码，完全控制服务器。该漏洞影响CMail 2.3 SP2和2.4版本的SMTP服务，CVSS评分10.0（严重级），攻击无需认证且可远程触发。攻击者只需向SMTP端口发送畸形的MAIL FROM命令即可触发缓冲区溢出，进而执行任意Shellcode获取服务器控制权。"
-3. remediation: "立即升级到最新版本的Computalynx CMail（≥2.5版本）并应用安全补丁，关闭不必要的SMTP服务端口，限制MAIL FROM命令的长度，部署网络ACL限制对服务器的访问，并监控异常的SMTP流量。"
-I'm struggling to access the Nessus plugin and bugtraq references. Attempting to fetch additional information about the vulnerability, I'm encountering persistent connection issues. The webfetch tool continues to time out, preventing me from completing my research. This confirms the limitations in accessing comprehensive vulnerability data for the Computalynx CMail SMTP buffer overflow.[id]
-ave_id = "AVE-1999-1983"
-aliases = ["CVE-1999-1521"]
 [basic]
-title = "Computalynx CMail 2.3 SP2/2.4 SMTP缓冲区溢出漏洞"
-description = "Computalynx CMail 2.3 SP2 和 2.4 版本的SMTP服务器在处理MAIL FROM命令时存在缓冲区溢出漏洞。远程攻击者可通过向SMTP端口发送超长的MAIL FROM参数触发堆栈缓冲区溢出，进而在服务器上下文中执行任意代码，完全控制服务器。该漏洞影响CMail 2.3 SP2和2.4版本的SMTP服务，CVSS评分10.0（严重级），攻击无需认证且可远程触发。攻击者只需向SMTP端口发送畸形的MAIL FROM命令即可触发缓冲区溢出，进而执行任意Shellcode获取服务器控制权。"
-severity = "CRITICAL"
-score = 10
-sources = ["exploitdb"]
+description = "Computalynx CMail 2.4 及 2.3 SP2 版本的 SMTP 服务在处理 MAIL FROM 命令时存在缓冲区溢出漏洞，远程攻击者无需身份认证即可向目标服务器发送特制的超长 MAIL FROM 命令，触发缓冲区溢出，进而导致任意代码执行。该漏洞 CVSS 评分 10.0，危害等级严重，受影响服务器可能被完全控制。"
 published = "1999-09-12T04:00:00.000"
+remediation = "Computalynx CMail 2.3 SP2/2.4 已停止维护，无可用安全补丁。建议立即迁移至仍在安全支持期的邮件服务器软件（如 Postfix、Exim、Microsoft Exchange），同时在网络防火墙层面限制外部对 SMTP 端口（25/TCP）的访问，仅允许可信 IP 连接作为临时缓解措施。"
+score = 10
+severity = "CRITICAL"
+sources = ["epss"]
+title = "Computalynx CMail SMTP 缓冲区溢出漏洞"
 updated = "2026-06-16T21:50:37.103"
-remediation = "立即升级到最新版本的Computalynx CMail（≥2.5版本）并应用安全补丁，关闭不必要的SMTP服务端口，限制MAIL FROM命令的长度，部署网络ACL限制对服务器的访问，并监控异常的SMTP流量。"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-1521"]
+ave_id = "AVE-1999-1983"
+
+[meta]
+collected_at = "2026-07-20T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://marc.info/?l=bugtraq&m=93720402717560&w=2",
-"http://marc.info/?l=bugtraq&m=94121824921783&w=2",
-"https://www.securityfocus.com/bid/633",
-"https://exchange.xforce.ibmcloud.com/vulnerabilities/2240",
-"https://www.exploit-db.com/exploits/19495",
-"https://github.com/CVEProject/cvelistV5/blob/a3a08d51f200d453300fca8b852aada6b8c5985a/cves/1999/1xxx/CVE-1999-1521.json",
-"https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1521",
-"https://github.com/fankh/vulnerability-poc/blob/8854c056beab250ba690e2bcc8887feb4c1f8139/1999/CVE-1999-1521/README.md",
-"https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1521.md",
-"https://github.com/Patrowl/PatrowlHearsData/blob/44e56ab96b4cc04024678e20a1f15145c3b3cc59/CVE/data/1999/CVE-1999-1521.json",
-"https://github.com/github/advisory-database/blob/b1dd20ab76cf8f3afbe611ea8133362b0532868d/advisories/unreviewed/2022/04/GHSA-c8p4-jpp6-3hwg/GHSA-c8p4-jpp6-3hwg.json",
-"https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/C/cmail_overflow.nasl",
-"https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153600_153700.json",
-"https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/633/info.html",
-"https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_3.list.dict"
+    "http://marc.info/?l=bugtraq&m=93720402717560&w=2",
+    "http://marc.info/?l=bugtraq&m=94121824921783&w=2",
+    "http://www.securityfocus.com/bid/633",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/2240",
+    "https://www.exploit-db.com/exploits/19495",
+    "https://github.com/CVEProject/cvelistV5/blob/055024821531fe5a0cbc9011c12b04dd02c9b91a/cves/1999/1xxx/CVE-1999-1521.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1521",
+    "https://github.com/fankh/vulnerability-poc/blob/ffa50060b7ba6ae58d60d6d90533e77eaf10d466/1999/CVE-1999-1521/README.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1521.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/b486315e56d9788648fd79d97e0d99cfccdee160/CVE/data/1999/CVE-1999-1521.json",
+    "https://github.com/github/advisory-database/blob/7bd4cbc048c92d100cc76a4a418275826d156a09/advisories/unreviewed/2022/04/GHSA-c8p4-jpp6-3hwg/GHSA-c8p4-jpp6-3hwg.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1521.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/633/info.html",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153600_153700.json",
+    "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/cmail_overflow.nasl",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-18T00:00:00Z"
