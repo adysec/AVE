@@ -1,10 +1,10 @@
 [basic]
-description = "perlshop.cgi 购物车程序未对敏感客户信息进行有效保护，将其存储在 Web 根目录下可被直接访问的文件和目录中，导致远程攻击者可通过 HTTP 请求直接获取这些敏感数据。该漏洞属于输入验证不当，影响使用 perlshop.cgi 的在线商店系统，可能导致客户个人隐私和支付信息泄露。"
+description = "perlshop.cgi 购物车程序存在敏感信息泄露漏洞，该程序将客户敏感信息（如订单详情、个人数据等）存储在 Web 根目录下的目录和文件中，远程攻击者无需身份认证即可通过直接发送 HTTP 请求访问这些文件，从而获取客户隐私数据。该漏洞影响使用 perlshop.cgi 的早期 Perl 购物车系统，危害等级中等，攻击复杂度低。"
 published = "2005-05-02T04:00:00.000"
-remediation = "建议将 perlshop.cgi 的数据目录（/store/customers/、/store/temp_customers/）移出 Web 文档根目录，或通过 Apache 的 <Directory> 及 .htaccess 添加 Deny from all 规则禁止 HTTP 直接访问。由于 perlshop.cgi 已停止维护，建议迁移至受支持的电商平台作为根本解决方案。"
+remediation = "将 perlshop.cgi 的 data_dir 配置参数指向 Web 根目录之外（如 /var/lib/perlshop/data），并确保该目录权限设置为 700（仅运行 httpd 的用户可读写）。同时修改 shop.cfg 中 `$data_dir` 变量为绝对路径的外部目录，并在 Apache 配置中添加 `<DirectoryMatch /shop/data>` 拒绝规则以阻止直接访问遗留数据文件。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
+sources = ["epss"]
 title = "PerlShop perlshop.cgi 敏感信息泄露漏洞"
 updated = "2026-06-16T21:50:18.230"
 
@@ -23,11 +23,11 @@ status = "completed"
 [references]
 urls = [
     "http://marc.info/?l=bugtraq&m=92523159819402&w=2",
-    "https://github.com/CVEProject/cvelistV5/blob/851a313c6bc1948d5487aca773aa21ade52b7c28/cves/1999/1xxx/CVE-1999-1374.json",
+    "https://github.com/CVEProject/cvelistV5/blob/36911ad057245f7d02822794db0f459d9b4c9b8f/cves/1999/1xxx/CVE-1999-1374.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1374",
     "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1374.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/929f101fd7b4d4314a4b92f62a8cc2523c6d76f0/CVE/data/1999/CVE-1999-1374.json",
-    "https://github.com/github/advisory-database/blob/491d1a908ffff7b174e17aaac4d0207c13405fa7/advisories/unreviewed/2022/04/GHSA-8c22-q5q8-5fgr/GHSA-8c22-q5q8-5fgr.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3012e5f1cf9bcfe839897275a956236aed334269/CVE/data/1999/CVE-1999-1374.json",
+    "https://github.com/github/advisory-database/blob/d56576b8850027b4a8571fd52a8c5fe418f01987/advisories/unreviewed/2022/04/GHSA-8c22-q5q8-5fgr/GHSA-8c22-q5q8-5fgr.json",
     "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/pre2008/dangerous_cgis.nasl",
     "https://github.com/olbat/nvdcve/blob/39f1db26eec9899ab2f8110ab3b45424c6fe9ec2/nvdcve/CVE-1999-1374.json",
     "https://github.com/magicsword-io/Magic-SigExplorer/blob/2c28b91b003429a144a687199ee99ebd26f1a343/Magic-SigExplorer/docs/cve_report.md",
