@@ -1,48 +1,42 @@
-Looking at the TOML, the `remediation` field has a very long value that starts with a markdown-style explanation/thinking text. The Rust parser likely saw this as invalid or empty. I need to provide a clean, concise remediation in Chinese.
-- `title` - "Microsoft Internet Explorer 任意文件读取漏洞" - this is Chinese, good
-- `description` - Chinese, ≥50 chars, good
-- `severity` = "MEDIUM", `score` = 5 - MEDIUM is ≥4, so 5 is valid
-- `sources` = ["cve"] - valid
-- `published` - has a timestamp, should be just date "1999-12-31"
-- `updated` - has a timestamp, should be just date
-- `urls` - all valid http(s) URLs
-- `meta` - valid
-The main fix needed is the `remediation` field. The previous value was a mess of English thinking text mixed with Chinese. I need to provide a clean, concise Chinese remediation.
-For CVE-1999-1472 (Internet Explorer 4.0 Freiburg text-viewing issue), the remediation is to upgrade to IE 5.0 or later, or disable Active Scripting.
-1. The `remediation` field is empty/null - the error says "remediation 字段为空". Looking at the TOML, the remediation field has a very long value that starts with a meta-commentary about what the user wants, then has `<value>` tags, and ends with actual content. The TOML parser likely sees this as malformed or empty.
-2. The `published` field has a time component `1999-12-31T05:00:00.000` - should be just date `1999-12-31`
-3. The `updated` field has a time component - should be just date
-4. The `remediation` field content is extremely messy - it contains what looks like the AI's internal reasoning/thinking process embedded in the value. I need to clean this up to just the actual remediation text.
-1. Clean up `remediation` - remove the meta-commentary and just keep the actual remediation text
-2. Fix `published` to just date format
-3. Fix `updated` to just date format
-The remediation should be: "升级 Internet Explorer 至 5.0 及以上版本，该漏洞在后续版本中已修复。如无法升级，可在浏览器安全设置中将「对标记为可安全执行脚本的 ActiveX 控件执行脚本」设为禁用，或改用其他现代浏览器。临时缓解措施可禁用 Active Scripting 功能。"
-The `updated` field - NVD says "Last Modified: 06/16/2026" so it should be `2026-06-16`.
-Now let me output the fixed TOML.[id]
-ave_id = "AVE-1999-1122"
-aliases = ["CVE-1999-1472"]
 [basic]
-title = "Microsoft Internet Explorer 4.0 任意文件读取漏洞"
-description = "Internet Explorer 4.0 存在跨域信息泄露漏洞，远程攻击者可通过构造包含恶意 IFRAME 的网页，利用 Dynamic HTML（DHTML）技术将用户本地的任意文本和 HTML 文件内容发送至攻击者服务器，导致敏感信息泄露。该漏洞无需用户交互即可触发，影响使用 Internet Explorer 4.0 的 Windows 系统，CVSS 评分 5.0，危害等级中危。"
+description = "Internet Explorer 4.0 存在任意文件读取漏洞（Freiburg 文本查看问题），远程攻击者可通过在恶意网页中嵌入小型 IFRAME 元素，利用 Dynamic HTML（DHTML）技术将用户本地的文本和 HTML 文件内容发送至攻击者控制的服务器。该漏洞无需用户交互即可触发，影响使用 IE 4.0 的 Windows 系统，CVSS 评分 5.0，危害等级中等。受限于浏览器版本，该漏洞仅影响早期 Windows 平台。"
+published = "1999-12-31T05:00:00.000"
+remediation = "升级至 Internet Explorer 4.01 及以上版本即可修复此漏洞。早期版本中 IFRAME 与 DHTML 的组合未对跨域文本读取做安全限制，升级后禁止了子框架跨域访问本地文件。如无法升级，可在浏览器安全设置中将「允许 META REFRESH 通过 IFRAME 运行」禁用，或使用最新版 Edge/Chrome 替代。"
+score = 5
 severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
-published = "1999-12-31"
-updated = "2026-06-16"
-remediation = "升级 Internet Explorer 至 5.0 及以上版本，该漏洞在后续版本中已修复。如无法升级，可在浏览器安全设置中将「对标记为可安全执行脚本的 ActiveX 控件执行脚本」设为禁用，或改用其他现代浏览器。临时缓解措施可禁用 Active Scripting 功能。"
+sources = ["epss"]
+title = "Microsoft Internet Explorer 任意文件读取漏洞"
+updated = "2026-06-16T21:50:30.877"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-1472"]
+ave_id = "AVE-1999-1122"
+
+[meta]
+collected_at = "2026-07-20T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://marc.info/?l=bugtraq&m=87710897923098&w=2",
-"http://support.microsoft.com/support/kb/articles/q176/6/97.asp",
-"http://support.microsoft.com/support/kb/articles/q176/7/94.asp",
-"http://www.insecure.org/sploits/Internet_explorer_4.0.hack.html",
-"http://www.microsoft.com/Windows/ie/security/freiburg.asp",
-"http://www.osvdb.org/7819",
-"https://exchange.xforce.ibmcloud.com/vulnerabilities/587",
+    "http://marc.info/?l=bugtraq&m=87710897923098&w=2",
+    "http://support.microsoft.com/support/kb/articles/q176/6/97.asp",
+    "http://support.microsoft.com/support/kb/articles/q176/7/94.asp",
+    "http://www.insecure.org/sploits/Internet_explorer_4.0.hack.html",
+    "http://www.microsoft.com/Windows/ie/security/freiburg.asp",
+    "http://www.osvdb.org/7819",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/587",
+    "https://github.com/CVEProject/cvelistV5/blob/b5102a7cca13b4c0a0e55e628783c406707da47e/cves/1999/1xxx/CVE-1999-1472.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1472",
+    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1472.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2cba6a622b2958fa1ec3a506e7b58871edec19fb/CVE/data/1999/CVE-1999-1472.json",
+    "https://github.com/github/advisory-database/blob/78550cb05ca9623089e78169330acf979f4b64ca/advisories/unreviewed/2022/04/GHSA-86r9-xq76-hv9m/GHSA-86r9-xq76-hv9m.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153900_154000.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001052.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--1419c91d-3291-4908-865f-a19061292bfe.json",
+    "https://github.com/olbat/nvdcve/blob/39f1db26eec9899ab2f8110ab3b45424c6fe9ec2/nvdcve/CVE-1999-1472.json",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/5721d007794215ff21176b4cb4c7f370781f5dd1/1999.tsv",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-16T00:00:00Z"
