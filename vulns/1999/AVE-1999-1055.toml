@@ -1,11 +1,11 @@
 [basic]
-description = "Linux 2.2.10 及更早版本中使用 ipchains 的 NAT 功能、以及 FreeBSD 3.2 中使用 ipfw 的 NAT 功能存在拒绝服务漏洞。远程攻击者可通过向目标系统发送特制的 `ping -R`（记录路由）ICMP 数据包触发内核 panic，导致系统崩溃。该漏洞影响 Linux 2.2.x 系列及 FreeBSD 3.2 等版本，仅需网络可达即可远程触发，无需认证。"
+description = "当 Linux 2.2.10 及更早版本（使用 ipchains）或 FreeBSD 3.2（使用 ipfw）启用网络地址转换（NAT）功能时，存在一个拒绝服务漏洞。远程攻击者可通过向目标发送带有记录路由选项的 ping 请求（ping -R），触发内核在处理 IP 记录路由选项时的异常，导致目标系统内核崩溃（kernel panic），造成服务不可用。该漏洞利用条件简单，无需认证即可远程触发，影响范围包括运行上述版本 Linux 和 FreeBSD 且启用 NAT 功能的系统。"
 published = "1999-12-31T05:00:00.000"
-remediation = "Linux 用户应将内核升级至 2.4.0 及以上版本（或改用 iptables/nftables），FreeBSD 用户应升级至 4.0 及以上版本。临时缓解措施：在 ipchains 或 ipfw 规则中添加丢弃带记录路由选项（record route）的 ICMP 包，或禁用 NAT 功能以避免触发内核 panic。"
+remediation = "Linux 用户应将内核升级至 2.2.11 或更高版本（patch-2.2.11.gz 已修复 ipchains NAT 下 ping -R 导致的内核崩溃）；FreeBSD 用户应升级至 3.3 或更高版本。临时缓解措施：在 ipchains 或 ipfw 规则中丢弃携带记录路由（record-route）选项的 ICMP 数据包，或禁用 NAT 功能。"
 score = 5
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Linux ipchains 与 FreeBSD ipfw NAT 拒绝服务漏洞"
+sources = ["epss"]
+title = "Linux Kernel 和 FreeBSD NAT 拒绝服务漏洞"
 updated = "2026-06-16T21:50:13.823"
 
 [exploit]
@@ -27,11 +27,11 @@ urls = [
     "http://www.iss.net/security_center/static/7257.php",
     "http://www.kernel.org/pub/linux/kernel/v2.2/patch-2.2.11.gz",
     "http://www.osvdb.org/6105",
-    "https://github.com/CVEProject/cvelistV5/blob/50269681ee58c9b5bf7169b73546eef94697389c/cves/1999/1xxx/CVE-1999-1339.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0b8e5ca8c68c148c2498e70421f33344e9cff1e8/cves/1999/1xxx/CVE-1999-1339.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1339",
     "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1339.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4631642e37ce9ee8b9057e387df4aee61487fb70/CVE/data/1999/CVE-1999-1339.json",
-    "https://github.com/github/advisory-database/blob/f37077e857e7a28bab83d284c23299407fb1af7e/advisories/unreviewed/2022/04/GHSA-8m8f-vqxq-q9r6/GHSA-8m8f-vqxq-q9r6.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/376d7933ee02aeea89711d9c7726aad7f10e0a2a/CVE/data/1999/CVE-1999-1339.json",
+    "https://github.com/github/advisory-database/blob/491d1a908ffff7b174e17aaac4d0207c13405fa7/advisories/unreviewed/2022/04/GHSA-8m8f-vqxq-q9r6/GHSA-8m8f-vqxq-q9r6.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x88000/87884/info.html",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153900_154000.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--4321c2f2-9dc5-429a-bd37-0385455013c1.json",
