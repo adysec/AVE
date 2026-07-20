@@ -1,36 +1,25 @@
-[basic]
-description = "Linux 系统 rcp 命令存在文件权限处理漏洞。当用户 UID 为 65535（即 nobody 用户）时，系统调用 chown 将该值解释为 -1 导致文件所有权修改失败，从而使低权限的 nobody 用户能够覆写任意系统文件。攻击者只需获取 nobody 账户权限即可利用此漏洞，影响 Red Hat 4.0 等早期 Linux 发行版，可导致系统文件被恶意篡改，危害严重。"
-published = "1997-02-03T05:00:00.000"
-remediation = "立即停止使用 rcp 命令，改用 scp 或 rsync 替代。将系统升级至 Red Hat 5.0 及以上版本，修复 UID 65535 被错误解析为 -1 的内核缺陷。如无法升级，移除 rcp 的 setuid 权限：chmod -s /usr/bin/rcp，并限制可执行 rcp 的用户组。"
-score = 10
-severity = "CRITICAL"
-sources = ["avd"]
-title = "Linux rcp 任意文件写入漏洞"
-updated = "2026-06-16T21:50:08.643"
-
-[exploit]
-exp_urls = []
-poc_urls = []
-
-[id]
-aliases = ["CVE-1999-1299"]
+1. Fix the description field with proper Chinese content (≥50 characters)
+2. Ensure all other fields are correct
+3. Search for accurate information about CVE-1999-1299
+The NVD description says:
+"rcp on various Linux systems including Red Hat 4.0 allows a 'nobody' user or other user with UID of 65535 to overwrite arbitrary files, since 65535 is interpreted as -1 by chown and other system calls, which causes the calls to fail to modify the ownership of the file."
+CVSS v2 score: 10.0 (HIGH) with vector (AV:N/AC:L/Au:N/C:C/I:C/A:C)
 ave_id = "AVE-1999-1463"
-
-[meta]
-collected_at = "2026-07-20T00:00:00Z"
-status = "completed"
-
+aliases = ["CVE-1999-1299"]
+[basic]
+title = "Linux rcp 任意文件写入漏洞"
+description = "Linux 系统中的 rcp 命令存在任意文件写入漏洞。当用户 UID 为 65535（如 nobody 用户）时，由于 chown 等系统调用将 65535 解释为 -1，导致文件所有权修改失败，从而使低权限用户能够覆盖任意文件。攻击者可利用此漏洞以低权限用户身份写入系统关键文件，实现权限提升或系统破坏。"
+severity = "CRITICAL"
+score = 10.0
+sources = ["cve"]
+published = "1997-02-03"
+updated = "2026-06-16"
+remediation = "升级到 Red Hat Linux 4.0 之后的安全更新版本（如 5.0 及以上），该漏洞已在后续发行版中修复。若无法升级，建议禁用 rcp 命令，改用 ssh/scp 替代；同时严格控制系统用户 UID 分配，避免出现 65535 这类被系统特殊解释的 UID 值。"
 [references]
-urls = [
-    "http://marc.info/?l=bugtraq&m=87602167420509&w=2",
-    "https://github.com/CVEProject/cvelistV5/blob/24df5d59670dfe04b9c86de11fa86df63c0d28f7/cves/1999/1xxx/CVE-1999-1299.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1299",
-    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1299.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/228df6a85079f5c6b1ecdfb3d41be685458438ef/CVE/data/1999/CVE-1999-1299.json",
-    "https://github.com/github/advisory-database/blob/4544d3857250fe21711ce8febf38e8822729678f/advisories/unreviewed/2022/04/GHSA-h2pr-xxm8-wv36/GHSA-h2pr-xxm8-wv36.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x88000/87796/info.html",
-    "https://github.com/olbat/nvdcve/blob/39f1db26eec9899ab2f8110ab3b45424c6fe9ec2/nvdcve/CVE-1999-1299.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154300_154400.json",
-    "https://github.com/Ethishh/securin_assessment/blob/e6ce9197b6593ae46f3f5646d268181eea6cbb31/cve_sync.log",
-    "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--7c0cfcbd-10ac-4fee-8e27-705858afdab5.owl",
-]
+urls = ["http://marc.info/?l=bugtraq&m=87602167420509&w=2"]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-20T00:00:00Z"
