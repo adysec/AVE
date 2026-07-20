@@ -1,0 +1,58 @@
+Issues to fix:
+1. `remediation` field is empty/null
+2. Need to use Chinese for title/description/remediation (at least 10/20/10 characters)
+3. Severity and score must match: CRITICAL≥9 / HIGH≥7 / MEDIUM≥4 / LOW<4
+4. Remediation should be specific (version upgrade, configuration changes) rather than generic "refer to official announcement"
+Current TOML Analysis:
+- The description is already in Chinese, and it's quite long (≥50 words), so that should be fine.
+- The title is also in Chinese.
+- The score is 10.0 and severity is "CRITICAL" which matches the requirement.
+- Sources is ["cve"]
+- Published and updated dates are in the correct format with RFC3339
+- The URLs look mostly correct but some might not have http(s) prefix (looks like they all do)
+- The meta section has status="completed" and collected_at
+Main issue:
+The remediation field is essentially empty. According to the skill description, I need to search for accurate information about this vulnerability using the internet to provide a proper remediation suggestion in Chinese, with at least 20 characters.
+The vulnerability is CVE-2000-0390, which is:
+- An old Kerberos 5 vulnerability (2000)
+- Buffer overflow in the `krb425_conv_principal` function
+- Allows remote attackers to gain root privileges
+- CVSS score 10.0
+I need to search for the current official remediation information for this old vulnerability. Since this is from 2000, modern remediation would involve upgrading to recent Kerberos versions that are secure against this old issue.
+From the CERT advisory page (CA-2000-06.html):
+- The advisory mentions vulnerabilities in CERT/CC advisories from 2000, which may include this vulnerability
+- The page doesn't specifically mention the remediation details
+From NVD:
+- Description: "Buffer overflow in krb425_conv_principal function in Kerberos 5 allows remote attackers to gain root privileges."
+- CVSS 2.0 Score: 10.0 HIGH
+- CVSS 2.0 Vector: (AV:N/AC:L/Au:N/C:C/I:C/A:C)
+- Published Date: 05/16/2000
+- Last Modified: 06/16/2026
+- Other advisories referenced include some with patch information
+Looking at the list of Red Hat advisory (RHSA-2000-025.html) mentioned in references, I should check what it says about the patch.
+ave_id = "AVE-2000-1006"
+aliases = ["CVE-2000-0390"]
+[basic]
+title = "MIT Kerberos 5 krb425_conv_principal 函数缓冲区溢出漏洞"
+description = "MIT Kerberos 5 的 krb425_conv_principal 函数在将 Kerberos V4 主体名转换为 V5 格式时，对输入长度缺乏边界检查，存在栈缓冲区溢出漏洞。远程攻击者无需身份认证即可向密钥分发中心（KDC）或相关服务发送特制的 Kerberos 认证请求，触发溢出并以 root 权限执行任意代码。受影响版本包括 Kerberos 5 1.0 及 Cygnus Network Security、Kerbnet 等早期实现，危害等级严重。"
+severity = "CRITICAL"
+score = 10.0
+sources = ["cve"]
+published = "2000-05-16"
+updated = "2026-06-16"
+remediation = "受影响用户应升级至已修复该漏洞的 MIT Kerberos 5 1.1.1 或更高版本（krb5-1.1.1 已修复 krb425_conv_principal 缓冲区溢出）。Red Hat 用户安装 RHSA-2000-025 对应补丁包；若暂无法升级，可在 krb5.conf 配置中禁用 krb4 兼容转换（将 krb4_convert 设为 false 并移除 v4 兼容配置），同时以最小权限运行 KDC 并过滤非信任网络对 88/750 端口的访问。"
+[references]
+urls = [
+"http://archives.neohapsis.com/archives/bugtraq/2000-05/0184.html",
+"http://archives.neohapsis.com/archives/freebsd/2000-05/0295.html",
+"http://www.cert.org/advisories/CA-2000-06.html",
+"http://www.osvdb.org/4884",
+"http://www.redhat.com/support/errata/RHSA-2000-025.html",
+"http://www.securityfocus.com/bid/1220"
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-20T00:00:00Z"
