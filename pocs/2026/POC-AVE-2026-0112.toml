@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "Gitea act_runner（act <= 0.262.0）Docker 后端在处理工作流 container.options 时，仅强制禁用 Privileged 标志，但未过滤 --pid=host、--ipc=host、--cap-add=ALL、--security-opt 等危险选项，攻击者可构造恶意 workflow YAML 实现容器逃逸到宿主机 root 权限。向目标 Gitea 仓库提交包含恶意 container.options 的工作流文件即可触发。"
+id = "POC-AVE-2026-0112"
+name = "Gitea act_runner 容器逃逸 PoC"
+severity = "critical"
+tags = [
+    "cve-2026-58053",
+    "gitea",
+    "container-escape",
+]
+vuln_id = [
+    "CVE-2026-58053",
+    "AVE-2026-0112",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Gitea",
+    "gitea",
+]
