@@ -1,33 +1,36 @@
-1. Description field is empty
-2. References URLs is empty (needs at least some URLs)
-The current TOML has:
-- title: "superscout 安全绕过漏洞" (30 chars, Chinese - OK)
-- description: "" (empty - BAD)
-- remediation: 170 chars (OK, but contains "请参考官方安全公告" which is a generic statement)
-- score: 5, severity: "MEDIUM" (should match severity - MEDIUM should be ≥4, so 5 is OK)
-- sources: ["cve"] (only one, should be non-empty array - OK)
-- aliases: ["CVE-2000-0124"] (OK)
-I need to:
-1. Fix the description (needs to be filled with Chinese content ≥50 words)
-2. Fix references URLs (need at least one valid http/https URL)
-3. Ensure remediation is specific and practical (not generic)
-4. Use webfetch to get accurate information about this CVE
-ave_id = "AVE-2000-0113"
-aliases = ["CVE-2000-0124"]
 [basic]
-title = "surfCONTROL SuperScout 网址过滤绕过漏洞"
-description = "surfCONTROL SuperScout 是一款 Web 内容过滤与访问控制系统，用于对用户可访问的网站进行按类别限制。该漏洞源于系统未能正确对以英文句点（.）结尾的网址进行类别分配，攻击者在受限站点域名末尾添加一个点（如 example.com.）即可使过滤规则匹配失效，从而绕过管理员配置的 Web 访问限制策略，访问本应被禁止的网站内容。攻击条件为本地网络已部署 SuperScout 且存在基于 URL 类别的访问控制策略。"
-severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
-published = "2000-02-03"
-updated = "2000-02-03"
-remediation = "升级到已修复该缺陷的 surfCONTROL SuperScout 版本；若无法立即升级，可在网关层强制规范化 URL（去除域名末尾的冗余句点）后再交由过滤引擎处理，并配置正则规则拦截所有以句点结尾的域名请求。"
-[references]
-urls = ["http://www.securityfocus.com/bid/965", "https://nvd.nist.gov/vuln/detail/CVE-2000-0124"]
+description = "surfCONTROL SuperScout 网页内容过滤软件在处理以点号（.）结尾的网站 URL 时存在分类失效漏洞。当用户访问带有尾部点号的域名时，该软件无法正确识别和匹配预设的访问控制策略，导致被限制访问的网站被错误地归类为允许访问，从而使内部用户能够绕过 Web 访问限制规则。攻击者只需在受限制网站的域名末尾添加一个点号即可触发该漏洞，利用难度极低，影响企业内容过滤策略的有效性。"
+published = "2000-02-03T05:00:00.000"
+remediation = "升级到 surfCONTROL SuperScout 最新可用版本，或迁移至受支持的 Web 过滤解决方案（如 Microsoft Defender for Cloud Apps 或 Forcepoint Web Security）。在 URL 过滤规则中增加对尾随点号（.）的规范化处理，确保所有 URL 在分类前去除末尾点号。如无法升级，在代理服务器或网关层面添加自定义规则，将含末尾点号的 URL 重写为标准格式后再进行过滤。"
+score = 2.1
+severity = "LOW"
+sources = ["avd"]
+title = "surfCONTROL SuperScout 安全绕过漏洞"
+updated = "2026-06-16T21:51:03.020"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0124"]
+ave_id = "AVE-2000-0113"
+
 [meta]
+collected_at = "2026-07-21T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-18T15:09:43.603610677+00:00"
+
+[references]
+urls = [
+    "http://www.securityfocus.com/bid/965",
+    "https://github.com/CVEProject/cvelistV5/blob/ea704212a9ed8366f550e49ed4e382e3803a0ba0/cves/2000/0xxx/CVE-2000-0124.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0124",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0124.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/5c6904371163d9b81521151d4181001adee1b956/CVE/data/2000/CVE-2000-0124.json",
+    "https://github.com/github/advisory-database/blob/8473d6777e627a0bbc745aac735e80a8c8aa5c51/advisories/unreviewed/2022/04/GHSA-gh2j-73gh-h7q7/GHSA-gh2j-73gh-h7q7.json",
+    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0124.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152100_152200.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--8892aa1b-c8ff-4996-bb27-2cb657cfab4f.json",
+    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idbypass",
+]
