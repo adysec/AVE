@@ -1,12 +1,12 @@
 [basic]
-description = "Cactus Software Shell Lock（shell-lock）是一款将 shell 脚本转换为 ELF 二进制文件的工具，声称可隐藏原始脚本内容并提供 SUID root 执行能力。然而该工具使用极其简单的编码机制（交替加减 0x44 和 0x63）对 shell 脚本进行混淆，任何具有文件读权限的攻击者均可轻易解码还原原始 shell 源码。此外，当使用 shell-lock 生成的二进制文件被设置为 SUID root 时，程序在执行过程中会于 /var/tmp 目录（或 $TMPDIR 环境变量指定位置）创建临时文件并执行。由于临时文件无特殊权限，攻击者可利用竞争条件在程序执行前将其替换为指向 /bin/sh 的软链接，从而以 root 身份执行任意命令，完成本地权限提升。"
-published = "1999-10-04"
-remediation = "Cactus Software 已确认该产品存在设计缺陷，未发布针对此弱编码和 SUID 竞争条件的正式补丁。建议停止使用 shell-lock 作为脚本混淆或 SUID 执行方案，改用 C 语言编写需要特权的程序，或通过 sudo 配置精细的权限控制。如现有环境中仍有 shell-lock 生成的二进制文件，应立即移除 SUID 位（chmod u-s），避免在受保护脚本中存放敏感凭据，并严格限制脚本文件访问权限。"
+description = "Cactus Software Shell Lock 是一款用于保护 Perl 脚本源代码的商业软件，但其使用的加密机制仅为简单的编码变换（弱加密），而非真正的加密算法。攻击者无需特殊权限，即可通过分析其编码逻辑轻易解码被保护的脚本，从而获取原始的源代码内容。该漏洞暴露出软件在代码保护设计上的严重缺陷，CVSS 评分 2.1，危害等级低，但会导致商业软件的核心知识产权保护失效。"
+published = "1999-10-04T04:00:00.000"
+remediation = "立即停止使用 Cactus Software Shell Lock，改用现代 shell 脚本加密工具（如 shc 配合 AES-256加密，或使用二进制编译工具打包）。该产品已停止维护且加密算法为简单编码，任何受此保护的脚本源码均应视为已泄露，需重置其中包含的凭据与密钥。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "Cactus Software Shell Lock 弱加密导致源码泄露与权限提升漏洞"
-updated = "2026-06-16"
+sources = ["avd"]
+title = """Let me analyze the information: - Vendor: Cactus Software - Product: Shell Lock - Vulnerability type: Weak encryption (trivial encoding) that allows attackers to easily decrypt and obtain source code - This is about source code disclosure due to weak encryption So the title should follow the format: "厂商 产品 漏洞类型" Cactus Software Shell Lock 弱加密导致源代码泄露漏洞 Let me think about this more carefully: - 厂商: Cactus Software（仙人掌软件） - 产品: Shell Lock - 漏洞类型: 弱加密导致源代码泄露漏洞 (weak encryption leading to source code disclosure) "cactus software" could be translated as "仙人掌软件" or kept as "Cactus Software". In Chinese vulnerability databases, foreign vendor names are often kept in English or mixed. Let me use a more standard Chinese format. "Cactus Software Shell Lock 弱加密导致源代码泄露漏洞" - this is good, but let me check the format more carefully. The example is "Microsoft Windows TCP/IP 远程代码执行漏洞" - so it's "Vendor Product Vulnerability Type" Cactus Software Shell Lock 弱加密导致源代码泄露漏洞 This seems reasonable. The vulnerability is about weak encryption (trivial encoding) that allows attackers to easily decrypt and obtain source code, which is essentially a source"""
+updated = "2026-06-16T21:50:40.570"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1540"]
 ave_id = "AVE-1999-1172"
 
 [meta]
-collected_at = "2026-07-17T00:00:00Z"
+collected_at = "2026-07-21T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,6 +25,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=93916168802365&w=2",
     "http://www.atstake.com/research/advisories/1999/shell-lock.txt",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/3356",
-    "https://github.com/CVEProject/cvelistV5/blob/476c79e4154073134b6998fc7a1fcba149340485/cves/1999/1xxx/CVE-1999-1540.json",
-    "https://github.com/github/advisory-database/blob/780ea229276a503f17a45c7ccc9fc5e26e6b2447/advisories/unreviewed/2022/04/GHSA-c58m-4vx5-jf3r/GHSA-c58m-4vx5-jf3r.json",
+    "https://github.com/CVEProject/cvelistV5/blob/9bf1bcd98df741ae892c1ba6b8127fb5da623fcc/cves/1999/1xxx/CVE-1999-1540.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1540",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-1999-1540.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/84a8576323536424cfe4fe56907ba66e1ea3a744/CVE/data/1999/CVE-1999-1540.json",
+    "https://github.com/github/advisory-database/blob/9a3495eb833b3f1f2096187c4b14884afc98b67a/advisories/unreviewed/2022/04/GHSA-c58m-4vx5-jf3r/GHSA-c58m-4vx5-jf3r.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x88000/87921/info.html",
+    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-1999-1540.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153700_153800.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/ea1d952547221140681bbac63b918e1ec10d4d32/1999.tsv",
 ]
