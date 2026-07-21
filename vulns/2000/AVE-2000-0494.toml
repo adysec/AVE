@@ -1,85 +1,39 @@
-Wait, looking at the `remediation` field, it's actually huge - it seems like the previous AI's thinking got embedded into the TOML value. The `remediation` field contains a long chain of reasoning text, not an actual remediation. The validation says "remediation 字段为空" which likely means the validation system can't parse it properly because it's not valid remediation content.
-So I need to:
-1. Fix the `remediation` field to contain actual remediation content in Chinese (≥10 characters)
-2. Make sure all other fields are correct
-- `[basic]` section should come after `[id]` - actually the order doesn't matter for TOML
-- The remediation field is a mess - it contains what looks like internal reasoning/thinking text
-The Savant Web Server is a very old product from around 2000 by Michael Lamont. It had a remote buffer overflow. Since it's so old, the product is definitely end-of-life.
-- CVE-2000-0641: Savant web server remote attackers execute arbitrary commands via a long GET request
-- CVSS v2 Score: 7.5 HIGH
-- Vector: (AV:N/AC:L/Au:N/C:P/I:P/A:P)
-- Published: 07/08/2000
-- References: Bugtraq, SecurityFocus, X-Force
-The ExploitDB page confirms:
-- EDB-ID: 20066
-- CVE: 2000-0641
-- Author: Wizdumb
-- Type: remote
-- Platform: Windows
-- Date: 2000-07-03
-- It's a buffer overflow via long GET request with many headers
-Now let me look at the issues with the current TOML:
-1. The `remediation` field is a mess - it contains internal reasoning text, not actual remediation content. The validation says it's empty because the TOML parser probably can't handle it properly.
-2. The `published` field has format `2000-07-08T04:00:00.000` - but according to NVD it should just be a date `2000-07-08`. Wait, let me check the schema - `published = "2024-01-01"` - it's a date format. But the current value has time. Let me fix it.
-3. The `updated` field - NVD says last modified 06/16/2026. So keep it.
-4. There are a lot of GitHub links in references that are not really official references - they are just mirrors of CVE data. I should clean this up.
-5. The remediation field needs to be clean and specific.
-Savant Web Server was developed by Michael Lamont and is no longer maintained. There's no official patch. The practical advice is to migrate away from it.
-The key issues to fix:
-1. `remediation` - it's full of reasoning text and the TOML is broken. Need a clean, specific remediation in Chinese, ≥10 chars.
-2. Clean up the excessive GitHub mirror URLs in references (those aren't official sources, just mirrors of CVE data). Actually, the schema says urls should contain "权威页面". Let me keep the key ones and clean up the junk.
-Actually, looking at the schema more carefully, it says "含搜索到的权威页面". The GitHub cvelist links are legitimate. Let me keep the important ones and remove the obviously irrelevant ones (like the intframework one, the openvas one, etc.).
-So the main issue is remediation. But looking at the TOML, the remediation field has a LOT of content that looks like internal monologue/reasoning, not an actual remediation value. The TOML parser likely sees this as invalid or empty.
-I need to replace the entire remediation field with a proper short Chinese remediation.
-- This is an ancient product from 2000 by Michael Lamont
-- No official patch exists
-- Best practice: migrate to a modern maintained web server
-- Temporary mitigation: firewall rules, WAF filtering
-- title: "Michael Lamont Savant Web Server 远程缓冲区溢出漏洞" - looks fine, Chinese, ≥10 chars
-- description: Looks good, Chinese, ≥50 chars
-- severity: "HIGH" - matches CVSS 7.5, correct
-- score: 7.5 - correct for CVSS v2
-- sources: ["exploitdb"] - should probably also include "cve" since it's from NVD too
-- published: "2000-07-08T04:00:00.000" - should be "2000-07-08" per schema example
-- updated: "2026-06-16T21:52:10.233" - this is fine as is
-- references: too many junk GitHub links, clean up to only legitimate references
-- poc_urls: [] - correct
-- exp_urls: [] - correct (the exploit is a DoS PoC, not full RCE)
-Wait, the exploit from ExploitDB IS a PoC (DoS via buffer overflow). The description says it crashes the server. So poc_urls should include it.
-Actually, looking at the exploit code more carefully: it causes a crash (invalid page fault in KERNEL32.DLL). It's a PoC for the buffer overflow. It doesn't demonstrate code execution, just a crash.
-So poc_urls should include https://www.exploit-db.com/exploits/20066
-For remediation, Savant Web Server is EOL (end of life). The remediation should state:
-- No official patch available (product discontinued)
-- Recommended to migrate to a modern web server
-- Temporary workaround: filter oversized requests
-Key fixes:
-1. Fix `remediation` - replace the huge reasoning text with a clean Chinese remediation
-2. Clean up `references.urls` - remove non-authoritative GitHub mirror links
-3. Fix `published` format to be just date (YYYY-MM-DD)
-4. Add `sources` to include "cve"
-5. Add exploit-db URL to `poc_urls` since there's a real PoC
-ave_id = "AVE-2000-0494"
-aliases = ["CVE-2000-0641"]
 [basic]
-title = "Savant Web Server 远程缓冲区溢出漏洞"
-description = "Savant Web Server 2.1 及 3.0 版本在处理超长 GET 请求时存在缓冲区溢出漏洞。攻击者无需身份认证，通过向目标服务器 80 端口发送包含大量头部字段的恶意 GET 请求即可触发栈缓冲区溢出，导致服务崩溃或任意代码执行。该漏洞影响 Savant Web Server 全系版本，CVSS 评分 7.5，危害等级高。"
-severity = "HIGH"
+description = "Savant Web Server 2.1 及 3.0 版本存在远程缓冲区溢出漏洞。攻击者无需身份认证，通过向目标服务器发送超长特制 GET 请求即可触发缓冲区溢出，导致服务器进程崩溃或执行任意命令。该漏洞影响 Savant Web Server 2.1 和 3.0 版本，CVSS 评分 7.5，危害等级高。官方已发布修复版本，建议用户升级至最新版本。"
+published = "2000-07-08T04:00:00.000"
+remediation = "立即停止使用 Savant Web Server（已停止维护，无官方补丁），迁移至受支持的产品如 Apache HTTP Server、Nginx 或 Microsoft IIS。如无法立即迁移，可在前端部署反向代理（如 Nginx、HAProxy）对 HTTP GET 请求 URI 长度做严格限制（建议不超过 4096 字节），并在网络边界防火墙限制 Savant 端口（默认 80/443）仅对可信 IP 开放，同时部署 IDS/IPS 规则检测超长 GET 请求攻击流量。"
 score = 7.5
-sources = ["cve", "exploitdb"]
-published = "2000-07-08"
+severity = "HIGH"
+sources = ["cve"]
+title = "Michael Lamont Savant WebServer 远程缓冲区溢出漏洞"
 updated = "2026-06-16T21:52:10.233"
-remediation = "Savant Web Server 已停止维护多年，无官方补丁。建议立即迁移至 Apache HTTP Server 或 Nginx 等现代 Web 服务器。临时缓解措施：在网络防火墙或反向代理层限制入站 GET 请求头部数量不超过 128 个，并仅允许可信来源 IP 访问服务端口。"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0641"]
+ave_id = "AVE-2000-0494"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"https://nvd.nist.gov/vuln/detail/CVE-2000-0641",
-"http://archives.neohapsis.com/archives/bugtraq/2000-07/0114.html",
-"http://www.securityfocus.com/bid/1453",
-"https://exchange.xforce.ibmcloud.com/vulnerabilities/4901",
-"https://www.exploit-db.com/exploits/20066",
+    "http://archives.neohapsis.com/archives/bugtraq/2000-07/0114.html",
+    "http://www.securityfocus.com/bid/1453",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/4901",
+    "https://www.exploit-db.com/exploits/20066",
+    "https://github.com/CVEProject/cvelistV5/blob/4382b0b8593e7ef30616ab300314afbbf1571636/cves/2000/0xxx/CVE-2000-0641.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0641",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0641.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cae595683b6fe65324ec717750e7cdca928c1db7/CVE/data/2000/CVE-2000-0641.json",
+    "https://github.com/github/advisory-database/blob/29756569ae7c866e39492d6faf2dcdff310590f7/advisories/unreviewed/2022/04/GHSA-m69c-hmx8-c8ph/GHSA-m69c-hmx8-c8ph.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0641.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152600_152700.json",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_3.list.dict",
+    "https://github.com/jbeasl7/openvas-feed-sync-local/blob/fb27339bf790f38603dcf52a87a4652cadb30c7e/openvas-feeds/nvt-feed/2009/www_too_long_url.nasl",
 ]
-[exploit]
-poc_urls = ["https://www.exploit-db.com/exploits/20066"]
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-20T00:00:00Z"
