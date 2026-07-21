@@ -1,14 +1,14 @@
 [basic]
-description = "基于 BSD 4.4 代码实现的共享内存子系统存在资源管理缺陷，本地用户可通过调用 mmap 或 shmget 系统调用连续分配大块共享内存并触发大量页面错误，绕过系统资源限制（如 rlimit）导致系统内存耗尽或性能严重下降。该漏洞影响 FreeBSD 3.2/NetBSD 1.4/Linux Kernel 2.3 及使用 BSD 4.4 共享内存实现的其他操作系统，攻击者利用本地账号即可实施拒绝服务攻击，无需任何特殊权限。"
+description = "基于 BSD 4.4 代码实现的共享内存子系统存在设计缺陷，本地攻击者可通过调用 mmap 或 shmget 分配大量共享内存并触发页面错误，绕过系统资源限制（rlimits）导致拒绝服务。该漏洞影响 FreeBSD/NetBSD/Linux 等多种操作系统内核版本，攻击者无需特殊权限即可利用，危害等级中等。"
 published = "1999-07-15"
-remediation = "Linux 系统安装 util-linux 补丁启用 RLIMIT_AS 支持，通过 /etc/limits 配置地址空间上限（如 default V512 限制 512MB），或通过 /etc/security/limits.conf 设置 as 限制。FreeBSD/NetBSD 升级内核使 mmap/shmget 检查 rlimits，或通过 sysctl 限制 kern.ipc.shmmax。临时缓解措施：在 shell 启动脚本中执行 ulimit -v 限制单进程虚拟内存。"
+remediation = "对于 FreeBSD 3.2 及更早版本，应用内核补丁使 mmap/shmget 系统调用检查 RLIMIT_AS 限制；对于 NetBSD 1.4 及更早版本，升级至 NetBSD 1.4.1 或更高版本；对于 Linux 2.3 及更早版本，安装 util-linux-2.9o 或更高版本并配置地址空间限制。"
 score = 5.0
 severity = "MEDIUM"
 sources = [
     "cve",
-    "bugtraq",
+    "avd",
 ]
-title = "FreeBSD NetBSD Linux 共享内存 mmap 拒绝服务漏洞"
+title = "FreeBSD/NetBSD/Linux 共享内存 mmap/shmget 拒绝服务漏洞"
 updated = "1999-07-15"
 
 [exploit]
@@ -20,7 +20,7 @@ aliases = ["CVE-1999-1518"]
 ave_id = "AVE-1999-1152"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-21T00:00:00Z"
 status = "completed"
 
 [references]
