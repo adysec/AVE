@@ -1,10 +1,10 @@
 [info]
-author = "ave"
-description = "验证 Hotmail 在渲染 HTML 邮件时是否对 IMG 标签的 LOWSRC/DYNRC 参数中的 JavaScript 代码进行充分过滤。通过向邮件内容提交特制的 IMG 标签载荷，检查返回邮件视图中脚本是否被原样保留而未转义，从而判定 XSS 是否存在。本 PoC 为安全无损检测，不窃取任何数据。"
+author = "AVE"
+description = "检测 Hotmail 邮件系统对 IMG 标签中 LOWSRC 或 DYNRC 参数的 JavaScript 代码过滤不当。攻击者通过发送包含恶意 IMG 标签的邮件，在受害者查看邮件时触发 JavaScript 执行，验证方式为请求邮件阅读接口并检查响应是否包含未被过滤的 IMG 标签属性"
 id = "POC-AVE-2000-0222"
-name = "CVE-2000-0085 Hotmail IMG 标签 XSS PoC"
+name = "CVE-2000-0085 PoC"
 severity = "high"
-tags = ["ave-2000-0222"]
+tags = ["cve-2000-0085"]
 vuln_id = [
     "CVE-2000-0085",
     "AVE-2000-0222",
@@ -14,20 +14,19 @@ vuln_id = [
 logic = "all"
 
 [[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}/mail/compose"
+method = "GET"
+path = "/{{BaseURL}}/mail/read.aspx"
 protocol = "http"
 
-[poc.requests.body]
-content = 'subject=test&body=<IMG LOWSRC="javascript:void(0)">'
-type = "form"
-
 [poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
+Cookie = "{{auth_cookie}}"
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ['<IMG LOWSRC="javascript:void(0)">']
+words = [
+    "lowsrc",
+    "dynsrc",
+]
