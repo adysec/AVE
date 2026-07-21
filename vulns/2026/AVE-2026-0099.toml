@@ -1,0 +1,49 @@
+[basic]
+description = "Apache ActiveMQ Web 控制台中的 Jolokia JMX-HTTP 桥接端点（/api/jolokia/）存在不当输入验证与代码注入漏洞。经过身份认证的攻击者可利用默认 Jolokia 访问策略允许对 ActiveMQ MBeans 执行操作的特性，通过调用 addNetworkConnector 或 addConnector 方法传入特制的 discovery URI，触发 VM 传输协议的 brokerConfig 参数加载远程恶意 Spring XML 应用上下文。由于 Spring 的 ResourceXmlApplicationContext 在 BrokerService 验证配置之前即实例化所有单例 bean，通过 bean 工厂方法（如 Runtime.exec）可在代理 JVM 上实现任意代码执行。该漏洞影响 Apache ActiveMQ 5.19.4 以下版本及 6.0.0 至 6.2.3 以下版本，CVSS 评分 8.8，危害等级高危。用户应升级至 5.19.4 或 6.2.3 版本修复。"
+published = "2026-04-07T09:16:20.967"
+remediation = "立即升级至 Apache ActiveMQ 5.19.4 或 6.2.3 及以上版本（官方已修复 addNetworkConnector 中 vm:// 传输协议的远程加载问题）。在反向代理/WAF 层面限制 /api/jolokia/ 端点仅允许受信 IP 访问；修改 jolokia-access.xml 将 org.apache.activemq:* 的 exec 操作权限设为 none 或仅保留只读操作。将 ActiveMQ Web 控制台绑定内网管理地址，禁用默认 admin/admin 凭据并启用强密码策略。若无法立即升级，可在 6.0.0-6.1.1 版本中临时禁用 Jolokia 端点或通过防火墙限制 8161 端口访问。"
+score = 8.8
+severity = "HIGH"
+sources = ["hwpoc"]
+title = "Apache ActiveMQ Jolokia 远程代码执行漏洞"
+updated = "2026-07-15T02:20:30.640"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-34197"]
+ave_id = "AVE-2026-0099"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://activemq.apache.org/security-advisories.data/CVE-2026-34197-announcement.txt",
+    "http://www.openwall.com/lists/oss-security/2026/04/06/3",
+    "https://access.redhat.com/security/cve/CVE-2026-34197",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=2455869",
+    "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-34197.json",
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-34197",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2026/CVE-2026-34197.yaml",
+    "https://github.com/pssec-io/CVE-2026-34197",
+    "https://github.com/vulhub/vulhub/blob/f7944fe38a3988ee533761e6cdb5e68d67eefff2/activemq/CVE-2026-34197/README.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/f2737ed54bc77e69eee49ea0fc8ad75416232e93/2026/CVE-2026-34197.json",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/47b5b37845c422b41f7f77baee4751638de71f26/http/cves/2026/CVE-2026-34197.yaml",
+    "https://github.com/Threekiii/Awesome-POC/blob/0f9e22b660cb1ea12c1c3668f9128d93e08da412/%E4%B8%AD%E9%97%B4%E4%BB%B6%E6%BC%8F%E6%B4%9E/Apache%20ActiveMQ%20Jolokia%20%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%20CVE-2026-34197.md",
+    "https://github.com/gelusus/wxvl/blob/edea45bcf3f5f232d6349d094e3ed87f8aba3ba7/doc/2026-04/Apache%20ActiveMQ%20%E4%B8%AD%E7%9A%84%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%20(CVE-2026-34197).md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8c8fc2aa7ae119f7163aab3170ab59022c4e4e32/osv/cve/2026/UBUNTU-CVE-2026-34197.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/df044812b70860d79ecaa4ed9deebd528d9595d4/pocs/2026/CVE-2026-34197.md",
+    "https://github.com/cloudflare/cloudflare-docs/blob/7672b321c8510a9b81b0e2f7db500f2d7ddabe16/src/content/changelog/waf/2026-04-21-waf-release.mdx",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0ebf8eac5e6d2af2400b71f0ba35608811c9cff6/references/CVE-2026-34197-2026-05-02-0005",
+    "https://github.com/oscs1024/VulnIntel/blob/f62012ff68e6011291b2851d1c7ccdb8a587c013/2026-04/ActiveMQ%20Jolokia%20%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%20(CVE-2026-34197).md",
+    "https://github.com/Catherines77/ActiveMQ-EXPtools",
+    "https://github.com/dinosn/CVE-2026-34197",
+    "https://github.com/dinosn/apache-activemq-rce-research",
+    "https://github.com/DEVSECURITYSPRO/CVE-2026-34197",
+    "https://github.com/AtoposX-J/CVE-2026-34197-Apache-ActiveMQ-RCE",
+    "https://nvd.nist.gov/vuln/detail/CVE-2026-34197",
+]
