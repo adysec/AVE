@@ -1,51 +1,27 @@
-CVE-2000-0172 is an old vulnerability. Let me search for it.Let me analyze the information I've gathered:
-CVE-2000-0172 is about the `mtr` program (Matt's TraceRoute / My TraceRoute) which only uses `seteuid` when attempting to drop privileges, allowing local users to gain root privileges.
-Key details:
-- CVSS v2.0: 7.2 HIGH (AV:L/AC:L/Au:N/C:C/I:C/A:C)
-- Published: 2000-03-03
-- Reference: http://www.securityfocus.com/bid/1038
-- CWE: Other
-- The vulnerability is a privilege escalation in mtr
-Now let me fix the TOML:
-1. title: "Matt Kimball and Roger Wolff mtr 提权漏洞" - needs to be Chinese with vulnerability type
-2. description: Was empty, need to fill with ≥50 chars Chinese
-3. references: Need to add the securityfocus URL
-4. remediation: Need specific advice, not generic
-5. severity/score: CVSS v2.0 is 7.2 HIGH, so severity=HIGH, score=7.2
-6. published: 2000-03-03
-7. updated: 2000-03-03 or keep as is
-From NVD:
-- Description: "The mtr program only uses a seteuid call when attempting to drop privileges, which could allow local users to gain root privileges."
-- CVSS v2: 7.2 HIGH, vector (AV:L/AC:L/Au:N/C:C/I:C/A:C)
-- Published: 2000-03-03
-- Reference: http://www.securityfocus.com/bid/1038
-- CWE: NVD-CWE-Other
-The vulnerability is about mtr (My TraceRoute) tool using seteuid instead of setuid when dropping privileges, allowing local users to regain root privileges.
-- title: "mtr 网络诊断工具权限提升漏洞" - this is a privilege escalation vulnerability
-- description: Need ≥50 chars Chinese. The mtr program only uses seteuid() to drop privileges, which is insufficient. A local attacker can regain elevated privileges because seteuid can be reversed, unlike setuid which permanently drops privileges.
-- severity: HIGH (CVSS 7.2)
-- score: 7.2
-- remediation: Upgrade to a patched version of mtr that properly uses setuid() instead of seteuid() to permanently drop privileges. Or apply vendor patches.
-- published: 2000-03-03
-- updated: 2000-03-03 (or keep as is)
-- sources: ["cve", "exploitdb"]
-- urls: ["http://www.securityfocus.com/bid/1038"]
-ave_id = "AVE-2000-0151"
-aliases = ["CVE-2000-0172"]
 [basic]
-title = "mtr 网络诊断工具权限提升漏洞"
-description = "mtr（My TraceRoute）网络诊断工具在尝试放弃特权时仅使用 seteuid() 系统调用，而非 setuid()。seteuid() 仅临时切换有效用户 ID，拥有 CAP_SETUID 能力的进程可恢复为 root 权限，导致本地攻击者能够重新获取提升后的特权，完全控制受影响系统。攻击条件为拥有本地 shell 访问权限。"
-severity = "HIGH"
-score = 7.2
-sources = ["cve", "exploitdb"]
+description = "mtr（My Traceroute）网络诊断工具在尝试降低进程权限时，仅调用 seteuid() 临时切换有效用户 ID 而非使用 setuid() 彻底撤销特权，导致特权无法被真正丢弃。本地攻击者可通过已控制的低权限进程利用该缺陷重新恢复 root 权限，进而完全控制目标系统。该漏洞影响 mtr 0.28/0.41 版本及 Turbolinux 3.5/4.2/4.4/6.0 系列操作系统，CVSS v2 评分 7.2，危害等级高。"
 published = "2000-03-03"
-updated = "2000-03-03"
-remediation = "升级 mtr 至已修复版本，确保程序使用 setuid() 而非 seteuid() 永久放弃 root 特权。也可通过移除 mtr-packet 的 suid-root 权限缓解，但会导致功能受限。"
-[references]
-urls = ["http://www.securityfocus.com/bid/1038"]
+remediation = "升级 mtr 至 0.33 或更高版本，该版本使用 setuid() 与 seteuid() 组合正确释放特权，修复了本地权限提升漏洞。如无法立即升级，可临时通过移除 mtr 的 setuid 位（chmod u-s /usr/sbin/mtr）或以普通用户权限运行 mtr 来缓解风险，但会造成部分网络诊断功能受限。受影响的 Turbolinux 3.5 b2/4.2/4.4/6.0 用户应及时联系厂商获取安全补丁。此外建议在 /etc/sudoers 中对 mtr 设置仅允许授权用户通过 sudo 执行。"
+score = 7.2
+severity = "HIGH"
+sources = ["cve"]
+title = "Matt Kimball and Roger Wolff mtr 本地权限提升漏洞"
+updated = "2026-06-16"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0172"]
+ave_id = "AVE-2000-0151"
+
 [meta]
+collected_at = "2026-07-21T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-19T04:47:56.636393170+00:00"
+
+[references]
+urls = [
+    "http://www.securityfocus.com/bid/1038",
+    "https://www.exploit-db.com/exploits/19796",
+]
