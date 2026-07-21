@@ -1,0 +1,40 @@
+[basic]
+description = "FatFs（ChaN FatFs）R0.16 及更早版本在处理长文件名（LFN）时存在下游缓冲区溢出漏洞。当启用 LFN 功能后，`fno.fname` 字段可长达 255 个字符，但许多调用方将其复制到固定长度的短缓冲区时未进行边界检查，导致缓冲区溢出。本地攻击者可通过构造恶意的长文件名文件（如 255 字符的 LFN）触发此漏洞，造成缓冲区写入越界，可能导致内存破坏或代码执行。该漏洞映射为 CWE-120（输入大小未检查的缓冲区复制），CVSS 评分 7.6，危害等级高。"
+published = "2026-07-01T15:17:13.013"
+remediation = '升级 FatFs 到 R0.16 以上版本；在调用 f_readdir() 的代码中，将所有复制 fno.fname 的 strcpy/sprintf 替换为 strncpy/snprintf 并明确限制目标缓冲区大小（如 snprintf(name, sizeof(name), "%s", fno.fname)）；如业务不需要长文件名支持，可在 ffconf.h 中将 FF_USE_LFN 设为 0 禁用 LFN 以彻底规避；同时审查项目所有集成 FatFs 的目录遍历代码路径，确保无其他固定缓冲区的越界复制。'
+score = 7.6
+severity = "HIGH"
+sources = ["hwpoc"]
+title = "ChaN FatFs 长文件名缓冲区溢出漏洞"
+updated = "2026-07-02T14:38:46.120"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-6688"]
+ave_id = "AVE-2026-0120"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://elm-chan.org/fsw/ff/",
+    "https://github.com/runZeroInc/vulns-2026-fatfs-chance",
+    "https://www.runzero.com/advisories/fatfs-long-fn-of-downstream-cve-2026-6688/",
+    "https://www.runzero.com/blog/fatfs-bugs/",
+    "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/2026/CVE-2026-6688.md",
+    "https://github.com/CVEProject/cvelistV5/blob/a986b2f03c729ac57ae7d269a03d86211c579de0/cves/2026/6xxx/CVE-2026-6688.json",
+    "https://github.com/espressif/esp-idf/blob/055ba9d3f9c6fd9a0efacd4993a2a942972dd65d/components/fatfs/sbom.yml",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/39897d9afb3c6d42c7013893163963e5f59b4180/reports/2026-07-01/TIER_3_CVE-2026-6688.md",
+    "https://github.com/cisagov/vulnrichment/blob/2bdccdc718eb7ee3dca97ad4cd1a43e8a13111b5/2026/6xxx/CVE-2026-6688.json",
+    "https://github.com/TMA84/cvealert/blob/f1d3db69525e35c34e256ac7316a1379e0f969b3/content/posts/cve-2026-6688.md",
+    "https://github.com/adysec/hwpoc/blob/0c7da69de8c9211abd9415ee499775016771b682/docs/2026/FatFs_%E9%95%BF%E6%96%87%E4%BB%B6%E5%90%8D%E4%B8%8B%E6%B8%B8%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA_CVE-2026-6688.toml",
+    "https://github.com/sec-dojo-com/cve-poc/blob/df044812b70860d79ecaa4ed9deebd528d9595d4/pocs/2026/CVE-2026-6688.md",
+    "https://github.com/github/advisory-database/blob/5a9fba9a290ea9e3c74c99f6d784969fc4412c6c/advisories/unreviewed/2026/07/GHSA-8vm2-mjff-2gg2/GHSA-8vm2-mjff-2gg2.json",
+    "https://github.com/runZeroInc/vulns-2026-fatfs-chance/blob/9fe74a1773a10f7061b60151ace5ac1039021480/fuzzer/main.go",
+    "https://nvd.nist.gov/vuln/detail/CVE-2026-6688",
+]
