@@ -1,0 +1,46 @@
+[info]
+author = "ave"
+description = "检测泛微 E-cology 10.0 的 /papi/esearch/data/devops/dubboApi/debug/method 接口是否存在未授权访问。该接口暴露了 Dubbo 调试功能，未经认证的攻击者可通过 POST 请求携带 interfaceName 和 methodName 参数调用任意方法实现远程代码执行（CVE-2026-22679）。通过发送 POST 请求并检查响应状态码或关键词判断漏洞是否存在，该检测不会执行任何命令。"
+id = "POC-AVE-2026-0060"
+name = "泛微 E-cology 10 Dubbo API 调试接口未授权访问 RCE 检测 PoC"
+severity = "critical"
+tags = ["ave-2026-0060"]
+vuln_id = [
+    "CVE-2026-22679",
+    "AVE-2026-0060",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/papi/esearch/data/devops/dubboApi/debug/method"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"interfaceName":"com.weaver.test","methodName":"test"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    405,
+    500,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "interfaceName",
+    "methodName",
+    "dubbo",
+    "DubboInvocation",
+]
