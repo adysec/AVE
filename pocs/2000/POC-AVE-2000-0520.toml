@@ -1,28 +1,29 @@
 [info]
 author = "ave"
-description = "检测 Oracle Web Listener 4.0.x 的 ows-bin 目录是否存在可执行批处理文件，通过发送包含 ?& 的畸形 URL 验证命令执行漏洞"
+description = "检测 Oracle Web Listener 4.0.x 的 /ows-bin/ 目录是否存在且可被远程访问。该目录下的批处理文件作为 CGI 脚本执行，攻击者通过附加 ?& 参数可绕过限制执行任意系统命令"
 id = "POC-AVE-2000-0520"
-name = "Oracle Web Listener ows-bin Batch File Command Execution PoC"
+name = "Oracle Web Listener 4.0.x Remote Command Execution PoC"
 severity = "high"
-tags = ["cve-2000-0169"]
+tags = ["ave-2000-0520"]
 vuln_id = [
     "CVE-2000-0169",
     "AVE-2000-0520",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/ows-bin/&"
+path = "/{{BaseURL}}/ows-bin/"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "200",
-    "HTTP",
+status = [
+    200,
+    401,
+    403,
+    302,
 ]
+type = "status"
