@@ -1,9 +1,9 @@
 [info]
 author = "ave"
-description = "检测 IIS 4 系统是否遗留 /scripts/iisadmin 目录未限制访问权限，攻击者可通过 Web 访问获取敏感服务器信息，包括管理员密码。"
+description = "检测 IIS 4 服务器上 /scripts/iisadmin 目录是否可被远程访问。该目录在 IIS 2/3 升级至 IIS 4 后遗留了 ism.dll 文件，未限制访问权限，可导致管理员密码等敏感信息泄露。"
 id = "POC-AVE-1999-1301"
-name = "Microsoft IIS 4（Windows NT）远程基于Web的行政管理功能安全漏洞 PoC"
-severity = "medium"
+name = "Microsoft IIS 4 /scripts/iisadmin 敏感信息泄露 PoC"
+severity = "low"
 tags = ["ave-1999-1301"]
 vuln_id = [
     "CVE-1999-1538",
@@ -15,15 +15,15 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/scripts/iisadmin/ism.dll"
+path = "/{{BaseURL}}/scripts/iisadmin"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
-type = "word"
-words = [
-    "password",
-    "Administrator",
-    "cPassword",
-]
+status = [200]
+type = "status"
