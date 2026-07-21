@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "检测 Jakarta Tomcat 3.x /admin 管理控制台路径是否可未授权访问，远程攻击者可利用该缺陷调用管理 Servlet 添加根目录上下文，实现任意文件读取"
+id = "POC-AVE-2000-0825"
+name = "Apache Jakarta Tomcat /admin 未授权访问 PoC"
+severity = "medium"
+tags = ["ave-2000-0825"]
+vuln_id = [
+    "CVE-2000-0672",
+    "AVE-2000-0825",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/admin/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Tomcat Administration",
+    "Admin",
+    "admin",
+]
