@@ -1,48 +1,31 @@
 [info]
-author = "AVE"
-description = "CERN httpd 对不存在的 URL 返回错误信息时泄露真实路径。发送 GET /cgi-bin/ls 请求，根据响应中是否包含文件系统路径判断漏洞是否存在。"
+author = "ave"
+description = "向W3C CERN httpd服务器发送GET /cgi-bin/ls HTTP/1.0请求，若服务器返回500错误并在响应中泄露cgi-bin目录的真实物理路径，则判定存在路径泄露漏洞"
 id = "POC-AVE-2000-0065"
-name = "W3C CERN httpd 路径泄露漏洞 PoC"
+name = "W3C CERN httpd 路径泄露 PoC"
 severity = "high"
-tags = [
-    "cve-2000-0079",
-    "path-disclosure",
-    "cern-httpd",
-]
+tags = ["ave-2000-0065"]
 vuln_id = [
     "CVE-2000-0079",
     "AVE-2000-0065",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
 path = "/{{BaseURL}}/cgi-bin/ls"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
-
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "usr/local",
-    "usr/bin",
-    "etc",
-    "var/www",
-    "cgi-bin",
-]
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "404 Not Found",
-    "File not found",
+    "Server: CERN",
+    "500",
+    "cannot exec",
+    "real path",
+    "no such file",
 ]
