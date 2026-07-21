@@ -1,12 +1,12 @@
 [basic]
-description = "Roxen Web Server 1.3.11 及更早版本中的 htmlparse.pike 组件存在递归解析漏洞，与 RXML 标记语言中 referer 标签的处理有关。远程攻击者无需认证，可通过向受影响服务器发送特制的 HTTP 请求触发递归解析，导致服务资源耗尽或异常，造成拒绝服务。该漏洞利用条件简单，攻击者可借此影响服务器可用性。"
+description = "Roxen Web Server 1.3.11 及更早版本中的 htmlparse.pike 模块存在递归解析漏洞。RXML 解析器采用递归机制处理标签，但 <referer> 标签的代码未对客户端输入的 Referer HTTP 头进行正确转义或阻止进一步递归解析，导致远程攻击者可通过发送构造了恶意 Referer 头的 HTTP 请求触发无限递归解析，造成服务器资源耗尽（拒绝服务）。该漏洞影响所有启用了 Pike-tag 或 RXML 解析器的 Roxen Web Server 实例，攻击者无需身份认证即可远程利用，CVSS v2.0 评分 5.0（AV:N/AC:L/Au:N/C:N/I:N/A:P），厂商已于 1999 年 10 月发布补丁修复。"
 published = "1999-10-07"
-remediation = "升级到已修复该递归解析问题的 Roxen Web Server 新版本；若暂无法升级，可在服务器配置中禁用或限制 RXML 解析器对 referer 标签的处理，避免攻击者通过特制请求触发递归解析，并监控异常请求以缓解拒绝服务风险。"
-score = 5.0
+remediation = '升级 Roxen Web Server 至 1.3.12 或更高版本，或应用官方补丁修改 htmlparse.pike 中 referer 标签处理逻辑：将 `return sizeof(id->referer)?id->referer*"":m->alt?m->alt:"..";` 改为 `return sizeof(id->referer)?({ id->referer*"" }):m->alt?m->alt:"..";`，用数组包裹返回值防止递归解析注入。临时缓解措施可禁用 RXML 解析器及 Pike-tag 功能。'
+score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Roxen Web Server htmlparse.pike 递归解析漏洞"
-updated = "2026-06-16"
+sources = ["avd"]
+title = "Roxen Web Server htmlparse.pike 递归解析和 RXML referer 标签漏洞"
+updated = "1999-10-07"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,19 @@ aliases = ["CVE-1999-1522"]
 ave_id = "AVE-1999-1158"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-21T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["http://marc.info/?l=bugtraq&m=93942579008408&w=2"]
+urls = [
+    "https://github.com/CVEProject/cvelistV5/blob/4441343672f486c63736487674c197dfd2a4f256/cves/1999/1xxx/CVE-1999-1522.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1522",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-1999-1522.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/81cdfffcd86317dec05d7dfba407f93d96d91273/CVE/data/1999/CVE-1999-1522.json",
+    "https://github.com/github/advisory-database/blob/9a3495eb833b3f1f2096187c4b14884afc98b67a/advisories/unreviewed/2022/04/GHSA-3vpv-5wr7-2hx5/GHSA-3vpv-5wr7-2hx5.json",
+    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-1999-1522.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000819.txt",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/92476fa9ef5bbdf211d346519c4e7fa1edfdfea0/1999.tsv",
+    "https://github.com/dong-xs/Vul-PAG/blob/7eb3b32094a5270cfd8495366e0e4a7df5a874ce/aspect_prediction/org_pred_diff.txt",
+]
