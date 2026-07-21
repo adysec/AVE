@@ -1,0 +1,56 @@
+[info]
+author = "AVE"
+description = "检测 Gardyn IoT Hub 管理面板（admin.gardyn.io）是否缺失关键安全 HTTP 响应头。该面板仅配置了 HSTS 标头，缺少 X-Frame-Options、Content-Security-Policy、X-Content-Type-Options 等保护机制。通过发送 GET 请求并检查响应头，若上述标头缺失则确认存在点击劫持和 XSS 攻击风险。"
+id = "POC-AVE-2026-0096"
+name = "Gardyn IoT Hub 管理面板安全标头缺失 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-54477",
+    "clickjacking",
+    "missing-headers",
+    "gardyn",
+]
+vuln_id = [
+    "CVE-2026-54477",
+    "AVE-2026-0096",
+    "GHSA-9qxq-9wpj-4f86",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "text/html,application/xhtml+xml"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+part = "header"
+type = "word"
+words = [
+    "x-frame-options",
+    "X-Frame-Options",
+]
+
+[[poc.requests.matchers]]
+expect = false
+part = "header"
+type = "word"
+words = [
+    "content-security-policy",
+    "Content-Security-Policy",
+]
+
+[[poc.requests.matchers]]
+expect = false
+part = "header"
+type = "word"
+words = [
+    "x-content-type-options",
+    "X-Content-Type-Options",
+]
