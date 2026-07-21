@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "AOL Instant Messenger 4.3.2229 之前版本在处理 aim:// URI 的 goim 命令 screenname 参数时存在缓冲区溢出，攻击者可构造超长 screenname 触发溢出执行任意代码。PoC 通过 HTTP 页面嵌入恶意 aim:// 链接触发。"
+id = "POC-AVE-2000-0787"
+name = "AOL Instant Messenger aim:// goim 缓冲区溢出漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2000-1093",
+    "aim",
+    "buffer-overflow",
+    "uri-handler",
+]
+vuln_id = [
+    "CVE-2000-1093",
+    "AVE-2000-0787",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "aim:goim?screenname=",
+    "AAAAAAAAAAAAAAAAAAAAAAAA",
+]
