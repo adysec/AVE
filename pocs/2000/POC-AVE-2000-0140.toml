@@ -1,10 +1,10 @@
 [info]
-author = "ave"
-description = "检测 Microsoft Internet Explorer 4.x/5.x 图片源重定向安全绕过漏洞（CVE-2000-0156）。远程攻击者可通过构造恶意 HTML 页面，利用 img 标签的 src 属性指向 file:// 协议的本地文件路径，由于 IE 安全区域设置存在延迟检查缺陷，可绕过同源策略读取客户端任意文件内容。"
+author = "AVE"
+description = "验证 Internet Explorer 4.x/5.x 的 Image Source Redirect 跨域文件读取漏洞。远程攻击者可通过构造恶意 HTML 页面，使用 img 标签的 src 属性指向 file:// 协议，诱导目标 IE 访问后绕过安全域限制读取客户端本地文件。"
 id = "POC-AVE-2000-0140"
-name = "Microsoft Internet Explorer Image Source Redirect PoC"
+name = "CVE-2000-0156 PoC"
 severity = "medium"
-tags = ["ave-2000-0140"]
+tags = ["cve-2000-0156"]
 vuln_id = [
     "CVE-2000-0156",
     "AVE-2000-0140",
@@ -15,11 +15,18 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/"
+path = "/{{BaseURL}}/poc.html"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["200"]
+words = [
+    "Image Source Redirect",
+    "file:///c:/",
+]
