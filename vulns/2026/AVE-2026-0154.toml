@@ -1,0 +1,24 @@
+[basic]
+description = "WinRAR 和 UnRAR 的 RAR5 恢复卷（.rev）解析器存在堆越界写入漏洞，位于 recvol5.cpp 的 RecVolumes5::ReadHeader 函数中。漏洞成因是 RecItems 向量仅在处理首个 .rev 文件时分配大小，后续 .rev 文件的 RecNum 值仅与自身 TotalCount 校验而未与实际 RecItems 大小校验。攻击者构造两个以上特制 .rev 文件，可在偏移量高达 65534×sizeof(RecVolItem) 字节的堆内存位置写入可控 32 位值（RevCRC 字段），破坏相邻堆对象，可能导致代码执行或服务崩溃。受害者需对攻击者提供的 .rev 集合执行修复/测试操作（如 unrar t 或 WinRAR 修复功能）才可被利用。该漏洞是 CVE-2023-40477 的 RAR5 路径变体。WinRAR/RAR 7.23 已修复。"
+published = "20260701"
+remediation = '立即升级至 WinRAR 7.23 或更高版本，该版本已修复 RAR5 恢复卷解析器中的堆缓冲区溢出漏洞。从 rarlab.com/download.htm 下载对应版本安装。如无法立即升级，避免对来源不明的 .rev 恢复卷文件执行"修复压缩包"或解压操作，并建议禁用自动恢复功能。'
+score = 5
+severity = "MEDIUM"
+sources = ["hwpoc"]
+title = "RARLAB WinRAR RAR5 恢复卷堆越界写入漏洞"
+updated = "20260701"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["HWPOC-2026-019671bd"]
+ave_id = "AVE-2026-0154"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = []
