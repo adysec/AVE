@@ -1,0 +1,24 @@
+[basic]
+description = "Argo CD Repo-Server 组件存在远程代码执行漏洞，该组件负责从 Git 仓库拉取并解析 Kubernetes 应用清单，由于对用户提交的仓库源数据校验不严，攻击者可通过构造恶意的 Helm Chart 或 Kustomize 配置触发漏洞，在 Repo-Server 容器内执行任意代码。由于 Repo-Server 持有集群管理凭证，成功利用后可完全接管目标 Kubernetes 集群，危害严重。Synacktiv 研究团队已开发名为 argo-cdown 的利用工具但暂未公开。"
+published = "20260515"
+remediation = "立即为 Argo CD repo-server 施加 Kubernetes NetworkPolicy，仅允许 argocd-server、argocd-application-controller、argocd-notifications-controller 和 argocd-applicationset-controller 访问 8081 端口的 gRPC 服务；同时为 Redis 施加网络策略，禁止非必要组件访问 6379 端口。如通过 Helm 部署，在 values.yaml 中设置 networkPolicy.create=true 并启用 defaultDenyIngress，然后升级 argocd-helm chart 至包含 GHSA-47m3-95c7-g2g8 修复的版本。在官方补丁发布前，不要在集群中授予不可信 Pod 的网络访问权限。"
+score = 5
+severity = "MEDIUM"
+sources = ["hwpoc"]
+title = "Argo CD Repo-Server 远程代码执行漏洞"
+updated = "20260515"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["HWPOC-2026-04add8cd"]
+ave_id = "AVE-2026-0208"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = []
