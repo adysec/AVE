@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核 x86 架构中的 MCE（Machine Check Exception）处理机制存在缺陷。Intel Skylake、Cascade Lake 和 Cooper Lake 代 CPU 的快速字符串拷贝指令（REP; MOVS*）存在勘误，当满足以下条件时可能触发罕见的内核恐慌：1）存在不可纠正的内存错误；2）错误位于页面的第一个缓存行；3）内核正在执行从该页前一页的 copy_page 操作。快速字符串拷贝指令会消耗目标区域后紧接着的缓存行中的不可纠正内存错误并触发 MCE，导致内核崩溃。本地攻击者可通过精心构造内存布局触发此漏洞，造成拒绝服务。CVSS 评分 5.5，危害等级中等。"
+published = "2025-02-26T07:00:49.740"
+remediation = "将 Linux 内核升级至 5.17.3 或更高版本（5.18 及以上包含主线修复），该补丁在 MCE 处理程序中直接返回以规避快速字符串拷贝指令的勘误，并在触发后自动禁用受影响超线程的快速字符串拷贝。临时缓解措施可通过 `wrmsr -a 0x1a0 $((0x850089 ^ (1<<0)))` 清除 MSR_IA32_MISC_ENABLE 的 bit 0 以禁用快速字符串拷贝，但会导致全局性能下降，仅建议作为无法升级内核时的应急方案。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Linux 内核快速字符串复制指令机器检查异常拒绝服务漏洞"
+updated = "2026-06-17T05:17:09.063"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49124"]
+ave_id = "AVE-2022-0017"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/8ca97812c3c830573f965a07bbd84223e8c5f5bd",
+    "https://git.kernel.org/stable/c/ba37c73be3d5632f6fb9fa20b250ce45560ca85d",
+    "https://github.com/CVEProject/cvelistV5/blob/3707ef32edab409db4eb6f5766397ecef95f7e15/cves/2022/49xxx/CVE-2022-49124.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49124.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2022-49124",
+    "https://github.com/KaweGG/vulnerability_tracker/blob/01de5763b71f6c005791d4aa8121132990782604/cves/CVE-2022-49124.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/df56f4cca3ff4a807de70444fbb8d3458b1d46ca/CVE/data/2022/CVE-2022-49124.json",
+    "https://github.com/github/advisory-database/blob/ca4032f687e5627fcf86913a0441b18137902527/advisories/unreviewed/2025/10/GHSA-5ghh-886p-hpp6/GHSA-5ghh-886p-hpp6.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2022-49124.html",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49124",
+    "https://github.com/microsoft/AzureLinuxVulnerabilityData/blob/f446e11135d45cb1643208c82d3c441bd9ae1832/osv/AZL-68535.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2022/CVE-2022-49124.json",
+]
