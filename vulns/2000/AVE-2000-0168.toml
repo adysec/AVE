@@ -1,26 +1,23 @@
 [basic]
-description = "PHP 3.0 版本中启用了 safe_mode 安全模式，该模式本应通过 EscapeShellCmd() 函数过滤 shell 元字符来限制系统命令执行。然而 popen() 函数未正确调用 EscapeShellCmd() 过滤，导致攻击者可通过向 popen 传递包含 shell 元字符的恶意参数绕过 safe_mode 限制，在目标服务器上以 Web 服务器权限执行任意系统命令。攻击者无需身份认证即可远程利用此漏洞。"
+description = "PHP 3.0.13 版本中 safe_mode 安全模式存在过滤缺陷，程序未能正确过滤通过 popen 函数执行的命令中的 shell 元字符（如管道符 |、分号 ; 等），远程攻击者可通过向目标服务器发送精心构造的 HTTP 请求，在目标系统上以 Web 服务器权限执行任意系统命令。该漏洞影响 PHP 3.0.13 及之前版本，CVSS v2 评分 10.0，危害等级严重。"
 published = "2000-01-04"
-remediation = "升级 PHP 至 3.0.14 或更高版本，该版本修复了 popen 函数未过滤 shell 元字符的问题。如无法升级，应避免在 PHP 应用中使用 popen 函数处理用户输入，并严格限制 Web 服务器运行权限。"
+remediation = "建议立即升级至 PHP 4.0.0 或更高版本（PHP 3.x 已停止维护），该漏洞在后续版本中已修复 safe_mode 的 shell 元字符过滤缺陷。如无法升级，可在 php.ini 中禁用 popen 函数（disable_functions = popen），并开启 open_basedir 限制脚本访问路径作为临时缓解措施。"
 score = 10.0
 severity = "CRITICAL"
-sources = [
-    "cve",
-    "exploitdb",
-]
-title = "PHP 3.0 safe_mode 模式下 popen 函数绕过 EscapeShellCmd 过滤导致远程命令执行漏洞"
+sources = ["cve"]
+title = "PHP 3.0.13 Safe Mode 命令执行漏洞"
 updated = "2026-06-16"
 
 [exploit]
-exp_urls = ["https://www.exploit-db.com/exploits/19708"]
-poc_urls = ["https://www.exploit-db.com/exploits/19708"]
+exp_urls = []
+poc_urls = []
 
 [id]
 aliases = ["CVE-2000-0059"]
 ave_id = "AVE-2000-0168"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-07-21T00:00:00Z"
 status = "completed"
 
 [references]
