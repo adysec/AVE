@@ -1,65 +1,38 @@
-1. `description` is empty - I can see the content is there but it's commented as "LET ME ANALYZE" which is clearly not a proper description. I need to write a proper Chinese description ≥50 characters.
-2. The TOML structure also has some issues - it's missing the `[basic]` section at the start wait, let me re-read.
-Actually looking more carefully:
-- The TOML has a `[basic]` section with a long description that starts with "Let me analyze" which is clearly AI reasoning text, not a proper cleaned description. The validator says "description 字段为空" which might mean the description isn't valid/empty.
-CVE-2000-0155 is about Windows NT Autorun executing autorun.inf on non-removable media, allowing local attackers to specify an alternate program to execute when other users access a drive. Severity is HIGH with score 7.2.
-- `sources` only has ["epss"] - needs more relevant sources like ["cve"]
-- The TOML has some field ordering issues but the 5 sections are there
-Actually, the key issue is the description field. Let me look at what was provided:
-The description field in the TOML has a lot of "Let me analyze" text which is not a proper description. I need to rewrite it properly.
-CVE-2000-0155:
-- Windows NT Autorun executes the autorun.inf file on non-removable media
-- Allows local attackers to specify an alternate program to execute when other users access a drive
-- CVSS 2.0: 7.2 HIGH, Vector: AV:L/AC:L/Au:N/C:C/I:C/A:C
-- CWE-94: Improper Control of Generation of Code ('Code Injection')
-- Published: 2000-02-18
-- References: securityfocus.com/bid/993
-Now I need to fix the TOML. The main issues are:
-1. description field - it's filled with AI reasoning text ("Let me analyze") instead of actual description. This is why it's being treated as empty.
-2. sources - only ["epss"] but should include ["cve"]
-Windows NT 操作系统中的自动运行功能在处理非可移动介质时存在安全漏洞。当用户访问此类驱动器时，系统会自动执行 autorun.inf 文件中的指令，本地攻击者可利用此机制在 autorun.inf 中指定替代程序，诱使其他用户在访问同一驱动器时执行恶意代码，造成权限提升和信息泄露。
-Now let me look at what needs fixing:
-1. description: Replace the AI reasoning text with proper Chinese description
-2. sources: Add "cve"
-3. The URLs should be cleaned up - keep the authoritative ones
-Actually, looking more carefully at the TOML:
-- `[basic]` section has a very long description that starts with "Let me analyze" - this is clearly wrong, the validator treats it as invalid/empty
-- I need to write a clean Chinese description
-Also, let me re-check my TOML against the schema rules:
-1. `[id]` with `ave_id` and `aliases` - OK
-2. `[basic]` with `title`, `description`, `severity`, `score`, `sources`, `published`, `updated`, `remediation` - OK
-3. `[references]` with `urls` - OK
-4. `[exploit]` with `poc_urls` and `exp_urls` - OK
-5. `[meta]` with `status` and `collected_at` - OK
-Severity check: HIGH >= 7.0, score = 7.2 - OK
-sources: non-empty array - OK
-description: ≥50 chars, Chinese - OK
-remediation: ≥20 chars, Chinese - OK
-title: ≥10 chars, Chinese - OK
-published: valid date - OK
-updated: valid date - OK
-urls: all start with http(s):// - OK
-The output must be pure TOML, no code blocks, no explanation.[id]
-ave_id = "AVE-2000-0139"
-aliases = ["CVE-2000-0155"]
 [basic]
-title = "Microsoft Windows NT 4.0 autorun.inf 非可移动介质本地代码执行漏洞"
-description = "Windows NT 操作系统中的自动运行功能在处理非可移动介质时存在安全漏洞。当用户访问此类驱动器时，系统会自动执行 autorun.inf 文件中的指令，本地攻击者可利用此机制在 autorun.inf 中指定替代程序，诱使其他用户在访问同一驱动器时执行恶意代码，造成权限提升和信息泄露。该漏洞影响 Windows 95/98/NT 4.0 版本，攻击者需具有本地访问权限。"
-severity = "HIGH"
+description = "Windows 95/98/NT 4.0 的自动运行功能存在权限处理缺陷，本地攻击者可在非可移动介质（如硬盘分区）中放置恶意 autorun.inf 文件，指定替代程序执行的路径。当其他用户访问该驱动器时，系统会以当前用户权限自动执行攻击者预设的恶意程序，导致权限提升或信息泄露。该漏洞利用难度低，影响 Windows 95/98/NT 4.0 多个版本。"
+published = "2000-02-18T05:00:00.000"
+remediation = '建议安装 Microsoft Windows NT 4.0 Service Pack 6a 及后续安全更新。如无法升级，可通过注册表将 `HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\NoDriveTypeAutoRun` 值设为 0xFF 以禁用所有驱动器的自动运行功能，或在组策略中启用"关闭自动播放"策略。同时建议升级到不再受支持的 Windows 版本（如 Windows 10/11）以彻底修复。'
 score = 7.2
-sources = ["cve", "exploitdb", "epss"]
-published = "2000-02-18"
-updated = "2026-06-16"
-remediation = "修改注册表禁用非可移动介质自动运行功能：将 HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer 下的 NoDriveTypeAutoRun 值设为 0xFF（十进制 255），以禁用所有驱动器自动运行；或将该值设为 0x95（十进制 149）仅禁用未知驱动器和网络驱动器自动运行。修改后重启系统生效。同时建议将操作系统升级至 Windows 10/11 等受支持版本，新版系统默认对非可移动介质禁用 autorun.inf 执行。"
+severity = "HIGH"
+sources = ["avd"]
+title = "Microsoft Windows NT 4.0 autorun.inf 本地代码执行漏洞"
+updated = "2026-06-16T21:51:06.887"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0155"]
+ave_id = "AVE-2000-0139"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://www.securityfocus.com/bid/993",
-"http://www.securityfocus.com/templates/archive.pike?list=1&date=2000-02-15&msg=000701bf79cd%24fdb5a620%244c4342a6%40mightye.org",
-"https://www.exploit-db.com/exploits/19754",
+    "http://www.securityfocus.com/bid/993",
+    "http://www.securityfocus.com/templates/archive.pike?list=1&date=2000-02-15&msg=000701bf79cd%24fdb5a620%244c4342a6%40mightye.org",
+    "https://www.exploit-db.com/exploits/19754",
+    "https://github.com/CVEProject/cvelistV5/blob/3707ef32edab409db4eb6f5766397ecef95f7e15/cves/2000/0xxx/CVE-2000-0155.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0155",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0155.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/df56f4cca3ff4a807de70444fbb8d3458b1d46ca/CVE/data/2000/CVE-2000-0155.json",
+    "https://github.com/nbrito/research/blob/f070ce78f917d962de8df74cc7a841f1cbbcfa00/cve/CVE-2000-0155/autorun.cpp",
+    "https://github.com/github/advisory-database/blob/ca4032f687e5627fcf86913a0441b18137902527/advisories/unreviewed/2022/04/GHSA-92rc-5g3w-9vp2/GHSA-92rc-5g3w-9vp2.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152100_152200.json",
+    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0155.json",
+    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-22T00:00:00Z"
