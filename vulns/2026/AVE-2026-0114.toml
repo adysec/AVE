@@ -1,0 +1,40 @@
+[basic]
+description = "FatFs（ChaN FatFs）R0.16 及之前版本的 FAT32 文件系统挂载函数 mount_volume() 中存在整数溢出漏洞（CWE-190）。当攻击者构造一个 BPB_FATSz32 字段值为 0x80000001 的恶意 FAT32 镜像时，fasize 与 fs->n_fats 的乘法运算会发生整数回绕，导致后续读取操作的偏移量和长度被攻击者控制。该漏洞允许物理接触的攻击者通过挂载特制 FAT32 镜像实现任意内存读取或代码执行，在 OTA/固件更新场景下也可远程触发。CVSS 评分 7.6，危害等级高。"
+published = "2026-07-01T15:17:12.313"
+remediation = "立即从 https://elm-chan.org/fsw/ff/ 下载并应用 FatFs R0.16 的 2026 年 7 月 10 日最新补丁，或在 mount_volume() 中 fasize *= fs->n_fats 运算前添加整数溢出检查：if (fs->n_fats > 0 && fasize > UINT_MAX / fs->n_fats) return FR_INT_ERR；同时校验 BPB_FATSz32 字段值不超过合法范围作为深层防御。"
+score = 7.6
+severity = "HIGH"
+sources = ["hwpoc"]
+title = "ChaN FatFs FAT32 整数溢出漏洞"
+updated = "2026-07-02T14:37:48.377"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-6682"]
+ave_id = "AVE-2026-0114"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://elm-chan.org/fsw/ff/",
+    "https://github.com/runZeroInc/vulns-2026-fatfs-chance",
+    "https://www.runzero.com/advisories/fatfs-fat32-int-of-mnt-cve-2026-6682/",
+    "https://www.runzero.com/blog/fatfs-bugs/",
+    "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/2026/CVE-2026-6682.md",
+    "https://github.com/CVEProject/cvelistV5/blob/59955f89028f6eb26686f8a6493373afe445701a/cves/2026/6xxx/CVE-2026-6682.json",
+    "https://github.com/espressif/esp-idf/blob/055ba9d3f9c6fd9a0efacd4993a2a942972dd65d/components/fatfs/src/ff.c",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/39897d9afb3c6d42c7013893163963e5f59b4180/reports/2026-07-01/TIER_2_CVE-2026-6682.md",
+    "https://github.com/cisagov/vulnrichment/blob/3a91743cb361cea8aa97e228bbbca0ca0cb04482/2026/6xxx/CVE-2026-6682.json",
+    "https://github.com/TMA84/cvealert/blob/f1d3db69525e35c34e256ac7316a1379e0f969b3/content/posts/cve-2026-6682.md",
+    "https://github.com/adysec/hwpoc/blob/0c7da69de8c9211abd9415ee499775016771b682/docs/2026/FatFs_FAT32_%E6%95%B4%E6%95%B0%E6%BA%A2%E5%87%BA_CVE-2026-6682.toml",
+    "https://github.com/sec-dojo-com/cve-poc/blob/df044812b70860d79ecaa4ed9deebd528d9595d4/pocs/2026/CVE-2026-6682.md",
+    "https://github.com/github/advisory-database/blob/e52c2c075f8ae41771cb3f6120956c7f745eea35/advisories/unreviewed/2026/07/GHSA-c25x-vcg6-4ccx/GHSA-c25x-vcg6-4ccx.json",
+    "https://github.com/runZeroInc/vulns-2026-fatfs-chance/blob/9fe74a1773a10f7061b60151ace5ac1039021480/harness/rce_demo.c",
+    "https://nvd.nist.gov/vuln/detail/CVE-2026-6682",
+]
