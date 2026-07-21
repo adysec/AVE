@@ -1,76 +1,37 @@
-1. `description` is empty
-2. `references.urls` is empty (no valid URLs)
-3. `published` and `updated` are empty
-4. `remediation` is generic and should be specific
-I need to search for information about CVE-1999-1563 to fill in these fields accurately. Let me use the webfetch tool to search for this CVE.
-CVE-1999-1563 - Nachuatec D435/D445 ICMP Redirect Message Storm DoS vulnerability
-Now I'm looking up the details of this CVE to gather the necessary information for populating the TOML fields.I got the NVD data for CVE-1999-1563. Let me summarize what I found:
-- Title/Description: "Nachuatec D435 and D445 printer allows remote attackers to cause a denial of service via ICMP redirect storm."
-- CVSS v2: Score 5.0 MEDIUM, Vector: (AV:N/AC:L/Au:N/C:N/I:N/A:P)
-- Published Date: 10/14/2000
-- References:
-- http://www.securityfocus.com/archive/1/30849
-- http://www.securityfocus.com/archive/1/35075
-- CWE: NVD-CWE-Other
-- Last Modified: 06/16/2026
-Now I need to fill in the TOML:
-1. `description`: I need to write a Chinese description ≥50 characters covering the principle, impact, and attack conditions.
-2. `references.urls`: Add the two URLs from NVD.
-3. `published`: "2000-10-14"
-4. `updated`: "2026-06-16" (from NVD last modified)
-5. `remediation`: Specific fix recommendation (not generic). Since this is an old 1999-era printer vulnerability, the fix would likely be a firmware update or disabling ICMP redirect processing. I should be honest and say what can be done. Since I don't have specific vendor patch info, I can suggest: updating firmware to the latest version, or configuring the network to filter ICMP redirect messages. This is a reasonable remediation for this type of vulnerability.
-For the description in Chinese (≥50 characters):
-"Nachuatec D435 和 D445 打印机存在安全漏洞，远程攻击者可通过发送伪造的 ICMP 重定向消息，使设备陷入持续的重定向循环风暴，导致打印机无法正常处理网络流量，从而造成拒绝服务。攻击者无需身份认证即可在局域网内发起攻击，影响设备的可用性。"
-This describes the principle (ICMP redirect storm), impact (denial of service), and attack conditions (remote, no auth needed).
-For remediation:
-"升级 Nachuatec D435/D445 打印机固件至厂商发布的最新安全版本，或在网络边界设备上配置规则过滤并阻断伪造 ICMP 重定向报文，防止恶意重定向消息到达目标打印机。"
-This is specific and actionable.
-The `collected_at` in meta is fine, it's in RFC3339.
-One issue: the score is 5 and severity is MEDIUM. MEDIUM≥4, so this is valid.
-Actually wait, the score field in the schema says 0.1~10.0. CVSS v2 score is 5.0 which is fine.
-- `[id]` with `ave_id` and `aliases`
-- `[basic]` with `title`, `description`, `severity`, `score`, `sources`, `published`, `updated`, `remediation`
-- `[references]` with `urls`
-- `[exploit]` with `poc_urls` and `exp_urls`
-- `[meta]` with `status` and `collected_at`
-I need to make sure I don't include any extra sections.
-From NVD:
-- Title: "Nachuatec D435 and D445 printer allows remote attackers to cause a denial of service via ICMP redirect storm."
-- CVSS v2: 5.0 MEDIUM
-- Published: 2000-10-14
-- Last Modified: 2026-06-16
-- References:
-- http://www.securityfocus.com/archive/1/30849
-- http://www.securityfocus.com/archive/1/35075
-I have enough data. Let me write the TOML.
-Description in Chinese (≥50 chars):
-"Nachuatec D435 和 D445 打印机在处理 ICMP 重定向消息时存在安全漏洞，远程攻击者无需身份认证即可向设备发送大量伪造的 ICMP 重定向报文，导致打印机陷入重定向消息风暴，无法正确处理正常网络流量，从而造成拒绝服务攻击，使网络打印功能完全中断。"
-This covers principle (ICMP redirect handling flaw), impact (DoS, print service interruption), attack conditions (remote, no auth).
-Remediation:
-"升级 Nachuatec D435 和 D445 打印机的固件至厂商发布的最新安全版本，或在网络边界路由器及防火墙上配置访问控制规则，过滤并阻断来源不明的 ICMP 重定向报文，防止恶意重定向消息到达打印机设备。"
-Published: "2000-10-14"
-Updated: "2026-06-16"
-Score: 5.0
-Severity: "MEDIUM"
-References URLs:
-- "http://www.securityfocus.com/archive/1/30849"
-- "http://www.securityfocus.com/archive/1/35075"
-ave_id = "AVE-1999-1186"
-aliases = ["CVE-1999-1563"]
 [basic]
-title = "Nachuatec D435/D445 打印机 ICMP 重定向消息风暴拒绝服务漏洞"
-description = "Nachuatec D435 和 D445 打印机在处理 ICMP 重定向消息时存在安全漏洞，远程攻击者无需身份认证即可向设备发送大量伪造的 ICMP 重定向报文，导致打印机陷入重定向消息风暴，无法正确处理正常网络流量，从而造成拒绝服务攻击，使网络打印功能完全中断。"
+description = "Nachuatec D435 与 D445 打印机存在 ICMP 重定向报文风暴拒绝服务漏洞，远程攻击者可向目标设备发送大量特制的 ICMP 重定向报文，耗尽设备资源导致打印机服务崩溃或无法正常响应打印请求。该漏洞影响 Nachuatec D435 和 D445 系列打印机设备，CVSS 评分 5.0，危害等级中危。目前厂商未提供有效修复方案，建议通过防火墙限制 ICMP 报文访问以降低风险。"
+published = "2000-10-14T04:00:00.000"
+remediation = "在路由器/防火墙上配置 ACL 丢弃入站 ICMP 重定向报文（type 5），阻断攻击源。将打印机隔离至独立 VLAN，限制外部访问。如设备固件存在更新，升级到最新版本；若厂商已停止维护，建议更换支持 ICMP 过滤的现代网络打印机。"
+score = 5
 severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
-published = "2000-10-14"
-updated = "2026-06-16"
-remediation = "升级 Nachuatec D435 和 D445 打印机的固件至厂商发布的最新安全版本，或在网络边界路由器及防火墙上配置访问控制规则，过滤并阻断来源不明的 ICMP 重定向报文，防止恶意重定向消息到达打印机设备。"
-[references]
-urls = ["http://www.securityfocus.com/archive/1/30849", "http://www.securityfocus.com/archive/1/35075"]
+sources = ["epss"]
+title = "Nachuatec D435/D445 打印机 ICMP 重定向消息风暴拒绝服务漏洞"
+updated = "2026-06-16T21:50:43.477"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-1563"]
+ave_id = "AVE-1999-1186"
+
 [meta]
+collected_at = "2026-07-21T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-17T04:20:40.504195326+00:00"
+
+[references]
+urls = [
+    "http://www.securityfocus.com/archive/1/30849",
+    "http://www.securityfocus.com/archive/1/35075",
+    "https://github.com/CVEProject/cvelistV5/blob/148999c8327bd04fe7e0fdad6195adf7b36060c6/cves/1999/1xxx/CVE-1999-1563.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1563",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-1999-1563.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/81cdfffcd86317dec05d7dfba407f93d96d91273/CVE/data/1999/CVE-1999-1563.json",
+    "https://github.com/github/advisory-database/blob/9a3495eb833b3f1f2096187c4b14884afc98b67a/advisories/unreviewed/2022/04/GHSA-v993-g7w6-fm39/GHSA-v993-g7w6-fm39.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x88000/87914/info.html",
+    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-1999-1563.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152600_152700.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--c273ba2c-67dd-48d4-8839-a169524e7817.json",
+    "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_dos.txt",
+]
