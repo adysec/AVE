@@ -1,0 +1,82 @@
+[basic]
+description = "Linux 内核 ptrace 子系统中的 get_dumpable() 逻辑存在权限管理缺陷。ptrace_may_access() 在对没有内存描述符（mm）的线程（如内核线程）进行访问检查时，错误地使用了本应用于判断进程是否可 core dump 的 dumpable 标志，且传统的 capability 丢弃机制无法阻止该检查。本地攻击者可利用此缺陷绕过权限验证，获取内核线程的敏感信息或实现本地权限提升。该漏洞影响 Linux 内核版本，Linux 社区已在 6.12.13、6.18.22、6.19.12 及更高版本中修复。"
+published = "2026-05-15T14:16:35.793"
+remediation = "立即升级 Linux 内核至安全版本：稳定版升级到 6.12.13 及以上，长期支持版升级到 6.18.22 及以上，最新主线版升级到 6.19.12 及以上。可通过 `uname -r` 确认当前版本，使用发行版包管理器（如 `apt upgrade`、`yum update`）获取更新。如无法立即升级，可临时限制非 root 用户对 ptrace 的访问：通过内核参数 `kernel.yama.ptrace_scope = 1` 写入 `/etc/sysctl.conf` 并执行 `sysctl -p` 生效，阻止非授权进程间调试。"
+score = 7.1
+severity = "HIGH"
+sources = ["hwpoc"]
+title = "Linux Linux Kernel ptrace 本地权限提升漏洞"
+updated = "2026-07-15T02:22:15.687"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-46333"]
+ave_id = "AVE-2026-0085"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/01363cb3fbd0238ffdeb09f53e9039c9edf8a730",
+    "https://git.kernel.org/stable/c/15b828a46f305ae9f05a7c16914b3ce273474205",
+    "https://git.kernel.org/stable/c/2a93a4fac7b6051d3be7cd1b015fe7320cd0404d",
+    "https://git.kernel.org/stable/c/31e62c2ebbfdc3fe3dbdf5e02c92a9dc67087a3a",
+    "https://git.kernel.org/stable/c/4709234fd1b95136ceb789f639b1e7ea5de1b181",
+    "https://git.kernel.org/stable/c/6e5b51e74a40d377bcd3081dd33fbaa0e1aa7e3d",
+    "https://git.kernel.org/stable/c/8f907d345bae8f4b3f004c5abc56bf2dfb851ea7",
+    "https://git.kernel.org/stable/c/93d4ba49d18e3d7fb41a9927c2d0cca5e9dfefd6",
+    "http://www.openwall.com/lists/oss-security/2026/05/15/9",
+    "http://www.openwall.com/lists/oss-security/2026/05/20/14",
+    "http://www.openwall.com/lists/oss-security/2026/05/20/16",
+    "https://lists.debian.org/debian-lts-announce/2026/05/msg00032.html",
+    "https://lists.debian.org/debian-lts-announce/2026/05/msg00035.html",
+    "https://access.redhat.com/errata/RHSA-2026:19521",
+    "https://access.redhat.com/errata/RHSA-2026:19540",
+    "https://access.redhat.com/errata/RHSA-2026:19568",
+    "https://access.redhat.com/errata/RHSA-2026:19569",
+    "https://access.redhat.com/errata/RHSA-2026:19664",
+    "https://access.redhat.com/errata/RHSA-2026:19666",
+    "https://access.redhat.com/errata/RHSA-2026:19705",
+    "https://access.redhat.com/errata/RHSA-2026:19711",
+    "https://access.redhat.com/errata/RHSA-2026:19875",
+    "https://access.redhat.com/errata/RHSA-2026:20051",
+    "https://access.redhat.com/errata/RHSA-2026:20054",
+    "https://access.redhat.com/errata/RHSA-2026:20129",
+    "https://access.redhat.com/errata/RHSA-2026:20130",
+    "https://access.redhat.com/errata/RHSA-2026:20299",
+    "https://access.redhat.com/errata/RHSA-2026:20593",
+    "https://access.redhat.com/errata/RHSA-2026:21701",
+    "https://access.redhat.com/errata/RHSA-2026:21702",
+    "https://access.redhat.com/errata/RHSA-2026:23468",
+    "https://access.redhat.com/errata/RHSA-2026:23469",
+    "https://access.redhat.com/errata/RHSA-2026:23470",
+    "https://access.redhat.com/errata/RHSA-2026:23471",
+    "https://access.redhat.com/errata/RHSA-2026:24814",
+    "https://access.redhat.com/errata/RHSA-2026:33486",
+    "https://access.redhat.com/security/cve/CVE-2026-46333",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=2477802",
+    "https://cert-portal.siemens.com/productcert/html/ssa-019113.html",
+    "https://github.com/0xdeadbeefnetwork/ssh-keysign-pwn/",
+    "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-46333.json",
+    "https://github.com/KaraZajac/CHARON",
+    "https://github.com/trickest/cve/blob/1b6397ca00ebc515023ce73df945527011e5cc49/2026/CVE-2026-46333.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/f2737ed54bc77e69eee49ea0fc8ad75416232e93/2026/CVE-2026-46333.json",
+    "https://github.com/mthcht/awesome-lists/blob/4be9ed93d6656cefc46f093178bc6f8691e73d5d/Lists/Others/Defender_yara_rules/Linux/Exploit/CVE-2026-46333.yara",
+    "https://github.com/centminmod/centminmod/blob/6f9c7f0b7fa21edf8c70dbbbf1231930b7de43d0/tools/cmm-security/checks/check-cve-2026-46333.sh",
+    "https://github.com/rapid7/metasploit-framework/blob/7c9fd4e653786d40d51f383be1f91993efddadf8/documentation/modules/post/linux/gather/cve_2026_46333_chage.md",
+    "https://github.com/AlmaLinux/almalinux.org/blob/6c8e0eddbb91ea6d2fc8d5a66985edf360e73fc9/content/blog/2026-05-15-ssh-keysign-pwn-cve-2026-46333.md",
+    "https://github.com/0xBlackash/CVE-2026-46333/blob/1d7e532c44de89d88be8b14ab3d5af761de27fa0/CVE-2026-46333.c",
+    "https://github.com/Threekiii/CVE/blob/4e96ec5c1f919e7ddf89ce2335ced09b058e2b49/2026.05/CVE-2026-46333%EF%BC%9ALinux%20Kernel%20ptrace%20%E6%9C%AC%E5%9C%B0%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87%E6%BC%8F%E6%B4%9E.md",
+    "https://github.com/xairy/linux-kernel-exploitation/blob/1120e9cea80c6039b8c8151bde6067c2cd76daa4/README.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0ebf8eac5e6d2af2400b71f0ba35608811c9cff6/references/CVE-2026-46333-2026-05-19-1405",
+    "https://github.com/0xBlackash/CVE-2026-46333",
+    "https://github.com/studiogangster/CVE-2026-46333",
+    "https://github.com/cumakurt/linuxpi",
+    "https://github.com/st4rburn/public-passwd",
+    "https://nvd.nist.gov/vuln/detail/CVE-2026-46333",
+]
