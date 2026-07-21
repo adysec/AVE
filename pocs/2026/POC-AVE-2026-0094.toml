@@ -1,0 +1,30 @@
+[info]
+author = "AVE"
+description = "Linux KVM/x86 影子分页（Shadow MMU）释放后使用漏洞验证。通过检查内核版本是否包含修复补丁（commit 81ccda30b4e8）来判断漏洞是否存在。该漏洞源于 kvm_mmu_get_child_sp() 未校验角色字段导致非叶子页表被错误复用，可触发 UAF 导致虚拟机逃逸。PoC 代码为内核模块，需在 KVM 虚拟机内加载并利用嵌套虚拟化触发竞态条件。"
+id = "POC-AVE-2026-0094"
+name = "CVE-2026-53359 KVM Shadow MMU Use-After-Free PoC"
+severity = "high"
+tags = [
+    "cve-2026-53359",
+    "kvm",
+    "shadow-mmu",
+    "use-after-free",
+    "januscape",
+]
+vuln_id = [
+    "CVE-2026-53359",
+    "AVE-2026-0094",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/proc/version"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Linux version"]
