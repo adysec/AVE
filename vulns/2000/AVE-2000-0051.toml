@@ -1,95 +1,37 @@
-1. `description` field is empty - this is the main issue. The description field appears to contain a lot of internal reasoning/thoughts rather than the actual description, and at the end it seems to be truncated. I need to fix this.
-2. The `sources` array only contains `["epss"]` - should include at least `["cve"]` since this is from CVE.
-3. `published` format should be `YYYY-MM-DD` not `YYYY-MM-DDTHH:MM:SS.mmm`.
-4. `updated` format should be `YYYY-MM-DD` not `YYYY-MM-DDTHH:MM:SS.mmm`.
-- `description` field is empty - actually looking at the TOML, the description field has a long multi-line string but it seems like it's the AI's internal reasoning, not a proper description. The validator says it's empty, probably because the content is just the AI's thoughts and not a valid description.
-```
-```
-This is AI internal chatter, not a proper description. The actual Chinese description attempt is at the end but seems incomplete. The validator likely sees this as invalid/empty.
-I need to:
-1. Write a proper Chinese description for CVE-2000-0064
-2. Fix `published` format
-3. Fix `updated` format
-4. Fix `sources` to include `cve`
-Actually, let me just look at the data provided in the prompt:
-- CVE-2000-0064
-- Title: Nortel Contivity 1.0 cgiproc Metacharacter 拒绝服务漏洞
-- NVD description: cgiproc CGI script in Nortel Contivity HTTP server allows remote attackers to cause a denial of service via a malformed URL that includes shell metacharacters.
-- CVSS: 5 (MEDIUM)
-- CWE: NVD-CWE-Other
-I need to write a proper Chinese description. Let me also use web search to confirm details.
-Actually, since the errors listed are:
-- [严重] description: description 字段为空
-That's the only error mentioned. But I should also fix other issues I see:
-- `published` and `updated` should be in `YYYY-MM-DD` format (the schema shows `"2024-01-01"` format)
-- `sources` should include `"cve"`
-- The `description` needs to be a proper Chinese description without the internal thoughts
-The key issues to fix:
-1. Replace `description` with a clean Chinese description of ≥50 characters
-2. Fix `published` format to `YYYY-MM-DD`
-3. Fix `updated` format to `YYYY-MM-DD`
-4. Fix `sources` to include `"cve"` (at minimum)
-For CVE-2000-0064:
-- Nortel Contivity 1.0 HTTP server cgiproc CGI script
-- Remote attackers can cause DoS via malformed URL with shell metacharacters
-- CVSS 5.0 (MEDIUM)
-Proper description in Chinese:
-"Nortel Contivity 1.0 HTTP服务器中的cgiproc CGI脚本存在元字符注入漏洞。远程攻击者可通过向目标设备发送包含shell特殊字符（如;|&`$()等）的恶意URL请求，触发cgiproc进程对用户输入的不当处理，导致服务进程崩溃，造成拒绝服务。该漏洞无需认证即可远程利用，影响Nortel Contivity 1.0版本。"
-That's well over 50 characters.
-Now let me also check - the `published` value in the schema shows `"2000-01-17"`. From the current TOML, it's `"2000-01-17T05:00:00.000"`. The schema example shows just date format. But let me check if the schema requires just date or allows datetime. The error message didn't mention this, so I'll keep it as is or fix it to match the schema.
-Actually, looking at the schema:
-```
-published = "2024-01-01"
-updated = "2024-06-01"
-```
-These are date-only format. But the current has datetime. Let me change them to match the schema format as YYYY-MM-DD.
-Wait, I should be careful. The errors listed only mention description being empty. Let me fix all issues I can see though, since they'll likely be caught in validation.
-Also, let me check if I need to search the web for more info. The instruction says "使用你的联网搜索工具获取准确的漏洞信息来修正字段内容". Let me do a quick web search to confirm details about this CVE.
-Actually, I already have enough info from the prompt. Let me just produce the corrected TOML.
-One more thing - the `aliases` field - the schema says "含 canonical ID 及所有已知别名，不含独立 cve_id 字段". The current aliases has `["CVE-2000-0064"]` which is correct.
-- CVSS v2.0 Base Score: 5.0 MEDIUM
-- Vector: (AV:N/AC:L/Au:N/C:N/I:N/A:P)
-- Published: 01/17/2000
-- Last Modified: 06/16/2026
-- Description: "cgiproc CGI script in Nortel Contivity HTTP server allows remote attackers to cause a denial of service via a malformed URL that includes shell metacharacters."
-- References: http://www.osvdb.org/7583, http://www.securityfocus.com/bid/938
-Now I need to fix the TOML:
-1. description - needs to be a proper Chinese description (≥50 chars), not AI internal monologue
-2. published - should be `"2000-01-17"` (date-only format per schema)
-3. updated - should be `"2026-06-16"` (date-only format per schema)
-4. sources - should include `"cve"` and can keep `"epss"` as well
-Actually, looking at the rules again:
-- `urls` 非法：过滤非 http(s) URL - all URLs are http(s) so they're fine
-- But some of those GitHub links are very noisy. Let me keep the more relevant ones.
-The main issue flagged is `description` being empty (it appears empty/truncated in the original). I need to write a proper Chinese description.
-"Nortel Contivity 1.0 HTTP服务器中的cgiproc CGI脚本存在shell元字符注入漏洞。远程攻击者无需认证即可通过向目标设备发送包含shell特殊字符（如; | & ` $ ()等）的特制URL请求，触发cgiproc脚本对用户输入参数的不当过滤，导致服务进程崩溃，造成拒绝服务。该漏洞影响Nortel Contivity 1.0版本，CVSS评分5.0，危害等级中等。"
-That's over 50 Chinese characters.
-For remediation:
-"由于Nortel已破产、Contivity产品已停止维护，建议立即禁用或删除cgiproc CGI脚本，在Web服务器配置中拒绝访问该脚本路径；同时部署反向代理或WAF过滤URL中的shell元字符（;|&`$()><）；如业务必需VPN功能，建议迁移至受支持的安全网关产品。"
-That's over 20 characters.
-Score: 5.0, Severity: MEDIUM (matches: MEDIUM≥4.0)
-The instruction says: "只输出纯 TOML 正文，不要任何解释/分析/代码块标记"
-So I should just output the TOML.[id]
-ave_id = "AVE-2000-0051"
-aliases = ["CVE-2000-0064"]
 [basic]
-title = "Nortel Contivity HTTP Server cgiproc CGI 元字符拒绝服务漏洞"
-description = "Nortel Contivity 1.0 HTTP 服务器中的 cgiproc CGI 脚本存在 shell 元字符注入漏洞。远程攻击者无需认证即可通过向目标设备发送包含 shell 特殊字符（如 | & ` $ () ; 等）的特制 URL 请求，触发 cgiproc 脚本对用户输入参数的不当处理，导致服务进程崩溃，造成拒绝服务。该漏洞影响 Nortel Contivity 1.0 版本，CVSS 评分 5.0，危害等级中等。"
+description = "Nortel Contivity HTTP Server 1.0 的 cgiproc CGI 脚本存在元字符注入漏洞，远程攻击者可通过向目标服务器发送包含 shell 元字符的特制 URL，导致 CGI 程序执行意外的系统命令，造成拒绝服务。该漏洞影响 Nortel Contivity 1.0 版本，无需认证即可远程触发，攻击条件简单，危害中等。"
+published = "2000-01-17T05:00:00.000"
+remediation = "升级 Nortel Contivity HTTP Server 至 1.0 以上已修复版本；如无法升级，建议在 Web 服务器配置中禁用或移除 cgiproc CGI 脚本，并在网络边界防火墙上限制对 HTTP 服务的访问来源 IP，同时对用户输入进行严格过滤，禁止 shell 元字符传入。该产品已停止维护，建议迁移至受支持的安全替代方案。"
+score = 5
 severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
-published = "2000-01-17"
-updated = "2026-06-16"
-remediation = "由于 Nortel 已破产、Contivity 产品已停止维护，建议立即禁用或删除 cgiproc CGI 脚本，在 Web 服务器配置中拒绝访问该脚本路径；同时部署反向代理或 WAF 过滤 URL 中的 shell 元字符；如业务必需 VPN 功能，建议迁移至受支持的安全网关产品。"
+sources = ["avd"]
+title = "Nortel Contivity HTTP Server cgiproc CGI 拒绝服务漏洞"
+updated = "2026-06-16T21:50:55.610"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0064"]
+ave_id = "AVE-2000-0051"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://www.osvdb.org/7583",
-"http://www.securityfocus.com/bid/938",
-"https://nvd.nist.gov/vuln/detail/CVE-2000-0064",
+    "http://www.osvdb.org/7583",
+    "http://www.securityfocus.com/bid/938",
+    "https://github.com/CVEProject/cvelistV5/blob/4603507d019be3585b2e7bcddcb6c6f57901b490/cves/2000/0xxx/CVE-2000-0064.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0064",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0064.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cae595683b6fe65324ec717750e7cdca928c1db7/CVE/data/2000/CVE-2000-0064.json",
+    "https://github.com/github/advisory-database/blob/f5ee58102af366026efb2988554e99ff8cc7a609/advisories/unreviewed/2022/04/GHSA-x983-ghxv-8xc2/GHSA-x983-ghxv-8xc2.json",
+    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/snort/drop-rules/web-cgi.rules",
+    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/N/nortel_cgiproc_dos.nasl",
+    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0064.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001103.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--8b4d925a-4ac4-4a9c-bcd7-8df5b55f31bf.json",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-21T00:00:00Z"
