@@ -1,45 +1,39 @@
-Looking at the current TOML, the remediation field is empty. I need to add a proper remediation. Based on the vulnerability description - Etype EServ 2.9.2 FTP server buffer overflow - the remediation should suggest upgrading to a version above 2.9.2 or migrating to a supported alternative since the product is end-of-life.
-I need to add a remediation field. Let me write the fixed TOML.The remediation field is empty in the generated TOML. I need to fix this. Let me look at the current TOML more carefully.
-The issue is that the TOML has duplicate sections - there's a malformed structure where the first `[basic]` section's `remediation` field contains a string that includes the rest of the TOML as its content. This is clearly a parsing/formatting error from the previous generation.
-1. `[id]` - ave_id = "AVE-2000-0435", aliases = ["CVE-2000-0523"]
-2. `[basic]` - title, description, severity, score, sources, published, updated, remediation
-3. `[references]` - urls
-4. `[exploit]` - poc_urls, exp_urls
-5. `[meta]` - status, collected_at
-The main issue is that `remediation` is empty. I need to provide a proper remediation. For CVE-2000-0523 (Etype EServ 2.9.2), the remediation should be about upgrading to a newer version or migrating to a different FTP server since this is an old product.
-Now for the remediation, I need to write something specific. Since EServ 2.9.2 is very old and the product is discontinued, the remediation should mention:
-- Upgrading to EServ 2.9.2以上版本 (but the vulnerability affects 2.9.2 and earlier)
-- Since the product is no longer maintained, recommend migrating to alternative FTP servers
-- CVE-2000-0523: Buffer overflow in EServ 2.9.2 and earlier via long MKD command
-- CVSS v2.0 Score: 10.0 HIGH, Vector: (AV:N/AC:L/Au:N/C:C/I:C/A:C)
-- Published: 06/06/2000, Last Modified: 06/16/2026
-- References: archives.neohapsis.com, securityfocus.com/bid/1315, exchange.xforce.ibmcloud.com/vulnerabilities/4614
-The main issue is that the `remediation` field is empty. Looking at the TOML, there are actually duplicate sections - the first `[basic]` block has a `remediation` that contains a bunch of other sections as its value (malformed TOML), and then there are proper sections later.
-The error says "remediation: remediation 字段为空" - looking at the TOML more carefully, the first `[basic]` section has `remediation = """"""` which is a multiline string that actually contains the rest of the TOML document. So the actual `[basic]` section that gets parsed (the second one) doesn't have a `remediation` field.
-I need to produce a clean, valid TOML with all 5 required sections and a proper remediationfield.I have the information I need. The remediation field is empty. I need to add a proper remediation. Based on the NVD data and ExploitDB info:
-- EServ 2.9.2 and earlier are vulnerable
-- The product is discontinued/no longer maintained
-- The remediation should recommend upgrading to a version > 2.9.2 (if available) or migrating to an alternative FTP server
-Looking at the original TOML that was provided, the remediation field is empty. I need to add a proper remediation in Chinese.
-The product is EType EServ, which is discontinued. The remediation should state:
-1. Upgrade to EServ 2.9.2以上版本 (but the product is EOL)
-2. Migrate to alternative FTP server software
-ave_id = "AVE-2000-0435"
-aliases = ["CVE-2000-0523"]
 [basic]
-title = "Etype EServ 2.9.2 日志记录缓冲区溢出漏洞"
-description = "Etype EServ 2.9.2 及更早版本的 FTP 服务器日志记录功能存在缓冲区溢出漏洞。攻击者可通过向服务器发送超长的 MKD（创建目录）命令，触发日志记录函数中的堆缓冲区溢出，从而在服务器上以系统权限执行任意代码。攻击无需身份认证，可远程利用，危害极大。"
+description = "EServ 2.9.2 及更早版本的日志记录功能存在缓冲区溢出漏洞，远程攻击者可通过向目标 SMTP 服务器发送超长的 MKD 命令触发该漏洞，导致任意代码执行。该漏洞影响 Etype EServ 邮件服务器软件，CVSS 评分 10.0，危害等级严重。攻击者无需认证即可利用此漏洞，实现远程控制目标服务器。"
+published = "2000-06-06T04:00:00.000"
+remediation = "升级到 EServ 2.9.3 或更高版本（若厂商已停止维护则无官方补丁），建议迁移至主流 FTP 服务器软件如 vsftpd 或 ProFTPD 替代 EServ。作为临时缓解措施，在防火墙/路由器上限制对 FTP 端口（21）的访问，仅允许受信任 IP 连接，并禁用不必要的 FTP 匿名登录。"
+score = 10
 severity = "CRITICAL"
-score = 10.0
-sources = ["cve", "exploitdb", "nvd"]
-published = "2000-06-06"
-updated = "2024-06-16"
-remediation = "EServ 已停止维护，建议立即迁移至其他受支持的 FTP 服务器软件（如 vsftpd、ProFTPD 或 FileZilla Server）；若必须继续使用，应限制 FTP 端口（21）的访问来源并禁用匿名登录以降低风险。"
-[references]
-urls = ["http://archives.neohapsis.com/archives/bugtraq/2000-06/0009.html", "http://www.securityfocus.com/bid/1315", "https://exchange.xforce.ibmcloud.com/vulnerabilities/4614", "https://www.exploit-db.com/exploits/19997"]
+sources = ["cve"]
+title = "Etype EServ 日志缓冲区溢出漏洞"
+updated = "2026-06-16T21:51:55.100"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0523"]
+ave_id = "AVE-2000-0435"
+
 [meta]
+collected_at = "2026-07-21T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-20T00:00:00Z"
+
+[references]
+urls = [
+    "http://archives.neohapsis.com/archives/bugtraq/2000-06/0009.html",
+    "http://www.securityfocus.com/bid/1315",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/4614",
+    "https://www.exploit-db.com/exploits/19997",
+    "https://github.com/CVEProject/cvelistV5/blob/148999c8327bd04fe7e0fdad6195adf7b36060c6/cves/2000/0xxx/CVE-2000-0523.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0523",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0523.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/81cdfffcd86317dec05d7dfba407f93d96d91273/CVE/data/2000/CVE-2000-0523.json",
+    "https://github.com/github/advisory-database/blob/9a3495eb833b3f1f2096187c4b14884afc98b67a/advisories/unreviewed/2022/04/GHSA-pg42-38hv-3f6h/GHSA-pg42-38hv-3f6h.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0523.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_3.list.dict",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--ad8e88eb-8f78-44fd-af04-96c18c56afb8.json",
+]
