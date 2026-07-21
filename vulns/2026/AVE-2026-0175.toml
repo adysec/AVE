@@ -1,0 +1,24 @@
+[basic]
+description = "Anthropic 开发的 Rust 语言 protobuf 库 buffa 存在未受控资源消耗漏洞。解码器的 decode_unknown_field 函数在处理未知字段时未对堆内存分配进行限制，攻击者可向使用 buffa 解析 protobuf 的应用发送特制的 protobuf 消息，利用 StartGroup 内嵌套未知字段导致约 22 倍的内存放大（如 64 MiB 输入引发约 1.4 GiB 分配），或构造任意大小的 length-delimited 未知字段耗尽目标进程内存，造成拒绝服务。该漏洞影响 buffa 0.8.0 之前版本，已分配 CVE-2026-55407，厂商在 0.8.0 版本中通过限制每消息未知字段数量上限（默认 100 万）完成修复。"
+published = "20260630"
+remediation = "立即升级 buffa Rust 库至已修复版本，在解码器入口处对 protobuf 消息大小进行上限校验（建议单条消息 ≤ 1MB），拒绝超过阈值的消息。在应用层引入速率限制，防止单连接发送大量解码请求。如无法立即升级，可在代理层过滤 Content-Type 为 application/x-protobuf 的异常大请求体。"
+score = 5
+severity = "MEDIUM"
+sources = ["hwpoc"]
+title = "Anthropic Buffa Rust 库 Protobuf 解析拒绝服务漏洞"
+updated = "20260630"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["HWPOC-2026-02b67ad0"]
+ave_id = "AVE-2026-0175"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = []
