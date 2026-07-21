@@ -1,11 +1,11 @@
 [basic]
-description = "AMaViS virus scanner 0.2.0-pre4 及更早版本存在命令注入漏洞，远程攻击者可向目标邮件服务器发送包含 shell 元字符（如反引号、管道符等）的 Reply-To 字段的恶意邮件，当 AMaViS 扫描处理该邮件时，会以 root 权限执行攻击者嵌入的任意系统命令。攻击者无需身份认证即可利用此漏洞完全控制目标服务器。受影响的版本为 AMaViS 0.2.0-pre4 及之前的所有版本，该漏洞 CVSS 评分 10.0，危害等级为严重。"
+description = "AMaViS 病毒扫描器 0.2.0-pre4 及更早版本存在命令注入漏洞。远程攻击者可通过向目标邮件服务器发送包含 shell 元字符的恶意邮件，将特制载荷置于 Reply-To 字段中，当 AMaViS 处理该邮件时即可触发命令执行，以 root 权限在系统上执行任意命令。该漏洞 CVSS 评分 10.0，危害等级严重，攻击者无需身份认证即可远程利用，可完全控制受影响服务器。"
 published = "1999-12-31T05:00:00.000"
-remediation = '该软件已停止维护，建议升级至其后续项目 amavisd-new（当前最新版 2.11.1）。若无法升级，须手动修改 scanmails 脚本，在将 sender（$2）和 receiver（$7）变量传入 mail 命令前，使用 ${var//\`/} 和 ${var//\$\(/} 等方式过滤反引号、$（ 和 ）等 shell 元字符；同时在邮件网关层面限制入站邮件头的特殊字符作为临时缓解措施。'
+remediation = "升级 AMaViS 至 0.2.1 或更高版本，该版本已修复 reply-to 字段的 shell 元字符转义问题。如无法升级，在调用 sendmail 或 amavis 的 Perl 脚本中，对 reply-to、from、subject 等用户可控邮件头字段使用 quotemeta() 函数进行转义后再传入 shell 命令，并确保禁用以 root 身份运行扫描进程的配置。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "AMaViS virus_scanner 远程代码执行漏洞"
+sources = ["avd"]
+title = "AMaViS virus_scanner 远程命令执行漏洞"
 updated = "2026-06-16T21:50:35.963"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1512"]
 ave_id = "AVE-1999-1982"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-21T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,11 +26,11 @@ urls = [
     "http://www.amavis.org/ChangeLog.txt",
     "http://www.securityfocus.com/bid/527",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/2349",
-    "https://github.com/CVEProject/cvelistV5/blob/b172e0393d29bddb2ceeda5ce57e29123589a55b/cves/1999/1xxx/CVE-1999-1512.json",
+    "https://github.com/CVEProject/cvelistV5/blob/5dccbdd02e04ed15263189c9e9adec0bd125446a/cves/1999/1xxx/CVE-1999-1512.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1512",
-    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1512.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/9a5386d000a40888283d918a46b8928ffcbfca7b/CVE/data/1999/CVE-1999-1512.json",
-    "https://github.com/github/advisory-database/blob/fe37e86b4ab6d44c1acc95d76e30f97043bfd67f/advisories/unreviewed/2022/04/GHSA-xx34-wh4m-w39f/GHSA-xx34-wh4m-w39f.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-1999-1512.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6471e48aab3adc28479bf4c8fa1d38ad4787a75a/CVE/data/1999/CVE-1999-1512.json",
+    "https://github.com/github/advisory-database/blob/db7261396795ee10e4834f0fdf94aec36b0936ff/advisories/unreviewed/2022/04/GHSA-xx34-wh4m-w39f/GHSA-xx34-wh4m-w39f.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1512.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--3a4ab5fd-0a12-4deb-9b2e-309b313a0f6e.json",
     "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
