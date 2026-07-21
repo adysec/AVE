@@ -1,0 +1,35 @@
+[info]
+author = "AVE"
+description = "检测 Esri ArcGIS Server 12.0 及之前版本中 uploads 接口的目录遍历漏洞。通过向 /arcgis/rest/services/System/PublishingTools/GPServer/uploads/upload 发送包含路径遍历序列的 filename 参数，判断目标是否存在漏洞。"
+id = "POC-AVE-2026-0127"
+name = "CVE-2026-9181 PoC"
+severity = "critical"
+tags = [
+    "cve-2026-9181",
+    "directory-traversal",
+    "arcgis",
+]
+vuln_id = [
+    "CVE-2026-9181",
+    "AVE-2026-0127",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/arcgis/rest/services/System/PublishingTools/GPServer/uploads/upload"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "error",
+    "errorInfo",
+]
