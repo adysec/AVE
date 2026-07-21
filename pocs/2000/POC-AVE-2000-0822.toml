@@ -1,0 +1,30 @@
+[info]
+author = "AVE"
+description = "通过检查 /proc/1/status 文件是否可读，检测 Recourse ManTrap 蜜罐系统的隐藏进程泄露漏洞。正常 Linux 系统 /proc/1/status 应包含 Name: 字段，ManTrap 蜜罐中隐藏进程的 proc 条目无法隐藏，导致可被检测。参考 ExploitDB 20380 实现。"
+id = "POC-AVE-2000-0822"
+name = "Recourse ManTrap 1.6 蜜罐隐藏进程检测 PoC"
+severity = "low"
+tags = [
+    "cve-2000-1140",
+    "mantrap",
+    "honeypot",
+    "detection",
+    "proc-fs",
+]
+vuln_id = [
+    "CVE-2000-1140",
+    "AVE-2000-0822",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+path = "/proc/1/status"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Name:"]
