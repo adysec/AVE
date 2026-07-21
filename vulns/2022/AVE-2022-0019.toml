@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 amdgpu 驱动中的 KFD（Kernel Fusion Driver）子系统存在死锁漏洞。当进程退出时，`kfd_process_notifier_release` 刷新 `svm_range_restore_work` 工作队列，该队列尝试刷新 `deferred_list` 工作；若 `deferred_list` 中的 `mmput` 释放最后一个用户引用，将触发 `exit_mmap` → `notifier_release` 路径，形成循环等待导致死锁。本地攻击者可利用此漏洞触发内核崩溃，造成拒绝服务。该漏洞影响 Linux 内核 amdgpu 驱动，CVSS 评分 5.5，危害等级中等。"
+published = "2025-02-26T07:00:50.590"
+remediation = "升级至包含该补丁的 Linux 内核版本（如 5.18+ 或对应长期支持版本 5.15.39+、5.10.119+），该修复已合入主线内核 commit `drm/amdkfd: svm range restore work deadlock when process exit`。如无法立即升级内核，可暂时禁用 amdgpu 驱动中的 SVM（共享虚拟内存）功能模块，或限制受影响 GPU 设备的使用作为临时缓解。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux AMD GPU amdkfd 驱动进程退出时 SVM 范围恢复工作死锁漏洞"
+updated = "2026-06-17T05:17:10.747"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49133"]
+ave_id = "AVE-2022-0019"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/6225bb3a88d22594aacea2485dc28ca12d596721",
+    "https://git.kernel.org/stable/c/858822905f4bf44100d63c5e22e263109976f7cb",
+    "https://git.kernel.org/stable/c/a6be83086e91891081e0589e4b4645bf4643e897",
+    "https://github.com/CVEProject/cvelistV5/blob/3707ef32edab409db4eb6f5766397ecef95f7e15/cves/2022/49xxx/CVE-2022-49133.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49133.yaml",
+    "https://github.com/KaweGG/vulnerability_tracker/blob/01de5763b71f6c005791d4aa8121132990782604/cves/CVE-2022-49133.md",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2022-49133",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/df56f4cca3ff4a807de70444fbb8d3458b1d46ca/CVE/data/2022/CVE-2022-49133.json",
+    "https://github.com/github/advisory-database/blob/ca4032f687e5627fcf86913a0441b18137902527/advisories/unreviewed/2025/10/GHSA-wg4q-grgr-4qgj/GHSA-wg4q-grgr-4qgj.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2022-49133.html",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49133",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2022-49133.md",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--726fd6fb-0ac3-4bf5-98f4-89e9532d758c.json",
+]
