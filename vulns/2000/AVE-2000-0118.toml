@@ -1,97 +1,39 @@
-1. Search for accurate information about CVE-2000-0131 (WarFTPd vulnerability)
-2. Fix the description field with proper Chinese text (≥50 characters)
-3. Ensure all other fields are correct
-4. Output pure TOML only
-1. description field is empty - I need to write a proper Chinese description based on the NVD data: "Buffer overflow in War FTPd 1.6x allows users to cause a denial of service via long MKD and CWD commands."
-2. severity/score mismatch - CVSS 2.0 score is 5.0 MEDIUM, which matches. But let me check: MEDIUM≥4, score=5.0. That's fine.
-3. published/updated format - The published date should be "2000-02-01" not "2000-02-01T05:00:00.000". The updated should be "2000-02-03" or similar.
-4. description field is empty - The current description has garbage text. I need to write a proper Chinese description.
-1. Fix description - write proper Chinese description about buffer overflow in MKD/CWD commands
-2. Fix published date format - should be "2000-02-01"
-3. Fix updated date format - should be "2000-02-03" (exploit date)
-4. Clean up references - remove non-authoritative GitHub mirror links, keep authoritative ones
-5. Keep severity MEDIUM and score 5.0 (they match)
-1. CVE-2000-0131: Buffer overflow in War FTPd 1.6x allows users to cause a denial of service via long MKD and CWD commands.
-2. CVSS v2.0 Score: 5.0 MEDIUM (AV:N/AC:L/Au:N/C:N/I:N/A:P)
-3. Published: 2000-02-01
-4. References: marc.info, osvdb.org, securityfocus.com/bid/966, exploit-db.com/exploits/19740
-5. Exploit: EDB-19740 - WarFTPd 1.66 x4s/1.67-3 CWD/MKD DoS
-Now let me fix the TOML:
-Issues to fix:
-1. `description` field is empty - need to fill with Chinese description ≥50 chars
-2. `published` format is wrong - should be "2000-02-01" not "2000-02-01T05:00:00.000"
-3. `updated` format is wrong - should be "2000-02-03" (from exploitdb date) or keep as date format
-4. `score` = 5, `severity` = "MEDIUM" - this matches (MEDIUM ≥ 4.0), so that's fine
-5. Need to clean up URLs - some are irrelevant (like CVE-2007-1567 references, intframework, etc.)
-Description: War FTPd 1.6x 版本在处理 MKD 和 CWD 命令时存在缓冲区溢出漏洞。由于对用户提交的超长路径名参数缺乏正确的边界检查，远程攻击者可通过向 FTP 服务器发送超长的 MKD 或 CWD 命令参数，触发缓冲区溢出，导致 FTP 服务进程崩溃，造成拒绝服务。该漏洞无需认证即可利用，攻击复杂度低。
-Remediation: 升级 War FTPd 至 1.67-4 或更高版本（1.71-0 已确认不受影响），下载地址 http://war.jgaa.com/alert/。如无法立即升级，可在防火墙或应用层限制 FTP 命令长度，阻止超过 260 字节的 MKD/CWD 命令参数以缓解缓冲区溢出风险。
-The updated date - the exploit was published 2000-02-03, and the CVE was last modified 2026-06-16. I'll use "2000-02-03" as the updated date since that's when the exploit was published.
-Wait, looking at the original TOML more carefully:
-- `published = "2000-02-01T05:00:00.000"` - should be just "2000-02-01"
-- `updated = "2026-06-16T21:51:03.917"` - this is the CVE last modified date, which is fine to keep
-Actually, the schema says `published = "2024-01-01"` format (date only). Let me fix the format.
-For the URLs, I should keep only the relevant ones:
-- http://marc.info/?l=bugtraq&m=94960703721503&w=2 (original advisory)
-- http://www.osvdb.org/4677
-- http://www.securityfocus.com/bid/966
-- https://www.exploit-db.com/exploits/19740
-The other GitHub URLs are just mirrors of CVE data and not really authoritative references. I'll keep the essential ones.
-Actually, looking at the exploit code, it's a DoS exploit that sends a long CWD command. This is both a PoC and an exploit (since it's a DoS). I'll put it in poc_urls.
-From NVD:
-- Description: "Buffer overflow in War FTPd 1.6x allows users to cause a denial of service via long MKD and CWD commands."
-- CVSS v2.0: Base Score 5.0 MEDIUM, Vector (AV:N/AC:L/Au:N/C:N/I:N/A:P)
-- Published: 02/01/2000
-- References: marc.info, osvdb.org, securityfocus.com
-From exploit-db:
-- EDB-ID: 19740
-- Author: crc
-- Type: dos
-- Platform: Windows
-- Date: 2000-02-03
-- Vulnerable: WarFTPd 1.66 x4s/1.67-3
-From vendor alert page:
-- Buffer overflow in 1.6* versions
-- Fix released February 3rd 2000
-- Download: ward167-4.zip (1.67-4)
-Now let me fix the TOML:
-The description field is empty in the original. I need to write a proper Chinese description.
-The original TOML has:
-- description: empty (the content is just "tags" which is garbage)
-- score: 5, severity: "MEDIUM" - this matches (MEDIUM >= 4)
-- remediation: already good
-- published: "2000-02-01T05:00:00.000" - should be "2000-02-01"
-- updated: "2026-06-16T21:51:03.917" - should be "2026-06-16"
-Wait, looking at the schema:
-- published = "2024-01-01" (date format)
-- updated = "2024-06-01" (date format)
-So I should use date format, not datetime format.
-- marc.info (original bugtraq post)
-- osvdb.org
-- securityfocus.com/bid/966
-- exploit-db.com/exploits/19740
-The rest are GitHub mirror repos that aren't really useful references. But the schema says urls should contain "权威页面" (authoritative pages). Let me keep the main ones and remove the GitHub noise.
-Actually, looking at the original TOML more carefully, the description field has garbage content. I need to write a proper Chinese description.
-ave_id = "AVE-2000-0118"
-aliases = ["CVE-2000-0131"]
 [basic]
-title = "Jgaa WarFTPd 远程拒绝服务漏洞"
-description = "War FTP Daemon 1.6x 版本在处理 MKD 和 CWD 命令时存在缓冲区溢出漏洞。由于对命令参数长度缺乏正确的边界检查，攻击者可通过向 FTP 服务器发送超长路径名参数（约 8182 字节）触发缓冲区溢出，导致服务进程崩溃，造成拒绝服务。该漏洞无需认证即可远程触发，影响 1.66x4s 及 1.67-3 版本。"
+description = "War FTPd 1.66及1.67-3版本中存在缓冲区溢出漏洞。远程攻击者可通过向FTP服务器发送超长的MKD（创建目录）和CWD（切换目录）命令，触发缓冲区溢出，导致服务进程崩溃，造成拒绝服务。该漏洞利用简单，无需身份认证即可远程触发，影响运行War FTPd 1.6x系列版本的系统。"
+published = "2000-02-01T05:00:00.000"
+remediation = "升级 War FTPd 至 1.67-4 或更高版本，该版本修复了 CWD/MKD 命令缓冲区溢出问题。如无法升级，可限制 FTP 用户的目录创建与切换操作权限，并在防火墙规则中限制对 FTP 服务 (默认端口 21) 的访问来源。建议迁移至现代维护的 FTP 服务器软件（如 FileZilla Server）替代已停止更新的 WarFTPd。"
+score = 5
 severity = "MEDIUM"
-score = 5.0
-sources = ["cve", "exploitdb"]
-published = "2000-02-01"
-updated = "2026-06-16"
-remediation = "升级 War FTP Daemon 至 1.67-4 或更高版本（1.71-0 已确认不受影响），下载地址 http://war.jgaa.com/alert/。如无法立即升级，可在防火墙或应用层限制 FTP 命令长度，阻止超过 260 字节的 MKD/CWD 命令参数以缓解缓冲区溢出风险。"
+sources = ["epss"]
+title = "Jgaa WarFTPd 缓冲区溢出拒绝服务漏洞"
+updated = "2026-06-16T21:51:03.917"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0131"]
+ave_id = "AVE-2000-0118"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://marc.info/?l=bugtraq&m=94960703721503&w=2",
-"http://www.osvdb.org/4677",
-"http://www.securityfocus.com/bid/966",
-"https://www.exploit-db.com/exploits/19740",
+    "http://marc.info/?l=bugtraq&m=94960703721503&w=2",
+    "http://www.osvdb.org/4677",
+    "http://www.securityfocus.com/bid/966",
+    "https://www.exploit-db.com/exploits/19740",
+    "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/2000/CVE-2000-0131.md",
+    "https://github.com/CVEProject/cvelistV5/blob/e8c9e9f5b27488fcb1deabf0d655d9ceb258cbfc/cves/2000/0xxx/CVE-2000-0131.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0131",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6964f0764748f6ac1325f430341f6b56fd263013/CVE/data/2000/CVE-2000-0131.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-0131.md",
+    "https://github.com/github/advisory-database/blob/f5ee58102af366026efb2988554e99ff8cc7a609/advisories/unreviewed/2022/04/GHSA-xwrw-m7f6-fqjx/GHSA-xwrw-m7f6-fqjx.json",
+    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/DDI_warftpd_cwd_overflow.nasl",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2007/CVE-2007-1567.json",
+    "https://github.com/edoardottt/missing-cve-nuclei-templates/blob/115c94bd1da3cc18977d652d6e78c9f4a5dfc13b/data/year/2000.txt",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-19T00:00:00Z"
