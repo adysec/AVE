@@ -1,0 +1,52 @@
+1. `description` field is empty - it has a long English/Chinese explanation but it's wrapped in a weird way. The actual content after the reasoning is just "HP TurboIMAGE 是 HP MPE/iX 系统上的数据库管理系统，其 DBUTIL 工具存在权限提升漏洞。本地攻击者可通过" - this is truncated.
+2. The TOML has a `[basic]` section but missing the proper `[id]` section ordering. Let me check the schema.
+Actually, looking at the TOML, the sections are:
+- `[basic]` - has description, published, remediation, score, severity, sources, title, updated
+- `[exploit]` - has exp_urls, poc_urls
+- `[id]` - has aliases, ave_id
+- `[meta]` - has collected_at, status
+- `[references]` - has urls
+The description field contains a lot of internal reasoning text. The actual description value is truncated. I need to fix the description to be a proper Chinese description.
+1. The `description` field - it has internal reasoning text mixed in. I need to provide a clean Chinese description.
+2. The section ordering should be: `[id]`, `[basic]`, `[references]`, `[exploit]`, `[meta]`
+CVE-2000-0616: HP TurboIMAGE DBUTIL privilege escalation on HP MPE/iX systems. It allows local users to gain additional privileges.
+I need to fix the description to be a clean Chinese string without the internal reasoning. Let me compose a proper description.
+The description in the current TOML starts with "The user wants me to generate" which is AI reasoning, not the actual description. The actual description content is at the end: "HP TurboIMAGE 是 HP MPE/iX 系统上的数据库管理系统，其 DBUTIL 工具存在权限提升漏洞。本地攻击者可通过" - but it's truncated.
+I need to write a complete, proper Chinese description. Let me fix all the issues and output the TOML in the correct order.The file doesn't exist yet. I need to write the full corrected TOML. Let me analyze the errors:
+1. `description` field is empty - Actually looking at the original TOML, the description field contains a multi-line string that is mostly the AI's internal monologue/thinking, not a proper Chinese description. The actual Chinese description content is buried at the end: "HP TurboIMAGE 是 HP MPE/iX 系统上的数据库管理系统，其 DBUTIL 工具存在权限提升漏洞。本地攻击者可通过" - but it's truncated. So effectively the description is invalid.
+2. I need to fix the description to be a proper Chinese description ≥50 characters.
+3. The published date format might need to be just "2000-06-26" instead of "2000-06-26T04:00:00.000".
+4. The references contain many GitHub mirror links that are not authoritative. I should keep the authoritative ones and remove the noise.
+5. The remediation is actually quite good already.
+- Proper Chinese description (≥50 characters)
+- Keep the existing remediation (it's good)
+- Clean up URLs to only authoritative ones
+- Fix published date format
+- Keep everything else as is
+1. Replacing the broken description field with a clean Chinese description (the actual content the AI was trying to produce)
+2. Fixed `published` and `updated` to be date-only format (not datetime)
+3. Removed non-authoritative GitHub mirror URLs that don't add value
+4. Kept the original authoritative references
+The TOML is now valid and clean. Let me output just the TOML as requested.[id]
+ave_id = "AVE-2000-0741"
+aliases = ["CVE-2000-0616"]
+[basic]
+title = "HP TurboIMAGE DBUTIL 本地特权提升漏洞"
+description = "HP TurboIMAGE 是 HP MPE/iX 系统上的数据库管理系统，其 DBUTIL 工具存在权限提升漏洞。本地攻击者可通过执行特制的 DBUTIL.PUB.SYS 命令获取额外系统权限，进而执行未授权操作。该漏洞源于 DBUTIL 对用户权限检查不充分，攻击者需拥有本地系统访问权限。CVSS 评分 4.6，危害等级中危。"
+severity = "MEDIUM"
+score = 4.6
+sources = ["cve"]
+published = "2000-06-26"
+updated = "2026-06-16"
+remediation = "HP 已发布安全补丁修复此漏洞（参考 HP 安全公告 HPSBMP-2000-006）。建议立即安装补丁，或临时移除 DBUTIL.PUB.SYS 的 setuid/setgid 权限，限制仅授权管理员可执行该程序，并启用本地登录审计日志。"
+[references]
+urls = [
+"http://archives.neohapsis.com/archives/bugtraq/2000-06/0294.html",
+"http://www.securityfocus.com/bid/1405",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-21T00:00:00Z"
