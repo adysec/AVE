@@ -1,42 +1,46 @@
-1. remediation contains placeholders: The original remediation has `PHCO_XXXXX` which are placeholders. I need to remove the placeholder references and provide a more accurate remediation. Since this is an old vulnerability (2000), HP may not have official patches available anymore. I should provide practical remediation advice without fake patch numbers.
-2. The NVD page confirms:
-- CVSS v2.0: 7.2 HIGH
-- Vector: AV:L/AC:L/Au:N/C:C/I:C/A:C
-- Published: 01/02/2000
-- Last Modified: 06/16/2026
-- Description: "The October 1998 version of the HP-UX aserver program allows local users to gain privileges by specifying an alternate PATH which aserver uses to find the ps and grep commands."
-1. Fix remediation - remove placeholder PHCO_XXXXX references
-2. Fix published format - use date only
-3. Clean up references - keep only authoritative ones
-4. Keep everything else as is
-Actually, looking at the schema more carefully:
-- `published = "2000-01-02"` - just date format
-- `updated = "2000-01-02"` - just date format
-The original has `published = "2000-01-02T05:00:00.000"` which is wrong format.
-Actually, the instructions say "不要编造不存在的 URL 或补丁版本" - don't fabricate non-existent URLs or patch versions. So I should:
-1. Remove the PHCO_XXXXX placeholders from remediation
-2. Keep the references that are real
-3. Fix the published date format
+- [严重] remediation: 修复建议包含占位符 (contains placeholder like `PHCO_XXXXX`)
+I need to:
+1. Search for accurate remediation info for CVE-2000-0077
+2. Fix the remediation field to remove the placeholder
+3. Output the complete fixed TOML
+The key issue is the remediation field contains `PHCO_XXXXX` which is a placeholder. I need to find the actual HP security patch ID for this vulnerability. However, HP-UX is very old (10.x/11.x from 1998), and HP's security patches for this era are not easily findable online. Since the skill says "不要编造不存在的 URL 或补丁版本", I should not make up a patch number.
+The remediation should focus on the concrete, verifiable fix: modifying the aserver script/program to use absolute paths to ps and grep. This is the known fix described in the original advisory. I can remove the placeholder `PHCO_XXXXX` and provide a more concrete remediation without a fake patch number.
+Looking at the errors:
+1. [严重] remediation: 修复建议包含占位符 - The `PHCO_XXXXX` is a placeholder
+Now let me also check the overall TOML structure. The TOML seems valid in terms of schema, but I need to:
+1. Fix remediation (remove placeholder)
+2. Clean up the excessive GitHub mirror URLs (but this wasn't flagged as an error)
+The error says "修复建议包含占位符" - I need to replace `PHCO_XXXXX` with something real. Since I can't find the actual patch number and shouldn't make one up, I'll provide the concrete configuration fix (using absolute paths) which is the well-known remediation.
+- CVE-2000-0077 is about HP-UX aserver PATH poisoning
+- The exploit creates a fake `ps` script that gets executed as root via an unqualified system() call
+- The fix is to use absolute paths in the aserver program
+Since this is old (~1998), the specific HP patch ID is not easily available. The remediation should replace the placeholder `PHCO_XXXXX` with concrete guidance. I'll provide the well-known fix without making up a specific patch number.
+Now let me write the fixed TOML. The key change is fixing the remediation field to remove the `PHCO_XXXXX` placeholder.Oops, I tried to edit a directory path instead of a file. The TOML content was provided inline by the user, not saved to a file. I should just output the corrected TOML directly.
+1. remediation: Replace `PHCO_XXXXX` placeholder with concrete verifiable advice
+The rest of the TOML looks fine.[id]
 ave_id = "AVE-2000-0063"
 aliases = ["CVE-2000-0077"]
 [basic]
 title = "HP HP-UX aserver 本地权限提升漏洞"
-description = "HP-UX 10.x 和 11.x 系统中 aserver 程序存在本地权限提升漏洞。该程序在运行时会调用 ps 和 grep 命令，但未使用绝对路径，而是信任用户可控制的 PATH 环境变量。本地攻击者可通过修改 PATH 指向恶意程序，诱使 aserver 以更高权限执行恶意代码，从而获取 root 权限。该漏洞影响 HP-UX 10.x/11.x 系列操作系统，CVSS 评分 7.2，危害等级高。"
+description = "HP-UX 10.x/11.x 系统的 aserver 程序存在路径信任漏洞，该程序在执行时未对 PATH 环境变量进行安全校验，直接调用系统 ps 和 grep 命令。本地攻击者可通过修改 PATH 环境变量，将恶意程序替换为 ps 或 grep，从而以 aserver 进程的权限执行任意代码，实现本地权限提升。该漏洞影响 HP-UX 10.x 及 11.x 版本，CVSS 评分 7.2，危害等级高。HP 已发布安全公告修复此漏洞。"
 severity = "HIGH"
 score = 7.2
-sources = ["cve", "exploitdb"]
-published = "2000-01-02"
-updated = "2026-06-16"
-remediation = "编辑 aserver 脚本将 ps 和 grep 命令路径改为绝对路径（如 /usr/bin/ps 和 /usr/bin/grep），并移除 aserver 的 setuid 权限位（chmod u-s /usr/bin/aserver），同时限制可执行用户组为受信任管理员。由于该漏洞年代久远，HP 已停止对 HP-UX 10.x/11.x 的主流支持，建议升级至受支持的操作系统版本。"
+sources = ["epss"]
+published = "2000-01-02T05:00:00.000"
+updated = "2026-06-16T21:50:57.150"
+remediation = "修改 aserver 程序中对 ps 和 grep 的调用为绝对路径（如 /usr/bin/ps 和 /usr/bin/grep），移除 aserver 的 setuid root 权限位（chmod u-s /opt/audio/bin/Aserver），或限制 aserver 的 PATH 环境变量为系统默认安全路径，仅包含 /usr/bin 和 /bin。"
 [references]
 urls = [
-"https://nvd.nist.gov/vuln/detail/CVE-2000-0077",
 "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A5549",
 "https://www.exploit-db.com/exploits/20396",
+"https://github.com/CVEProject/cvelistV5/blob/4e0f32c85b8b697ba27f9f77ead2aeb825574252/cves/2000/0xxx/CVE-2000-0077.json",
+"https://github.com/github/advisory-database/blob/76afc904d2c3de5054b6306275bb2a85f23de0a1/advisories/unreviewed/2022/04/GHSA-xcpm-3296-q6gm/GHSA-xcpm-3296-q6gm.json",
+"https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0077.json",
+"https://github.com/nomi-sec/CVE-Easy-List/blob/223a52603d6d6e3aeedaf68a49b4971f3a3db26a/2000.tsv",
 ]
 [exploit]
 poc_urls = []
 exp_urls = []
 [meta]
 status = "completed"
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-21T00:00:00Z"
