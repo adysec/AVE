@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = '验证 Microsoft Windows Media Player 7.0 处理自定义 .wms 皮肤文件时的任意脚本执行漏洞。攻击者将含恶意 JS 的 .wms 和 .js 打包为 .wmz (ZIP)，再嵌入 .wmd 下载包中，通过 HTML iframe 或 window.open 触发 WMP 自动下载并执行嵌入脚本。PoC 结构：test.js(创建 C:\gfiseclab.txt) + test.wms(调用 test.js) → test.wmz(ZIP) → test.wmd(ZIP含 test.asx/test.mpg/test.wmz) → exploit.html(iframe 触发下载)。'
+id = "POC-AVE-2000-0802"
+name = "Microsoft Windows Media Player 7.0 .wms Arbitrary Script PoC"
+severity = "medium"
+tags = ["ave-2000-0802"]
+vuln_id = [
+    "CVE-2000-1112",
+    "AVE-2000-0802",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/test.wmd"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    206,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/exploit.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "test.wmd",
+    "iframe",
+]
