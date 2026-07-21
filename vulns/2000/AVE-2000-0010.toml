@@ -1,12 +1,12 @@
 [basic]
-description = "Nortel Networks Optivity NETarchitect 2.0 中的 bna_pass 程序调用系统 rm 命令时使用了受环境变量 PATH 影响的搜索路径，未指定绝对路径，导致本地攻击者可通过修改 PATH 环境变量将其指向恶意程序，从而以目标程序权限执行任意命令。此漏洞需要本地用户权限，利用难度较低。"
-published = "1999-12-29"
-remediation = "Nortel 已停止运营，官方无补丁可用。建议迁移至替代网络管理方案，并移除 bna_pass 程序的 SUID 权限（chmod -s /opt/bna/bin/bna_pass）。同时确保系统 PATH 环境变量在调用前重置为安全值，避免使用相对路径调用系统命令。"
+description = "Nortel Networks Optivity NETarchitect 2.0 中的 bna_pass 程序在调用系统 rm 命令时依赖 PATH 环境变量来定位可执行文件，未使用绝对路径，构成安全漏洞。本地攻击者可通过修改 PATH 环境变量，将恶意程序替换为 rm 并在 bna_pass 执行时被调用，从而以 bna_pass 进程权限执行任意命令。该漏洞影响 Optivity NETarchitect 2.0 版本，攻击者需具备本地系统访问权限，CVSS 评分 7.2，危害等级高。"
+published = "1999-12-29T05:00:00.000"
+remediation = "将 bna_pass 程序中对 rm 的调用改为使用绝对路径 /bin/rm，或在执行 system() 前将 PATH 环境变量重置为安全值（如 /bin:/usr/bin），避免继承用户的 PATH 环境变量。同时设置程序以最小权限运行，禁止 SUID 提权。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Nortel Networks Optivity NETarchitect 本地命令执行漏洞"
-updated = "2026-06-16"
+sources = ["avd"]
+title = "Nortel Networks Optivity NETarchitect 本地权限提升漏洞"
+updated = "2026-06-16T21:50:48.877"
 
 [exploit]
 exp_urls = []
@@ -24,4 +24,14 @@ status = "completed"
 urls = [
     "http://www.securityfocus.com/bid/907",
     "https://www.exploit-db.com/exploits/19704",
+    "https://github.com/CVEProject/cvelistV5/blob/9b8712ba896f892b31b495bb919cac52eac29a85/cves/2000/0xxx/CVE-2000-0009.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0009",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0009.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9da4ebcefe304654f22bdf6c578568005410bc6c/CVE/data/2000/CVE-2000-0009.json",
+    "https://github.com/github/advisory-database/blob/23c72f0e29729596bf60b6750cbec12b936da4bf/advisories/unreviewed/2022/04/GHSA-3ch7-w6x4-f69f/GHSA-3ch7-w6x4-f69f.json",
+    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0009.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153900_154000.json",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_5.list.dict",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000973.txt",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/9d0315205d43d95e2c2bb89a3750b8aa22a01721/2000.tsv",
 ]
