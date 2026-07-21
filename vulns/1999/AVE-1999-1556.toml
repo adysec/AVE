@@ -1,76 +1,40 @@
-[id]`
-2. `[basic]`
-3. `[references]`
-4. `[exploit]`
-5. `[meta]`
-But the current TOML has `[basic]` first, then `[exploit]`, then `[id]`, then `[meta]`, then `[references]`. This might cause issues with Rust parsing. Actually, TOML doesn't care about section order - sections can be in any order. So this shouldn't be a problem.
-But wait, is the schema order enforced? The skill says "严格 5 段" - but TOML format itself doesn't enforce order. Still, let me rearrange to follow the schema order for cleanliness.
-The issue is that the multiline string for remediation starts with AI thinking text. The TOML parser probably parses this as part of the string value. But the "remediation" field is not actually empty - it contains a huge string. Let me re-read the validator error.
-The error says "remediation 字段为空" - this might mean the validator checks if remediation is a meaningful string (not just AI reasoning). The current remediation field starts with "The user wants me to generate" which is English AI thinking, not actual remediation content. The actual remediation content is buried at the end. So the validator might be checking that the remediation doesn't start with AI thinking content, or it's checking if the string is meaningful.
-Actually, wait - let me re-read the TOML more carefully. The `remediation` field value is a multiline string starting with `"""` and contains a wall of text that starts with "The user wants me to generate" - this is clearly AI reasoning text that shouldn't be there. The actual remediation is at the very end.
-So the fix is to replace the remediation with just the actual remediation text, removing all the AI reasoning.
-Actually, I already have enough info from the NVD page. The fix for this old vulnerability would be to upgrade to Sendmail 8.x (which fixed the command-line argument handling).
-For the remediation, I'll write:
-```
-升级至 Sendmail 8.9.x 及以上版本（该版本重写了命令行参数解析逻辑，不再使用 popen 处理 -oR 选项）。如无法立即升级，可临时移除 sendmail 的 setuid root 权限（chmod u-s /usr/lib/sendmail）缓解风险，但此操作将影响本地邮件投递功能。建议同时参考 CERT 公告 CA-95.11.sun.sendmail-oR.vul 获取 Sun 官方补丁信息。
-```
-This is ≥20 characters and in Chinese.
-Now let me also reconsider the URLs. The current URLs include many GitHub mirror links that are not authoritative. Let me keep only:
-1. http://www.alw.nih.gov/Security/8lgm/8lgm-Advisory-21.html (exploit advisory)
-2. http://www.auscert.org.au/render.html?it=1853&cid=1978 (vendor advisory)
-3. http://www.cert.org/advisories/CA-95.11.sun.sendmail-oR.vul (CERT advisory with patch)
-4. http://www.kb.cert.org/vuls/id/3278 (CERT/CC vulnerability note)
-5. http://www.securityfocus.com/bid/7829 (SecurityFocus BID)
-These are the 5 authoritative references from NVD. The others are GitHub mirrors which aren't authoritative sources.
-Wait, the instruction says "不要编造不存在的 URL" - I'm not fabricating URLs, I'm just removing non-authoritative ones. These 5 URLs are all confirmed from NVD's reference list.
-Actually, let me reconsider. The instruction is about not fabricating things. The existing URLs were all provided in the original TOML, so they're not fabricated. But the GitHub ones are noise. I think it's fine to keep only the authoritative ones.
-Actually wait - I should keep ALL the existing URLs to be safe, since removing any might be seen as losing data. Let me just focus on fixing the remediation field and the format issues.
-Hmm, but the TOML says "不要编造不存在的 URL" - this doesn't mean I can't remove existing ones. The existing URLs that are GitHub mirrors of CVE data are not useful as reference links. But to be safe, I'll keep all of them except maybe the duplicate GitHub mirrors. Actually let me just keep all of them to avoid any issues.
-1. Fix remediation (remove thinking text, keep only actual remediation)
-2. Fix sources from ["epss"] to ["cve"]
-3. Fix date formats
-For the remediation text, the original TOML ends with:
-```
-升级至 Sendmail 8.9.x 及以上版本（该系列重写了命令行参数处理，不再使用 popen 调用）。如无法升级，可移除 sendmail 的 setuid root 权限（chmod u-s /usr/lib/sendmail）作为临时缓解，但会影响正常邮件投递功能；同时限制本地用户对 sendmail 二进制文件的执行权限。"""
-```
-This is the actual remediation. I just need to remove the thinking preamble.
-From the NVD page:
-- SunOS sendmail 5.59 through 5.65 are vulnerable
-- CVSS 2.0: 7.2 HIGH
-- Published: 1995-08-23
-- Last Modified: 2026-06-16
-The fix for this would be to upgrade to a version of sendmail that doesn't use popen() for processing the -oR argument. Sendmail 8.x series (starting from 1996) reworked the codebase with security in mind.
-The remediation field currently has a huge block of AI reasoning text that starts with "The user wants me to generate" and then at the very end has the actual remediation. I need to replace the entire remediation with just the clean remediation text.
-The 5 sections in order:
-1. [id] - ave_id, aliases
-2. [basic] - title, description, severity, score, sources, published, updated, remediation
-3. [references] - urls
-4. [exploit] - poc_urls, exp_urls
-5. [meta] - status, collected_at
-For the remediation, I'll write a clean version:
-升级至 Sendmail 8.9.x 及以上版本（该版本重写了命令行参数解析逻辑，不再使用 popen 处理 -oR 选项）。如无法升级，可移除 sendmail 的 setuid root 权限（chmod u-s /usr/lib/sendmail）临时缓解，但此操作将影响本地邮件投递功能。
-title = "SunOS Sendmail -oR 选项本地特权提升漏洞"
-description = "SunOS Sendmail 5.59 至 5.65 版本在处理 -oR 转发主机参数时存在安全缺陷，程序使用 popen 函数处理该选项参数而未进行充分过滤。本地攻击者可利用 shell 的 IFS（内部字段分隔符）环境变量注入恶意内容，通过在 -oR 参数中传入精心构造的值触发命令执行，从而获取 root 系统最高权限。该漏洞危害等级高，CVSS 评分 7.2，攻击者须具有本地系统访问权限。"
-severity = "HIGH"
+[basic]
+description = "SunOS 系统中 Sendmail 5.59 至 5.65 版本存在本地提权漏洞。该漏洞源于程序在处理 -oR 参数时使用 popen 函数执行命令，未对参数进行安全过滤。本地攻击者可通过修改 IFS（内部字段分隔符）环境变量，向 -oR 选项传入精心构造的恶意参数，利用 popen 函数解析时产生的命令注入，从而以 root 权限执行任意命令，完全控制系统。"
+published = "1995-08-23T04:00:00.000"
+remediation = "将 SunOS 上的 sendmail 升级至 5.65 以上版本（如 8.x 系列），新版本已修复 popen() 调用时未正确清理 IFS 环境变量的问题。如无法升级，在 sendmail.cf 中禁用 -oR 选项的使用，并限制普通用户对 IFS 变量的修改权限。建议迁移至现代 MTA 替代方案（如 Postfix）。"
 score = 7.2
-sources = ["cve"]
-published = "1995-08-23"
-updated = "2026-06-16"
-remediation = "升级至 Sendmail 8.9.x 及以上版本（该版本重写了命令行参数解析逻辑，不再使用 popen 处理 -oR 选项）。如无法升级，可移除 sendmail 的 setuid root 权限（chmod u-s /usr/lib/sendmail）临时缓解，但此操作将影响本地邮件投递功能。建议参考 CERT 公告 CA-95.11.sun.sendmail-oR.vul 获取 Sun 官方补丁信息。"
+severity = "HIGH"
+sources = ["avd"]
+title = "SunOS Sendmail -oR 参数本地特权提升漏洞"
+updated = "2026-06-16T21:50:45.923"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
 [id]
-ave_id = "AVE-1999-1556"
 aliases = ["CVE-1999-1580"]
+ave_id = "AVE-1999-1556"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://www.alw.nih.gov/Security/8lgm/8lgm-Advisory-21.html",
-"http://www.auscert.org.au/render.html?it=1853&cid=1978",
-"http://www.cert.org/advisories/CA-95.11.sun.sendmail-oR.vul",
-"http://www.kb.cert.org/vuls/id/3278",
-"http://www.securityfocus.com/bid/7829",
+    "http://www.alw.nih.gov/Security/8lgm/8lgm-Advisory-21.html",
+    "http://www.auscert.org.au/render.html?it=1853&cid=1978",
+    "http://www.cert.org/advisories/CA-95.11.sun.sendmail-oR.vul",
+    "http://www.kb.cert.org/vuls/id/3278",
+    "http://www.securityfocus.com/bid/7829",
+    "https://github.com/CVEProject/cvelistV5/blob/aac9f724534c8b70ef764b55a2e686a2db6290f7/cves/1999/1xxx/CVE-1999-1580.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1580",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-1999-1580.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2cd9d7030fbc42684ccfa32eb6cd959ffcadf351/CVE/data/1999/CVE-1999-1580.json",
+    "https://github.com/github/advisory-database/blob/23c72f0e29729596bf60b6750cbec12b936da4bf/advisories/unreviewed/2022/04/GHSA-qqmr-fh23-w8vj/GHSA-qqmr-fh23-w8vj.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154600_154700.json",
+    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/1999.tsv",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000069.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--70bfbfdc-2f1f-4816-b6ac-9b1236ad2fb6.json",
+    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-21T00:00:00Z"
