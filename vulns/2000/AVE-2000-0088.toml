@@ -1,11 +1,11 @@
 [basic]
-description = "glFTPD FTP 服务端软件在处理 SITE ZIPCHK 命令时，未对用户输入中的元字符（metacharacters）进行有效过滤与转义，导致已通过认证的本地攻击者可通过向服务端发送包含特殊 shell 元字符的恶意请求，在服务端执行任意系统命令，从而获取超出预期的系统权限。该漏洞影响 glFTPD 相关版本，CVSS 评分 10.0，危害等级严重，需尽快升级或应用补丁修复。"
+description = "glFTPD 存在本地权限提升漏洞，本地攻击者通过在 SITE ZIPCHK 命令中插入元字符（metacharacters）可执行任意系统命令，从而获取更高权限。该漏洞源于程序未对用户输入的命令参数进行充分过滤或转义，攻击者需拥有本地账户即可利用，成功利用后可提升至 root 权限，完全控制受影响系统。"
 published = "1999-12-23T05:00:00.000"
-remediation = '升级 glFTPD 至 1.24 或更高版本，该版本对 SITE ZIPCHK 等命令的输入进行了严格的元字符过滤。如无法升级，在 glftpd.conf 中添加 "deny-site-command ZIPCHK" 禁用该命令，并限制本地非信任用户对 FTP 服务的访问；同时建议迁移至维护更活跃的 vsftpd 或 ProFTPD 等替代方案。'
+remediation = "立即升级 glFTPd 至 1.24 或更高版本，该版本已修复 SITE ZIPCHK 命令中元字符未正确转义的问题。如无法升级，在 glftpd.conf 中禁用 SITE ZIPCHK 命令（添加 deny SITE ZIPCHK 规则），并确保 FTP 用户使用 chroot 限制目录访问权限，降低提权风险。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "glFtpD 本地权限提升漏洞"
+sources = ["avd"]
+title = "glFtpD SITE ZIPCHK 命令本地权限提升漏洞"
 updated = "2026-06-16T21:50:52.640"
 
 [exploit]
@@ -23,14 +23,14 @@ status = "completed"
 [references]
 urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-2000-0040",
-    "https://github.com/trickest/cve/blob/1b6397ca00ebc515023ce73df945527011e5cc49/2000/CVE-2000-0040.md",
-    "https://github.com/CVEProject/cvelistV5/blob/aac9f724534c8b70ef764b55a2e686a2db6290f7/cves/2000/0xxx/CVE-2000-0040.json",
+    "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/2000/CVE-2000-0040.md",
+    "https://github.com/CVEProject/cvelistV5/blob/59955f89028f6eb26686f8a6493373afe445701a/cves/2000/0xxx/CVE-2000-0040.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0040",
-    "https://github.com/sari3l/Poc-Monitor/blob/1ce02d4d91174b5d6b67423908aa25f065650bbe/2000/CVE-2000-0040.json",
+    "https://github.com/sari3l/Poc-Monitor/blob/cf818d3668155ee14907188346fea9ac5f2014db/2000/CVE-2000-0040.json",
     "https://github.com/fankh/vulnerability-poc/blob/ffa50060b7ba6ae58d60d6d90533e77eaf10d466/2000/CVE-2000-0040/README.md",
     "https://github.com/eldondev/Snort/blob/34bdcf6a7a638b55c7c04f77ef1efa526ad08e33/doc/signatures/1921.txt",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-0040.md",
-    "https://github.com/github/advisory-database/blob/23c72f0e29729596bf60b6750cbec12b936da4bf/advisories/unreviewed/2022/04/GHSA-w4rv-5mh3-w9fg/GHSA-w4rv-5mh3-w9fg.json",
+    "https://github.com/github/advisory-database/blob/e52c2c075f8ae41771cb3f6120956c7f745eea35/advisories/unreviewed/2022/04/GHSA-w4rv-5mh3-w9fg/GHSA-w4rv-5mh3-w9fg.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0040.json",
     "https://github.com/jdkoftinoff/mb-linux-msli/blob/8adb103e34af9ff1d8d122e9ee2a1808836f0a14/uClinux-dist/user/snort/drop-rules/ftp.rules",
 ]
