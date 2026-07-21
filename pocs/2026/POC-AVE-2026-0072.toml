@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "检测 Veeam Service Provider Console（VSPC）远程代码执行漏洞（CVE-2026-32998）。该漏洞存在于 VSPC 报警脚本执行功能中，当配置文件中 AlarmManagement_ScriptExecutionEnabled 设置为 True 时，未经认证的攻击者可通过 VSPC Web 管理接口（默认 12800 端口）发送特制请求触发远程代码执行。影响 VSPC 9.2.0.33215 及更早版本，官方 KB4853 已发布修复。"
+id = "POC-AVE-2026-0072"
+name = "Veeam Service Provider Console 远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["cve-2026-32998"]
+vuln_id = [
+    "CVE-2026-32998",
+    "AVE-2026-0072",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Veeam Service Provider Console",
+    "Veeam",
+    "VSPC",
+]
