@@ -1,11 +1,11 @@
 [basic]
-description = "Red Hat Linux 在用户初始密码设置时默认使用 DES 算法配合 crypt() 函数进行加密，而非采用更安全的 MD5 算法。DES 加密算法使用 56 位密钥，有效密钥空间较小，且只能处理前 8 个字符，导致密码强度大幅降低。本地攻击者可通过获取 /etc/shadow 文件中的密码哈希后，利用 DES 加密的弱密码特性实施暴力破解，以较低的计算成本获取用户密码，进而提升权限或横向移动，对系统安全性构成严重威胁。"
+description = "Red Hat Linux 在安装过程中默认使用 DES 加密算法配合 crypt() 函数对初始用户密码进行哈希处理，而非采用安全性更高的 MD5 算法。DES 算法密钥空间有限（56 位），易于被暴力破解或彩虹表攻击，攻击者在获取到 /etc/shadow 文件中的密码哈希后，可利用 DES 较弱的加密强度在较短时间内破解用户密码。该漏洞影响 Red Hat Linux 多个版本，属于加密算法强度不足导致的敏感信息泄露风险。"
 published = "2000-01-21T05:00:00.000"
-remediation = "建议立即升级到 Red Hat Linux 6.0 以上版本，该版本默认使用 MD5 密码哈希算法。对于现有系统，可使用 `authconfig --passalgo=md5` 或编辑 `/etc/login.defs` 将 `ENCRYPT_METHOD` 设置为 `MD5`，并重新设置所有用户密码使其使用更强的哈希算法。如运行 Red Hat Enterprise Linux，建议升级到 RHEL 5 及以上版本以使用 SHA-512 哈希。"
+remediation = "修改 /etc/login.defs 配置文件，将 ENCRYPT_METHOD 设为 MD5 或 SHA512（推荐 SHA512），并运行 authconfig --passalgo=sha512 --update 命令切换系统密码加密算法。同时使用 pwconv 命令重新加密现有用户口令。升级至 Red Hat Linux 6.2 及以上版本可获得 md5 密码支持。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "Red Hat Linux 口令初始化使用 DES 弱加密算法漏洞"
+sources = ["avd"]
+title = "Red Hat Linux 初始密码使用 DES 弱加密算法漏洞"
 updated = "2026-06-16T21:50:59.167"
 
 [exploit]
@@ -23,14 +23,14 @@ status = "completed"
 [references]
 urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-2000-0093",
-    "https://github.com/CVEProject/cvelistV5/blob/01aff5db145d29bbcb0b8fff3fe830e13aa53d69/cves/2000/0xxx/CVE-2000-0093.json",
+    "https://github.com/CVEProject/cvelistV5/blob/72f387512fbbb3f0e46713b23cdbd1f9c533d1f7/cves/2000/0xxx/CVE-2000-0093.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0093",
-    "https://github.com/sari3l/Poc-Monitor/blob/cf818d3668155ee14907188346fea9ac5f2014db/2000/CVE-2000-0093.json",
+    "https://github.com/sari3l/Poc-Monitor/blob/922354cca15ef3923415d02f4397f929a0208531/2000/CVE-2000-0093.json",
     "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0093.md",
-    "https://github.com/github/advisory-database/blob/c32de14d223251fcc47138cf2f2d457787b2173f/advisories/unreviewed/2022/04/GHSA-jpmj-rq8m-mfq3/GHSA-jpmj-rq8m-mfq3.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bb5b1eedc994a703f39cb712ed03e138958e291d/CVE/data/2000/CVE-2000-0093.json",
+    "https://github.com/github/advisory-database/blob/0e291808cb617ccf4c842a91d82530cb507f8570/advisories/unreviewed/2022/04/GHSA-jpmj-rq8m-mfq3/GHSA-jpmj-rq8m-mfq3.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d67487551d3c04e5942b9b8e11c25937ecfba21c/CVE/data/2000/CVE-2000-0093.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88231/info.html",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152100_152200.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/c9b68d7e9fee580d97403fe7a317626fdb0fba2c/2000.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/5116d66f715b098d7dc74f3fb3559215242e5dbf/2000.tsv",
 ]
