@@ -1,0 +1,37 @@
+[basic]
+description = "OPNsense GeoIP Alias Importer 功能存在任意文件写入漏洞，该功能在处理 `country_code` 字段时未进行路径过滤，攻击者可构造恶意的 GeoIP 数据库，通过包含 `../` 路径遍历序列的 country_code 实现以 Root 权限将文件写入任意位置。结合系统默认的 newsyslog 定时任务可进一步提升为 Root 权限任意代码执行。该漏洞需要 Firewall: Alias: Edit 权限，影响 OPNsense 系统，危害严重。"
+published = "1day"
+remediation = "立即升级 OPNsense 至最新版本（≥25.7.x），通过 System → Firmware → Updates 检查并安装安全更新。该漏洞已在 GeoIP Alias Importer 模块中添加路径遍历过滤，升级后 country_code 字段将自动过滤 ../ 及其编码变体。若暂时无法升级，可在 Firewall → Aliases → Import 中禁用 GeoIP 数据库自动导入功能，删除已导入的恶意 GeoIP 别名，避免使用不受信任的 GeoIP 数据源（如第三方提供的 mmdb 文件），并临时关闭 Firewall: Alias: Edit 权限以限制攻击面。同时建议定期审计 /var/db/aliases 目录下文件来源的可信度。"
+score = 5
+severity = "MEDIUM"
+sources = ["hwpoc"]
+title = "OPNsense GeoIP Alias Importer 任意文件写入致 Root 远程代码执行漏洞"
+updated = "1day"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-57155"]
+ave_id = "AVE-2026-0111"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/a787519a95f62cf00a76124a68ca5cfb2e26b6ec/2026/CVE-2026-57155.json",
+    "https://github.com/gelusus/wxvl/blob/b7272967d4cf0923f79d101c86e7ecac005fe400/doc/2026-07/OPNsense%20Root%20RCE%20%E6%BC%8F%E6%B4%9E(CVE-2026-57155%EF%BC%8CCVSS%209.9)%20PoC%E5%B7%B2%E5%85%AC%E5%BC%80%EF%BC%8C%E5%BB%BA%E8%AE%AE%E7%AB%8B%E5%8D%B3%E5%8D%87%E7%BA%A7%EF%BC%81.md",
+    "https://github.com/sari3l/Poc-Monitor/blob/cf818d3668155ee14907188346fea9ac5f2014db/2026/CVE-2026-57155.json",
+    "https://github.com/opnsense/changelog/blob/40f243516794c20ce49e508dae3129792426fa8e/business/26.4/26.4.1",
+    "https://github.com/adysec/hwpoc/blob/0c7da69de8c9211abd9415ee499775016771b682/docs/2026/OPNsense_GeoIP_Alias_Importer_%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E8%87%B4_Root_RCE_CVE-2026-57155.toml",
+    "https://github.com/opnsense/docs/blob/ee0a0c6bf86a85fa5b634e9e1f88f265f22aad97/source/releases/BE_26.4.rst",
+    "https://github.com/Ice-001/wxvuln/blob/fae6f4ab8d8097b6f5d802616f4b907a418dd275/md/2026/2026-07/2026-07-10.md",
+    "https://github.com/Binaergewitter/serious-bg/blob/ac16f2510f6a60684a193b12935e684ff090732e/articles/2026-07-18-binaergewitter-talk-number-384.md",
+    "https://github.com/Knaithe/1DayNews/blob/3be5727a550841dfb56734f3005db5cdd9f28f2a/src/config.py",
+    "https://github.com/Ampferl/security/blob/80704ca392b54cb35f1f0d34ca07810e505293bc/README.md",
+    "https://github.com/babyshen/CVE-2026-57155",
+    "https://nvd.nist.gov/vuln/detail/CVE-2026-57155",
+]
