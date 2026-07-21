@@ -1,11 +1,11 @@
 [basic]
-description = "Debian GNU/Linux 系统中 gnucash 财务管理软件所使用的 libguile.so 共享库文件被设置了全局可写权限（world-writable），本地攻击者可通过向该共享库文件中写入恶意代码，当其他用户或服务加载该库时触发执行，从而实现权限提升或任意代码执行。该漏洞影响 Debian GNU/Linux 系统，利用条件为攻击者拥有本地访问权限，CVSS 评分 7.5，危害等级高。建议立即修复 libguile.so 文件的权限设置。"
+description = "Debian GNU/Linux 系统中 gnucash 财务软件所依赖的 libguile.so 共享库文件被错误地设置了全局可写权限（world-writable）。本地攻击者可利用此权限缺陷修改该库文件，注入恶意代码，当其他用户或进程加载该库时触发执行，从而导致权限提升或敏感信息泄露。该漏洞影响 Debian GNU/Linux 发行版，CVSS v2 评分 7.5，危害等级高。"
 published = "2000-02-05T05:00:00.000"
-remediation = "建议立即修复 `/usr/lib/libguile.so` 文件权限：执行 `chmod 755 /usr/lib/libguile.so` 移除全局可写权限，并确认 `umask` 设置为 `022` 以避免后续安装的共享库再次出现权限问题；同时升级 gnucash 至包含权限修复的版本（如 Debian 2.2.x 对应安全更新）。"
+remediation = '立即以 root 身份执行 `chmod 755 /usr/lib/libguile.so` 移除全局可写权限，并确认文件属主为 root:root。使用 `find / -type f -perm -o+w -name "*.so*" 2>/dev/null` 扫描系统其他存在相同问题的共享库文件，对非预期可写的 .so 文件统一执行 `chmod 755`。同时检查该文件是否被篡改（与原始 deb 包的 md5sum 比对），如有异常应重新安装 libguile 包。'
 score = 7.5
 severity = "HIGH"
-sources = ["epss"]
-title = "Debian GNU/Linux gnucash libguile 权限配置不当漏洞"
+sources = ["avd"]
+title = "Debian GNU/Linux gnucash 本地权限提升漏洞"
 updated = "2026-06-16T21:51:05.630"
 
 [exploit]
@@ -23,14 +23,14 @@ status = "completed"
 [references]
 urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-2000-0145",
-    "https://github.com/CVEProject/cvelistV5/blob/4603507d019be3585b2e7bcddcb6c6f57901b490/cves/2000/0xxx/CVE-2000-0145.json",
+    "https://github.com/CVEProject/cvelistV5/blob/f655f864c18bd25e1fca21f5741c644854233bf0/cves/2000/0xxx/CVE-2000-0145.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0145",
-    "https://github.com/sari3l/Poc-Monitor/blob/919d6cac5eadae13826d4a35bab84cf2bac57965/2000/CVE-2000-0145.json",
+    "https://github.com/sari3l/Poc-Monitor/blob/89a21c5c97923550694ebf8b925bdcbb260bc495/2000/CVE-2000-0145.json",
     "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0145.md",
-    "https://github.com/github/advisory-database/blob/f5ee58102af366026efb2988554e99ff8cc7a609/advisories/unreviewed/2022/04/GHSA-hpp7-x4c7-r2pf/GHSA-hpp7-x4c7-r2pf.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/cae595683b6fe65324ec717750e7cdca928c1db7/CVE/data/2000/CVE-2000-0145.json",
+    "https://github.com/github/advisory-database/blob/ca4032f687e5627fcf86913a0441b18137902527/advisories/unreviewed/2022/04/GHSA-hpp7-x4c7-r2pf/GHSA-hpp7-x4c7-r2pf.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/be9b320c2a949cb73c32157503bdf6fad99f369e/CVE/data/2000/CVE-2000-0145.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88323/info.html",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152100_152200.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/3563ce5ac8824b98ec39d3c626e2f6617054b9f7/2000.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/3e910c6d0fff2c3163dd69b92eb626a214df8855/2000.tsv",
 ]
