@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "检测 Palo Alto Networks PAN-OS GlobalProtect 门户是否存在认证绕过漏洞（CVE-2026-0257），通过访问 GlobalProtect 门户检查是否存在未经授权即可访问的 VPN 连接入口。该漏洞允许未认证的攻击者绕过身份验证建立 VPN 连接。"
+id = "POC-AVE-2026-0055"
+name = "Palo Alto Networks PAN-OS GlobalProtect Authentication Bypass PoC"
+severity = "critical"
+tags = ["ave-2026-0055"]
+vuln_id = [
+    "CVE-2026-0257",
+    "AVE-2026-0055",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/global-protect/login.esp"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["GlobalProtect"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ssl-tunnel"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Portal"]
