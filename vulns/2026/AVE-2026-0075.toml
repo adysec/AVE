@@ -1,0 +1,43 @@
+[basic]
+description = "Apache Camel 存在 header 注入漏洞，该漏洞是 CVE-2025-27636 修复不完整导致：官方在 HttpHeaderFilterStrategy 中添加了 setLowerCase(true) 以过滤大小写变体头名称，但未同步应用于 JmsHeaderFilterStrategy、SjmsHeaderFilterStrategy、CoAPHeaderFilterStrategy、GooglePubsubHeaderFilterStrategy 等五个非 HTTP 协议的 HeaderFilterStrategy 实现。这些策略使用大小写敏感的 String.startsWith('Camel'/'camel') 过滤，而 Camel Exchange 以大小写不敏感的 Map 存储头信息，导致拥有 JMS/CoAP/Google PubSub 消息生产者权限的攻击者可通过注入大小写变种的 Camel 内部头，使下游组件（如 camel-exec、camel-file）解析为原始大小写的可执行头，从而实现远程代码执行和任意文件写入。该漏洞影响 Apache Camel 3.0.0 至 4.14.6 之前、4.15.0 至 4.18.2 之前、4.19.0 至 4.20.0 之前的版本，CVSS 评分 9.9，危害等级严重。"
+published = "2026-04-27T09:16:01.493"
+remediation = '建议升级至 Apache Camel 4.20.0（最新稳定版），LTS 用户升级至 4.14.6，4.18.x 用户升级至 4.18.2。临时缓解措施：① 自定义 HeaderFilterStrategy，覆盖 setLowerCase(true) 强制大小写折叠过滤；② 在路由入口添加 removeHeaders("Camel*", "camel*") 并设置 ignoreCase=true 清除所有 Camel 内部头；③ 限制 JMS/CoAP/Google PubSub 等协议的未授权 producer 访问消息代理；④ 审查依赖 camel-exec/camel-file 等高危组件的 consumer，避免直接消费不可信来源的协议消息。'
+score = 9.9
+severity = "CRITICAL"
+sources = ["hwpoc"]
+title = "Apache Camel 多协议消息头注入远程代码执行漏洞"
+updated = "2026-07-15T02:21:05.743"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-40453"]
+ave_id = "AVE-2026-0075"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://camel.apache.org/security/CVE-2026-40453.html",
+    "https://access.redhat.com/errata/RHSA-2026:17668",
+    "https://access.redhat.com/errata/RHSA-2026:19835",
+    "https://access.redhat.com/security/cve/CVE-2026-40453",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=2463173",
+    "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-40453.json",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/f2737ed54bc77e69eee49ea0fc8ad75416232e93/2026/CVE-2026-40453.json",
+    "https://github.com/apache/camel-website/blob/065bea5ebe5f2801b404853fd107b1c4a22f5e53/content/security/CVE-2026-40453.md",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/39897d9afb3c6d42c7013893163963e5f59b4180/reports/2026-04-27/TIER_2_CVE-2026-40453.md",
+    "https://github.com/sari3l/Poc-Monitor/blob/d17870d3de3988e949c161d788c25e4dfe158dac/2026/CVE-2026-40453.json",
+    "https://github.com/Tabll/gemnasium-db/blob/ccf2cc3d762789b06638ba5aa3e06982a53080c8/maven/org.apache.camel/camel-jms/CVE-2026-40453.yml",
+    "https://github.com/TMA84/cvealert/blob/39b22452fe579e54bd7f5c66d1416f8c94c190d0/content/posts/cve-2026-40453.md",
+    "https://github.com/GoogleCloudPlatform/click-to-deploy/blob/f14acfa75f32791c391c723fe3b94a90d6922917/docker/activemq/6/debian12/6.1/Dockerfile",
+    "https://github.com/adysec/hwpoc/blob/0c7da69de8c9211abd9415ee499775016771b682/docs/2026/Apache_Camel_Header_%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E_CVE-2026-40453.toml",
+    "https://github.com/sec-dojo-com/cve-poc/blob/df044812b70860d79ecaa4ed9deebd528d9595d4/pocs/2026/CVE-2026-40453.md",
+    "https://github.com/apache/camel/blob/439f20faf0bf91527fa21253fad32ab7b60bee5a/docs/user-manual/modules/ROOT/pages/security-model.adoc",
+    "https://github.com/oscerd/CVE-2026-40453",
+    "https://nvd.nist.gov/vuln/detail/CVE-2026-40453",
+]
