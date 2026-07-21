@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Lotus Domino HTTP 服务器未正确禁用 cgi-bin 目录的匿名访问。本 PoC 通过匿名向目标服务器的 cgi-bin 目录发起 HTTP GET 请求，验证服务器是否在未经身份认证的情况下允许访问该目录。若返回 200 或显示 CGI 目录列表/可执行脚本响应，则表明存在匿名访问缺陷。该验证仅做无害探测，不执行任何恶意操作。"
+description = "通过向 Lotus Domino HTTP 服务器的 /cgi-bin/ 目录发送 HTTP 请求，检测是否返回 200 OK 而非应有的 401/403 认证拒绝状态码，从而验证是否存在未授权访问漏洞。"
 id = "POC-AVE-2000-0020"
-name = "CVE-2000-0022 Lotus Domino cgi-bin 匿名访问 PoC"
+name = "Lotus Domino HTTP 服务器 cgi-bin 目录匿名访问漏洞 PoC"
 severity = "medium"
 tags = ["ave-2000-0020"]
 vuln_id = [
@@ -11,32 +11,12 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/cgi-bin/"
+path = "/{{BaseURL}}/cgi-bin/"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-status = [
-    200,
-    403,
-    404,
-]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/cgi-bin/test-cgi"
-protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
@@ -45,18 +25,20 @@ type = "status"
 
 [[poc.requests]]
 method = "GET"
-path = "/cgi-bin/printenv"
+path = "/{{BaseURL}}/cgi-bin/test-cgi"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "DOCUMENT_ROOT",
-    "SERVER_SOFTWARE",
-    "QUERY_STRING",
-]
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/printenv"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
