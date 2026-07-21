@@ -1,0 +1,84 @@
+[basic]
+description = "Linux 内核 net/sched 子系统中的 pedit（数据包编辑器）动作存在部分写时复制（COW）逻辑缺陷，tcf_pedit_act() 函数在循环前仅使用 tcfp_off_max_hint 计算一次 COW 范围，未考虑类型化键引入的运行时报头偏移，导致部分写区域未能正确触发 COW，进而造成页面缓存损坏。本地攻击者通过构造特制的 tc 规则并运行恶意程序，可利用此漏洞实现权限提升，获取 root 权限。该漏洞影响主流 Linux 内核版本，需升级至 ≥ v7.1-rc7 或应用对应补丁修复，CVSS 评分 7.8，危害等级高。"
+published = "2026-06-16T08:16:23.993"
+remediation = "立即升级 Linux 内核至 v7.1-rc7 或更高版本，各发行版用户请安装对应内核更新（如 Red Hat 系列可通过 RHSA-2026:27288 等 RHSA 公告更新）。也可手动应用补丁：`git cherry-pick 2bec122b9fb91507a758ab5e3e5c4fbe7cb3f61b`。临时缓解措施：通过 `capsh --drop=cap_net_admin` 限制非特权用户执行 tc 命令，并监控 su/sudo 等 setuid 二进制文件的异常修改行为。"
+score = 7.8
+severity = "HIGH"
+sources = ["hwpoc"]
+title = "Linux Linux Kernel net/sched pedit COW 污染缓存本地提权漏洞"
+updated = "2026-07-15T02:22:15.200"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-46331"]
+ave_id = "AVE-2026-0084"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/2bec122b9fb91507a758ab5e3e5c4fbe7cb3f61b",
+    "https://git.kernel.org/stable/c/3dee9d0c198faeb95d052c1b94c2958751a28512",
+    "https://git.kernel.org/stable/c/544d857b42a1734b923040e13aa61a6fd4746cf2",
+    "https://git.kernel.org/stable/c/899ee91156e57784090c5565e4f31bd7dbffbc5a",
+    "https://git.kernel.org/stable/c/a071e057518decc5e3bec89855758f5f8786f2c5",
+    "https://git.kernel.org/stable/c/b198ed4e52580a7238c7c7082f03906f8b310313",
+    "https://git.kernel.org/stable/c/b685d6ef6f07a3b5ce814565a25f39f2157538a5",
+    "https://git.kernel.org/stable/c/d5d01d35a5a7d36f7cb679b67d9cbdd5205672dc",
+    "https://access.redhat.com/errata/RHSA-2026:27288",
+    "https://access.redhat.com/errata/RHSA-2026:27353",
+    "https://access.redhat.com/errata/RHSA-2026:27354",
+    "https://access.redhat.com/errata/RHSA-2026:27355",
+    "https://access.redhat.com/errata/RHSA-2026:27704",
+    "https://access.redhat.com/errata/RHSA-2026:27705",
+    "https://access.redhat.com/errata/RHSA-2026:27706",
+    "https://access.redhat.com/errata/RHSA-2026:27707",
+    "https://access.redhat.com/errata/RHSA-2026:27708",
+    "https://access.redhat.com/errata/RHSA-2026:27709",
+    "https://access.redhat.com/errata/RHSA-2026:27713",
+    "https://access.redhat.com/errata/RHSA-2026:27731",
+    "https://access.redhat.com/errata/RHSA-2026:27789",
+    "https://access.redhat.com/errata/RHSA-2026:28887",
+    "https://access.redhat.com/errata/RHSA-2026:28962",
+    "https://access.redhat.com/errata/RHSA-2026:29080",
+    "https://access.redhat.com/errata/RHSA-2026:29794",
+    "https://access.redhat.com/errata/RHSA-2026:29799",
+    "https://access.redhat.com/errata/RHSA-2026:29833",
+    "https://access.redhat.com/errata/RHSA-2026:29856",
+    "https://access.redhat.com/errata/RHSA-2026:29863",
+    "https://access.redhat.com/errata/RHSA-2026:33219",
+    "https://access.redhat.com/errata/RHSA-2026:33220",
+    "https://access.redhat.com/errata/RHSA-2026:33221",
+    "https://access.redhat.com/errata/RHSA-2026:33222",
+    "https://access.redhat.com/errata/RHSA-2026:33223",
+    "https://access.redhat.com/errata/RHSA-2026:33224",
+    "https://access.redhat.com/errata/RHSA-2026:33225",
+    "https://access.redhat.com/errata/RHSA-2026:33666",
+    "https://access.redhat.com/errata/RHSA-2026:34048",
+    "https://access.redhat.com/errata/RHSA-2026:34098",
+    "https://access.redhat.com/security/cve/CVE-2026-46331",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=2479492",
+    "https://github.com/sgkdev/packet_edit_meme/tree/main",
+    "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-46331.json",
+    "https://github.com/aexdyhaxor/CVE-2026-46331",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/f2737ed54bc77e69eee49ea0fc8ad75416232e93/2026/CVE-2026-46331.json",
+    "https://github.com/Threekiii/CVE/blob/4e96ec5c1f919e7ddf89ce2335ced09b058e2b49/2026.06/CVE-2026-46331%EF%BC%9ALinux%20Kernel%20%E6%9C%AC%E5%9C%B0%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87%E6%BC%8F%E6%B4%9E.md",
+    "https://github.com/linux-test-project/ltp/blob/34388e7008c8da9a9cccd62411cdd6ea7cf33c8b/runtest/cve",
+    "https://github.com/Unclecheng-li/poc-lab/blob/b3a8fa7275a8368823f63eba88eb6e6b8e62a718/CVE-2026-46331%20act_pedit/README.md",
+    "https://github.com/benscha/KQLAdvancedHunting/blob/f3893d5a5ac82fc9f605e07ca569f84c91410288/Exploit%20Detection/Linux%20pedit%20COW%20Exploit%20Detection%20(CVE-2026-46331).md",
+    "https://github.com/sec-dojo-com/cve-poc/blob/df044812b70860d79ecaa4ed9deebd528d9595d4/pocs/2026/CVE-2026-46331.md",
+    "https://github.com/ARGOeu-Metrics/secmon-probes/blob/39c7b00a6c5ee3198df75d8d1d85ccdfdb0f728e/src/WN-probes/check_CVE-2026-46331",
+    "https://github.com/barmi/cve-patch-auditor/blob/aa2bda85705e8a73235db16ba9e42de088f6c9c4/doc/cve/cve-2026-46331.md",
+    "https://github.com/0xBlackash/CVE-2026-46331/blob/21bb6350a24767eeb4ef96b54e918df77f924f48/CVE-2026-46331.c",
+    "https://github.com/sari3l/Poc-Monitor/blob/1ce02d4d91174b5d6b67423908aa25f065650bbe/2026/CVE-2026-46331.json",
+    "https://github.com/sgkdev/packet_edit_meme",
+    "https://github.com/0xBlackash/CVE-2026-46331",
+    "https://github.com/vulnquest58/dirtyclone-exploit",
+    "https://github.com/yanxinwu946/CVE-2026-46331",
+    "https://nvd.nist.gov/vuln/detail/CVE-2026-46331",
+]
