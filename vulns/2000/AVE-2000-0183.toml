@@ -1,11 +1,11 @@
 [basic]
-description = "ht://Dig 是一款用于网站全文检索的开源搜索引擎。其 CGI 程序 htsearch 在处理请求参数时存在安全缺陷，远程攻击者可在传递给 htsearch 的参数中使用反引号（`）包裹文件名，从而触发任意文件读取。受影响版本包括 ht://Dig 3.1.1 至 3.1.4 以及 3.2.0b1。攻击者无需身份认证，只需向存在漏洞的 htsearch 接口发送特制参数即可读取服务器上的任意文件，可能导致敏感配置、密码等关键信息泄露。该漏洞 CVSS 评分约 5.0，危害等级中等。"
+description = "htsearch CGI 程序在处理用户参数时未正确过滤反引号（`）字符，远程攻击者可通过向 htsearch 传递包含反引号包裹的文件名参数，利用命令执行上下文读取服务器上任意文件。该漏洞影响 ht://Dig 3.1.1 至 3.2.0b1 版本，攻击者无需认证即可利用，可能导致敏感信息泄露。"
 published = "2000-02-29T05:00:00.000"
-remediation = "立即将 ht://Dig 升级到 3.1.5 及以后修复版本，或升级到已修补的 3.2 正式版及以上，并替换所有 htsearch CGI。若无法马上升级，从 Web 服务器配置中移除或禁用 htsearch（如删除/重命名 cgi-bin 下的 htsearch 可执行文件），仅允许受信内网访问搜索接口，并在 Web/WAF 层过滤请求参数中的反引号（`）等 shell 元字符作为临时缓解。"
+remediation = "立即升级 ht://Dig 至 3.2.0b3 或更高版本，该版本已修复 htsearch CGI 对用户输入参数的反引号（backtick）过滤不严问题。如无法升级，应修改 htsearch 脚本源码，对用户传入的 `config`、`restrict`、`format` 等参数中的反引号、$() 等 shell 元字符进行严格转义或拒绝；同时在 Web 服务器（Apache/Nginx）层面禁止对 htsearch CGI 的匿名外部访问，仅允许内网可信 IP 调用，或直接移除该 CGI 程序。ht://Dig 已停止维护，建议迁移至其他活跃的站内搜索方案（如 Apache Solr 或 Meilisearch）。"
 score = 5
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "ht://Dig Group ht://Dig htsearch 任意文件读取漏洞"
+sources = ["epss"]
+title = "ht://Dig Group ht://Dig htsearch 任意文件包含漏洞"
 updated = "2026-06-16T21:51:13.673"
 
 [exploit]
@@ -17,17 +17,17 @@ aliases = ["CVE-2000-0208"]
 ave_id = "AVE-2000-0183"
 
 [meta]
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-21T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/1026",
     "https://www.exploit-db.com/exploits/19785",
-    "https://github.com/CVEProject/cvelistV5/blob/ad13a04165adf44a190b93c89d746f49525e5595/cves/2000/0xxx/CVE-2000-0208.json",
+    "https://github.com/CVEProject/cvelistV5/blob/8ac21ad6117514c2d2073c3d7d77e898bf2697d2/cves/2000/0xxx/CVE-2000-0208.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0208",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-2000-0208.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/72b66ad516faec962399c4214c080517aebc4c11/CVE/data/2000/CVE-2000-0208.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0208.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/be9b320c2a949cb73c32157503bdf6fad99f369e/CVE/data/2000/CVE-2000-0208.json",
     "https://github.com/swimlane/soc-faker/blob/361c4ae88956878fbd8aaf5975044328556dfecd/socfaker/data/alert_names.txt",
     "https://github.com/decal/werdlists/blob/81edb463f7f6311c85defefaf75ac9cd58e5cfb9/exploit-info/symantec-attack-signatures.txt",
     "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/snort/drop-rules/sid-msg.map",
