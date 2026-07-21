@@ -1,0 +1,40 @@
+[basic]
+description = "Linux 内核 FUSE 文件系统驱动在处理 page cache 中的目录项时存在越界写漏洞（CWE-787）。fuse_add_dirent_to_cache() 函数未对由 FUSE 服务器控制的 namelen 字段进行大小校验，仅检查当前页面剩余空间是否足够，忽略了目录项本身可能超过单页大小（4KiB）。攻击者可通过挂载恶意 FUSE 服务器并返回精心构造的 namelen=4095 的超长目录项，触发 memcpy 越界写入后续内核页面 24 字节，造成本地权限提升。该漏洞影响所有使用 4KiB 内存页的 Linux 系统，CVSS 评分 7.8，危害等级高。需升级内核至 6.18.25+ 或 7.0.2+ 版本修复。"
+published = "2026-05-01T14:16:19.133"
+remediation = "升级 Linux 内核至 6.18.25+ 或 7.0.2+ 版本（对应发行版请安装相应安全更新）。如无法立即更新，可剥离 fusermount3 的 setuid 权限并限制非特权用户命名空间创建，或在不需 FUSE 的系统上禁用 FUSE 内核模块（modprobe -r fuse），防止恶意 FUSE 服务器触发越界写。"
+score = 7.8
+severity = "HIGH"
+sources = ["hwpoc"]
+title = "Linux Kernel FUSE page cache 越界写本地提权漏洞"
+updated = "2026-07-02T15:16:59.813"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-31694"]
+ave_id = "AVE-2026-0070"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/474ce83c96a55f2eeb14dee2be375eeadfdacdf5",
+    "https://git.kernel.org/stable/c/51a8de6c50bf947c8f534cd73da4c8f0a13e7bed",
+    "https://git.kernel.org/stable/c/7de93abfaae1b2dc94da8a07a36421bd073f1d8f",
+    "https://github.com/0xCyberstan/CVE-2026-31694-POC",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/f2737ed54bc77e69eee49ea0fc8ad75416232e93/2026/CVE-2026-31694.json",
+    "https://github.com/Threekiii/CVE/blob/4e96ec5c1f919e7ddf89ce2335ced09b058e2b49/2026.05/CVE-2026-31694%EF%BC%9ALinux%20FUSE%20page%20cache%20%E6%9C%AC%E5%9C%B0%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87%E6%BC%8F%E6%B4%9E.md",
+    "https://github.com/xairy/linux-kernel-exploitation/blob/1120e9cea80c6039b8c8151bde6067c2cd76daa4/README.md",
+    "https://github.com/sec-dojo-com/cve-poc/blob/df044812b70860d79ecaa4ed9deebd528d9595d4/pocs/2026/CVE-2026-31694.md",
+    "https://github.com/bottlerocket-os/bottlerocket/blob/ce59f61e34745243624ba6386f41c1b63f9fadac/CHANGELOG.md",
+    "https://github.com/sari3l/Poc-Monitor/blob/d17870d3de3988e949c161d788c25e4dfe158dac/2026/CVE-2026-31694.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2026-31694",
+    "https://github.com/microsoft/msft-linux-cve-analysis/blob/a841a405d027c9fb5457a22ca062dd95b1555c5d/vulns/CVE-2026-31694.yml_reasoning.md",
+    "https://github.com/gelusus/wxvl/blob/edea45bcf3f5f232d6349d094e3ed87f8aba3ba7/doc/2026-07/%E3%80%90%E5%B7%B2%E5%A4%8D%E7%8E%B0%E3%80%91Linux%20FUSE%20page%20cache%20%E6%9C%AC%E5%9C%B0%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87%E6%BC%8F%E6%B4%9E(CVE-2026-31694)%E5%AE%89%E5%85%A8%E9%A3%8E%E9%99%A9%E9%80%9A%E5%91%8A.md",
+    "https://github.com/TMA84/cvealert/blob/39b22452fe579e54bd7f5c66d1416f8c94c190d0/content/posts/cve-2026-31694.md",
+    "https://nvd.nist.gov/vuln/detail/CVE-2026-31694",
+]
