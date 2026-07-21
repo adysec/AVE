@@ -1,70 +1,38 @@
-Looking at the TOML provided, the `remediation` field actually has a lot of content - it seems like there's a very long string with what looks like internal monologue/chain-of-thought embedded in it. The validation says "remediation 字段为空" which might mean the field is considered empty because it's filled with non-remediation content (internal reasoning text).
-Actually, looking more carefully at the TOML, I see the `remediation` field starts with a long multi-line string that contains internal reasoning/thinking text. The validator probably sees this as invalid or empty because the actual remediation content is mixed in with what looks like AI self-talk.
-1. Writing a proper, concise Chinese remediation field
-2. Keeping the rest of the TOML the same
-The vulnerability is about Novell BorderManager 3.0/3.5 Telnet DoS on port 2000. A proper remediation would be:
-- Upgrade to the latest patched version of Novell BorderManager
-- Disable the Telnet proxy service
-- Use firewall rules to restrict access to port 2000
-Looking at the current TOML, the sections are:
-- [basic] - has description, published, remediation, score, severity, sources, title, updated
-- [exploit] - has exp_urls, poc_urls
-- [id] - has aliases, ave_id
-- [meta] - has collected_at, status
-- [references] - has urls
-That looks correct with the 5 required sections.
-Wait, I need to think about this more carefully. The issue says "remediation: remediation 字段为空". Let me re-read the TOML
-Actually, I think the problem is that the `remediation` field value is extremely long and contains what appears to be internal chain-of-thought/thinking text mixed in with the actual remediation. It starts with:
-```
-"""
-This is a very old vulnerability from 2000 - CVE-2000-0152 affecting Novell BorderManager 3.0/3.5. The issue is a DoS via telnet connection to port 2000 by pressing enter key.
-I need to write a remediation suggestion in Chinese, ≥20 characters, specific and actionable
-```
-This looks like the AI's internal reasoning leaked into the output. The actual remediation content is mixed in there but the field is mostly filled with non-remediation content. The validator probably considers this effectively empty or invalid.
-The severity is MEDIUM with score 5, which is valid (MEDIUM≥4).
-Actually, looking at the `sources` field - it says `["epss"]`. That doesn't seem right for a CVE from 2000. The sources should probably be `["cve"]` since the original source is CVE.
-But the instructions say to only fix the problem fields. The only error reported is about remediation being empty. Let me just fix the remediation.
-Wait, let me re-read the requirements more carefully. The user says to check the errored fields and fix them. The only error is:
-```
-[严重] remediation: remediation 字段为空
-```
-So I just need to fix the remediation field. The rest should be fine.
-"升级到 Novell BorderManager 3.5 Service Pack 1a 或更高版本。若无法升级，在防火墙规则中限制仅允许可信 IP 访问 TCP 2000 端口，或在管理控制台中禁用 Telnet 代理服务。建议迁移至受支持的替代产品。"
-This is ≥20 characters, specific, actionable, and in Chinese.
-Now let me output the full TOML with just the remediation field fixed.
-Actually wait - I need to look at the `sources` field more carefully. It says `["epss"]` which seems wrong. But the error doesn't mention this, and the instructions say to only fix errored fields. Let me be conservative and only fix the remediation field.
-Hmm, but also the `remediation` in the original TOML uses a multi-line string with `"""`. The content inside has internal reasoning text that shouldn't be there. Let me replace it entirely with a clean remediation.
-Wait, the user wants me to output it directly, not write to a file. But actually I think outputting it as text would be best. Let me read the file and present it as output.
-Actually, re-reading the instructions: "只输出纯 TOML 正文，不要任何解释/分析/代码块标记". So I should just output the TOML content directly in my response.
-1. Written in Chinese (≥20 characters ✓)
-2. Specific and actionable - mentions upgrade to SP1a, firewall rules to restrict TCP 2000, disabling telnet proxy, migrating to supported alternative
-3. Not using placeholder text like "请参考官方安全公告"
-ave_id = "AVE-2000-0136"
-aliases = ["CVE-2000-0152"]
 [basic]
-title = "Novell BorderManager 3.0/3.5 Telnet 拒绝服务漏洞"
-description = "Novell BorderManager 3.0 及 3.5 版本存在拒绝服务漏洞。远程攻击者可通过 Telnet 协议连接到目标服务器的 2000 端口，仅需按下回车键即可触发该漏洞，导致 BorderManager 服务崩溃或停止响应。攻击无需认证，利用方式简单，危害程度中等。"
+description = "Novell BorderManager 3.0 及 3.5 版本中 Telnet 服务存在拒绝服务漏洞，远程攻击者无需认证即可通过向端口 2000 发起 Telnet 连接并反复按回车键，导致系统代理服务崩溃或资源耗尽，造成服务不可用。该漏洞攻击门槛低，仅需基本的网络连接能力即可触发危害。Novell 官方尚未发布有效补丁，受影响系统面临持续性拒绝服务攻击风险。"
+published = "2000-03-30T05:00:00.000"
+remediation = "升级 Novell BorderManager 至 3.6 或更高版本，或在防火墙层面限制对 2000 端口的 telnet 访问，仅允许受信任 IP 连接。如产品已停止维护，建议迁移至受支持的替代产品并完全禁用 telnet 服务。"
+score = 5
 severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
-published = "2000-03-30"
+sources = ["avd"]
+title = "Novell BorderManager 3.0/3.5 Telnet连接拒绝服务漏洞"
 updated = "2026-06-16T21:51:06.527"
-remediation = "升级到 Novell BorderManager 3.5 Service Pack 1a 或更高版本。若无法升级，在防火墙规则中限制仅允许可信 IP 访问 TCP 2000 端口，或在管理控制台中禁用 Telnet 代理服务。建议迁移至受支持的替代产品。"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0152"]
+ave_id = "AVE-2000-0136"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://www.osvdb.org/7468",
-"http://www.securityfocus.com/bid/976",
-"https://www.exploit-db.com/exploits/19746",
-"https://github.com/CVEProject/cvelistV5/blob/4382b0b8593e7ef30616ab300314afbbf1571636/cves/2000/0xxx/CVE-2000-0152.json",
-"https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0152",
-"https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0152.md",
-"https://github.com/Patrowl/PatrowlHearsData/blob/1d32b25dbea4bacedc1131a8702fa8adcc181eee/CVE/data/2000/CVE-2000-0152.json",
-"https://github.com/github/advisory-database/blob/29756569ae7c866e39492d6faf2dcdff310590f7/advisories/unreviewed/2022/04/GHSA-j87h-5rjf-7jm7/GHSA-j87h-5rjf-7jm7.json",
-"https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0152.json",
+    "http://www.osvdb.org/7468",
+    "http://www.securityfocus.com/bid/976",
+    "https://www.exploit-db.com/exploits/19746",
+    "https://github.com/CVEProject/cvelistV5/blob/6acfb9cecc7e37f5bf14164f693abec3417aeb06/cves/2000/0xxx/CVE-2000-0152.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0152",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0152.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/df56f4cca3ff4a807de70444fbb8d3458b1d46ca/CVE/data/2000/CVE-2000-0152.json",
+    "https://github.com/github/advisory-database/blob/ca4032f687e5627fcf86913a0441b18137902527/advisories/unreviewed/2022/04/GHSA-j87h-5rjf-7jm7/GHSA-j87h-5rjf-7jm7.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0152.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/novell_border_manager.nasl",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_0.list.dict",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001253.txt",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-21T00:00:00Z"
