@@ -1,77 +1,37 @@
-The issues are:
-1. `description` field appears empty (the previous AI generated a messy description with internal thoughts mixed in)
-2. `references` has no valid URLs
-3. `severity` is "MEDIUM" with score 5 - this is actually valid (MEDIUM >= 4), but I should verify the actual CVSS score
-4. `published` and `updated` are "nday" - should be proper dates
-I need to:
-1. Search for accurate info about this LiteLLM SQL injection vulnerability
-2. Fix the description to be clean Chinese
-3. Find proper references
-4. Fix the score/severity if needed
-5. Fix published/updated dates
-Key facts from NVD:
-- CVE-2026-42208
-- CVSS 4.0: 9.3 CRITICAL
-- CVSS 3.1: 9.8 CRITICAL
-- Affects LiteLLM >= 1.81.16, < 1.83.7
-- Fixed in 1.83.7
-- CWE-89: SQL Injection
-- Unauthenticated attacker can inject SQL via Authorization header
-- References:
-- https://github.com/BerriAI/litellm/security/advisories/GHSA-r75f-5x8p-qvmc
-- https://github.com/BerriAI/litellm/releases/tag/v1.83.7-stable
-- https://access.redhat.com/security/cve/CVE-2026-42208
-- https://bugzilla.redhat.com/show_bug.cgi?id=2463965
-- https://www.cisa.gov/known-exploited-vulnerabilities-catalog
-- Published: 2026-05-08
-- In CISA KEV: actively exploited
-So the issues with the TOML:
-1. `description` - the previous generation messed it up with internal thoughts. Need a clean Chinese description.
-2. `published` = "nday" - should be a proper date: "2026-05-08"
-3. `updated` = "nday" - should be "2026-07-14" (from NVD last modified)
-4. `severity` = "MEDIUM" with `score` = 5 - This is WRONG for this CVE. CVSS 3.1 is 9.8 CRITICAL. Should be CRITICAL with score 9.8.
-5. `references.urls` = [] - need to add real URLs
-6. `aliases` only has HWPOC, need to add CVE-2026-42208 and GHSA-r75f-5x8p-qvmc
-Wait, but I need to be careful. The user asked me to fix the TOML. Let me check what the actual HWPOC entry refers to. The HWPOC id is HWPOC-2026-034c822c. This maps to AVE-2026-0188.
-The alias list currently only has ["HWPOC-2026-034c822c"]. I should add the CVE ID and GHSA.
-Key fixes needed:
-1. `title` - already decent Chinese, keep it
-2. `description` - clean it up, make it proper Chinese ≥50 chars
-3. `severity` - should be "CRITICAL" (CVSS 9.8)
-4. `score` - should be 9.8
-5. `published` - "2026-05-08"
-6. `updated` - "2026-07-14"
-7. `remediation` - already good, can keep
-8. `references.urls` - add real URLs from NVD
-9. `aliases` - add CVE-2026-42208 and GHSA-r75f-5x8p-qvmc
-10. `sources` - add "cve" since we now have CVE data
-1. description: The previous output had internal monologue/thinking mixed in. Need clean Chinese description.
-2. published: "nday" → "2026-05-08"
-3. updated: "nday" → "2026-07-14"
-4. severity: "MEDIUM" → "CRITICAL" (CVSS v3.1 is 9.8 CRITICAL)
-5. score: 5 → 9.8
-6. references.urls: [] → add real URLs
-7. aliases: Need to add CVE-2026-42208 and GHSA-r75f-5x8p-qvmc
-8. sources: ["hwpoc"] → ["hwpoc", "cve"]
-9. remediation: It mentions upgrading to 1.83.7 which is correct. Also has the workaround about disable_error_logs. Let me keep it but make it more accurate.
-Wait, the GHSA says Apr 20, 2026 while NVD says May 8, 2026. Let me use NVD's published date since it's the CVE publication date.
-Now let me write the corrected TOML.[id]
-ave_id = "AVE-2026-0188"
-aliases = ["CVE-2026-42208", "GHSA-r75f-5x8p-qvmc", "HWPOC-2026-034c822c"]
 [basic]
-title = "LiteLLM 代理 API 密钥验证中的预认证 SQL 注入漏洞"
 description = "LiteLLM 是一个 AI 网关代理服务器，用于以 OpenAI 兼容格式调用大模型 API。版本 1.81.16 至 1.83.7 之前，代理在验证 API 密钥时直接将攻击者通过 Authorization 头部传入的密钥值拼接到 SQL 查询字符串中，而非作为参数化查询的绑定变量传递。未经认证的远程攻击者可向任意 LLM API 路由（如 POST /chat/completions）发送精心构造的 Authorization 头部，经由代理的错误处理路径触发该漏洞，从而读取甚至修改代理数据库中的敏感数据，包括用户凭据和 API 密钥，进而获得对代理及所管理凭证的未授权访问权限。"
-severity = "CRITICAL"
-score = 9.8
-sources = ["hwpoc", "cve"]
 published = "2026-05-08"
-updated = "2026-07-14"
 remediation = "立即将 LiteLLM 升级至 1.83.7 及以上版本，该版本已将用户输入作为参数化查询的绑定变量而非拼接到 SQL 字符串中修复此漏洞。如无法立即升级，可在 general_settings 中设置 disable_error_logs: true 阻断未认证输入到达脆弱查询的路径。该漏洞已被 CISA KEV 收录并检测到在野利用，应优先处理。"
-[references]
-urls = ["https://github.com/BerriAI/litellm/security/advisories/GHSA-r75f-5x8p-qvmc", "https://github.com/BerriAI/litellm/releases/tag/v1.83.7-stable", "https://nvd.nist.gov/vuln/detail/CVE-2026-42208"]
+score = 9.8
+severity = "CRITICAL"
+sources = [
+    "hwpoc",
+    "cve",
+]
+title = "LiteLLM 代理 API 密钥验证中的预认证 SQL 注入漏洞"
+updated = "2026-07-14"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-42208",
+    "GHSA-r75f-5x8p-qvmc",
+    "HWPOC-2026-034c822c",
+]
+ave_id = "AVE-2026-0188"
+
 [meta]
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-21T00:00:00Z"
+
+[references]
+urls = [
+    "https://github.com/BerriAI/litellm/security/advisories/GHSA-r75f-5x8p-qvmc",
+    "https://github.com/BerriAI/litellm/releases/tag/v1.83.7-stable",
+    "https://nvd.nist.gov/vuln/detail/CVE-2026-42208",
+    "https://access.redhat.com/security/cve/CVE-2026-42208",
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-42208",
+]
