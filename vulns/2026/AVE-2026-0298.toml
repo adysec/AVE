@@ -1,0 +1,42 @@
+[basic]
+description = "Elixir Tesla HTTP 客户端库的 Mint 适配器在 `Tesla.Adapter.Mint.open_conn/2` 函数中，将每个出站请求的 URL 协议方案直接传入 `String.to_atom/1` 转换为 BEAM 原子，且未进行任何白名单校验。由于 BEAM 原子永不回收且原子表上限约为 1,048,576 个条目，攻击者可通过向应用程序提交大量不同协议方案的恶意请求（或利用 FollowRedirects 中间件由攻击者控制的服务器返回新协议方案的 Location 头），每次请求创建一个永久原子，最终耗尽原子表导致 BEAM 虚拟机崩溃，造成拒绝服务。该漏洞影响 tesla 1.3.0 至 1.18.2 版本，CVSS 评分 8.2，危害等级高，已在 1.18.3 版本中修复。"
+published = "2026-06-02T20:16:38.710"
+remediation = '立即将 elixir-tesla/tesla 升级到 1.18.3 或更高版本（`mix.exs` 中 `{:tesla, "~> 1.18.3"}` 后执行 `mix deps.update tesla`）。如无法升级，在调用 `Tesla.get/2` 等函数前对用户输入的 URL 做 scheme 白名单校验（仅允许 `http`/`https`），并移除 `Tesla.Middleware.FollowRedirects` 中间件以防止重定向攻击。'
+score = 8.2
+severity = "HIGH"
+sources = ["ghsa"]
+title = "elixir-tesla tesla Mint适配器原子表耗尽拒绝服务漏洞"
+updated = "2026-07-22T19:10:00.120"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-48597",
+    "GHSA-h74c-q9j7-mpcm",
+]
+ave_id = "AVE-2026-0298"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://cna.erlef.org/cves/CVE-2026-48597.html",
+    "https://github.com/elixir-tesla/tesla/commit/4699c3cb3e2fd6078f99f45f11cf7466aeedbf0e",
+    "https://github.com/elixir-tesla/tesla/security/advisories/GHSA-h74c-q9j7-mpcm",
+    "https://osv.dev/vulnerability/EEF-CVE-2026-48597",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2026/CVE-2026-48597.md",
+    "https://github.com/CVEProject/cvelistV5/blob/60bbc98c39201e6f5661b9e41f1492ce39335948/cves/2026/48xxx/CVE-2026-48597.json",
+    "https://github.com/cisagov/vulnrichment/blob/a538bd81432b918b342e413f43256da1f80b6c0d/2026/48xxx/CVE-2026-48597.json",
+    "https://github.com/elixir-tesla/tesla/blob/dc56717827cf9cd65fca4f331520a9bae02fd544/CHANGELOG.md",
+    "https://github.com/TMA84/cvealert/blob/75714204a4d47ab0def5b37be4839e1beb10bacd/content/posts/cve-2026-48597.md",
+    "https://github.com/sec-dojo-com/cve-poc/blob/9a0b7a19487f40b2e217de2ad9f19cbcad032a8a/pocs/2026/CVE-2026-48597.md",
+    "https://github.com/edoardottt/missing-cve-nuclei-templates/blob/115c94bd1da3cc18977d652d6e78c9f4a5dfc13b/data/year/2026.txt",
+    "https://github.com/erlef-cna/website/blob/c3ea8d6de083cd441e9c6143037548522b280a02/_data/osv/EEF-CVE-2026-48597.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/162c3b701e005dd6b31306e14e932e0271641750/posts/cve-2026-48597-erlang-tesla.html",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f0111a41156462d46f484c055bdeafa69cf38c8e/CVE/data/2026/CVE-2026-48597.json",
+]
