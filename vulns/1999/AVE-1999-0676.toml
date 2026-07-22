@@ -1,44 +1,27 @@
-1. `remediation` field is marked as empty - looking at the TOML, the remediation field has a very long value that starts with "The user wants me to generate" which is clearly AI reasoning text, not actual remediation content. The actual remediation content is embedded within that long string. I need to clean this up to just the actual remediation text.
-2. The `score` is 5 and `severity` is "MEDIUM" - this is correct per the rules (MEDIUM≥4).
-3. The `published` field has a time component - should be just date "1999-10-25".
-4. The `updated` field has a time component - should be just date.
-5. The `sources` field only has `["epss"]` - needs at least one proper source.
-Actually, looking at the remediation field more carefully, it's a mess. The value starts with "The user wants me to generate" which is clearly AI internal monologue. I need to extract just the actual remediation content and clean it up.
-1. remediation field is empty - The remediation field in the TOML has a very long string that starts with "The user wants me to generate" - this is clearly an AI thinking/scratchpad that leaked into the output. The actual remediation content is buried inside this. I need to clean this up to a proper remediation text.
-2. sources - Currently `["epss"]` which is wrong. Should be `["cve"]` since this is from CVE.
-3. published - Currently `"1999-10-25T04:00:00.000"` - should be just date `"1999-10-25"` per schema.
-4. updated - Currently `"2026-06-16T21:49:15.453"` - should be date only `"2026-06-16"`.
-5. score = 5, severity = "MEDIUM" - This is correct per CVSS v2 (5.0 MEDIUM).
-6. remediation - The field contains a huge AI thinking dump. I need to extract just the actual remediation content. The actual remediation content starts after all the thinking and is:
-"Zeus Web Server 已停止维护多年，建议立即迁移至受支持的 Web 服务器（如 Apache/Nginx）。如暂时无法迁移，应在防火墙层面严格限制管理接口（默认端口 9090/TCP）的访问来源 IP，仅允许受信任的管理网段连接，并启用 TLS 加密传输管理流量。同时将管理密码更换为高强度复杂密码，避免使用弱加密存储。"
-But wait, the error says "remediation: remediation 字段为空" - this is because the TOML parser sees the remediation value as starting with a multi-line string that begins with "The user wants me to generate" which is not valid remediation content. The actual remediation content is there but buried in AI thinking text.
-Also, the urls list has many GitHub links that are just mirrors of CVE data - I should keep the authoritative ones (osvdb, securityfocus, xforce) and remove the GitHub mirror links to keep it clean.
-1. remediation - clean up to just the actual remediation text
-2. sources - change to `["cve"]`
-3. published - change to `"1999-10-25"`
-4. updated - change to `"2026-06-16"`
-5. urls - clean up to keep only authoritative references
-Actually, looking more carefully at the remediation field, the entire content from `"""` to `"""` is the value. The TOML parser would see this as a valid multi-line string. But the error says "remediation 字段为空" - maybe the Rust parser is checking that the remediation content is meaningful (not just AI thinking text). Let me replace the entire remediation with just the actual remediation advice.
-ave_id = "AVE-1999-0676"
-aliases = ["CVE-1999-0884"]
 [basic]
-title = "Zeus Web Server 管理接口弱密码加密漏洞"
-description = "Zeus Web Server 管理接口使用弱加密算法对用户密码进行加密存储，远程攻击者可通过网络嗅探或暴力破解方式获取管理员凭据，进而登录管理后台获取服务器完全控制权限。该漏洞影响 Zeus Web Server 多个版本，攻击无需身份认证，危害较大。"
+description = "Solaris 2.6 系统中的 sdtcm_convert 工具在处理临时文件时未正确检查符号链接，本地攻击者可通过创建恶意符号链接诱使 sdtcm_convert 覆盖任意系统文件，导致权限提升或系统文件被破坏。攻击者需要拥有本地账号权限。"
+published = "1999-08-09"
+remediation = "应用 Sun 官方补丁或升级到 Solaris 7 及以上版本；如无法升级，移除 sdtcm_convert 的 setuid 位并使用 nosuid 挂载选项限制临时目录的符号链接攻击面。"
+score = 4.6
 severity = "MEDIUM"
-score = 5.0
 sources = ["cve"]
-published = "1999-10-25"
+title = "Sun Solaris 2.6 sdtcm_convert 符号链接攻击漏洞"
 updated = "2026-06-16"
-remediation = "Zeus Web Server 已停止维护多年，建议立即迁移至受支持的 Web 服务器（如 Apache/Nginx）。如暂时无法迁移，应在防火墙层面严格限制管理接口（默认端口 9090/TCP）的访问来源 IP，仅允许受信任的管理网段连接，并启用 TLS 加密传输管理流量。同时将管理密码更换为高强度复杂密码，避免使用弱加密存储。"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-0676"]
+ave_id = "AVE-1999-0676"
+
+[meta]
+collected_at = "2026-07-22T10:02:43.548217086+00:00"
+status = "completed"
+
 [references]
 urls = [
-"http://www.osvdb.org/8186",
-"http://www.securityfocus.com/bid/742",
-"https://exchange.xforce.ibmcloud.com/vulnerabilities/3833",
+    "http://www.securityfocus.com/bid/575",
+    "http://www.securityfocus.com/templates/archive.pike?list=1&msg=19990809134220.A1191%40hades.chaoz.org",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-18T00:00:00Z"
