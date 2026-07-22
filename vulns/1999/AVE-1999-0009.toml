@@ -1,11 +1,11 @@
 [basic]
-description = "GNU C 库（glibc）2.2 之前版本的 tdelete 函数在删除树根节点时未明确说明返回值类型，导致开发者无法正确判断操作结果，从而可能访问悬空指针。攻击者可利用此缺陷绕过安全检查或触发程序崩溃，影响所有依赖 glibc 的 Linux 系统及应用。该漏洞源于对返回值未加检查（CWE-252），CVSS 评分 9.8，危害等级严重。"
+description = "GNU C 库（glibc）2.2 版本之前的 `tdelete` 函数存在未检查返回值漏洞。由于文档 `manual/search.texi` 缺少关于删除二叉查找树根节点时返回值的明确说明，开发者可能未正确处理该返回值，进而访问已释放的悬挂指针，导致内存破坏、程序崩溃或敏感信息泄露。攻击者可通过操控树结构触发此缺陷，影响所有依赖旧版本 glibc 的应用。该漏洞 CVSS 评分 9.8，危害等级严重。"
 published = "2020-10-06T13:15:13.087"
-remediation = "升级 GNU C Library (glibc) 至 2.2 及以上版本，该版本已明确定义 tdelete 函数在删除树根节点时的返回值。开发者应在调用 tdelete 后始终检查返回值是否为 NULL，避免使用悬空指针。无法立即升级的应用可通过静态代码扫描工具（如 cppcheck）检测 tdelete 返回值未检查的模式。临时缓解措施可结合内存安全防护机制（如 AddressSanitizer）在开发阶段捕获此类缺陷。"
+remediation = "升级 GNU C Library (glibc) 至 2.2 或更高版本，该版本已在文档中明确注明 tdelete() 删除根节点时返回值为未定义。开发者应在调用 tdelete() 后始终检查返回值是否为 NULL，避免解引用悬空指针。如无法升级 glibc，应在应用层对 tdelete() 返回的指针做 NULL 判等处理，并避免依赖删除根节点后的返回值。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["epss"]
-title = "GNU glibc 未加检查的返回值漏洞"
+sources = ["osv"]
+title = "GNU glibc tdelete 返回值未检查漏洞"
 updated = "2026-06-16T21:47:53.723"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0199"]
 ave_id = "AVE-1999-0009"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,4 +25,14 @@ urls = [
     "https://ftp.gnu.org/gnu/glibc/glibc-2.2.tar.gz",
     "https://github.com/bminor/glibc/commit/2864e767053317538feafa815046fff89e5a16be#diff-94e8c502f255fdfc346df0e29fd4ef40",
     "https://www.cee.studio/tdelete.html",
+    "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/1999/CVE-1999-0199.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4e452a37e644e8194f1171b7eec1f7dc625b6526/cves/1999/0xxx/CVE-1999-0199.json",
+    "https://github.com/exein-io/kepler/blob/acb566a88795464de78b4a1859800346c6b83f62/domain-db/src/db/fixtures/single_CVE-1999-0199.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d880529b2028116bddf6c732baf8f599b169f01e/CVE/data/1999/CVE-1999-0199.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0199.md",
+    "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-7hm4-28mg-fmp9/GHSA-7hm4-28mg-fmp9.json",
+    "https://github.com/u91738/cvematch/blob/7df60a9d96ed605cdff87e97361966832915c18d/README.md",
+    "https://github.com/VanceLongwill/cve_data_analysis/blob/58e80fc4858f0505560159e26179aaa337f7dc76/yearly.py",
+    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/1999.tsv",
+    "https://github.com/euisuh/CVEFixesUtil/blob/80553ecb562dae14f0d21a3addfd789e14f1bd3c/main.ipynb",
 ]
