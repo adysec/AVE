@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "检测 WordPress Mapplic（≤6.1）及 Mapplic Lite（≤1.0）插件是否存在。通过读取插件 readme.txt 获取版本号，若版本低于修复版本则判定存在 SSRF 转 XSS 漏洞。攻击者可利用 SSRF 请求恶意 SVG 文件触发 XSS。"
+id = "POC-AVE-2012-0008"
+name = "WordPress Mapplic / Mapplic Lite 插件 SSRF 转 XSS 漏洞检测"
+severity = "high"
+tags = ["ave-2012-0008"]
+vuln_id = [
+    "CVE-2012-10018",
+    "AVE-2012-0008",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wp-content/plugins/mapplic/readme.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["mapplic"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wp-content/plugins/mapplic-lite/readme.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["mapplic-lite"]
