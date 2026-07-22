@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 mlx5e 驱动在处理封装锁（encap lock）时存在空指针解引用漏洞。当模块卸载过程中仍有对等 tc 流处于 offload 状态时，上游链路 rep 配置文件切换为 nic 配置导致 neigh encap 锁被销毁；后续 VF 代表网卡注销触发非对等 tc 流删除，进而级联删除对等流。对等流删除过程会尝试获取已被销毁的 encap 锁，触发空指针解引用导致内核崩溃。本地攻击者可通过构造特定的 tc 流卸载配置触发此漏洞，造成拒绝服务。该漏洞影响 Linux 内核中 Mellanox mlx5 网卡驱动相关版本，CVSS 评分 5.5，危害等级中危。"
+published = "2025-05-02T16:15:29.430"
+remediation = "将 Linux 内核升级至 6.1.21、6.2.8 或更高版本，其中已合入清理 mlx5e tc eswitch 时清除 peer flow 的修复补丁（commit c9668f0b1d28 / b7350f8dbe0c2）。如无法立即升级内核，可卸载 mlx5_core 模块前先移除所有 tc flower 流表规则避免触发释放后空指针解引用。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel mlx5e 网卡驱动封装锁清理空指针解引用漏洞"
+updated = "2026-06-17T06:44:18.430"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2023-53105"]
+ave_id = "AVE-2023-0365"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/01fdaea410787fe372daeaeda93a29ed0606d334",
+    "https://git.kernel.org/stable/c/b7350f8dbe0c2a1d4d3ad7c35b610abd3cb91750",
+    "https://git.kernel.org/stable/c/c9668f0b1d28570327dbba189f2c61f6f9e43ae7",
+    "https://github.com/CVEProject/cvelistV5/blob/0e6d432d517e5cdf9829125ecfaa3a6437985a0c/cves/2023/53xxx/CVE-2023-53105.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2023/CVE-2023-53105.yaml",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2023-53105",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2023-53105.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2023-53105.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6a25a9384d7c18dfb53a1d1532073678a2c29fe5/CVE/data/2023/CVE-2023-53105.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2023-53105.html",
+    "https://github.com/github/advisory-database/blob/a96652a2a06e880f217d1d6526622d8501dbbd69/advisories/unreviewed/2025/05/GHSA-w3vx-37cc-jxmm/GHSA-w3vx-37cc-jxmm.json",
+    "https://github.com/keryanchpn/ia-data/blob/534363d1afb19db8eaf67f9cab2c9be27811247b/data_fallback/data/first/CVE-2023-53105",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--787462f9-9e07-4736-8cb8-d0360f12a843.json",
+]
