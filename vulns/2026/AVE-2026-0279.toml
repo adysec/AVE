@@ -1,34 +1,76 @@
-[basic]
-description = 'Decidim 开源参与式民主平台的"下载你的数据"功能存在不安全的直接对象引用漏洞。用户请求导出后，Decidim 端点正确校验了当前用户身份，但随后重定向到 Active Storage blob URL，该签名 URL 未绑定用户会话或一次性令牌，导致获得该链接的任何人都可在无需认证的情况下重复下载私密导出文件。攻击者可通过浏览器历史、日志、代理工具、截图、支持工单等渠道截获链接，从而访问敏感个人数据。CVSSv3 评分 6.5，攻击向量为网络远程、低复杂度、无需权限但需用户交互。'
-published = "2026-07-13"
-remediation = "升级 Decidim 至 v0.30.9、v0.31.5 或 v0.32.0 及以上版本，这些版本已通过引入 PrivateDownload 控制器使用 send_data 方法替代直接 Active Storage 重定向，为导出文件添加了访问控制校验。如无法立即升级，可在反向代理层为 /rails/active_storage/blobs/ 路径添加访问令牌校验，或配置 Active Storage 使用短期过期签名 URL（如 5 分钟），阻止泄露的链接被长期重放利用。"
-score = 6.5
-severity = "MEDIUM"
-sources = [
-    "ghsa",
-    "cve",
-]
-title = "Decidim 私有导出可重放链接信息泄露漏洞"
-updated = "2026-07-22"
-
-[exploit]
-exp_urls = []
-poc_urls = []
-
 [id]
-aliases = [
-    "CVE-2026-45377",
-    "GHSA-767h-63j4-5226",
-]
 ave_id = "AVE-2026-0279"
+aliases = ["CVE-2026-45377","GHSA-767h-63j4-5226"]
 
-[meta]
-collected_at = "2026-07-22T00:00:00Z"
-status = "completed"
+[basic]
+title = "Decidim: Private exports can be downloaded through reusable links"
+description = "## Description
+
+The normal `download_your_data` flow requires the requester to be logged in as the export owner, but the resulting Active Storage blob redirect URL can be replayed without authentication by anyone who obtains it.
+
+## Technical description
+ 
+This private export flow turns an authenticated, user-scoped download into a reusable bearer link because the protected Decidim endpoint redirects to the underlying Active Storage blob URL. `Decidim::DownloadYourDataController#download_file` correctly scopes the export record to `current_user`, so the wrapper route itself is not directly accessible to another user. However, once the owner
+performs that authenticated GET request, the response redirects to a signed Active Storage URL that is no longer bound to the user session. Anyone who learns that URL can replay it and retrieve the file without being logged in as the export owner.
+
+Because the blob redirect URL is delivered through a GET request and appears in the redirect chain, it is more likely to leak through browser history, logs, proxy tooling, screenshots, copied links, support transcripts, or other client-side handling of URLs.
+
+Reproduction steps:
+
+Step 1. Generate or locate a completed export in the Web UI.
+1. Sign in as `user@example.org` at `http://localhost:3001/users/sign_in`.
+2. Open `http://localhost:3001/download_your_data`.
+3. Request a new export from the page and wait until the export becomes downloadable.
+4. Open the completed export entry from the list and copy its wrapper URL, for example `http://localhost:3001/download_your_data/download?uuid=07286e61-932d-46d4-bd74-bcd1340c503f `.
+
+Step 2. Download through the authenticated wrapper route.
+1. While still signed in as user@example.org, open the wrapper URL in the browser.
+2. Confirm that this Decidim route requires the owner session and is not directly usable when logged out or when logged in as another user.
+
+Step 3. Capture the final bearer URL in the redirect chain.
+
+1. In DevTools Network or Burp, inspect the redirect sequence for the wrapper request.
+2. Copy the Active Storage redirect URL, typically matching `http://localhost:3001/rails/active_storage/blobs/redirect/<SIGNED_ID>/<FILENAME>`.
+3. Note that the Active Storage redirect URL is no longer protected by the Decidim ownership check.
+
+Step 4. Replay the final file URL without authentication.
+1. Open a private window or separate browser with no Decidim session.
+2. Paste the copied `http://localhost:3001/rails/active_storage/blobs/redirect/<SIGNED_ID>/<FILENAME>` URL.
+3. Confirm the export file still downloads even though you are not logged in as the export owner.
+
+### Impact
+
+Personal data exports can be retrieved through leakage channels such as browser history, logs, referrers, screenshots, copied links, support transcripts, intercepted email content, or other client-side disclosure of the GET URL.
+
+### Patches
+
+See https://github.com/decidim/decidim/pull/16680 
+
+### Workarounds
+
+Disable Private Downloads URLs
+
+### Reference
+
+OWASP A01:2021 Broken Access Control
+
+### Credits
+
+This issue was discovered in a security audit organized by the [Decidim Association](https://decidim.org) and made by [Radically Open Security](https://www.radicallyopensecurity.com/) against Decidim financed by [NGI](https://ngi.eu/)."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
 
 [references]
-urls = [
-    "https://github.com/decidim/decidim/security/advisories/GHSA-767h-63j4-5226",
-    "https://github.com/decidim/decidim/pull/16680",
-    "https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2026/07/GHSA-767h-63j4-5226/GHSA-767h-63j4-5226.json",
-]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T17:46:50.275366644+00:00"
