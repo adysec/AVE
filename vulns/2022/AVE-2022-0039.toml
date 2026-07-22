@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核网络子系统中 udpv6_sendmsg 函数与 `__ip6_datagram_connect` 函数之间存在数据竞争（data race）漏洞。当 UDP 套接字在调用 sendmsg 发送数据时，会无锁读取 `sk->sk_bound_dev_if` 字段，而此时另一线程可能通过 connect 系统调用并发写入该字段，导致读取到不一致的数据。该漏洞由内核并发消毒器（KCSAN）检测发现，可能引发未定义行为或内存访问异常。攻击者可通过精心构造的多线程程序触发竞争条件，在特定场景下造成信息泄露或系统不稳定。影响 Linux 内核版本，CVSS 评分 5.5，危害等级中危。"
+published = "2025-02-26T07:01:18.440"
+remediation = "将 Linux 内核升级至 5.18.3 或更高版本（含对应 stable 分支补丁），补丁提交为 4c971d2f3548 和 20b2f6179787。若无法立即更新，可通过内核启动参数 `kcsan.enabled=0` 临时关闭 KCSAN 检测以消除告警，但这仅为排查手段，长期仍需升级内核彻底修复。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel UDP sk_bound_dev_if 条件竞争漏洞"
+updated = "2026-06-17T05:18:00.173"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49420"]
+ave_id = "AVE-2022-0039"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/20b2f61797873a2b18b5ff1a304ad2674fa1e0a5",
+    "https://git.kernel.org/stable/c/4c971d2f3548e4f11b1460ac048f5307e4b39fdb",
+    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2022/49xxx/CVE-2022-49420.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49420.yaml",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49420",
+    "https://github.com/KaweGG/vulnerability_tracker/blob/01de5763b71f6c005791d4aa8121132990782604/cves/CVE-2022-49420.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6962d12e25fbf447fb7ec00c59de25f9ba4e2a94/CVE/data/2022/CVE-2022-49420.json",
+    "https://github.com/github/advisory-database/blob/60cf806ffc57d6909f887b4f3823ae39ed0d7c51/advisories/unreviewed/2025/10/GHSA-h3wv-rxr8-rgrg/GHSA-h3wv-rxr8-rgrg.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2022-49420.html",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2022-49420",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2022-49420.md",
+    "https://github.com/microsoft/AzureLinuxVulnerabilityData/blob/f446e11135d45cb1643208c82d3c441bd9ae1832/osv/AZL-68621.json",
+]
