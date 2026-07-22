@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 BPF 子系统中存在逻辑缺陷，当启用 JIT 随机化（blinding）功能且 BPF 程序中包含指向子程序的指针时，JIT 编译过程未正确识别 ld_imm64 这类特殊指令（其操作数非用户可控常量），导致对它们进行了不必要的随机化处理。此问题在首次 JIT 阶段触发后，使得后续 JIT 子程序阶段无法正确调整这些指令的地址引用，从而在内核态引发页面错误导致系统崩溃。本地攻击者可通过加载特制的 BPF 程序触发此漏洞，造成拒绝服务。"
+published = "2025-02-26T07:01:31.040"
+remediation = "建议将 Linux 内核升级至 5.17.13（5.17.x 分支）、5.18.2（5.18.x 分支）或 5.19 及以上版本，内核中已合入对应修复补丁（commit 4b6313cf99b0、a029b02b47dd、d106a3e96fca）。如无法立即升级，可关闭 BPF JIT 盲化功能作为临时缓解措施：将 `/proc/sys/net/core/bpf_jit_enable` 设为 0 并设置 `bpf_jit_harden=0`，但会导致 eBPF 性能下降。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel BPF JIT盲化与子程序指针组合拒绝服务漏洞"
+updated = "2026-06-17T05:18:25.827"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49552"]
+ave_id = "AVE-2022-0056"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/4b6313cf99b0d51b49aeaea98ec76ca8161ecb80",
+    "https://git.kernel.org/stable/c/a029b02b47dd5bb87a21550d9d9a80cb4dd3f714",
+    "https://git.kernel.org/stable/c/d106a3e96fca30e44081eae9c27aab28fc132a46",
+    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2022/49xxx/CVE-2022-49552.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49552.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2022-49552",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2022-49552.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f85df5a91c5446a7fcdf9094db67818508b32b7c/CVE/data/2022/CVE-2022-49552.json",
+    "https://github.com/github/advisory-database/blob/60cf806ffc57d6909f887b4f3823ae39ed0d7c51/advisories/unreviewed/2025/10/GHSA-hg9m-frc8-4qpx/GHSA-hg9m-frc8-4qpx.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2022-49552.html",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49552",
+    "https://github.com/microsoft/AzureLinuxVulnerabilityData/blob/f446e11135d45cb1643208c82d3c441bd9ae1832/osv/AZL-68687.json",
+    "https://github.com/sfX-android/automation_scripts/blob/31ea3918bf444b85e03796e19b5377a53835812b/roles/axp/common/templates/cve_excludes/kernel_sony_sdm660.j2",
+]
