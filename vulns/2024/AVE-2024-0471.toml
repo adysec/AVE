@@ -1,41 +1,28 @@
-The error is that one of the URLs in the references section is a placeholder/not a real reference. I need to remove that URL. Let me also check the other issues.
-The specific error is:
-- `references` contains a URL that is a placeholder: `https://github.com/NetBSD/pkgsrc-wip/blob/e102c59531a200634a7963d414d2aea84124389b/py-cloud-init/TODO`
-I need to remove that URL. Let me also check the overall TOML for any other issues:
-1. The `[basic]` section has `sources = ["msrc"]` - this should probably be `["cve"]` since it's a CVE. But the error report didn't flag this, so I'll leave it.
-2. The `published` field has a timestamp format - let me check if it should be just a date. The schema says `published = "2024-01-01"` format. But the error report didn't flag this.
-3. The `updated` field also has a timestamp format.
-Actually, looking more carefully at the error, it says the URL contains a placeholder. The URL `https://github.com/NetBSD/pkgsrc-wip/blob/e102c59531a200634a7963d414d2aea84124389b/py-cloud-init/TODO` - the `TODO` at the end suggests this is a TODO file, not a real reference. I should remove this URL.
-1. [严重] references: 引用 URL 包含占位符: https://github.com/NetBSD/pkgsrc-wip/blob/e102c59531a200634a7963d414d2aea84124389b/py-cloud-init/TODO
-This is the only error. I need to remove that URL from the urls list. The rest of the TOML looks fine based on the schema rules. Let me just output the corrected TOML.[id]
-ave_id = "AVE-2024-0471"
-aliases = ["CVE-2024-11584"]
 [basic]
-title = "Canonical cloud-init hotplugd 套接字权限设置不当漏洞"
-description = "cloud-init 通过 25.1.2 版本中，systemd socket 单元 `cloud-init-hotplugd.socket` 默认 `SocketMode` 设置为 0666，导致该 socket 文件全局可写。本地低权限攻击者可向 "/run/cloud-init/hook-hotplug-cmd" FIFO 写入恶意数据，触发 hotplug-hook 命令，以 root 权限执行任意操作。该漏洞影响所有使用受影响版本 cloud-init 的 Linux 发行版，CVSS 评分 5.9，危害中等。建议立即将 SocketMode 修改为更严格的权限值。"
-severity = "MEDIUM"
-score = 5.9
-sources = ["cve"]
+description = "cloud-init 至 25.1.2 版本中，systemd socket 单元 cloud-init-hotplugd.socket 默认 SocketMode 设置为 0666，导致 /run/cloud-init/hook-hotplug-cmd FIFO 文件全局可写。本地低权限攻击者可向该 FIFO 写入恶意载荷触发 hotplug-hook 命令，以 root 权限执行任意操作。该漏洞影响所有使用受影响版本 cloud-init 的 Linux 发行版，危害中等。"
 published = "2025-06-26T10:15:24.703"
+remediation = "立即升级 cloud-init 至 25.1.3 及以上版本（apt upgrade cloud-init 或从 GitHub 拉取最新源码编译安装）。如无法立即升级，编辑 systemd 单元覆盖文件 /etc/systemd/system/cloud-init-hotplugd.socket.d/override.conf 添加 SocketMode=0640，执行 systemctl daemon-reload && systemctl restart cloud-init-hotplugd.socket 后核查 /run/cloud-init/ 下 FIFO 文件权限。"
+score = 5.9
+severity = "MEDIUM"
+sources = ["cve"]
+title = "Canonical cloud-init hotplugd 套接字权限设置不当漏洞"
 updated = "2026-06-17T06:58:00.843"
-remediation = "立即升级 cloud-init 至 25.1.3 及以上版本（通过包管理器 apt upgrade cloud-init 或从 GitHub 拉取最新源码编译安装）。如无法立即升级，编辑 systemd 单元覆盖文件 /etc/systemd/system/cloud-init-hotplugd.socket.d/override.conf，添加 SocketMode=0640，然后执行 systemctl daemon-reload && systemctl restart cloud-init-hotplugd.socket。注意核查 /run/cloud-init/ 目录下 FIFO 文件权限，确保非 root 用户无法写入。"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-11584"]
+ave_id = "AVE-2024-0471"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"https://github.com/canonical/cloud-init/pull/6265/commits/6e10240a7f0a2d6110b398640b3fd46cfa9a7cf3",
-"https://github.com/canonical/cloud-init/releases/tag/25.1.3",
-"https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-11584.md",
-"https://github.com/CVEProject/cvelistV5/blob/bf570d3b8e47bf0003b46684217cf02c76e2c7f4/cves/2024/11xxx/CVE-2024-11584.json",
-"https://github.com/open-edge-platform/edge-microvisor-toolkit/blob/84e7ae47f14035508805838ccc3a113644857e14/SPECS/cloud-init/CVE-2024-11584.patch",
-"https://github.com/canonical/ubuntu-security-notices/blob/fd5a60b9d722f22d25e3006c20222fbaba7000b5/osv/cve/2024/UBUNTU-CVE-2024-11584.json",
-"https://github.com/neuvector/vul-source/blob/27dcc23268ea595c1e22ac2008b340bb4e848cb2/ubuntu-cve-tracker/retired/CVE-2024-11584",
-"https://github.com/cisagov/vulnrichment/blob/6d175f59444084675ba336cc9e2bc51fc5338e6d/2024/11xxx/CVE-2024-11584.json",
-"https://github.com/canonical/cloud-init/blob/bd85f29dca80e64595caba5a75cfef547500a3ea/ChangeLog",
-"https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-11584.md",
-"https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/02/18/seguranca/cve-2024-11584-cloud-init-through-2512-includes-th-1771405708000.md",
+    "https://github.com/canonical/cloud-init/pull/6265/commits/6e10240a7f0a2d6110b398640b3fd46cfa9a7cf3",
+    "https://github.com/canonical/cloud-init/releases/tag/25.1.3",
+    "https://nvd.nist.gov/vuln/detail/CVE-2024-11584",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-22T00:00:00Z"
