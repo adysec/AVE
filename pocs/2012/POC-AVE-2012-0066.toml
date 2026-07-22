@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "通过HTTP服务托管恶意Java Applet，利用AtomicReferenceArray类型混淆绕过Java沙箱，验证目标是否存在CVE-2012-0507漏洞。受害者访问PoC页面时，Java Applet尝试利用类型违规逃逸沙箱，检测到漏洞存在则返回特定标识。"
+id = "POC-AVE-2012-0066"
+name = "Oracle Java SE AtomicReferenceArray 类型违规远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2012-0066"]
+vuln_id = [
+    "CVE-2012-0507",
+    "AVE-2012-0066",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/CVE-2012-0507.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "AtomicReferenceArray",
+    "CVE-2012-0507",
+]
