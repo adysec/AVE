@@ -1,28 +1,62 @@
-[id]
-- Then [meta]
-- Then [references]
-This is malformed - there are duplicate sections. The correct structure should be:
-[id]
-[basic]
-[references]
-[exploit]
-[meta]
-The ave_id should be "AVE-2000-0190" (from the task description).
-Now for remediation - since SCO UnixWare 7.x is end-of-life, the specific remediation would be:
-1. Remove the setuid bit from the cu binary: `chmod u-s /usr/bin/cu`
-2. Restrict local access to trusted users only
-3. Migrate to a supported operating system
+CVE-2000-0215 is a vulnerability in SCO UnixWare. Let me search for details.Let me analyze the information from NVD:
+- CVE-2000-0215: Vulnerability in SCO cu program in UnixWare 7.x allows local users to gain privileges.
+- CVSS v2.0: Base Score 7.2 HIGH, Vector: (AV:L/AC:L/Au:N/C:C/I:C/A:C)
+- Published: 02/08/2000
+- Reference: http://www.securityfocus.com/bid/1019
+- CWE: NVD-CWE-Other (Other)
+Now let me fix the TOML:
+1. description: Need to write a Chinese description ≥50 chars about the SCO cu program vulnerability in UnixWare 7.x allowing local privilege escalation.
+2. published: "2000-02-08"
+3. remediation: Need specific advice since SCO UnixWare 7.x is very old (2000), the product is discontinued. I can mention upgrading to a supported version or applying vendor patches.
+4. score: CVSS v2.0 Base Score 7.2, which is HIGH. So severity = "HIGH" and score = 7.2
+5. sources: Add "cve" since we have info from NVD
+6. references: Add the securityfocus URL
+7. updated: Set to appropriate date
+For score 7.2, severity should be HIGH (≥7.0).
+Actually, for a 2000 vulnerability in UnixWare 7.x (which is long discontinued), the practical remediation is to apply vendor patches. Since SCO UnixWare 7.x is discontinued/end-of-life, the recommendation would be to upgrade to a supported platform.
+The CVSS v2 score is 7.2 with vector (AV:L/AC:L/Au:N/C:C/I:C/A:C). This means:
+- Access Vector: Local
+- Access Complexity: Low
+- Authentication: None
+- Confidentiality: Complete
+- Integrity: Complete
+- Availability: Complete
+This is a local privilege escalation vulnerability.
+CVE-2000-0215:
+- Description: "Vulnerability in SCO cu program in UnixWare 7.x allows local users to gain privileges."
+- CVSS 2.0: 7.2 HIGH, Vector: (AV:L/AC:L/Au:N/C:C/I:C/A:C)
+- Published: 02/08/2000
+- Last Modified: 06/16/2026
+- References: http://www.securityfocus.com/bid/1019
+- CWE: Other (NVD-CWE-Other)
+- Affected: SCO UnixWare 7.x
+Now let me construct the correct TOML:
+For CVSS v2, score is 7.2, severity is HIGH (≥7.0). But the original has severity MEDIUM with score 5. I need to fix this.
+Actually, wait - the source says "avd" not "cve". But the CVE ID is CVE-2000-0215. I should use the actual NVD data.
+The original had:
+- score = 5 (wrong, should be 7.2 based on NVD CVSS v2)
+- severity = "MEDIUM" (wrong, should be HIGH)
+- description = "" (needs to be filled)
+- published = "" (should be "2000-02-08")
+- updated = "" (should be "2024-11-20" or the NVD modified date)
+- urls = [] (needs url from NVD: http://www.securityfocus.com/bid/1019)
+- remediation = generic text about "请参考官方安全公告" (needs specific fix)
+For the remediation, since this is an old SCO UnixWare 7.x vulnerability from 2000, the vendor (SCO) has likely stopped supporting this product. I shouldn't make up a version number. I can suggest upgrading or applying vendor patches.
+Actually, let me reconsider the score. NVD has CVSS v2 score of 7.2. But should I use that? The original schema says score should be 0.1~10.0. CVSS v2 7.2 maps to HIGH severity. I'll use 7.2.
+For published date: NVD says "Published Date: 02/08/2000" - that's 2000-02-08.
+For updated: The last modified date could be 2024-11-20 (when CVE modified by MITRE) or 2026-06-16.
+The remediation should be specific. Since this is an old SCO UnixWare vulnerability, the fix would be to apply SCO's security patches or upgrade. I'll write something reasonable without inventing specific version numbers.
 ave_id = "AVE-2000-0190"
 aliases = ["CVE-2000-0215"]
 [basic]
-title = "SCO UnixWare cu 本地权限提升漏洞"
-description = "SCO UnixWare 7.x 系统中的 cu 串行通信程序存在安全漏洞。cu 程序以 setuid root 权限运行，在处理特制命令行参数时未能正确验证用户输入，导致本地攻击者可通过向 cu 程序传递恶意参数触发权限提升，从而获得 root 权限。攻击者需要拥有系统本地访问权限，无需额外认证即可完全控制系统。"
+title = "SCO UnixWare 7.x cu 程序本地权限提升漏洞"
+description = "SCO UnixWare 7.x 系统中的 cu 程序存在安全漏洞，本地用户可利用该程序的特权缺陷获取系统高级权限，导致机密性、完整性和可用性完全丧失。攻击者需拥有本地访问权限，无需认证即可利用。"
 severity = "HIGH"
 score = 7.2
-sources = ["cve"]
+sources = ["cve", "avd"]
 published = "2000-02-08"
-updated = "2024-06-16"
-remediation = "SCO 已针对此漏洞发布安全补丁，建议升级到最新版本。由于 UnixWare 7.x 已停止官方支持，建议迁移到受支持的操作系统平台，或严格限制不可信用户对系统的本地访问权限，并移除 cu 程序的 setuid 位以降低风险。"
+updated = "2024-11-20"
+remediation = "建议升级到 SCO 官方发布的安全补丁版本，限制 cu 程序的 suid 权限，或迁移至受支持的操作系统版本。"
 [references]
 urls = ["http://www.securityfocus.com/bid/1019"]
 [exploit]
@@ -30,4 +64,4 @@ poc_urls = []
 exp_urls = []
 [meta]
 status = "completed"
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-22T06:45:47.567611578+00:00"
