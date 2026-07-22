@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核的 Ceph 文件系统存在死锁漏洞，当客户端以 wsync 模式挂载后，创建 O_RDWR 文件时 inline_version 被错误初始化为 1，随后立即进行缓冲写入操作时，客户端已持有 Fwb  caps 锁并等待 getattr(Fsr) 请求完成，而 MDS 节点间因文件锁状态转换需要回收 Fxwb caps，形成循环等待导致死锁。本地攻击者可通过构造特定的文件操作序列触发此漏洞，造成系统拒绝服务。该漏洞影响 Linux 内核 Ceph 文件系统模块，CVSS 评分 5.5，危害等级中等。"
+published = "2025-02-26T07:01:06.433"
+remediation = "将 Linux 内核升级至 5.18.4 或更高版本（5.19+ 已包含主线修复），或向后移植补丁 commit 825978fd6a0defc3c29d8a38b6cea76a0938d21e（稳定分支）与 292b7a7275ce（主线分支）。作为临时缓解措施，避免使用 wsync 挂载选项挂载 CephFS，并在创建 O_RDWR 文件后避免立即执行缓冲区写入操作，减少触发死锁的条件。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel Ceph 文件系统死锁漏洞"
+updated = "2026-06-17T05:17:37.933"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49296"]
+ave_id = "AVE-2022-0031"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/292b7a7275ce535a1abfa4dd0b2e586162aaae1e",
+    "https://git.kernel.org/stable/c/825978fd6a0defc3c29d8a38b6cea76a0938d21e",
+    "https://github.com/CVEProject/cvelistV5/blob/9b149e946381b5dfe67f5c76cee65997e05f3a01/cves/2022/49xxx/CVE-2022-49296.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49296.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/3de260baf5452671b1860955d9815c2cdbc09bef/2022/49xxx/CVE-2022-49296.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2022-49296",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2022-49296.md",
+    "https://github.com/github/advisory-database/blob/60cf806ffc57d6909f887b4f3823ae39ed0d7c51/advisories/unreviewed/2025/04/GHSA-gcr7-hvf6-ph59/GHSA-gcr7-hvf6-ph59.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49296",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/b8e6f3ed799539d1c038cf82ae94c10d35c39858/SSVC/data/2022/CVE-2022-49296.json",
+    "https://github.com/microsoft/AzureLinuxVulnerabilityData/blob/f446e11135d45cb1643208c82d3c441bd9ae1832/osv/AZL-60327.json",
+    "https://github.com/begumsozer/Atelier_Data_Project/blob/c180b70b99084444dad46b49963b14f4cf496528/cve_ids.txt",
+]
