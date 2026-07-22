@@ -1,0 +1,42 @@
+[basic]
+description = 'Mint HTTP/1 客户端在解析 Content-Length 响应头时，使用 Integer.parse/1 函数处理头部值，该函数允许可选的 "+" 或 "-" 符号前缀。虽然长度 ≥0 的检查排除了负数，但 "+0"、"+123" 等输入仍被当作有效长度值处理，违反了 RFC 7230 规定的 Content-Length 必须为纯数字的规范。当客户端通过严格遵守 RFC 的前置代理或负载均衡器复用连接时，代理与 Mint 对响应帧的解析不一致，导致响应走私攻击：攻击者控制的恶意上游服务器可在共享连接上向其他消费者的响应流中注入数据。该漏洞影响 Mint 0.1.0 至 1.9.0 之前的所有版本，CVSS 评分 6.3，危害等级中危。官方已在 1.9.0 版本中通过修复 Content-Length 解析逻辑完成修复。'
+published = "2026-06-02T16:16:44.777"
+remediation = "立即将 Mint 升级至 1.9.0 或更高版本（`mix deps.update mint`），该版本已修复 Content-Length 解析器对 `+` 前缀的宽松处理。如无法升级，可在上游代理/负载均衡层配置规则拒绝 `Content-Length` 值含非数字字符的请求，并避免跨信任域复用同一 Mint 连接池。"
+score = 6.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "elixir-mint Mint HTTP/1 客户端 HTTP 响应走私漏洞"
+updated = "2026-07-22T19:10:00.120"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-49753",
+    "GHSA-mjqx-c6f6-7rc2",
+]
+ave_id = "AVE-2026-0316"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://cna.erlef.org/cves/CVE-2026-49753.html",
+    "https://github.com/elixir-mint/mint/commit/47e48027480228e4e32a0b4df39db497b4804921",
+    "https://github.com/elixir-mint/mint/security/advisories/GHSA-mjqx-c6f6-7rc2",
+    "https://osv.dev/vulnerability/EEF-CVE-2026-49753",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2026/CVE-2026-49753.md",
+    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2026/49xxx/CVE-2026-49753.json",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2026/49xxx/CVE-2026-49753.json",
+    "https://github.com/TMA84/cvealert/blob/75714204a4d47ab0def5b37be4839e1beb10bacd/content/posts/cve-2026-49753.md",
+    "https://github.com/elixir-explorer/explorer/blob/d8412e82516d0d204ae2a687d04c04324414ec7d/CHANGELOG.md",
+    "https://github.com/sec-dojo-com/cve-poc/blob/9a0b7a19487f40b2e217de2ad9f19cbcad032a8a/pocs/2026/CVE-2026-49753.md",
+    "https://github.com/erlef-cna/website/blob/c3ea8d6de083cd441e9c6143037548522b280a02/_data/osv/EEF-CVE-2026-49753.json",
+    "https://github.com/github/advisory-database/blob/4d465198ab8436491a7618e7789ef7adce4c01e0/advisories/github-reviewed/2026/07/GHSA-mjqx-c6f6-7rc2/GHSA-mjqx-c6f6-7rc2.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/ad583e79ed38e32f21eec5f8962c8f59146c10bc/SSVC/data/2026/CVE-2026-49753.json",
+    "https://github.com/maxgfr/package-checker.sh/blob/c90ad5c96a79db358ddf823df4ed4f299d202d94/data/osv-hex.purl",
+]
