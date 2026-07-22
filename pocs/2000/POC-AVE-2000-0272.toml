@@ -1,15 +1,10 @@
 [info]
 author = "ave"
-description = "通过 HTTP 服务构造包含 Active Setup Control ActiveX 控件的 HTML 页面，验证 CVE-2000-0329 漏洞。远程攻击者可通过 HTML 邮件或网页中的嵌入式脚本触发 ActiveX 控件自动下载并执行恶意 CAB 文件，导致任意代码执行。"
+description = "检测目标是否可被用于触发 Microsoft Active Setup Control (clsid:6E449683-C509-11CF-AAFA-00AA00B6015C) 加载远程 CAB 文件的漏洞。通过构造包含 ActiveX 对象的 HTML 页面，验证 ActiveX 控件能否被远程触发下载并执行 CAB 文件。"
 id = "POC-AVE-2000-0272"
-name = "Microsoft Internet Explorer/Outlook ActiveX CAB File Execution PoC"
+name = "Microsoft Internet Explorer/Outlook ActiveX CAB 文件远程执行漏洞 PoC"
 severity = "medium"
-tags = [
-    "cve-2000-0329",
-    "activex",
-    "cab",
-    "ms99-048",
-]
+tags = ["ave-2000-0272"]
 vuln_id = [
     "CVE-2000-0329",
     "AVE-2000-0272",
@@ -20,10 +15,18 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/"
+path = "/{{BaseURL}}/poc.html"
 protocol = "http"
 
+[poc.requests.body]
+content = ""
+type = "raw"
+
 [[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
+expect = false
+part = "body"
+type = "word"
+words = [
+    "ActiveX",
+    "CAB",
+]
