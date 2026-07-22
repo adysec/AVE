@@ -1,0 +1,35 @@
+CVE-2001-0247 is about a buffer overflow in OpenBSD's FTP server glob() function. The fix was released in OpenBSD 2.8. Let me search for the actual patch information.The remediation field is empty in the TOML. Let me check the OpenBSD 2.8 errata for the ftpd glob() vulnerability fix. Let me also check OpenBSD 2.8 errata.
+The vulnerability is in BSD FTP servers (specifically OpenBSD ftpd). Looking at the OpenBSD 2.7 errata, entry 037 mentions a one-byte overflow in replydirname() but not the glob() issue. Let me check OpenBSD 2.8 errata page for the specific fix.
+The vulnerability affects OpenBSD 2.8 and earlier. The fix was in OpenBSD 2.8 patches or later. Let me look for the specific patch.The OpenBSD 2.8 errata shows that patch 025 and 026 are relevant:
+- 025: SECURITY FIX: Apr 10, 2001 - glob(3) contains multiple buffer overflows
+- 026: SECURITY FIX: Apr 23, 2001 - ftpd(8) has a potential DoS related to glob(3). This patch introduces a GLOB_LIMIT, eliminating the DoS. You must have 025_glob.patch installed before installing this patch.
+So the remediation is to upgrade to OpenBSD 2.8 or later, AND apply patches 025_glob.patch and 026_ftpd.patch to OpenBSD 2.8 systems.
+1. remediation field is empty - need to fix that
+2. The remediation text contained a debug/thinking message from the AI
+ave_id = "AVE-2001-0097"
+aliases = ["CVE-2001-0247"]
+[basic]
+title = "OpenBSD FTPd glob() 远程缓冲区溢出漏洞"
+description = "BSD 系统 FTP 服务器在处理 glob() 文件匹配函数时存在缓冲区溢出漏洞。攻击者可通过向 FTP 服务器发送包含特制花括号（{}）序列的长模式字符串，触发 g_opendir、g_lstat、g_stat 及 glob2/glob3 等函数中的缓冲区溢出，从而以 root 权限远程执行任意代码。该漏洞影响 OpenBSD 2.8 以下版本，CVSS 评分 10.0，危害等级严重。"
+severity = "CRITICAL"
+score = 10.0
+sources = ["cve", "exploitdb"]
+published = "2001-06-18"
+updated = "2026-06-16"
+remediation = "升级至 OpenBSD 2.8 或更高版本。对于运行 OpenBSD 2.8 的系统，需依次应用 025_glob.patch（修复 glob(3) 缓冲区溢出）和 026_ftpd.patch（引入 GLOB_LIMIT 消除拒绝服务）两个安全补丁。对于其他 BSD 衍生系统（FreeBSD、NetBSD），请参考各自厂商安全公告安装对应补丁。此外建议禁用匿名 FTP 访问以降低攻击面。"
+[references]
+urls = [
+"http://archives.neohapsis.com/archives/freebsd/2001-04/0466.html",
+"http://www.cert.org/advisories/CA-2001-07.html",
+"http://www.nai.com/research/covert/advisories/048.asp",
+"http://www.securityfocus.com/bid/2548",
+"https://exchange.xforce.ibmcloud.com/vulnerabilities/6332",
+"https://www.exploit-db.com/exploits/20733",
+"ftp://ftp.NetBSD.ORG/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-018.txt.asc",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-22T00:00:00Z"
