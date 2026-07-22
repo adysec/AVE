@@ -1,0 +1,65 @@
+1. remediation is empty - I need to provide a proper remediation. From the NVD data, I can see:
+- The vulnerability affects tinyproxy 1.5.0, 1.4.3, and earlier
+- Debian DSA-145 provided fixes: woody (old stable) got 1.4.3-2woody2, unstable got 1.4.3-3
+- The upstream fix was in tinyproxy 1.4.4 (or 1.5.1)
+- References mention SourceForge release notes (release_id=88790) and ISS advisory
+2. The remediation field in the original TOML is filled with the AI's internal reasoning text instead of actual remediation content. I need to replace it with proper Chinese remediation text.
+3. The `published` field should be just a date, not a datetime. Let me check the schema - it says `published = "2024-01-01"` format. So it should be `"2002-08-12"`.
+4. The `updated` field should also be just a date.
+5. The `sources` field has `["osv"]` but should reflect the actual sources. Since this came from CVE/NVD, it should be `["cve"]`.
+6. The `references.urls` list has many GitHub mirror links that are not authoritative. I should keep only the authoritative ones.
+Now let me also check the `published` and `updated` fields. The schema shows `published = "2024-01-01"` (date format), but the current TOML has `published = "2002-08-12T04:00:00.000"` (datetime format). I should use date format.
+Now let me construct the fixed TOML:
+For remediation, based on the NVD data and Debian advisory:
+- Upgrade tinyproxy to version 1.4.4 或更高版本（或 1.5.1 或更高版本）
+- Debian 系统用户应升级至 DSA-145 提供的修复版本
+1. remediation field is empty - The remediation field contains a long AI reasoning text instead of actual remediation content. I need to replace it with proper remediation text.
+From the NVD page, I can see:
+- CVE-2002-0847: tinyproxy HTTP proxy 1.5.0, 1.4.3, and earlier - double-free vulnerability
+- CVSS v2.0: 7.5 HIGH (AV:N/AC:L/Au:N/C:P/I:P/A:P)
+- References mention Debian DSA-145
+The fix version: tinyproxy 1.4.4 or later (since affected versions are 1.5.0, 1.4.3, and earlier). The Debian DSA-145 fixed it with version 1.4.3-2woody2 for woody and 1.4.3-3 for unstable.
+- title: "tinyproxy HTTP 代理服务器双重释放远程代码执行漏洞" - OK, Chinese, good
+- description: Already in Chinese, ≥50 chars - OK
+- severity: "HIGH" with score 7.5 - matches (HIGH≥7.0) - OK
+- sources: ["osv"] - OK
+- published: "2002-08-12T04:00:00.000" - should be just date "2002-08-12"
+- updated: "2026-06-16T21:58:15.420" - should be just date "2026-06-16"
+- remediation: needs to be fixed - replace the long AI reasoning with actual remediation text
+The remediation should be:
+- Upgrade tinyproxy to version 1.4.4或更高版本（或1.5.1或更高版本）
+- Debian用户应升级至DSA-145提供的修复版本
+Actually, looking at the error more carefully:
+- [严重] remediation: remediation 字段为空
+The remediation field is NOT empty - it contains a very long AI reasoning text. The issue is that the field is malformed - it contains the AI's internal reasoning/thinking process instead of actual remediation content. I need to replace it with proper remediation text.
+1. Fix remediation - replace the long reasoning text with actual remediation
+2. Fix published/updated format - should be date only (YYYY-MM-DD)
+3. Clean up references - remove non-authoritative GitHub mirror links
+4. Keep everything else as is
+For remediation, based on what I know:
+- tinyproxy 1.4.4 or later fixes this (since 1.4.3 and 1.5.0 are affected)
+- Debian DSA-145 provides fixes
+ave_id = "AVE-2002-0029"
+aliases = ["CVE-2002-0847"]
+[basic]
+title = "tinyproxy HTTP 代理服务器双重释放远程代码执行漏洞"
+description = "tinyproxy HTTP 代理服务器 1.5.0、1.4.3 及更早版本中存在双重释放（double-free）内存漏洞。远程攻击者可通过向目标代理服务器发送特制的 HTTP 请求触发该漏洞，导致内存损坏，进而实现任意代码执行。该漏洞影响运行 tinyproxy 的各类 Linux/Unix 系统，CVSS 评分 7.5，危害等级高。"
+severity = "HIGH"
+score = 7.5
+sources = ["osv"]
+published = "2002-08-12"
+updated = "2026-06-16"
+remediation = "升级 tinyproxy 至 1.4.4 或更高版本（上游修复版本）。Debian 用户应参考 DSA-145，将 woody 系统上的 tinyproxy 升级至 1.4.3-2woody2，unstable 系统升级至 1.4.3-3。"
+[references]
+urls = [
+"http://sourceforge.net/project/shownotes.php?release_id=88790",
+"http://www.iss.net/security_center/static/9079.php",
+"http://www.securityfocus.com/bid/4731",
+"https://www.debian.org/security/2002/dsa-145",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-22T00:00:00Z"
