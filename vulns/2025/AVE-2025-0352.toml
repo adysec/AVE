@@ -1,0 +1,41 @@
+[basic]
+description = 'Tornado 是一个 Python Web 框架和异步网络库，其 `httputil.py` 中的 `_parseparam` 函数在解析 `multipart/form-data` 等 HTTP 头部参数时使用了低效算法，在处理包含引号分号（如 `param=";"`）的参数时会在嵌套循环中反复调用 `string.count()`。攻击者可通过向 `Content-Disposition` 头部发送大量恶意构造的参数，使服务器 CPU 使用率呈二次方增长（O(n²)），导致拒绝服务。由于 Tornado 采用单事件循环架构，单个恶意请求即可使整个服务器长时间无响应。该漏洞影响 Tornado 6.5.2 及以下版本，CVSS 评分 7.5，危害等级高。官方已在 6.5.3 版本中修复。'
+published = "2025-12-12T07:15:44.920"
+remediation = "立即将 Tornado 升级至 6.5.3 或更高版本（pip install --upgrade tornado），该版本已修复 `_parseparam` 函数在解析 multipart 参数时的 O(n²) 性能问题。如无法立即升级，可在反向代理层（如 Nginx）限制 `Content-Disposition` 头部的参数数量，或对上传请求进行速率限制作为临时缓解措施。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Tornado Multipart 参数解析二次方拒绝服务漏洞"
+updated = "2026-06-17T09:58:02.440"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2025-67726",
+    "GHSA-jhmp-mqwm-3gq8",
+]
+ave_id = "AVE-2025-0352"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/tornadoweb/tornado/commit/771472cfdaeebc0d89a9cc46e249f8891a6b29cd",
+    "https://github.com/tornadoweb/tornado/releases/tag/v6.5.3",
+    "https://github.com/tornadoweb/tornado/security/advisories/GHSA-jhmp-mqwm-3gq8",
+    "https://github.com/tornadoweb/tornado/blob/e530031405e2154654dedc4c84d5656b557ea310/docs/releases/v6.5.3.rst",
+    "https://github.com/CVEProject/cvelistV5/blob/4e452a37e644e8194f1171b7eec1f7dc625b6526/cves/2025/67xxx/CVE-2025-67726.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/935010a28fdab6bbd2dc347ebc953db9773080d4/osv/cve/2025/UBUNTU-CVE-2025-67726.json",
+    "https://github.com/Tabll/gemnasium-db/blob/de1cbf8802a4c6060caaa5924b50812f2a62fead/pypi/tornado/CVE-2025-67726.yml",
+    "https://github.com/neuvector/vul-source/blob/27dcc23268ea595c1e22ac2008b340bb4e848cb2/ubuntu-cve-tracker/active/CVE-2025-67726",
+    "https://github.com/cisagov/vulnrichment/blob/6d175f59444084675ba336cc9e2bc51fc5338e6d/2025/67xxx/CVE-2025-67726.json",
+    "https://github.com/alpinelinux/aports/blob/1a52ff8ec1bcb2a7098656810eca5dcfa9f4ec17/community/py3-tornado/APKBUILD",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2025-67726.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2025-67726.json",
+    "https://github.com/Xilinx/meta-openembedded/blob/4d3e2639dec542b58708244662d5ce36810fc510/meta-python/recipes-devtools/python/python3-tornado/CVE-2025-67726.patch",
+]
