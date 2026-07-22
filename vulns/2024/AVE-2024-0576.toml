@@ -1,0 +1,44 @@
+[basic]
+description = "Linux 内核网络调度器 netem 的 qlen 计数器存在计数不一致漏洞。netem 作为根 qdisc 使用时，其 qlen 仅统计内部 tfifo 队列中的报文数，未正确计入子 qdisc（如 tbf）中排队的报文。当子 qdisc 通过 qdisc_tree_reduce_backlog 通知 netem 创建或丢弃 SKB 时，netem 的 qlen 被错误更新，导致 qlen 与 tfifo 实际队列深度不一致。攻击者可在本地通过构造特定流量（如启用 GSO 并配置 netem+tbf 组合），使 netem 的 qlen 达到配置的 limit 上限，即使 tfifo 实际为空也无法接收新报文，造成拒绝服务。该漏洞影响所有使用 netem 与子 qdisc 组合的 Linux 内核版本，CVSS 评分 5.5，危害等级中危。"
+published = "2025-01-08T17:15:15.957"
+remediation = "立即将 Linux 内核升级到以下已修复版本：5.4.288、5.10.232、5.15.175、6.1.121、6.6.67、6.12.6 或更高版本。各发行版用户请安装对应安全更新（如 Debian 11/12 请参考 DLA-4075-1 公告，Ubuntu 用户安装 USN-7506-1 更新）。如无法立即升级，临时缓解措施为避免将 netem 与 tbf 等子 qdisc 配合使用，或禁用 GSO（ethtool -K <接口> gso off）以防止子 qdisc 分段触发 qlen 计数异常。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel netem 网络调度器拒绝服务漏洞"
+updated = "2026-06-17T08:12:56.993"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-56770"]
+ave_id = "AVE-2024-0576"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/10df49cfca73dfbbdb6c4150d859f7e8926ae427",
+    "https://git.kernel.org/stable/c/216509dda290f6db92c816dd54b83c1df9da9e76",
+    "https://git.kernel.org/stable/c/356078a5c55ec8d2061fcc009fb8599f5b0527f9",
+    "https://git.kernel.org/stable/c/3824c5fad18eeb7abe0c4fc966f29959552dca3e",
+    "https://git.kernel.org/stable/c/83c6ab12f08dcc09d4c5ac86fdb89736b28f1d31",
+    "https://git.kernel.org/stable/c/c2047b0e216c8edce227d7c42f99ac2877dad0e4",
+    "https://git.kernel.org/stable/c/f8d4bc455047cf3903cd6f85f49978987dbb3027",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-56770.md",
+    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2024/56xxx/CVE-2024-56770.json",
+    "https://github.com/xairy/linux-kernel-exploitation/blob/1120e9cea80c6039b8c8151bde6067c2cd76daa4/README.md",
+    "https://github.com/SEC-bench/SEC-bench-Pro/blob/798fe5865a23d1d1dd1aaee2729abd2faf4899d1/projects/linux/CVE-2024-56770/VERIFIED.txt",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-56770",
+    "https://github.com/peass-ng/PEASS-ng/blob/1cabd84639d48c21ba088e07e52661c30c906aef/linPEAS/builder/linpeas_parts/variables/kernel_cve_registry_data.sh",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-56770.yaml",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7b14132e5983d4643412f6d4f89beb409b809e9f/SSVC/data/2024/CVE-2024-56770.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-56770.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/d8c79a157e22e9abda84461cbe0f59ce58612245/references/CveServices-CVE-2024-56770-2025-11-03-1451",
+]
