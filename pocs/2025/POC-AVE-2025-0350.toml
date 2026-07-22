@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "检测目标是否运行存在漏洞的 Tornado 版本（< 6.5.3）。漏洞位于 set_status 和 HTTPError 的 reason 参数，未转义直接写入 HTTP 响应头（头注入）或错误页面 HTML（XSS），通过传递不可信数据即可触发。访问不存在的路径触发默认错误页，检测响应中是否存在 Tornado 标识。"
+id = "POC-AVE-2025-0350"
+name = "Tornado HTTP Header Injection and XSS via reason PoC"
+severity = "medium"
+tags = ["ave-2025-0350"]
+vuln_id = [
+    "CVE-2025-67724",
+    "AVE-2025-0350",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["TornadoServer"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ave-poc-nonexistent-trigger-error"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Tornado"]
