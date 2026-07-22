@@ -1,0 +1,80 @@
+[id]
+ave_id = "AVE-2026-0280"
+aliases = ["CVE-2026-45378","GHSA-3mvf-82qp-8qh5"]
+
+[basic]
+title = "Decidim: Verification documents can be downloaded through reusable links"
+description = "## Description
+
+Scanned identity-document images provided by participants and shown in the verification admin workflow are exposed through signed `/rails/active_storage/disk/` URLs that can be fetched without any authenticated session.
+
+Anyone who obtains one of those URLs can retrieve the document until the signature expires.
+
+## Technical description
+
+This issue comes from the verification admin UI exposing scanned documents through reusable Active Storage disk links. Verification-document images are rendered with `variant_url(...)`, which produces signed `/rails/active_storage/disk/...` links instead of routing the file through an authorization-checking controller. Because Decidim configures Active Storage service URLs to remain valid for seven days, the URL itself becomes the credential for that period.
+
+The affected files are `verification_attachment` blobs on Decidim::Authorization, and the admin review pages embed those signed URLs directly into the HTML for pending and confirmation views.
+
+Reproduction steps:
+
+1. Create a fresh verification document as a normal user.
+1.1. Open http://localhost:3001/users/sign_in.
+1.2. Open http://localhost:3001/id_documents/authorizations/new.
+1.3. Submit an id_documents verification request with an image attachment.
+
+2. Open the admin review page that renders the attachment.
+2.1. Sign out.
+2.2. Sign back in as admin@example.org.
+2.3. Try http://localhost:3001/admin/id_documents.
+
+3. Harvest the signed Active Storage URL.
+3.1. Open DevTools Network before loading the review page.
+3.2. Reload the page.
+3.3. Copy one request URL matching `http://localhost:3001/rails/active_storage/disk/<SIGNED_TOKEN>/<FILENAME>`.
+
+4. Replay the file URL without any Decidim session.
+4.1. Open a private window or a second browser where you are not signed in to Decidim.
+4.2. Paste the exact copied /rails/active_storage/disk/... URL.
+4.3. Confirm the verification image still loads.
+
+### Impact
+
+- This only applies to Organizations using the \"Identity documents\" verification
+- Any party that obtains one of these URLs can download the underlying scanned identity document for the lifetime of the signed link without needing to authenticate as the reviewing admin.
+- In the reproduced case, that replay window was about seven days, which is long enough for routine leakage channels such as copied links, screenshots, logs, browser history, and support workflows to become realistic exfiltration paths.
+- This raises the risk of leakage through browser history, screenshots, copy-paste, support tickets, logs, analytics tooling, malicious browser extensions, or any other channel that captures full URLs.
+- Because the affected files are identity-verification documents, the exposed data can include highly sensitive personal information.
+
+### Patches
+
+See https://github.com/decidim/decidim/pull/16680
+
+### Workarounds
+
+Disable the \"Identity documents\" verification 
+
+### Reference
+
+OWASP A01:2021 Broken Access Control
+
+### Credits
+
+This issue was discovered in a security audit organized by the [Decidim Association](https://decidim.org) and made by [Radically Open Security](https://www.radicallyopensecurity.com/) against Decidim financed by [NGI](https://ngi.eu/)."
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T17:55:32.262072663+00:00"
