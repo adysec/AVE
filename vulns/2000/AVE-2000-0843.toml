@@ -1,10 +1,10 @@
 [basic]
-description = "PostgreSQL 6.3.2 及 6.5.3 版本中存在明文密码存储漏洞。PostgreSQL 将用户密码以明文形式存储在 pg_shadow 和 pg_pwd 系统表中，具有足够数据库权限的攻击者可直接读取这些表中的明文凭据，进而获取其他数据库的访问权限。该漏洞属于设计缺陷，攻击难度较低，危害中等，建议升级至不受影响的版本。"
+description = "PostgreSQL 在 pg_shadow 和 pg_pwd 文件中以明文形式存储数据库用户名和密码，具有足够权限的攻击者（如数据库管理员或系统管理员）可直接读取这些文件获取所有用户凭据，进而访问其他数据库账户。该漏洞影响 PostgreSQL 6.3.2 及 6.5.3 版本，CVSS 评分 4.6，危害等级中危。由于密码未经过任何加密或哈希处理，内部攻击者利用难度较低，建议升级至修复版本或采用外部认证机制。"
 published = "2001-08-31T04:00:00.000"
-remediation = "升级 PostgreSQL 至 7.1 及以上版本，新版本默认使用 md5 加密存储密码。如无法升级，在 postgresql.conf 中设置 password_encryption = md5 并重启服务，同时为所有用户重新设置密码使其转换为加密存储。限制 pg_shadow 和 pg_pwd 文件的系统权限为仅 postgres 用户可读（chmod 600）。"
+remediation = "升级 PostgreSQL 至 7.1 或更高版本（该版本起默认使用 MD5 加密存储密码）。如无法升级，在 postgresql.conf 中设置 password_encryption = md5 并重启服务，同时将 pg_hba.conf 中的认证方式改为 md5 而非 password。作为临时缓解措施，使用 chmod 600 限制 pg_shadow 和 pg_pwd 文件的系统权限，仅允许 postgres 系统用户读取。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["exploitdb"]
+sources = ["redhat"]
 title = "PostgreSQL 明文密码存储漏洞"
 updated = "2026-06-16T21:53:21.847"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1199"]
 ave_id = "AVE-2000-0843"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,11 +26,11 @@ urls = [
     "http://www.securityfocus.com/bid/1139",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4364",
     "https://www.exploit-db.com/exploits/19875",
-    "https://github.com/CVEProject/cvelistV5/blob/f655f864c18bd25e1fca21f5741c644854233bf0/cves/2000/1xxx/CVE-2000-1199.json",
+    "https://github.com/CVEProject/cvelistV5/blob/6e1fee15e021f95477107e3e5d652470f76f7bac/cves/2000/1xxx/CVE-2000-1199.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1199",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-1199.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/be9b320c2a949cb73c32157503bdf6fad99f369e/CVE/data/2000/CVE-2000-1199.json",
-    "https://github.com/github/advisory-database/blob/ca4032f687e5627fcf86913a0441b18137902527/advisories/unreviewed/2022/04/GHSA-9ccp-985w-grj6/GHSA-9ccp-985w-grj6.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-1199.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d449633638bc4d33beb359a70dee0dbe66d39a20/CVE/data/2000/CVE-2000-1199.json",
+    "https://github.com/github/advisory-database/blob/ece131eb82ceb38a160571408bcbbb92bfa0f3c0/advisories/unreviewed/2022/04/GHSA-9ccp-985w-grj6/GHSA-9ccp-985w-grj6.json",
     "https://github.com/marcellodesales/aibbp-reverse-engineer/blob/960f610d597aae9fec1cc5f03c68679be00c222d/reverse_engineer/acunetix/vulnerabilities/vdb/2000/1xxx/cve-2000-1199.yaml",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x2000/1139/info.html",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1199.json",
