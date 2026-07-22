@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 AMDGPU 驱动的 DRM/AMDKFD 子系统中存在双重释放漏洞（CWE-415）。当 `kfd_process_device_init_vm` 在虚拟内存转换为计算 VM 并设置 PASID 后失败时，由于未正确持有 `pdd->drm_file` 引用计数，导致 drm 关闭文件处理程序与 KFD 进程销毁工作线程可能同时释放同一计算 PASID，引发内核空指针解引用或 IDR 释放警告。本地攻击者可利用此漏洞造成系统崩溃或潜在权限提升，影响使用 AMDGPU 驱动的 Linux 内核版本，CVSS 评分 7.8，危害等级高。"
+published = "2025-09-15T15:15:41.840"
+remediation = "升级 Linux 内核至 6.0.19、6.1.5 或 6.2 及以上版本，其中已包含 `amdgpu_amdkfd_gpuvm_set_vm_pasid` 助手函数的修复补丁，防止 KFD 进程在 vm 初始化失败时因未持有 pdd->drm_file 引用导致同一 compute pasid 被双重释放。无法立即升级的发行版可向后移植提交 `1a799c4c190e` / `89f0d766c9e3` / `a02c07b61989` 到受影响内核源码树中 `drivers/gpu/drm/amd/amdgpu/` 和 `drivers/gpu/drm/amd/amdkfd/` 对应文件。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux kernel DRM/AMDKFD 计算PASID双重释放漏洞"
+updated = "2026-06-17T05:23:11.500"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-50303"]
+ave_id = "AVE-2022-0103"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1a799c4c190ea9f0e81028e3eb3037ed0ab17ff5",
+    "https://git.kernel.org/stable/c/89f0d766c9e3fdeafbed6f855d433c2768cde862",
+    "https://git.kernel.org/stable/c/a02c07b619899179384fde06f951530438a3512d",
+    "https://github.com/CVEProject/cvelistV5/blob/40c65e734a16e244433aafd42706edabef09072d/cves/2022/50xxx/CVE-2022-50303.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-50303.yaml",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-50303",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2022-50303.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/765c58d21032d831d20918314a5f12dad607f124/CVE/data/2022/CVE-2022-50303.json",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2025/12/05/seguranca/cve-2022-50303-drmamdkfd-fix-double-release-comput-1764982882000.md",
+    "https://github.com/github/advisory-database/blob/36ddac9224d3973c64320c39be98ecc1f1ca5395/advisories/unreviewed/2025/09/GHSA-ppmr-4j3r-434x/GHSA-ppmr-4j3r-434x.json",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2022-50303",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2022/CVE-2022-50303.json",
+    "https://github.com/neuvector/vul-source/blob/27dcc23268ea595c1e22ac2008b340bb4e848cb2/ubuntu-cve-tracker/active/CVE-2022-50303",
+]
