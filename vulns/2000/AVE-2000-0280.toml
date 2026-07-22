@@ -1,11 +1,11 @@
 [basic]
-description = "Linux OpenLDAP 服务器在处理临时文件时存在符号链接（symlink）安全漏洞。本地攻击者可通过在 `/usr/tmp/` 目录下创建恶意符号链接，诱使 OpenLDAP 服务器以提升的权限写入目标文件，从而实现任意文件修改。该漏洞影响 OpenLDAP 1.2.7/1.2.8/1.2.9/1.2.10 版本，利用需要本地系统访问权限，CVSS 评分 2.1，危害等级低。"
+description = "OpenLDAP 1.2.7至1.2.10版本在Linux系统下的 `/usr/tmp/` 目录中存在不安全的临时文件创建漏洞。本地攻击者可利用符号链接（symlink）攻击，在OpenLDAP服务写入临时文件前创建指向目标文件的符号链接，从而以OpenLDAP进程权限覆写任意系统文件。该漏洞利用条件为需要本地用户权限，CVSS评分2.1，危害等级较低。"
 published = "2000-04-21T04:00:00.000"
-remediation = "升级到 OpenLDAP 1.2.11 或更高版本，该版本已修复符号链接跟踪问题。临时缓解措施：确保 /usr/tmp/ 目录设置 sticky bit（chmod +t /usr/tmp），并避免在多用户环境下以 root 权限运行 slapd。"
+remediation = "升级至 OpenLDAP 1.2.11 及以上版本，该版本已修复临时文件创建时的符号链接检查。如无法升级，确保 OpenLDAP 以非 root 低权限用户运行，并对 `/usr/tmp/` 目录设置粘滞位（chmod +t /usr/tmp），避免本地用户删除或替换其他进程的临时文件。同时将临时目录迁移至 `/tmp` 并使用 `umask 077` 限制文件权限。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "OpenLDAP 符号链接本地任意文件修改漏洞"
+sources = ["epss"]
+title = "OpenLDAP 本地符号链接攻击导致任意文件修改漏洞"
 updated = "2026-06-16T21:51:30.277"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0336"]
 ave_id = "AVE-2000-0280"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,11 +26,11 @@ urls = [
     "http://www.securityfocus.com/bid/1232",
     "http://www.turbolinux.com/pipermail/tl-security-announce/2000-May/000009.html",
     "https://www.exploit-db.com/exploits/19946",
-    "https://github.com/CVEProject/cvelistV5/blob/30c3a896d257362f7419b0c772be2f3dd063ccaa/cves/2000/0xxx/CVE-2000-0336.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0e6d432d517e5cdf9829125ecfaa3a6437985a0c/cves/2000/0xxx/CVE-2000-0336.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0336",
-    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-2000-0336.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/d0a8c476da89b37a2bbb6193b7964b10d03aff75/CVE/data/2000/CVE-2000-0336.json",
-    "https://github.com/github/advisory-database/blob/cdfc8886d71af7ef3bdab3e4db46753ff8af6538/advisories/unreviewed/2022/05/GHSA-7rcw-76jx-qx7m/GHSA-7rcw-76jx-qx7m.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0336.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6a25a9384d7c18dfb53a1d1532073678a2c29fe5/CVE/data/2000/CVE-2000-0336.json",
+    "https://github.com/github/advisory-database/blob/a96652a2a06e880f217d1d6526622d8501dbbd69/advisories/unreviewed/2022/05/GHSA-7rcw-76jx-qx7m/GHSA-7rcw-76jx-qx7m.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/M/mandrake_MDKSA-2000-003.nasl",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--71b80b21-88e5-4eb6-903e-a2fe8f548491.json",
