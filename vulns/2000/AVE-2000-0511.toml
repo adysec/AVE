@@ -1,11 +1,11 @@
 [basic]
-description = "IMP 邮件系统在处理文档时调用 MSWordView 组件进行转换，但未在 MSWordView 异常退出后正确清理临时文件。本地攻击者可通过大量请求文档并提前终止请求，使临时文件不断堆积占用磁盘空间，最终导致系统拒绝服务。该漏洞影响 IMP 2.2 Pre12 及更早版本，CVSS 评分 5.0，危害等级中危。"
+description = "IMP 邮件系统在处理 MSWordView 文档转换时存在文件清理不当漏洞。本地攻击者可通过大量请求文档转换并在完成前中断请求，导致临时文件无法被正确删除，持续占用磁盘空间，最终造成系统拒绝服务。该漏洞影响 IMP 2.2 Pre12 及更早版本，攻击条件为需要本地访问权限，利用难度较低。"
 published = "2000-04-22T04:00:00.000"
-remediation = "升级 IMP 至 2.2 Pre12 之后的安全版本，修复 MSWordView 退出时临时文件清理机制。如无法升级，限制单个用户请求文档的数量，并配置 cron 定期清理 /tmp 下 IMP 生成的临时文件。建议在应用层对文档转换过程设置超时和资源上限，防止因进程异常中止导致磁盘填满。"
+remediation = "升级 IMP 至 2.2 pre11 或更高版本（已修复 umask 权限问题）。如无法升级，在 imp/lib/mimetypes.lib 中修改临时文件存储路径，创建仅 web 进程可访问（权限 700）的专用目录替代 /tmp。针对拒绝服务问题，设置 cron 定时任务，定期清理超过 30 分钟的 IMP 临时文件（如 find /tmp -name 'imp.word.*' -mmin +30 -delete），并监控 /tmp 磁盘使用量。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Horde IMP MSWordView 拒绝服务漏洞"
+sources = ["epss"]
+title = "Horde IMP MSWordView 文件清理不当拒绝服务漏洞"
 updated = "2026-06-16T21:51:46.800"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-0459"]
 ave_id = "AVE-2000-0511"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://marc.info/?l=bugtraq&m=95672120116627&w=2",
     "http://www.securityfocus.com/bid/1361",
-    "https://github.com/CVEProject/cvelistV5/blob/b5102a7cca13b4c0a0e55e628783c406707da47e/cves/2000/0xxx/CVE-2000-0459.json",
+    "https://github.com/CVEProject/cvelistV5/blob/6e1fee15e021f95477107e3e5d652470f76f7bac/cves/2000/0xxx/CVE-2000-0459.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0459",
-    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-2000-0459.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2cba6a622b2958fa1ec3a506e7b58871edec19fb/CVE/data/2000/CVE-2000-0459.json",
-    "https://github.com/github/advisory-database/blob/4336bda7e2e81151e464319b6c81d98e092706d6/advisories/unreviewed/2022/04/GHSA-6cjc-9cq5-fc4r/GHSA-6cjc-9cq5-fc4r.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0459.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d449633638bc4d33beb359a70dee0dbe66d39a20/CVE/data/2000/CVE-2000-0459.json",
+    "https://github.com/github/advisory-database/blob/7c78b01f402841eaeb570a26d276cd67a60a9531/advisories/unreviewed/2022/04/GHSA-6cjc-9cq5-fc4r/GHSA-6cjc-9cq5-fc4r.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0459.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--904c9cfb-5b32-46a1-bbe7-e7d08990a7f9.json",
     "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001311.txt",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/3ff80c5b3b825d7f48ed77b5e27dd49f02502867/2000.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/864adb9ddf294417a5a4e84f90f9adf54e9dca89/2000.tsv",
 ]
