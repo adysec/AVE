@@ -1,11 +1,11 @@
 [basic]
-description = "DG/UX 操作系统中 rpc.statd（NFS 状态监控守护进程）存在输入验证缺陷，远程攻击者无需身份认证即可向目标系统发送特制的恶意请求，利用无效数据触发文件创建或删除操作。该漏洞可导致系统关键文件被篡改或删除，影响系统的正常服务运行和数据完整性，受影响的 DG/UX 版本范围广泛，危害等级中等。"
+description = "NFS 服务中的 rpc.statd 组件存在输入验证缺陷，远程攻击者无需身份认证，可通过向目标系统发送特制的恶意 RPC 请求，利用该漏洞非法删除或创建任意文件。该漏洞影响多种 Unix 操作系统（包括 DG/UX 等），CVSS 评分 5.0，危害等级中等，攻击者利用后可破坏系统文件完整性，进而实施进一步的入侵攻击。"
 published = "1996-04-24T04:00:00.000"
-remediation = "DG/UX 系统已停止支持无官方补丁，建议立即停止 rpc.statd 服务（`/etc/init.d/nfs.server stop`）并禁用 rpcbind 端口映射；在网络边界防火墙阻断 111(TCP/UDP) 端口对该主机的访问；如业务需要 NFS 功能，限制可访问来源 IP 并在 hosts.allow/deny 中仅允许受信主机连接 rpc.statd。"
+remediation = "升级 nfs-utils 至修复版本（Linux 系统升级至 0.1.6 以上），或安装对应操作系统的安全补丁。如无需 NFS 服务，可停止 rpc.statd 服务（`service nfs-kernel-server stop`）并禁用端口映射（rpcbind）。在防火墙上限制对 TCP/UDP 111 和 32771 端口的访问，仅允许可信来源连接。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "Data General DG/UX rpc.statd 文件创建或删除漏洞"
+sources = ["redhat"]
+title = "多种 Unix 系统 NFS rpc.statd 远程文件创建删除漏洞"
 updated = "2026-06-16T21:47:21.823"
 
 [exploit]
@@ -17,8 +17,20 @@ aliases = ["CVE-1999-0019"]
 ave_id = "AVE-1999-0066"
 
 [meta]
-collected_at = "2026-07-13T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["http://sunsolve.sun.com/pub-cgi/retrieve.pl?doctype=coll&doc=secbull/135"]
+urls = [
+    "http://sunsolve.sun.com/pub-cgi/retrieve.pl?doctype=coll&doc=secbull/135",
+    "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/1999/CVE-1999-0019.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4e452a37e644e8194f1171b7eec1f7dc625b6526/cves/1999/0xxx/CVE-1999-0019.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0019",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0019.md",
+    "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-m29h-r53r-8j77/GHSA-m29h-r53r-8j77.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0019.json",
+    "https://github.com/Heretyc/inntinn/blob/21d34f5ab9fb9cee4ad4306ccb65c7e5b5efe6fb/examples.py",
+    "https://github.com/feng-li/tools-for-data-science-course/blob/8e62d47ee8ffbebe9a0e50aee193617f83883118/2019spring/2017312271/result.txt",
+    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/R/rpc_statd.nasl",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+]
