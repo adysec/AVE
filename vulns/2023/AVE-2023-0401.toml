@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核 F2FS 文件系统在 f2fs_remount() 函数中存在条件竞争漏洞。当系统以读写方式重新挂载 F2FS 文件系统时，default_options() 会先将挂载选项重置为默认值，随后 parse_options() 再根据参数更新，两者之间存在时间窗口。在此期间，攻击者可通过并发执行 fallocate 系统调用触发 f2fs_drop_extent_tree() 访问已释放的 extent cache 锁，导致空指针解引用，引发内核崩溃。该漏洞影响 Linux 内核使用 F2FS 文件系统的版本，本地普通用户可利用此漏洞发起拒绝服务攻击。"
+published = "2025-09-18T16:15:49.067"
+remediation = "升级 Linux 内核至 5.10.210、5.15.149、6.1.64、6.6.3 及以上包含 commit 3c6b5b1c2b8e 的版本，或应用对应稳定分支的补丁。临时缓解措施：避免在 f2fs 文件系统上并发执行 remount 与 fallocate 操作。"
+score = 4.7
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel f2fs 竞争条件漏洞"
+updated = "2026-06-17T06:45:21.877"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2023-53447"]
+ave_id = "AVE-2023-0401"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/115557cc226a927924f2d7d1980ccbf6e3b3bb36",
+    "https://git.kernel.org/stable/c/458c15dfbce62c35fefd9ca637b20a051309c9f1",
+    "https://github.com/CVEProject/cvelistV5/blob/b5b2b32751baccad543d82143784e310554463ae/cves/2023/53xxx/CVE-2023-53447.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2023/CVE-2023-53447.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/6d175f59444084675ba336cc9e2bc51fc5338e6d/2023/53xxx/CVE-2023-53447.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2023-53447",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2023-53447.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2023-53447.json",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2025/12/16/seguranca/cve-2023-53447-f2fs-dont-reset-unchangable-mount-o-1765935541000.md",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2023-53447",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/affa68d6539dbc90b6b6e0e1e746facb4aae08df/SSVC/data/2023/CVE-2023-53447.json",
+    "https://github.com/keryanchpn/ia-data/blob/534363d1afb19db8eaf67f9cab2c9be27811247b/data_fallback/data/first/CVE-2023-53447",
+]
