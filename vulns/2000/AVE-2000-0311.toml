@@ -1,12 +1,12 @@
 [basic]
-description = "Linux 系统 pam_console PAM 模块在用户登录时会对各类设备执行 chown 操作，但用户登出后这些设备的文件描述符仍保持打开状态，导致该用户可以在后续其他用户登录时持续监听设备活动。该漏洞影响 Red Hat Linux 6.0/6.1/6.2 等版本，攻击者利用此漏洞可窃取其他用户的登录会话信息，造成敏感数据泄露。"
-published = "2000-05-03"
-remediation = "升级 pam_console 至 0.05 或更高版本，该版本在用户注销时正确关闭设备文件描述符。对于 Red Hat Linux 6.x 系统，安装官方 errata 安全更新 RHSA-2000:016。由于 Red Hat Linux 6 已停止维护，建议迁移至受支持的 RHEL/CentOS 7+ 或 Rocky Linux 8+ 等现代发行版。"
+description = "Linux 系统 pam_console PAM 模块存在设备文件描述符泄露漏洞。当用户登录时，pam_console 会对各类设备文件执行 chown 操作以赋予当前用户访问权限，但在用户注销后，之前打开的设备文件描述符并未被正确关闭，导致已注销用户仍可保持对设备的访问能力。本地攻击者可利用此漏洞，在注销后持续监控后续用户登录时的设备活动，从而窃取敏感信息（如键盘输入、屏幕输出等）。该漏洞影响 RedHat Linux 6.0/6.1/6.2 版本，攻击者需具备本地登录权限，无需额外认证即可实施监控，CVSS 评分 7.2，危害等级高。"
+published = "2000-05-03T04:00:00.000"
+remediation = "升级到包含修复的 pam 版本（pam-0.68 及以上），该版本在用户注销时正确关闭所有控制台设备文件描述符。如无法升级，可修改 /etc/security/console.perms 配置文件，移除 pam_console 对敏感设备（如 /dev/tty*、/dev/mouse、/dev/audio）的自动 chown 权限，或直接禁用 pam_console.so 模块（从 /etc/pam.d/login 中注释掉 session required pam_console.so 行）。对于仍在运行 Red Hat Linux 6.x 的系统，建议立即迁移到受支持的 Red Hat Enterprise Linux 版本。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "RedHat Linux pam_console 模块设备文件描述符残留信息泄露漏洞"
-updated = "2026-06-16"
+sources = ["avd"]
+title = "RedHat Linux pam_console 模块本地信息泄露漏洞"
+updated = "2026-06-16T21:51:35.513"
 
 [exploit]
 exp_urls = []
@@ -25,4 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-05/0023.html",
     "http://www.securityfocus.com/bid/1176",
     "https://www.exploit-db.com/exploits/19900",
+    "https://github.com/CVEProject/cvelistV5/blob/6e1fee15e021f95477107e3e5d652470f76f7bac/cves/2000/0xxx/CVE-2000-0378.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0378",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0378.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/ad583e79ed38e32f21eec5f8962c8f59146c10bc/CVE/data/2000/CVE-2000-0378.json",
+    "https://github.com/github/advisory-database/blob/711263a5c057385b05d3b3d477c7a317d9a9f37f/advisories/unreviewed/2022/04/GHSA-5949-54q2-grjg/GHSA-5949-54q2-grjg.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152300_152400.json",
+    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0378.json",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_5.list.dict",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--bef28ef8-a6b1-4ae5-ae39-677d4184a250.json",
 ]
