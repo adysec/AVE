@@ -1,11 +1,11 @@
 [basic]
-description = "HP-UX 11.0 的 net.init RC 脚本（S008net.init）在启动网络服务时会以 root 权限向 /tmp/stcp.conf 写入配置数据，但该文件路径为固定的临时目录且未做安全检查。本地攻击者可先创建符号链接，将 /tmp/stcp.conf 指向目标系统文件（如 /etc/passwd 等关键文件），当脚本执行写入操作时，攻击者即可实现任意文件覆盖，进而提升本地权限至 root。该漏洞的攻击前提是拥有本地 shell 访问权限。"
+description = "HP-UX 11.0 的 net.init RC 脚本存在符号链接攻击漏洞。本地攻击者可通过在 /tmp/stcp.conf 与目标文件之间建立符号链接，当系统以 root 权限执行 net.init 脚本时，会覆盖任意文件，导致权限提升或系统破坏。该漏洞影响 HP-UX 11.00 版本，攻击者需拥有本地系统访问权限，CVSS 评分 7.2，危害等级高。"
 published = "2000-10-20T04:00:00.000"
-remediation = "建议升级 HP-UX 11.0 到最新的 Patch 04（针对 CVE-2000-0702 的完整安全修复包），或安装包含 S701543 的 HP-UX 11.0 Security Update Package。通过修改 /etc/init.d/net.init，添加 `O_EXCL` 标志来确保 stcp.conf 文件安全创建，避免临时文件符号链接攻击。如无法立即升级，可临时将 /tmp 目录权限修改为 700，仅 root 用户可访问，并添加 `umask 077` 到登录 shell 中，以防止攻击者创建危害性文件。"
+remediation = "升级到 HP-UX 11.0 或 11.11 (11i) 的累积补丁或安装 PHCO_22666 安全补丁。如无法升级，删除 net.init 脚本的 setuid/setgid 位（chmod u-s /sbin/init.d/net.init），并在执行前创建 /tmp/stcp.conf 为只读空文件防止符号链接劫持。同时限制本地用户对敏感系统文件的写入权限作为纵深防御。"
 score = 7.2
 severity = "HIGH"
-sources = ["exploitdb"]
-title = "HP HP-UX 11.00 net.init RC 脚本本地文件覆盖漏洞"
+sources = ["cve"]
+title = "HP HP-UX net.init RC 脚本符号链接攻击漏洞"
 updated = "2026-06-16T21:52:18.083"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0702"]
 ave_id = "AVE-2000-0551"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1602",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5131",
     "https://www.exploit-db.com/exploits/20162",
-    "https://github.com/CVEProject/cvelistV5/blob/453c5421de2e86e7c24435e1e7daaae43fb314cf/cves/2000/0xxx/CVE-2000-0702.json",
+    "https://github.com/CVEProject/cvelistV5/blob/fbc52696b7594c66d398b40fcc0dc269121d7362/cves/2000/0xxx/CVE-2000-0702.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0702",
-    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-2000-0702.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/9a5386d000a40888283d918a46b8928ffcbfca7b/CVE/data/2000/CVE-2000-0702.json",
-    "https://github.com/github/advisory-database/blob/9abbad74b022844878ae09855eadd45809145d9b/advisories/unreviewed/2022/04/GHSA-225c-mv8x-h9xj/GHSA-225c-mv8x-h9xj.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0702.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6af0515548db3ee9e7e86d58b079762631fa8897/CVE/data/2000/CVE-2000-0702.json",
+    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/unreviewed/2022/04/GHSA-225c-mv8x-h9xj/GHSA-225c-mv8x-h9xj.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152700_152800.json",
-    "https://github.com/olbat/nvdcve/blob/39f1db26eec9899ab2f8110ab3b45424c6fe9ec2/nvdcve/CVE-2000-0702.json",
+    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0702.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--17fbce87-0aac-449f-a641-c16ddecd78f7.json",
 ]
