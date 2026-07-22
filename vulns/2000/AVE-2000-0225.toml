@@ -1,12 +1,15 @@
 [basic]
-description = "IBM AIX 系统的快速响应缓存加速器（FRCA）中，frcactrl 程序在处理配置文件时存在不安全的文件操作缺陷。本地已登录的普通用户可利用该程序提供的配置功能，通过构造恶意参数对系统上任意文件进行篡改（如覆盖或写入关键系统文件）。该漏洞仅影响本地已获得系统访问权限的低权限用户，无法被远程直接利用，攻击条件是攻击者需先登录到目标 AIX 主机。成功利用后可导致系统文件完整性被破坏，进而可能引发权限提升或服务异常，危害本地系统安全。IBM 已通过相应的补丁程序修复此问题。"
+description = "IBM AIX 操作系统的 Fast Response Cache Accelerator (FRCA) 组件中的 frcactrl 程序存在配置安全缺陷，本地攻击者可利用该程序的配置功能修改系统任意文件，导致权限提升或系统完整性遭破坏。CVSS 评分 7.2，危害等级高。"
 published = "2000-04-26"
-remediation = "应用 IBM AIX 对应版本的安全补丁（APAR IY05850 等），升级至已修复的 AIX 4.3.3 维护级别或更高版本。临时缓解措施：使用 chmod 700 与 chown root:system 限制 frcactrl 程序权限，禁止普通用户执行；或通过 /etc/security/user 限制相关用户登录，关闭 FRCA 服务直至完成补丁升级。"
+remediation = "安装 IBM APAR IY06437 提供的 AIX 安全补丁，或升级至 AIX 5.2 及以上版本。临时缓解措施：执行 chmod 0500 /usr/sbin/frcactrl 移除 setuid root 权限，若未使用 FRCA 功能可删除该二进制文件。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "IBM AIX FRCA frcactrl 本地任意文件篡改漏洞"
-updated = "2000-04-26"
+sources = [
+    "cve",
+    "avd",
+]
+title = "IBM AIX Fast Response Cache Accelerator 本地任意文件修改漏洞"
+updated = "2026-06-16"
 
 [exploit]
 exp_urls = []
@@ -17,12 +20,13 @@ aliases = ["CVE-2000-0249"]
 ave_id = "AVE-2000-0225"
 
 [meta]
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/1152",
     "http://xforce.iss.net/alerts/advise47.php3",
-    "https://github.com/CVEProject/cvelistV5/blob/bf63c766a0e51c24a528a42a3e26e4fdf58db9e8/cves/2000/0xxx/CVE-2000-0249.json",
+    "https://github.com/CVEProject/cvelistV5/blob/6b6ab35c79a8cf8624d21f1a20325bab41c1211a/cves/2000/0xxx/CVE-2000-0249.json",
+    "https://github.com/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-xwq6-j9m4-9grh/GHSA-xwq6-j9m4-9grh.json",
 ]
