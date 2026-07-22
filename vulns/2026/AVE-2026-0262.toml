@@ -1,0 +1,42 @@
+[basic]
+description = "vLLM 推理服务引擎在处理多声道音频时，默认使用 Librosa 库的 numpy.mean 进行声道下混（to_mono），而国际标准 ITU-R BS.775-4 规定了加权混音算法，两者存在处理差异。攻击者可利用此差异构造特制多声道音频，使人类听到的内容与 AI 模型处理的内容不一致，从而绕过内容审核机制。该漏洞影响 vLLM 0.5.5 至 0.18.0 之前版本，CVSS 评分 5.9，危害等级中危。官方已在 0.18.0 版本中修复此问题。"
+published = "2026-04-02T20:16:25.437"
+remediation = "立即将 vLLM 升级至 0.18.0 或以上版本（于 2026 年发布，包含该修复）。如无法立即升级，可修改音频预处理管线，将降混算法替换为 ITU-R BS.775-4 加权算法（参考 librosa 的 `to_mono` 实现，改用 `librosa.core.resample` 配合权重矩阵），并增加音频输入的内容安全校验机制以防范隐式注入攻击。"
+score = 5.9
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "vLLM 多声道音频混音算法不一致安全绕过漏洞"
+updated = "2026-06-17T10:39:34.550"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-34760",
+    "GHSA-6c4r-fmh3-7rh8",
+]
+ave_id = "AVE-2026-0262"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/vllm-project/vllm/commit/c7f98b4d0a63b32ed939e2b6dfaa8a626e9b46c4",
+    "https://github.com/vllm-project/vllm/pull/37058",
+    "https://github.com/vllm-project/vllm/releases/tag/v0.18.0",
+    "https://github.com/vllm-project/vllm/security/advisories/GHSA-6c4r-fmh3-7rh8",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/184a4cd474c4aaa5a27dac20b468f57966faa421/data/vuln/vllm/CVE-2026-34760.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/5c4b2ba2a59a96457ab4b8ea4ee82efc5782bb1d/cves/2026/34xxx/CVE-2026-34760.json",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/4d1eebacb731643a646e28a4f60e64dd753a5ff4/proposals/nvd/CVE-2026-34760.proposal.yaml",
+    "https://github.com/Tabll/gemnasium-db/blob/de1cbf8802a4c6060caaa5924b50812f2a62fead/pypi/vllm/CVE-2026-34760.yml",
+    "https://github.com/cisagov/vulnrichment/blob/a5255477d5a184aa815a0febf0096e43251805cf/2026/34xxx/CVE-2026-34760.json",
+    "https://github.com/TMA84/cvealert/blob/b5611c329e651f1fd606ff16e22adf5d86508695/content/posts/cve-2026-34760.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2026-34760.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/deaa43929ec54780e2eb376ab2d9b7b05edd5031/cve/CVE-2026-34760.html",
+    "https://github.com/pypa/advisory-database/blob/aad1d5d7fcfd4bf7bee792090d157de726946a96/vulns/vllm/PYSEC-2026-2299.yaml",
+    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/github-reviewed/2026/07/GHSA-6c4r-fmh3-7rh8/GHSA-6c4r-fmh3-7rh8.json",
+]
