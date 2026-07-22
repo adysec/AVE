@@ -1,0 +1,41 @@
+[basic]
+description = '''Perl 编程语言中的 `tr`（音译）运算符在处理左侧非 ASCII 字节时存在堆缓冲区溢出漏洞。当 `tr` 运算符的左操作数包含非 ASCII 字节时，`S_do_trans_invmap` 函数中的目标指针 `d` 会发生越界写入，导致堆内存损坏。攻击者可通过构造特制的 Perl 脚本（如 `perl -e '$_ = "\x{FF}" x 1000000; tr/\xFF/\x{100}/;'`）触发该漏洞，在缺乏足够内存安全防护的平台上可能导致拒绝服务或远程代码执行。该漏洞影响 Perl 5.34、5.36、5.38、5.40 及 5.33.1 至 5.41.10 的开发版本，CVSS 评分 8.4，危害等级高。利用该漏洞需要本地执行恶意 Perl 脚本的能力，无需特殊权限或用户交互。'''
+published = "2025-04-13T14:15:14.527"
+remediation = "升级 Perl 至修复版本：5.40.x 用户升级到 5.40.2，5.38.x 用户升级到 5.38.4，5.34.x 和 5.36.x 用户升级到对应发行版的最新安全补丁版本。如无法立即升级，可应用上游 commit 87f42aa0e0096e9a346c9672aa3a0bd3bef8c1dd 的补丁（https://github.com/Perl/perl5/commit/87f42aa0e0096e9a346c9672aa3a0bd3bef8c1dd.patch）手动修补源码后重新编译。Linux 发行版用户应通过系统包管理器安装安全更新（如 apt upgrade perl / yum update perl）。临时缓解措施：避免在 `tr` 运算符左侧使用非 ASCII 字节序列处理不可信输入。"
+score = 8.4
+severity = "HIGH"
+sources = ["msrc"]
+title = "Perl Perl tr运算符堆缓冲区溢出漏洞"
+updated = "2026-06-17T08:12:08.977"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-56406"]
+ave_id = "AVE-2024-0565"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Perl/perl5/commit/87f42aa0e0096e9a346c9672aa3a0bd3bef8c1dd.patch",
+    "https://metacpan.org/release/SHAY/perl-5.38.4/changes",
+    "https://metacpan.org/release/SHAY/perl-5.40.2/changes",
+    "http://www.openwall.com/lists/oss-security/2025/04/13/3",
+    "http://www.openwall.com/lists/oss-security/2025/04/13/4",
+    "http://www.openwall.com/lists/oss-security/2025/04/13/5",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-56406.md",
+    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2024/56xxx/CVE-2024-56406.json",
+    "https://github.com/manwar/theweeklychallenge/blob/b80269de5ec1a2920fe576a532db22fcedb45a71/content/blog/cve-2024-56406.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/75471602a53215062ddbaeb95f039a60b664c3d0/osv/cve/2024/UBUNTU-CVE-2024-56406.json",
+    "https://github.com/ekala-project/corepkgs/blob/d42eedf53274274d7bb9666071a8eecaa3dae5a0/pkgs-many/perl/CVE-2024-56406.patch",
+    "https://github.com/Perl/perl5/blob/d0f7d8eef2afa1167f036c6ddfe1fca566f3e922/pod/perl5402delta.pod",
+    "https://github.com/neuvector/vul-source/blob/9ba62febaf6254d72eb4667cd7923d92d2c3f9b6/ubuntu-cve-tracker/retired/CVE-2024-56406",
+    "https://github.com/openbsd/src/blob/7df8bae8aea92b7558995237fccbbb695cae1615/gnu/usr.bin/perl/pod/perl5384delta.pod",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2024/56xxx/CVE-2024-56406.json",
+    "https://github.com/Vu1nT0tal/yarb/blob/326d1eb3c211c5432d4f6357a04093f6484ab9cc/archive/2025/2025-04-16.md",
+]
