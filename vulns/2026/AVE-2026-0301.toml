@@ -1,0 +1,135 @@
+[id]
+ave_id = "AVE-2026-0301"
+aliases = ["CVE-2026-48737","GHSA-m5x5-28jr-gpjj"]
+
+[basic]
+title = "pyLoad: SSRF guard bypass via IPv6 6to4/NAT64 transition wrappers of internal IPs"
+description = "## Summary
+
+`is_global_address` in [`src/pyload/core/utils/web/check.py`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/src/pyload/core/utils/web/check.py) is the central guard against SSRF-style outbound connections in pyload-ng. It tests whether a given IP is \"globally routable\" via Python's `ipaddress.ip_address(value).is_global`, and callers treat `not is_global` as \"deny\":
+
+```python
+def is_global_address(value):
+    try:
+        return ipaddress.ip_address(value).is_global
+    except ValueError:
+        return False
+
+def is_global_host(value):
+    ips = host_to_ip(value)
+    return ips and all((is_global_address(ip) for ip in ips))
+```
+
+Python's `ipaddress.IPv6Address.is_global` classifies the NAT64 well-known prefix as **globally routable** on every supported Python version (3.9 through 3.14 confirmed), and on older Pythons (3.9-3.11) the 6to4 prefix as well:
+
+| address                          | `is_global` on Py 3.9-3.11 | `is_global` on Py 3.12+ | wrapped IPv4         |
+|----------------------------------|---------------------------|--------------------------|----------------------|
+| `2002:7f00:0001::` (6to4)        | True                      | False                    | 127.0.0.1            |
+| `2002:0a00:0001::` (6to4)        | True                      | False                    | 10.0.0.1             |
+| `2002:a9fe:a9fe::` (6to4)        | True                      | False                    | 169.254.169.254 (IMDS)|
+| `64:ff9b::a9fe:a9fe` (NAT64)     | True                      | True                     | 169.254.169.254      |
+| `64:ff9b::7f00:1` (NAT64)        | True                      | True                     | 127.0.0.1            |
+
+pyload-ng declares `python_requires = >=3.9` (`setup.cfg`), so deployments on Python 3.9-3.11 see the 6to4 path too. The NAT64 path is universal. `is_global` returns True for these wrappers, so `is_global_address` returns True and the deny check passes. The pycurl `PREREQFUNC` at [`src/pyload/core/network/http/http_request.py:680`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/src/pyload/core/network/http/http_request.py#L680) consults the same helper just before TCP-connect:
+
+```python
+if not self.allow_private_ip:
+    is_proxy_ip = self.http_proxy_host and self.http_proxy_host == (conn_primary_ip, conn_primary_port)
+    if not is_global_address(conn_primary_ip) and not is_proxy_ip:
+        return pycurl.PREREQFUNC_ABORT
+return pycurl.PREREQFUNC_OK
+```
+
+On a host with 6to4 routing (legacy operator tunnels; `2002::/16` still configurable) or NAT64 (cloud IPv6-only subnets with NAT64 gateway), the encoded form routes to the embedded IPv4 and the curl connection terminates at the internal endpoint, defeating the deny.
+
+`is_global_host` (the helper that callers like `parse_urls` use against a URL hostname) feeds through `host_to_ip` which pins `family=AF_INET`, so hostname-based reach to these forms relies on the attacker supplying an IPv6 literal in the URL — but the curl PREREQFUNC sees the actual resolved IP (the AAAA returned for the hostname), so a hostname with an AAAA record set to one of the bypass forms reaches the same gap.
+
+Cross-reference: this is the same incomplete-coverage class as pydantic-ai's [GHSA-cqp8-fcvh-x7r3](https://github.com/pydantic/pydantic-ai/security/advisories/GHSA-cqp8-fcvh-x7r3) / CVE-2026-46678. pyload-ng's prior SSRF advisories [GHSA-7gvf-3w72-p2pg](https://github.com/pyload/pyload/security/advisories/GHSA-7gvf-3w72-p2pg) and [GHSA-8rp3-xc6w-5qp5](https://github.com/pyload/pyload/security/advisories/GHSA-8rp3-xc6w-5qp5) both went through `is_global_host` / `is_global_address`; the IPv6 transition gap is orthogonal to those redirect-bypass classes.
+
+## Severity
+
+**MEDIUM** — `CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:C/C:L/I:N/A:L` = **4.7**
+
+- `AC:H` — exploitation requires the host network to route 6to4 (`2002::/16` traffic), have a NAT64 gateway, or otherwise resolve the IPv6 transition form to an internal IPv4 endpoint at the TCP layer.
+- `PR:L` — `parse_urls` ([`src/pyload/core/api/__init__.py:582`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/src/pyload/core/api/__init__.py#L582)) requires `Perms.ADD`, which any account capable of adding links holds. The curl PREREQFUNC at [`http_request.py:680`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/http_request.py#L680) is reached by every downloader plugin that runs after `is_global_host` passed.
+- `C:L/A:L` — internal-network recon and timing-based confirmation; cloud-metadata exfiltration on networks where the transition form actually routes.
+
+**CWE-918**: Server-Side Request Forgery (SSRF).
+
+## Affected versions
+
+`pyload-ng` from the introduction of `is_global_address` / `is_global_host` in [`src/pyload/core/utils/web/check.py`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/src/pyload/core/utils/web/check.py) up to and including the current main HEAD as of filing.
+
+## Vulnerable code
+
+[`src/pyload/core/utils/web/check.py`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/src/pyload/core/utils/web/check.py):
+
+```python
+def is_global_address(value):
+    try:
+        return ipaddress.ip_address(value).is_global
+    except ValueError:
+        return False
+```
+
+`Python ipaddress.IPv6Address.is_global` returns True for every address in `2002::/16` (6to4) and `64:ff9b::/96` (NAT64) regardless of the IPv4 they wrap, so this guard is a one-line bypass for the prefix the attacker chooses.
+
+## Reproduction
+
+[`research_wave5/poc/pyload_ipv6_ssrf/poc.py`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/research_wave5/poc/pyload_ipv6_ssrf/poc.py) drives both `is_global_address` and `is_global_host` against IPv6 transition forms whose embedded IPv4 points at loopback, RFC 1918, and AWS IMDS. The helper returns \"globally routable\" for every form. A second pass replays the same forms through the `PREREQFUNC` logic in [`http_request.py:680`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/http_request.py#L680) and shows the connection would be ALLOWED in each case.
+
+## Suggested fix
+
+Treat IPv6 transition-encoding forms by unwrapping the embedded IPv4 and re-running the global check, plus an explicit blocklist of well-known embedding prefixes for defence in depth:
+
+```python
+import ipaddress
+
+_NAT64_WELL_KNOWN = ipaddress.IPv6Network(\"64:ff9b::/96\")
+_NAT64_DISCOVERY = ipaddress.IPv6Network(\"64:ff9b:1::/48\")
+
+
+def _embedded_ipv4(addr):
+    if isinstance(addr, ipaddress.IPv6Address):
+        if addr.ipv4_mapped is not None:
+            return addr.ipv4_mapped
+        if addr.sixtofour is not None:  # 2002::/16 6to4
+            return addr.sixtofour
+        if addr in _NAT64_WELL_KNOWN or addr in _NAT64_DISCOVERY:
+            return ipaddress.IPv4Address(addr.packed[-4:])
+    return None
+
+
+def is_global_address(value):
+    try:
+        addr = ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    embedded = _embedded_ipv4(addr)
+    if embedded is not None:
+        addr = embedded
+    return addr.is_global
+```
+
+A patch implementing this approach (plus tests covering 6to4 and NAT64 wraps for 127.0.0.1, 10.0.0.1, 172.16.0.1, 192.168.1.1, 100.64.0.0/10, and 169.254.169.254) accompanies the fix PR.
+
+## Credits
+
+Reported by tonghuaroot."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T20:08:27.663323966+00:00"
