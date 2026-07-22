@@ -1,8 +1,8 @@
 [info]
 author = "AVE"
-description = "检测 Allmanage 2.6 的 allmanageup.pl CGI 文件上传脚本是否可被未授权直接访问。远程攻击者无需认证即可调用该脚本上传恶意文件、修改用户账户或网页内容。"
+description = "检测 Allmanage Website 管理软件 2.6 中 allmanageup.pl CGI 脚本是否可被远程未授权访问。该脚本本应受权限控制，但可被直接调用，攻击者可利用其上传功能修改用户账户或网页内容。"
 id = "POC-AVE-2000-0474"
-name = "Allmanage allmanageup.pl 未授权访问检测 PoC"
+name = "Allmanage allmanageup.pl 未授权文件上传 PoC"
 severity = "high"
 tags = ["ave-2000-0474"]
 vuln_id = [
@@ -18,27 +18,21 @@ method = "GET"
 path = "/{{BaseURL}}/cgi-bin/allmanageup.pl"
 protocol = "http"
 
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/allmanageup.pl"
-protocol = "http"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 status = [200]
 type = "status"
 
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/Allmanage/cgi-bin/allmanageup.pl"
-protocol = "http"
-
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "allmanageup",
+    "upload",
+    "Content-Type",
+]
