@@ -1,0 +1,149 @@
+[id]
+ave_id = "AVE-2026-0318"
+aliases = ["CVE-2026-49825","GHSA-4jhm-jv67-739f"]
+
+[basic]
+title = "`lxml_html_clean.Cleaner` does not strip `javascript:` URLs from namespaced URL attributes"
+description = "# `lxml_html_clean.Cleaner` does not strip `javascript:` URLs from namespaced URL attributes (`xlink:href`)
+
+**Reporter:** Guillem Lefait <guillem@datamq.com> · **Date:** 2026-05-10
+**Affected:** `lxml` ≤ 6.1.0 and `lxml_html_clean` ≤ 0.4.4 (latest stable)
+**Confirmed against:** lxml 6.1.0 + lxml_html_clean 0.4.4 on Python 3.13.5, 3.14.4, and 3.15.0a8 (libxml2 2.14.6 / 2.9.14 — bug is in pure-Python sanitizer logic, independent of the libxml2 backend)
+**Root-cause class:** same as CVE-2021-28957 (`formaction` missing from `link_attrs`)
+
+## Summary
+
+`Cleaner` filters URL schemes (`javascript:`, `vbscript:`, …) by walking links via `rewrite_links()`, which delegates to `iterlinks()`, which only yields attributes named in `lxml.html.defs.link_attrs`. That allow-list contains no prefixed names (`xlink:href`) and no `srcset`. As a result, when `Cleaner` is configured with `safe_attrs_only=False` — a documented option for callers that want lenient attribute handling but still expect URL-scheme scrubbing — `<a xlink:href=\"javascript:…\">` survives sanitization untouched, and any browser that follows the SVG-anchor specification will execute the JavaScript when the rendered link is clicked.
+
+**CWE:** CWE-79 (XSS), with CWE-184 (Incomplete List of Disallowed Inputs) as the underlying defect class.
+
+## Affected components
+
+| Package            | Versions tested        | File / line                      |
+|--------------------|------------------------|----------------------------------|
+| `lxml`             | 4.9.x, 5.2.1, 6.1.0    | `src/lxml/html/defs.py:20`       |
+| `lxml`             | \"                      | `src/lxml/html/__init__.py:485-528` |
+| `lxml_html_clean`  | 0.4.0 – 0.4.4          | `lxml_html_clean/clean.py:348,576` |
+
+The legacy `lxml.html.clean` module — bundled in `lxml < 5.2.0` and still installable on newer versions via the `lxml[html_clean]` extra — shares the same bug.
+
+## Root cause
+
+`defs.link_attrs` is a flat string set; the literal `xlink:href` is absent:
+
+```python
+# lxml/html/defs.py
+link_attrs = frozenset([
+    'action', 'archive', 'background', 'cite', 'classid',
+    'codebase', 'data', 'href', 'longdesc', 'profile', 'src',
+    'usemap', 'dynsrc', 'lowsrc', 'formaction',
+])
+```
+
+`HtmlMixin.iterlinks()` (`lxml/html/__init__.py:526-528`) only yields attributes whose key is in that set:
+
+```python
+for attrib in link_attrs:
+    if attrib in attribs:
+        yield (el, attrib, attribs[attrib], 0)
+```
+
+`Cleaner.__call__` registers the URL-scheme filter via `rewrite_links` (`lxml_html_clean/clean.py:348`), which is a thin wrapper around `iterlinks()`. Because `xlink:href` is never yielded, `_remove_javascript_link` (`clean.py:576`) is never invoked for it.
+
+## Minimal reproducer
+
+```python
+from lxml import html
+from lxml_html_clean import Cleaner
+
+for payload in (
+    '<svg><a xlink:href=\"javascript:alert(1)\">x</a></svg>',
+    '<math><a xlink:href=\"javascript:alert(2)\">y</a></math>',
+):
+    tree = html.fromstring(payload)
+    Cleaner(safe_attrs_only=False)(tree)
+    print(html.tostring(tree).decode())
+    print('  iterlinks:', list(html.fromstring(payload).iterlinks()))
+# <svg><a xlink:href=\"javascript:alert(1)\">x</a></svg>     ← unchanged
+#   iterlinks: []                                          ← link rewriter blind
+# <math><a xlink:href=\"javascript:alert(2)\">y</a></math>   ← unchanged
+#   iterlinks: []                                          ← link rewriter blind
+```
+
+Both SVG and MathML scopes are vulnerable — same allow-list gap, both render anchors that browsers treat as navigable. Other lab-confirmed surviving variants (same scope, different scheme encoding): mixed-case (`JaVaScRiPt:`), HTML-entity (`java&#x73;cript:`), embedded tab (`java\tscript:`).
+
+## Impact
+
+A caller that uses `Cleaner` to neutralise untrusted HTML and chooses `safe_attrs_only=False` — typically because the application wants to allow custom data-/aria-/vendor attributes — will silently pass `javascript:` payloads carried on `xlink:href` through to victim renders. Stored XSS in any application that round-trips user-supplied HTML through this configuration. Reach is conditional on the `safe_attrs_only=False` toggle, but that is a documented public option; consumers reasonably expect URL-scheme scrubbing to be independent of attribute allow-listing.
+
+## Suggested fix
+
+**Extend `link_attrs`** to include `xlink:href`. In HTML mode, `lxml.html` keeps prefixed attribute names verbatim — the parsed key is the literal string `xlink:href`, not a Clark-notation form — so the existing allow-list lookup is a plain string match. Same shape as the CVE-2021-28957 fix:
+
+```diff
+ # lxml/html/defs.py
+ link_attrs = frozenset([
+     'action', 'archive', 'background', 'cite', 'classid',
+     'codebase', 'data', 'href', 'longdesc', 'profile', 'src',
+     'usemap', 'dynsrc', 'lowsrc', 'formaction',
++    'xlink:href',
+ ])
+```
+
+This single change closes the reported XSS for both SVG `<a xlink:href>` and MathML `<a xlink:href>`. `lxml_html_clean` is the canonical home of the `Cleaner` code (881 lines); `lxml.html.clean` is a 21-line backward-compat shim (`from lxml_html_clean import *`) that picks up the fix automatically once `link_attrs` is updated upstream. Since the upstream change requires lxml maintainer action, see the alternative below if a self-contained patch in `lxml_html_clean` is preferred.
+
+**Alternative (in-package fix, no lxml coordination needed):** add a namespaced-URL-attribute walk inside `Cleaner.__call__` so the URL-scheme filter doesn't depend on `link_attrs`. Sketch:
+
+```python
+# lxml_html_clean/clean.py — supplements rewrite_links() in __call__
+_NS_URL_ATTRS = ('xlink:href',)  # extend as needed
+_BAD_SCHEME = re.compile(r'^\s*(javascript|vbscript|data):', re.I)
+
+for el in doc.iter():
+    for attr in _NS_URL_ATTRS:
+        if attr in el.attrib and _BAD_SCHEME.match(el.attrib[attr]):
+            del el.attrib[attr]
+```
+
+This decouples the cleaner from the upstream `link_attrs` set and matches the security-ownership boundary established when the cleaner was extracted in lxml 5.2.0.
+
+**Defense in depth (optional, regardless of which fix path is taken):**
+- Also handle `srcset`: the value is a `url 1x, url 2x, …` descriptor list, so split on commas and validate each candidate URL. Not directly executable in current browsers, but closes the same gap.
+- Also accept Clark-notation forms (`{http://www.w3.org/1999/xlink}href`) so XML-mode callers using `lxml.etree` get the same protection. HTML mode never produces this form, so not needed for the reported bug.
+
+## Severity
+
+CVSS 3.1 base score: **8.2 / High** — `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N` (stored XSS; victim must click the SVG anchor; scope-changed because script executes in the rendering origin). PR:N reflects the common case where untrusted HTML enters the sanitizer from anonymous sources (comments, support tickets); deployments that gate writes behind authentication can score with PR:L (→ 7.6).
+
+Severity is **CONDITIONAL** on the caller passing `safe_attrs_only=False`. With the class default (`True`), attribute allow-listing strips `xlink:href` before scheme scrubbing runs, and the bug does not fire — verified at HEAD: default-config `Cleaner()(<svg><a xlink:href=\"javascript:…\">x</a></svg>)` → `<svg><a>x</a></svg>`.
+
+## Prior art / novelty
+
+- **CVE-2021-28957 (lxml 4.6.3)** — same root cause, different attribute (`formaction`). Fix was a one-line extension of `link_attrs`. Direct precedent.
+- **CVE-2022-34473** (Mozilla Sanitizer API) — `xlink:href` URL bypass primitive in a different sanitizer.
+- **Bleach (Mozilla, Python)** explicitly handles the `xlink` namespace; `enshrined/svg-sanitize` (PHP) ships `cleanXlinkHrefs()`; DOMPurify scrubs `xlink:href` via `ALLOWED_URI_REGEXP`.
+- **`nh3`** (the alternative recommended in `lxml_html_clean`'s own README for security-sensitive use) is **not vulnerable** to this primitive — verified 2026-05-10 on `nh3==0.3.5`: with `<svg>`/`<math>`/`<a>` and `xlink:href` explicitly added to `tags`/`attributes`, both SVG and MathML payloads, all four scheme-encoding variants, are stripped (output e.g. `<svg><a rel=\"noopener noreferrer\">x</a></svg>`).
+
+
+## Coordination
+
+Filing as a private GHSA at `fedora-python/lxml_html_clean` — `lxml_html_clean` is the canonical maintainer of the `Cleaner` code (881 lines) and the security-responsible team since the lxml 5.2.0 split, where the cleaner was extracted out of lxml precisely so cleaner-security reports could land on the right team. The lxml side cannot be filed via GHSA (`https://github.com/lxml/lxml/security/advisories/new` returns 404 — private reporting is not enabled), so a parallel report has been emailed directly to the lxml maintainer for the upstream `defs.link_attrs` patch path. You're welcome to coordinate with them directly if you'd prefer the upstream fix over the in-package alternative above.
+
+Happy to provide a draft patch or PR on either path. No bounty expected."
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T23:13:56.256745546+00:00"
