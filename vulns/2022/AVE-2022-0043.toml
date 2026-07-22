@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 mt76 无线驱动中的 mt7921 芯片驱动存在空指针解引用漏洞。在设备移除流程中，mt7921_pci_remove 函数过早释放 mt76 设备结构体，导致 devm_free_irq 尚未完成时 mt7921_irq_handler 中断处理函数仍可能被调用，从而访问已释放的内存触发内核崩溃。本地攻击者可通过热拔插或驱动解绑操作利用该漏洞，造成拒绝服务。CVSS 评分 5.5，中等危害。"
+published = "2025-02-26T07:01:23.800"
+remediation = "将 Linux 内核升级至 5.17.14、5.18.3 或 5.19 及以上版本，包含提交 ad483ed9dd51 的补丁。该修复将 mt76_free_device 延迟至 devm_free_irq 完成后执行，避免设备移除时中断处理程序访问已释放的内存导致空指针解引用崩溃。如无法立即升级，可避免在系统运行中热拔插或 unbind mt7921 无线网卡设备作为临时缓解。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel mt7921 WiFi 驱动释放后使用导致内核空指针解引用漏洞"
+updated = "2026-06-17T05:18:10.293"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49476"]
+ave_id = "AVE-2022-0043"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/09693f5b636fb3f6dd56fd943226fc1bbc600b51",
+    "https://git.kernel.org/stable/c/677e669973bf5460705bc65033445ea9f6615999",
+    "https://git.kernel.org/stable/c/ad483ed9dd5193a54293269c852a29051813b7bd",
+    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2022/49xxx/CVE-2022-49476.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2022-49476",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49476.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/3de260baf5452671b1860955d9815c2cdbc09bef/2022/49xxx/CVE-2022-49476.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2022-49476.md",
+    "https://github.com/github/advisory-database/blob/60cf806ffc57d6909f887b4f3823ae39ed0d7c51/advisories/unreviewed/2025/03/GHSA-h9m4-2235-4mrh/GHSA-h9m4-2235-4mrh.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49476",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6962d12e25fbf447fb7ec00c59de25f9ba4e2a94/SSVC/data/2022/CVE-2022-49476.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--609b98d9-d3fd-4e02-90e8-bda5e895c124.json",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2022-49476",
+]
