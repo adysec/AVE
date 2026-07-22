@@ -1,35 +1,28 @@
-[id] and [meta] - the order doesn't matter in TOML but it's a style issue.
-3. The `published` and `updated` dates have millisecond precision with extra `.000` and `.570` suffix.
-1. `remediation` - needs to be actual Chinese remediation text ≥20 characters
-2. I should also clean up the date format by removing the millisecond precision since Rust typically expects RFC3339 without the fractional seconds.Based on the NVD page, I can see that this vulnerability is in gpm on Caldera Linux, allowing local users to delete arbitrary files or conduct a denial of service. CVSS v2 score is 3.6 (LOW). The references include:
-- http://archives.neohapsis.com/archives/bugtraq/2000-07/0273.html
-- http://www.securityfocus.com/bid/1512
-The problems to fix:
-1. `remediation` field is empty/corrupted - it contains template text that needs to be replaced with actual Chinese remediation text ≥20 characters
-Since this is an old 2000 vulnerability in Caldera Linux's gpm, the remediation would be to upgrade gpm package or apply vendor patches. I don't have a specific patch number confirmed, so I'll provide a general but actionable remediation.
-For the remediation step, local administrators need to upgrade the gpm package to a version with the fix applied, while also restricting local system access and considering disabling the gpm service if the graphical console isn't essential. Caldera Linux's "Exploit" and "Patch" tags in the NVD references indicate patches existed, though Caldera was acquired by SCO so I should surface a version number if possible from the securityfocus archive.
-Since this is an old Caldera Linux vulnerability, my best approach is recommending administrators upgrade gpm to the patched version from SCO, patch the package, or disable the service if it's not needed—I'll phrase it specifically without fabricating a version number I can't verify.Based on the NVD page, I can confirm the key details. The main issue is the `remediation` field contains corrupted template text. Let me fix it:
-[id]
-ave_id = "AVE-2000-0817"
-aliases = ["CVE-2000-0667"]
 [basic]
-title = "Caldera Linux gpm 本地文件删除与拒绝服务漏洞"
 description = "Caldera Linux 系统中所集成的通用鼠标服务（gpm）存在安全漏洞，本地攻击者可通过向该服务发送特制请求利用此漏洞，从而删除系统任意文件或触发拒绝服务（DoS）条件。该漏洞影响 Caldera Linux 发行版，利用前提是攻击者已获得本地系统访问权限。CVSS 评分为 3.6，危害等级较低。"
-severity = "LOW"
-score = 3.6
-sources = ["cve"]
 published = "2000-07-27"
-updated = "2000-07-27"
 remediation = "将 gpm 软件包升级到 Caldera 官方已修复的版本，或应用相应安全补丁。如系统不需要鼠标控制台功能，建议通过系统启动项配置禁用以减少攻击面。管理有本地访问权限的用户列表，避免赋予不可信用户 shell 访问权限。"
+score = 3.6
+severity = "LOW"
+sources = ["cve"]
+title = "Caldera Linux gpm 本地文件删除与拒绝服务漏洞"
+updated = "2000-07-27"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0667"]
+ave_id = "AVE-2000-0817"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://archives.neohapsis.com/archives/bugtraq/2000-07/0273.html",
-"http://www.securityfocus.com/bid/1512",
-"https://nvd.nist.gov/vuln/detail/CVE-2000-0667",
+    "http://archives.neohapsis.com/archives/bugtraq/2000-07/0273.html",
+    "http://www.securityfocus.com/bid/1512",
+    "https://nvd.nist.gov/vuln/detail/CVE-2000-0667",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-21T00:00:00Z"

