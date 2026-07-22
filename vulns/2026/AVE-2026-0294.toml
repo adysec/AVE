@@ -1,0 +1,112 @@
+[id]
+ave_id = "AVE-2026-0294"
+aliases = ["CVE-2026-48118","GHSA-mxpf-qgg6-v3ff"]
+
+[basic]
+title = "NukeViet: Unauthenticated Reflected XSS in Comment Module"
+description = "## Summary
+
+Reflected XSS in the Comment module via the `status_comment` URL parameter. The parameter accepts attacker-controlled base64-encoded HTML/JavaScript that is decoded server-side and rendered unescaped into the page. Compounded by a second flaw: the `checkss` anti-forgery token was derived from a site-wide static value (`NV_CACHE_PREFIX`) instead of a per-session value, making the token reusable across all users and allowing the attack to be delivered via a simple crafted URL.
+
+## Details
+
+### Vulnerability 1 — Reflected XSS via `status_comment`
+
+**Affected components:**
+- `modules/comment/funcs/main.php` — parameter ingestion
+- `modules/comment/comment.php` — decode and template assignment
+- `themes/*/modules/comment/comment.tpl` — raw render
+
+The `status_comment` GET/POST parameter is sanitised with `get_title()`, which applies `strip_tags()`. Because the parameter is intended to carry a base64-encoded string, its character set (`[A-Za-z0-9-_,]`) passes through `strip_tags()` unchanged. The value is later decoded with `nv_base64_decode()` and assigned to the template variable `STATUS_COMMENT` **without any escaping**, which the template then renders raw inside a `<div>`.
+
+The fundamental flaw is ordering: the filter is applied to the **encoded form** of the data, before decoding, so it is entirely ineffective against whatever the decoded content contains. Any HTML or JavaScript payload, once base64-encoded, survives the filter and executes in the victim's browser.
+
+### Vulnerability 2 — Session-independent `checkss` token
+
+**Affected components:**
+- `modules/comment/comment.php` — token validation in comment-load and comment-module functions
+- `modules/comment/funcs/post.php` — token validation when posting
+- All caller modules that generate a `checkss` before invoking the comment system (e.g. `modules/news`, `modules/page`)
+
+The `checkss` token required to load the comment block was computed by hashing the resource parameters together with `NV_CACHE_PREFIX`:
+
+```
+checkss = md5(module + area + id + allowed + NV_CACHE_PREFIX)
+```
+
+`NV_CACHE_PREFIX` is a static, site-wide constant — identical for every visitor — derived at install time from the site key and server name. The token therefore has the same value for all users viewing the same article and never changes between sessions.
+
+This token is printed into the public HTML of every page that includes a comment block (as a `data-checkss` attribute on the comment container). Because the token is not session-bound, an attacker can read it from the page source and reuse it in a crafted URL targeting any other user.
+
+The correct pattern, used consistently elsewhere in the codebase (e.g. `modules/contact`, `modules/banners`), is to derive the token from `NV_CHECK_SESSION`:
+
+```
+NV_CHECK_SESSION = md5(NV_CACHE_PREFIX + session_id)
+```
+
+This binds the token to the current session, so a token obtained by the attacker is invalid for any other user's session.
+
+## Attack scenario
+
+1. Attacker opens any article with a comment block and reads the `checkss` value from the HTML source.
+2. Attacker constructs a payload (e.g. a credential-phishing overlay) and base64-encodes it.
+3. Attacker delivers the following URL to the victim:
+   ```
+   https://<target>/index.php?language=vi&nv=comment&comment_load=1
+     &module=news&area=<area>&id=<id>&allowed=<allowed>
+     &checkss=<value_from_step_1>
+     &status_comment=<base64_payload>
+   ```
+4. When the victim opens the URL, the decoded payload renders in their browser within the site's origin, with access to cookies, session storage, and the ability to make authenticated requests.
+
+**Verified impact:** A phishing overlay form was confirmed to transmit captured plaintext credentials to an attacker-controlled server. No authentication is required at any step.
+
+**CSP note:** NukeViet's Content-Security-Policy includes `script-src 'unsafe-inline'` and does not restrict navigation, so the policy does not prevent exploitation.
+
+## CVSS 3.1
+
+**Vector:** `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N`
+**Base Score:** **8.2 (High)**
+
+| Metric | Value | Rationale |
+|--------|-------|-----------|
+| Attack Vector | Network | Exploitable remotely via crafted URL |
+| Attack Complexity | Low | `checkss` readable from public HTML; no special setup required |
+| Privileges Required | None | No authentication needed |
+| User Interaction | Required | Victim must open the crafted URL |
+| Scope | Changed | JavaScript executes in victim's browser, crossing the application security boundary |
+| Confidentiality | **High** | Full plaintext credential capture demonstrated via phishing overlay |
+| Integrity | Low | DOM manipulation and authenticated requests possible; no direct backend write access |
+| Availability | None | No denial-of-service impact |
+
+## Patches
+
+Both root causes are addressed:
+
+**Fix 1 — Bind `checkss` to user session:** Replace `NV_CACHE_PREFIX` with `NV_CHECK_SESSION` in all locations that generate or validate the comment `checkss` token — both inside the comment module itself and in any caller module that constructs the token before invoking the comment system. With a session-bound token, a value obtained by the attacker is invalid for any other user's session, removing the delivery mechanism for this attack.
+
+**Fix 2 — Escape decoded output before rendering:** Apply `nv_htmlspecialchars()` to the result of `nv_base64_decode($status_comment)` before assigning it to the template. This closes the XSS sink as an independent defence-in-depth measure, remaining effective regardless of how the code path is reached.
+
+Fix 1 alone eliminates the exploitability of this specific vector. Fix 2 is a necessary defence-in-depth layer that closes the underlying sink.
+
+## CWE
+
+- [CWE-79](https://cwe.mitre.org/data/definitions/79.html): Improper Neutralization of Input During Web Page Generation (Cross-site Scripting)
+- [CWE-565](https://cwe.mitre.org/data/definitions/565.html): Reliance on Cookies without Validation and Integrity Checking (contributing factor — session-independent token)"
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T19:30:24.433569859+00:00"
