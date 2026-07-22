@@ -1,6 +1,6 @@
 [info]
 author = "AVE"
-description = "检测 CVS 1.10.7 可预测临时文件名本地拒绝服务漏洞。CVS 使用 /tmp/cvs-serv<PID> 格式的可预测临时文件名进行锁定，本地攻击者可预先创建大量锁目录抢占 PID 范围，导致合法 CVS 用户无法获取文件锁而拒绝服务。PoC 验证攻击前提条件 — /tmp 目录可写且 cvs-serv 前缀路径可预测。"
+description = "检测 CVS 1.10.7 可预测临时文件名锁定漏洞，通过检查 CVS 仓库中是否存在可预测的锁目录来判断漏洞存在条件"
 id = "POC-AVE-2000-0285"
 name = "CVE-2000-0338 PoC"
 severity = "medium"
@@ -11,14 +11,14 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
-path = "/tmp"
+path = "/tmp/cvs-servers/#cvs.lock"
 protocol = "file"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["tmp"]
+words = [""]
