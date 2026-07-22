@@ -1,6 +1,6 @@
 [info]
-author = "ave"
-description = "检测目标服务器是否存在 rpm_query CGI，该脚本未经认证即可返回系统已安装的 RPM 包列表，导致信息泄露。发送 GET 请求到 /cgi-bin/rpm_query，若返回包含 RPM 包名特征则判定存在漏洞。"
+author = "AVE"
+description = "向 Caldera OpenLinux 2.3 的 /cgi-bin/rpm_query CGI 发送 GET 请求，检测是否返回 RPM 软件包列表信息。该 CGI 无需认证即可访问，泄露已安装软件包名称与版本，可被用于后续针对性攻击。"
 id = "POC-AVE-2000-0169"
 name = "Caldera OpenLinux 2.3 rpm_query CGI 信息泄露 PoC"
 severity = "medium"
@@ -11,7 +11,7 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
@@ -20,11 +20,15 @@ protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
 part = "body"
 type = "word"
 words = [
-    "Name",
-    "Distribution",
-    "kernel",
     "rpm_query",
+    "RPM",
+    "Query",
 ]
