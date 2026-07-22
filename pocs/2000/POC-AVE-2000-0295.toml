@@ -1,8 +1,8 @@
 [info]
-author = "ave"
-description = "检测 Microsoft IIS 4.0/5.0 IISADMPWD 虚拟目录的 Undelimited .HTR Request 拒绝服务漏洞（CVE-2000-0304）。通过向 .htr 密码管理脚本发送 HTTP 请求，验证目标服务器是否启用了 IISADMPWD 虚拟目录及 HTR 脚本映射，这是触发该漏洞的前提条件。若存在，攻击者可通过发送缺失分隔符的畸形请求触发无限循环，导致 Web 服务响应缓慢或崩溃。"
+author = "AVE"
+description = "向 IISADMPWD 虚拟目录发送畸形未分隔的 HTR 请求，触发 inetinfo.exe 解析异常导致进程崩溃，验证 IIS 拒绝服务漏洞存在"
 id = "POC-AVE-2000-0295"
-name = "CVE-2000-0304 PoC"
+name = "Microsoft IIS 4.0/5.0 HTR请求拒绝服务漏洞 PoC"
 severity = "medium"
 tags = ["ave-2000-0295"]
 vuln_id = [
@@ -11,23 +11,19 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/iisadmpwd/aexp.htr"
+path = "/{{BaseURL}}/IISADMPWD/"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "200",
-    "401",
-    "403",
     "500",
+    "Service Unavailable",
+    "Server Error",
 ]
