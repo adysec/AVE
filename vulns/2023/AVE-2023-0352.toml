@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核 drm/i915 驱动中 `mmap_offset` 重复使用导致内存泄漏，`drm_vma_node_allow()` 与 `drm_vma_node_revoke()` 调用未成对平衡，每次用户调用 `mmap_offset` 时调用前者但后者仅在释放时调用一次，导致每文件 `vm_count` 非零且红黑树节点泄漏。本地攻击者可通过反复触发 `mmap_offset` 操作耗尽系统内存，造成拒绝服务。该漏洞影响 Linux 主线内核版本，CVSS 评分 5.5，危害等级中危。"
+published = "2025-03-27T17:15:49.050"
+remediation = "立即升级 Linux 内核至 6.1.9 及以上版本（含 6.2+），或合入修复补丁 commits `0bdc4b4ba720` / `0220e4fe178c`（均位于 `drivers/gpu/drm/i915/gem/i915_gem_mman.c`）。若无法立即升级，可通过限制本地用户对 i915 DRM 设备的访问权限作为临时缓解措施，或在内核启动参数中禁用 i915 模块（`modprobe.blacklist=i915`）以完全规避此内存泄漏风险。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel drm/i915 内存泄漏漏洞"
+updated = "2026-06-17T06:44:05.637"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2023-53002"]
+ave_id = "AVE-2023-0352"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0220e4fe178c3390eb0291cdb34912d66972db8a",
+    "https://git.kernel.org/stable/c/0bdc4b4ba7206c452ee81c82fa66e39d0e1780fb",
+    "https://github.com/CVEProject/cvelistV5/blob/0e6d432d517e5cdf9829125ecfaa3a6437985a0c/cves/2023/53xxx/CVE-2023-53002.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2023/CVE-2023-53002.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/ee0faf64b77ff7a5d60107543287bfbcf4a3c8bf/2023/53xxx/CVE-2023-53002.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2023-53002",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2023-53002.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2023-53002.json",
+    "https://github.com/github/advisory-database/blob/a96652a2a06e880f217d1d6526622d8501dbbd69/advisories/unreviewed/2025/03/GHSA-vxj7-p6gh-99vg/GHSA-vxj7-p6gh-99vg.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2023-53002",
+    "https://github.com/AwwMann99/VulneRAG/blob/09adf154d3574ffded6af925a6311b0a20df9db0/docs/Cve_Data/cve_md/CVE-2023-53002.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8575b52c5f0d68ec89781aae82e849b4f469cd84/SSVC/data/2023/CVE-2023-53002.json",
+]
