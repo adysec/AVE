@@ -1,47 +1,27 @@
-[id]`, two `[exploit]`, two `[meta]`, two `[references]`)
-2. `remediation` field is empty (it contains a malformed string that includes the next `[id]` section)
-3. Description needs more technical details
-4. The `[id]` section has `ave_id = "AVE-1999-00001"` in one place and `ave_id = "AVE-1999-0935"` in another - the correct one is `AVE-1999-0935` per the task
-5. Multiple structural issues
-1. The TOML is malformed - There are duplicate sections (`[basic]`, `[id]`, `[meta]`, `[references]`, `[exploit]` appear multiple times). The first `[basic]` section has a `remediation` field that contains a raw string with embedded TOML content, which is invalid.
-2. description - Needs more technical details (function names, attack vectors). The current description is decent but could be more specific.
-3. remediation - The remediation field is empty in the final valid section (the first `[basic]` section has remediation embedded in a malformed way, but the second `[basic]` section has no remediation field at all).
-4. URLs - There are too many GitHub mirror URLs that are not authoritative. I should keep only the authoritative ones.
-From NVD:
-- Description: "tin 1.40 creates the .tin directory with insecure permissions, which allows local users to read passwords from the .inputhistory file."
-- CVSS v2.0: 4.6 MEDIUM (AV:L/AC:L/Au:N/C:P/I:P/A:P)
-- Published: 1999-11-17
-- Reference: http://marc.info/?l=bugtraq&m=94286179032648&w=2
-The CVE is about tin 1.40 creating .tin directory with insecure permissions (likely 0777 or umask issues), allowing local users to read .inputhistory file containing passwords.
-For remediation: Since this is from 1999, the fix would be to upgrade to tin 1.41+ or manually set permissions on .tin directory to 700.
-Key facts:
-- tin 1.40 (not 1.40, it's 1.4.0)
-- The .tin directory is created with permissions drwxr-xr-x (755)
-- The .inputhistory file is created with permissions -rw-rw-r-- (664)
-- This allows local users to read passwords stored in .inputhistory
-- CVSS v2 score: 4.6 MEDIUM (AV:L/AC:L/Au:N/C:P/I:P/A:P)
-- Published: 1999-11-17
-- The original Bugtraq post suggests: rm .inputhistory, touch new one, chmod 000
-The remediation should be specific: upgrade to a newer version, or manually fix permissions as described in the Bugtraq post.
-Now let me fix the TOML. The issues were:
-1. description needs more technical details (function names, attack vectors)
-2. remediation is empty
-description = "tin 1.4.0 在用户主目录下创建 .tin 目录时使用默认权限 drwxr-xr-x（755），同时将用户所有键盘输入记录保存至 ~/.tin/.inputhistory 文件（权限 664）。同一系统上的其他本地用户可通过读取该文件获取明文密码等敏感信息，攻击者无需特殊权限即可实施窃取。"
+[basic]
+description = "tin 1.4.0 在用户主目录下创建 .tin 配置目录时使用默认权限 drwxr-xr-x（755），同时 .inputhistory 文件权限为 -rw-rw-r--（664）。当用户使用需要认证的新闻服务器时，tin 会记录所有键盘输入并保存至 ~/.tin/.inputhistory，其他本地用户可直接读取该文件获取明文密码等敏感信息。"
 published = "1999-11-17"
-remediation = "升级 tin 至更高版本；或手动执行 rm -f ~/.tin/.inputhistory && touch ~/.tin/.inputhistory && chmod 000 ~/.tin/.inputhistory 禁止其他用户读取。同时建议使用安全认证方式避免密码明文存储。"
+remediation = "升级 tin 至更高版本修复目录权限问题；或手动执行 rm -f ~/.tin/.inputhistory && touch ~/.tin/.inputhistory && chmod 000 ~/.tin/.inputhistory 禁止其他用户读取该文件。同时建议使用安全认证方式避免密码明文存储。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["cve", "avd"]
+sources = ["cve"]
 title = "tin 1.4.0 .tin目录权限不安全导致密码泄露漏洞"
 updated = "2024-06-16"
+
 [exploit]
 exp_urls = []
 poc_urls = []
+
 [id]
 aliases = ["CVE-1999-1092"]
 ave_id = "AVE-1999-0935"
+
 [meta]
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
+
 [references]
-urls = ["http://marc.info/?l=bugtraq&m=94286179032648&w=2", "https://nvd.nist.gov/vuln/detail/CVE-1999-1092"]
+urls = [
+    "http://marc.info/?l=bugtraq&m=94286179032648&w=2",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-1092",
+]
