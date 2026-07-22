@@ -1,0 +1,33 @@
+[basic]
+description = "EGroupware 邮件 HTML 编辑功能在处理内嵌图片 URL 时，未对 URI scheme 进行充分校验，仅通过 str_starts_with($myUrl, 'http') 判断是否为 HTTP 链接，导致 file:// 协议被绕过检测。攻击者可构造包含 file:// 协议的恶意邮件，利用 file_get_contents() 读取服务器任意本地文件（如 /etc/passwd）并以内联 MIME 附件形式嵌入外发邮件中。该漏洞影响 EGroupware 全版本，攻击者需具备向目标系统发送 HTML 邮件的权限，属于低权限条件下的高危信息泄露漏洞。"
+published = "2026-07-06"
+remediation = "升级 EGroupware 到 26.5.20260507（26.x 分支）或 23.1.20260601（23.x 分支）及以上版本。如无法立即升级，修改 api/src/Mail.php 中 processURL2InlineImages 函数，将 URI 校验由 !str_starts_with($myUrl, 'http') 替换为 if (!preg_match('#^https?://#i', $myUrl)) { continue; }，禁止 file:// 等非 HTTP 协议 URIs 传入 file_get_contents。"
+score = 6.5
+severity = "MEDIUM"
+sources = [
+    "cve",
+    "ghsa",
+]
+title = "EGroupware Mail 组件文件包含漏洞"
+updated = "2026-07-07"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-45016",
+    "GHSA-c8m7-r2jv-rw63",
+]
+ave_id = "AVE-2026-0272"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/EGroupware/egroupware/security/advisories/GHSA-c8m7-r2jv-rw63",
+    "https://github.com/advisories/GHSA-c8m7-r2jv-rw63",
+]
