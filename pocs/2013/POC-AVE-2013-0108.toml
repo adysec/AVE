@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "检测目标服务器是否托管了易受 CVE-2013-0648 攻击的 Flash 内容。通过扫描 SWF 文件、Flash 版本标识和 ExternalInterface 桥接端点，判断目标是否运行在存在 ExternalInterface ActionScript 远程代码执行漏洞的 Flash Player 版本（Windows/Mac 上低于 10.3.183.67 或 11.6.602.171，Linux 上低于 10.3.183.67 或 11.2.202.273）"
+id = "POC-AVE-2013-0108"
+name = "CVE-2013-0648 Adobe Flash Player ExternalInterface RCE PoC"
+severity = "high"
+tags = ["ave-2013-0108"]
+vuln_id = [
+    "CVE-2013-0648",
+    "AVE-2013-0108",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/main.swf"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "FWS",
+    "CWS",
+    "ZWS",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "application/x-shockwave-flash",
+    "swfobject",
+    "ExternalInterface",
+]
