@@ -1,0 +1,39 @@
+[info]
+author = "AVE"
+description = "通过构造恶意 Silverlight XAP 应用，利用 System.Windows.Browser.ScriptObject.Initialize() 方法中的双重解引用漏洞触发内存访问错误，实现远程代码执行。PoC 模拟 Metasploit 模块的 HTML 页面投递方式，检测目标是否加载恶意 Silverlight 组件。"
+id = "POC-AVE-2013-0022"
+name = "CVE-2013-0074 Microsoft Silverlight Double Dereference RCE PoC"
+severity = "high"
+tags = ["ave-2013-0022"]
+vuln_id = [
+    "CVE-2013-0074",
+    "AVE-2013-0022",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Silverlight",
+    "application/x-silverlight-2",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/SilverApp1.xap"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["application/x-silverlight-2"]
