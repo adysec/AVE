@@ -1,0 +1,35 @@
+[basic]
+description = "imwheel 套件中的 imwheel-solo 是一个 SUID Perl 脚本，存在一个危险的符号链接漏洞。攻击者能够通过精心 crafted 的 .imwheelrc 文件（或相关临时文件）创建指向敏感文件（如 /etc/shadow、/etc/passwd 等）的符号链接，当 imwheel-solo 脚本在处理这些文件时，将导致系统权限用户实际修改这些关键系统文件。漏洞原理在于脚本未充分验证目标文件的真实路径，而是直接打开并写入用户控制的路径。具体影响方面，任何本地用户均可利用此漏洞修改系统关键配置文件，潜在后果包括：破坏系统安全（修改密码文件）、破坏服务配置（权限提升）、数据破坏或导致系统服务崩溃。攻击条件要求攻击者首先获得本地用户权限，通常通过其他漏洞或社会工程学手段实现，这类攻击通常通过辅助工具（如编译自定义 payload）结合定时任务或登录后执行链实现。利用方式上，攻击者需要先分析目标系统的 .imwheelrc 文件权限和位置，精心设计恶意符号链接路径，利用 imwheel-solo 的 SU 权限触发写入操作，因此这是典型的本地提权漏洞，危害等级为低至中（CVSS v2.0 评分为 2.1），影响系统完整性和机密性。官方补丁通常建议升级到安全版本并修改 imwheel-solo 的权限配置，或直接禁用其 SU 权限以消除风险。"
+published = "2001-08-31"
+remediation = "立即升级 imwheel 至修复版本（Red Hat 已发布 RHSA-2000:016 安全公告，对应 imwheel 补丁版本）。如无法升级，可删除 imwheel-solo 的 suid 位（chmod u-s /usr/bin/imwheel-solo），或直接卸载 imwheel 软件包以消除攻击面。临时缓解措施包括确保 .imwheelrc 文件所在目录仅由可信用户管理。"
+score = 5
+severity = "MEDIUM"
+sources = ["redhat"]
+title = "imwheel imwheel-solo 本地符号链接任意文件修改漏洞"
+updated = "2001-08-31"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-1190"]
+ave_id = "AVE-2000-0932"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/CVEProject/cvelistV5/blob/27eee309d10a00ce5571c5ab1765599e23f1725f/cves/2000/1xxx/CVE-2000-1190.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1190",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-1190.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d449633638bc4d33beb359a70dee0dbe66d39a20/CVE/data/2000/CVE-2000-1190.json",
+    "https://github.com/github/advisory-database/blob/b21976b5bf1b11783559cbe4f375f11636b79518/advisories/unreviewed/2022/04/GHSA-pwgx-pv8v-3hcp/GHSA-pwgx-pv8v-3hcp.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88540/info.html",
+    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-1190.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_151200_151300.json",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/864adb9ddf294417a5a4e84f90f9adf54e9dca89/2000.tsv",
+    "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--f29c72cc-43ac-4c3b-9b11-8ec2972ce55c.owl",
+]
