@@ -1,0 +1,25 @@
+[info]
+author = "AVE"
+description = "检测 Gitea 1.25.5 版本中预接收钩子(pre-receive hook)权限缓存绕过漏洞。该版本在单次 git push 会话中对分支写入权限的检查结果会被缓存并错误地复用于后续所有引用(refs)，拥有单一分支维护者编辑权限的攻击者可借此提权写入整个仓库。通过 API 版本检查确认目标是否受影响。"
+id = "POC-AVE-2026-0255"
+name = "Gitea Pre-Receive Hook Permission Cache Bypass PoC"
+severity = "high"
+tags = ["ave-2026-0255"]
+vuln_id = [
+    "CVE-2026-27775",
+    "AVE-2026-0255",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/version"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["1.25.5"]
