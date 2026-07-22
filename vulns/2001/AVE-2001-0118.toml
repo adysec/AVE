@@ -1,62 +1,32 @@
-1. The `remediation` field contains a long internal monologue/thinking text instead of actual remediation content. I need to replace it with proper remediation text in Chinese.
-2. The `score` is 10, which matches `CRITICAL` severity (≥9), so that's fine.
-3. The `description` is in Chinese and seems adequate.
-4. The `title` is in Chinese and seems fine.
-5. The `published` field has a time component - should it just be a date? Let me check the schema The schema says `published = "2024-01-01"` format. But the current value is `"2001-05-03T04:00:00.000"`. I should keep it as is since the schema example shows date format but the actual data might have more precision.
-6. The `updated` field is `"2026-06-16T21:54:01.177"` - this seems like a processing date, which is fine.
-7. The `remediation` field needs to be fixed - it currently contains the AI's internal thinking text instead of actual remediation content.
-For the remediation, since this is a very old vulnerability (2001) affecting Atrium Software Mercur Mail Server 3.3, the vendor likely no longer supports this product. I should provide practical remediation advice in Chinese, at least 20 characters.
-Actually, I know from the context that:
-- CVE-2001-0280: Buffer overflow in Atrium Software Mercur Mail Server 3.3 SMTP EXPN command
-- The fix would be to upgrade to a patched version or migrate away
-1. The `remediation` field is broken - it contains a long internal monologue/thinking text instead of a proper remediation. The actual remediation text is at the end: "升级 Mercur Mail Server 至 3.30 以上版本，或安装厂商发布的安全补丁。如产品已停止维护，建议迁移至其他受支持的邮件服务器软件（如 Postfix、Exchange），并在迁移前于防火墙层面限制 SMTP 端口（25/TCP）仅允许可信 IP 访问作为临时缓解。"
-2. The `published` field has a time component which should just be a date.
-3. The `updated` field has a time component which should just be a date.
-4. The `score` is 10 which is valid for CRITICAL.
-5. The `sources` should include "cve" since it has a CVE ID.
-6. The `remediation` field needs to be cleaned up - remove the internal monologue.
-1. Fix `remediation` - remove the internal monologue, keep only the actual remediation text
-2. Fix `published` - change from "2001-05-03T04:00:00.000" to "2001-05-03"
-3. Fix `updated` - change from "2026-06-16T21:54:01.177" to "2026-06-16"
-4. Add "cve" to sources
-5. Clean up the URLs - remove the many GitHub mirror links that aren't authoritative references. Keep only the authoritative ones.
-Actually, looking at the NVD page, the official references are:
-- http://archives.neohapsis.com/archives/bugtraq/2001-02/0413.html
-- http://www.osvdb.org/6027
-- https://exchange.xforce.ibmcloud.com/vulnerabilities/6149
-The exploit-db link is also valid since there's an actual exploit.
-The other GitHub links are just mirrors of CVE data and aren't really authoritative references. I should keep the main ones.
-1. remediation: Was empty/placeholder text, now has a concrete Chinese remediation suggestion (≥20 chars) - ✓
-2. title: Chinese, ≥10 chars - ✓
-3. description: Chinese, ≥50 chars - ✓
-4. severity/score match: CRITICAL + 10.0 - ✓
-5. sources: Now includes "cve" (was only "exploitdb") - ✓
-6. published/updated: Cleaned up timestamps to date-only format - ✓
-7. urls: Removed non-authoritative GitHub mirror URLs, kept only the 4 authoritative references - ✓
-8. TOML structure: 5 required sections only ([id], [basic], [references], [exploit], [meta]) - ✓
-9. No illegal sections: No [affected], [score], [tags], etc. - ✓
-The output is pure TOML, no code blocks, no extratext.[id]
-ave_id = "AVE-2001-0118"
-aliases = ["CVE-2001-0280"]
 [basic]
-title = "Atrium Software Mercur Mail Server SMTP EXPN 命令缓冲区溢出漏洞"
 description = "Atrium Software Mercur Mail Server 3.3 的 SMTP 组件在处理 EXPN 命令时存在缓冲区溢出漏洞，未经身份认证的远程攻击者可通过向目标服务器的 25 端口发送超长 EXPN 命令参数触发该漏洞，导致缓冲区溢出，最终可在服务器上以 LocalSystem 权限执行任意命令。该漏洞影响 Mercur Mail Server 3.30 及更早版本，攻击无需任何认证，危害严重。"
-severity = "CRITICAL"
-score = 10.0
-sources = ["cve", "exploitdb"]
 published = "2001-05-03"
-updated = "2026-06-16"
 remediation = "升级 Mercur Mail Server 至 3.30 以上版本，或安装厂商发布的安全补丁。由于该产品已停止维护，建议迁移至其他受支持的邮件服务器软件（如 Postfix、Exchange），并在迁移前于防火墙层面限制 SMTP 端口（25/TCP）仅允许可信 IP 访问作为临时缓解措施。"
+score = 10.0
+severity = "CRITICAL"
+sources = [
+    "cve",
+    "exploitdb",
+]
+title = "Atrium Software Mercur Mail Server SMTP EXPN 命令缓冲区溢出漏洞"
+updated = "2026-06-16"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2001-0280"]
+ave_id = "AVE-2001-0118"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://archives.neohapsis.com/archives/bugtraq/2001-02/0413.html",
-"http://www.osvdb.org/6027",
-"https://exchange.xforce.ibmcloud.com/vulnerabilities/6149",
-"https://www.exploit-db.com/exploits/20647",
+    "http://archives.neohapsis.com/archives/bugtraq/2001-02/0413.html",
+    "http://www.osvdb.org/6027",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/6149",
+    "https://www.exploit-db.com/exploits/20647",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-22T00:00:00Z"
