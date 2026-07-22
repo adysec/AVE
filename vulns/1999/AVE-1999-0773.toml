@@ -1,86 +1,31 @@
-1. Fix the remediation field with specific, actionable Chinese text
-2. Ensure all fields are correct
-3. Output only pure TOML
-CVE-1999-0975 is about Windows Help file vulnerability (Trojan horse in Windows help system). Let me search for more details.I have the NVD information and ExploitDB information. Let me analyze the errors:
-1. The TOML has multiple issues:
-- It has duplicate fields (multiple `score`, `severity`, `sources`, `title`, `updated` etc.)
-- The `remediation` field is empty (just contains garbage text)
-- The `[basic]` section has a malformed `remediation` field with garbage content
-- The `published` and `updated` fields have wrong formats (should be YYYY-MM-DD, not with time)
-- The `sources` field has `["epss"]` which is not a valid source
-- The `[references]` urls have too many GitHub mirror links that are not authoritative
-1. remediation is empty - need to provide specific remediation
-2. The TOML has duplicate fields and malformed structure
-From NVD:
-- Description: "The Windows help system can allow a local user to execute commands as another user by editing a table of contents metafile with a .CNT extension and modifying the topic action to include the commands to be executed when the .hlp file is accessed."
-- CVSS v2.0: 4.6 MEDIUM, Vector: (AV:L/AC:L/Au:N/C:P/I:P/A:P)
-- Published: 1999-12-10
-- References: http://www.securityfocus.com/bid/868
-From ExploitDB:
-- EDB-ID: 19673
-- Author: Pauli Ojanpera
-- Type: local
-- Platform: Windows
-- Date: 1999-12-10
-- The exploit involves editing .CNT files to execute commands
-The remediation should be specific. Since this is a very old vulnerability (1999) affecting Windows 95/98/NT 4.0, the practical remediation is to upgrade to a supported Windows version. Microsoft's security bulletin MS99-043 addressed this.
-Now let me construct the fixed TOML. I need to:
-1. Fix the remediation field with specific content
-2. Clean up the duplicate fields
-3. Fix the published/updated format (remove time portion, just keep date)
-4. Fix sources to be valid
-5. Clean up references URLs (remove non-authoritative GitHub mirrors)
-6. Ensure severity/score match
-The original TOML had:
-- score = 4.6 (appears twice)
-- severity = "MEDIUM" (appears twice)
-- sources = ["epss"] and also sources = ["cve", "exploitdb"] in the first block
-For the remediation, based on the vulnerability:
-- This affects Windows 95/98/NT 4.0
-- Microsoft released MS99-043 security bulletin
-- The fix involves upgrading to Windows 2000 or later, or applying the specific patch from MS99-043
-- Since these systems are end-of-life, the practical recommendation is to upgrade to a supported Windows version
-1. `remediation` field is empty - I need to provide a meaningful remediation in Chinese with at least 10 characters.
-From the NVD data and ExploitDB, I can see:
-- CVE-1999-0975: Windows help system vulnerability
-- CVSS v2.0: 4.6 MEDIUM
-- Published: 1999-12-10
-- The vulnerability allows local users to execute commands as another user by editing .CNT files
-- Affects Windows 95/98/NT 4.0
-- ExploitDB ID: 19673
-- SecurityFocus BID: 868
-- MS99-043 security bulletin
-The remediation should be specific. Since this is an old vulnerability for unsupported systems, the remediation should mention:
-- Microsoft released MS99-043 security bulletin
-- For Windows 95/98/NT 4.0 (all end-of-life), the recommended action is to upgrade to a supported Windows version
-- As a workaround, avoid opening .hlp files from untrusted sources
-- Disable the Windows help system if not needed
-Looking at the input more carefully, it seems like the TOML has duplicate fields and some malformed content. The key error is `remediation` field is empty.
-The remediation should be specific and actionable:
-- Microsoft released security bulletin MS99-043 addressing this issue
-- For Windows 95/98/NT 4.0 (all end-of-life), upgrade to a supported Windows version (Windows 10/11)
-- As a workaround, disable the Windows help system (winhlp32.exe) or restrict access to .hlp/.cnt files
-- Do not open .hlp files from untrusted sources
-ave_id = "AVE-1999-0773"
-aliases = ["CVE-1999-0975"]
 [basic]
-title = "Microsoft Windows 95/98/NT 4.0 帮助文件后门漏洞"
 description = "Windows帮助系统存在本地权限提升漏洞。本地用户可通过编辑.CNT扩展名的目录元文件，修改主题操作为执行指定命令，当其他用户访问对应的.hlp帮助文件时触发执行。攻击者需具有本地写入.CNT文件的权限，利用难度较低。该漏洞影响Windows 95/98/NT 4.0系统。"
-severity = "MEDIUM"
-score = 4.6
-sources = ["cve", "exploitdb"]
 published = "1999-12-10"
-updated = "2024-06-01"
 remediation = "微软已发布安全公告MS99-043。Windows 95/98/NT 4.0均已停止支持，建议升级到Windows 10/11等受支持版本。临时防护措施：禁用winhlp32.exe帮助系统组件，或通过组策略限制用户对.hlp和.cnt文件的访问权限，不打开来源不明的帮助文件。"
+score = 4.6
+severity = "MEDIUM"
+sources = [
+    "cve",
+    "exploitdb",
+]
+title = "Microsoft Windows 95/98/NT 4.0 帮助文件后门漏洞"
+updated = "2026-07-19"
+
+[exploit]
+exp_urls = ["https://www.exploit-db.com/exploits/19673"]
+poc_urls = ["https://www.exploit-db.com/exploits/19673"]
+
+[id]
+aliases = ["CVE-1999-0975"]
+ave_id = "AVE-1999-0773"
+
+[meta]
+collected_at = "2026-07-19T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://www.securityfocus.com/bid/868",
-"https://www.exploit-db.com/exploits/19673",
-"https://nvd.nist.gov/vuln/detail/CVE-1999-0975"
+    "http://www.securityfocus.com/bid/868",
+    "https://www.exploit-db.com/exploits/19673",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-0975",
 ]
-[exploit]
-poc_urls = ["https://www.exploit-db.com/exploits/19673"]
-exp_urls = ["https://www.exploit-db.com/exploits/19673"]
-[meta]
-status = "completed"
-collected_at = "2026-07-19T00:00:00Z"
