@@ -1,0 +1,56 @@
+[info]
+author = "AVE"
+description = "检测目标是否托管恶意Java小程序或暴露Java版本信息，验证CVE-2012-4681 Java安全管理器绕过漏洞的可利用条件"
+id = "POC-AVE-2012-0208"
+name = "Oracle Java SE JRE SecurityManager Bypass PoC"
+severity = "critical"
+tags = [
+    "cve-2012-4681",
+    "java",
+    "rce",
+    "applet",
+]
+vuln_id = [
+    "CVE-2012-4681",
+    "AVE-2012-0208",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/applet/Exploit.class"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CA FE BA BE"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Exploit.jar"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["PK"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<applet",
+    "archive=",
+    "java_code",
+]
