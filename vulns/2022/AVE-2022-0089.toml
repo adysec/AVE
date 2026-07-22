@@ -1,0 +1,39 @@
+[basic]
+description = "Linux 内核 tap 驱动中存在空指针解引用漏洞。在 tap_get_user 函数中，调用 virtio_net_hdr_to_skb 时 skb->dev 尚未赋值（该字段在调用后才设置），而该函数内部会调用 dev_parse_header_protocol 访问 skb->dev 指针，从而触发空指针解引用导致内核崩溃。攻击者可通过向受影响系统发送特制的网络数据包触发此漏洞，造成拒绝服务。该漏洞影响 Linux 内核，CVSS 评分 5.5，危害等级中等。"
+published = "2025-06-18T11:15:36.173"
+remediation = "立即升级 Linux 内核至 5.10.258、5.15.209 或 6.0 及以上版本，各长期支持分支均已包含该补丁。若无法升级，可手动合入补丁 4f61f133f354（将 drivers/net/tap.c 中 skb->dev 赋值移至 virtio_net_hdr_to_skb 调用前）并重新编译内核模块。作为临时缓解措施，可禁用 tap 模块（modprobe -r tap）或停止使用依赖 tap 的虚拟网络设备（如 qemu/kvm 的 virtio-net 后端）。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel TAP 驱动空指针解引用漏洞"
+updated = "2026-06-17T05:22:42.250"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-50073"]
+ave_id = "AVE-2022-0089"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/447ba770cfe798925f4923548b367fd49f0ee5f0",
+    "https://git.kernel.org/stable/c/4f61f133f354853bc394ec7d6028adb9b02dd701",
+    "https://git.kernel.org/stable/c/8f90163f9e013c8fc791aab338aab44a46044cfc",
+    "https://git.kernel.org/stable/c/dd29648fcf69339713f2d25f7014ae905dcdfc18",
+    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2022/50xxx/CVE-2022-50073.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-50073.yaml",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-50073",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2022-50073.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/99462b1672511a2817705398570cd388f155e617/CVE/data/2022/CVE-2022-50073.json",
+    "https://github.com/github/advisory-database/blob/36ddac9224d3973c64320c39be98ecc1f1ca5395/advisories/unreviewed/2025/06/GHSA-j9xf-8j9q-6cvr/GHSA-j9xf-8j9q-6cvr.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2022-50073.html",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2022-50073",
+    "https://github.com/canonical/ubuntu-security-notices/blob/935010a28fdab6bbd2dc347ebc953db9773080d4/usn/8576-1.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2022/CVE-2022-50073.json",
+]

