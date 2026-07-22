@@ -1,0 +1,40 @@
+[basic]
+description = "Linux 内核块层限流模块（blk-throttle）存在释放后使用（Use-After-Free）漏洞。当 BIO（块 I/O 请求）需要被限流时，内核启用了定时器并设置 BIO_THROTTLED 标志，但若在定时器到期前该 BIO 已完成并释放，定时器回调函数 `blk_throtl_dispatch_work_fn()` 继续访问已释放的 BIO，导致释放后使用。本地攻击者可通过精心构造的 I/O 操作序列触发该竞态条件，造成系统崩溃或潜在权限提升。该漏洞影响 Linux 内核多个版本，CVSS 评分 7.8，危害等级高。官方已通过将 BIO_THROTTLED 设置移入队列锁（queue_lock）修复此问题。"
+published = "2025-02-26T07:01:22.787"
+remediation = "立即升级 Linux 内核至以下修复版本：5.10.248、5.15.198、5.17.14 或 5.18.3 及以上版本。该漏洞通过将 BIO_THROTTLED 标志的设置移入 queue_lock 中修复，避免 bio 完成后的 use-after-free 问题。如无法立即升级，可禁用块层限流功能（通过设置 /sys/block/*/queue/throttle_sample_group 为 0）作为临时缓解。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 blk-throttle 使用后释放漏洞"
+updated = "2026-06-17T05:18:07.803"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49465"]
+ave_id = "AVE-2022-0040"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/047ea38d41d90d748bca812a43339632f52ba715",
+    "https://git.kernel.org/stable/c/0cfc8a0fb07cde61915e4a77c4794c47de3114a4",
+    "https://git.kernel.org/stable/c/24ba80efaf6e772f6132465fad08e20fb4767da7",
+    "https://git.kernel.org/stable/c/5a011f889b4832aa80c2a872a5aade5c48d2756f",
+    "https://git.kernel.org/stable/c/935fa666534d7b7185e8c6b0191cd06281be4290",
+    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2022/49xxx/CVE-2022-49465.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2022-49465",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49465.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/3de260baf5452671b1860955d9815c2cdbc09bef/2022/49xxx/CVE-2022-49465.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2022-49465.md",
+    "https://github.com/github/advisory-database/blob/60cf806ffc57d6909f887b4f3823ae39ed0d7c51/advisories/unreviewed/2025/02/GHSA-xp9j-268q-p7q6/GHSA-xp9j-268q-p7q6.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49465",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6962d12e25fbf447fb7ec00c59de25f9ba4e2a94/SSVC/data/2022/CVE-2022-49465.json",
+    "https://github.com/microsoft/AzureLinuxVulnerabilityData/blob/f446e11135d45cb1643208c82d3c441bd9ae1832/osv/AZL-58998.json",
+    "https://github.com/bottlerocket-os/bottlerocket-kernel-kit/blob/f0477bb907bdf8f44b2428131e7b4ebefe094480/advisories/2.3.2/BRSA-e8gvjo9xlq7a.toml",
+]
