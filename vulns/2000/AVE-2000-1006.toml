@@ -1,11 +1,11 @@
 [basic]
-description = "MIT Kerberos 5 的 krb425_conv_principal 函数在将 Kerberos V4 主体名转换为 V5 格式时，对输入长度缺乏边界检查，存在栈缓冲区溢出漏洞。远程攻击者无需身份认证即可向密钥分发中心（KDC）或相关服务发送特制的 Kerberos 认证请求，触发溢出并以 root 权限执行任意代码。受影响版本包括 Kerberos 5 1.0 及 Cygnus Network Security、Kerbnet 等早期实现，危害等级严重。"
+description = "Kerberos 5 的 krb425_conv_principal 函数存在缓冲区溢出漏洞，远程攻击者可通过向目标系统发送特制的认证请求触发该漏洞，导致缓冲区溢出，进而实现任意代码执行并以 root 权限控制目标系统。该漏洞影响早期 Kerberos 5 实现，CVSS 评分 10.0，危害等级严重。建议用户及时升级至修复版本。"
 published = "2000-05-16"
-remediation = "受影响用户应升级至已修复该漏洞的 MIT Kerberos 5 1.1.1 或更高版本（krb5-1.1.1 已修复 krb425_conv_principal 缓冲区溢出）。Red Hat 用户安装 RHSA-2000-025 对应补丁包；若暂无法升级，可在 krb5.conf 配置中禁用 krb4 兼容转换（将 krb4_convert 设为 false 并移除 v4 兼容配置），同时以最小权限运行 KDC 并过滤非信任网络对 88/750 端口的访问。"
+remediation = "升级 MIT Kerberos 5 至 1.1.1 或更高版本，该版本修复了 krb425_conv_principal 函数中的缓冲区溢出问题。如无法立即升级，可在服务端防火墙限制对 Kerberos 服务端口（默认 88/udp 和 749/tcp）的访问，仅允许可信网络段连接。"
 score = 10.0
 severity = "CRITICAL"
 sources = ["cve"]
-title = "MIT Kerberos 5 krb425_conv_principal 函数缓冲区溢出漏洞"
+title = "MIT Kerberos 5 远程缓冲区溢出漏洞"
 updated = "2026-06-16"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0390"]
 ave_id = "AVE-2000-1006"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
