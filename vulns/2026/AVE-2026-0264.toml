@@ -1,0 +1,38 @@
+[basic]
+description = "uutils coreutils 中的 mknod 命令存在 SELinux 上下文设置缺陷：在创建设备节点后才设置 SELinux 上下文（而非 GNU 实现在创建前通过 setfscreatecon 原子化标记），当设置 SELinux 上下文失败时，清理函数错误地使用 remove_dir 删除设备节点或 FIFO 文件（实际无法删除），导致标记错误的节点残留。在 SELinux 强制模式下，攻击者可利用此缺陷创建上下文错误的设备节点，绕过强制访问控制策略，造成权限提升或系统安全策略规避。该漏洞影响 uutils coreutils 相关版本。"
+published = "2026-04-23"
+remediation = "立即升级 uutils coreutils 至 0.6.0 或更高版本，该版本已合入修复 PR #10582，在 mknod 前通过 setfscreatecon 原子化设置 SELinux 上下文。如无法立即升级，可通过 SELinux 策略限制 mknod 命令的执行权限，或避免在 SELinux enforcing 模式下使用 mknod 创建设备节点作为临时缓解措施。"
+score = 3.5
+severity = "LOW"
+sources = ["ghsa"]
+title = "uutils coreutils mknod 命令 SELinux 安全上下文标签漏洞"
+updated = "2026-04-23"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-35361",
+    "GHSA-r9hw-mj3w-phcq",
+]
+ave_id = "AVE-2026-0264"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/CVEProject/cvelistV5/blob/34b929f9979d6d9d9584dfab31f29f50dcf08e3f/cves/2026/35xxx/CVE-2026-35361.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/fd5a60b9d722f22d25e3006c20222fbaba7000b5/osv/cve/2026/UBUNTU-CVE-2026-35361.json",
+    "https://github.com/Tabll/gemnasium-db/blob/de1cbf8802a4c6060caaa5924b50812f2a62fead/cargo/uu_mknod/CVE-2026-35361.yml",
+    "https://github.com/neuvector/vul-source/blob/27dcc23268ea595c1e22ac2008b340bb4e848cb2/ubuntu-cve-tracker/active/CVE-2026-35361",
+    "https://github.com/cisagov/vulnrichment/blob/a5255477d5a184aa815a0febf0096e43251805cf/2026/35xxx/CVE-2026-35361.json",
+    "https://github.com/TMA84/cvealert/blob/b5611c329e651f1fd606ff16e22adf5d86508695/content/posts/cve-2026-35361.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2026-35361.md",
+    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/github-reviewed/2026/07/GHSA-r9hw-mj3w-phcq/GHSA-r9hw-mj3w-phcq.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/475f53ac063af305fc146a443cce993188109d56/CVE/data/2026/CVE-2026-35361.json",
+    "https://github.com/maxgfr/package-checker.sh/blob/c90ad5c96a79db358ddf823df4ed4f299d202d94/data/osv-cargo.purl",
+]
