@@ -1,0 +1,42 @@
+[basic]
+description = "Elixir HTTP 客户端库 Tesla 的中间件 `Tesla.Middleware.DecompressResponse` 和 `Tesla.Middleware.Compression` 在处理 HTTP 响应体时存在解压炸弹漏洞。`decompress_body/2` 函数在解压响应体时未对输出大小做任何限制，且 `content-encoding` 头支持逗号分隔的多层编码令牌，每层 gzip 解压可膨胀约 1000 倍。攻击者通过控制目标客户端访问的恶意服务器（或利用重定向），返回一个仅数百字节但经过多层 gzip 嵌套压缩的响应，可膨胀至数 GB 的 BEAM 堆内存，导致调用进程内存耗尽崩溃或节点不可用。该漏洞影响 tesla 0.6.0 至 1.18.2 版本，CVSS 评分 8.2，危害等级高。已在 tesla 1.18.3 版本中修复。"
+published = "2026-06-02T20:16:38.193"
+remediation = "立即将 tesla 升级至 1.18.3 或更高版本（`mix deps.update tesla`），该版本在 decompress_body/2 中增加了输出大小上限检查。如无法立即升级，请从中间件管道中移除 Tesla.Middleware.DecompressResponse 和 Tesla.Middleware.Compression，或通过反向代理（如 nginx）在进入应用前解压并限制响应体大小。"
+score = 8.2
+severity = "HIGH"
+sources = ["ghsa"]
+title = "elixir-tesla Tesla 解压炸弹拒绝服务漏洞"
+updated = "2026-07-22T19:10:00.120"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-48594",
+    "GHSA-mc85-72gr-vm9f",
+]
+ave_id = "AVE-2026-0295"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://cna.erlef.org/cves/CVE-2026-48594.html",
+    "https://github.com/elixir-tesla/tesla/commit/340f75b5d191dc747ef7ac6365bd002d1cd55a9d",
+    "https://github.com/elixir-tesla/tesla/security/advisories/GHSA-mc85-72gr-vm9f",
+    "https://osv.dev/vulnerability/EEF-CVE-2026-48594",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2026/CVE-2026-48594.md",
+    "https://github.com/CVEProject/cvelistV5/blob/60bbc98c39201e6f5661b9e41f1492ce39335948/cves/2026/48xxx/CVE-2026-48594.json",
+    "https://github.com/cisagov/vulnrichment/blob/a538bd81432b918b342e413f43256da1f80b6c0d/2026/48xxx/CVE-2026-48594.json",
+    "https://github.com/elixir-tesla/tesla/blob/dc56717827cf9cd65fca4f331520a9bae02fd544/CHANGELOG.md",
+    "https://github.com/TMA84/cvealert/blob/75714204a4d47ab0def5b37be4839e1beb10bacd/content/posts/cve-2026-48594.md",
+    "https://github.com/sec-dojo-com/cve-poc/blob/9a0b7a19487f40b2e217de2ad9f19cbcad032a8a/pocs/2026/CVE-2026-48594.md",
+    "https://github.com/edoardottt/missing-cve-nuclei-templates/blob/115c94bd1da3cc18977d652d6e78c9f4a5dfc13b/data/year/2026.txt",
+    "https://github.com/erlef-cna/website/blob/c3ea8d6de083cd441e9c6143037548522b280a02/_data/osv/EEF-CVE-2026-48594.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/ad2bcc66bdd6cd816d33b50c6a2002801f870705/posts/cve-2026-48594-erlang-tesla.html",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f0111a41156462d46f484c055bdeafa69cf38c8e/CVE/data/2026/CVE-2026-48594.json",
+]
