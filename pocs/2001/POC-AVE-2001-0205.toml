@@ -1,0 +1,29 @@
+[info]
+author = "AVE"
+description = "检测 Aladdin eSafe Gateway 3.0 是否允许通过 Unicode 编码绕过 SCRIPT 标签过滤。发送包含 Unicode 编码 SCRIPT 标签的 HTTP 请求，若响应中包含未过滤的脚本内容则判定存在漏洞。"
+id = "POC-AVE-2001-0205"
+name = "Aladdin eSafe Gateway 3.0 Unicode Script-filtering Bypass PoC"
+severity = "high"
+tags = ["ave-2001-0205"]
+vuln_id = [
+    "CVE-2001-0521",
+    "AVE-2001-0205",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<SCRIPT",
+    "<ScRiPt",
+    "%uFF1C",
+]
