@@ -1,11 +1,11 @@
 [basic]
-description = "GNU Emacs 20 的 make-temp-name Lisp 函数在创建临时文件时使用可预测的文件名，导致攻击者能够提前创建符号链接指向这些临时文件。当 Emacs 进程向这些可预测名称的临时文件写入敏感数据时，实际上会写入攻击者控制的符号链接目标，从而实现本地信息窃听。该漏洞影响 Emacs 20 版本，攻击者需具备在目标系统上创建符号链接的本地权限，成功利用后可导致敏感会话数据、密码或其他机密信息被非法获取。"
+description = "GNU Emacs 20 中的 make-temp-name Lisp 函数在创建临时文件时使用可预测的文件名，本地攻击者可通过符号链接攻击（symlink attack）在目标系统上实现文件劫持或信息窃听。该漏洞影响 GNU Emacs 20 及可能受影响的早期版本，攻击者需拥有本地用户权限，利用难度较低。建议升级至不受影响的版本或采用安全的临时文件创建方式。"
 published = "2000-04-18T04:00:00.000"
-remediation = "建议升级至 GNU Emacs 20.7 或更高版本（如 Emacs 21.1+），修复 make-temp-name 可预测临时文件名漏洞。若暂时无法升级，请设置 TMPDIR 环境变量指向权限 700 的私有目录（如 ~/.tmp），并设置 umask 077 限制临时文件权限，防止符号链接攻击。同时避免在多用户可写目录（如 /tmp）中使用 make-temp-name 创建敏感临时文件。"
+remediation = "升级到 Emacs 21.1 或更高版本（2001 年 10 月发布），该版本引入 make-temp-file 函数，该函数原子化创建临时文件，从根本上消除竞争条件。如无法升级，将所有 Elisp 代码中对 make-temp-name 的调用替换为 make-temp-file，并确保创建临时文件时使用 O_CREAT|O_EXCL 标志防止符号链接劫持。作为临时缓解措施，在系统层面配置 umask 077 避免其他用户访问临时目录。"
 score = 3.6
 severity = "LOW"
-sources = ["cve"]
-title = "GNU Emacs 临时文件可预测符号链接攻击漏洞"
+sources = ["avd"]
+title = "GNU Emacs 可预测临时文件名本地符号链接攻击漏洞"
 updated = "2026-06-16T21:51:22.010"
 
 [exploit]
@@ -17,18 +17,18 @@ aliases = ["CVE-2000-0270"]
 ave_id = "AVE-2000-0248"
 
 [meta]
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/1126",
     "http://www.securityfocus.com/templates/archive.pike?list=1&date=2000-04-15&msg=tg4s8zioxq.fsf%40mercury.rus.uni-stuttgart.de",
-    "https://github.com/CVEProject/cvelistV5/blob/067b58f5ad5d89a104fab4ddd25fa3685c59a18e/cves/2000/0xxx/CVE-2000-0270.json",
+    "https://github.com/CVEProject/cvelistV5/blob/bf570d3b8e47bf0003b46684217cf02c76e2c7f4/cves/2000/0xxx/CVE-2000-0270.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0270",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-2000-0270.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f6fc85c731fb3018b2c4fbe9aed66186edd5321b/CVE/data/2000/CVE-2000-0270.json",
-    "https://github.com/github/advisory-database/blob/5d945305f2cad48b7bb06af582393a58c31555d3/advisories/unreviewed/2022/04/GHSA-83rm-6fqr-j4q7/GHSA-83rm-6fqr-j4q7.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0270.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6af0515548db3ee9e7e86d58b079762631fa8897/CVE/data/2000/CVE-2000-0270.json",
+    "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-83rm-6fqr-j4q7/GHSA-83rm-6fqr-j4q7.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0270.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x2000/1125/info.html",
