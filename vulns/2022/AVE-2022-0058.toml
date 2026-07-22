@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核 KVM 子系统的 VMX（虚拟机扩展）模块中，在虚拟机入口（vmenter）操作前进行 SPEC_CTRL 寄存器写入与 vmenter 之间存在平衡的返回指令序列。尽管平衡返回通常安全，但理论上深度调用栈的非屏蔽中断（NMI）可能在返回执行前耗尽返回栈缓冲区（RSB），导致 RSB 下溢。攻击者利用此漏洞可能引发基于推测执行的信息泄露。该漏洞影响 Linux 内核，CVSS 评分 5.5，危害等级中等。开发者通过禁止在 SPEC_CTRL 写入与 vmenter 之间的任何返回操作来修复此问题。"
+published = "2025-02-26T07:01:36.463"
+remediation = "建议将 Linux 内核升级至 5.18.14 及以上版本（适用于 5.18.x 稳定分支）或 5.19 及以上版本（主线），其中已通过 commit afd743f6dde8 修复 VMX vmenter 前 SPEC_CTRL 写入与 VM 进入之间的 RSB 下溢问题。使用 RHEL/CentOS 8/9、Ubuntu 20.04/22.04 LTS、Debian 11/12 等发行版的用户，请安装厂商提供的 linux-image 安全更新包并重启宿主机。如无法立即升级，可在 KVM 模块参数中设置 kvm.ignore_msrs=1 缓解侧信道风险，或在 BIOS 中关闭 Intel VT-x 功能禁用硬件虚拟化（将导致所有虚拟机无法运行）。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux KVM VMX 返回栈缓冲区下溢漏洞"
+updated = "2026-06-17T05:18:37.410"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49610"]
+ave_id = "AVE-2022-0058"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/07853adc29a058c5fd143c14e5ac528448a72ed9",
+    "https://git.kernel.org/stable/c/afd743f6dde87296c6f3414706964c491bb85862",
+    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2022/49xxx/CVE-2022-49610.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49610.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2022-49610",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2022-49610.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f85df5a91c5446a7fcdf9094db67818508b32b7c/CVE/data/2022/CVE-2022-49610.json",
+    "https://github.com/github/advisory-database/blob/60cf806ffc57d6909f887b4f3823ae39ed0d7c51/advisories/unreviewed/2025/10/GHSA-4w6c-74px-57rx/GHSA-4w6c-74px-57rx.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2022-49610.html",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49610",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--c740b2de-10ce-40c8-8806-c0269518a368.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2022/CVE-2022-49610.json",
+]
