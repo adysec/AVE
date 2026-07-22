@@ -1,50 +1,28 @@
-1. The TOML has structural issues - it's missing the proper 5-section structure with `[id]`, `[basic]`, `[references]`, `[exploit]`, `[meta]`. The sections are out of order.
-2. The `remediation` field is detected as empty by the validator, but looking at it, it seems to have content wrapped in a weird way. The field has content but it appears the validator didn't recognize it. Let me look more carefully
-Actually, looking at the error: "remediation: remediation 字段为空" - but the TOML does have a remediation field with content. Wait, maybe the issue is that the TOML sections are in the wrong order, causing parsing issues?
-- `[id]`
-- `[basic]`
-- `[references]`
-- `[exploit]`
-- `[meta]`
-The current TOML has these sections but in a strange order: `[basic]` first, then `[exploit]`, then `[id]`, then `[meta]`, then `[references]`.
-The schema says "strict 5 段" - maybe they need to be in a specific order? Looking at the schema, the order shown is: `[id]`, `[basic]`, `[references]`, `[exploit]`, `[meta]`.
-Also, I need to make sure the remediation is ≥20 Chinese characters and is specific. The current remediation has some junk text mixed in.
-1. The TOML sections need to be in the correct order: `[id]`, `[basic]`, `[references]`, `[exploit]`, `[meta]`
-2. The `remediation` field has junk text mixed in (the AI thinking text before `<value>`)
-3. The `remediation` needs to be clean and specific in Chinese
-ave_id = "AVE-2000-0403"
-aliases = ["CVE-2000-0482"]
 [basic]
-title = "Check Point Firewall-1 畸形IP分片报文拒绝服务漏洞"
-description = "Check Point Firewall-1 4.0 及 4.1 版本在处理 IP 分片重组时存在缺陷，未经身份认证的远程攻击者可向目标系统发送大量特制的畸形分片 IP 数据包，触发内存耗尽或处理逻辑异常，导致防火墙服务停止响应，造成拒绝服务。该漏洞影响 Check Point Firewall-1 4.0/4.1 版本，CVSS 评分 5.0，危害等级中危。厂商已发布安全公告建议升级至修复版本。"
+description = "Windows NT 4.0 的 CIFS Computer Browser 服务在处理 HostAnnouncement 帧时未对浏览表大小做限制。远程攻击者可通过向主浏览器发送大量伪造的 HostAnnouncement 帧，导致浏览表膨胀、复制流量耗尽网络带宽，从而引发拒绝服务。攻击者需与目标位于同一子网，且无需认证即可发起攻击。"
+published = "2000-05-25"
+remediation = "安装 Microsoft 安全公告 MS00-036 提供的补丁，在 Windows NT 4.0 上通过注册表设置 MaximumBrowseEntries（默认 100000）限制浏览表大小，并设置 RefuseReset 忽略 ResetBrowser 帧。同时在防火墙层面阻止外部对 UDP 138 端口的访问。Windows NT 4.0 已停止支持，建议升级至受支持的操作系统版本。"
+score = 5.0
 severity = "MEDIUM"
-score = 5
 sources = ["cve"]
-published = "2000-06-06T04:00:00.000"
-updated = "2026-06-16T21:51:49.747"
-remediation = "升级 Check Point Firewall-1 至 4.1 SP2 及以上版本，该版本已修复分片包处理缺陷。如无法升级，可在防火墙规则中启用分片包丢弃选项，并配置 anti-spoofing 防止伪造源 IP 的分片攻击。同时建议在网络边界限制入站分片包速率。"
+title = "Microsoft Windows NT 4.0 CIFS Computer Browser HostAnnouncement 洪泛拒绝服务漏洞"
+updated = "2026-06-16"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0403"]
+ave_id = "AVE-2000-0403"
+
+[meta]
+collected_at = "2026-07-22T11:40:51.407692964+00:00"
+status = "completed"
+
 [references]
 urls = [
-"http://archives.neohapsis.com/archives/bugtraq/2000-05/0473.html",
-"http://www.checkpoint.com/techsupport/alerts/list_vun.html#IP_Fragmentation",
-"http://www.osvdb.org/1379",
-"http://www.securityfocus.com/bid/1312",
-"https://exchange.xforce.ibmcloud.com/vulnerabilities/4609",
-"https://www.exploit-db.com/exploits/19994",
-"https://github.com/CVEProject/cvelistV5/blob/559e7878a2bcd153513c59154e730dfe23ee3b94/cves/2000/0xxx/CVE-2000-0482.json",
-"https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0482",
-"https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-2000-0482.md",
-"https://github.com/Patrowl/PatrowlHearsData/blob/1ed836d32ec0f7204df361b2aedfef822b3e814e/CVE/data/2000/CVE-2000-0482.json",
-"https://github.com/github/advisory-database/blob/fe37e86b4ab6d44c1acc95d76e30f97043bfd67f/advisories/unreviewed/2022/04/GHSA-r7g3-cvfv-cr4w/GHSA-r7g3-cvfv-cr4w.json",
-"https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/J/jolt2.nasl",
-"https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-"https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0482.json",
-"https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
-"https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
+    "https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-036",
+    "http://www.securityfocus.com/bid/1261",
+    "http://www.microsoft.com/technet/support/kb.asp?ID=263307",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-20T00:00:00Z"
