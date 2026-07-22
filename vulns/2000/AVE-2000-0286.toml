@@ -1,11 +1,11 @@
 [basic]
-description = "fcheck 是一款文件完整性检查工具，存在本地权限提升漏洞。本地攻击者可通过在文件名中嵌入 shell 元字符（如 `;`、`|`、`$()` 等），当 fcheck 处理这些特制文件名时，元字符会被 shell 解释执行，导致攻击者以 fcheck 运行权限执行任意命令，实现权限提升。该漏洞影响 fcheck 多个版本，攻击前提是攻击者拥有本地文件系统写入权限，CVSS 评分 7.2，危害等级高。"
+description = "fcheck 是一款用于文件完整性检查的工具，其处理文件名时存在安全缺陷，未对用户可控的文件名中的 shell 元字符（如反引号、分号、管道符等）进行有效过滤和转义。本地攻击者可通过创建含有恶意 shell 元字符的特制文件名，诱使 fcheck 在处理文件时将其传递给 shell 执行，从而以 fcheck 运行权限执行任意命令，实现本地权限提升。该漏洞需要攻击者拥有本地系统访问权限并能够在受影响目录中创建文件才能利用。"
 published = "2000-03-31T05:00:00.000"
-remediation = "升级至 fcheck 2.7.59 及以上版本（当前 Debian 打包版本为 2.7.59-27），该版本已修复文件名 shell 元字符注入问题。若无法升级，手动修改 fcheck 脚本，将所有 `system($cmd)` 和反引号调用替换为 `system(@args)` 列表参数形式避免 shell 解释，或在传递文件名前使用 Perl 的 `quotemeta()` 函数进行转义。作为临时缓解措施，定期扫描受监控目录，确保不存在包含 `;`、`|`、`` ` ``、`$()` 等 shell 元字符的文件名。"
+remediation = "升级 fcheck 至 2.2 或更高版本，该版本已修复文件名 shell 元字符转义问题；若无法升级，建议在 fcheck 源码中调用系统命令前对文件名使用 escapeshellarg() 或等价的 POSIX shell 转义函数处理所有文件名字段。临时缓解措施：限制被监控目录的写入权限，确保不可信用户无法在 fcheck 扫描路径下创建文件，同时考虑迁移至 AIDE、Tripwire 或 Samhain 等仍在维护的文件完整性检查工具。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "fcheck 权限提升漏洞"
+sources = ["avd"]
+title = "fcheck 本地权限提升漏洞"
 updated = "2026-06-16T21:51:25.290"
 
 [exploit]
@@ -17,11 +17,21 @@ aliases = ["CVE-2000-0296"]
 ave_id = "AVE-2000-0286"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://archives.neohapsis.com/archives/bugtraq/current/0011.html",
     "http://www.securityfocus.com/bid/1086",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2000/CVE-2000-0296.md",
+    "https://github.com/CVEProject/cvelistV5/blob/5c4b2ba2a59a96457ab4b8ea4ee82efc5782bb1d/cves/2000/0xxx/CVE-2000-0296.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0296",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/475f53ac063af305fc146a443cce993188109d56/CVE/data/2000/CVE-2000-0296.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-0296.md",
+    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/unreviewed/2022/04/GHSA-j27w-32qp-vhcc/GHSA-j27w-32qp-vhcc.json",
+    "https://github.com/briandfoy/cpan-security-advisory/blob/2089ff7201b44e5e462742a5baaa080ba003d257/TO_DO",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0296.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--d2ea44a0-156c-4a23-889d-839d003bcfcf.json",
 ]
