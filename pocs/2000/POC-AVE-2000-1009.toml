@@ -1,14 +1,10 @@
 [info]
-author = "AVE"
-description = "向 Rockliffe MailSite Management Agent 的 wconsole.dll 发送超长 query_string 参数的 HTTP GET 请求，检测是否触发缓冲区溢出导致服务异常"
+author = "ave"
+description = "通过向 Rockliffe MailSite Management Agent 的 wconsole.dll 发送超长 query_string 参数的 HTTP GET 请求触发缓冲区溢出。安全检测方式：探测 wconsole.dll 是否存在并检查 MailSite 特征响应，确认目标运行受影响组件。"
 id = "POC-AVE-2000-1009"
-name = "Rockliffe MailSite Management Agent wconsole.dll 缓冲区溢出漏洞 PoC"
+name = "Rockliffe MailSite Management Agent wconsole.dll Buffer Overflow PoC"
 severity = "critical"
-tags = [
-    "cve-2000-0398",
-    "buffer-overflow",
-    "rce",
-]
+tags = ["ave-2000-1009"]
 vuln_id = [
     "CVE-2000-0398",
     "AVE-2000-1009",
@@ -19,32 +15,6 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/wconsole.dll"
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "access violation",
-    "segmentation fault",
-    "buffer overflow",
-    "stack overflow",
-    "exception",
-    "fatal error",
-    "runtime error",
-]
-
-[[poc.requests]]
-method = "GET"
 path = "/{{BaseURL}}/cgi-bin/wconsole.dll"
 protocol = "http"
 
@@ -52,21 +22,35 @@ protocol = "http"
 content = ""
 type = "raw"
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "MailSite",
+    "wconsole",
+    "Rockliffe",
+    "Management Agent",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wconsole.dll"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "access violation",
-    "segmentation fault",
-    "buffer overflow",
-    "stack overflow",
-    "exception",
-    "fatal error",
-    "runtime error",
+    "MailSite",
+    "wconsole",
+    "Rockliffe",
+    "Management Agent",
 ]
 
 [[poc.requests]]
@@ -78,19 +62,13 @@ protocol = "http"
 content = ""
 type = "raw"
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "access violation",
-    "segmentation fault",
-    "buffer overflow",
-    "stack overflow",
-    "exception",
-    "fatal error",
-    "runtime error",
+    "MailSite",
+    "wconsole",
+    "Rockliffe",
+    "Management Agent",
 ]
