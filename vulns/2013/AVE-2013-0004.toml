@@ -1,11 +1,11 @@
 [basic]
-description = "Apache Struts2 的默认参数拦截器在处理 `action:`、`redirect:`、`redirectAction:` 等前缀参数时，未对用户输入的 OGNL 表达式进行充分过滤，导致远程攻击者可通过向受影响应用发送特制的 HTTP 请求，在服务器端注入并执行任意 OGNL 表达式，从而实现远程代码执行。该漏洞影响 Struts2 2.0.0 至 2.3.15 版本，CVSS 评分 9.8，危害等级严重，攻击复杂度低且无需认证。"
+description = "Apache Struts2 存在OGNL表达式注入漏洞（S2-016），远程攻击者无需身份认证即可通过向HTTP请求中构造带有action:、redirect:或redirectAction:前缀的恶意参数，触发Struts2框架对参数值进行OGNL表达式解析，从而在目标服务器上执行任意系统命令。该漏洞影响Struts2 2.0.0至2.3.15版本，CVSS评分9.8，危害等级严重，攻击复杂度低，可导致服务器完全沦陷。"
 published = "2013-07-20T03:37:30.737"
-remediation = '立即升级 Apache Struts2 至 2.3.15.1 及以上版本。该版本对 DefaultActionMapper 进行了修复，对 "action:" 前缀参数做输入过滤，并完全移除了 "redirect:" 和 "redirectAction:" 前缀参数的处理逻辑。如无法立即升级，可在 Web 服务器层（如 WAF、反向代理）拦截包含 `action:`, `redirect:`, `redirectAction:` 前缀的请求参数，作为临时缓解措施。'
+remediation = "立即升级 Apache Struts 至 2.3.15.1 或更高版本，该版本已修复 DefaultActionMapper 对 action:/redirect:/redirectAction: 前缀参数处理不当导致的 OGNL 表达式注入问题。如无法升级，可部署 WAF 规则拦截包含 action:、redirect:、redirectAction: 前缀的请求参数作为临时缓解措施。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["nuclei"]
-title = "Apache Struts2 远程命令执行漏洞"
+sources = ["kev"]
+title = "Apache Struts2 远程命令执行漏洞（S2-016）"
 updated = "2026-06-16T23:53:01.530"
 
 [exploit]
@@ -42,7 +42,7 @@ urls = [
     "https://www.exploit-db.com/exploits/44583",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2013/CVE-2013-2251.yaml",
     "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2013/CVE-2013-2251.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/c2df87babf8eed88f612cb73e25ef1a25c924358/2013/CVE-2013-2251.json",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/3c5116308718006831f8b0ac674f891f3d553471/2013/CVE-2013-2251.json",
     "https://github.com/cckuailong/reapoc/blob/699762e4c31d0183733f64313d8fc3be6470bd37/2013/CVE-2013-2251/poc/pocsploit/CVE-2013-2251.py",
     "https://github.com/Threekiii/Awesome-POC/blob/0f9e22b660cb1ea12c1c3668f9128d93e08da412/%E4%B8%AD%E9%97%B4%E4%BB%B6%E6%BC%8F%E6%B4%9E/Apache%20Struts2%20S2-016%20%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%20CVE-2013-2251.md",
     "https://github.com/gobysec/GobyVuls/blob/a5de8e3be10d51a94e0977ecd8086c176251229f/Struts2/S2-016(CVE-2013-2251)/README.md",
