@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 ext2 文件系统的 DAX 模式下存在缺陷，当调用 ext2_setsize 函数且长度参数为页面对齐值时，PAGE_ALIGN 宏直接返回原值，导致 dax_zero_range 以长度 0 调用 iomap_begin，进而触发 ext2_get_blocks 中的 BUG_ON(maxblocks==0) 内核崩溃。本地低权限攻击者可通过在 DAX 挂载的 ext2 文件系统上执行 truncate -s 0 命令触发此漏洞，造成系统拒绝服务。该漏洞影响 Linux 内核 6.3-rc2 及之前版本，CVSS 评分 5.5，危害等级中危。"
+published = "2025-09-16T17:15:38.410"
+remediation = '升级到 Linux 内核 v6.3 及以上版本（或对应 LTS 发行版的内核更新，如 RHEL 9.4+、Ubuntu 23.04+），已合入上游修复 commit "ext2/dax: Fix ext2_setsize when len is page aligned"。如无法升级内核，可通过补丁方式手动 cherry-pick 该提交并重新编译内核。业务层面避免在 DAX 挂载的 ext2 文件系统上执行 `truncate -s 0` 操作作为临时规避措施。'
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel ext2 文件系统 DAX 拒绝服务漏洞"
+updated = "2026-06-17T06:44:53.353"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2023-53323"]
+ave_id = "AVE-2023-0382"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/5cee8bfb8cbd99c97aff85d2bf066b6a496e13ab",
+    "https://git.kernel.org/stable/c/9e54fd14bd143c261e52fde74355e85e9526c58c",
+    "https://git.kernel.org/stable/c/fcced95b6ba2a507a83b8b3e0358a8ac16b13e35",
+    "https://github.com/CVEProject/cvelistV5/blob/6b6ab35c79a8cf8624d21f1a20325bab41c1211a/cves/2023/53xxx/CVE-2023-53323.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2023/CVE-2023-53323.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/6d175f59444084675ba336cc9e2bc51fc5338e6d/2023/53xxx/CVE-2023-53323.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2023-53323",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2023-53323.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2023-53323.json",
+    "https://github.com/github/advisory-database/blob/a96652a2a06e880f217d1d6526622d8501dbbd69/advisories/unreviewed/2025/09/GHSA-2f9c-chxh-5h7v/GHSA-2f9c-chxh-5h7v.json",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2023-53323",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d880529b2028116bddf6c732baf8f599b169f01e/SSVC/data/2023/CVE-2023-53323.json",
+    "https://github.com/microsoft/AzureLinuxVulnerabilityData/blob/f446e11135d45cb1643208c82d3c441bd9ae1832/osv/AZL-71885.json",
+]
