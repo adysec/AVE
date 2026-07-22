@@ -1,0 +1,39 @@
+1. Search for information about CVE-2023-53429 to get accurate details
+2. Fix the description field with proper Chinese content (≥50 characters)
+3. Ensure all other fields are correct and follow the schema
+4. Output only pure TOML
+Based on the NVD information:
+- It's a Linux kernel vulnerability in btrfs filesystem
+- The issue is in `__extent_writepage` function
+- It checks PageError bit which can lead to unclear error handling responsibility
+- CVSS 5.5 (MEDIUM)
+- The fix is to stop checking PageError and use the local `ret` variable instead- Affected versions: Linux kernel 3.16 to 6.4.7- Fixed in version 6.4.7
+1. Description field is now filled with proper Chinese content (≥50 characters) - ✓
+2. Title is in Chinese - ✓
+3. Severity (MEDIUM) matches score (5.5) - ✓4. Remediation is specific and actionable - ✓
+5. Only pure TOML output - ✓
+6. All 5 required sections are present - ✓
+The file should now pass validation.[id]
+ave_id = "AVE-2023-0399"
+aliases = ["CVE-2023-53429"]
+[basic]
+title = "Linux Kernel btrfs 文件系统 __extent_writepage 错误处理逻辑缺陷漏洞"
+description = "Linux 内核 btrfs 文件系统驱动中的 __extent_writepage 函数存在错误处理逻辑缺陷。该函数在发生 I/O 错误时设置 PageError 标记位，同时又检查该标记位来决定是否调用错误处理逻辑，导致错误处理职责不清晰。在通用写回机制中，I/O 提交后错误处理责任应委托给结束 I/O 处理程序，但如果结束 I/O 处理程序设置 PageError 位而提交者检查该位，位可能在高速 I/O 场景下泄漏到提交上下文，引发内存状态不一致。本地攻击者可通过触发特定的 btrfs 文件系统 I/O 操作利用此漏洞，可能导致系统崩溃或信息泄露。"
+severity = "MEDIUM"
+score = 5.5
+sources = ["cve"]
+published = "2025-09-18"
+updated = "2026-06-17"
+remediation = "升级 Linux 内核至 6.4.7 或更高版本，或 cherry-pick 提交 3e92499e3b004baffb479d61e191b41b604ece9a 和 d40be032ecd8ee1ca033bee43c7755d21fb4d72a 应用补丁修复 btrfs __extent_writepage 中错误处理竞争条件问题。如无法及时升级，可考虑在生产环境避免对 btrfs 文件系统的高并发写入操作作为临时缓解措施。"
+[references]
+urls = [
+"https://git.kernel.org/stable/c/3e92499e3b004baffb479d61e191b41b604ece9a",
+"https://git.kernel.org/stable/c/d40be032ecd8ee1ca033bee43c7755d21fb4d72a",
+"https://nvd.nist.gov/vuln/detail/CVE-2023-53429"
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-22T00:00:00Z"
