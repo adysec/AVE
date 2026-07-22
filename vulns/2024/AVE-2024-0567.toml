@@ -1,0 +1,40 @@
+[basic]
+description = "Linux 内核 btrfs 文件系统在 relocate_one_folio() 函数中存在条件竞争漏洞。当调用 btrfs_read_folio() 读取 folio 时，该 folio 会被解锁，此时其他线程可能通过 invalidate_inode_pages2() 修改映射并将 mapping 置为 NULL。若后续未重新检查 folio 映射有效性就直接调用 set_extent_mapping()，将导致空指针解引用，引发内核崩溃。本地低权限攻击者可通过并发触发 btrfs 块组重定位与事务中止操作来利用此漏洞，造成系统拒绝服务。该漏洞影响 Linux 内核 btrfs 文件系统，CVSS 评分 5.5，危害等级中等。"
+published = "2025-01-06T17:15:40.597"
+remediation = "建议立即升级内核至修复版本：SUSE Linux Enterprise 15 SP6 Azure 内核升级至 SUSE-SU-2025:1177-1 版本，SUSE Linux Enterprise 15 SP7 升级至 SUSE-SU-2025:01967-1 或 SUSE-SU-2025:01951-1 版本，Ubuntu 24.04 LTS 升级至 USN-7381-1 提供的内核版本，Debian 12 升级至 DSA-5973 提供的内核版本，Microsoft CBL-Mariner/Azure Linux 升级至 AZL-55032 修复版本。如无法立即升级内核，可暂时卸载或禁用 btrfs 文件系统模块（modprobe -r btrfs 并加入黑名单 /etc/modprobe.d/blacklist-btrfs.conf），或避免在 btrfs 卷上执行 balance/relocate 操作作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel btrfs 空指针解引用漏洞"
+updated = "2026-06-17T08:12:55.433"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-56758"]
+ave_id = "AVE-2024-0567"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/36679fab54fa7bcffafd469e2c474c1fc4beaee0",
+    "https://git.kernel.org/stable/c/3e74859ee35edc33a022c3f3971df066ea0ca6b9",
+    "https://git.kernel.org/stable/c/c7b1bd52a031ad0144d42eef0ba8471ce75122dd",
+    "https://git.kernel.org/stable/c/d508e56270389b3a16f5b3cf247f4eb1bbad1578",
+    "https://lists.debian.org/debian-lts-announce/2025/10/msg00008.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-56758.md",
+    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2024/56xxx/CVE-2024-56758.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-56758",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-56758.yaml",
+    "https://github.com/0xMarcio/cve/blob/c6c9e305761264e104c5de70e59376c519bbfef3/2024/CVE-2024-56758.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-56758.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/d8c79a157e22e9abda84461cbe0f59ce58612245/references/CveServices-CVE-2024-56758-2025-11-03-1121",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/ad583e79ed38e32f21eec5f8962c8f59146c10bc/CVE/data/2024/CVE-2024-56758.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-56758",
+    "https://github.com/microsoft/AzureLinuxVulnerabilityData/blob/49fc6c5c0668d68233834d9d61b1c916248edd25/osv/AZL-55032.json",
+]
