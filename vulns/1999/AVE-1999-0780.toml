@@ -1,11 +1,11 @@
 [basic]
-description = "CVE-1999-0523 是指目标主机未对 ICMP 回显请求（即 ping 包）做来源限制，允许任意外部主机向该系统发送 ICMP echo 请求并获取响应。其原理在于防火墙或主机未过滤 ICMP 入站流量，导致任何可达的远程攻击者都能探测到主机存活状态、进行网络拓扑与主机发现，并为后续端口扫描、操作系统指纹识别及网络侦察提供基础。该配置缺陷影响所有开放 ICMP 回显且未做访问控制过滤的网络设备与服务器，攻击条件仅需攻击者能路由到达目标地址，无需身份认证或特殊权限，利用方式即直接发送 ping 命令即可确认目标在线并收集网络信息。"
+description = "ICMP（Internet控制报文协议）回显请求（ping）默认允许来自任意主机的响应，导致攻击者可通过发送ICMP Echo Request报文探测目标主机是否存活，进而进行网络拓扑测绘和主机发现。该漏洞影响大量早期TCP/IP协议栈实现，攻击者无需任何认证即可远程利用，常被用作网络侦察和信息收集的前置步骤。此外，结合伪造源地址的Smurf攻击方式，该漏洞还可被用于放大反射式拒绝服务攻击（DDoS），对网络基础设施造成严重影响。缓解措施包括在网络边界防火墙限制ICMP流量、配置系统禁用ICMP回显响应。"
 published = "1999-01-01T05:00:00.000"
-remediation = "在边界防火墙或主机防火墙上拒绝来自不受信任网络的 ICMP Echo Request（类型 8）及对应 Echo Reply（类型 0）。Linux 可用 iptables -A INPUT -p icmp --icmp-type echo-request -j DROP 或等价 nftables/firewalld 规则；Windows 可在高级安全 Windows 防火墙中禁用“文件和打印机共享（回显请求 - ICMPv4-In）”入站规则；路由器/云安全组同样关闭对公网开放的 ICMP ping。仅对运维网段白名单放行，并保留必要的 Path MTU 相关 ICMP 类型以免影响正常通信。"
+remediation = '建议在网络边界防火墙上配置访问控制策略，阻止来自不可信来源的 ICMP echo request（类型 8）报文，仅允许来自受信监控系统的 ping 探测。在 Linux 系统上可通过 iptables 规则 `-A INPUT -p icmp --icmp-type echo-request -j DROP` 实现，在 Windows 防火墙中可勾选"阻止传入的 ICMP echo 请求"。'
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = """The user is asking me to generate a [title] field following specific guidelines. Let me analyze what they've provided: **Known Information:** - CVE ID: CVE-1999-0523 - Original title: "允许来自任意主机的ICMP回显（ping）。" - NVD description: "ICMP echo (ping) is allowed from arbitrary hosts." - CVSS: 0 () - CWE: NVD-CWE-Other - AVD: "允许来自任意主机的ICMP回显（ping）。" **Requirements:** - Chinese vulnerability title - Format: "厂商 产品 漏洞类型" - 20-100 Chinese characters - Examples: "Microsoft Windows TCP/IP 远程代码执行漏洞" **Analysis:** The vulnerability is about ICMP echo/ping being allowed from arbitrary hosts. This appears to be a Windows networking configuration issue. Looking at the information: 1. The vulnerability is about ICMP (ping) functionality 2. It's related to Windows TCP/IP networking 3. The title suggests it's about a misconfiguration/security issue 4. It's a Windows-related vulnerability Based on the format "厂商 产品 漏洞类型": - Manufacturer: Microsoft - Product: Windows - Vulnerability Type: ICMP 协议安全漏洞 (ICMP protocol security vulnerability) The title should be in Chinese and around 20-100 characters: "Microsoft Windows ICMP 协议安全漏洞" (25 characters - too short) "微软 Windows ICMP 协议安全漏洞" (24 characters - too short) Let me make it longer to meet the 20-100 character requirement: "Microsoft Windows ICMP 回显功能安全漏洞，允许来自任意主机的 ping 请求" (42 characters - good) But in Chinese format: "微软 Windows ICMP 回显功能安全漏洞，允许来自任意主机的 ping 请求" (28 characters - this is more appropriate) Wait, I need to follow the format "厂商 产品 漏洞类型". Let me re-read the example: Microsoft Windows TCP/IP 远程代码执行漏洞 -> "Microsoft Windows TCP/IP 远程代码执行漏洞" So the format is: Manufacturer + Product + Vulnerability Type I'll explore more descriptive options that capture the vulnerability's characteristics. The key is to create a Chinese title that precisely describes the security issue while maintaining the required structure. I want to ensure it's informative, technically accurate, and provides a clear understanding of the network configuration vulnerability. I'll focus on crafting a title that highlights the security implications of unrestricted ICMP echoing, using precise technical terminology to convey the underlying risk. The goal is to create a concise yet comprehensive description that meets the formatting requirements while communicating the critical nature of this Windows network configuration weakness.我需要为 CVE-1999-0523 生成一个符合格式要求的中文漏洞标题。 现有信息显示，这是一个关于 Windows 系统 ICMP 回显功能被允许来自任意主机的问题。根据示例格式"厂商 产品 漏洞类型"，我需要提取关键信息： - 厂商：Microsoft - 产品：Windows - 漏洞类型：ICMP 安全漏洞 最终生成的漏洞标题应该是："Microsoft Windows ICMP 安全漏洞""""
+sources = ["redhat"]
+title = "通用网络设备 ICMP Ping 允许任意主机访问漏洞"
 updated = "2026-06-16T21:48:34.590"
 
 [exploit]
@@ -17,19 +17,19 @@ aliases = ["CVE-1999-0523"]
 ave_id = "AVE-1999-0780"
 
 [meta]
-collected_at = "2026-07-16T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://www.cve.org/CVERecord?id=CVE-1999-0523",
-    "https://github.com/trickest/cve/blob/6e5939e8074723d33adaf5b2f8b0352edab9ba8d/1999/CVE-1999-0523.md",
-    "https://github.com/CVEProject/cvelistV5/blob/1ce36d0de2f3ddd1d56c222c398df994c8c331b1/cves/1999/0xxx/CVE-1999-0523.json",
+    "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/1999/CVE-1999-0523.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b5b2b32751baccad543d82143784e310554463ae/cves/1999/0xxx/CVE-1999-0523.json",
     "https://github.com/faker-ruby/faker/blob/cca4184947e09fdd02afb8b89d25a9c8ebc7274e/lib/faker/default/vulnerability_identifier.rb",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0523",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f581b54f28a314b57ac171b83d3b2d21db7414a0/CVE/data/1999/CVE-1999-0523.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/affa68d6539dbc90b6b6e0e1e746facb4aae08df/CVE/data/1999/CVE-1999-0523.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0523.md",
-    "https://github.com/github/advisory-database/blob/11845a9fe6e6b4d82150d9fd8a4257b88a244a45/advisories/unreviewed/2022/04/GHSA-jh35-pp3w-8pc6/GHSA-jh35-pp3w-8pc6.json",
+    "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-jh35-pp3w-8pc6/GHSA-jh35-pp3w-8pc6.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0523.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153100_153200.json",
