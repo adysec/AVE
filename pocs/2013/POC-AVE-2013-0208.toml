@@ -1,0 +1,74 @@
+[info]
+author = "AVE"
+description = "Oracle Java SE 7u21及更早版本JRE组件2D子件storeImageArray()函数存在无效数组索引漏洞，远程攻击者可通过托管恶意Applet网页触发内存破坏绕过Java沙箱执行任意代码。检测目标服务器是否托管了CVE-2013-2465利用相关文件（Exploit.class/Exploit$MyColorModel.class/Exploit$MyColorSpace.class）"
+id = "POC-AVE-2013-0208"
+name = "Oracle Java SE 2D storeImageArray() 无效数组索引漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2013-2465",
+    "oracle",
+    "java",
+    "jre",
+    "2d",
+    "sandbox-bypass",
+    "rce",
+]
+vuln_id = [
+    "CVE-2013-2465",
+    "AVE-2013-0208",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Exploit.class"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "javax/media/jai",
+    "ColorModel",
+    "ColorSpace",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Exploit$MyColorModel.class"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["ColorModel"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Exploit$MyColorSpace.class"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["ColorSpace"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<applet",
+    "archive=",
+    "code=",
+]
