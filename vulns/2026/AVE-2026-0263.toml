@@ -1,0 +1,39 @@
+[basic]
+description = "uutils coreutils 的 mkfifo 命令存在权限绕过漏洞。当 mkfifo() 因目标路径已存在文件而创建失败时，代码仅输出错误信息但缺少 `continue;` 语句，导致执行流程意外进入后续的 `set_permissions` 调用，将已存在文件的权限修改为默认 FIFO 模式（0o666 & umask → 0644）。攻击者可通过预创建目标文件并诱导受害者执行 mkfifo 命令，将敏感文件（如 SSH 私钥）权限修改为全局可读，造成信息泄露。该漏洞影响 uutils coreutils 多个版本，CVSS 评分 7.1，危害等级高。"
+published = "2026-04-22T17:16:36.060"
+remediation = "立即升级 uutils coreutils 至包含 commit `00f77cc`（2026-01-23）或更新版本，该提交在 mkfifo 创建失败时添加了缺失的 `continue;` 语句，阻止后续 `set_permissions` 执行。如无法升级，可考虑在系统层面使用 GNU coreutils 替代 uutils coreutils 的 mkfifo，或通过文件系统监控（如 fanotify）检测对敏感文件的意外权限变更作为临时缓解措施。"
+score = 7.1
+severity = "HIGH"
+sources = ["ghsa"]
+title = "uutils coreutils mkfifo 现成文件权限修改漏洞"
+updated = "2026-06-17T10:40:25.500"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-35341",
+    "GHSA-pmf6-rcx4-v53v",
+]
+ave_id = "AVE-2026-0263"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/uutils/coreutils/issues/10020",
+    "https://github.com/CVEProject/cvelistV5/blob/5c4b2ba2a59a96457ab4b8ea4ee82efc5782bb1d/cves/2026/35xxx/CVE-2026-35341.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/fd5a60b9d722f22d25e3006c20222fbaba7000b5/osv/cve/2026/UBUNTU-CVE-2026-35341.json",
+    "https://github.com/Tabll/gemnasium-db/blob/de1cbf8802a4c6060caaa5924b50812f2a62fead/cargo/uu_mkfifo/CVE-2026-35341.yml",
+    "https://github.com/neuvector/vul-source/blob/27dcc23268ea595c1e22ac2008b340bb4e848cb2/ubuntu-cve-tracker/active/CVE-2026-35341",
+    "https://github.com/cisagov/vulnrichment/blob/a5255477d5a184aa815a0febf0096e43251805cf/2026/35xxx/CVE-2026-35341.json",
+    "https://github.com/TMA84/cvealert/blob/b5611c329e651f1fd606ff16e22adf5d86508695/content/posts/cve-2026-35341.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2026-35341.md",
+    "https://github.com/Floodnut/xfx/blob/16f0ea0c869438adbe22af0a20922e9494c66ff7/vulnerability/opensource/CVE-2026-35341-uutils-mkfifo-missing-continue.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/dc4ab29758552fce2b71b92dc68fc56ce91f64eb/posts/cve-2026-35341-rust-uu-mkfifo.html",
+    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/github-reviewed/2026/07/GHSA-pmf6-rcx4-v53v/GHSA-pmf6-rcx4-v53v.json",
+]
