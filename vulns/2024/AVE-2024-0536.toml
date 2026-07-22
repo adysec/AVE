@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核 btrfs 文件系统在 dev_replace 设备替换功能中存在死锁漏洞（CWE-667）。当启用 RAID stripe-tree 功能并执行设备替换操作时，btrfs_map_block 函数会尝试重复获取同一个 dev_replace rwsem 读写信号量，导致任务在已持有该锁的情况下再次请求锁，触发 lockdep 检测到的递归锁定死锁。该漏洞影响启用了 RAID stripe-tree 特性的 Linux 内核 btrfs 文件系统，CVSS 3.1 评分 5.5（中等），攻击向量为本地（AV:L），攻击复杂度低（AC:L），需要低权限（PR:L），无需用户交互（UI:N），主要影响可用性（A:H）。本地攻击者可通过触发带有 RAID stripe-tree 的 btrfs 设备替换操作（如运行 fstests btrfs/011 测试），导致内核死锁引发拒绝服务。Linux 内核已通过修改 btrfs_map_block 避免在已持有 dev_replace rwsem 的任务中再次获取该锁来修复此死锁问题。"
+published = "2025-01-11T13:15:22.933"
+remediation = "建议立即升级 Linux 内核至 6.11.5、6.10.13、6.6.48、6.1.106 或 5.15.166 及以上版本（含修复提交 7a5c5b8b3b2f）。Ubuntu 24.04 LTS 用户请安装 USN-7381-1/USN-7450-1 安全更新（linux-image-6.8.0-49-generic 及以上）。如暂时无法升级内核，可临时避免在使用 RAID stripe-tree 特性的 btrfs 文件系统上执行设备替换操作，或在维护窗口卸载相关文件系统后再执行替换操作。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 btrfs 文件系统死锁漏洞"
+updated = "2026-06-17T07:58:56.987"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-48875"]
+ave_id = "AVE-2024-0536"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/8cca35cb29f81eba3e96ec44dad8696c8a2f9138",
+    "https://git.kernel.org/stable/c/a2e99dcd7aafa9d474f7d9b0740b8f93c4e156c2",
+    "https://github.com/CVEProject/cvelistV5/blob/60bbc98c39201e6f5661b9e41f1492ce39335948/cves/2024/48xxx/CVE-2024-48875.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-48875",
+    "https://github.com/cisagov/vulnrichment/blob/a538bd81432b918b342e413f43256da1f80b6c0d/2024/48xxx/CVE-2024-48875.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-48875.yaml",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-48875.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2024-48875.md",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/02/18/seguranca/cve-2024-48875-btrfs-dont-take-dev-replace-rwsem-o-1771412274000.md",
+    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2025/01/GHSA-hg9v-mfmx-jx2x/GHSA-hg9v-mfmx-jx2x.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-48875",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f0111a41156462d46f484c055bdeafa69cf38c8e/SSVC/data/2024/CVE-2024-48875.json",
+]
