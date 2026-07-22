@@ -1,39 +1,24 @@
-Looking at the TOML, the `remediation` field has a very long value that starts with "The user wants me to generate" - this is clearly wrong. It should be a proper Chinese remediation text.
-Also, I notice the TOML has sections in the wrong order. The schema requires: `[id]`, `[basic]`, `[references]`, `[exploit]`, `[meta]` - in that order. The current TOML has them in a different order.
-1. The `remediation` field - it has a long instruction text instead of actual remediation
-2. The section ordering - should be `[id]`, `[basic]`, `[references]`, `[exploit]`, `[meta]`
-3. The `remediation` should be a proper Chinese string
-The remediation should be about upgrading to wvdial 1.5+ or manually setting permissions on the .config file.
-I need to fix the TOML so that the `remediation` field contains only the actual remediation text, not the meta-instructions. Let me also clean up the URLs - many of them are just GitHub mirrors of CVE data, not actual advisory pages. The only real advisory URL is the Novell/SUSE one.
-1. Fix `remediation` - remove the meta-commentary, keep only the actual remediation text
-2. Clean up `urls` - keep only the relevant advisory URL (the Novell one), remove the GitHub mirror links that aren't actual advisories
-3. Fix `published` - should be just date, not datetime
-4. Fix `updated` - should be just date, not datetime
-Actually, looking at the schema more carefully:
-- `published` and `updated` are shown as "2024-01-01" format (date only) in the schema
-- But the existing TOML has datetime format. Let me check the schema again The schema shows `published = "2024-01-01"` and `updated = "2024-06-01"` - date only format.
-"升级 wvdial 至 1.5 及以上版本，该版本已将 .config 文件权限默认设为仅属主可读（0600）。如无法升级，手动执行 chmod 600 ~/.wvdial.conf 限制配置文件权限，并将 dialout 组成员资格仅授予可信用户。"
-But the field value starts with a long instruction text: "The user wants me to generate a `remediation` field for CVE-2000-0361" which is clearly meta-instruction text that leaked into the TOML value.
-I need to fix the remediation field to only contain the actual remediation content. Let me also clean up the URLs - many of them are just GitHub mirror copies of the CVE data, not actual advisory/announcement pages. I should keep only the authoritative ones.
-The remediation field needs to be cleaned up - remove the meta-instruction text and keep only the actual remediation content.
-ave_id = "AVE-2000-0372"
-aliases = ["CVE-2000-0361"]
 [basic]
-title = "Wvdial PPP wvdial.lxdialog 脚本权限许可和访问验证漏洞"
 description = "Wvdial 1.4 及之前版本中的 PPP wvdial.lxdialog 脚本在创建 .config 配置文件时，未正确设置文件权限，导致该文件具有全局可读权限。属于 dialout 组的本地攻击者可通过读取该配置文件，获取其中存储的拨号登录用户名和密码等敏感凭据信息，进而实施进一步攻击。该漏洞影响 wvdial 1.4 及更早版本，CVSS 评分 2.1，危害等级低，修复方式为升级至更高版本。"
-severity = "LOW"
-score = 2.1
-sources = ["cve"]
 published = "1999-12-14"
-updated = "2026-06-16"
 remediation = "升级 wvdial 至 1.5 及以上版本，该版本已将 .config 文件权限默认设为仅属主可读（0600）。如无法升级，手动执行 chmod 600 ~/.wvdial.conf 限制配置文件权限，并将 dialout 组成员资格仅授予可信用户。"
-[references]
-urls = [
-"http://www.novell.com/linux/security/advisories/suse_security_announce_35.html",
-]
+score = 2.1
+severity = "LOW"
+sources = ["cve"]
+title = "Wvdial PPP wvdial.lxdialog 脚本权限许可和访问验证漏洞"
+updated = "2026-06-16"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0361"]
+ave_id = "AVE-2000-0372"
+
 [meta]
-status = "completed"
 collected_at = "2026-07-20T00:00:00Z"
+status = "completed"
+
+[references]
+urls = ["http://www.novell.com/linux/security/advisories/suse_security_announce_35.html"]
