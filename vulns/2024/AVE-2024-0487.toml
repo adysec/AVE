@@ -1,0 +1,39 @@
+[basic]
+description = 'Linux 内核文件扩展属性处理模块（fs/xattr）存在文件描述符引用泄露漏洞。在 fremovexattr() 系统调用中，当 strncpy_from_user() 对 name 参数操作失败时，函数提前返回但未调用 fdput() 释放通过 fdget() 获取的文件引用。在多线程进程环境下，fdget() 走慢路径时该缺陷导致每次调用永久泄露一个文件引用，使得 struct file 及相关内核对象无法从内存中释放。本地非特权攻击者可反复触发该漏洞造成内核内存耗尽，影响系统稳定性。该漏洞已在提交 a71874379ec8（"xattr: switch to CLASS(fd)"）中修复，建议尽快升级内核版本。'
+published = "2026-03-09T16:16:14.313"
+remediation = "立即升级 Linux 内核至 6.6.133、6.12.77 或 6.13 及以上版本，该漏洞已在提交 a71874379ec8 中修复。如无法立即升级，可限制本地用户对 fremovexattr 系统调用的访问权限作为临时缓解措施，例如通过 seccomp 过滤或 LSM 模块拦截该调用。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 fremovexattr 文件引用泄露漏洞"
+updated = "2026-06-26T20:18:19.230"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-14027"]
+ave_id = "AVE-2024-0487"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/9a3a2ae5efbbcaed37551218abed94e23c537157",
+    "https://git.kernel.org/stable/c/a71874379ec8c6e788a61d71b3ad014a8d9a5c08",
+    "https://git.kernel.org/stable/c/d151b94967c8247005435b63fc60f8f4baa320da",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/c2df87babf8eed88f612cb73e25ef1a25c924358/2024/CVE-2024-14027.json",
+    "https://github.com/xairy/linux-kernel-exploitation/blob/1120e9cea80c6039b8c8151bde6067c2cd76daa4/README.md",
+    "https://github.com/sari3l/Poc-Monitor/blob/5cfa0f1bd26575870eeae4f5500f9044b4445f22/2024/CVE-2024-14027.json",
+    "https://github.com/microsoft/msft-linux-cve-analysis/blob/a841a405d027c9fb5457a22ca062dd95b1555c5d/vulns/CVE-2024-14027.yml_reasoning.md",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-14027",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2024-14027.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-14027.json",
+    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/unreviewed/2026/03/GHSA-h9jc-64qv-h9cg/GHSA-h9jc-64qv-h9cg.json",
+    "https://github.com/CVEProject/cvelistV5/blob/5c4b2ba2a59a96457ab4b8ea4ee82efc5782bb1d/cves/2024/14xxx/CVE-2024-14027.json",
+    "https://github.com/keryanchpn/ia-data/blob/534363d1afb19db8eaf67f9cab2c9be27811247b/data_fallback/data/first/CVE-2024-14027",
+    "https://github.com/lcfr-eth/CVE-2024-14027_slop",
+]

