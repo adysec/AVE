@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 Microsoft IIS 服务器是否启用了存在缓冲区溢出漏洞的 .ida ISAPI 筛选器映射。通过向 /NULL.ida 发送 HTTP GET 请求，检查响应中是否包含 IDQ 和 NULL.ida 特征字符串，以确认 idq.dll 筛选器是否激活。该漏洞允许远程攻击者无需认证即可利用缓冲区溢出执行任意代码，CVSS 10.0。"
+id = "POC-AVE-2001-0200"
+name = "Microsoft IIS Index Server ISAPI Extension Buffer Overflow PoC"
+severity = "critical"
+tags = ["ave-2001-0200"]
+vuln_id = [
+    "CVE-2001-0500",
+    "AVE-2001-0200",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/NULL.ida"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "IDQ",
+    "NULL.ida",
+]
