@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核 USB Gadget 子系统的 usb_udc_uevent() 函数中存在释放后使用（Use-After-Free）漏洞。该漏洞源于 uevent 回调处理与 gadget 驱动注销之间存在竞态条件：usb_udc_uevent() 在访问 udc->driver 指针时未持有 udc_lock 互斥锁，若 gadget 驱动被同时卸载，已释放的驱动结构体可能被继续访问，触发 KASAN 检测到的释放后读错误。本地攻击者可通过精心构造的 USB 设备热插拔操作触发此竞态条件，导致系统崩溃或潜在权限提升。该漏洞影响 Linux 内核 5.19-rc4 及之前版本，CVSS 评分 7.8，危害等级高。Linux 内核社区已通过添加互斥锁修复此问题。"
+published = "2025-06-18T11:15:25.480"
+remediation = "升级 Linux 内核至 5.19-rc5 及以上版本，或合入提交 `https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=bfe6c2f6f1c6a955f04f7ad0b22d2c7c3b5e9e38`。如无法立即升级，可禁用 USB Gadget 相关模块（如 `modprobe -r usb_f_* g_*`）或限制物理 USB 设备接入以降低攻击面。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 USB Gadget 释放后使用漏洞"
+updated = "2026-06-17T05:19:40.303"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49980"]
+ave_id = "AVE-2022-0081"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/2191c00855b03aa59c20e698be713d952d51fc18",
+    "https://git.kernel.org/stable/c/f44b0b95d50fffeca036e1ba36770390e0b519dd",
+    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2022/49xxx/CVE-2022-49980.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49980.yaml",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49980",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2022-49980.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/09ea4c6e198f67c97f9e843f2fc9dbea00a9ec98/CVE/data/2022/CVE-2022-49980.json",
+    "https://github.com/github/advisory-database/blob/36ddac9224d3973c64320c39be98ecc1f1ca5395/advisories/unreviewed/2025/06/GHSA-w97r-pxm9-vm23/GHSA-w97r-pxm9-vm23.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2022-49980.html",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2022-49980",
+    "https://github.com/sfX-android/automation_scripts/blob/31ea3918bf444b85e03796e19b5377a53835812b/roles/axp/common/templates/cve_excludes/common.j2",
+    "https://github.com/microsoft/AzureLinuxVulnerabilityData/blob/f446e11135d45cb1643208c82d3c441bd9ae1832/osv/AZL-70220.json",
+]
