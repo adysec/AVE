@@ -1,0 +1,65 @@
+[id]
+ave_id = "AVE-2026-0319"
+aliases = ["CVE-2026-49830","GHSA-c827-pw3m-67w7"]
+
+[basic]
+title = "DSpace: ORE resource URI does not validate scheme for non-web resources"
+description = "## Overview
+
+When ingesting an aggregated ORE resource by URI (using the [OAI-ORE Harvester](https://wiki.lyrasis.org/spaces/DSDOC9x/pages/379125906/OAI#OAI-OAI-PMH/OAI-OREHarvester(Client))), the ORE Ingestion Crosswalk does not validate the URI scheme. This may allow for local file inclusion via malicious paths like `file:///etc/passwd`. _This vulnerability impacts DSpace versions <= 7.6.6, 8.0 <= 8.3, 9.0 <= 9.2._ The attacker MUST already have DSpace collection administrator privileges in order to perform the attack.
+
+Expected behaviour : Only external web resources should be ingested as ORE resources, preferably from the trusted endpoint.
+
+## Impact
+
+A remote OAI endpoint configured as a harvest source for a DSpace collection can supply malicious ORE XML that results in a local file from the DSpace server being ingested as a bitstream.
+
+Only Collection, Community and Site Administrators can configure a collection for OAI harvest, however an attacker may use stolen credentials to escalate into local file/data disclosure, or a compromised OAI endpoint could also supply malicious XML.
+
+## Patches
+
+The fix is included in DSpace 7.6.7, 8.4, 9.3 and 10.0.  Please upgrade to one of these versions or disable the ORE Crosswalk (see below).
+
+If users cannot upgrade immediately, it is possible to manually patch their DSpace backend. (No changes are necessary to the frontend.) A pull request exists which can be used to patch systems running DSpace 7.6.x, 8.x or 9.x.
+* Pull request for 9.x: https://github.com/DSpace/DSpace/pull/12541  ([Downloadable patch file](https://github.com/DSpace/DSpace/pull/12541.patch))
+* Pull request for 8.x: https://github.com/DSpace/DSpace/pull/12543  ([Downloadable patch file](https://github.com/DSpace/DSpace/pull/12543.patch))
+* Pull request for 7.x: https://github.com/DSpace/DSpace/pull/12542  ([Downloadable patch file](https://github.com/DSpace/DSpace/pull/12542.patch))
+
+
+### Apply the patch to a user's DSpace
+If at all possible, we recommend disabling the ORE Crosswalk (see below) or upgrading a user's DSpace site based on the upgrade instructions. However, if they are unable to do so, they can manually apply the above patches to their DSpace backend as follows:
+1. Download the appropriate patch file to the machine where DSpace backend is running
+2. From the `[dspace-src]` folder, apply the patch, e.g. `git apply [name-of-file].patch`
+3. Now, update the DSpace site (based loosely on the Upgrade instructions). This generally involves three steps:
+    1. Rebuild DSpace, e.g. `mvn -U clean package`  (This will recompile all DSpace backend code)
+    2. Redeploy DSpace, e.g. `ant update`  (This will copy all newly built code to their installation directory). Depending on their setup they also may need to copy the updated \"server\" webapp over to their Tomcat webapps folder.
+    3. Restart Tomcat (or runnable JAR)
+
+## Workarounds
+* Disable the ORE ingestion crosswalk in `dspace.cfg` by commenting out or removing it from the list of `plugin.named.org.dspace.content.crosswalk.IngestionCrosswalk` plugins:
+```
+  # Remove or comment out this line
+  org.dspace.content.crosswalk.OREIngestionCrosswalk = ore, \
+```
+* Once they have patched their site or upgraded, they may safely enable the OREIngestionCrosswalk again.
+
+## Credits
+Discovered & reported by Pablo Picurelli Ortiz (@superpegaso2703), cybersecurity student at Universidad Rey Juan Carlos.
+Code fix developed by Kim Shepherd (@kshepherd) of The Library Code"
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T23:40:14.419342293+00:00"
