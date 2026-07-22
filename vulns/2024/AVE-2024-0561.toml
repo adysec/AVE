@@ -1,0 +1,38 @@
+[basic]
+description = "FRRouting（FRR）在处理 RTR（RPKI-to-Router）协议更新时存在资源管理不当漏洞（CWE-404）。当单次 RTR 更新数据总量超过操作系统默认套接字缓冲区大小（通常为 4KB）时，FRR 会触发对所有路由的重新验证。攻击者可通过在更新间隔内（通常为 30 分钟）发送超过该阈值的 ROA 更新，迫使目标 FRR 路由器持续重新解析 RIB（路由信息库），导致路由处理性能严重下降。对于维护大型全量路由表的路由器，单次重新验证可能超过 30 分钟，攻击者可利用持续签发/撤销大量 ROA 的方式影响全球所有使用 RPKI 的 FRR 实例的路由处理能力，同时导致 BMP（BGP 监控协议）流量激增。该漏洞影响 FRR 6.0 至 10.3 版本，CVSS 评分 7.5，危害等级高。修复版本为 10.0.3、10.1.2、10.2.1 及 10.3 以上。"
+published = "2025-01-06T23:15:07.637"
+remediation = "升级 FRRouting 至 10.0.3、10.1.2、10.2.1 或 10.3 及以上版本。补丁提交见 https://github.com/FRRouting/frr/pull/17586。如无法立即升级，可通过 `sysctl -w net.core.rmem_default=65536` 临时增大 RTR 套接字接收缓冲区大小（默认 4KB），降低因缓冲区满触发全量路由重校验的频率，但此缓解措施不能完全消除风险。"
+score = 7.5
+severity = "HIGH"
+sources = ["msrc"]
+title = "FRRouting FRR 拒绝服务漏洞"
+updated = "2026-06-17T08:11:13.833"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-55553"]
+ave_id = "AVE-2024-0561"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://frrouting.org/security/cve-2024-55553/",
+    "https://github.com/FRRouting/frr/pull/17586/commits/b0800bfdf04b4fcf48504737ebfe4ba7f05268d3",
+    "https://lists.debian.org/debian-lts-announce/2025/01/msg00023.html",
+    "https://github.com/CVEProject/cvelistV5/blob/6e1fee15e021f95477107e3e5d652470f76f7bac/cves/2024/55xxx/CVE-2024-55553.json",
+    "https://github.com/FRRouting/frr-www/blob/597982afc99050d3f7f2de614e1e88370e98fa67/content/security/CVE-2024-55553.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/75471602a53215062ddbaeb95f039a60b664c3d0/osv/cve/2024/UBUNTU-CVE-2024-55553.json",
+    "https://github.com/neuvector/vul-source/blob/9ba62febaf6254d72eb4667cd7923d92d2c3f9b6/ubuntu-cve-tracker/retired/CVE-2024-55553",
+    "https://github.com/cisagov/vulnrichment/blob/40201653244e9d985cea536a2ac651eca18f5fd4/2024/55xxx/CVE-2024-55553.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/d8c79a157e22e9abda84461cbe0f59ce58612245/references/CVE-2024-55553-2025-01-23-1705",
+    "https://github.com/FRRouting/frr/blob/e6d5610e2022680f9555641241419a58625d2dc4/redhat/frr.spec.in",
+    "https://github.com/Xilinx/meta-openembedded/blob/4d3e2639dec542b58708244662d5ce36810fc510/meta-networking/recipes-protocols/frr/frr/CVE-2024-55553.patch",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/02/18/seguranca/cve-2024-55553-in-frrouting-frr-all-routes-are-re--1771406778000.md",
+    "https://github.com/opensourcerouting/frr-cves/blob/4b374c7d216bff70f86a0158215cf264f05eed32/CVE-2024-55553/_index.md",
+]
