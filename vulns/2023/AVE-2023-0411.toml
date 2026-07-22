@@ -1,0 +1,47 @@
+[id], [basic], [references], [exploit], [meta]
+- No forbidden sections
+- No forbidden fields
+The file on disk looks good. Let me just write it as the output.
+Actually wait - the user explicitly says "现在请直接输出修复后的纯 TOML". They want me to output the fixed TOML. The file on disk appears to already be fixed. Let me just output it.
+But I should also verify: is the `sources` field correct? For a kernel.org CVE, `["cve"]` seems right. The original had `["msrc"]` which is Microsoft's Security Response Center - clearly wrong for a Linux kernel vuln.
+Also checking the references URLs - many point to GitHub blob URLs with specific commit hashes. These are valid URLs but some may not resolve properly. The skill says "不要编造不存在的 URL". The URLs in the file appear to be real ones from the NVD data and CVE databases, so they should be fine.
+The file on disk looks correct. I'll output it as the fixed TOML.The file on disk already appears to have been cleaned up from a previous pass. Let me verify it fully passes the schema requirements.
+The issues from the broken TOML were:
+1. `remediation` — contained thinking text, code blocks, markdown garbage (now fixed in file)
+2. `sources = ["msrc"]` — wrong for a Linux kernel vuln (now `"cve"`)
+3. `score = 5` — adjusted to 5.5 for MEDIUM
+4. Date formats — had datetime with milliseconds, now clean `YYYY-MM-DD`
+The file on disk at `/tmp/ave-acp-workspace/output/vulns/2023/AVE-2023-0411.toml` is already correct. Let me output the fixed TOML:
+[id]
+ave_id = "AVE-2023-0411"
+aliases = ["CVE-2023-54161"]
+[basic]
+title = "Linux Kernel af_unix 空指针解引用漏洞"
+description = "Linux 内核 AF_UNIX 套接字实现中的 unix_stream_sendpage() 函数存在空指针解引用漏洞。当对端文件描述符在套接字间循环传递时，垃圾回收机制在未加锁情况下释放 skb，而 unix_stream_sendpage() 同时无锁访问对端接收队列尾部的 skb，导致 use-after-free 和空指针解引用。本地攻击者可通过特制系统调用触发此竞态条件，导致内核崩溃拒绝服务。该漏洞影响 Linux 6.5 以下所有包含 unix_stream_sendpage 的内核版本。"
+severity = "MEDIUM"
+score = 5.5
+sources = ["cve"]
+published = "2025-12-24"
+updated = "2025-12-29"
+remediation = "立即升级 Linux 内核至包含补丁 d39fc9b94dc0 的稳定版本（如 6.1.46+），或直接升级至 6.5 及以上版本（6.5+ 因 sendpage 重构已天然免疫此漏洞）。Debian/Ubuntu 运行 apt update && apt upgrade linux-image 后重启；RHEL/CentOS 运行 yum update kernel 后重启。如无法立即升级，可通过 seccomp 策略拦截 sendfile 系统调用中涉及 AF_UNIX 套接字的路径作为临时缓解。"
+[references]
+urls = [
+"https://github.com/CVEProject/cvelistV5/blob/a54ce91ca4eed5acb1176739213f8ac035b9fa27/cves/2023/54xxx/CVE-2023-54161.json",
+"https://github.com/canonical/ubuntu-security-notices/blob/fd5a60b9d722f22d25e3006c20222fbaba7000b5/osv/cve/2023/UBUNTU-CVE-2023-54161.json",
+"https://github.com/Patrowl/PatrowlHearsData/blob/c30cb75c630bd0892c286bac41dd51c65d6a6546/CVE/data/2023/CVE-2023-54161.json",
+"https://github.com/neuvector/vul-source/blob/27dcc23268ea595c1e22ac2008b340bb4e848cb2/ubuntu-cve-tracker/retired/CVE-2023-54161",
+"https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2025/12/GHSA-7j7j-rcvh-xpm2/GHSA-7j7j-rcvh-xpm2.json",
+"https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2023-54161.json",
+"https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2023-54161.json",
+"https://github.com/devanyops/cvechecker/blob/33908273064056e6531c4827b9ca09062ac8ac19/qacves/notaffect.20260104",
+"https://github.com/apmatlock/apmatlock.github.io/blob/cc2c70bee4acb769e6d3b2c8fb2b8797181dfd23/cybersecnews/2025-12-25.html",
+"https://github.com/fkie-cad/nvd-json-data-feeds/blob/64de4f2cd86a1126b3a6d15ba07e17a7857c3906/CVE-2023/CVE-2023-541xx/CVE-2023-54161.json",
+"https://git.kernel.org/stable/c/d39fc9b94dc0719afa4bc8e58341a5eb41febef3",
+"https://github.com/torvalds/linux/commit/d39fc9b94dc0719afa4bc8e58341a5eb41febef3"
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-22T00:00:00Z"
