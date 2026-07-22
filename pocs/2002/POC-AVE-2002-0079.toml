@@ -1,0 +1,61 @@
+[info]
+author = "AVE"
+description = "向目标 CUPS IPP 服务（端口 631）发送特制的零宽度 GIF 图像打印作业，检测 CUPS 1.1.14-1.1.17 版本中 filters/image-gif.c 对零宽度 GIF chunk 头部校验不严导致的缓冲区溢出漏洞。若服务返回 200 OK 且包含 CUPS 版本信息，则可能存在漏洞。"
+id = "POC-AVE-2002-0079"
+name = "CUPS GIF 零宽度图像远程代码执行漏洞 PoC"
+severity = "high"
+tags = ["ave-2002-0079"]
+vuln_id = [
+    "CVE-2002-1371",
+    "AVE-2002-0079",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/printers"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/ipp"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CUPS/1.1"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CUPS/1.1"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
