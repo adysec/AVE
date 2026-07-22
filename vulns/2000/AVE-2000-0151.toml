@@ -1,12 +1,12 @@
 [basic]
-description = "mtr（My Traceroute）网络诊断工具在尝试降低进程权限时，仅调用 seteuid() 临时切换有效用户 ID 而非使用 setuid() 彻底撤销特权，导致特权无法被真正丢弃。本地攻击者可通过已控制的低权限进程利用该缺陷重新恢复 root 权限，进而完全控制目标系统。该漏洞影响 mtr 0.28/0.41 版本及 Turbolinux 3.5/4.2/4.4/6.0 系列操作系统，CVSS v2 评分 7.2，危害等级高。"
-published = "2000-03-03"
-remediation = "升级 mtr 至 0.33 或更高版本，该版本使用 setuid() 与 seteuid() 组合正确释放特权，修复了本地权限提升漏洞。如无法立即升级，可临时通过移除 mtr 的 setuid 位（chmod u-s /usr/sbin/mtr）或以普通用户权限运行 mtr 来缓解风险，但会造成部分网络诊断功能受限。受影响的 Turbolinux 3.5 b2/4.2/4.4/6.0 用户应及时联系厂商获取安全补丁。此外建议在 /etc/sudoers 中对 mtr 设置仅允许授权用户通过 sudo 执行。"
+description = "mtr（My TraceRoute）网络诊断工具在权限降级处理中存在安全缺陷，仅调用 seteuid 而非 setuid 来降低权限，导致有效用户 ID 未被彻底重置。本地攻击者可利用该漏洞在权限降级后通过进程劫持或信号注入等方式重新获取 root 权限，实现本地权限提升。该漏洞影响 mtr 0.28/0.41 及 Turbolinux 3.5/4.2/4.4/6.0 等版本，CVSS 评分 7.2，危害等级高。"
+published = "2000-03-03T05:00:00.000"
+remediation = "立即将 mtr 升级至 0.42 或更高版本，该版本已将降权调用从 seteuid() 替换为 setuid()，确保永久丢弃 root 权限。Red Hat Linux/Turbolinux 用户请安装对应发行版安全更新。临时缓解措施：执行 chmod u-s /usr/sbin/mtr 移除 setuid 位（普通用户将无法使用 mtr，仅 root 可执行）。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Matt Kimball and Roger Wolff mtr 本地权限提升漏洞"
-updated = "2026-06-16"
+sources = ["avd"]
+title = "Matt Kimball mtr 本地权限提升漏洞"
+updated = "2026-06-16T21:51:09.050"
 
 [exploit]
 exp_urls = []
@@ -17,11 +17,21 @@ aliases = ["CVE-2000-0172"]
 ave_id = "AVE-2000-0151"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/1038",
     "https://www.exploit-db.com/exploits/19796",
+    "https://github.com/CVEProject/cvelistV5/blob/9b149e946381b5dfe67f5c76cee65997e05f3a01/cves/2000/0xxx/CVE-2000-0172.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0172",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0172.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/b8e6f3ed799539d1c038cf82ae94c10d35c39858/CVE/data/2000/CVE-2000-0172.json",
+    "https://github.com/github/advisory-database/blob/60cf806ffc57d6909f887b4f3823ae39ed0d7c51/advisories/unreviewed/2022/04/GHSA-p5c2-j3x2-m9jw/GHSA-p5c2-j3x2-m9jw.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cwe_details/cwe_details_200_300.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0172.json",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001214.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--c144e173-6225-43c1-b760-8d4241496c24.json",
+    "https://github.com/Yuning-J/NVDFeatureAnalysis/blob/493a57a415cc110f9945148abd717eeb92f6ca7e/originalDataset/cveIDThreatType/cve_idgainpre",
 ]
