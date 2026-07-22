@@ -1,0 +1,31 @@
+[basic]
+description = "FacturaScripts 的 CSVExport 功能存在 CSV 公式注入漏洞（CWE-1236），低权限认证用户可在客户名称等字段中插入以 =、+、-、@ 等开头的恶意公式载荷。Core/Lib/Export/CSVExport.php::writeData() 在生成 CSV 时未对单元格首字符进行公式触发前缀检查，直接将原始值写入文件。管理员通过 ListCliente 页面导出 CSV 后，在 Excel 或 LibreOffice 中打开时公式自动执行，可触发 DDE 命令执行或凭据窃取。攻击者可利用任意具备数据写入权限的低权限账号种植载荷，危害严重。"
+published = "2026-07-14"
+remediation = "在 Core/Lib/Export/CSVExport.php 的 writeData() 方法中对以 =、+、-、@、制表符、回车符开头的单元格值自动添加前导单引号改为纯文本格式，同时需在 writeHeader() 和 XLSExport::getCursorRawData() 中应用相同修复。升级至包含该补丁的版本。临时缓解措施：在 Excel 中禁用 DDE 自动执行，在 LibreOffice 中设置宏安全级别为高。"
+score = 8.0
+severity = "HIGH"
+sources = ["ghsa"]
+title = "FacturaScripts CSVExport CSV公式注入漏洞"
+updated = "2026-07-14"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-45263",
+    "GHSA-2p5x-4jr6-x5jg",
+]
+ave_id = "AVE-2026-0275"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/NeoRazorX/facturascripts/security/advisories/GHSA-2p5x-4jr6-x5jg",
+    "https://github.com/advisories/GHSA-2p5x-4jr6-x5jg",
+    "https://github.com/NeoRazorX/facturascripts",
+]
