@@ -1,11 +1,11 @@
 [basic]
-description = "Marty Bochane MDBms 0.9 数据库服务器中的 xbx 组件存在缓冲区溢出漏洞，远程攻击者可通过向服务器发送超长字符串触发该漏洞，导致任意命令执行。该漏洞影响 MDBms 0.9 及更早版本，CVSS 评分 7.5，危害等级高。攻击者无需认证即可远程利用，成功利用后可完全控制目标系统。"
+description = "MDBms 0.9 数据库服务在处理用户输入时存在缓冲区溢出漏洞，远程攻击者无需身份认证即可向目标系统的 TCP 2223/2224 端口发送超长字符串，触发缓冲区溢出，进而导致任意命令执行。该漏洞 CVSS 评分 7.5，危害等级高，且已有公开的 Exploit-DB 利用代码，攻击门槛低。"
 published = "2000-05-24T04:00:00.000"
-remediation = "立即停止使用已停止维护的 MDBms 0.9 数据库服务器，迁移至受支持的关系型数据库（如 MySQL、PostgreSQL 等）。在无法立即迁移的情况下，在防火墙层面严格限制数据库服务端口（默认监听 TCP 端口）的访问来源，仅允许受信任的内部 IP 连接，并禁用 xbx 远程管理组件。同时使用 iptables 或其他主机防火墙对数据库服务端口进行白名单 ACL 控制。"
+remediation = "立即停止使用 MDBMS 数据库服务，该软件已停止维护且所有版本（含最新版 .99b6）均存在此漏洞。具体操作：1) 在防火墙层面添加规则 `iptables -A INPUT -p tcp --dport 2223 -j DROP` 和 `iptables -A INPUT -p tcp --dport 2224 -j DROP` 阻断远程访问；2) 若业务必须使用，配置 hosts.allow/hosts.deny 仅允许特定内网 IP 连接；3) 修改 MDBMS 配置文件，将服务绑定到 127.0.0.1 禁止外网监听；4) 使用 Snort 规则 `alert tcp $EXTERNAL_NET any -> $HOME_NET 2223:2224` 检测攻击流量；5) 迁移至 PostgreSQL 或 MariaDB 等受支持数据库产品。"
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
-title = "Marty Bochane MDBMS 数据库服务器缓冲区溢出漏洞"
+sources = ["epss"]
+title = "Marty Bochane MDBms 数据库服务缓冲区溢出漏洞"
 updated = "2026-06-16T21:51:45.073"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0446"]
 ave_id = "AVE-2000-0367"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,10 +25,10 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-05/0274.html",
     "http://www.securityfocus.com/bid/1252",
     "https://www.exploit-db.com/exploits/19966",
-    "https://github.com/CVEProject/cvelistV5/blob/a131a61f179c398a4ef435924df81458086a9cb6/cves/2000/0xxx/CVE-2000-0446.json",
+    "https://github.com/CVEProject/cvelistV5/blob/97700d7e657426c8e1ee6cf44a0a2b88c60738c3/cves/2000/0xxx/CVE-2000-0446.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0446",
-    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-2000-0446.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/9849013fb49e540f15cffd30644fcdcb875c1d4f/CVE/data/2000/CVE-2000-0446.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0446.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/800f04b3cfadd1b9ab0343f5b9acd785dbc1e953/CVE/data/2000/CVE-2000-0446.json",
     "https://github.com/eldondev/Snort/blob/34bdcf6a7a638b55c7c04f77ef1efa526ad08e33/doc/signatures/1240.txt",
     "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/snort/drop-rules/exploit.rules",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0446.json",
