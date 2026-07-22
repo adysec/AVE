@@ -1,0 +1,44 @@
+[basic]
+description = "Linux 内核 Hyper-V 驱动工具（hv_util）中的 KVP（键值对）和 VSS（卷影副本）组件存在条件竞争漏洞。当 KVP 或 VSS 守护进程在 VMBus 通道的环形缓冲区完全初始化之前启动时，守护进程通过字符设备注册自身会触发尚未就绪的回调函数，导致空指针解引用，引发内核崩溃（panic）。本地攻击者可在具备低权限条件下，通过控制 KVP/VSS 守护进程的启动时机触发该条件竞争，造成系统拒绝服务。该漏洞影响 Linux 内核多个版本，CVSS 评分 5.5，危害等级中危。官方修复方案为调整 util_probe() 中的初始化顺序，确保在 vmbus_open() 完成环形缓冲区初始化后再创建字符设备入口。"
+published = "2025-01-11T13:15:28.353"
+remediation = "立即更新 Linux 内核至以下已修复版本：5.4.289、5.10.233、5.15.176、6.1.122、6.6.68、6.12.7 或更高版本。对应各发行版，Debian 11/12 用户安装 linux 6.1.122-1 及以上版本，Ubuntu 24.04 用户安装 USN-7381-1 更新。如无法立即升级，可卸载 hv_utils 内核模块（rmmod hv_utils）并阻止 KVP/VSS 守护进程自启动，避免竞争条件触发内核空指针解引用崩溃。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel Hyper-V 工具驱动空指针解引用漏洞"
+updated = "2026-06-17T08:11:26.560"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-55916"]
+ave_id = "AVE-2024-0562"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/042253c57be901bfd19f15b68267442b70f510d5",
+    "https://git.kernel.org/stable/c/07a756a49f4b4290b49ea46e089cbe6f79ff8d26",
+    "https://git.kernel.org/stable/c/3dd7a30c6d7f90afcf19e9b072f572ba524d7ec6",
+    "https://git.kernel.org/stable/c/718fe694a334be9d1a89eed22602369ac18d6583",
+    "https://git.kernel.org/stable/c/89fcec5e466b3ac9b376e0d621c71effa1a7983f",
+    "https://git.kernel.org/stable/c/d81f4e73aff9b861671df60e5100ad25cc16fbf8",
+    "https://git.kernel.org/stable/c/f091a224a2c82f1e302b1768d73bb6332f687321",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-55916.md",
+    "https://github.com/CVEProject/cvelistV5/blob/6e1fee15e021f95477107e3e5d652470f76f7bac/cves/2024/55xxx/CVE-2024-55916.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-55916",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-55916.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2024/55xxx/CVE-2024-55916.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-55916.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/d8c79a157e22e9abda84461cbe0f59ce58612245/references/CveServices-CVE-2024-55916-2025-11-03-1449",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-55916.md",
+    "https://github.com/github/advisory-database/blob/4bf73ddbbcc405dd84dc085a0381e11437719536/advisories/unreviewed/2025/01/GHSA-r35m-8jf8-g83g/GHSA-r35m-8jf8-g83g.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-55916",
+]
