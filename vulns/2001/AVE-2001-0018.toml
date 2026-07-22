@@ -1,0 +1,56 @@
+1. `remediation` field is empty/incorrect - it has markdown-like content and the value is not clean
+2. Need to check severity/score matching - severity is "MEDIUM", score is 5.0 - this is correct (MEDIUM≥4)
+3. Need to ensure all fields are correct
+- The `remediation` field has a long text that looks like it was from a previous conversation/instruction rather than actual remediation content. It needs to be a clean Chinese remediation string.
+- Need to verify the score matches severity: MEDIUM with score 5.0 - that's OK since MEDIUM≥4
+- title, description look OK - both Chinese, sufficient length
+So I need to fix the remediation field to contain just that clean text.
+Also, I should check if the URLs are valid and reasonable. Some of those GitHub links seem like they're just references to CVE data mirrors rather than actual advisory pages. Let me clean up the URL list to be more reasonable.
+Actually, let me re-read the schema more carefully:
+- `published = "2024-01-01"` - date only format
+- `updated = "2024-06-01"` - date only format
+So both published and updated should be date-only, not datetime.
+1. remediation - clean the text
+2. published - change to date-only format
+3. updated - change to date-only format
+4. Clean up URLs to only keep authoritative ones
+5. Keep severity/score as-is (MEDIUM/5.0 is fine)
+Actually wait - for CVE-2001-0037, the CVSS score would be this is a very old CVE from before CVSS existed. The score of 5.0 with MEDIUM seems reasonable.
+1. remediation field is empty - The error says "remediation: remediation 字段为空". Looking at the TOML, the remediation field is actually present but has a very strange value - it contains what looks like the AI's internal reasoning/thinking, wrapped in a `<value>` tag. The actual content after `<value>` is: "立即升级 HomeSeer 至 1.4.29 或更高版本，该版本已修复目录遍历漏洞。如无法升级，在 Web 服务器层面配置 URL 过滤规则，拦截包含 ".." 的路径请求，并限制 Web 访问账号对文件系统的读取权限。" - This seems like valid remediation content. But the problem is the TOML parser might be seeing the whole multiline string as malformed or empty.
+Wait, looking more carefully at the TOML - the remediation field is a multi-line string that starts with "The user wants me to generate a [remediation] field" which is clearly the AI's internal thought process leaking into the output. This would cause the TOML to be invalid or the field to be considered malformed.
+- score = 5.0 (MEDIUM) - MEDIUM ≥ 4.0, so this is correct
+But wait, the NVD shows CVSS v2.0 Base Score: 5.0 MEDIUM. That's correct.
+Also, the `sources` field only has `["exploitdb"]` - it should at least include `["cve"]` since it has a CVE.
+The `published` and `updated` fields have full datetime format which might not be correct for TOML - TOML dates should be RFC 3339 format. Let me check:
+- `published = "2001-02-16T05:00:00.000"` - This isn't valid TOML datetime. It should be `2001-02-16T05:00:00Z` or `2001-02-16T05:00:00.000Z`. Missing the Z or timezone offset.
+- `updated = "2026-06-16T21:53:32.133"` - Same issue. Missing timezone.
+Actually, in TOML, offset date-times need a timezone offset like `Z` or `+00:00`. So these are invalid TOML date-time values.
+Also the references section has many GitHub links that are not really vulnerability references but just mirror/aggregator pages. Those should be cleaned up.
+1. Fix remediation - remove the AI thinking, keep only the actual Chinese text
+2. Fix published/updated - add proper timezone
+3. Clean up references - keep only authoritative sources
+4. Fix sources - add "cve"
+ave_id = "AVE-2001-0018"
+aliases = ["CVE-2001-0037"]
+[basic]
+title = "HomeSeer 目录遍历漏洞"
+description = "HomeSeer 1.4.29 之前版本存在目录遍历漏洞。远程攻击者可通过在 URL 中注入 `../` 等路径遍历序列，绕过访问限制，读取目标服务器上的任意文件，导致敏感信息泄露。攻击无需身份认证，仅需向目标 Web 服务发送特制 HTTP 请求即可触发。该漏洞影响 HomeSeer 1.4.29 之前所有版本。"
+severity = "MEDIUM"
+score = 5.0
+sources = ["cve", "exploitdb"]
+published = "2001-02-16T05:00:00Z"
+updated = "2026-06-16T21:53:32Z"
+remediation = "升级 HomeSeer 至 1.4.29 或更高版本，该版本已修复目录遍历漏洞。如无法升级，在 Web 服务器层面配置 URL 过滤规则，拦截包含 `..` 的路径请求，并限制 Web 访问账号对文件系统的读取权限。"
+[references]
+urls = [
+"http://archives.neohapsis.com/archives/bugtraq/2000-12/0082.html",
+"http://www.securityfocus.com/bid/2085",
+"https://exchange.xforce.ibmcloud.com/vulnerabilities/5663",
+"https://www.exploit-db.com/exploits/20489",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-22T00:00:00Z"
