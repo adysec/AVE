@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证目标 Squid 2.2 是否将 cachemgr.cgi 暴露在公开 Web 目录中且未做访问控制。通过请求该 CGI 脚本并检测其返回内容，判断攻击者能否利用它作为中间代理发起连接。"
+description = "Squid 代理服务器的 cachemgr.cgi 管理脚本默认安装至公开 CGI 目录且无认证，远程攻击者可通过发送 HTTP GET 请求构造 host 和 port 参数将其作为跳板代理，实现对内网其他主机的端口扫描。PoC 验证能否通过 cachemgr.cgi 访问指定目标地址。"
 id = "POC-AVE-1999-0406"
-name = "CVE-1999-0710 Squid cachemgr.cgi 未授权连接 PoC"
+name = "Squid cachemgr.cgi 未授权连接 PoC"
 severity = "high"
 tags = ["ave-1999-0406"]
 vuln_id = [
@@ -11,15 +11,19 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/cgi-bin/cachemgr.cgi"
+path = "/{{BaseURL}}/cgi-bin/cachemgr.cgi"
 protocol = "http"
 
+[poc.requests.body]
+content = ""
+type = "raw"
+
 [poc.requests.headers]
-User-Agent = "AVE/1.0"
+User-Agent = "Mozilla/4.0"
 
 [[poc.requests.matchers]]
 expect = true
@@ -28,5 +32,5 @@ type = "word"
 words = [
     "Cache Manager",
     "cachemgr",
-    "Squid Object Cache",
+    "Enter hostname and port",
 ]

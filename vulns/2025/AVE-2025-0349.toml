@@ -1,0 +1,41 @@
+[basic]
+description = "Wasmtime 是一个 WebAssembly 运行时，其在 37.0.0 和 37.0.1 版本中存在 C/C++ API 内存泄漏漏洞。由于开发过程中将 `ManuallyRooted<T>` 重构为 `OwnedRooted<T>` 类型时未正确集成到 C/C++ API 中，导致 `externref` 和 `anyref` 类型的宿主内存分配无法在 store 销毁时自动释放。C API 中的 `wasmtime_val_unroot` 函数因拼写错误实际无效，C++ API 缺少析构函数处理，以及宿主函数返回值未被取消根引用，共同导致持续内存泄漏。使用 C/C++ API 处理 `externref` 或 `anyref` 值的应用会累积泄漏宿主内存，长期运行可能导致拒绝服务。该漏洞不影响 Rust crate 及未使用相关类型的嵌入场景。已在 37.0.2 版本修复。"
+published = "2025-10-07T19:15:38.780"
+remediation = "升级至 Wasmtime 37.0.2 或更高版本，该版本已修复 `wasmtime_val_unroot` 函数未真正取消根对象的缺陷，并为 C++ API 的 `ExternRef`、`AnyRef` 和 `Val` 类型添加了析构函数。如无法立即升级，应避免在 C/C++ API 中使用 `externref` 和 `anyref` 类型，以消除内存泄漏风险。"
+score = 1
+severity = "LOW"
+sources = ["ghsa"]
+title = "Bytecode Alliance Wasmtime C/C++ API 内存泄漏漏洞"
+updated = "2026-06-17T09:50:45.227"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2025-61670",
+    "GHSA-vvp9-h8p2-xwfc",
+]
+ave_id = "AVE-2025-0349"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/bytecodealliance/wasmtime/commit/adff9d9d0f09569203709d5687e5a7dc8e1ad0a3",
+    "https://github.com/bytecodealliance/wasmtime/releases/tag/v37.0.2",
+    "https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-vvp9-h8p2-xwfc",
+    "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/2025/CVE-2025-61670.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4e452a37e644e8194f1171b7eec1f7dc625b6526/cves/2025/61xxx/CVE-2025-61670.json",
+    "https://github.com/Tabll/gemnasium-db/blob/de1cbf8802a4c6060caaa5924b50812f2a62fead/pypi/wasmtime-bin/CVE-2025-61670.yml",
+    "https://github.com/cisagov/vulnrichment/blob/6d175f59444084675ba336cc9e2bc51fc5338e6d/2025/61xxx/CVE-2025-61670.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-61670.md",
+    "https://github.com/pypa/advisory-database/blob/b9b8f76bfb92e30a50d8f60d2d06a8800347fe9d/vulns/wasmtime-bin/PYSEC-2025-268.yaml",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d880529b2028116bddf6c732baf8f599b169f01e/SSVC/data/2025/CVE-2025-61670.json",
+    "https://github.com/NovyWave/NovyWave/blob/c8d16adfe96205549bd43ebfe13781fce00f266a/.claude/extra/project/specs/plugins.md",
+    "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/github-reviewed/2026/07/GHSA-vvp9-h8p2-xwfc/GHSA-vvp9-h8p2-xwfc.json",
+    "https://github.com/maxgfr/package-checker.sh/blob/70b8af273b1d73af5c372b20593b139dc1165787/data/osv-cargo.purl",
+]
