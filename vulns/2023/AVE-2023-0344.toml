@@ -1,0 +1,41 @@
+[basic]
+description = "Linux 内核 mm/khugepaged 子系统存在条件竞争漏洞，由于 collapse_and_free_pmd() 函数在释放页表时未正确持有 anon_vma 锁，本地攻击者可通过竞态条件合并相邻 VMA 的 anon_vma（与子进程共享），导致并发 rmap 遍历访问正在被释放的页表，进而触发 use-after-free 和锁依赖警告。该漏洞影响 Linux 内核多个版本，CVSS 评分 7.8，危害等级高，本地低权限用户可利用此漏洞实现权限提升或系统崩溃。"
+published = "2025-03-27T17:15:43.330"
+remediation = "升级 Linux 内核至以下已修复版本：5.4.299+、5.10.243+、5.15.192+、6.1.11+ 或 6.2+。修复提交为 mm/khugepaged 中在持有 mmap 锁后重复检查 ->anon_vma，防止折叠页表时的释放后使用竞争条件。对于无法立即升级的系统，可通过内核命令行参数 `transparent_hugepage=never` 禁用透明 hugepage 作为临时缓解措施。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Kernel mm/khugepaged 匿名映射 VMA 竞争条件导致释放后使用漏洞"
+updated = "2026-06-17T06:43:58.280"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2023-52935"]
+ave_id = "AVE-2023-0344"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/023f47a8250c6bdb4aebe744db4bf7f73414028b",
+    "https://git.kernel.org/stable/c/352fbf61ce776fef18dca6a68680a6cd943dac95",
+    "https://git.kernel.org/stable/c/abdf3c33918185c3e8ffeb09ed3e334b3d7df47c",
+    "https://git.kernel.org/stable/c/acb08187b5a83cdb9ac4112fae9e18cf983b0128",
+    "https://git.kernel.org/stable/c/cee956ab1efbd858b4ca61c8b474af5aa24b29a6",
+    "https://lists.debian.org/debian-lts-announce/2025/10/msg00007.html",
+    "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/2023/CVE-2023-52935.md",
+    "https://github.com/CVEProject/cvelistV5/blob/837e8232e5e0f859088f714711fc711909aefe8c/cves/2023/52xxx/CVE-2023-52935.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2023/CVE-2023-52935.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2023-52935",
+    "https://github.com/cisagov/vulnrichment/blob/ecab81d7d04fc29e521ba40362078f57ea679e40/2023/52xxx/CVE-2023-52935.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2023-52935.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/54ab2d6e8edcc52192915a067c45b2190f568993/references/CveServices-CVE-2023-52935-2025-11-03-1136",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2023/CVE-2023-52935.md",
+    "https://github.com/github/advisory-database/blob/a96652a2a06e880f217d1d6526622d8501dbbd69/advisories/unreviewed/2025/03/GHSA-whcm-px77-62x7/GHSA-whcm-px77-62x7.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2023-52935",
+]
