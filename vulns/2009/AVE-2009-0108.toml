@@ -1,0 +1,70 @@
+1. Fix the description field - it has a lot of internal reasoning text instead of a clean Chinese description
+2. Make sure all fields are correct
+3. Output pure TOML only
+- The `description` field has a very long internal monologue/thinking text instead of a clean description. The actual description text starts after all the thinking, but it's truncated. I need to replace it with a proper clean Chinese description.
+- The `published` field has a non-standard format - it should be just a date like "2010-01-13"
+- The `updated` field also has a non-standard format
+- The `sources` field only has `["kev"]` - should include more sources like `["cve", "kev"]`
+- The `description` is truncated mid-sentence
+- Adobe Reader and Acrobat U3D implementation
+- Out-of-bounds write (CWE-787) via CLODProgressiveMeshDeclaration
+- Remote code execution via malformed U3D data in PDF
+- Affects versions: 9.x before 9.3, 8.x before 8.2, 7.x before 7.1.4
+- CVSS: 8.8 (HIGH)
+- Fixed in APSB10-02
+- In CISA KEV catalog
+- Metasploit module available
+Actually, let me just fix the TOML directly since I have enough information from the context. The main issues are:
+1. `description` field has internal monologue instead of clean text - need to replace with just the Chinese description
+2. `published` format should be just date
+3. `updated` format should be just date
+4. `sources` should include "cve" as well
+- title: "Adobe Reader 和 Acrobat U3D 实现远程代码执行漏洞" - good, Chinese, ≥10 chars
+- description: currently contains the AI's internal reasoning text, not a proper description. Need to replace with clean Chinese description.
+- severity: HIGH, score: 8.8 - matches (HIGH ≥ 7.0)
+- remediation: good, Chinese, ≥20 chars
+- sources: ["kev"] - should include more sources like "cve"
+- published: "2010-01-13T19:30:00.343" - should be date format "2010-01-13"
+- updated: "2026-06-16T23:12:41.597" - should be date format
+Wait, looking at the schema more carefully:
+- published = "2024-01-01" (date format)
+- updated = "2024-06-01" (date format)
+The current values have timestamps, not just dates. Let me fix that.
+Also, the description field currently contains the AI's internal reasoning text wrapped in a multi-line string. I need to replace it with a proper Chinese description.
+Key facts from NVD:
+- CVE-2009-3953: Adobe Reader and Acrobat U3D implementation vulnerability
+- Type: Out-of-bounds write (CWE-787) via CLODProgressiveMeshDeclaration array boundary issue
+- CVSS 3.1: 8.8 HIGH, Vector: AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+- Affected: Reader and Acrobat 9.x before 9.3, 8.x before 8.2, 7.x before 7.1.4 on Windows and Mac OS X
+- Published: 2010-01-13
+- In CISA KEV catalog
+- Metasploit module available
+- Fixed in APSB10-02
+The original TOML from the prompt had the description field as a multi-line string that was essentially empty (it contained the AI's internal reasoning). I need to write a clean TOML.
+ave_id = "AVE-2009-0108"
+aliases = ["CVE-2009-3953"]
+[basic]
+title = "Adobe Reader 和 Acrobat U3D 实现远程代码执行漏洞"
+description = "Adobe Reader 和 Acrobat 的 U3D 实现中存在越界写入漏洞（CWE-787），具体位于 CLODProgressiveMeshDeclaration 的数组边界处理逻辑中。攻击者可通过构造包含恶意 U3D 数据的 PDF 文件，诱使用户打开后触发数组越界写入，成功利用此漏洞可实现远程代码执行，完全控制受影响的系统。该漏洞影响 Adobe Reader 和 Acrobat 7.1.4 之前、8.2 之前及 9.3 之前的版本，已有 Metasploit 利用模块公开，并被 CISA 列入已知被利用漏洞目录。"
+severity = "HIGH"
+score = 8.8
+sources = ["cve", "kev"]
+published = "2010-01-13"
+updated = "2026-06-16"
+remediation = "升级 Adobe Reader/Acrobat 至 9.3（9.x 版本）、8.2（8.x 版本）或 7.1.4（7.x 版本）及以上版本，修复 U3D CLODProgressiveMeshDeclaration 数组越界漏洞。如无法升级，可在 PDF 阅读器中禁用 U3D 解析功能，或使用其他 PDF 阅读器打开可疑文档。"
+[references]
+urls = [
+"http://www.adobe.com/support/security/bulletins/apsb10-02.html",
+"http://lists.opensuse.org/opensuse-security-announce/2010-01/msg00009.html",
+"http://www.us-cert.gov/cas/techalerts/TA10-013A.html",
+"https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2009-3953",
+"https://www.exploit-db.com/exploits/16622",
+"https://bugzilla.redhat.com/show_bug.cgi?id=554293",
+"https://exchange.xforce.ibmcloud.com/vulnerabilities/55551",
+]
+[exploit]
+poc_urls = ["https://www.exploit-db.com/exploits/16622"]
+exp_urls = ["https://www.exploit-db.com/exploits/16622"]
+[meta]
+status = "completed"
+collected_at = "2026-07-22T00:00:00Z"
