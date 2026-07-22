@@ -1,187 +1,27 @@
-1. The description no longer has the `tags.<value>` placeholder issue - it's been cleaned up
-2. The title says "r8188eu" instead of "rtl8192eu"
-3. The sources field says `["cve"]` instead of `["msrc"]`
-4. The URLs have been cleaned up to only include relevant ones
-5. The published and updated fields are in date format (not datetime)
-But wait - the `published` field should be `["nvd"]` not `["cve"]`, based on the original format note. Actually, looking at the schema, `sources` is just a non-empty array, so `["cve"]` is fine.
-Wait, I see the file has already been partially fixed. Let me look at what the previous version had:
-Previous version (from the prompt, the one that needs fixing):
-- description had `tags.<value>` placeholder
-- sources was `["msrc"]`
-- published was `2025-02-26T07:01:07.123`
-- updated was `2026-06-17T05:17:39.350`
-- Many non-essential github URLs
-Current file has:
-- description is clean (no placeholder)
-- sources is `["cve"]`
-- published is `2025-02-26`
-- updated is `2026-06-17`
-- URLs are cleaned up
-So it seems the file has already been partially fixed. But the title still says "r8188eu" while the original description mentions "RTL8192EU". Let me check what the correct name is.
-From the NVD data:
-```
-drivers: staging: rtl8192eu: Fix deadlock in rtw_joinbss_event_prehandle
-```
-But the affected file is `drivers/staging/r8188eu/core/rtw_mlme.c`. So the staging driver directory is `r8188eu`, but the chipset is RTL8192EU. The original kernel commit title says "rtl8192eu". Looking at the git history, the driver was initially called `rtl8192eu` and was later renamed to `r8188eu` in the staging tree. Both refer to the same driver for RTL8188EU/RTL8192EU chipsets.
-Actually, the commit message says "drivers: staging: rtl8192eu: Fix deadlock in rtw_joinbss_event_prehandle" but the actual path in the kernel is `drivers/staging/r8188eu/`. The driver was renamed at some point. Both refer to the same codebase.
-The title currently says "Linux 内核 r8188eu 驱动死锁漏洞" which is correct as the staging directory is `r8188eu`. This seems fine.
-Now, the error from the validation was:
-```
-[严重] description: 描述包含占位符
-```
-Looking at the current file, the description does NOT contain any placeholder anymore. It seems like the file has already been fixed. But the user provided the validation results from the previous round. Let me re-read the user's message.
-"任务：修复以下漏洞 TOML 的格式问题"
-Then shows the "上一轮生成的 TOML（需要修复）" which has the placeholder issue.
-But then the actual file on disk shows a different version that's already been cleaned up. So perhaps the file has been partially fixed but hasn't been re-validated yet, or the user wants me to verify and further improve it.
-Hmm, let me re-read. The user says "修复以下漏洞 TOML 的格式问题" and shows the "上一轮生成的 TOML（需要修复）" - this has the placeholder in description. Then they show the validation errors including:
-```
-[严重] description: 描述包含占位符
-```
-And then they say requirements include:
-1. 检查出错的字段，修正内容
-2. title/description/remediation 中文
-3. severity/score match
-4. remediation concrete
-5. only pure TOML output
-6. use web search
-Looking at the current file, it seems some fixes were already applied. But maybe the validation check is saying the TOML still has a placeholder issue? Let me look more carefully at the description in the current file No, it doesn't have any placeholder.
-Wait, the thing is: the user showed me the "上一轮生成的 TOML" as reference of what needs to be fixed, and the current file on disk might be a different version. Let me check if the file on disk is the same as what the user showed.
-No, they are clearly different:
-- User's "上一轮" TOML has `tags.<value>` in description, sources = ["msrc"], etc.
-- Current file doesn't have the placeholder, has sources = ["cve"], etc.
-So the current file has already been partially fixed. The question is: does it match the full requirements now?
-1. The description is clean (no placeholder) ✓
-2. title/description/remediation are in Chinese ✓ (all ≥ required chars)
-3. severity = MEDIUM, score = 5.5 → MEDIUM ≥ 4 ✓
-4. remediation is concrete ✓
-5. It should be pure TOML ✓
-6. I used web search ✓
-Wait, there's one thing I notice: in the user's provided "上一轮" TOML, the `sources` is `["msrc"]`. In the current file, it's `["cve"]`. Actually, looking at NVD data, the source of this CVE is kernel.org (not msrc, not cve exactly). The `sources` field is supposed to indicate the data source. Let me check the original prompt more carefully.
-Actually, looking more carefully at the original output schema it says:
-```
-sources = ["cve"]             # 非空数组
-```
-So the example uses `["cve"]`, which matches the current file. Good.
-1. The published field: current is `"2025-02-26"` which matches NVD published date ✓
-2. The updated field: current is `"2026-06-17"` which matches NVD last modified ✓
-3. The remediation mentions the correct version 5.18.4 ✓
-4. URLs are relevant ✓
-Actually, I wonder if there is still an issue. Let me re-read the user prompt more carefully:
-I think the correct approach is: the file on disk has already been partially fixed. I should verify it's fully correct and make any remaining adjustments. Let me check each field:
-- `[id].ave_id` = "AVE-2022-0032" ✓
-- `[id].aliases` = ["CVE-2022-49303"] ✓
-- `[basic].title` = "Linux 内核 r8188eu 驱动死锁漏洞" - This could be improved. The commit says "rtl8192eu" but the directory is "r8188eu". Let me keep it as is since it refers to the staging directory name, which is the correct kernel path.
-- `[basic].description` ≥ 50 chars ✓, Chinese ✓, no placeholder ✓
-- `[basic].severity` = "MEDIUM" with score 5.5 ✓
-- `[basic].score` = 5.5 ✓
-- `[basic].sources` = ["cve"] ✓
-- `[basic].published` = "2025-02-26" ✓
-- `[basic].updated` = "2026-06-17" ✓
-- `[basic].remediation` ≥ 20 chars ✓, Chinese ✓, concrete ✓
-- `[references].urls` - all valid http(s) URLs ✓
-- `[exploit].poc_urls` = [] ✓
-- `[exploit].exp_urls` = [] ✓
-- `[meta].status` = "completed" ✓
-- `[meta].collected_at` = "2026-07-22T00:00:00Z" ✓
-Wait, I should also check if there's a `references.nvd` or any other illegal fields. Looking at the file, there are no illegal fields.
-Also checking for illegal sections: none of `[affected]`, `[score]`, `[tags]`, `[info]`, `[poc]`, `[headers]`, `[description]`, `[identity]`, `[metrics]`, `[remediation]`, `[severity]`, `[title]`, `[sources]`, `[score_val]`, `[published]`, `[updated]` are present. ✓
-No illegal fields like `id.cve_id`, `basic.source`, `references.nvd`, `exploit.nuclei_templates`. ✓
-The file looks correct to me. But I need to verify if there's truly no more placeholder issue Actually, the current description in the file doesn't contain any placeholder. The "上一轮" version did. So it seems like someone (perhaps the user or a previous AI run) already fixed the placeholder issue but the validation hasn't been re-run.
-Actually wait - looking at this again, the current file IS different from the "上一轮" version shown in the prompt. So perhaps the user applied some fixes manually or a previous attempt partially fixed it. The user is now asking me to output the final corrected TOML.
-Hmm, but the user says "上一轮生成的 TOML（需要修复）" and then shows the version WITH the placeholder. The current file on disk does NOT have the placeholder. So either:
-1. The file was already fixed by someone/something else
-2. The user wants me to take the BAD version shown in the prompt and output the fixed version
-I think option 2 is more likely - the user is showing me the "上一轮" version and asking me to fix it. The fact that the file on disk is different might be because the file was written by the previous AI run but still failed validation.
-Actually, I think the most logical interpretation is: the user showed me the problematic TOML from the previous round, and the file on disk currently contains that version. But the file content I read is different from what the user showed. Let me check if I misread
-No, I clearly see the file content differs from what the user pasted. The user's "上一轮" TOML has:
-- description contains `tags.<value>` placeholder
-- `sources = ["msrc"]`
-- Many non-essential github URLs
-The file on disk has:
-- No placeholder in description
-- `sources = ["cve"]`
-- Cleaned up URLs (only 3 relevant ones)
-So the file has already been changed. Maybe this is a different iteration and the user pasted the wrong version? Or maybe the file was updated after the failed validation.
-Either way, I'll work with the current file on disk and make any necessary improvements. Let me check if there's any valid issue remaining.
-Actually, I think I should just verify the current file against all the requirements and output a corrected version if needed. The current file looks good to me. Let me just output it as-is or with minor improvements.
-Wait, I need to check one more thing: the `sources` field. Looking at the original specification:
-```
-sources = ["cve"]
-```
-This suggests it should be from the NVD/CVE sources. The current file has `["cve"]` which matches. But actually, what does "cve" mean as a source? It could mean NVD or CVE. Either way, it's acceptable.
-Also, I notice the title says "r8188eu" but the original commit title says "rtl8192eu". The driver in staging is r8188eu, which supports RTL8188EU and RTL8192EU chipsets. The commit message title uses "rtl8192eu" which is one of the chipset names. Using "r8188eu" is also correct since it's the kernel driver directory name. This is a cosmetic issue, not a correctness issue.
-I think the current file is already correct. But the error message said "描述包含占位符" which is no longer present in the current file. So the current file should pass validation.
-Hmm, but the user specifically asked me to fix it and output the corrected TOML. Let me output the current file as the corrected version since it already fixes the placeholder issue.
-Actually wait - the user wrote in Chinese "不要编造不存在的 URL 或补丁版本" (don't fabricate non-existent URLs or patch versions). And they provided a validation error of `描述包含占位符`.
-Looking at this more carefully, I think what happened is:
-1. The "上一轮生成的 TOML" was generated and failed validation
-2. Someone (possibly me in a previous invocation, or the system) partially fixed it by removing the placeholder and fixing some fields
-3. But the user is showing me the original problematic version and asking me to fix it from scratch
-Since the current file on disk is already clean, I should just verify it's correct and output it. Let me check if there are any remaining issues
-The file looks correct. All fields check out. I'll output the current file content as the fix.
-Oh wait! I just realized something. Looking at the "上一轮生成的 TOML" more carefully:
-```
 [basic]
-description = "` tags.<value>Linux 内核 RTL8192EU 无线网卡驱动中存在死锁漏洞"
-```
-The issue is `tags.<value>` at the beginning. It seems like a template rendering issue where `tags.<value>` was accidentally included from some template engine. The current file fixes this by removing it.
-Also, the "上一轮" version has `sources = ["msrc"]` which was wrong (MSRC would be Microsoft Security Response Center, but this is a Linux kernel CVE). The current file has `sources = ["cve"]` which is correct.
-So the fixes that were already applied to the file:
-1. Removed the `tags.<value>` placeholder from description ✓
-2. Changed `sources` from `["msrc"]` to `["cve"]` ✓
-3. Cleaned up URLs to only include relevant ones ✓
-4. Fixed `published` from datetime to date string ✓
-5. Fixed `updated` from datetime to date string ✓
-The file looks good. I'll just make sure everything is clean and output it.
-"只输出纯 TOML 正文，不要任何解释/分析/代码块标记"
-OK, so I need to output only the TOML content. Let me write the current file content.
-Actually, I just want to double-check one thing: the title in the current file says "r8188eu" but the original CVE description says "rtl8192eu". Let me check if "r8188eu" is correct.
-From NVD:
-- Affected file: `drivers/staging/r8188eu/core/rtw_mlme.c`
-- Commit title: `drivers: staging: rtl8192eu: Fix deadlock in rtw_joinbss_event_prehandle`
-- The staging directory is `r8188eu`
-So the driver in the kernel source tree is at `drivers/staging/r8188eu/`. This driver supports RTL8188EU and RTL8192EU chipsets. The commit title uses "rtl8192eu" as a historical/descriptive name.
-For the title, both "r8188eu" and "RTL8192EU" are acceptable. The current file uses "r8188eu" which directly matches the kernel directory name. This is fine.
-OK, I'm confident the current file is correct. I'll output it.
-One more thing: let me check if the remediation should mention "5.18.4" specifically. From the NVD data:
-```
-# [cleanup] skipped line with string multiplication: "version":"5.18.4","lessThanOrEqual":"5.18.*","versionType":
-```
-So yes, 5.18.4 is the fixed version. ✓
-And the published date "2025-02-26" matches NVD. ✓
-And the updated date "2026-06-17" matches NVD last modified. ✓
-Everything checks out. I'll output the current file content as the fixed TOML.
-Wait, but I should also consider whether I need to do any web search for more info. The user said "使用你的联网搜索工具获取准确的漏洞信息来修正字段内容". I already fetched NVD data and verified the information. The current file has accurate information based on NVD and the kernel commits.
-I think the file is complete and correct. Let me output it.The file has been written. The current TOML file:
-1. No placeholder in description ✓
-2. All Chinese fields ≥ required length ✓
-3. severity MEDIUM with score 5.5 ✓ (MEDIUM ≥ 4)
-4. remediation is concrete with specific commands ✓
-5. No illegal sections or fields ✓
-6. All URLs are valid http(s) URLs ✓
-7. Sources is non-empty ✓
-The output has already been written. The user asked to "只输出纯 TOML 正文" (only output pure TOML body). So I should not add any explanation.
-But actually the user asked me to "现在请直接输出修复后的纯 TOML" - they want me to output the TOML. The file is already written. Let me just confirm by outputting the final TOML without any additional text.[id]
-ave_id = "AVE-2022-0032"
-aliases = ["CVE-2022-49303"]
-[basic]
-title = "Linux 内核 r8188eu 驱动死锁漏洞"
-description = "Linux 内核 staging 子系统中 r8188eu（RTL8192EU 芯片组）无线网卡驱动存在死锁漏洞。rtw_joinbss_event_prehandle() 函数在持有 pmlmepriv->lock 自旋锁时调用 del_timer_sync() 等待定时器停止，而定时器回调函数 _rtw_join_timeout_handler() 同样试图获取同一自旋锁，两者相互等待形成死锁。本地攻击者可利用竞态条件触发此情况，导致系统崩溃引发拒绝服务。该漏洞影响 Linux 内核 5.15 至 5.18.4 之前版本，CVSS 评分 5.5，危害等级中危。"
-severity = "MEDIUM"
-score = 5.5
-sources = ["cve"]
+description = "Linux 内核 r8188eu 驱动中的 rtw_joinbss_event_prehandle 函数存在死锁漏洞。线程1持有 pmlmepriv->lock 锁后调用 del_timer_sync() 等待定时器停止，而定时器回调函数 rtw_join_timeout_handler 也需要获取同一把锁，导致相互等待形成死锁，系统无法响应。攻击者可利用此漏洞造成本地拒绝服务。"
 published = "2025-02-26"
+remediation = "升级 Linux 内核至 5.18.4 或更高版本，该版本已将 del_timer_sync() 移出锁保护范围并改用 spin_lock_irq() 修复死锁。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["cve"]
+title = "Linux 内核 r8188eu 驱动死锁漏洞"
 updated = "2026-06-17"
-remediation = "升级 Linux 内核至 5.18.4 或更高版本，该版本已合入修复补丁。如使用长期支持发行版（如 Debian/RHEL），请更新至发行商提供的已含该补丁的内核包。无法立即升级时，可卸载或黑名单禁用 r8188eu 驱动模块（modprobe -r r8188eu && echo 'blacklist r8188eu' >> /etc/modprobe.d/blacklist.conf），禁用使用该芯片组的无线网卡以临时缓解。"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49303"]
+ave_id = "AVE-2022-0032"
+
+[meta]
+collected_at = "2026-07-22T11:58:30.656887925+00:00"
+status = "completed"
+
 [references]
 urls = [
-"https://git.kernel.org/stable/c/0fcddf9c7c10202946d5b19409efbdff744fba88",
-"https://git.kernel.org/stable/c/25cf414b0610fea29d8e045f315648d9007c9a46",
-"https://nvd.nist.gov/vuln/detail/CVE-2022-49303",
+    "https://git.kernel.org/stable/c/0fcddf9c7c10202946d5b19409efbdff744fba88",
+    "https://git.kernel.org/stable/c/25cf414b0610fea29d8e045f315648d9007c9a46",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-22T00:00:00Z"
