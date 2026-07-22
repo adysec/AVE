@@ -1,58 +1,38 @@
-The remediation field is empty in the current TOML. I need to fix it by providing a specific, actionable Chinese remediation suggestion. Let me search for the actual fix details for CVE-2023-53012.
-From the context provided in the TOML, I can see:
-- This is a Linux kernel thermal core vulnerability
-- The fix commits are: a7d736cc3c6cb, 2846a7412f624, 6c54b7bc8a31ce
-- The issue is about `put_device()` being called before `device_register()` fails
-I need to search for the actual kernel versions that fix this CVE to provide an accurate remediation. Let me try to fetch some info.From NVD data I can extract:
-Affected versions:
-- versions from (including) 5.15.86 up to (excluding) 5.16
-- versions from (including) 6.0.16 up to (excluding) 6.1
-- versions from (including) 6.1.2 up to (excluding) 6.2
-- 6.2:rc1 through 6.2:rc4
-Fix commits:
-- a7d736cc3c6cb0d7498bbfb56515d414e35e9510
-- 2846a7412f6246fd5171f51011bf76dfebcec0ee
-- 6c54b7bc8a31ce0f7cc7f8deef05067df414f1d8
-CVSS: 5.5 MEDIUM, CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H
-The remediation field is currently broken (contains English thinking text instead of actual remediation). I need to replace it with proper Chinese remediation.
-The fixed versions are:
-- Linux kernel 5.16 or later (for 5.15.x users)
-- Linux kernel 6.1 or later (for 6.0.x users)
-- Linux kernel 6.2 or later (for 6.1.x users)
-The schema shows `published = "2024-01-01"` - just date. But `collected_at = "2024-06-01T00:00:00Z"` - RFC3339. Let me use the same format as the schema shows for published (just date). Actually, let me check the rest of the fields more carefully.
-Also I notice `updated = "2026-06-17T06:44:06.957"` - this seems to be a datetime, not just a date. But the schema shows date format. Let me keep it consistent and use the format that seems expected - just date for published/updated.
-Actually looking at the errors: only remediation is flagged as the issue. So I should fix the remediation field and keep everything else the same. The main issue is that `remediation` is filled with English thinking/notes rather than actual Chinese remediation text.
-The remediation should advise upgrading to specific fixed kernel versions.[id]
-ave_id = "AVE-2023-0356"
-aliases = ["CVE-2023-53012"]
 [basic]
-title = "Linux 内核 thermal 子系统设备注册引用计数错误漏洞"
 description = "Linux 内核 thermal 核心模块在 __thermal_cooling_device_register() 函数中存在设备引用计数使用不当缺陷，put_device() 在 device_register() 失败前被错误调用，且在部分错误路径上不必要地调用了 thermal_cooling_device_destroy_sysfs()。本地攻击者可利用此缺陷触发内核对象错误释放，导致系统崩溃或拒绝服务。该漏洞 CVSS 评分 5.5，攻击者需本地低权限访问，无需用户交互。"
-severity = "MEDIUM"
-score = 5.5
-sources = ["cve"]
 published = "2025-03-27"
-updated = "2026-06-17"
 remediation = "更新 Linux 内核至修复版本：5.15.x 系列升级至 5.16 及以上，6.0.x 系列升级至 6.1 及以上，6.1.x 系列升级至 6.2 及以上。补丁已合入内核主线仓库，可通过 git 拉取 commit a7d736cc3c6c、2846a7412f62 或 6c54b7bc8a31 应用修复。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["cve"]
+title = "Linux 内核 thermal 子系统设备注册引用计数错误漏洞"
+updated = "2026-06-17"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2023-53012"]
+ave_id = "AVE-2023-0356"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"https://git.kernel.org/stable/c/2846a7412f6246fd5171f51011bf76dfebcec0ee",
-"https://git.kernel.org/stable/c/6c54b7bc8a31ce0f7cc7f8deef05067df414f1d8",
-"https://git.kernel.org/stable/c/a7d736cc3c6cb0d7498bbfb56515d414e35e9510",
-"https://github.com/CVEProject/cvelistV5/blob/0e6d432d517e5cdf9829125ecfaa3a6437985a0c/cves/2023/53xxx/CVE-2023-53012.json",
-"https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2023/CVE-2023-53012.yaml",
-"https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2023-53012.md",
-"https://github.com/canonical/ubuntu-security-notices/blob/935010a28fdab6bbd2dc347ebc953db9773080d4/osv/cve/2023/UBUNTU-CVE-2023-53012.json",
-"https://github.com/openbmc/openbmc/blob/0478d501e9e2b8c9215e795c9b359dead7f96d9a/upstream-layers/openembedded-core/meta/recipes-kernel/linux/cve-exclusion.inc",
-"https://github.com/neuvector/vul-source/blob/27dcc23268ea595c1e22ac2008b340bb4e848cb2/ubuntu-cve-tracker/active/CVE-2023-53012",
-"https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2023-53012.json",
-"https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2023-53012.html",
-"https://github.com/github/advisory-database/blob/a96652a2a06e880f217d1d6526622d8501dbbd69/advisories/unreviewed/2025/03/GHSA-pqmw-jx87-8vxx/GHSA-pqmw-jx87-8vxx.json",
-"https://github.com/nomi-sec/NVD-Database/blob/23dc120c20cb/2023/CVE-2023-53012.json",
+    "https://git.kernel.org/stable/c/2846a7412f6246fd5171f51011bf76dfebcec0ee",
+    "https://git.kernel.org/stable/c/6c54b7bc8a31ce0f7cc7f8deef05067df414f1d8",
+    "https://git.kernel.org/stable/c/a7d736cc3c6cb0d7498bbfb56515d414e35e9510",
+    "https://github.com/CVEProject/cvelistV5/blob/0e6d432d517e5cdf9829125ecfaa3a6437985a0c/cves/2023/53xxx/CVE-2023-53012.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2023/CVE-2023-53012.yaml",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2023-53012.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/935010a28fdab6bbd2dc347ebc953db9773080d4/osv/cve/2023/UBUNTU-CVE-2023-53012.json",
+    "https://github.com/openbmc/openbmc/blob/0478d501e9e2b8c9215e795c9b359dead7f96d9a/upstream-layers/openembedded-core/meta/recipes-kernel/linux/cve-exclusion.inc",
+    "https://github.com/neuvector/vul-source/blob/27dcc23268ea595c1e22ac2008b340bb4e848cb2/ubuntu-cve-tracker/active/CVE-2023-53012",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2023-53012.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2023-53012.html",
+    "https://github.com/github/advisory-database/blob/a96652a2a06e880f217d1d6526622d8501dbbd69/advisories/unreviewed/2025/03/GHSA-pqmw-jx87-8vxx/GHSA-pqmw-jx87-8vxx.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c20cb/2023/CVE-2023-53012.json",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-22T00:00:00Z"
