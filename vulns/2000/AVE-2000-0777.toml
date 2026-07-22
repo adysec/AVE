@@ -1,11 +1,11 @@
 [basic]
-description = "Dansie 购物车应用 cart.pl 未对用户提交的表单字段进行服务端校验，远程攻击者可通过修改隐藏表单字段（hidden form fields）的值来篡改购物车中的商品价格、数量等敏感购买信息，从而实现低价或零成本购买商品。该漏洞影响 Dansie 购物车应用早期版本，攻击者无需身份认证即可利用，危害等级严重。建议升级至最新版本或对服务端输入进行严格校验。"
+description = "Dansie 购物车应用 cart.pl 中存在安全设计缺陷，远程攻击者可通过修改网页中隐藏表单字段（hidden form fields）的值来篡改敏感购买信息（如商品价格、数量等），从而实现以低于原价的价格完成订单。该漏洞无需身份认证即可利用，攻击者只需向目标服务器发送包含恶意修改的隐藏表单字段值的 HTTP 请求即可触发。由于 danish cart.pl 未对隐藏表单字段进行服务端校验，导致任意未授权用户均可绕过支付逻辑。CVSS 评分为 10.0，危害等级严重，影响运行 Dansie shopping cart 的 Web 服务器。"
 published = "2000-04-11T04:00:00.000"
-remediation = "该漏洞源于 cart.pl 直接信任客户端提交的隐藏表单字段（如商品价格、数量），导致攻击者可篡改订单数据。官方已停止维护，建议立即迁移至支持服务端校验的现代电商平台（如 WooCommerce、Magento），并确保所有价格计算在服务端完成，禁止依赖隐藏字段传递敏感数据。"
+remediation = "该漏洞源于 cart.pl 将商品价格、数量等敏感交易数据存放在 HTML 隐藏表单域中，攻击者可直接修改提交任意值。根本修复方案：废弃该 CGI 程序，改用服务端会话机制存储订单信息，所有价格、折扣等关键数据仅在服务端维护，不接受客户端提交。如仍在使用旧版 Perl CGI 购物车，须对所有隐藏表单提交的参数做服务端校验，或迁移至支持服务端会话的现代购物车系统（如 WooCommerce、Magento 等）。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "Dansie cart.pl 隐藏表单字段购买信息篡改漏洞"
+sources = ["avd"]
+title = "Dansie Shopping Cart 隐藏表单域敏感信息修改漏洞"
 updated = "2026-06-16T21:51:19.690"
 
 [exploit]
@@ -24,11 +24,11 @@ status = "completed"
 urls = [
     "http://www.securityfocus.com/bid/1115",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4621",
-    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2000/0xxx/CVE-2000-0253.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4e452a37e644e8194f1171b7eec1f7dc625b6526/cves/2000/0xxx/CVE-2000-0253.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0253",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0253.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/6962d12e25fbf447fb7ec00c59de25f9ba4e2a94/CVE/data/2000/CVE-2000-0253.json",
-    "https://github.com/github/advisory-database/blob/60cf806ffc57d6909f887b4f3823ae39ed0d7c51/advisories/unreviewed/2022/04/GHSA-fv9x-crqp-rpqh/GHSA-fv9x-crqp-rpqh.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0253.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d880529b2028116bddf6c732baf8f599b169f01e/CVE/data/2000/CVE-2000-0253.json",
+    "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-fv9x-crqp-rpqh/GHSA-fv9x-crqp-rpqh.json",
     "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/dansie_cart.nasl",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cwe_details/cwe_details_500_600.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
