@@ -1,11 +1,11 @@
 [basic]
-description = "Squid 代理服务器在 Red Hat Linux 5.2/6.0 及其他发行版中默认将 cachemgr.cgi 管理脚本安装到公开 Web 目录下，且未配置访问认证措施。远程攻击者无需任何身份验证即可通过 HTTP 直接访问该脚本，将其作为跳板代理连接内网或其他系统，导致敏感信息泄露、内网扫描及未授权访问等安全风险。该漏洞利用门槛较低，仅需目标系统运行存在缺陷的 Squid 版本且 cachemgr.cgi 可被外部访问即可触发。"
+description = "Squid 代理服务器在 Red Hat Linux 5.2/6.0 等发行版中默认将 cachemgr.cgi 脚本安装于公开 Web 目录下，且未对访问来源进行有效限制。远程攻击者无需任何身份认证即可利用该 CGI 脚本作为中间代理转发连接请求，从而绕过目标网络的访问控制策略，实现内网探测、隐藏攻击来源或作为跳板对外发起攻击。该漏洞影响范围广泛，仅需目标开放 HTTP 服务即可利用，危害等级高危。"
 published = "1999-07-25T04:00:00.000"
-remediation = "删除或限制 Squid 的 cachemgr.cgi 脚本访问权限：从 web 目录中移除该脚本（`rm /usr/lib/squid/cachemgr.cgi`），或在 Squid 配置中使用 ACL 规则限制仅允许信任 IP 访问（如 `acl manager proto cache_object` + `http_access deny manager`）。升级至 Squid 2.3 及以上版本可获得官方修复。"
+remediation = "升级 squid 至 Red Hat RHSA-1999-025 对应修复版本，或将 cachemgr.cgi 移出 Web 公开目录（如 /usr/lib/cgi-bin/）。在 Apache 配置中为 cachemgr.cgi 添加访问控制，仅允许受信管理 IP 访问：<Location /cachemgr.cgi> Order deny,allow; Deny from all; Allow from 192.168.0.0/16 </Location>。如无需远程管理功能，直接删除 cachemgr.cgi 文件。Debian 用户应升级至 DSA-576 对应版本。"
 score = 7.5
 severity = "HIGH"
-sources = ["osv"]
-title = "Squid cachemgr.cgi 未授权连接漏洞"
+sources = ["redhat"]
+title = "Squid cachemgr.cgi 未授权代理连接漏洞"
 updated = "2026-06-16T21:48:53.680"
 
 [exploit]
@@ -32,12 +32,12 @@ urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/2385",
     "https://www.exploit-db.com/exploits/20465",
     "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/1999/CVE-1999-0710.md",
-    "https://github.com/CVEProject/cvelistV5/blob/4e452a37e644e8194f1171b7eec1f7dc625b6526/cves/1999/0xxx/CVE-1999-0710.json",
+    "https://github.com/CVEProject/cvelistV5/blob/b5b2b32751baccad543d82143784e310554463ae/cves/1999/0xxx/CVE-1999-0710.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0710",
     "https://github.com/microsoft/azurelinux/blob/dabd751ebee99e2986a17e0dd685d32ee33f3524/specs/s/squid/squid.spec",
     "https://github.com/squid-cache/squid/blob/6f4c814b8181c38c56be817f2d339936b63b408f/ChangeLog",
     "https://github.com/grafeas/grafeas/blob/448cd756a92f62111ecf96509c66267421396826/go/v1beta1/storage/testobjects.go",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/d880529b2028116bddf6c732baf8f599b169f01e/CVE/data/1999/CVE-1999-0710.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c30cb75c630bd0892c286bac41dd51c65d6a6546/CVE/data/1999/CVE-1999-0710.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/1999/CVE-1999-0710.md",
     "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/fedora_2005-373.nasl",
     "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-qhrx-x4p7-jr4j/GHSA-qhrx-x4p7-jr4j.json",
