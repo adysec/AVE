@@ -1,68 +1,27 @@
-[id]` which is wrong order, and the description field is actually empty (the long text is just the AI's internal reasoning, not actual description content)
-- http://www.allaire.com/handlers/index.cfm?ID=15697&Method=Full (vendor advisory)
-- http://www.securityfocus.com/bid/1179 (BID)
-The rest are just GitHub data mirrors and should be removed.
-Now let me write the corrected TOML:
-[id] first
-[basic] second
-[references] third
-[exploit] fourth
-[meta] fifth
-Title: "Allaire ColdFusion ClusterCATS 信息泄露漏洞" - short and precise
-Description: Need Chinese, ≥50 chars. The vulnerability is about ClusterCATS appending stale query string arguments to URLs during HTML redirection, potentially leaking sensitive info.
-Remediation: Need specific fix advice. Since this is from 2000, the product is long discontinued. I should say something about upgrading to the patched version or migrating away.
-1. title: Too long (1237 chars). Need a concise Chinese title like "Allaire ClusterCATS URL重定向信息泄露漏洞"
-2. description: Empty. Need to write a proper Chinese description ≥50 chars based on the NVD info: "ColdFusion ClusterCATS appends stale query string arguments to a URL during HTML redirection, which may provide sensitive information to the redirected site."
-3. severity/score: LOW / 2.6 - this is correct (LOW < 4.0)
-4. remediation: Already has good content but let me check if it's ≥20 chars - yes it is.
-5. urls: Need to clean up - keep only the authoritative ones (allaire.com and securityfocus.com), remove the GitHub mirror links which are not authoritative references.
-Looking at the schema:
-- `published = "2024-01-01"` - date format
-- `updated = "2024-06-01"` - date format
-But the current TOML has:
-- `published = "2000-05-08T04:00:00.000"` - this is a datetime, should be just date
-- `updated = "2026-06-16T21:51:36.003"` - same issue
-Wait, looking at the schema more carefully, it says `published = "2024-01-01"` and `updated = "2024-06-01"` - these are just date strings. But the current values have timestamps. Let me keep them as-is since the schema example shows date format but the actual data might accept datetime. Actually, the schema says `published = "2024-01-01"` - just a date. Let me fix these to be just dates.
-Actually, looking at the original TOML more carefully, the `published` and `updated` fields have full ISO timestamps. The schema example shows just dates. But the error report only mentions title and description issues. Let me focus on those.
-- http://www.allaire.com/handlers/index.cfm?ID=15697&Method=Full (vendor advisory)
-- http://www.securityfocus.com/bid/1179 (Bugtraq)
-Now let me write the fixed TOML:
-Title: "Allaire ClusterCATS URL重定向信息泄露漏洞" - concise, Chinese, covers vendor+product+vuln type
-Description: "Allaire ClusterCATS（ColdFusion组件）在处理HTML重定向时，会将过时的查询字符串参数附加到目标URL中，导致重定向过程中敏感信息（如会话令牌、认证凭据等）可能被泄漏给第三方站点。攻击者可通过构造恶意重定向链接，诱使用户点击后窃取URL中的敏感参数。"
-That's well over 50 characters.
-Remediation: Already good - "建议立即升级Allaire ClusterCATS至厂商修复版本（参见Allaire安全公告ID15697），该补丁修复了HTML重定向时泄露敏感查询参数的问题。如产品已停止维护，应迁移至Adobe ColdFusion最新受支持版本，并在反向代理层过滤URL中可疑的查询字符串参数作为临时缓解措施。"
-Wait, the remediation says "建议立即升级" but this is a 2000 vulnerability and the product is long discontinued. Let me adjust to be more realistic. Actually, the current remediation is fine - it mentions the product is discontinued and suggests migration.
-Similarly `updated = "2026-06-16"` instead of the full timestamp.
-Actually, looking at the error report again, it only mentions:
-1. title too long
-2. description empty
-So let me just fix those two issues and keep everything else as-is. But I should also clean up the URLs to only include authoritative ones.
-1. title: "Allaire ColdFusion ClusterCATS URL重定向信息泄露漏洞" - this is short and in Chinese. ✓
-2. description: "Allaire ColdFusion ClusterCATS 在生成 HTML 重定向响应时，会将过时的查询字符串参数附加到目标 URL 中。攻击者可通过诱导用户访问特制链接触发该重定向行为，导致 URL 中携带的会话令牌、认证凭据等敏感信息被泄漏给重定向目标站点。该漏洞攻击复杂度较高，需依赖用户交互触发。" - this is ≥50 characters and in Chinese. ✓
-3. severity/score: LOW / 2.6 - matches (LOW < 4.0). ✓
-4. remediation: ≥20 characters, in Chinese, with specific advice. ✓
-5. All 5 required sections present: [id], [basic], [references], [exploit], [meta]. ✓
-6. No forbidden sections. ✓
-The file looks good. I should output the fixed TOML directly.[id]
-ave_id = "AVE-2000-0398"
-aliases = ["CVE-2000-0382"]
 [basic]
-title = "Allaire ColdFusion ClusterCATS URL重定向信息泄露漏洞"
 description = "Allaire ColdFusion ClusterCATS 在生成 HTML 重定向响应时，会将过时的查询字符串参数附加到目标 URL 中。攻击者可通过诱导用户访问特制链接触发该重定向行为，导致 URL 中携带的会话令牌、认证凭据等敏感信息被泄漏给重定向目标站点。该漏洞攻击复杂度较高，需依赖用户交互触发。"
-severity = "LOW"
-score = 2.6
-sources = ["cve"]
 published = "2000-05-08"
-updated = "2026-06-16"
 remediation = "升级 Allaire ClusterCATS 至厂商安全公告 ASB00-12（补丁 ID 15697）对应修复版本，该补丁已修复 HTML 重定向时泄露敏感查询参数的问题。由于 Allaire 已被收购且该产品已停止维护，建议迁移至 Adobe ColdFusion 最新受支持版本，并在反向代理层过滤 URL 中的可疑查询字符串参数作为临时缓解措施。"
+score = 2.6
+severity = "LOW"
+sources = ["cve"]
+title = "Allaire ColdFusion ClusterCATS URL重定向信息泄露漏洞"
+updated = "2026-06-16"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0382"]
+ave_id = "AVE-2000-0398"
+
+[meta]
+collected_at = "2026-07-20T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://www.allaire.com/handlers/index.cfm?ID=15697&Method=Full",
-"http://www.securityfocus.com/bid/1179",
+    "http://www.allaire.com/handlers/index.cfm?ID=15697&Method=Full",
+    "http://www.securityfocus.com/bid/1179",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-20T00:00:00Z"
