@@ -1,0 +1,49 @@
+[info]
+author = "AVE"
+description = "检测目标是否运行存在 CVE-2013-0422 漏洞的 Oracle Java 7（Update 11 之前版本）。通过部署恶意 Java Applet 页面，利用 JmxMBeanServer 类的 getMBeanInstantiator 方法绕过安全沙箱执行任意代码。"
+id = "POC-AVE-2013-0033"
+name = "Oracle Java 7 JMX Applet RCE PoC"
+severity = "critical"
+tags = [
+    "cve-2013-0422",
+    "java",
+    "rce",
+    "applet",
+]
+vuln_id = [
+    "CVE-2013-0422",
+    "AVE-2013-0033",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = [
+    "Java",
+    "java",
+    "application/x-java-applet",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Java Web Start",
+    "Java Plug-in",
+    "JRE",
+]
