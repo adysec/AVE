@@ -1,0 +1,34 @@
+[basic]
+description = "OpenCost 存在未授权文件写入漏洞，位于 /serviceKey 端点。未经身份认证的远程攻击者可利用该端点直接覆盖 GCP 服务账号密钥文件，无需任何认证即可实施攻击。该漏洞可导致 Kubernetes 集群内服务中断、凭据窃取及权限提升，影响 OpenCost 所有版本。建议用户立即升级修复版本或限制 /serviceKey 端点的访问权限。"
+published = "2026-07-14"
+remediation = "立即升级 OpenCost 至 v1.119.1 及以上版本，该版本通过 adminAuthMiddleware 要求所有管理端点（包括 /serviceKey）必须配置 ADMIN_TOKEN 环境变量方可访问。在 Helm 部署中设置 opencost.exporter.adminToken 值。若无法立即升级，通过 Kubernetes NetworkPolicy 限制对 OpenCost 服务 9003 端口的网络访问，仅允许受信任的客户端 IP；同时在容器启动参数中移除 CONFIG_PATH 可写目录挂载，或将配置目录设为只读。"
+score = 8.8
+severity = "HIGH"
+sources = [
+    "ghsa",
+    "cve",
+]
+title = "OpenCost /serviceKey 端点未授权凭证覆盖注入漏洞"
+updated = "2026-07-22"
+
+[exploit]
+exp_urls = []
+poc_urls = ["https://github.com/advisories/GHSA-wmj8-9953-vff5"]
+
+[id]
+aliases = [
+    "CVE-2026-44300",
+    "GHSA-wmj8-9953-vff5",
+    "GO-2026-5974",
+]
+ave_id = "AVE-2026-0268"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/opencost/opencost/security/advisories/GHSA-wmj8-9953-vff5",
+    "https://github.com/advisories/GHSA-wmj8-9953-vff5",
+]
