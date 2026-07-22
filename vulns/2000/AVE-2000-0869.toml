@@ -1,11 +1,11 @@
 [basic]
-description = "Red Hat Linux 6.2 自带的 diskcheck.pl 脚本在处理临时文件时存在符号链接（symlink）竞争条件漏洞。本地攻击者可通过在临时文件创建前建立恶意符号链接，诱使脚本以 root 权限向任意文件写入数据，实现本地权限提升或破坏系统关键文件。该漏洞影响 Red Hat Linux 6.2 系统，需要本地用户身份才能利用，CVSS 评分 2.1，危害等级低。"
+description = "Red Hat Linux 6.2 自带的 DiskCheck 脚本 diskcheck.pl 在处理临时文件时未正确检查文件链接，存在典型的条件竞争/符号链接漏洞。本地攻击者可通过在临时文件创建前预置符号链接指向目标文件，诱使脚本以当前用户权限覆盖或写入任意系统文件，导致本地权限提升或系统文件被破坏。该漏洞影响 Red Hat Linux 6.2 及可能使用该脚本的其他发行版，CVSS 评分 2.1，危害等级低，攻击前提是拥有本地账户权限。"
 published = "2000-10-20T04:00:00.000"
-remediation = "升级 Red Hat Linux 至 7.0 及以上版本，或手动修补 diskcheck.pl 脚本，将临时文件创建方式改为使用 mktemp 命令而非可预测路径名，避免符号链接竞争条件。如无需该脚本，建议直接删除 diskcheck.pl 以消除风险。"
+remediation = "升级至 Red Hat Enterprise Linux 7 及以上版本以彻底修复。如无法升级，请手动修改 diskcheck.pl：1) 编辑 /etc/diskcheck.conf 将临时文件路径 $tempfile 改为 /var/local/diskusagealert.txt；2) 在 diskcheck.pl 中引入 Perl 的 File::Temp 模块替代直接拼接临时文件名，避免可预测路径；3) 使用 O_CREAT|O_EXCL 标志创建临时文件，防止符号链接跟随攻击。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "Red Hat Linux DiskCheck 符号链接任意文件写入漏洞"
+sources = ["redhat"]
+title = "Red Hat Linux diskcheck 符号链接攻击任意文件写入漏洞"
 updated = "2026-06-16T21:52:19.767"
 
 [exploit]
@@ -26,14 +26,14 @@ urls = [
     "http://seclists.org/bugtraq/2000/Aug/0096.html",
     "http://seclists.org/bugtraq/2000/Jun/0298.html",
     "http://www.securityfocus.com/bid/1552",
-    "https://github.com/CVEProject/cvelistV5/blob/5c4b2ba2a59a96457ab4b8ea4ee82efc5782bb1d/cves/2000/0xxx/CVE-2000-0715.json",
+    "https://github.com/CVEProject/cvelistV5/blob/86060d5336eceede57f01ccb65fb3037638af8db/cves/2000/0xxx/CVE-2000-0715.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0715",
     "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0715.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/03de0f4bc3d6ed449f7108b4761b99fb0c8c56d7/CVE/data/2000/CVE-2000-0715.json",
-    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/unreviewed/2022/04/GHSA-gh68-vx3r-mw6g/GHSA-gh68-vx3r-mw6g.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1b84eedba993546f37a880c6d2d084176a1f04a7/CVE/data/2000/CVE-2000-0715.json",
+    "https://github.com/github/advisory-database/blob/1684cfa32e43376c48beb06819bce86de6ba421b/advisories/unreviewed/2022/04/GHSA-gh68-vx3r-mw6g/GHSA-gh68-vx3r-mw6g.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152700_152800.json",
     "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0715.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--8d43a6b1-e347-46d4-94c9-121b00816758.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/1e58254e5bdaf937b4bd41c6a50d0d633bef0eb7/2000.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/3944e09fb28929da2e246a8b27f3b2564782fb22/2000.tsv",
 ]
