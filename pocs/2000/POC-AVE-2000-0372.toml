@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "检测 wvdial 1.4 及更早版本中 .config 配置文件是否被设置为全局可读权限。wvdial.lxdialog 脚本在创建配置文件时未正确设置权限，导致 dialout 组的本地攻击者可读取其中的登录凭据和密码信息。通过检查 ~/.wvdial.conf 和 /etc/wvdial.conf 文件的存在性与可读性来验证漏洞。"
+id = "POC-AVE-2000-0372"
+name = "CVE-2000-0361 wvdial 配置文件权限漏洞 PoC"
+severity = "low"
+tags = ["cve-2000-0361"]
+vuln_id = [
+    "CVE-2000-0361",
+    "AVE-2000-0372",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+path = "~/.wvdial.conf"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+regex = ".+"
+type = "regex"
+
+[[poc.requests]]
+path = "/etc/wvdial.conf"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+regex = ".+"
+type = "regex"
