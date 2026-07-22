@@ -1,0 +1,42 @@
+[basic]
+description = 'Elixir 的 Tesla HTTP 客户端库中 `Tesla.Middleware.FollowRedirects` 中间件存在大小写处理不当漏洞。该中间件在跨源重定向时本应过滤掉 `Authorization` 等安全敏感标头，但过滤检查使用小写字符串 `"authorization"` 进行大小写敏感比较。由于 Tesla 保留调用者提供的原始标头键名（如 RFC 7235 规范大小写的 `"Authorization"`），导致该标头绕过过滤检查，在跨源重定向请求中泄露给第三方目标服务器。攻击者通过控制重定向目标即可窃取受害客户端的 Bearer 令牌等凭据。该漏洞影响 tesla 1.4.0 至 1.18.2 版本，CVSS 评分 8.2，危害等级高。已在 1.18.3 版本中修复。'
+published = "2026-06-02T20:16:38.390"
+remediation = '立即升级 tesla 至 1.18.3 或以上版本（`mix deps.update tesla`），该版本已修复大小写敏感比较问题。如无法立即升级，将所有 HTTP 请求头键名统一转为小写，使用 `"authorization"` 而非 `"Authorization"` 设置认证头，可通过 `Tesla.put_header/3` 或自定义中间件强制规范化头键名作为临时缓解措施。'
+score = 8.2
+severity = "HIGH"
+sources = ["ghsa"]
+title = "elixir-tesla Tesla 跨源重定向授权标头泄漏漏洞"
+updated = "2026-07-22T19:10:00.120"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-48595",
+    "GHSA-9m9w-gxf7-rh8m",
+]
+ave_id = "AVE-2026-0296"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://cna.erlef.org/cves/CVE-2026-48595.html",
+    "https://github.com/elixir-tesla/tesla/commit/db963dba67651b9abd1fc420a1d9679cf6efe182",
+    "https://github.com/elixir-tesla/tesla/security/advisories/GHSA-9m9w-gxf7-rh8m",
+    "https://osv.dev/vulnerability/EEF-CVE-2026-48595",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2026/CVE-2026-48595.md",
+    "https://github.com/CVEProject/cvelistV5/blob/60bbc98c39201e6f5661b9e41f1492ce39335948/cves/2026/48xxx/CVE-2026-48595.json",
+    "https://github.com/sari3l/Poc-Monitor/blob/6f55cdabfee7f424985cda0793a68247672d750d/2026/CVE-2026-48595.json",
+    "https://github.com/elixir-tesla/tesla/blob/dc56717827cf9cd65fca4f331520a9bae02fd544/CHANGELOG.md",
+    "https://github.com/TMA84/cvealert/blob/75714204a4d47ab0def5b37be4839e1beb10bacd/content/posts/cve-2026-48595.md",
+    "https://github.com/sec-dojo-com/cve-poc/blob/9a0b7a19487f40b2e217de2ad9f19cbcad032a8a/pocs/2026/CVE-2026-48595.md",
+    "https://github.com/erlef-cna/website/blob/c3ea8d6de083cd441e9c6143037548522b280a02/_data/osv/EEF-CVE-2026-48595.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/851fe3e699242718aa7a88e53b3fb00152c89428/posts/cve-2026-48595-erlang-tesla.html",
+    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/github-reviewed/2026/07/GHSA-9m9w-gxf7-rh8m/GHSA-9m9w-gxf7-rh8m.json",
+    "https://github.com/cisagov/vulnrichment/blob/a538bd81432b918b342e413f43256da1f80b6c0d/2026/48xxx/CVE-2026-48595.json",
+]
