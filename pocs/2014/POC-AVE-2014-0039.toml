@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "通过向 /api/v1/repos/search 接口的 q 参数注入 UNION SELECT 语句，检测 Gogs 是否存在 SQL 注入漏洞。若响应包含 ok:true 和 data 字段则判定存在漏洞。"
+id = "POC-AVE-2014-0039"
+name = "Gogits Gogs SQL注入漏洞 PoC"
+severity = "high"
+tags = ["ave-2014-0039"]
+vuln_id = [
+    "CVE-2014-8682",
+    "AVE-2014-0039",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/v1/repos/search"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    '"ok":true',
+    '"data"',
+    '"repolink":"',
+]
