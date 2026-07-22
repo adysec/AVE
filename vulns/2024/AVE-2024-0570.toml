@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 x86 FRED（灵活返回与事件分发）子系统中存在 WFE（WAIT_FOR_ENDBRANCH）状态未清除漏洞。当 CPU 间接分支跟踪器（IBT）处于 WFE 状态时，若解码器发现非 ENDBR 指令会触发 #CP 异常。FRED 机制在入口栈中保存并恢复 WFE 状态，但软件未在异常处理路径中清除该状态，导致从引发 #CP 的指令恢复执行时再次触发 #CP，形成死循环。本地攻击者可通过触发缺失 ENDBRANCH 的 #CP 异常（如运行 IBT 自测程序）造成系统拒绝服务。该漏洞影响 Linux 内核 x86 架构，CVSS 评分 5.5，需本地低权限访问。"
+published = "2025-01-06T17:15:41.480"
+remediation = "建议立即将 Linux 内核升级至 6.6.70、6.12.8 或 6.13 及以上版本，对应补丁提交为 b939f108e86b、dc81e556f2a0、151447859d6f。Ubuntu 24.04 LTS 用户可通过 apt update && apt upgrade 安装 linux-image-6.11.0-1011-lowlatency（USN-7381-1）或 linux-image-6.8.0-1028-nvidia（USN-7514-1）修复此问题。升级后须重启系统生效。如无法立即升级，可在启动参数中添加 ibt=off 禁用 IBT 作为临时缓解措施，但会降低控制流完整性保护。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel x86 FRED 缺失 ENDBRANCH 处理导致拒绝服务漏洞"
+updated = "2026-06-17T08:12:55.900"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-56761"]
+ave_id = "AVE-2024-0570"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/151447859d6fb0dcce8259f0971c6e94fb801661",
+    "https://git.kernel.org/stable/c/b939f108e86b76119428a6fa4e92491e09ac7867",
+    "https://git.kernel.org/stable/c/dc81e556f2a017d681251ace21bf06c126d5a192",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-56761.md",
+    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2024/56xxx/CVE-2024-56761.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-56761.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-56761",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-56761.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7b14132e5983d4643412f6d4f89beb409b809e9f/CVE/data/2024/CVE-2024-56761.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-56761.md",
+    "https://github.com/github/advisory-database/blob/5965518125739d48e98f0cf3efbf7359253ff7cc/advisories/unreviewed/2025/01/GHSA-q9hp-vwf8-w58f/GHSA-q9hp-vwf8-w58f.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-56761",
+    "https://github.com/InfoSecREDD/CVE-Discord-Notify/blob/3f4b2b159624fda9a5cd9efcc2a46893068cd4db/seen_cves.txt",
+]
