@@ -1,0 +1,68 @@
+[info]
+author = "ave"
+description = "验证 w3m 0.3.2.2 之前版本在 IMG 标签 ALT 属性中未正确转义 HTML 标签，导致跨站脚本攻击（XSS）漏洞。通过恶意网页诱导用户使用 w3m 访问，可窃取 Cookie 或访问本地文件。"
+id = "POC-AVE-2002-0072"
+name = "CVE-2002-1348 PoC"
+severity = "medium"
+tags = ["ave-2002-0072"]
+vuln_id = [
+    "CVE-2002-1348",
+    "AVE-2002-0072",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE-PoC/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<script>alert('XSS')</script>",
+    "<img src=x onerror=alert(1)>",
+    "malicious-alt",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/cookie-steal.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE-PoC/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "document.cookie",
+    "steal",
+    "cookie",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
