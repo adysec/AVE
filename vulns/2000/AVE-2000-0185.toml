@@ -1,15 +1,12 @@
 [basic]
-description = "Sun Flex License Manager（FlexLM）中的 lit 程序在处理文件时未对符号链接进行安全检查，会直接跟随符号链接进行操作。本地已登录用户可以创建指向任意系统文件的符号链接，诱使 lit 程序以该程序权限写入或覆盖目标文件，从而修改本无权访问的任意文件内容。该漏洞影响运行 Sun Workshop 5.0 等使用 FlexLM 授权管理组件的 Solaris 系统，攻击前提是攻击者需在目标主机拥有本地账户及执行 lit 程序的权限，属于本地权限提升类漏洞，CVSS 评分较低（约 1.2），危害等级低。"
-published = "2000-02-21"
-remediation = "立即停用或卸载 Sun Workshop 5.0 中的 FlexLM 组件；将 lit 可执行文件去除 setuid 位（chmod u-s /path/to/lit）并限制普通用户对其执行权限；确保 /tmp 等临时目录设置 sticky bit（chmod 1777 /tmp）且仅 root 可写敏感目标文件。若业务仍需许可证服务，迁移到已修复的后续 FlexNet Publisher 或 Oracle Solaris Studio 授权方案，并禁止本地非特权用户在 lit 工作目录创建符号链接；无法升级时，将 lit 从默认 PATH 移除并配合严格本地账户与文件 ACL 作为临时缓解。"
+description = "Sun Flex License Manager 中的 lit 程序存在符号链接漏洞，本地用户可通过在临时文件目录中创建恶意符号链接，诱使 lit 程序以更高权限写入任意文件，实现本地提权。该漏洞影响 Sun Workshop 5.0 等使用 Sun FlexLM 的产品，CVSS 评分 1.2，危害等级低。建议限制 lit 程序的执行权限或升级到不受影响的版本。"
+published = "2000-02-21T05:00:00.000"
+remediation = "立即移除 lit 程序的 setuid/setgid 权限位：`chmod u-s /path/to/lit` 及 `chmod g-s /path/to/lit`，防止本地用户通过符号链接提升权限修改任意文件。限制 lit 可执行文件的执行权限仅对授权管理员开放。由于 Sun Microsystems 已停止运营且产品生命周期终结，官方不再提供安全更新，建议迁移至替代授权管理方案。"
 score = 1.2
 severity = "LOW"
-sources = [
-    "exploitdb",
-    "cve",
-]
-title = "Sun FlexLM lit 符号链接本地文件覆盖漏洞"
-updated = "2026-07-19"
+sources = ["avd"]
+title = "Sun Flex License Manager 符号链接漏洞"
+updated = "2026-06-16T21:51:13.927"
 
 [exploit]
 exp_urls = []
@@ -20,12 +17,21 @@ aliases = ["CVE-2000-0210"]
 ave_id = "AVE-2000-0185"
 
 [meta]
-collected_at = "2026-07-19T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/998",
     "https://www.exploit-db.com/exploits/19757",
-    "https://github.com/CVEProject/cvelistV5/blob/ad13a04165adf44a190b93c89d746f49525e5595/cves/2000/0xxx/CVE-2000-0210.json",
+    "https://github.com/CVEProject/cvelistV5/blob/f410e8277949e9113269176595e70bd0c0230a55/cves/2000/0xxx/CVE-2000-0210.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0210",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0210.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/765c58d21032d831d20918314a5f12dad607f124/CVE/data/2000/CVE-2000-0210.json",
+    "https://github.com/github/advisory-database/blob/36ddac9224d3973c64320c39be98ecc1f1ca5395/advisories/unreviewed/2022/04/GHSA-wgx9-jc59-6fmq/GHSA-wgx9-jc59-6fmq.json",
+    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0210.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_3.list.dict",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--52a8657c-25b9-45af-8ede-ad5db0f552e9.json",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/4741b68d7df3ee95f92711bd26337adccd49bef2/2000.tsv",
 ]
