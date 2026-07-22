@@ -1,0 +1,125 @@
+[id]
+ave_id = "AVE-2026-0249"
+aliases = ["CVE-2026-23603","GHSA-x77v-q46j-393g"]
+
+[basic]
+title = "Gitea: Blind SSRF in OAuth2 avatar synchronization via unvalidated OIDC picture claim"
+description = "### Summary
+When `[oauth2_client] UPDATE_AVATAR = true` is enabled, Gitea fetches the avatar URL received from an OAuth2/OIDC provider using Go's default HTTP client. The URL comes from the user's OAuth/OIDC avatar value, commonly the OIDC `picture` claim.
+
+The affected code path calls `http.Get(url)` without applying outbound host or IP restrictions. A low-privileged user who can influence their own `picture` claim under an already-configured OAuth2/OIDC source can cause the Gitea server to make arbitrary outbound HTTP GET requests. This includes requests to loopback addresses, RFC 1918 private network addresses, and IPv4 link-local addresses such as `169.254.169.254`.
+
+This is a blind SSRF by default. Impact can increase in deployments where the Gitea host can reach cloud metadata services, localhost-only services, or internal services that return valid image data.
+
+### Details
+The vulnerable sink is in `routers/web/auth/oauth.go`:
+
+```go
+func oauth2UpdateAvatarIfNeed(ctx *context.Context, url string, u *user_model.User) {
+    if setting.OAuth2Client.UpdateAvatar && len(url) > 0 {
+        resp, err := http.Get(url)
+        if err == nil {
+            defer func() { _ = resp.Body.Close() }()
+        }
+        if err == nil && resp.StatusCode == http.StatusOK {
+            data, err := io.ReadAll(io.LimitReader(resp.Body, setting.Avatar.MaxFileSize+1))
+            if err == nil && int64(len(data)) <= setting.Avatar.MaxFileSize {
+                _ = user_service.UploadAvatar(ctx, u, data)
+            }
+        }
+    }
+}
+```
+
+The caller is in `routers/web/auth/oauth_signin_sync.go`:
+
+```go
+func oauth2SignInSync(ctx *context.Context, authSourceID int64, u *user_model.User, gothUser goth.User) {
+    oauth2UpdateAvatarIfNeed(ctx, gothUser.AvatarURL, u)
+    ...
+}
+```
+
+`gothUser.AvatarURL` is derived from the OAuth2/OIDC provider's avatar value. For OIDC providers, this is commonly populated from the `picture` claim returned by the provider's userinfo endpoint or ID token.
+
+The issue is that this value can be attacker-influenced in some common IdP configurations, while Gitea fetches it server-side using `http.Get` with no host/IP validation and no restricted transport.
+
+Comparable outbound fetch paths in Gitea use `hostmatcher.NewDialContext` to enforce restrictions at TCP dial time. For example, repository migration uses an HTTP transport with host matching. The OAuth2 avatar synchronization path does not apply those restrictions.
+
+### PoC
+
+#### Requirements
+
+- Local Gitea build or binary
+- Python 3
+- Python packages: `requests`, `pyjwt`, `cryptography`
+- Gitea configured with OAuth2 avatar synchronization enabled
+
+Install Python dependencies:
+
+```bash
+python3 -m pip install requests pyjwt cryptography
+```
+
+Configure `app.ini`:
+
+```ini
+[oauth2_client]
+UPDATE_AVATAR = true
+ENABLE_AUTO_REGISTRATION = true
+USERNAME = userid
+```
+
+Run the fake OIDC provider:
+
+```bash
+python3 fake_oidc.py http://127.0.0.1:8888/ 9999
+```
+
+Run a listener for the SSRF target:
+
+```bash
+nc -lvnp 8888
+```
+
+Register an OAuth2 authentication source in Gitea:
+
+- Provider: `OpenID Connect`
+- Client ID: `gitea-client`
+- Client Secret: `gitea-secret`
+- OpenID Connect Auto Discovery URL: `http://127.0.0.1:9999/.well-known/openid-configuration`
+
+Then initiate login through the configured OAuth2 source.
+
+Observed request to the SSRF listener:
+
+```http
+GET / HTTP/1.1
+Host: 127.0.0.1:8888
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+```
+
+Observe that Gitea fetched the OIDC `picture` claim URL from the server side using the default Go HTTP client.
+
+### Impact
+When [oauth2_client] UPDATE_AVATAR = true is enabled, a low-privileged OAuth2/OIDC user who can influence their own picture claim can force the Gitea server to make outbound HTTP GET requests to attacker-selected URLs. This allows blind SSRF from the Gitea server’s network position, including requests to loopback addresses, RFC1918 private addresses, link-local addresses such as 169.254.169.254, and other internal services that may not be reachable from the public internet. In practical terms, this can enable internal service probing and interaction with localhost-only or private-network services depending on the deployment’s network access controls.
+
+The vulnerability is blind in the common case because non-image responses such as HTML, JSON, or plaintext are rejected during avatar processing and are not directly returned to the attacker. However, impact can increase in cloud or internal-network deployments where metadata services, internal admin panels, monitoring endpoints, or image-generating internal services are reachable from the Gitea host. If an internal endpoint returns a valid supported image format within the configured avatar size limit, the response may be stored as the attacker’s avatar, creating a limited response retrieval primitive."
+severity = "LOW"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T12:14:29.736011386+00:00"
