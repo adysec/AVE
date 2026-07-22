@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核 EROFS 文件系统的 z_erofs_decompressqueue_endio 函数中对原子上下文的检测不充分，该函数可能在 RCU 锁保护下被 blk_mq_flush_plug_list 调用，此时处于原子上下文中却执行了 mutex_lock 等可能导致休眠的操作，触发内核 BUG，系统崩溃。该漏洞位于 fs/erofs/zdata.c，CVSS 评分 5.5，危害等级中危。本地攻击者可通过对 EROFS 文件系统执行 I/O 操作（如触发 page cache 预读）来触发此条件，导致系统拒绝服务。"
+published = "2025-09-15T15:15:50.063"
+remediation = "升级 Linux 内核至 6.1.25 以上版本或合入该补丁提交（修复位于 fs/erofs/decompressor.c 中，将原子上下文检测由 in_atomic() 改为 !in_task() 并增加 rcu_read_lock_any_held() 判断），即可避免在 RCU 锁定上下文中触发内核态休眠操作导致的 BUG。若无法立即升级，可在 dm-verity 场景下通过内核启动参数 `erofs_async_decompress=1` 强制所有解压缩走异步 worker 路径作为临时缓解。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux EROFS 文件系统原子上下文检测不当导致内核崩溃漏洞"
+updated = "2026-06-17T06:44:34.507"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2023-53231"]
+ave_id = "AVE-2023-0375"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/12d0a24afd9ea58e581ea64d64e066f2027b28d9",
+    "https://git.kernel.org/stable/c/597fb60c75132719687e173b75cab8f6eb1ca657",
+    "https://github.com/CVEProject/cvelistV5/blob/0e6d432d517e5cdf9829125ecfaa3a6437985a0c/cves/2023/53xxx/CVE-2023-53231.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2023/CVE-2023-53231.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/6d175f59444084675ba336cc9e2bc51fc5338e6d/2023/53xxx/CVE-2023-53231.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2023-53231",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2023-53231.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2023-53231.json",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2025/12/08/seguranca/cve-2023-53231-erofs-fix-detection-of-atomic-conte-1765244308000.md",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2023-53231",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6a25a9384d7c18dfb53a1d1532073678a2c29fe5/SSVC/data/2023/CVE-2023-53231.json",
+    "https://github.com/program377/CyberSec_ToolsKit/blob/4d205a2898b1d639c73f71f025dbf408ff7f8148/README.md",
+]
