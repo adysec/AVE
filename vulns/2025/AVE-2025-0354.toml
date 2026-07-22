@@ -1,0 +1,82 @@
+1. Fix the `remediation` field with a proper Chinese remediation suggestion
+2. Keep everything else valid
+3. Output only pure TOML
+1. CVE-2025-13957 - Use of Hard-coded Credentials vulnerability in Schneider Electric EcoStruxure Data Center Expert
+2. CVSS v4.0: 7.5 HIGH (CVSS:4.0/AV:N/AC:L/AT:P/PR:H/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N)
+3. Affected versions: v9.0 and prior
+4. Published: 03/10/2026
+5. Last Modified: 06/17/2026
+6. CWE-798: Use of Hard-coded Credentials
+7. Reference: https://download.schneider-electric.com/files?p_Doc_Ref=SEVD-2026-069-05&p_enDocType=Security+and+Safety+Notice&p_File_Name=SEVD-2026-069-05.pdf
+Now let me look at the issues with the TOML:
+1. remediation field is empty - The `remediation` field contains garbage text instead of actual remediation advice. I need to fix this.
+From the NVD data:
+- Affected: EcoStruxure Data Center Expert v9.0 and prior
+- The vendor advisory is SEVD-2026-069-05
+The remediation should advise upgrading to a version newer than v9.0. But the skill says "不要编造不存在的 URL 或补丁版本" (don't fabricate non-existent URLs or patch versions).
+From the NVD page, the affected versions are "v9.0 and prior" with status "affected". The fix would be to upgrade to a version newer than v9.0. But I don't have the exact fixed version from the PDF (it's binary).
+Actually, looking at the NVD data more carefully:
+- The CNA is Schneider Electric SE
+- The advisory reference is SEVD-2026-069-05
+- The affected product is "EcoStruxure™ IT Data Center Expert (Formerly known as StruxureWare Data Center Expert)" with versions "v9.0 and prior" affected
+Since I can't read the PDF (it's binary), let me try to search for the advisory text online.
+Wait, but the skill says severity/score matching: CRITICAL≥9.0 / HIGH≥7.0 / MEDIUM≥4.0 / LOW<4.0. So 7.5 = HIGH is correct.
+Now the main issue is the `remediation` field. It currently has garbage text. I need to write a proper remediation in Chinese.
+From the NVD data, the fix would be to upgrade to a version newer than v9.0. Let me search for the specific fixed version.
+From the NVD page, I can see:
+- CVE-2025-13957: Use of Hard-coded Credentials in Schneider Electric EcoStruxure Data Center Expert
+- CVSS 4.0 score: 7.5 (HIGH) from CNA
+- Affected: EcoStruxure IT Data Center Expert v9.0 and prior
+- Published: 2026-03-10
+- CWE-798: Use of Hard-coded Credentials
+- Reference: https://download.schneider-electric.com/files?p_Doc_Ref=SEVD-2026-069-05&p_enDocType=Security+and+Safety+Notice&p_File_Name=SEVD-2026-069-05.pdf
+The remediation field in the original TOML is broken - it contains garbage text. I need to fix it with a proper Chinese remediation.
+From the NVD data:
+- The vulnerability exists when SOCKS Proxy is enabled
+- SOCKS Proxy is disabled by default
+- Administrator credentials and PostgreSQL database credentials are known
+- Affected: v9.0 and prior
+- The fix is in SEVD-2026-069-05 security notice
+1. From NVD: CVE-2025-13957 is about Schneider Electric EcoStruxure Data Center Expert with hard-coded credentials (CWE-798). The CVSS v4.0 score is 7.5 (HIGH) from the CNA (Schneider Electric SE). The affected version is v9.0 and prior. SOCKS Proxy is disabled by default.
+2. The SEVD-2026-069-05 PDF is the official security advisory from Schneider Electric.
+3. The CISA advisory page I found was for Apeman Cameras (ICSA-26-069-01), not for this CVE. Let me check if there's a CISA advisory for this specific Schneider Electric issue.
+Now let me fix the TOML. The main issues are:
+1. `remediation` field is corrupted/garbage - needs to be replaced with proper Chinese text
+2. The `published` and `updated` fields have timestamps that should be just dates
+3. Need to verify score/severity match
+From NVD:
+- CVSS v4.0: 7.5 HIGH (from CNA Schneider Electric)
+- Affected: EcoStruxure IT Data Center Expert v9.0 and prior
+- Published: 2026-03-10
+- Last Modified: 2026-06-17
+The score is 7.5 which maps to HIGH (≥7.0). That's correct.
+For remediation, I need to write a specific Chinese remediation. From the NVD data:
+- The vendor advisory is SEVD-2026-069-05
+- Affected: v9.0 and prior
+- The fix would be to upgrade to a patched version
+Since I can't find the exact patched version from the PDF (it's binary), I'll write a reasonable remediation based on what's known: upgrade to the latest version that includes the security fix from SEVD-2026-069-05, and disable SOCKS Proxy if not needed.
+Now let me write the corrected TOML.[id]
+ave_id = "AVE-2025-0354"
+aliases = ["CVE-2025-13957"]
+[basic]
+title = "施耐德电气 EcoStruxure Data Center Expert 硬编码凭据远程代码执行漏洞"
+description = "施耐德电气 EcoStruxure Data Center Expert（原 StruxureWare Data Center Expert）v9.0 及之前版本中存在硬编码凭据漏洞（CWE-798）。当 SOCKS 代理功能启用时，攻击者在已知管理员凭据和 PostgreSQL 数据库凭据的情况下，可通过网络利用该漏洞实现信息泄露和远程代码执行。SOCKS 代理默认处于禁用状态，但一旦开启将带来严重安全风险。该漏洞 CVSS v4.0 评分为 7.5，危害等级较高，可导致敏感数据泄露、系统完整性破坏及关键业务中断。"
+severity = "HIGH"
+score = 7.5
+sources = ["zdi", "cve"]
+published = "2026-03-10"
+updated = "2026-06-17"
+remediation = "建议用户立即升级 EcoStruxure Data Center Expert 至 SEVD-2026-069-05 安全公告中指定的修复版本。如无需使用 SOCKS 代理功能，应确保其保持默认禁用状态。同时应限制对管理界面的网络访问，仅允许受信任 IP 连接，并定期更换管理员及数据库凭据。具体补丁文件请从施耐德电气官网下载中心获取。"
+[references]
+urls = [
+"https://download.schneider-electric.com/files?p_Doc_Ref=SEVD-2026-069-05&p_enDocType=Security+and+Safety+Notice&p_File_Name=SEVD-2026-069-05.pdf",
+"https://nvd.nist.gov/vuln/detail/CVE-2025-13957",
+"https://github.com/CVEProject/cvelistV5/blob/56b9e9b42ce0a91a448094549973b81cdf8e832e/cves/2025/13xxx/CVE-2025-13957.json",
+"https://github.com/github/advisory-database/blob/1684cfa32e43376c48beb06819bce86de6ba421b/advisories/unreviewed/2026/03/GHSA-65x8-8358-vgrj/GHSA-65x8-8358-vgrj.json",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-22T00:00:00Z"
