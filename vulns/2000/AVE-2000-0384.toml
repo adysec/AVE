@@ -1,15 +1,12 @@
 [basic]
-description = "Caldera OpenLinux 2.3 系统中的 IDENT 服务（identd）在处理每个 IDENT 请求时会创建多个线程，远程攻击者无需认证即可发送大量 IDENT 请求，消耗服务器系统资源，导致 identd 服务崩溃或系统拒绝服务。该漏洞影响系统可用性，攻击条件简单，只需网络可达即可触发。"
-published = "1999-10-08"
-remediation = "禁用 identd 服务（编辑 /etc/inetd.conf 注释 ident 行并重启 inetd），或安装 Caldera 官方安全公告 CSSA-1999-029.1 提供的补丁升级修复版本。"
-score = 5.0
+description = "Caldera OpenLinux 2.3 系统中的 Ident 服务守护进程存在拒绝服务漏洞。当远程攻击者向目标系统发送大量 IDENT 请求时，该守护进程会为每个请求创建独立线程进行处理，由于未对并发线程数进行有效限制，导致系统资源被迅速耗尽，最终造成服务崩溃或系统无响应。攻击者无需任何身份认证即可通过网络远程触发该漏洞，攻击条件简单，危害等级中等。受影响的系统包括 Caldera OpenLinux 2.3 及可能使用相同 Ident 实现的其他 Linux 发行版。"
+published = "1999-10-08T04:00:00.000"
+remediation = "建议禁用 identd 服务（identd 主要用于身份验证查询，非关键服务）：执行 `killall identd` 停止进程，并删除或注释 `/etc/inetd.conf` 中的 `auth` 或 `ident` 行，然后重启 inetd。如无法禁用，在防火墙层面阻止外部对 TCP 113 端口的访问：执行 `iptables -A INPUT -p tcp --dport 113 -j DROP`。升级到 Caldera OpenLinux 更高版本或迁移至受支持的 Linux 发行版。"
+score = 5
 severity = "MEDIUM"
-sources = [
-    "cve",
-    "epss",
-]
-title = "Caldera OpenLinux 2.3 Ident 守护进程拒绝服务漏洞"
-updated = "2026-06-16"
+sources = ["avd"]
+title = "Caldera OpenLinux 2.3 Ident Daemon 拒绝服务漏洞"
+updated = "2026-06-16T21:51:34.400"
 
 [exploit]
 exp_urls = []
@@ -20,8 +17,20 @@ aliases = ["CVE-2000-0369"]
 ave_id = "AVE-2000-0384"
 
 [meta]
-collected_at = "2026-07-22T11:29:07.637122602+00:00"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["http://www.securityfocus.com/bid/1266"]
+urls = [
+    "http://www.securityfocus.com/bid/1266",
+    "https://github.com/CVEProject/cvelistV5/blob/6e1fee15e021f95477107e3e5d652470f76f7bac/cves/2000/0xxx/CVE-2000-0369.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0369",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0369.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d449633638bc4d33beb359a70dee0dbe66d39a20/CVE/data/2000/CVE-2000-0369.json",
+    "https://github.com/github/advisory-database/blob/74884340187670a91b9d5bdb799b52e73426ad63/advisories/unreviewed/2022/05/GHSA-gqwr-j5j7-xjj4/GHSA-gqwr-j5j7-xjj4.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0369.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153700_153800.json",
+    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
+    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000822.txt",
+]
