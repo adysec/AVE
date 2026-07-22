@@ -1,11 +1,11 @@
 [basic]
-description = "Linux 内核 block cgroup 子系统中存在空指针解引用漏洞，blkcg_reset_stats() 函数清除 blkg_iostat_set 结构体后未正确重新初始化 blkg 指针和 sync 字段，导致后续访问时触发空指针解引用，造成内核崩溃。该漏洞影响使用 cgroup v1 接口的 Linux 内核版本，需要本地低权限用户通过写入 cgroup 统计重置接口触发，CVSS 评分 5.5，危害等级中等。Linux 内核社区已发布补丁修复此问题。"
+description = "Linux 内核 blk-cgroup 子系统的 blkcg_reset_stats() 函数在清空 blkg_iostat_set 结构体后未正确重新初始化 blkg 和 sync 字段，导致空指针解引用，可能引发内核崩溃（panic）。该漏洞源于 commit 3b8cc6298724 和 f73316482977 引入的字段在重置时未同步重建，攻击者需具备 cgroup v1 操作权限才能触发。CVSS 评分 5.5，危害等级中等，影响使用相关内核版本的 Linux 系统。"
 published = "2025-09-18T16:15:45.897"
-remediation = "建议将 Linux 内核升级至修复版本（v6.7+ 主线版本，或对应的 LTS 分支 6.6.y/6.1.y/5.15.y/5.10.y 安全更新）。Debian/Ubuntu 用户请安装 linux-image 安全更新包，Red Hat 用户需更新至 kernel-4.18.0-553 及以上版本（具体版本号以各发行版安全公告为准）。如无法立即升级，可在 cgroup v1 场景下避免调用 blkcg_reset_stats() 重置 IO 统计信息作为临时缓解措施。"
+remediation = "将 Linux 内核升级至 6.4.4、6.3.13、6.1.162、5.15.199 或 5.10.258 及以上版本，其中已包含对 blkcg_reset_stats() 中 blkg_iostat_set 未正确重新初始化导致空指针解引用的修复补丁。如无法立即升级，可通过内核 livepatch 机制加载热补丁（KPatch/KGraft）临时缓解，或限制普通用户对 cgroup v1 blkio 控制器的写入权限以降低触发风险。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
-title = "Linux Kernel blk-cgroup 空指针解引用导致内核崩溃漏洞"
+title = "Linux Kernel blk-cgroup 空指针解引用漏洞"
 updated = "2026-06-17T06:45:17.053"
 
 [exploit]
