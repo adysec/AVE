@@ -1,0 +1,78 @@
+1. description field is empty (it has a weird value that's not valid)
+2. remediation field is empty (same issue)
+I need to search for accurate information about CVE-2014-4535 to write proper Chinese description and remediation.
+1. The `description` field is empty - the content got corrupted with the AI's internal thinking text. I need to write a proper Chinese description.
+2. The `remediation` field is empty - same issue, corrupted with internal thinking text.
+3. The `published` field has the wrong format - it should be `2014-12-27` not `2019-12-27T20:15:11.253`. Wait, actually NVD says published 12/27/2019. Let me check - CVE-2014-4535 was published 2019-12-27 according to NVD. That's unusual for a 2014 CVE but that's what NVD says. Let me keep it as date only format.
+Wait, looking at the schema, `published` should be a date string like "2024-01-01". The current value is `2019-12-27T20:15:11.253` which has a time component. Let me fix that to just the date.
+Actually, looking at the NVD page, the published date is 12/27/2019. So `published = "2019-12-27"` is correct.
+For the description, I need to write a proper Chinese description based on the CVE info:
+- WordPress Import Legacy Media plugin 0.1 and earlier
+- XSS vulnerability
+- filename parameter in getid3/demos/demo.mimeonly.php
+- CVSS 3.1: 6.1 MEDIUM
+- CWE-79
+For remediation, since this is an old abandoned plugin (2014), the best advice is to uninstall/delete it. But I should be more specific.
+Now let me write the corrected TOML. The key fixes:
+1. Fix description - write proper Chinese description
+2. Fix remediation - write proper Chinese remediation
+3. Fix published format - remove time component
+4. Fix updated format - remove time component
+5. Fix sources - add "cve" since this is from CVE/NVD
+"WordPress Import Legacy Media 插件 0.1 及更早版本中存在跨站脚本漏洞。远程攻击者可通过 getid3/demos/demo.mimeonly.php 页面的 filename 参数注入任意 Web 脚本或 HTML 代码，当管理员访问恶意链接时可在浏览器中执行任意脚本，窃取 Cookie 或执行其他恶意操作。"
+That's well over 50 characters.
+For remediation:
+"Import Legacy Media 插件已停止维护多年，建议立即在 WordPress 后台卸载并删除该插件。如业务必需使用，请手动编辑 getid3/demos/demo.mimeonly.php 文件，对 filename 参数进行严格的输入过滤和 HTML 转义处理。"
+That's over 20 characters.
+Now let me also check the `published` field more carefully. The NVD page says "Published Date: 12/27/2019" - this is the date the CVE was published in NVD, not the original disclosure date. The CVE ID is from 2014 but was published later. I'll use the NVD published date.
+Now let me also check the `references.urls` - the first URL `http://codevigilant.com/disclosure/wp-plugin-import-legacy-media-a3-cross-site-scripting-xss` is the original disclosure. The rest are GitHub mirrors of nuclei templates. I should keep the original disclosure URL and maybe a few key references, but the list is quite long. Let me keep the original disclosure URL and remove the excessive GitHub template URLs to keep it clean.
+Actually, looking at the schema, it says `urls = ["https://"]` - the first URL uses `http://` not `https://`. But the rule says "url 必须 http(s):// 开头", so `http://` is fine.
+Now let me also check the `published` field. The NVD page says "Published Date: 12/27/2019" so `published = "2019-12-27"` is correct.
+Wait, I need to double-check the `published` date. The CVE ID is CVE-2014-4535, which suggests it was assigned in 2014. But NVD shows published as 2019-12-27. This is because the CVE was reserved in 2014 but only published later. I'll use the NVD published date.
+Now let me also check the `sources` field. The schema says it should be a non-empty array. Since this is from CVE/NVD, I should include "cve" as a source. The current value is `["nuclei"]` which is incorrect. I'll change it to `["cve"]`.
+Actually, looking at the schema more carefully, the `references.urls` should contain "权威页面" (authoritative pages). The original disclosure from codevigilant.com is the most authoritative. The GitHub template URLs are less authoritative. Let me keep a reasonable set.
+From NVD:
+- Description: Cross-site scripting (XSS) vulnerability in the Import Legacy Media plugin 0.1 and earlier for WordPress allows remote attackers to inject arbitrary web script or HTML via the filename parameter to getid3/demos/demo.mimeonly.php.
+- CVSS 3.1: 6.1 MEDIUM (AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N)
+- CVSS 2.0: 4.3 MEDIUM
+- CWE: CWE-79
+- Published: 2019-12-27
+- Updated: 2026-06-16
+- Reference: http://codevigilant.com/disclosure/wp-plugin-import-legacy-media-a3-cross-site-scripting-xss
+From the disclosure:
+- Plugin: Import Legacy Media 0.1
+- Vulnerability: XSS
+- Unauthenticated
+- Identified by Prajalkulkarni
+- Timeline: Vendor contacted Jan 21, 2014, Plugin closed Jan 11, 2014, Public disclosure May 25, 2014
+The plugin is abandoned (closed in 2014), so remediation should recommend removing the plugin.
+Now let me fix the TOML. The issues are:
+1. description field is empty (it has a weird value that's actually the AI's thinking text, not a proper description)
+2. remediation field is empty (same issue)
+I need to write proper Chinese descriptions and remediation.
+Actually, looking at the TOML more carefully, the description and remediation fields have values that are the AI's internal monologue/thinking text, not actual field values. The TOML parser would see these as multi-line strings but the content is wrong. Let me rewrite them properly.
+For description (≥50 Chinese characters):
+WordPress Import Legacy Media 插件 0.1 及更早版本中存在跨站脚本漏洞。未认证的远程攻击者可通过 getid3/demos/demo.mimeonly.php 页面的 filename 参数注入任意 Web 脚本或 HTML 代码，当管理员访问恶意链接时，攻击者可在浏览器会话中执行任意脚本代码，窃取 Cookie 或执行其他恶意操作。
+For remediation (≥20 Chinese characters):
+该插件已于 2014 年关闭且不再维护，建议立即在 WordPress 后台卸载并删除 Import Legacy Media 插件。如业务必需使用，请手动编辑 getid3/demos/demo.mimeonly.php 文件，对 filename 参数使用 htmlspecialchars() 函数进行 HTML 实体编码过滤。
+Actually, looking at the original TOML, the published is "2019-12-27T20:15:11.253" which matches NVD. The updated is "2026-06-17T00:10:11.840" which is close to the NVD last modified "6/16/2026 8:10:11 PM". Let me keep these.
+Now let me write the clean TOML.[id]
+ave_id = "AVE-2014-0018"
+aliases = ["CVE-2014-4535"]
+[basic]
+title = "WordPress Import Legacy Media 插件跨站脚本漏洞"
+description = "WordPress Import Legacy Media 插件 0.1 及更早版本中存在跨站脚本漏洞。未认证的远程攻击者可通过 getid3/demos/demo.mimeonly.php 页面的 filename 参数注入任意 Web 脚本或 HTML 代码，当管理员访问恶意构造的链接时，攻击者可在浏览器会话中执行任意脚本代码，窃取 Cookie 或执行其他恶意操作。"
+severity = "MEDIUM"
+score = 6.1
+sources = ["cve", "nuclei"]
+published = "2019-12-27T20:15:11.253"
+updated = "2026-06-17T00:10:11.840"
+remediation = "该插件已于 2014 年关闭且不再维护，建议立即在 WordPress 后台卸载并删除 Import Legacy Media 插件。如业务必需保留功能，请手动编辑 getid3/demos/demo.mimeonly.php 文件，对 filename 参数使用 htmlspecialchars() 函数进行 HTML 实体编码过滤以防止 XSS 攻击。"
+[references]
+urls = ["http://codevigilant.com/disclosure/wp-plugin-import-legacy-media-a3-cross-site-scripting-xss"]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-22T00:00:00Z"
