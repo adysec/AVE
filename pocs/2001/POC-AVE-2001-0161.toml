@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测nph-maillist.pl CGI脚本email参数shell元字符注入漏洞(CVE-2001-0400)。攻击者在email地址中插入反引号包裹的命令，可导致任意命令在服务器上以Web服务器权限执行。通过发送含`id`命令的payload并检查响应中是否包含uid/gid信息来判断漏洞是否存在。"
+id = "POC-AVE-2001-0161"
+name = "nph-maillist CGI email shell metachar injection PoC"
+severity = "high"
+tags = ["ave-2001-0161"]
+vuln_id = [
+    "CVE-2001-0400",
+    "AVE-2001-0161",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/nph-maillist.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
