@@ -1,10 +1,10 @@
 [basic]
-description = "SuSE Linux 及其他 Linux 系统中 linuxnfs/knfsd 软件包所包含的 rpc.kstatd（NFS 状态统计守护进程）存在字符串解析错误漏洞。远程攻击者无需身份认证即可通过网络向目标系统发送特制的 RPC 请求，触发该解析错误，导致缓冲区溢出，从而获取目标系统的 root 权限。该漏洞影响范围广泛，CVSS 评分 10.0，危害等级严重，可导致服务器完全被控制。"
+description = "SuSE Linux 及其他使用 linuxnfs/knfsd 包的系统中，rpc.kstatd 服务存在字符串格式化解析漏洞。由于程序在处理用户输入时未正确验证格式化字符串，未经身份认证的远程攻击者可通过发送精心构造的恶意 RPC 请求，触发格式化字符串漏洞实现任意代码执行，从而获取系统 root 权限。该漏洞影响 SuSE Linux 及所有部署了受影响版本 knfsd/nfs-utils 的 Linux 发行版，CVSS 评分 10.0（AV:N/AC:L/Au:N/C:C/I:C/A:C），属于最高危级别。攻击者无需本地访问权限即可远程利用，危害极大。建议尽快升级至修复版本的 nfs-utils 或 knfsd 包，并限制 rpc 服务的网络暴露面。"
 published = "2000-10-20T04:00:00.000"
-remediation = "立即停止 rpc.kstatd 服务（/etc/init.d/kstatd stop 或 killall rpc.kstatd），并从 inetd.conf 或 xinetd 配置中注释掉 kstatd 相关的 rpc 服务条目。升级 linuxnfs/knfsd 软件包至 SuSE Security Announce 58 中指定的修复版本（SuSE Linux 6.x 系列需更新至 linuxnfs-2.2beta37-xx 或 knfsd-1.4.x-xx 以上版本）。在网络层面通过 iptables 或 TCP Wrappers（hosts.allow/hosts.deny）限制对 rpc.kstatd 对应 RPC 端口的访问。如果不需要 NFS 内核统计功能，建议彻底移除 rpc.kstatd 可执行文件并取消其 RPC 注册。"
+remediation = "根据 SuSE Security Announcement #58（2000年10月），建议立即升级 SuSE Linux 的 linuxnfs 或 knfsd 软件包至 SuSE 官方发布的安全补丁版本，可通过 SuSE 的 YaST 在线更新工具或 FTP 镜像站点获取修复后的 nfs-utils 和 knfsd 相关 RPM 包。如暂无法立即打补丁，应在防火墙或 iptables 规则中限制对 rpc.kstatd 服务端口（端口 111 及 NFS 相关端口）的访问，仅允许受信任网络的主机访问。同时建议在禁用的服务列表中将 nfs 和 statd 相关启动脚本设为不自动启动，以减少攻击面。"
 score = 10
 severity = "CRITICAL"
-sources = ["redhat"]
+sources = ["cve"]
 title = "SuSE Linux linuxnfs/knfsd rpc.kstatd 远程权限提升漏洞"
 updated = "2026-06-16T21:52:30.447"
 
@@ -23,11 +23,11 @@ status = "completed"
 [references]
 urls = [
     "http://www.novell.com/linux/security/advisories/suse_security_announce_58.html",
-    "https://github.com/CVEProject/cvelistV5/blob/377bb49f7479dd297ab5004f75a37c291a136578/cves/2000/0xxx/CVE-2000-0800.json",
+    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2000/0xxx/CVE-2000-0800.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0800",
     "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0800.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1b84eedba993546f37a880c6d2d084176a1f04a7/CVE/data/2000/CVE-2000-0800.json",
-    "https://github.com/github/advisory-database/blob/ad1f28a6575460b2b8dc02e086c9a35eb31ea1f4/advisories/unreviewed/2022/04/GHSA-fjq5-vvr8-jg5f/GHSA-fjq5-vvr8-jg5f.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7b14132e5983d4643412f6d4f89beb409b809e9f/CVE/data/2000/CVE-2000-0800.json",
+    "https://github.com/github/advisory-database/blob/7007cbf91cfd56bead27c222fc520c733ed0ad71/advisories/unreviewed/2022/04/GHSA-fjq5-vvr8-jg5f/GHSA-fjq5-vvr8-jg5f.json",
     "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/2011/secpod_nfs_rpc_statd_mult_format_string_vuln.nasl",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152800_152900.json",
