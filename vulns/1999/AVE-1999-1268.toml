@@ -1,11 +1,11 @@
 [basic]
-description = "Solaris 7.0 系统内核在处理 set-gid 程序时存在权限检查缺陷，即使真实用户 ID 不属于 set-gid 所属组，仍允许 set-gid 程序产生 core dump 文件。本地攻击者可利用该漏洞，通过触发程序崩溃（如使用 dmesg 命令）来以更高权限覆盖或创建任意文件，从而实现本地权限提升。该漏洞影响 Solaris 2.4 至 7.0 版本，需本地访问权限且攻击难度较低。"
+description = "Solaris 2.4 至 7.0 系统中 set-gid 程序存在核心转储权限检查缺陷，当真实用户 ID 不属于 set-gid 组时，set-gid 程序仍可生成 core dump 文件。本地攻击者可通过触发 set-gid 程序崩溃（例如利用 dmesg 命令）生成 core dump，从而以更高权限覆盖或创建任意文件，实现本地权限提升。CVSS 评分 4.6，危害等级中危。"
 published = "1996-08-03T04:00:00.000"
-remediation = "安装 Solaris 7.0 对应内核补丁集（Kernel Jumbo Patch）或升级至更高版本，确保 set-gid 程序 core dump 受权限检查约束。临时缓解措施：使用 `coreadm -d setid` 禁用 set-gid 程序的 core dump 功能，并通过 `coreadm -e log` 记录 core dump 事件以监控异常。"
+remediation = "安装 Solaris 2.4 kernel jumbo patch -35 或更新版本，限制 set-gid 程序在非特权用户下产生 core dump。可使用 coreadm(1M) 将 core 文件限制为只允许 root 读取，或通过 setuid(2) 在关键 set-gid 程序入口处禁用 core dump 生成。同时限制普通用户对 dmesg 等系统日志工具的访问权限。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["avd"]
-title = "Sun Solaris set-gid 程序核心转储本地权限提升漏洞"
+sources = ["epss"]
+title = "Sun Solaris set-gid 程序 Core Dump 本地权限提升漏洞"
 updated = "2026-06-16T21:50:23.280"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-1413"]
 ave_id = "AVE-1999-1268"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,12 +25,12 @@ urls = [
     "http://marc.info/?l=bugtraq&m=87602167419549&w=2",
     "http://www.securityfocus.com/bid/296",
     "https://www.exploit-db.com/exploits/19236",
-    "https://github.com/CVEProject/cvelistV5/blob/36911ad057245f7d02822794db0f459d9b4c9b8f/cves/1999/1xxx/CVE-1999-1413.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4e452a37e644e8194f1171b7eec1f7dc625b6526/cves/1999/1xxx/CVE-1999-1413.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1413",
-    "https://github.com/cisagov/vulnrichment/blob/29711f1653ed65ad79a93227b8f3339faf73bbfb/1999/1xxx/CVE-1999-1413.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1413.md",
-    "https://github.com/github/advisory-database/blob/664f1b641010bd1f3bc1d11a60ca29d1f4a0e4ca/advisories/unreviewed/2022/04/GHSA-6v6p-c65q-8x22/GHSA-6v6p-c65q-8x22.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3012e5f1cf9bcfe839897275a956236aed334269/CVE/data/1999/CVE-1999-1413.json",
+    "https://github.com/cisagov/vulnrichment/blob/6d175f59444084675ba336cc9e2bc51fc5338e6d/1999/1xxx/CVE-1999-1413.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-1999-1413.md",
+    "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-6v6p-c65q-8x22/GHSA-6v6p-c65q-8x22.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d880529b2028116bddf6c732baf8f599b169f01e/CVE/data/1999/CVE-1999-1413.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_154500_154600.json",
     "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000093.txt",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x1000/296/info.html",
