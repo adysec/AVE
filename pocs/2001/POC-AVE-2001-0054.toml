@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "验证 Windows Media Player 7.0 皮肤文件远程代码执行漏洞（CVE-2001-0137）。攻击者将恶意 Java 小程序封装在 skin.wmz 皮肤文件中，通过 HTML 的 applet 标签 codebase 参数引用该文件，诱使用户在 IE 中访问即可触发任意 Java 代码执行。"
+id = "POC-AVE-2001-0054"
+name = "Microsoft Windows Media Player 7 皮肤文件远程代码执行漏洞 PoC"
+severity = "medium"
+tags = ["ave-2001-0054"]
+vuln_id = [
+    "CVE-2001-0137",
+    "AVE-2001-0054",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/skin.wmz"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["PK"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/exploit.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "applet",
+    "codebase",
+]
