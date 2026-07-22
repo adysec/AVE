@@ -1,0 +1,37 @@
+[basic]
+description = "GNU GRUB2 的 HFS 文件系统驱动在处理挂载操作时，未对用户提供的卷标名称长度进行有效校验，直接调用 `strcpy()` 将卷标复制到固定大小的堆缓冲区中，导致堆越界写入漏洞。本地攻击者可通过挂载特制的 HFS 文件系统卷触发该漏洞，破坏 GRUB 的敏感数据完整性，最终绕过安全启动（Secure Boot）保护机制。该漏洞影响所有使用受影响版本 GRUB2 的系统，CVSS 评分 7.8，危害等级高。"
+published = "2025-03-03T17:15:12.900"
+remediation = "升级 GRUB2 至 2.12 以上版本（含已合入补丁的构建），或应用上游补丁 `417547c10410b714e43f08f74137c24015f8f4c3`，将 `grub-core/fs/hfs.c:382` 处的 `grub_strcpy()` 替换为 `grub_strlcpy()` 以限制拷贝长度。各发行版用户安装对应安全更新：RHEL 用户关注 RHSA 公告，Debian/Ubuntu 用户通过 `apt update && apt upgrade grub-pc grub-efi` 更新，更新后执行 `grub-install` 重新安装引导器。如无法立即更新，限制本地攻击者访问系统引导分区并启用 UEFI Secure Boot 配合 SBAT 策略阻止未签名 GRUB 加载。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "GNU GRUB2 HFS 文件系统堆越界写入漏洞"
+updated = "2026-06-29T23:16:41.673"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-45782"]
+ave_id = "AVE-2024-0522"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://access.redhat.com/security/cve/CVE-2024-45782",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=2345858",
+    "https://github.com/CVEProject/cvelistV5/blob/377bb49f7479dd297ab5004f75a37c291a136578/cves/2024/45xxx/CVE-2024-45782.json",
+    "https://github.com/open-edge-platform/edge-microvisor-toolkit/blob/84e7ae47f14035508805838ccc3a113644857e14/SPECS/grub2/CVE-2024-45782.nopatch",
+    "https://github.com/NixOS/nixpkgs/blob/b8117fffa9486975f050b7b07cfad353ee71453e/pkgs/by-name/gr/grub2/package.nix",
+    "https://github.com/cisagov/vulnrichment/blob/4a810b0db2e9cab67156f722c309e925ee8f02a0/2024/45xxx/CVE-2024-45782.json",
+    "https://github.com/microsoft/azurelinux/blob/dabd751ebee99e2986a17e0dd685d32ee33f3524/specs/g/grub2/grub2.spec",
+    "https://github.com/neuvector/vul-source/blob/9ba62febaf6254d72eb4667cd7923d92d2c3f9b6/ubuntu-cve-tracker/active/CVE-2024-45782",
+    "https://github.com/canonical/ubuntu-security-notices/blob/4cbc1cd445b97bc2235c2b80e223e324747c59b3/osv/cve/2024/UBUNTU-CVE-2024-45782.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2024-45782.md",
+    "https://github.com/seapath/meta-seapath/blob/479229566d9de44367de66249dba8ed29de7b8ff/recipes-bsp/grub/files/CVE-2024-45782_CVE-2024-56737.patch",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-45782.json",
+]
