@@ -1,0 +1,43 @@
+[basic]
+description = "Linux 内核 btrfs 文件系统在写时复制（COW）树块时存在释放后使用漏洞。当启用 trace_btrfs_cow_block() 跟踪点且内核开启 CONFIG_PREEMPT 时，btrfs_force_cow_block() 函数通过 free_extent_buffer_stale() 释放扩展缓冲区并调度 RCU 回收，若当前进程在调用跟踪点前被抢占，已释放的缓冲区将被访问，触发释放后使用。本地攻击者可在低权限条件下利用此漏洞实现权限提升，导致系统崩溃或信息泄露。CVSS 评分 7.8，危害等级高。受影响的包括 Ubuntu、Debian、SUSE 等主流发行版内核，各厂商已发布安全更新修复。"
+published = "2025-01-06T17:15:40.900"
+remediation = "更新内核到 >=5.15.0 版本（或通过发行商（Ubuntu/debian/RedHat等）提供的安全更新），或在跟踪不可用时禁用 tracepoint trace_btrfs_cow_block。Ubuntu: `sudo apt-get update && sudo apt-get install --only-upgrade linux-generic`；Debian: `apt-get update && apt-get install --only-upgrade linux-image-$(uname -r)`；Red Hat/Fedora: `dnf upgrade kernel`。如使用 Kubernetes，请确保控制平面和节点均已更新。内核 5.15+ 包含内核 commit 994a2d51f21668bcbb5e7da3b47050d806cf4a08 的修复。实时跟踪如非必须可选禁用：`echo 0 > /sys/kernel/debug/tracing/events/btrfs/trace_btrfs_cow_block/enable`"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 btrfs 使用后释放漏洞"
+updated = "2026-06-17T08:12:55.563"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-56759"]
+ave_id = "AVE-2024-0568"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/44f52bbe96dfdbe4aca3818a2534520082a07040",
+    "https://git.kernel.org/stable/c/526ff5b27f090fb15040471f892cd2c9899ce314",
+    "https://git.kernel.org/stable/c/66376f1a73cba57fd0af2631d7888605b738e499",
+    "https://git.kernel.org/stable/c/9a466b8693b9add05de99af00c7bdff8259ecf19",
+    "https://git.kernel.org/stable/c/ba5120a2fb5f23b4d39d302e181aa5d4e28a90d1",
+    "https://git.kernel.org/stable/c/c3a403d8ce36f5a809a492581de5ad17843e4701",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-56759.md",
+    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2024/56xxx/CVE-2024-56759.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-56759.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-56759",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2024/56xxx/CVE-2024-56759.json",
+    "https://github.com/0xMarcio/cve/blob/c6c9e305761264e104c5de70e59376c519bbfef3/2024/CVE-2024-56759.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-56759.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/d8c79a157e22e9abda84461cbe0f59ce58612245/references/CveServices-CVE-2024-56759-2025-11-03-1439",
+    "https://github.com/github/advisory-database/blob/fc954c015ec74fa656f6d2cb3eaa86c83e860239/advisories/unreviewed/2025/01/GHSA-6574-vqv8-9334/GHSA-6574-vqv8-9334.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-56759",
+]
