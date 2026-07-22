@@ -1,0 +1,40 @@
+[basic]
+description = 'jq 命令行 JSON 处理工具 1.7.1 及之前版本的 decNumber.c 中的 decNumberCopy 函数存在类型混淆漏洞（CWE-843），未正确区分 NaN（非数值）与普通数值类型，导致栈缓冲区溢出和越界写入。攻击者可通过构造包含特定 NaN 数字字符串（如 "1 NaN123" 后跟大量数字）的 JSON 输入，配合 --slurp 参数使用减法过滤器（如 .-.）触发该漏洞，造成拒绝服务或潜在的信息泄露。该漏洞需本地访问且利用复杂度较高，CVSS 评分 8.1，影响所有使用 jq 1.7.1 及之前版本的系统。'
+published = "2025-02-26T16:15:16.237"
+remediation = "立即将 jq 升级至 1.8.0 及以上版本（当前最新为 1.8.2），该版本已合入拒绝解析带载荷 NaN（如 NaN123）的修复补丁。可通过包管理器更新（如 apt install jq=1.8.2、brew upgrade jq）或从 https://github.com/jqlang/jq/releases 下载最新二进制替换。如无法升级，可在输入 JSON 前通过预处理过滤包含 NaN 后跟数字的字符串作为临时缓解措施。"
+score = 8.1
+severity = "HIGH"
+sources = ["msrc"]
+title = "jq 栈缓冲区溢出漏洞"
+updated = "2026-06-17T08:08:52.940"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-53427"]
+ave_id = "AVE-2024-0553"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://gist.github.com/Ekkosun/a83870ce7f3b7813b9b462a395e8ad92",
+    "https://github.com/jqlang/jq/blob/71c2ab509a8628dbbad4bc7b3f98a64aa90d3297/src/decNumber/decNumber.c#L3375",
+    "https://github.com/jqlang/jq/issues/3196",
+    "https://github.com/jqlang/jq/issues/3296",
+    "https://github.com/jqlang/jq/security/advisories/GHSA-x6c3-qv5r-7q22",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-53427.md",
+    "https://github.com/CVEProject/cvelistV5/blob/6e1fee15e021f95477107e3e5d652470f76f7bac/cves/2024/53xxx/CVE-2024-53427.json",
+    "https://github.com/jqlang/jq/blob/2d410d6d86be7f685ad28e5cffac0248aa47664c/NEWS.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/bd141078a7ff2a16f9bd8cc62066eb74bbd40e0e/osv/cve/2024/UBUNTU-CVE-2024-53427.json",
+    "https://github.com/neuvector/vul-source/blob/9ba62febaf6254d72eb4667cd7923d92d2c3f9b6/ubuntu-cve-tracker/active/CVE-2024-53427",
+    "https://github.com/cisagov/vulnrichment/blob/40201653244e9d985cea536a2ac651eca18f5fd4/2024/53xxx/CVE-2024-53427.json",
+    "https://github.com/alpinelinux/aports/blob/6ca8a69233790aa99633b6ad5606668ac000cf96/main/jq/APKBUILD",
+    "https://github.com/Xilinx/meta-openembedded/blob/4d3e2639dec542b58708244662d5ce36810fc510/meta-oe/recipes-devtools/jq/jq/CVE-2024-53427.patch",
+    "https://github.com/hashicorp/hcp/blob/22914bf04188992bd99f6dea82da226d9204f62b/.release/security-scan.hcl",
+    "https://github.com/wolfi-dev/os/blob/4b5161978d759ef78f9196705942bfe3008611db/jq.yaml",
+]
