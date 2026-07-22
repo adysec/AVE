@@ -1,0 +1,30 @@
+[basic]
+description = "cJSON 1.7.15 版本在解析 JSON 文档时存在拒绝服务漏洞。当 JSON 中包含超长整数（如 9999999999999999999999999999999999999999999999912345678901234567）时，parse_number 函数使用固定 64 字节栈缓冲区复制数字字符串，超长数字导致缓冲区溢出前的循环遍历消耗大量 CPU 资源，造成服务不响应。攻击者可通过向目标应用提交特制 JSON 数据触发该漏洞。此漏洞影响所有使用 cJSON 库解析用户输入 JSON 数据的应用程序，CVSS 评分 2.9，危害等级低。"
+published = "2025-04-19"
+remediation = "将 cJSON 升级至 1.7.16 或更高版本（最新版为 1.7.19），该版本已通过动态分配缓冲区修复超大数字导致解析崩溃的问题（commit a328d65）。Debian Bullseye 用户可升级至 1.7.14-1+deb11u2，Bookworm 用户可升级至 1.7.15-1+deb12u3，详见 DLA-4216-1。若无法升级，接入外部 JSON 前使用独立线程并设置超时（如 5 秒），或在应用层对数值字段做范围校验。"
+score = 2.9
+severity = "LOW"
+sources = ["cve"]
+title = "cJSON 拒绝服务漏洞"
+updated = "2026-06-17"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2023-26819"]
+ave_id = "AVE-2023-0335"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://nvd.nist.gov/vuln/detail/CVE-2023-26819",
+    "https://github.com/boofish/json_bugs/tree/main/cjson",
+    "https://github.com/DaveGamble/cJSON/commit/a328d65ad490b64da8c87523cbbfe16050ba5bf6",
+    "https://lists.debian.org/debian-lts-announce/2025/06/msg00014.html",
+    "https://security-tracker.debian.org/tracker/CVE-2023-26819",
+]
