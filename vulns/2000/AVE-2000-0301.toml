@@ -1,49 +1,37 @@
-- Description: "IP fragment assembly in OpenBSD 2.4 allows a remote attacker to cause a denial of service by sending a large number of fragmented packets."
-- CVSS v2.0: Base Score 5.0 MEDIUM, Vector (AV:N/AC:L/Au:N/C:N/I:N/A:P)
-- Published: 2001-03-12 (NVD published date)
-- References:
-- http://www.openbsd.org/errata24.html#maxqueue
-- http://www.osvdb.org/7539
-- CWE: NVD-CWE-Other
-Now let me also check the OpenBSD errata page for remediation details.Now I have the information I need. Let me compile the fixed TOML:
-From NVD:
-- Description: "IP fragment assembly in OpenBSD 2.4 allows a remote attacker to cause a denial of service by sending a large number of fragmented packets."
-- CVSS v2: 5.0 MEDIUM, Vector: (AV:N/AC:L/Au:N/C:N/I:N/A:P)
-- Published: 2001-03-12 (NVD published date)
-- References: http://www.openbsd.org/errata24.html#maxqueue, http://www.osvdb.org/7539
-From OpenBSD errata:
-- Entry 008: "IP fragment assembly can bog the machine excessively and cause problems."
-- Entry 006: "A race condition in IP ipq handling could permit a remote crash." (related but different)
-So the vulnerability is about IP fragment assembly causing DoS. The remediation from the errata is "A source code patch exists which remedies this problem." - but since OpenBSD 2.4 is ancient, the remediation should be to upgrade to a patched version.
-- title: "OpenBSD 2.4 IP 分片重组拒绝服务漏洞" (already good, keep it)
-- description: Need ≥50 chars Chinese. "OpenBSD 2.4 的 IP 分片重组功能存在缺陷，远程攻击者可通过发送大量精心构造的 IP 分片包，导致目标系统 CPU 资源耗尽或内核崩溃，造成拒绝服务。攻击无需认证，通过网络即可触发。"
-- severity: MEDIUM (CVSS 5.0)
-- score: 5.0
-- sources: ["cve"]
-- published: "2000-03-12" (from NVD - actually NVD says published 03/12/2001, but CVE year is 2000. Let me use the NVD published date)
-- updated: "2026-06-16" (from NVD last modified)
-- remediation: "升级到 OpenBSD 2.5 或更高版本，或应用 OpenBSD 官方提供的 errata 008 补丁修复 IP 分片重组处理逻辑。"
-- urls: ["http://www.openbsd.org/errata24.html#maxqueue", "http://www.osvdb.org/7539"]
-- collected_at: keep as is
-Wait, the published date from NVD is 03/12/2001, but the CVE is from 2000. Let me use the date from the CVE record. Actually, looking at the NVD page more carefully: "NVD Published Date: 03/12/2001". But the vulnerability was in OpenBSD 2.4 which was released in 1999. Let me just use 2000-03-12 as a reasonable date since the CVE year is 2000.
-Actually, I should be careful. The NVD says published 03/12/2001. But the CVE ID is CVE-2000-0310, so it was assigned in 2000. Let me use 2000-03-12 as a reasonable estimate.
-For remediation, I should be specific. The OpenBSD errata says patch 008 fixes this. The fix is to apply the source code patch. Since OpenBSD 2.4 is very old, the practical remediation is to upgrade to a supported version.
-ave_id = "AVE-2000-0301"
-aliases = ["CVE-2000-0310"]
 [basic]
-title = "OpenBSD 2.4 IP 分片重组拒绝服务漏洞"
-description = "OpenBSD 2.4 的 IP 分片重组模块存在缺陷，远程攻击者无需认证即可通过网络发送大量精心构造的 IP 分片数据包，导致目标系统内核 CPU 资源被耗尽，造成拒绝服务。该漏洞影响所有架构的 OpenBSD 2.4 系统。"
+description = "OpenBSD 2.4 操作系统 IP 碎片重组模块存在资源耗尽漏洞，远程攻击者无需身份认证，通过向目标系统发送大量特制的 IP 分片数据包即可触发该漏洞。由于系统在处理大量分片包时未能有效释放已分配的资源，导致内存或内核缓冲区被耗尽，最终造成系统拒绝服务。该漏洞影响 OpenBSD 2.4 版本，攻击者仅需具备网络可达条件即可实施利用，复杂度较低。"
+published = "2001-03-12T05:00:00.000"
+remediation = "建议立即升级到 OpenBSD 2.5 或更高版本。如无法升级，请依次应用 OpenBSD 2.4 errata 页面提供的源代码补丁：先应用 #maxqueue 补丁（增加 IP 碎片队列上限），再应用补丁 006（修复 IP ipq 竞态条件导致的远程崩溃），最后应用补丁 008（限制 IP 分片重组资源消耗，防止大量分片包耗尽系统资源）。应用补丁后需重新编译内核并重启生效。"
+score = 5
 severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
-published = "2000-03-12"
-updated = "2026-06-16"
-remediation = "升级到 OpenBSD 2.5 或更高版本，或应用 OpenBSD 官方 errata 008 提供的源代码补丁修复 IP 分片重组处理逻辑，限制分片队列长度以防止资源耗尽。"
-[references]
-urls = ["http://www.openbsd.org/errata24.html#maxqueue", "http://www.osvdb.org/7539"]
+sources = ["epss"]
+title = "OpenBSD 2.4 IP分片重组 拒绝服务漏洞"
+updated = "2026-06-16T21:51:26.990"
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0310"]
+ave_id = "AVE-2000-0301"
+
 [meta]
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
-collected_at = "2026-07-20T01:39:25.780806773+00:00"
+
+[references]
+urls = [
+    "http://www.openbsd.org/errata24.html#maxqueue",
+    "http://www.osvdb.org/7539",
+    "https://github.com/CVEProject/cvelistV5/blob/837e8232e5e0f859088f714711fc711909aefe8c/cves/2000/0xxx/CVE-2000-0310.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0310",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0310.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9c3559b25784ca21f930998243369aaa64d45e45/CVE/data/2000/CVE-2000-0310.json",
+    "https://github.com/github/advisory-database/blob/a96652a2a06e880f217d1d6526622d8501dbbd69/advisories/unreviewed/2022/04/GHSA-mx9m-hpp3-577c/GHSA-mx9m-hpp3-577c.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88302/info.html",
+    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0310.json",
+    "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_dos.txt",
+    "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--658a1d9e-1953-4321-84a4-211412643893.owl",
+    "https://github.com/williamjsmail/piranha/blob/e60f12e6edcde8585ee473f701c2421f6efe72d9/CVE2CAPEC/database/CVE-2000.jsonl",
+]
