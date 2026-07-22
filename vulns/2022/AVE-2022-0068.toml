@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核 BPF（Berkeley Packet Filter）子系统中存在程序递归调用漏洞。当 BPF 程序作为原始跟踪点附加到 contention_begin 跟踪点时，程序内部调用 bpf_trace_printk 辅助函数会再次触发同一跟踪点，导致无限递归，进而引发内核警告、锁竞争加剧及栈溢出风险。本地攻击者需具备 BPF 程序加载权限（通常需 root 权限）来触发该漏洞，可导致系统拒绝服务。Linux 内核社区已通过引入 BPF 程序 active 字段标志位，在程序已运行时跳过执行以避免递归，从而修复此漏洞。"
+published = "2025-05-01T15:15:59.170"
+remediation = '建议立即将 Linux 内核升级至 6.1 及以上版本（该漏洞在 6.1-rc1 中修复，commit 为内核 BPF 子系统的 "Prevent bpf program recursion for raw tracepoint probes" 补丁），或向后移植该补丁到所使用的 LTS 内核分支。如无法立即升级，应避免将调用 bpf_trace_printk 等可能触发锁机制的 BPF 程序附加到 contention_begin 等原始跟踪探针上，作为临时缓解措施。'
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 BPF 原始追踪探针程序递归拒绝服务漏洞"
+updated = "2026-06-17T05:19:05.513"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49764"]
+ave_id = "AVE-2022-0068"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/05b24ff9b2cfabfcfd951daaa915a036ab53c9e1",
+    "https://git.kernel.org/stable/c/2e5399879024fedd6cdc41f73fbf9bbe7208f899",
+    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2022/49xxx/CVE-2022-49764.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49764.yaml",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49764",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2022-49764.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/09ea4c6e198f67c97f9e843f2fc9dbea00a9ec98/CVE/data/2022/CVE-2022-49764.json",
+    "https://github.com/github/advisory-database/blob/60cf806ffc57d6909f887b4f3823ae39ed0d7c51/advisories/unreviewed/2025/05/GHSA-7wj3-cv8c-chpx/GHSA-7wj3-cv8c-chpx.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2022-49764.html",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2022-49764",
+    "https://github.com/microsoft/AzureLinuxVulnerabilityData/blob/f446e11135d45cb1643208c82d3c441bd9ae1832/osv/AZL-69716.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--9291f458-82e3-4daa-b0b8-b16ce8aaf2e5.json",
+]
