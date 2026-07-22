@@ -1,10 +1,10 @@
 [basic]
-description = "rpc.statd 是 NFS 文件共享服务中的状态监控守护进程，其日志记录功能在处理未净化的格式化字符串时存在远程格式串漏洞。未经认证的远程攻击者可通过向目标主机的 rpc.statd 服务发送特制 RPC 请求，利用格式字符串 %n/%x 等标记实现任意内存写入，最终以 root 权限执行任意代码。该漏洞影响 Conectiva 4.x/5.x、Debian 2.x、RedHat 6.x、S.u.S.E 6.x/7.0 及 Trustix 1.x 等多款 Linux 发行版的 nfs-utils 包，CVSS 评分 10.0，危害等级严重。"
+description = "rpc.statd 是 NFS 文件共享服务中的状态监控守护进程，nfs-utils 软件包中的 rpc.statd 存在格式字符串漏洞。远程攻击者可通过向目标系统发送特制的 RPC 请求，利用未正确过滤的格式字符串参数执行任意代码，从而获取 root 权限。该漏洞影响 Conectiva、Debian、RedHat、S.u.S.E、Trustix 等多个 Linux 发行版的早期版本，CVSS 评分 10.0，危害等级严重。厂商已发布安全补丁修复此漏洞。"
 published = "2000-07-16T04:00:00.000"
-remediation = "立即升级 nfs-utils 到各发行版提供的修补版本：Red Hat 安装 RHSA-2000:043 对应更新，Debian 升级至 DSA-001 修复版，Caldera 更新至 CSSA-2000-025.0 指定版本。修复内容为在 rpc.statd 的 syslog 调用中使用 %s 格式符替代直接传递用户可控数据，消除格式字符串漏洞。如无法升级，可在防火墙屏蔽 rpc.statd 使用的端口（111/TCP/UDP、2049/TCP/UDP）作为临时缓解，或禁用 NFS 服务。"
+remediation = '升级 nfs-utils 至 0.1.17 及以上版本，该版本修复了 rpc.statd 中未正确清理格式化字符串的问题。如无法立即升级，可在 /etc/hosts.deny 中添加 "rpc.statd: ALL" 并在 /etc/hosts.allow 中仅放行可信 IP，或禁用 NFS 服务 (service nfs stop && chkconfig nfs off) 作为临时缓解措施。'
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
+sources = ["redhat"]
 title = "Linux nfs-utils rpc.statd 远程格式字符串漏洞"
 updated = "2026-06-16T21:52:13.413"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0666"]
 ave_id = "AVE-2000-0518"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
@@ -32,14 +32,14 @@ urls = [
     "http://www.securityfocus.com/bid/1480",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4939",
     "https://www.exploit-db.com/exploits/20077",
-    "https://github.com/CVEProject/cvelistV5/blob/47aadecb5d7f9b0723652503f764f5addc1275b9/cves/2000/0xxx/CVE-2000-0666.json",
+    "https://github.com/CVEProject/cvelistV5/blob/9342e5394ee109ffc3617b5105797cdfcfcb78cf/cves/2000/0xxx/CVE-2000-0666.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0666",
     "https://github.com/fankh/vulnerability-poc/blob/ffa50060b7ba6ae58d60d6d90533e77eaf10d466/2000/CVE-2000-0666/README.md",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0666.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0666.md",
     "https://github.com/eldondev/Snort/blob/34bdcf6a7a638b55c7c04f77ef1efa526ad08e33/doc/signatures/1916.txt",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4dd512046a74ddd9ae16741caf0933056ffd666e/CVE/data/2000/CVE-2000-0666.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4591185d8ea1fe47b6e30df3286bd52753a931ce/CVE/data/2000/CVE-2000-0666.json",
     "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/redhat_fixes.nasl",
-    "https://github.com/github/advisory-database/blob/d32fbb1d4025b1bea886959235df20ad5eb6c39d/advisories/unreviewed/2022/04/GHSA-jc43-58xv-97mp/GHSA-jc43-58xv-97mp.json",
+    "https://github.com/github/advisory-database/blob/1684cfa32e43376c48beb06819bce86de6ba421b/advisories/unreviewed/2022/04/GHSA-jc43-58xv-97mp/GHSA-jc43-58xv-97mp.json",
     "https://github.com/bailehang/snort_2.2.0/blob/34f8a3a85f15645aea53d6e0d46863c7c57e43ef/doc/signatures/1890.txt",
-    "https://github.com/gadievron/raptor/blob/26c6dc6fb7b9fe20a15bd0c975f62ab9d61cb264/packages/cve_diff/data/samples/random_200_full_v3.json",
+    "https://github.com/gadievron/raptor/blob/117ae98018f0e5f1508cde2ba2b4e30bfee2d63e/packages/cve_diff/data/samples/random_200_full_v3.json",
 ]
