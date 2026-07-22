@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测目标系统上是否存在易受符号链接攻击的 gzexe 脚本。通过检查 /usr/bin/gzexe 文件存在性及内容特征，判断系统是否运行受影响版本的 gzip 工具包。"
+author = "ave"
+description = "检测目标系统上 gzexe 脚本是否存在。GNU gzip 的 gzexe 脚本 (CVE-1999-1332) 在创建临时文件时使用可预测的文件名，可能被本地攻击者利用符号链接攻击获取目标用户权限。"
 id = "POC-AVE-1999-1048"
-name = "GNU gzip gzexe 临时文件符号链接漏洞 PoC"
+name = "GNU gzip gzexe 不安全临时文件创建漏洞 PoC"
 severity = "low"
 tags = ["ave-1999-1048"]
 vuln_id = [
@@ -11,10 +11,20 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 path = "/usr/bin/gzexe"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["#!/bin/sh"]
+
+[[poc.requests]]
+path = "/bin/gzexe"
 protocol = "file"
 
 [[poc.requests.matchers]]
