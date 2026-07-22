@@ -1,11 +1,11 @@
 [basic]
-description = "OpenBSD 2.4 系统的 i386 架构跟踪陷阱处理函数中存在拒绝服务漏洞。当内核调试器（DDB）功能启用时，本地攻击者可通过触发特制的跟踪陷阱条件导致内核异常，进而造成系统崩溃或拒绝服务。该漏洞需要攻击者拥有本地用户权限且目标系统启用了 DDB 内核调试功能，攻击门槛较高，但成功利用后将严重影响系统可用性。"
+description = "OpenBSD 2.4 系统在启用 DDB（内核调试器）的情况下，其 i386 架构的 trace-trap 处理机制存在安全缺陷。本地攻击者可通过触发特定的追踪陷阱（trace-trap）导致系统内核崩溃，造成拒绝服务。该漏洞影响 OpenBSD 2.4 版本，需要攻击者拥有本地系统访问权限，无法远程利用，CVSS 评分 2.1，危害等级低。"
 published = "2001-03-12T05:00:00.000"
-remediation = "升级至 OpenBSD 2.5 或更高版本。若无法升级，从 OpenBSD 官方 errata 页面获取 patch 021 并应用到内核源码树后重新编译内核：`patch -p0 < 021_trctrap.patch`，然后 `cd /usr/src/sys/arch/i386/conf && config GENERIC && cd ../compile/GENERIC && make && make install` 并重启。如 DDB 非必需，临时缓解措施可在内核配置文件中移除 `options DDB` 后重新编译内核。"
+remediation = "升级至 OpenBSD 2.5 或更高版本，该版本已修复 i386 跟踪陷阱处理中的拒绝服务漏洞。如无法升级，在编译内核时移除 DDB 选项（`option DDB`），禁用内核调试器以消除攻击面。限制本地用户对系统的交互式访问权限亦可作为临时缓解措施。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "OpenBSD DDB i386 trace-trap 处理本地拒绝服务漏洞"
+sources = ["avd"]
+title = "OpenBSD 2.4 DDB 本地拒绝服务漏洞"
 updated = "2026-06-16T21:51:26.870"
 
 [exploit]
@@ -17,19 +17,19 @@ aliases = ["CVE-2000-0309"]
 ave_id = "AVE-2000-0298"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.openbsd.org/errata24.html#trctrap",
     "http://www.osvdb.org/6126",
-    "https://github.com/CVEProject/cvelistV5/blob/e25ede9c3545efaa8ff0b393e30e48edb07502a8/cves/2000/0xxx/CVE-2000-0309.json",
+    "https://github.com/CVEProject/cvelistV5/blob/9342e5394ee109ffc3617b5105797cdfcfcb78cf/cves/2000/0xxx/CVE-2000-0309.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0309",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1fe9b156eeeb72b8f8baa50bbe7bc0d9806e8c64/content/CVE-2000-0309.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/248c2167e720df96125f6ac9925793063a207510/CVE/data/2000/CVE-2000-0309.json",
-    "https://github.com/github/advisory-database/blob/cdfc8886d71af7ef3bdab3e4db46753ff8af6538/advisories/unreviewed/2022/04/GHSA-cmfj-xq93-7whq/GHSA-cmfj-xq93-7whq.json",
-    "https://github.com/olbat/nvdcve/blob/63d4031680b3d3fa77b826660a1e30ffc70ff5cd/nvdcve/CVE-2000-0309.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0309.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4591185d8ea1fe47b6e30df3286bd52753a931ce/CVE/data/2000/CVE-2000-0309.json",
+    "https://github.com/github/advisory-database/blob/1684cfa32e43376c48beb06819bce86de6ba421b/advisories/unreviewed/2022/04/GHSA-cmfj-xq93-7whq/GHSA-cmfj-xq93-7whq.json",
+    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0309.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88324/info.html",
     "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_dos.txt",
     "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--b6f440bf-14a3-4986-a606-f51b5f75ec48.owl",
