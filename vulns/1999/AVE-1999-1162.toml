@@ -1,40 +1,32 @@
-From the Bugtraq reference, I can see the workarounds are:
-1. Set the HTTP Server "Enable" setting to False in Project settings
-2. Remove the HTTP Server module in Global settings
-Actually, looking at the TOML more carefully, the remediation field contains a very long value that starts with a lot of analysis text and then has `<value>升级至` which looks like it was meant to be the actual content but is all messed up. The error says "remediation 字段为空" which means the parser didn't extract a valid remediation string.
-The current TOML:
-- `[id]` - looks fine
-- `[basic]` - title, description, severity, score, sources, published, updated seem fine
-- `[references]` - urls look fine
-- `[exploit]` - fine
-- `[meta]` - fine
-The main fix is the `remediation` field.
-The remediation should be:
-1. 在项目设置的 HTTP Server 中将 "Enable" 设为 False（禁用内置 HTTP 服务器）
-2. 或在全局设置中移除 HTTP Server 模块
-3. 升级至非 Beta 的稳定版本
-The current TOML has a problem with the `remediation` field - it contains processing text/analysis rather than just the remediation content, and the value is malformed.
-ave_id = "AVE-1999-1162"
-aliases = ["CVE-1999-1527"]
 [basic]
-title = "Sun NetBeans Java IDE HTTP服务器IP限制绕过漏洞"
 description = "Sun NetBeans Developer 3.0 Beta及Forte Community Edition 1.0 Beta内置的HTTP服务器未能正确按照配置文件中的IP白名单规则限制访问，当为特定IP启用服务后，任意远程攻击者无需认证即可通过HTTP 8082端口直接访问服务器根目录及所有子目录，获取IDE内部敏感信息。该漏洞在NetBeans 3.0 Beta中为默认启用状态，用户无需任何操作即可被利用。"
-severity = "HIGH"
-score = 7.5
-sources = ["cve", "avd"]
 published = "1999-11-23"
-updated = "2026-06-16T21:50:37.903"
-remediation = "升级至NetBeans/Forte正式版（非Beta），该漏洞在稳定版中已修复。临时缓解措施：在项目设置的HTTP Server中将"Enable"设为False禁用内置服务器，或在全局设置中移除HTTP Server模块；同时在防火墙层面禁用端口8082的外部访问。"
+remediation = "升级至NetBeans/Forte正式版（非Beta），该漏洞在稳定版中已修复。临时缓解措施：在项目设置的HTTP Server中将'Enable'设为False禁用内置服务器，或在全局设置中移除HTTP Server模块；同时在防火墙层面禁用端口8082的外部访问。"
+score = 7.5
+severity = "HIGH"
+sources = [
+    "cve",
+    "avd",
+]
+title = "Sun NetBeans Java IDE HTTP服务器IP限制绕过漏洞"
+updated = "2026-06-16"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-1527"]
+ave_id = "AVE-1999-1162"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://marc.info/?l=bugtraq&m=94338883114254&w=2",
-"http://www.securityfocus.com/bid/816",
-"https://github.com/CVEProject/cvelistV5/blob/148999c8327bd04fe7e0fdad6195adf7b36060c6/cves/1999/1xxx/CVE-1999-1527.json",
-"https://nvd.nist.gov/vuln/detail/CVE-1999-1527"
+    "http://marc.info/?l=bugtraq&m=94338883114254&w=2",
+    "http://www.securityfocus.com/bid/816",
+    "https://github.com/CVEProject/cvelistV5/blob/148999c8327bd04fe7e0fdad6195adf7b36060c6/cves/1999/1xxx/CVE-1999-1527.json",
+    "https://nvd.nist.gov/vuln/detail/CVE-1999-1527",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-21T00:00:00Z"
