@@ -1,29 +1,36 @@
 [info]
 author = "ave"
-description = "通过请求 IIS 4.0/5.0 上 FrontPage 扩展的 shtml.exe 并传入不存在的文件路径，触发错误响应泄露服务器上文件的物理绝对路径。"
+description = "Detects IIS FrontPage shtml.exe path disclosure (CVE-2000-0413). Requesting a non-existent .htm file through shtml.exe causes IIS to return an error message revealing the physical server path on the server."
 id = "POC-AVE-2000-0341"
-name = "Microsoft IIS 4.0/5.0 FrontPage shtml.exe 路径泄露 PoC"
+name = "CVE-2000-0413 PoC"
 severity = "medium"
-tags = ["ave-2000-0341"]
+tags = [
+    "cve-2000-0413",
+    "iis",
+    "frontpage",
+    "path-disclosure",
+]
 vuln_id = [
     "CVE-2000-0413",
     "AVE-2000-0341",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/_vti_bin/shtml.exe/nonexistent.htm"
+path = "/_vti_bin/shtml.exe/nonexistent.htm"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
+    "0x8004",
     "physical path",
-    "Server.MapPath",
-    "Path",
 ]
