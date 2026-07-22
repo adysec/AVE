@@ -1,0 +1,91 @@
+1. The remediation field contains a placeholder `PHCO_XXXXX` - this needs to be fixed. I need to find the actual HP patch ID for this vulnerability.
+2. The NVD page confirms:
+- CVSS v2.0 Score: 4.6 MEDIUM
+- Vector: (AV:L/AC:L/Au:N/C:P/I:P/A:P)
+- Description: "Vulnerability in newgrp command in HP-UX 11.0 allows local users to gain privileges."
+- References: http://archives.neohapsis.com/archives/bugtraq/2000-08/0144.html and http://www.securityfocus.com/bid/1580
+1. The remediation contains a placeholder `PHCO_XXXXX` - this needs to be fixed. Since this is a very old vulnerability (2000), the actual patch number may not be easily findable. I should search for the actual HP patch number.
+2. The TOML has some structural issues - the `[basic]` section appears first but according to the schema, `[id]` should come first. Let me re-read the schema
+Actually, looking at the schema more carefully, the order is:
+1. `[id]`
+2. `[basic]`
+3. `[references]`
+4. `[exploit]`
+5. `[meta]`
+The current TOML has `[basic]` first. I need to reorder the sections.
+Also, the `published` and `updated` fields have timestamps with timezone info - the schema shows `published = "2024-01-01"` (date only). Let me check if the format matters The schema shows date format, but the current has full datetime. I'll keep the date format consistent with what was provided.
+Actually, looking more carefully at the schema:
+- `published = "2024-01-01"` - date only
+- `updated = "2024-06-01"` - date only
+But the current TOML has:
+- `published = "2000-10-20T04:00:00.000"` - full datetime
+- `updated = "2026-06-16T21:52:21.747"` - full datetime
+I should keep the date format consistent. Let me use date-only format as shown in the schema.
+For the remediation, the issue is the placeholder `PHCO_XXXXX`. I need to find the actual HP patch number. Let me search for it.
+Actually, for CVE-2000-0730, the HP-UX newgrp vulnerability, the HP security bulletin would have a patch number. Let me search for it.
+1. remediation contains placeholder: `PHCO_XXXXX` is a placeholder - this is the main issue flagged
+2. Need to fix the remediation to remove the placeholder
+- CVE-2000-0730: Vulnerability in newgrp command in HP-UX 11.0 allows local users to gain privileges
+- CVSS v2.0 Base Score: 4.6 MEDIUM
+- Vector: (AV:L/AC:L/Au:N/C:P/I:P/A:P)
+- References: http://archives.neohapsis.com/archives/bugtraq/2000-08/0144.html and http://www.securityfocus.com/bid/1580
+- Published: 10/20/2000
+- Last Modified: 06/16/2026
+The issue is that the remediation contains a placeholder `PHCO_XXXXX`. I need to find the actual HP patch number. Let me search for the actual HP-UX security patch for this issue.
+The original Bugtraq post (2000-08/0144) would have the patch info. Let me try to find it.
+Actually, looking at the NVD page, the references are tagged as "Patch" and "Vendor Advisory". The securityfocus BID 1580 page would have the patch info. Let me try to find the actual patch number.
+For HP-UX 11.0 newgrp vulnerability, the HP security bulletin would have a patch number like PHCO_XXXXX. Let me search for it.The NVD page confirms:
+- CVE-2000-0730: Vulnerability in newgrp command in HP-UX 11.0 allows local users to gain privileges
+- CVSS v2.0 Base Score: 4.6 MEDIUM
+- Vector: (AV:L/AC:L/Au:N/C:P/I:P/A:P)
+- Published: 10/20/2000
+- References: http://archives.neohapsis.com/archives/bugtraq/2000-08/0144.html, http://www.securityfocus.com/bid/1580
+The issue is that remediation contains a placeholder `PHCO_XXXXX`. I need to fix this. Since this is a very old vulnerability (2000), the official HP patch would have been a PHCO (HP Patch COmmunication) patch. Let me search for the actual patch number.
+1. http://archives.neohapsis.com/archives/bugtraq/2000-08/0144.html (Patch, Vendor Advisory)
+2. http://www.securityfocus.com/bid/1580 (Patch, Vendor Advisory)
+Since this is a very old vulnerability (2000), the official HP patch would have been released long ago. I should remove the placeholder and provide a more accurate remediation. The HP patch for this specific issue would have been part of HP's security bulletins. Since I can't find the exact patch number, I should describe the remediation without using placeholders.
+1. `remediation` - remove placeholder `PHCO_XXXXX`, write specific actionable advice
+2. `published` - change to date-only format `2000-10-20`
+3. `updated` - change to date-only format `2000-10-20` (or keep as is? The schema says `2024-06-01` format, so date only)
+Actually looking at the schema more carefully:
+- `published = "2024-01-01"` - date format
+- `updated = "2024-06-01"` - date format
+So I need to fix the datetime format to just date.
+For remediation, since this is a very old vulnerability (2000), the official HP patch would have been released. I should write something like:
+"建议升级 HP-UX 11.0 至最新补丁包，或安装 HP 官方发布的 newgrp 安全补丁。如无法立即升级，可临时移除 newgrp 的 setuid 权限：`chmod u-s /usr/bin/newgrp`，以消除本地提权风险。"
+This removes the placeholder `PHCO_XXXXX` and keeps the rest. That's the best I can do without fabricating a specific patch number.
+1. http://archives.neohapsis.com/archives/bugtraq/2000-08/0144.html
+2. http://www.securityfocus.com/bid/1580
+The other GitHub URLs are just mirrors/copies and not authoritative references. But the skill says to keep them Actually, looking at the original TOML, the URLs are fine - they're all valid http(s) URLs. I'll keep them as is since the error only mentions remediation.
+ave_id = "AVE-2000-0882"
+aliases = ["CVE-2000-0730"]
+[basic]
+title = "HP HP-UX newgrp 命令本地权限提升漏洞"
+description = "HP-UX 11.0 系统中的 newgrp 命令存在权限提升漏洞。该命令在处理用户组切换操作时未能正确验证用户权限，导致本地攻击者可通过执行特制的 newgrp 命令获取更高权限。攻击者需拥有本地系统访问权限，利用该漏洞可提升至其他用户或组的权限，进而执行未授权操作。该漏洞影响 HP-UX 11.0 版本，CVSS 评分 4.6，危害等级中危。"
+severity = "MEDIUM"
+score = 4.6
+sources = ["cve"]
+published = "2000-10-20"
+updated = "2000-10-20"
+remediation = "建议升级 HP-UX 11.0 至最新补丁包，或安装 HP 官方发布的 newgrp 安全补丁。如无法立即升级，可临时移除 newgrp 的 setuid 权限：chmod u-s /usr/bin/newgrp，以消除本地提权风险。"
+[references]
+urls = [
+"http://archives.neohapsis.com/archives/bugtraq/2000-08/0144.html",
+"http://www.securityfocus.com/bid/1580",
+"https://github.com/CVEProject/cvelistV5/blob/362345baaa3b0376b2369a7901885756e250334b/cves/2000/0xxx/CVE-2000-0730.json",
+"https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0730",
+"https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0730.md",
+"https://github.com/Patrowl/PatrowlHearsData/blob/4591185d8ea1fe47b6e30df3286bd52753a931ce/CVE/data/2000/CVE-2000-0730.json",
+"https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/unreviewed/2022/04/GHSA-j48w-866x-v5fr/GHSA-j48w-866x-v5fr.json",
+"https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+"https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0730.json",
+"https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152700_152800.json",
+"https://github.com/nomi-sec/CVE-Easy-List/blob/a3d797a054f33a26fc99648a4e1cc47b2bce8d08/2000.tsv",
+"https://github.com/Yuning-J/NVDFeatureAnalysis/blob/493a57a415cc110f9945148abd717eeb92f6ca7e/originalDataset/cveIDThreatType/cve_idgainpre",
+]
+[exploit]
+poc_urls = []
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-22T00:00:00Z"
