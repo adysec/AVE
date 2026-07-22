@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 MSM DRM 驱动程序中存在空指针解引用漏洞，由于驱动组件的 .remove 和 .shutdown 回调在硬件关闭逻辑上不一致，当 GPU 子设备探测失败导致 .bind 回调未执行时，系统关机过程中将调用 drm_atomic_helper_shutdown() 对未初始化的 DRM 设备进行操作，尝试获取未初始化的互斥锁，进而触发内核空指针解引用导致系统崩溃。本地攻击者可利用此漏洞通过构造特定硬件状态触发内核崩溃，造成拒绝服务。该漏洞影响 Linux 内核使用 MSM DRM 驱动的 Qualcomm 平台系统。"
+published = "2025-09-15T14:15:36.873"
+remediation = "升级 Linux 内核至已修复版本：5.19.17、6.0.3 或 6.1 及以上。对于使用 5.9 至 5.19.x 分支的系统，升级到 5.19.17 或更高版本；对于使用 6.0.x 分支的系统，升级到 6.0.3 或更高版本。若无法立即升级内核，可在系统关闭前手动禁用 msm DRM 驱动模块（rmmod msm 或在 modprobe.d 中黑名单 msm 模块），避免 shutdown 阶段触发空指针解引用导致内核恐慌。发行版用户可通过各自的包管理器（如 apt upgrade linux-image / dnf update kernel）安装已包含补丁的内核版本。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel MSM DRM 子系统关机流程不一致导致内核崩溃漏洞"
+updated = "2026-06-17T05:23:05.937"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-50260"]
+ave_id = "AVE-2022-0101"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0a58d2ae572adaec8d046f8d35b40c2c32ac7468",
+    "https://git.kernel.org/stable/c/0e6649a2e31ac157c711d583ec8f5ec59da5de0e",
+    "https://git.kernel.org/stable/c/26f9a766f87b33c50ed400a9500cc1dc9aced953",
+    "https://github.com/CVEProject/cvelistV5/blob/40c65e734a16e244433aafd42706edabef09072d/cves/2022/50xxx/CVE-2022-50260.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-50260.yaml",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-50260",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2022-50260.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/99462b1672511a2817705398570cd388f155e617/CVE/data/2022/CVE-2022-50260.json",
+    "https://github.com/github/advisory-database/blob/36ddac9224d3973c64320c39be98ecc1f1ca5395/advisories/unreviewed/2025/09/GHSA-wv25-jjx7-r2r4/GHSA-wv25-jjx7-r2r4.json",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2022-50260",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2022/CVE-2022-50260.json",
+    "https://github.com/keryanchpn/ia-data/blob/534363d1afb19db8eaf67f9cab2c9be27811247b/data_fallback/data/first/CVE-2022-50260",
+    "https://github.com/neuvector/vul-source/blob/27dcc23268ea595c1e22ac2008b340bb4e848cb2/mariner-vulnerability/osv/AZL-70768.json",
+]
