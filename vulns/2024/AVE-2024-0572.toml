@@ -1,0 +1,40 @@
+[basic]
+description = "Linux 内核 powerpc/pSeries 架构的 VAS（虚拟加速器交换板）子系统中存在释放后使用（Use-After-Free）漏洞。当用户进程通过 mmap 映射 paste 地址时，VMA 地址被保存在 VAS 窗口结构体中，用于在系统迁移时取消映射。然而，当进程调用 munmap() 解除映射后，VAS 窗口中的 VMA 地址并未同步更新，仍指向已释放的内存区域。在后续分区迁移操作中，reconfig_close_windows 函数访问该悬空指针，触发 slab-use-after-free，可能导致内核内存损坏。本地低权限攻击者可利用此漏洞造成系统崩溃或潜在的信息泄露。该漏洞影响 Linux 内核 powerpc pSeries 平台，CVSS 评分 7.8，危害等级高。"
+published = "2025-01-06T17:15:42.800"
+remediation = "立即升级 Linux 内核至以下安全版本：6.1.123、6.6.69、6.12.8 或 6.13 及以上。对应补丁提交为 05aa156e156e、6d9cd2710545、8b2282b50845、b7f60ffdfd96。Ubuntu 24.04 LTS 用户可通过 `apt update && apt install linux-image-6.11.0-1011-lowlatency` 安装 USN-7381-1 更新。Debian 用户参考 DLA-4071-1。如无法立即升级，可临时禁用 VAS 功能（`modprobe.blacklist=vas`）或避免在受影响系统上执行 LPAR 迁移操作作为缓解。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Kernel powerpc/pseries VAS 释放后使用漏洞"
+updated = "2026-06-17T08:12:56.283"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-56765"]
+ave_id = "AVE-2024-0572"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/05aa156e156ef3168e7ab8a68721945196495c17",
+    "https://git.kernel.org/stable/c/6d9cd27105459f169993a4c5f216499a946dbf34",
+    "https://git.kernel.org/stable/c/8b2282b5084521254a2cd9742a3f4e1d5b77f843",
+    "https://git.kernel.org/stable/c/b7f60ffdfd96f8fc826f1d61a1c6067d828e20b9",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-56765.md",
+    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2024/56xxx/CVE-2024-56765.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-56765",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-56765.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2024/56xxx/CVE-2024-56765.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-56765.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/d8c79a157e22e9abda84461cbe0f59ce58612245/references/CveServices-CVE-2024-56765-2025-11-03-1439",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-56765.md",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/02/18/seguranca/cve-2024-56765-powerpcpseriesvas-add-close-callbac-1771406040000.md",
+    "https://github.com/github/advisory-database/blob/270a81434b1ea0c21e9b1eeeec5c62d11319dabe/advisories/unreviewed/2025/01/GHSA-f6j3-h537-397p/GHSA-f6j3-h537-397p.json",
+]
