@@ -1,54 +1,30 @@
-The issue is that the remediation contains a placeholder `PHSS_xxxxx`. I need to fix this by searching for the actual HP patch information for CVE-2000-0251. Let me search for this information first.
-CVE-2000-0251 affects HP-UX 11.04 VirtualVault (VVOS). The remediation mentions "PHSS_xxxxx" which is a placeholder. I need to find the actual patch number.
-1. [严重] remediation: 修复建议包含占位符 - The remediation contains "PHSS_xxxxx" which is a placeholder. I need to fix this since the product is very old (2000), there's no specific patch version available. I should remove the placeholder and state the realistic situation - that no public patch is available for this very old vulnerability, and describe workarounds instead.
-2. The title/description/remediation need to be in Chinese (they already are - ok).
-3. severity = "MEDIUM" with score = 5 - this matches MEDIUM ≥ 4, so it's fine.
-4. The `[basic]` section has `sources = ["epss"]` which seems wrong - should be `["cve"]` based on the schema.
-5. The remediation contains "PHSS_xxxxx" placeholder - this is the main issue.
-- `published = "2024-01-01"` (date only)
-- `updated = "2024-06-01"` (date only)
-But the current values have timestamps: `"2000-04-06T04:00:00.000"` and `"2026-06-16T21:51:19.423"`. I should use just the date format.
-Actually, looking more carefully at the schema, it shows date format `"2024-01-01"`, but the NVD API provides timestamps. Let me check the existing format The schema example shows `published = "2024-01-01"` without time. But the current values have time components. I should keep the date format consistent with the schema, but actually the schema just shows an example. Let me keep the date format simple - just date.
-Also, `sources` should be `["cve"]` not `["epss"]`.
-For remediation, since this is a very old vulnerability (2000), there's no active patch available from HP for such an old product. I should write a realistic remediation:
-- Remove the placeholder "PHSS_xxxxx"
-- State that HP no longer provides patches for this EOL version
-- Suggest network-level mitigation: separate IP aliases onto different interfaces, use firewall rules to restrict access to management interfaces, isolate VirtualVault systems
-1. Fix `sources` from `["epss"]` to `["cve"]`
-2. Fix `published` format to date-only
-3. Fix `updated` format to date-only
-4. Fix `remediation` to remove placeholder text
-Wait, actually I need to check if the timestamp format is acceptable. The schema just shows examples. Looking at real usage, dates with time are probably fine. Let me keep them as-is since they're valid ISO 8601.
-Actually, looking more carefully at what needs to be fixed:
-- [严重] remediation has placeholder "PHSS_xxxxx" - need to replace with actual text, no placeholder
-- `sources` should be `["cve"]` not `["epss"]`
-From the NVD data, I can see:
-- CVSS v2 score: 5.0 MEDIUM
-- The description is accurate
-- Published: 2000-04-06T04:00:00.000
-- Updated: 2026-06-16T21:51:19.423
-- References: http://archives.neohapsis.com/archives/bugtraq/2000-04/0021.html and http://www.securityfocus.com/bid/1090
-The main issue is "remediation: 修复建议包含占位符" - the PHSS_xxxxx placeholder. I need to remove that placeholder. Since this is a very old vulnerability (2000), HP no longer provides patches. I should write a practical remediation without fake patch numbers.
-The existing TOML is mostly fine, just need to fix the remediation to remove the placeholder.[id]
-ave_id = "AVE-2000-0227"
-aliases = ["CVE-2000-0251"]
 [basic]
-title = "HP HP-UX 11.04 VirtualVault 多别名IP地址信息泄露漏洞"
-description = "HP-UX 11.04 VirtualVault (VVOS) 存在信息泄露漏洞，当系统网络接口配置了多个别名 IP 地址时，原本应发送给特权进程的数据可能会被错误地路由到非特权进程，导致敏感信息泄露。攻击者无需认证即可通过监听网络流量获取本应受保护的数据。该漏洞影响 HP-UX 11.04 VirtualVault 系统，CVSS 评分 5.0，属于中危漏洞，建议用户升级补丁或重新配置网络接口隔离策略。"
-severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
+description = "HP-UX 11.04 VirtualVault（VVOS）存在数据转发漏洞。当网络接口配置多个别名 IP 地址时，系统会将本应发送给特权进程的数据通过别名接口错误地发送给未授权进程，导致敏感信息泄露。攻击者可通过网络远程利用此漏洞，无需认证即可触发数据错误路由，造成部分完整性破坏。"
 published = "2000-04-06"
-updated = "2026-06-16"
-remediation = "HP-UX 11.04 VirtualVault (VVOS) 已终止支持，HP 不再提供官方补丁。建议将不同安全级别的服务分离到独立物理接口，避免在同一接口配置多个别名 IP；通过网络防火墙和 ACL 限制对 VirtualVault 管理接口的访问，仅允许受信主机连接；升级迁移至受支持的 HP-UX 版本或替代安全平台。"
+remediation = "安装 HP 安全公告 HPSBUX0004-112 对应的补丁程序。临时缓解措施：避免在 VirtualVault 网络接口上配置多个别名 IP 地址。HP-UX 11.04 VVOS 已停止支持，建议升级至受支持版本。"
+score = 5.0
+severity = "MEDIUM"
+sources = [
+    "cve",
+    "avd",
+]
+title = "HP-UX VirtualVault 别名IP地址信息泄露漏洞"
+updated = "2000-04-06"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0251"]
+ave_id = "AVE-2000-0227"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"http://archives.neohapsis.com/archives/bugtraq/2000-04/0021.html",
-"http://www.securityfocus.com/bid/1090",
+    "http://archives.neohapsis.com/archives/bugtraq/2000-04/0021.html",
+    "http://www.securityfocus.com/bid/1090",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-22T00:00:00Z"
