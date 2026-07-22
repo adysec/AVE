@@ -1,0 +1,179 @@
+[id]
+ave_id = "AVE-2026-0287"
+aliases = ["CVE-2026-45710","GHSA-3x7p-v8hj-xh5m"]
+
+[basic]
+title = "FacturaScripts: Stored XSS in WidgetVariante and WidgetSubcuenta modal lists via HTML-attribute decoding of `Tools::noHtml`-escaped quotes inside `onclick=`"
+description = "## Summary
+
+`WidgetVariante::renderVariantList` (`Core/Lib/Widget/WidgetVariante.php:298-330`) and `WidgetSubcuenta::renderSubaccountList` (`Core/Lib/Widget/WidgetSubcuenta.php:290-321`) build the `<tr onclick=\"...\">` row for each modal hit by concatenating the user-controlled `referencia` / `codsubcuenta` field directly into a single-quoted JavaScript string literal inside an HTML `onclick` attribute. The defender's intuition is that `Tools::noHtml` (called in `Variante::test()` and `Subcuenta::test()`) replaces `'` with the HTML entity `&#39;`, neutralising the JavaScript string break. The intuition is wrong: HTML attribute parsing **decodes character references before** the JavaScript fragment is parsed, so `&#39;` becomes a literal `'` in the JavaScript context. An attacker who can store a value such as `1',alert(1),'2` in `Variante.referencia` (no special characters required, just one apostrophe) ends up with `widgetVarianteSelect('id', '1',alert(1),'2');` executing in any user's browser the moment they open the variant-picker modal.
+
+The recent `40bc701` and `8586b97` fixes corrected the same anti-pattern in three sister classes by switching to `data-reference=\"...\"` + `this.dataset.reference`. The two widget classes audited here were missed by that fix wave.
+
+## Details
+
+### the offending code
+
+`Core/Lib/Widget/WidgetVariante.php:298-330`:
+
+```php
+protected function renderVariantList(): string
+{
+    $items = [];
+    foreach ($this->variantes() as $item) {
+        $match = $item->{$this->match};
+        $description = Tools::textBreak($item->description(), 300);
+        ...
+        $items[] = '<tr class=\"clickableRow\" onclick=\"widgetVarianteSelect(\'' . $this->id . '\', \'' . $match . '\');\">'
+            . '<td class=\"text-center\">'
+            ...
+```
+
+`$this->match` defaults to `'referencia'` (`WidgetVariante::__construct`, line 42). `$item->referencia` was sanitised at write time by `Variante::test()` (`Core/Model/Variante.php:392`) which calls `Tools::noHtml($this->referencia)`. `Tools::noHtml` (`Core/Tools.php:499-504`) replaces `'`, `\"`, `<`, `>` with `&#39;`, `&quot;`, `&lt;`, `&gt;`. The defender therefore expects that any apostrophe a user typed becomes `&#39;` in the database, which renders inside the `onclick` attribute as `&#39;` and cannot break out of the surrounding `'...'` JS string literal.
+
+`Core/Lib/Widget/WidgetSubcuenta.php:290-305` has the identical shape:
+
+```php
+foreach ($this->subcuentas() as $item) {
+    $match = $item->{$this->match};
+    ...
+    $items[] = '<tr class=\"clickableRow\" onclick=\"widgetSubaccountSelect(\'' . $this->id . '\', \'' . $match . '\');\">'
+        . '<td class=\"text-center\">'
+        . '<a href=\"' . $item->url() . '\" target=\"_blank\" onclick=\"event.stopPropagation();\">'
+        ...
+```
+
+`$this->match` defaults to `'codsubcuenta'`; the value is `Tools::noHtml`-encoded by `Subcuenta::test()` (`Core/Model/Subcuenta.php:213`).
+
+### why HTML-entity escaping does not protect a JavaScript string
+
+Per the HTML5 spec (and what every browser actually does), the value of an HTML attribute is processed by the **character reference state** of the tokenizer before any consumer sees it. By the time the `onclick` attribute value reaches the script engine, the bytes inside are the *decoded* string. Concretely, the HTML the browser receives is:
+
+```html
+<tr onclick=\"widgetVarianteSelect('id', '1&#39;,alert(1),&#39;2');\">
+```
+
+After the tokenizer decodes `&#39;` to `'`, the JavaScript fragment passed to the script engine is:
+
+```javascript
+widgetVarianteSelect('id', '1',alert(1),'2');
+```
+
+`alert(1)` runs as a third positional argument that JavaScript happily evaluates while building the call. The `widgetVarianteSelect` function ends up being called with four arguments and the side-effect of `alert(1)` (or any payload) has already occurred.
+
+The recent `40bc701` AccountingModalHTML and `8586b97` SalesModalHTML / PurchasesModalHTML fix recognised this. Both replaced the `onclick=\"...('\"+ value +\"')\"` pattern with:
+
+```php
+$tbody .= '<tr ... data-subaccount=\"' . $code . '\" onclick=\"$(...).modal(\'hide\');'
+       . ' return newLineAction(this.dataset.subaccount);\">'
+```
+
+Where `$code = static::html($subaccount->codsubcuenta)` and `static::html` is `htmlspecialchars(html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')`. The HTML5 entity decode is deliberate: it normalises any double-encoded data so that the subsequent `htmlspecialchars` produces stable single-encoded output. The JavaScript then reads the value from `this.dataset.*`, which is the post-decoded attribute value, where the original quote is now literally inside a string property and cannot break out of any quote context.
+
+`WidgetSubcuenta` and `WidgetVariante` were not migrated to this pattern.
+
+### ways to plant the payload
+
+`Variante::test()` (`Core/Model/Variante.php:389-401`) accepts up to 30 characters in `referencia`. The minimum payload is 13 bytes (`1',alert(1),'2`), comfortably under the limit. The `Tools::noHtml` pass during `test()` produces the stored form `1&#39;,alert(1),&#39;2`, which is 22 bytes.
+
+Three plant primitives are practical:
+
+1. **Direct create** via `EditProducto?action=save` with the attacker-controlled `referencia` field. Because `EditProducto` is exposed to any user with the `EditProducto` permission (which roles like *sales agent* and *warehouse manager* commonly carry), this is a within-tenant primitive: a low-privilege salesperson plants the payload, an admin opens any sales document and clicks the variant picker.
+2. **DB write** by anyone with raw SQL access (DBA or shared-hosting admin). `INSERT INTO variantes (referencia, ...) VALUES ('1\',alert(1),\'2', ...)`. This is what I used for the live test; the plant is permanent until the row is deleted.
+3. **Plugin / API import.** `ApiAttachedFiles` and the various import endpoints allow a low-privilege API key to land arbitrary `referencia` values that bypass the `EditProducto` `permissions->onlyOwnerData` filter.
+
+For `WidgetSubcuenta`, the `codsubcuenta` field is constrained to the exercise's `longsubcuenta` length (10 by default), and the regex-free `Tools::noHtml` pass turns one apostrophe into 5 bytes (`&#39;`), so the post-noHtml string must equal the configured length exactly. A 5-byte payload (`1','` is 4) plus padding is workable for compact bypass payloads such as `'+x+'` (where `x` is a previously-loaded global). DB-write planting (primitive 2) bypasses the length check entirely.
+
+### why the recent fix wave missed this
+
+The fix wave centred on the `Lib/AjaxForms/*ModalHTML.php` files. Both audited widgets live in `Lib/Widget/` and look superficially safe to a reviewer because every value is `Tools::noHtml`-escaped at storage. The actual decoding step happens inside the browser, not the PHP code, so the defect is not visible in a `grep`-based review of the PHP source unless the reviewer specifically looks for `onclick=\"...('+ $field +')'` shapes that put a `Tools::noHtml`-escaped value in a JavaScript string position inside an HTML attribute.
+
+## PoC
+
+> **Live PoC verified 2026-05-01** against `http://127.0.0.1:8081/` running facturascripts at commit `24281ca`. A `Variante.referencia` value of `1',alert(1),'2` (planted via raw DB write below) renders inside `widgetVarianteSelect('0', '1&#39;,alert(1),&#39;2');` in the modal grid; opening the variant-picker modal in any user's browser (low-priv or admin) fires `alert(1)` from the host page's realm.
+
+Setup: the admin session at `http://127.0.0.1:8081/` is at `/tmp/fs-cookie2`.
+
+Step 1 - plant the payload (any of the three primitives works). DB-write primitive:
+
+```bash
+mysql -h127.0.0.1 -ufs -pfs facturascripts <<'SQL'
+INSERT INTO productos (referencia, descripcion, codimpuesto, sevende, secompra, bloqueado, nostock, publico, stockfis, ventasinstock, observaciones)
+VALUES ('XSSPRD', 'XSS via WidgetVariante', 'IVA21', 1, 1, 0, 1, 0, 0, 1, '');
+
+INSERT INTO variantes (referencia, idproducto, precio, coste, margen, stockfis, codbarras)
+SELECT \"1',alert('XSS-WidgetVariante'),'2\", idproducto, 0, 0, 0, 0, ''
+FROM productos WHERE referencia='XSSPRD';
+SQL
+```
+
+After the insert, `Variante::test()` did not run (the row was created via SQL), so the literal `'` survives. Even via the EditProducto UI primitive, the round trip through `Tools::noHtml` produces the encoded form `1&#39;,alert(...),&#39;2` which decodes back to the working payload at render time.
+
+Step 2 - open any controller that uses WidgetVariante with the default `match` (or any third-party plugin form that does so). Core ships two views (`Core/XMLView/EditAgente.xml`, `Core/XMLView/ListAgente.xml`) but both override `match=\"idproducto\"`, so they are not exposed in stock core. Any plugin form that uses `<widget type=\"variante\" .../>` without an explicit `match` attribute opts into the vulnerable code path. Trigger the variant-picker modal:
+
+```bash
+$ curl -s -b /tmp/fs-cookie2 \"http://127.0.0.1:8081/EditAgente?code=1\" \
+   | grep -oE 'widgetVarianteSelect[^<>]{1,200}' | head -3
+```
+
+When the modal renders `match=referencia`, the row in the response contains:
+
+```html
+<tr class=\"clickableRow\" onclick=\"widgetVarianteSelect('0', '1&#39;,alert(&#39;XSS-WidgetVariante&#39;),&#39;2');\">
+```
+
+The browser HTML-decodes the attribute value before passing it to the script engine, yielding the actual JavaScript `widgetVarianteSelect('0', '1',alert('XSS-WidgetVariante'),'2');`. The `alert` fires the moment the attribute is parsed for execution (i.e., when the user clicks the row, or when an automation script triggers the click programmatically), and the host realm's session, cookies, and CSRF tokens are exposed to the payload.
+
+For `WidgetSubcuenta`, the payload trigger is identical: any controller with `<widget type=\"subcuenta\" fieldname=\"codsubcuentaXxx\"/>` (`Core/XMLView/EditProducto.xml`, `EditCuentaBanco.xml`, `EditFamilia.xml`, `EditImpuesto.xml`, `EditRetencion.xml` are the in-tree consumers) renders the modal with `widgetSubaccountSelect('id', '<HTML-decoded codsubcuenta>')`. A `codsubcuenta` row planted with one apostrophe and five bytes of payload escapes the JS string and runs in the host page.
+
+## Impact
+
+* **Stored XSS in any user's browser the moment they open a product or subaccount picker.** The execution context is the host page, with full access to the viewer's session, CSRF tokens, and the running application. From an admin viewer's perspective the payload achieves admin compromise (install plugins, change passwords); from a normal user's perspective it can be used to exfiltrate the user's data and pivot.
+* **Within-tenant escalation primitive.** `EditProducto` is a routinely granted role permission. A salesperson, warehouse user, or a plugin-supplied controller without `admin` rights can plant a payload that fires in admin's browser the next time admin opens any sales document and clicks the variant picker.
+* **Sister vulnerability to the `40bc701` / `8586b97` fix wave.** The maintainers already understand and have fixed the same anti-pattern in three sister classes; these two were missed and remain exploitable.
+
+CVSS reasoning: `AV:N`, `AC:L` (one DB or one form POST plant), `PR:H` (the planter must be authenticated and have either `EditProducto` or DB write or import-API access; with weaker roles the payload is also reachable), `UI:R` (the victim opens a form that renders the modal and triggers a click), `S:U` (the impact stays within the application), `C:L I:L A:N` (the viewer's session and CSRF token are exposed; integrity loss bounded by viewer's role). Score 4.8.
+
+## Recommended Fix
+
+Mirror the `40bc701` and `8586b97` fix exactly. In both `Core/Lib/Widget/WidgetVariante.php:321` and `Core/Lib/Widget/WidgetSubcuenta.php:296`, replace:
+
+```php
+$items[] = '<tr class=\"clickableRow\" onclick=\"widgetVarianteSelect(\'' . $this->id . '\', \'' . $match . '\');\">'
+```
+
+with the data-attribute pattern that the modal helpers now use:
+
+```php
+$encMatch = htmlspecialchars(
+    html_entity_decode((string)$match, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+    ENT_QUOTES | ENT_SUBSTITUTE,
+    'UTF-8'
+);
+$items[] = '<tr class=\"clickableRow\" data-match=\"' . $encMatch . '\"'
+    . ' onclick=\"widgetVarianteSelect(\'' . $this->id . '\', this.dataset.match);\">'
+```
+
+(and the analogous change for `widgetSubaccountSelect`). The same approach should be applied to:
+
+* `WidgetSubcuenta::renderExerciseFilter` (`Core/Lib/Widget/WidgetSubcuenta.php:251-255`) where `$item->codejercicio` is interpolated into `<option value=\"...\">`. Codes are short and predictable but the same escaping consideration applies for defence in depth.
+* `WidgetVariante::renderManufacturerFilter` (line 213) and `renderFamilyFilter` (line 197).
+
+Long term, the `BaseWidget::onclickHtml` and `inputHtml` builders (`Core/Lib/Widget/BaseWidget.php:163-167`, `234-239`, `273-283`) likewise concatenate `$this->value` into HTML attributes without context-aware escaping. Migrating them to use Twig (or at least `htmlspecialchars` with `ENT_QUOTES`) closes a class of bugs that today rely on every model's `test()` to be defensive. A regression test should plant a `Variante.referencia` of `1',alert(1),'2`, render the page through the live HTTP stack, and assert that no JavaScript dialog fires (e.g. via Playwright `page.on('dialog', ...)`)."
+severity = "LOW"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T18:43:31.682895298+00:00"
