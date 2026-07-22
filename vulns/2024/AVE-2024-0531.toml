@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核 BPF 子系统中存在一个由 freplace 程序与尾调用（tailcall）组合引发的无限循环漏洞。当 entry_freplace 的附加目标为 subprog_tc，而尾调用又指向 entry_tc 时，会形成 entry_tc → subprog_tc → entry_freplace → tailcall → entry_tc 的死循环。由于每次执行 entry_freplace 时 tail_call_cnt 计数器都会重置为零，尾调用机制无法终止，最终导致内核崩溃（kernel panic）。本地攻击者只需低权限即可触发此漏洞，造成系统拒绝服务。该漏洞影响 Linux 内核各发行版版本，CVSS 评分 5.5，危害等级中等。"
+published = "2025-01-11T13:15:22.390"
+remediation = "立即将 Linux 内核升级至 6.12.5 或更高版本（主线内核已包含修复提交 987aa730bad3 和 d6083f040d5d）。各发行版用户请安装对应安全更新：Ubuntu 24.04 LTS 安装 USN-7381-1 或 USN-7450-1 更新，SUSE Linux Enterprise 15 SP6 安装 SUSE-SU-2025:1177-1 更新。如无法立即升级，可通过 seccomp 限制 BPF 系统调用（禁用 bpf() 和 BPF_PROG_TYPE_EXT 相关操作）作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel BPF 尾调用无限循环拒绝服务漏洞"
+updated = "2026-06-17T07:57:45.727"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-47794"]
+ave_id = "AVE-2024-0531"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/987aa730bad3e1ef66d9f30182294daa78f6387d",
+    "https://git.kernel.org/stable/c/d6083f040d5d8f8d748462c77e90547097df936e",
+    "https://github.com/CVEProject/cvelistV5/blob/60bbc98c39201e6f5661b9e41f1492ce39335948/cves/2024/47xxx/CVE-2024-47794.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-47794.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-47794",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2024-47794.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-47794.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f0111a41156462d46f484c055bdeafa69cf38c8e/CVE/data/2024/CVE-2024-47794.json",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/01/08/seguranca/cve-2024-47794-bpf-prevent-tailcall-infinite-loop--1767883860000.md",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2024-47794.html",
+    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2025/01/GHSA-qrrc-56f8-gw3j/GHSA-qrrc-56f8-gw3j.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-47794",
+]
