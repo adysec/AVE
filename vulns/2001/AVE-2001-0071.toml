@@ -1,0 +1,41 @@
+The issue is that the `remediation` field contains a long explanatory text (the AI's thinking/analysis) instead of just the remediation value. I need to fix this by providing a clean remediation string without the meta-commentary. Let me also check the other fields.
+Looking at the TOML, the `remediation` field has embedded text that looks like the AI's internal reasoning. The error says "remediation field为空" but actually it's not empty - it's just filled with garbage/tool output rather than a proper remediation string.
+I need to:
+1. Fix the `remediation` field - it contains AI internal monologue instead of clean Chinese remediation
+2. The `sources` field only has `["exploitdb"]` - should include `["cve"]` or similar
+3. The `published` field has a time part which is fine
+CVE-2001-0187 is a format string vulnerability in WU-FTPD. The fix was to upgrade to wu-ftpd 2.6.2 or later, or disable debug mode.
+1. The `remediation` field is not empty per se, but it contains a long JSON-like text/instruction rather than actual remediation content. The validator says "remediation field为空" which likely means it's not a valid remediation string (it contains instructions to the AI rather than actual remediation advice).
+2. Looking at the current TOML, the `remediation` field value is actually a long text that starts with "The user wants me to generate" - this is clearly the AI's internal thought process rather than actual remediation content. So it needs to be replaced with proper Chinese remediation.
+3. From NVD, I found the patch URL: `ftp://ftp.wu-ftpd.org/pub/wu-ftpd/patches/apply_to_current/missing_format_strings.patch` and the Red Hat statement indicates wu-ftp 2.6.2 is not vulnerable.
+4. The remediation should be: upgrade to wu-ftpd 2.6.2 or apply the format string patch. In Chinese.
+Actually wait, the remediation issue is the main problem. The `remediation` field contains AI instructions instead of actual content. I need to replace it with proper Chinese remediation.
+From NVD data:
+- Patch: `ftp://ftp.wu-ftpd.org/pub/wu-ftpd/patches/apply_to_current/missing_format_strings.patch`
+- Red Hat says "Red Hat Enterprise Linux 2.1 ships with wu-ftp version 2.6.2 which is not vulnerable to this issue."
+So proper remediation: upgrade to wu-ftpd 2.6.2 or apply the official patch `missing_format_strings.patch`. This is a very old vulnerability (2001), so the fix has been available for decades.
+ave_id = "AVE-2001-0071"
+aliases = ["CVE-2001-0187"]
+[basic]
+title = "WU-FTPD 调试模式主机名格式字符串远程代码执行漏洞"
+description = "WU-FTPD 2.6.1 及更早版本在启用调试模式时存在格式化字符串漏洞，远程攻击者可通过向 PASV 端口分配过程提交特制参数触发该漏洞，导致任意命令执行。该漏洞影响 WU-FTPD 2.4.2/2.5/2.6 等多个版本，CVSS 评分 10.0，危害等级严重。攻击者无需认证即可远程利用，建议禁用调试模式或升级至最新版本。"
+severity = "CRITICAL"
+score = 10.0
+sources = ["cve", "exploitdb"]
+published = "2001-03-26"
+updated = "2026-06-16"
+remediation = "升级 wu-ftpd 至 2.6.2 或更高版本，该版本已修复此格式化字符串漏洞。若无法升级，下载并应用官方补丁 ftp://ftp.wu-ftpd.org/pub/wu-ftpd/patches/apply_to_current/missing_format_strings.patch，并在配置文件中禁用 debug mode 选项，限制 FTP 服务（端口 21）的访问来源。"
+[references]
+urls = [
+"http://distro.conectiva.com.br/atualizacoes/?id=a&anuncio=000443",
+"http://www.debian.org/security/2001/dsa-016",
+"http://www.securityfocus.com/bid/2296",
+"https://exchange.xforce.ibmcloud.com/vulnerabilities/6020",
+"https://www.exploit-db.com/exploits/20594",
+]
+[exploit]
+poc_urls = ["https://www.exploit-db.com/exploits/20594"]
+exp_urls = []
+[meta]
+status = "completed"
+collected_at = "2026-07-22T00:00:00Z"
