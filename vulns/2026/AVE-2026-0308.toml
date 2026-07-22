@@ -1,0 +1,74 @@
+[id]
+ave_id = "AVE-2026-0308"
+aliases = ["CVE-2026-49455","GHSA-75w3-gmqx-993q"]
+
+[basic]
+title = "Waku: Cross-Origin CSRF on RSC Server Action Dispatch"
+description = "## Summary
+
+Waku's RSC request dispatcher invokes server actions without validating the request's `Origin` (or `Sec-Fetch-Site`) header. A cross-origin web attacker can therefore cause a victim browser to issue an authenticated `POST` to a registered server action endpoint using a CORS-safelisted content type (`text/plain`), which does not trigger a preflight. Any state-mutating server action that the application exposes via `'use server'` can be invoked with the victim's cookies attached. A working proof-of-concept demonstrates the vulnerability against waku 1.0.0-beta.0 dev server: a cross-origin POST with `Content-Type: text/plain` invokes a registered `'use server'` action and returns HTTP 200 with an RSC stream response. The same defect affects the progressive-enhancement (no-JavaScript) server action path: a cross-origin HTML form auto-submitting `multipart/form-data` reaches the dispatch through a second unguarded branch of the request handler, dynamically confirmed on 2026-05-17. Both branches were confirmed exploitable from opaque-origin contexts (sandboxed iframes, `file://` navigation, browser extension pages), which send `Origin: null` — a value no Origin guard exists to reject. This is the same vulnerability class previously disclosed for Next.js Server Actions (GHSA-mq59-m269-xvcx); waku's implementation is broader in that no Origin check exists at all in the default request handler.
+
+
+## Root cause
+
+In `packages/waku/src/lib/utils/request.ts`:
+
+```ts
+// line 29
+if (pathname.startsWith(rscPathPrefix)) {
+  rscPath = decodeRscPath(pathname.slice(rscPathPrefix.length));
+  const actionId = decodeFuncId(rscPath);
+  if (actionId) {
+    const body = await getActionBody(req);
+    const args = await decodeReply(body, { temporaryReferences });
+    const action = await loadServerAction(actionId);
+    // ...action is invoked with attacker-supplied args
+  }
+}
+```
+
+The sibling `else if (req.method === 'POST')` branch (line 61) does enforce a method check, but only for non-RSC paths. The RSC dispatch branch has no equivalent guard. For comparison, frameworks in the same category (Next.js, Remix) compare the request's `Origin` header against the configured host before invoking a server action.
+
+## Trigger (one-line summary)
+
+A cross-origin `POST` with `Content-Type: text/plain` to `/<rscBase>/<encoded-action-path>` reaches `loadServerAction` and invokes a registered `'use server'` action with the victim's browser-attached cookies.
+
+## Affected entry surfaces
+
+- All HTTP adapters exposed by waku (`packages/waku/src/adapters/node.ts`, `cloudflare.ts`, `vercel.ts`, `edge.ts`) — each chains through the same `request.ts:getInput` dispatcher.
+- Any server action declared with `'use server'` and reachable from the Vite module graph (i.e., normal application code).
+
+## Suggested fix outline
+
+Add an `Origin` (and ideally `Sec-Fetch-Site`) validation step in the RSC dispatch branch of `getInput`, gated against the configured base URL host, with an opt-in `allowedOrigins` configuration option for legitimate cross-origin scenarios. Exact patch sketches will be provided in the follow-up comment.
+
+## Disclosure
+
+| Field | Value |
+|---|---|
+| Reporter | j0hndo (dohyun4466@gmail.com) |
+| Discovery date | 2026-05-15 |
+| Embargo | 90 days from acknowledgement (operator open to extension on request) |
+| Comparable precedent | Next.js GHSA-mq59-m269-xvcx (\"null origin can bypass Server Actions CSRF checks\"), CVSS 5.3, fixed Next.js 16.1.7 |
+| References | OWASP CSRF cheat sheet; Fetch spec § CORS-safelisted request-header (text/plain). |
+
+## Workarounds (publish-safe)
+
+Until a framework-level fix is released, operators can mitigate by placing an `Origin`-validating reverse proxy or middleware in front of waku that rejects requests whose `Origin` header does not match the application's host on `POST` requests to the configured `rscBase` prefix. Note that Vite's `server.allowedHosts` guard (which rejects unrecognized `Host` headers with HTTP 403) applies only to `waku dev`; production deployments using `waku build && waku start` do not have an equivalent guard and are fully exposed without an external mitigation layer."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T21:36:32.153754992+00:00"
