@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测目标服务器是否存在 Cobalt RaQ 的 cgiwrap 脚本，该脚本在未打补丁的 RaQ2/RaQ3 上存在权限设置缺陷，允许攻击者绕过 cgiwrap 执行任意命令或修改文件"
+description = "检测 Cobalt RaQ2/RaQ3 服务器上 cgiwrap 脚本是否可访问。该漏洞因 FrontPage 上传文件时权限设置不当，导致攻击者可绕过 cgiwrap 限制修改文件。通过 HTTP 请求检查 /cgiwrap 路径是否存在，若存在则表明目标可能受此漏洞影响。"
 id = "POC-AVE-2000-0466"
-name = "Cobalt RaQ2/RaQ3 cgiwrap 权限绕过漏洞 PoC"
+name = "CVE-2000-0431 Cobalt RaQ cgiwrap 权限绕过检测 PoC"
 severity = "high"
 tags = ["ave-2000-0466"]
 vuln_id = [
@@ -28,8 +28,17 @@ part = "body"
 type = "word"
 words = ["cgiwrap"]
 
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/cgiwrap"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
 [[poc.requests.matchers]]
 expect = true
 part = "body"
-status = [200]
-type = "status"
+type = "word"
+words = ["cgiwrap"]
