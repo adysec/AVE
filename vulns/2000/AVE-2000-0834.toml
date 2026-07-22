@@ -1,23 +1,26 @@
 [basic]
-description = "Oracle 8.1.5 Connection Manager Control 组件中的 cmctl 程序存在缓冲区溢出漏洞。本地攻击者可通过提交超长的命令行参数触发缓冲区溢出，成功利用此漏洞可获取目标系统的更高权限（权限可提升至 oracle 用户）。该漏洞影响 Oracle 8.x 系列版本，攻击者需具有本地系统访问权限才能利用此漏洞。攻击者可通过控制参数长度覆盖栈上的返回地址，执行任意 shellcode。"
-published = "2001-01-09T05:00:00.000Z"
-remediation = "升级 Oracle 8.1.5 到支持版本（推荐 19c 或 21c），并移除 cmctl 程序的 setuid/setgid 权限位。此外，以 root 身份执行 `chmod -s $ORACLE_HOME/bin/cmctl` 可阻止普通用户通过此漏洞提升权限。"
+description = "Oracle 8.1.5 Connection Manager Control 组件中的 cmctl 程序存在栈缓冲区溢出漏洞。cmctl 在将用户提供的命令行参数复制到固定长度栈缓冲区前未进行长度检查，超长参数可覆盖栈上的返回地址。本地攻击者通过提交特制的超长命令行参数可触发缓冲区溢出，执行任意 shellcode，从而将权限提升至 oracle 用户（euid=oracle, egid=dba）。该漏洞影响 Oracle 8.1.5 for Linux 平台，攻击者需具有本地系统访问权限。"
+published = "2001-01-09"
+remediation = "移除 cmctl 程序的 setuid/setgid 权限位：以 root 身份执行 chmod -s $ORACLE_HOME/bin/cmctl，阻止普通用户通过此漏洞提升权限。如业务允许，限制可执行 cmctl 的用户组或直接删除该程序的 setuid 位。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "Oracle 8.x Connection Manager Control cmctl 缓冲区溢出漏洞"
-updated = "2026-06-16T21:53:19.630Z"
+sources = [
+    "cve",
+    "exploitdb",
+]
+title = "Oracle 8.1.5 Connection Manager Control cmctl 缓冲区溢出漏洞"
+updated = "2026-06-16"
 
 [exploit]
-exp_urls = []
-poc_urls = []
+exp_urls = ["https://www.exploit-db.com/exploits/20411"]
+poc_urls = ["https://www.exploit-db.com/exploits/20411"]
 
 [id]
 aliases = ["CVE-2000-1180"]
 ave_id = "AVE-2000-0834"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-22T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +29,4 @@ urls = [
     "http://www.securityfocus.com/bid/1968",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5551",
     "https://www.exploit-db.com/exploits/20411",
-    "https://github.com/CVEProject/cvelistV5/blob/8ac21ad6117514c2d2073c3d7d77e898bf2697d2/cves/2000/1xxx/CVE-2000-1180.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1180",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-1180.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/be9b320c2a949cb73c32157503bdf6fad99f369e/CVE/data/2000/CVE-2000-1180.json",
-    "https://github.com/github/advisory-database/blob/ca4032f687e5627fcf86913a0441b18137902527/advisories/unreviewed/2022/04/GHSA-xmgq-gq24-73mw/GHSA-xmgq-gq24-73mw.json",
-    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-1180.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150500_150600.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--6e1c743b-1a64-4069-b467-d16dd8b02223.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/3e910c6d0fff2c3163dd69b92eb626a214df8855/2000.tsv",
 ]
