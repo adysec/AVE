@@ -1,0 +1,42 @@
+[basic]
+description = "Mint HTTP/2 客户端在处理 PUSH_PROMISE 帧时存在资源分配无限制漏洞。lib/mint/http2.ex 中的 decode_push_promise_headers_and_add_response/5 函数在收到服务端推送承诺帧后，直接将每个承诺的流 ID 插入 conn.streams 映射中，而未检查 max_concurrent_streams 并发限制。攻击者控制的恶意 HTTP/2 服务端可发送大量 PUSH_PROMISE 帧但不发送对应的响应 HEADERS 帧，导致每个承诺帧在客户端内存中永久占用约 148 字节的条目，最终耗尽客户端进程内存造成拒绝服务。该漏洞影响 mint 0.2.0 至 1.9.0 之前的所有版本，CVSS 评分 8.2，危害等级高。服务端推送默认开启，无需应用主动启用即可被利用。建议升级到 mint 1.9.0 或更高版本，或在连接到不可信服务端时设置 client_settings 中 enable_push 为 false 以禁用 HTTP/2 服务端推送功能。"
+published = "2026-06-02T16:16:44.627"
+remediation = "将 Mint 升级至 1.9.0 或更高版本（含补丁 commit 70b97b6）。如无法立即升级，在连接不可信服务器时通过 `client_settings: [enable_push: false]` 禁用 HTTP/2 Server Push，Mint 将在 PUSH_PROMISE 到达时直接返回 PROTOCOL_ERROR 从而阻断攻击路径。"
+score = 8.2
+severity = "HIGH"
+sources = ["ghsa"]
+title = "elixir-mint Mint HTTP/2 客户端 PUSH_PROMISE 资源耗尽拒绝服务漏洞"
+updated = "2026-07-22T19:10:00.120"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-48862",
+    "GHSA-g586-ccqf-7x4r",
+]
+ave_id = "AVE-2026-0303"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://cna.erlef.org/cves/CVE-2026-48862.html",
+    "https://github.com/elixir-mint/mint/commit/70b97b6a5209fb288b0e04d8e657dda26c59de67",
+    "https://github.com/elixir-mint/mint/security/advisories/GHSA-g586-ccqf-7x4r",
+    "https://osv.dev/vulnerability/EEF-CVE-2026-48862",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2026/CVE-2026-48862.md",
+    "https://github.com/CVEProject/cvelistV5/blob/97700d7e657426c8e1ee6cf44a0a2b88c60738c3/cves/2026/48xxx/CVE-2026-48862.json",
+    "https://github.com/cisagov/vulnrichment/blob/a538bd81432b918b342e413f43256da1f80b6c0d/2026/48xxx/CVE-2026-48862.json",
+    "https://github.com/TMA84/cvealert/blob/75714204a4d47ab0def5b37be4839e1beb10bacd/content/posts/cve-2026-48862.md",
+    "https://github.com/elixir-explorer/explorer/blob/d8412e82516d0d204ae2a687d04c04324414ec7d/CHANGELOG.md",
+    "https://github.com/sec-dojo-com/cve-poc/blob/9a0b7a19487f40b2e217de2ad9f19cbcad032a8a/pocs/2026/CVE-2026-48862.md",
+    "https://github.com/erlef-cna/website/blob/c3ea8d6de083cd441e9c6143037548522b280a02/_data/osv/EEF-CVE-2026-48862.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/9542f124dc2666bd5faef7b9364f9b770a02f8f0/posts/cve-2026-48862-erlang-mint.html",
+    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/github-reviewed/2026/07/GHSA-g586-ccqf-7x4r/GHSA-g586-ccqf-7x4r.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/b36aad80af9d4885d28bae2d9125e8d29ed3f3c1/data/2026/CVE-2026-48862.json",
+]
