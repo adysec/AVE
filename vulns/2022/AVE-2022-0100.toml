@@ -1,0 +1,38 @@
+[basic]
+description = "Linux内核DRM Meson显示驱动存在释放后使用漏洞。meson_encoder_hdmi_init和meson_encoder_cvbs_init函数在初始化时向全局bridge_list注册DRM桥接器，但在驱动模块卸载时未手动移除这些桥接器，导致全局链表中残留指向已释放内存的悬挂指针。当驱动模块重新加载时，drm_bridge_add函数遍历全局bridge_list会访问已释放的内存，触发use-after-free。该漏洞影响Linux 4.10至5.19.16及6.0至6.0.2版本，攻击者需具备本地低权限即可利用，可能造成权限提升或内核代码执行，CVSS评分7.8，危害等级高。"
+published = "2025-09-15T14:15:36.363"
+remediation = "将 Linux 内核升级至 5.19.17、6.0.3 或更高版本，包含对应 git commit de2b6ebe0cb7/fc1fd114dde3/09847723c12f。若无法立即升级，可在加载 meson_drm 模块前通过 blacklist 禁止自动加载（/etc/modprobe.d/blacklist.conf 中添加 blacklist meson_drm），或在内核编译时取消 CONFIG_DRM_MESON 选项以移除受影响驱动模块。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Linux内核meson DRM驱动使用后释放内存漏洞"
+updated = "2026-06-17T05:23:05.297"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-50256"]
+ave_id = "AVE-2022-0100"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/09847723c12fc2753749cec3939a02ee92dac468",
+    "https://git.kernel.org/stable/c/de2b6ebe0cb7746b5b6b35d79e150d934392b958",
+    "https://git.kernel.org/stable/c/fc1fd114dde3d2623ac37676df3d74ffeedb0da8",
+    "https://github.com/CVEProject/cvelistV5/blob/40c65e734a16e244433aafd42706edabef09072d/cves/2022/50xxx/CVE-2022-50256.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-50256.yaml",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-50256",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2022-50256.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/99462b1672511a2817705398570cd388f155e617/CVE/data/2022/CVE-2022-50256.json",
+    "https://github.com/github/advisory-database/blob/36ddac9224d3973c64320c39be98ecc1f1ca5395/advisories/unreviewed/2025/09/GHSA-qh76-9567-4h37/GHSA-qh76-9567-4h37.json",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2022-50256",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2022/CVE-2022-50256.json",
+    "https://github.com/keryanchpn/ia-data/blob/534363d1afb19db8eaf67f9cab2c9be27811247b/data_fallback/data/Avis/CERTFR-2025-AVI-1070",
+    "https://github.com/neuvector/vul-source/blob/27dcc23268ea595c1e22ac2008b340bb4e848cb2/ubuntu-cve-tracker/active/CVE-2022-50256",
+]
