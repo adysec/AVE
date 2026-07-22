@@ -1,0 +1,37 @@
+[basic]
+description = "这是一个针对 Ceph 分布式存储平台在 S3 对象复制功能中的逻辑缺陷。攻击者可以通过向 RGW 守护程序发送包含空 HTTP 标头的 `PUT` 请求来触发漏洞， specifically when the `x-amz-copy-source` 参数的值为空字符串。多个 Ceph 版本（最先在 19.2.3 版本中发现）都受到该漏洞的影响，因为它们在处理空标头时没有进行充分验证，导致 R保持进程崩溃并引发拒绝服务攻击。该漏洞影响了广泛部署的分布式存储系统，可能导致云计算、对象存储和大数据应用等使用 Ceph 的服务不可用。该漏洞为远程无状态攻击，无需任何权限或用户交互即可触发，易于被攻击者利用。识别和缓解的当务之急是加强对 S3 请求参数的输入验证和边界检查，并尽快部署最新的安全补丁以应对该漏洞带来的服务可用性威胁。"
+published = "2025-11-12T19:15:34.867"
+remediation = "立即升级 Ceph 至包含 commit `bef59f1` 的版本（≥19.2.3-0ubuntu1.25.10.3 或从 Ceph 主分支重新编译），该提交在 `RGWCopyObj::parse_copy_location()` 中增加了对空 `x-amz-copy-source` 头部的校验。Ubuntu 用户可通过 `apt update && apt upgrade ceph` 安装 USN-8045-1 提供的修复版本（25.10/24.04/22.04 已发布，20.04/18.04/16.04/14.04 需通过 Ubuntu Pro 获取）。如无法立即升级，可在反向代理或 WAF 层面拦截 `x-amz-copy-source` 值为空或仅含空白字符的 S3 PutObject 请求作为临时缓解措施。"
+score = 7.5
+severity = "HIGH"
+sources = ["msrc"]
+title = "Ceph RGW S3 对象复制空 HTTP 标头拒绝服务漏洞"
+updated = "2026-06-17T07:57:52.860"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-47866"]
+ave_id = "AVE-2024-0533"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/ceph/ceph/security/advisories/GHSA-mgrm-g92q-f8h8",
+    "http://www.openwall.com/lists/oss-security/2025/11/11/3",
+    "https://github.com/CVEProject/cvelistV5/blob/60bbc98c39201e6f5661b9e41f1492ce39335948/cves/2024/47xxx/CVE-2024-47866.json",
+    "https://github.com/cisagov/vulnrichment/blob/a538bd81432b918b342e413f43256da1f80b6c0d/2024/47xxx/CVE-2024-47866.json",
+    "https://github.com/neuvector/vul-source/blob/9ba62febaf6254d72eb4667cd7923d92d2c3f9b6/ubuntu-cve-tracker/active/CVE-2024-47866",
+    "https://github.com/canonical/ubuntu-security-notices/blob/4cbc1cd445b97bc2235c2b80e223e324747c59b3/osv/cve/2024/UBUNTU-CVE-2024-47866.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2024-47866.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f7fbdb78e572cf69166b06f5f222a65cac6edb53/references/CVE-2024-47866-2025-12-18-1005",
+    "https://github.com/alpinelinux/aports/blob/0c43d6081c65becce3a5df5efcc5f04ee3e3a37d/community/ceph19/APKBUILD",
+    "https://github.com/univention/univention-corporate-server/blob/6de2a236d596f48d69a2ea791edef7f8811bfeea/doc/errata/published/2026-06-17_485_ceph.yaml",
+    "https://github.com/eslerm/ubuntu-cve-tracker/blob/f17e5ebf7a87347cc68d8fae347d07409a857342/active/CVE-2024-47866",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f0111a41156462d46f484c055bdeafa69cf38c8e/CVE/data/2024/CVE-2024-47866.json",
+]
