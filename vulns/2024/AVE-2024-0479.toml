@@ -1,73 +1,41 @@
-[id]` section is AFTER `[basic]` section - it needs to come first
-2. The `remediation` field contains placeholder/thinking text instead of actual content
-3. The `remediation` field appears to be empty (the error says it's empty)
-- Score: 5.3, Severity: MEDIUM - need to check if MEDIUM≥4, yes 5.3≥4, so this is fine
-- The TOML structure order needs to be fixed: `[id]` must come first
-Looking at the remediation content in the current TOML, it seems to contain a thinking process that leaked through - the `<think>` tags and the reasoning process are visible in the field value. This is why it's considered "empty" or invalid - the actual remediation advice got mixed with internal reasoning.
-Now I'm looking at the schema requirements and remediation guidelines more carefully. The field needs specific upgrade guidance in Chinese with at least 20 characters, pointing to GnuTLS 3.8.8 or higher, along with RHEL-specific package versions for different releases and temporary mitigation steps.
-Checking the current TOML order, I see the sections are in the wrong sequence - `[id]` should come before `[basic]` according to the schema. Beyond reordering, the real issue is that the `remediation` field contains placeholder thinking text that needs to be replaced with the actual actionable fix instructions starting from "立即将 GnuTLS 升级至 3.8.8". I've identified the key fixes needed: moving the `[id]` section to the top, and replacing the corrupted `remediation` field with proper upgrade instructions in Chinese. The remediation value got cut off mid-sentence, so I'll complete it with the version-specific guidance for different Linux distributions.Now I have all the information I need. Let me also check the GnuTLS fix version - from the NVD change history:
-- GnuTLS version 3.8.0 to less than 3.8.8 is affected
-- GnuTLS version 3.8.9 and later is unaffected
-- So the fix is GnuTLS >= 3.8.8 (or 3.8.9+)
-Now let me construct the fixed TOML. The issues are:
-1. `[id]` section must come BEFORE `[basic]` section (it currently comes after)
-2. The `remediation` field has contaminated thinking process text that leaked in - "The user is asking me" etc. - and I need to extract only the actual remediation content, which appears to be the Chinese text about upgrading to GnuTLS 3.8.8 and the RHEL package versions, truncated mid-sentence. The thinking stream is embedded within the multi-line string, causing the field to appear invalid. I need to extract just the actual remediation content that comes after the closing tag—the Chinese text about upgrading GnuTLS and applying RHEL/RHSA patches—and discard all the analytical reasoning that got mixed in. I'm recognizing the thinking pattern here - the AI is working through different fix versions for GnuTLS across various RHEL releases and Linux distributions, comparing the upstream 3.8.8+ solution against distro-specific patches from RHEL 8, RHEL 9, and Debian LTS to identify which resolved the vulnerability. Now I'm compiling the specific package updates and their corresponding security advisories across different Linux distributions—RHEL 8 and 9 have their respective patch versions, Debian has DLA-4075-1, and there are temporary workarounds like certificate validation limits and TLS interception proxies if upgrading isn't immediately possible.
-Checking the TOML structure against the schema—the `[id]` section should come first, and the `remediation` field needs to be a clean string without embedded thinking. The current value is cut off mid-sentence, so I need to complete it with the actual remediation advice while keeping it within TOML string constraints. 、Siemens 相关固件（SIMATIC S7-1500 CPU、RUGGEDCOM ROX 系列）需关注厂商公告并应用对应安全补丁。
-Looking at the validation rules, I need to ensure descriptions meet the 50-character minimum, so I'll verify the word count across all fields before finalizing.
-Now checking the schema constraints—the TOML has exactly five sections as required, no additional identifiers, and string values are limited to `[id]` and `[basic]` fields. Noting a few issues: the `published` timestamp includes milliseconds which should be reduced, and I need to confirm the parameter restrictions are followed. So the `published` field with the full ISO 8601 timestamp should work fine in TOML, and I need to restructure the file by moving the `[id]` section to the top and fixing the `remediation` value to remove that leaked thinking content with the closing tag.Now I have all the info I need. Let me also check what fix was committed for this issue to get the exact version. From the NVD change history:
-- GnuTLS 3.8.0 to less than 3.8.8 are affected
-- GnuTLS 3.8.9 is unaffected
-So the fix is in GnuTLS 3.8.8.
-Now let me construct the complete fixed TOML. The main issues to fix are:
-1. Move `[id]` to the top (before `[basic]`)
-2. Fix `remediation` - remove the leaked thinking content, replace with proper Chinese remediation text
-The original `remediation` field value was:
-Fixing the section order and adding the remediation text about upgrading GnuTLS to version 3.8.8 or later. The field needs to contain at least 20 characters of Chinese remediation text, and based on the previous input, it looks like the text got cut off mid-sentence.
-Now I'm reviewing the NVD data to confirm the fix version. The change history shows the last modified date was June 17, 2026 for the Siemens products, while the original published date remains February 10, 2025. The upstream GnuTLS fix should be version 3.8.8, which combined the libtasn1 bounds check changes, and I should verify this directly against the NVD data to finalize the TOML entry.Let me try to fetch the NVD API for the CVE to get more precise version fix information.
-From the NVD data I already have:
-- GnuTLS versions affected: 0~3.6.16, 3.7.0~3.7.11, 3.8.0~less than 3.8.8
-- GnuTLS version 3.8.9 is unaffected
-So the fix is clearly GnuTLS >= 3.8.8 (i.e., 3.8.8 or 3.8.9+).
-Now let me write the complete fixed TOML. The key issues are:
-1. `[id]` must come before `[basic]`
-2. The `remediation` field needs cleanup — I'll remove the header and replace the mixed Chinese/English advice with proper version-specific guidance and command examples.
-Generating TOML contentBased on my research, the key fix details are:
-- GnuTLS fix version: 3.8.8+ (3.8.0~3.8.7 affected)
-- RHEL 8 fix: `gnutls-3.6.16-8.el8_10.3` (RHSA-2025:4051)
-- RHEL 9 fix: `gnutls-3.8.3-6.el9` (RHSA-2025:7076)
-- Debian: DLA-4075-1
-The TOML has two problems: `[id]` section is in the wrong order (must come first), and `remediation` contains leaked thinking-process text. Here's the fixed output:
-[id]
-ave_id = "AVE-2024-0479"
-aliases = ["CVE-2024-12243"]
 [basic]
-title = "GnuTLS libtasn1 DER解码远程拒绝服务漏洞"
-description = "GnuTLS 依赖 libtasn1 库处理 ASN.1 数据。由于 libtasn1 中 DER 解码算法复杂度不当，解析包含大量 subject alternative name 或 name constraint 字段的特制证书时会消耗过量 CPU 资源，导致远程攻击者可向使用 GnuTLS 的服务发送恶意证书，触发 CPU 占用飙升至 100%，造成服务响应缓慢或完全不可用，构成拒绝服务（DoS）安全风险。CVSS v3.1 评分 5.3，危害等级中危。"
-severity = "MEDIUM"
-score = 5.3
-sources = ["cve", "nvd"]
+description = "GnuTLS 依赖 libtasn1 处理 ASN.1 数据。由于 libtasn1 中 DER 解码算法存在复杂度缺陷，解析包含大量 subject alternative name 或 name constraint 字段的特制 X.509 证书时 CPU 消耗急剧上升。远程攻击者可发送恶意证书使 GnuTLS 服务 CPU 占用达 100%，导致响应缓慢或完全不可用，构成拒绝服务（DoS）风险。CVSS 3.1 评分 5.3，中危。"
 published = "2025-02-10"
+remediation = "将 GnuTLS 升级至 3.8.8 或更高版本（3.8.0~3.8.7 均受影响，3.8.9 及以上不受影响）。RHEL 8 用户安装 RHSA-2025:4051 提供的 gnutls-3.6.16-8.el8_10.3 或更新版本；RHEL 9 用户安装 RHSA-2025:7076 提供的 gnutls-3.8.3-6.el9 或更新版本；RHEL 7 用户参考 RHSA-2025:17361。Debian 用户参考 DLA-4075-1。Siemens 设备用户关注 SSA-082556 和 SSA-202008。临时措施：在网络边界部署 TLS 拦截代理，限制单个证书中 SAN 及 name constraint 字段数量。"
+score = 5.3
+severity = "MEDIUM"
+sources = [
+    "cve",
+    "nvd",
+]
+title = "GnuTLS libtasn1 DER解码远程拒绝服务漏洞"
 updated = "2026-06-17"
-remediation = "立即将 GnuTLS 升级至 3.8.8 或更高版本（3.8.0~3.8.7 均受影响，受 libtasn1  DER 解码低效算法触发）；RHEL 8 用户安装 errata RHSA-2025:4051 提供的 gnutls-3.6.16-8.el8_10.3 或更新版本；RHEL 9 用户安装 errata RHSA-2025:7076 提供的 gnutls-3.8.3-6.el9 或更新版本；Debian 用户安装 DLA-4075-1 安全更新；Siemens SIMATIC S7-1500 CPU 1518-4 PN/DP MFP 和 RUGGEDCOM ROX 系列设备需关注厂商公告 SSA-082556 和 SSA-202008 并应用对应补丁；临时缓解措施：在网络边界部署 TLS 拦截代理，限制单个证书中 subject alternative name 及 name constraint 字段的最大数量，或对证书解析设置超时。"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-12243"]
+ave_id = "AVE-2024-0479"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"https://access.redhat.com/errata/RHSA-2025:17361",
-"https://access.redhat.com/errata/RHSA-2025:4051",
-"https://access.redhat.com/errata/RHSA-2025:7076",
-"https://access.redhat.com/errata/RHSA-2025:8020",
-"https://access.redhat.com/errata/RHSA-2025:8385",
-"https://access.redhat.com/security/cve/CVE-2024-12243",
-"https://bugzilla.redhat.com/show_bug.cgi?id=2344615",
-"https://gitlab.com/gnutls/gnutls/-/issues/1553",
-"https://gitlab.com/gnutls/libtasn1/-/issues/52",
-"https://lists.debian.org/debian-lts-announce/2025/02/msg00027.html",
-"https://security.netapp.com/advisory/ntap-20250523-0002/",
-"https://cert-portal.siemens.com/productcert/html/ssa-082556.html",
-"https://cert-portal.siemens.com/productcert/html/ssa-202008.html",
+    "https://access.redhat.com/errata/RHSA-2025:17361",
+    "https://access.redhat.com/errata/RHSA-2025:4051",
+    "https://access.redhat.com/errata/RHSA-2025:7076",
+    "https://access.redhat.com/errata/RHSA-2025:8020",
+    "https://access.redhat.com/errata/RHSA-2025:8385",
+    "https://access.redhat.com/security/cve/CVE-2024-12243",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=2344615",
+    "https://gitlab.com/gnutls/gnutls/-/issues/1553",
+    "https://gitlab.com/gnutls/libtasn1/-/issues/52",
+    "https://lists.debian.org/debian-lts-announce/2025/02/msg00027.html",
+    "https://security.netapp.com/advisory/ntap-20250523-0002/",
+    "https://cert-portal.siemens.com/productcert/html/ssa-082556.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-202008.html",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-22T00:00:00Z"
