@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核的 MACsec 驱动中存在释放后使用（UAF）漏洞。创建 macsec 虚拟设备时未增加对 real_dev（底层物理设备）的引用计数，导致 real_dev 被提前释放后 macsec 设备仍可访问其内存，从而触发 UAF。本地攻击者可通过顺序创建和删除特制的 macsec 设备导致内核内存破坏，可能实现权限提升或系统崩溃。该漏洞影响 Linux 内核各版本，CVSS 评分 7.8，危害等级高。"
+published = "2025-02-26T07:01:15.620"
+remediation = "建议立即将 Linux 内核升级至 5.17.15、5.18.3 或 5.19 及以上版本。如无法升级内核，可手动应用补丁：在 drivers/net/macsec.c 的 macsec_dev_init() 中添加 dev_hold_track(real_dev)，在 macsec_free_netdev() 中添加 dev_put_track(real_dev)，确保 macsec 设备对 real_dev 持有引用计数，避免释放后使用。补丁参考 git.kernel.org 稳定树提交 196a888ca657、78933cbc143b、d130282179aa。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Kernel macsec 释放后使用漏洞"
+updated = "2026-06-17T05:17:54.840"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49390"]
+ave_id = "AVE-2022-0038"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/196a888ca6571deb344468e1d7138e3273206335",
+    "https://git.kernel.org/stable/c/78933cbc143b82d02330e00900d2fd08f2682f4e",
+    "https://git.kernel.org/stable/c/d130282179aa6051449ac8f8df1115769998a665",
+    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2022/49xxx/CVE-2022-49390.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49390.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2022-49390",
+    "https://github.com/cisagov/vulnrichment/blob/3de260baf5452671b1860955d9815c2cdbc09bef/2022/49xxx/CVE-2022-49390.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2022-49390.md",
+    "https://github.com/github/advisory-database/blob/60cf806ffc57d6909f887b4f3823ae39ed0d7c51/advisories/unreviewed/2025/02/GHSA-w9jf-hmj5-fp54/GHSA-w9jf-hmj5-fp54.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49390",
+    "https://github.com/canonical/ubuntu-security-notices/blob/5fc355d60e5d1a1fefefacd0202b767223ed6ef1/usn/7922-5.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6962d12e25fbf447fb7ec00c59de25f9ba4e2a94/CVE/data/2022/CVE-2022-49390.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--1dd8fbbb-2a94-4a12-b123-840f68a439ae.json",
+]
