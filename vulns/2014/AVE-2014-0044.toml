@@ -1,0 +1,250 @@
+[basic]
+description = "GNU Bash 在通过环境变量处理函数定义时，未正确截断后续字符串内容，导致攻击者可通过构造特制环境变量在目标系统上执行任意命令。该漏洞（又称 ShellShock）影响 GNU Bash 4.3 及更早版本，利用 OpenSSH 的 ForceCommand 功能、Apache HTTP Server 的 mod_cgi/mod_cgid 模块、DHCP 客户端脚本等多种向量，无需身份认证即可远程触发。攻击者仅需设置包含恶意代码的环境变量并触发 Bash 解释执行，即可在当前权限下获得远程代码执行能力，对服务器、Web 应用和网络设备构成严重威胁。该漏洞 CVSS 评分 9.8，危害等级严重，已列入 CISA KEV 目录，并被 Metasploit、Nuclei 等工具收录利用代码。"
+published = "2014-09-24T18:48:04.477"
+remediation = '''
+# 下载并安装最新的bash源代码
+   wget https://ftp.gnu.org/gnu/bash/bash-5.2.tar.gz
+   tar xzf bash-5.2.tar.gz && cd bash-5.2
+   ./configure --prefix=/usr/local
+   make -j$(nproc) && make install
+   ```
+
+3. **系统配置强化**：
+   ```bash
+   # 限制危险Shell函数
+   echo 'alias. () { :;}; alias. () { :;}' >> /etc/bashrc
+   echo 'function. () { :;}' >> /etc/bashrc
+   echo '() { :;}' >> /etc/bashrc
+   
+   # 启用Bash安全限制（read 中的安全模式）
+   cat >> /etc/profile << 'EOF'
+   ulimit -S -n 4096
+   export SHELLOPTS=semblues
+   EOF
+   ```
+
+4. **应用层防护措施**：
+   - Apache HTTP Server：升级mod_cgi/mod_cgid到安全补丁版本
+   - OpenSSH服务：升级到包含安全补丁的版本，配置`"ForceCommand"`受限命令
+   - 所有Web应用：验证CGI脚本对环境变量的有效性限制
+   - DHCP服务：确保设备发送的安全环境变量过滤机制
+
+5. **临时缓解措施**：
+   - 停止启用CGI脚本或危险Shell命令功能
+   - 配置防火墙过滤包含`() {`或`eval `等危险模式的环境变量的网络包
+   - 使用web应用防火墙规则禁止可疑的环境变量注入攻击
+
+6. **后续监控与验证**：
+   ```bash
+   # 验证补丁是否成功应用
+   bash --version | grep "4.4\|5.0\|5.1\|5.2"
+   grep -r "(): {" /etc/profile /etc/bashrc /etc/bash.bashrc 2>/dev/null || true'''
+score = 9.8
+severity = "CRITICAL"
+sources = ["nuclei"]
+title = "GNU Bash 命令执行漏洞"
+updated = "2026-06-17T00:12:48.020"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2014-6271"]
+ave_id = "AVE-2014-0044"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://advisories.mageia.org/MGASA-2014-0388.html",
+    "http://archives.neohapsis.com/archives/bugtraq/2014-10/0101.html",
+    "http://jvn.jp/en/jp/JVN55667175/index.html",
+    "http://jvndb.jvn.jp/jvndb/JVNDB-2014-000126",
+    "http://kb.juniper.net/InfoCenter/index?page=content&id=JSA10673",
+    "http://lcamtuf.blogspot.com/2014/09/quick-notes-about-bash-bug-its-impact.html",
+    "http://linux.oracle.com/errata/ELSA-2014-1293.html",
+    "http://linux.oracle.com/errata/ELSA-2014-1294.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2014-09/msg00028.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2014-09/msg00029.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2014-09/msg00034.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2014-09/msg00037.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2014-09/msg00040.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2014-09/msg00044.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2014-09/msg00049.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2014-10/msg00004.html",
+    "http://lists.opensuse.org/opensuse-updates/2014-10/msg00023.html",
+    "http://lists.opensuse.org/opensuse-updates/2014-10/msg00025.html",
+    "http://marc.info/?l=bugtraq&m=141216207813411&w=2",
+    "http://marc.info/?l=bugtraq&m=141216668515282&w=2",
+    "http://marc.info/?l=bugtraq&m=141235957116749&w=2",
+    "http://marc.info/?l=bugtraq&m=141319209015420&w=2",
+    "http://marc.info/?l=bugtraq&m=141330425327438&w=2",
+    "http://marc.info/?l=bugtraq&m=141330468527613&w=2",
+    "http://marc.info/?l=bugtraq&m=141345648114150&w=2",
+    "http://marc.info/?l=bugtraq&m=141383026420882&w=2",
+    "http://marc.info/?l=bugtraq&m=141383081521087&w=2",
+    "http://marc.info/?l=bugtraq&m=141383138121313&w=2",
+    "http://marc.info/?l=bugtraq&m=141383196021590&w=2",
+    "http://marc.info/?l=bugtraq&m=141383244821813&w=2",
+    "http://marc.info/?l=bugtraq&m=141383304022067&w=2",
+    "http://marc.info/?l=bugtraq&m=141383353622268&w=2",
+    "http://marc.info/?l=bugtraq&m=141383465822787&w=2",
+    "http://marc.info/?l=bugtraq&m=141450491804793&w=2",
+    "http://marc.info/?l=bugtraq&m=141576728022234&w=2",
+    "http://marc.info/?l=bugtraq&m=141577137423233&w=2",
+    "http://marc.info/?l=bugtraq&m=141577241923505&w=2",
+    "http://marc.info/?l=bugtraq&m=141577297623641&w=2",
+    "http://marc.info/?l=bugtraq&m=141585637922673&w=2",
+    "http://marc.info/?l=bugtraq&m=141694386919794&w=2",
+    "http://marc.info/?l=bugtraq&m=141879528318582&w=2",
+    "http://marc.info/?l=bugtraq&m=142113462216480&w=2",
+    "http://marc.info/?l=bugtraq&m=142118135300698&w=2",
+    "http://marc.info/?l=bugtraq&m=142358026505815&w=2",
+    "http://marc.info/?l=bugtraq&m=142358078406056&w=2",
+    "http://marc.info/?l=bugtraq&m=142546741516006&w=2",
+    "http://marc.info/?l=bugtraq&m=142719845423222&w=2",
+    "http://marc.info/?l=bugtraq&m=142721162228379&w=2",
+    "http://marc.info/?l=bugtraq&m=142805027510172&w=2",
+    "http://packetstormsecurity.com/files/128517/VMware-Security-Advisory-2014-0010.html",
+    "http://packetstormsecurity.com/files/128567/CA-Technologies-GNU-Bash-Shellshock.html",
+    "http://packetstormsecurity.com/files/128573/Apache-mod_cgi-Remote-Command-Execution.html",
+    "http://packetstormsecurity.com/files/137376/IPFire-Bash-Environment-Variable-Injection-Shellshock.html",
+    "http://packetstormsecurity.com/files/161107/SonicWall-SSL-VPN-Shellshock-Remote-Code-Execution.html",
+    "http://rhn.redhat.com/errata/RHSA-2014-1293.html",
+    "http://rhn.redhat.com/errata/RHSA-2014-1294.html",
+    "http://rhn.redhat.com/errata/RHSA-2014-1295.html",
+    "http://rhn.redhat.com/errata/RHSA-2014-1354.html",
+    "http://seclists.org/fulldisclosure/2014/Oct/0",
+    "http://secunia.com/advisories/58200",
+    "http://secunia.com/advisories/59272",
+    "http://secunia.com/advisories/59737",
+    "http://secunia.com/advisories/59907",
+    "http://secunia.com/advisories/60024",
+    "http://secunia.com/advisories/60034",
+    "http://secunia.com/advisories/60044",
+    "http://secunia.com/advisories/60055",
+    "http://secunia.com/advisories/60063",
+    "http://secunia.com/advisories/60193",
+    "http://secunia.com/advisories/60325",
+    "http://secunia.com/advisories/60433",
+    "http://secunia.com/advisories/60947",
+    "http://secunia.com/advisories/61065",
+    "http://secunia.com/advisories/61128",
+    "http://secunia.com/advisories/61129",
+    "http://secunia.com/advisories/61188",
+    "http://secunia.com/advisories/61283",
+    "http://secunia.com/advisories/61287",
+    "http://secunia.com/advisories/61291",
+    "http://secunia.com/advisories/61312",
+    "http://secunia.com/advisories/61313",
+    "http://secunia.com/advisories/61328",
+    "http://secunia.com/advisories/61442",
+    "http://secunia.com/advisories/61471",
+    "http://secunia.com/advisories/61485",
+    "http://secunia.com/advisories/61503",
+    "http://secunia.com/advisories/61542",
+    "http://secunia.com/advisories/61547",
+    "http://secunia.com/advisories/61550",
+    "http://secunia.com/advisories/61552",
+    "http://secunia.com/advisories/61565",
+    "http://secunia.com/advisories/61603",
+    "http://secunia.com/advisories/61633",
+    "http://secunia.com/advisories/61641",
+    "http://secunia.com/advisories/61643",
+    "http://secunia.com/advisories/61654",
+    "http://secunia.com/advisories/61676",
+    "http://secunia.com/advisories/61700",
+    "http://secunia.com/advisories/61703",
+    "http://secunia.com/advisories/61711",
+    "http://secunia.com/advisories/61715",
+    "http://secunia.com/advisories/61780",
+    "http://secunia.com/advisories/61816",
+    "http://secunia.com/advisories/61855",
+    "http://secunia.com/advisories/61857",
+    "http://secunia.com/advisories/61873",
+    "http://secunia.com/advisories/62228",
+    "http://secunia.com/advisories/62312",
+    "http://secunia.com/advisories/62343",
+    "http://support.apple.com/kb/HT6495",
+    "http://support.novell.com/security/cve/CVE-2014-6271.html",
+    "http://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20140926-bash",
+    "http://www-01.ibm.com/support/docview.wss?uid=isg3T1021272",
+    "http://www-01.ibm.com/support/docview.wss?uid=isg3T1021279",
+    "http://www-01.ibm.com/support/docview.wss?uid=isg3T1021361",
+    "http://www-01.ibm.com/support/docview.wss?uid=ssg1S1004879",
+    "http://www-01.ibm.com/support/docview.wss?uid=ssg1S1004897",
+    "http://www-01.ibm.com/support/docview.wss?uid=ssg1S1004898",
+    "http://www-01.ibm.com/support/docview.wss?uid=ssg1S1004915",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21685541",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21685604",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21685733",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21685749",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21685914",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21686084",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21686131",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21686246",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21686445",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21686447",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21686479",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21686494",
+    "http://www-01.ibm.com/support/docview.wss?uid=swg21687079",
+    "http://www-947.ibm.com/support/entry/portal/docdisplay?lndocid=MIGR-5096315",
+    "http://www.debian.org/security/2014/dsa-3032",
+    "http://www.kb.cert.org/vuls/id/252743",
+    "http://www.mandriva.com/security/advisories?name=MDVSA-2015:164",
+    "http://www.novell.com/support/kb/doc.php?id=7015701",
+    "http://www.novell.com/support/kb/doc.php?id=7015721",
+    "http://www.oracle.com/technetwork/topics/security/bashcve-2014-7169-2317675.html",
+    "http://www.qnap.com/i/en/support/con_show.php?cid=61",
+    "http://www.securityfocus.com/archive/1/533593/100/0/threaded",
+    "http://www.securityfocus.com/bid/70103",
+    "http://www.ubuntu.com/usn/USN-2362-1",
+    "http://www.us-cert.gov/ncas/alerts/TA14-268A",
+    "http://www.vmware.com/security/advisories/VMSA-2014-0010.html",
+    "http://www.websense.com/support/article/kbarticle/Vulnerabilities-resolved-in-TRITON-APX-Version-8-0",
+    "https://access.redhat.com/articles/1200223",
+    "https://access.redhat.com/node/1200223",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=1141597",
+    "https://help.ecostruxureit.com/display/public/UADCO8x/StruxureWare+Data+Center+Operation+Software+Vulnerability+Fixes",
+    "https://kb.bluecoat.com/index?page=content&id=SA82",
+    "https://kb.juniper.net/InfoCenter/index?page=content&id=JSA10648",
+    "https://kc.mcafee.com/corporate/index?page=content&id=SB10085",
+    "https://securityblog.redhat.com/2014/09/24/bash-specially-crafted-environment-variables-code-injection-attack/",
+    "https://support.apple.com/kb/HT6535",
+    "https://support.citrix.com/article/CTX200217",
+    "https://support.citrix.com/article/CTX200223",
+    "https://support.f5.com/kb/en-us/solutions/public/15000/600/sol15629.html",
+    "https://support.hpe.com/hpsc/doc/public/display?docLocale=en_US&docId=emr_na-c04497075",
+    "https://support.hpe.com/hpsc/doc/public/display?docLocale=en_US&docId=emr_na-c04518183",
+    "https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&solutionid=sk102673&src=securityAlerts",
+    "https://www.arista.com/en/support/advisories-notices/security-advisories/1008-security-advisory-0006",
+    "https://www.exploit-db.com/exploits/34879/",
+    "https://www.exploit-db.com/exploits/37816/",
+    "https://www.exploit-db.com/exploits/38849/",
+    "https://www.exploit-db.com/exploits/39918/",
+    "https://www.exploit-db.com/exploits/40619/",
+    "https://www.exploit-db.com/exploits/40938/",
+    "https://www.exploit-db.com/exploits/42938/",
+    "https://www.suse.com/support/shellshock/",
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2014-6271",
+    "https://www.exploit-db.com/exploits/42938",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2014/CVE-2014-6271.yaml",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2014/CVE-2014-6271.md",
+    "https://github.com/vulhub/vulhub/blob/aeaf65793f147f29bd50841ef77f4e9cad07ecc7/bash/CVE-2014-6271/README.md",
+    "https://github.com/tobor88/Bash/blob/b5c043ad1cee1bd09c0383fd1e581db718e68ec8/CVE-2014-6271.sh",
+    "https://github.com/nixawk/pentest-wiki/blob/90d8ad7626f1804d5fe2c1a62c21c6463f8d9bdc/CTFS/Nebula/level01.md",
+    "https://github.com/RUB-NDS/PRET/blob/a04bd04b5490ea6a88d11951a55997113f526b77/lpd/README",
+    "https://github.com/future-architect/vuls/blob/45714b6ff6e4ff3f8bd63a834309d80f063a2adf/subcmds/discover.go",
+    "https://github.com/P0cL4bs/ShellShock-CGI-Scan/blob/75a3d136b957f95be51c746308c0f437e4a512d1/CVE-2014-6271.c",
+    "https://github.com/smartFlash/pySecurity/blob/ebcd0364af1f38444411123443141ff463428b73/SUMMARY.md",
+    "https://github.com/onlurking/awesome-infosec/blob/4e05df2170086298bf7c3623b21598fe325f2ba6/readme.md",
+    "https://github.com/jenkins-infra/jenkins.io/blob/98ef77f1a5c6452ca52aa5456602e35207785eb3/content/node/511.adoc",
+    "https://github.com/opsxcq/exploit-CVE-2014-6271",
+    "https://github.com/capture0x/XSHOCK",
+    "https://github.com/scottjpack/shellshock_scanner",
+    "https://github.com/hmlio/vaas-cve-2014-6271",
+    "https://github.com/b4keSn4ke/CVE-2014-6271",
+]
