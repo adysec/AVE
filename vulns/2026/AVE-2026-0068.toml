@@ -1,70 +1,29 @@
-Looking at the remediation field, it seems like the previous output contained someone's internal thought process / reasoning about how to generate the remediation, rather than the actual remediation text. The actual remediation text is at the end between `<value></value>` tags: "升级到 OpenClaw 2026.2.14 及以上版本。如无法立即升级，可在网络层或应用层防火墙添加规则，拦截包含 `0:0:0:0:0:ffff:` 前缀的 IPv4-mapped IPv6 请求目标，并限制出站请求仅允许白名单目标地址。同时审查 SSRF 防护逻辑，确保 IPv6 字面量也被正确解析和过滤。"
-I need to:
-1. Fix the remediation field to contain only the actual remediation text (not the reasoning)
-2. Ensure all other fields are correct
-3. Output pure TOML only
-- title: "OpenClaw SSRF 范围绕过漏洞" - This is Chinese, OK
-- description: long Chinese description, OK
-- severity: "HIGH" with score 7.5 - matches (HIGH ≥ 7.0)
-- sources: ["hwpoc"] - OK
-- published/updated: present
-- urls: all valid https:// URLs
-- meta: present
-The main fix is just the remediation field. Let me extract the actual remediation text from within the `<value>` tags and clean up the field.
-Actually, wait - the remediation field currently contains a huge block of text that's clearly an internal reasoning/chain-of-thought from the previous AI call. The actual remediation content is between `<value></value>` tags. I need to replace the entire remediation value with just the clean text.
-1. `title` - "OpenClaw SSRF 范围绕过漏洞" - this is Chinese, ≥10 chars ✓
-2. `description` - Chinese, ≥50 chars ✓
-3. `severity` = "HIGH", `score` = 7.5 - HIGH ≥ 7 ✓
-4. `remediation` - needs to be fixed (currently has a long internal reasoning text embedded)
-5. `sources` - ["hwpoc"] - non-empty ✓
-6. `published`/`updated` - present ✓
-7. `urls` - all valid http(s) URLs ✓
-8. `meta` - present ✓
-The main issue is the `remediation` field. It contains a huge block of text that includes the AI's internal reasoning ("The user wants me to generate a remediation") followed by the actual remediation wrapped in `<value>` tags. This needs to be cleaned up to just contain the remediation text.
-1. Fix the `remediation` field - strip out the internal monologue, keep only the actual remediation content
-2. Output the corrected TOML
-The key issue is:
-- `remediation` field contains a long internal reasoning monologue wrapped in triple quotes, with the actual remediation content embedded inside `<value>` tags
-- `title` = "OpenClaw SSRF 范围绕过漏洞" - this is Chinese, OK
-- `description` - Chinese, >=50 chars, OK
-- `severity` = "HIGH" with score 7.5 - OK
-- `remediation` - needs to be a clean string, OK
-- `sources` = ["hwpoc"] - OK
-- `published` and `updated` - OK
-- `urls` - all valid http(s) URLs, OK
-- `meta` - OK
-The main fix is just the remediation field. Let me output the corrected TOML.[id]
-ave_id = "AVE-2026-0068"
-aliases = ["CVE-2026-26324"]
 [basic]
-title = "OpenClaw SSRF 防护绕过漏洞"
 description = "OpenClaw 个人 AI 助手存在服务端请求伪造（SSRF）防护绕过漏洞。攻击者可通过构造完整格式的 IPv4 映射 IPv6 地址（如 `0:0:0:0:0:ffff:7f00:1`，即 `127.0.0.1`）绕过 SSRF 防护机制，向本应被拦截的环回地址、私有网络或链路本地元数据端点发起请求，可能导致敏感信息泄露或内网探测。该漏洞影响 2026.2.14 之前的版本，CVSS 评分 7.5，危害等级高。开发者已在 2026.2.14 版本中修复此漏洞。"
-severity = "HIGH"
-score = 7.5
-sources = ["hwpoc"]
 published = "2026-02-19T23:16:25.653"
+remediation = "升级到 OpenClaw 2026.2.14 及以上版本。如无法立即升级，可在网络层或应用层防火墙添加规则，拦截包含 0:0:0:0:0:ffff: 前缀的 IPv4-mapped IPv6 请求目标，并限制出站请求仅允许白名单目标地址。同时审查 SSRF 防护逻辑，确保 IPv6 字面量也被正确解析和过滤。"
+score = 7.5
+severity = "HIGH"
+sources = ["hwpoc"]
+title = "OpenClaw SSRF 防护绕过漏洞"
 updated = "2026-06-17T10:26:05.667"
-remediation = "升级到 OpenClaw 2026.2.14 及以上版本。如无法立即升级，可在网络层或应用层防火墙添加规则，拦截包含 `0:0:0:0:0:ffff:` 前缀的 IPv4-mapped IPv6 请求目标，并限制出站请求仅允许白名单目标地址。同时审查 SSRF 防护逻辑，确保 IPv6 字面量也被正确解析和过滤。"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-26324"]
+ave_id = "AVE-2026-0068"
+
+[meta]
+collected_at = "2026-07-21T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"https://github.com/openclaw/openclaw/commit/c0c0e0f9aecb913e738742f73e091f2f72d39a19",
-"https://github.com/openclaw/openclaw/releases/tag/v2026.2.14",
-"https://github.com/openclaw/openclaw/security/advisories/GHSA-jrvc-8ff5-2f9f",
-"https://github.com/Tencent/AI-Infra-Guard/blob/a4311d5c86d3742d94ad2f239296401cb877e315/data/vuln/openclaw/CVE-2026-26324.yaml",
-"https://github.com/CVEProject/cvelistV5/blob/e37edb84f090321c2ab4b4aefc57f84a75b1b940/cves/2026/26xxx/CVE-2026-26324.json",
-"https://github.com/cisagov/vulnrichment/blob/a72c2d0c49169a0d402485a1b08b9cdd8f9a4630/2026/26xxx/CVE-2026-26324.json",
-"https://github.com/Tabll/gemnasium-db/blob/ccf2cc3d762789b06638ba5aa3e06982a53080c8/npm/openclaw/CVE-2026-26324.yml",
-"https://github.com/zzzteph/low-hanging-vulns/blob/d96cdcee4ef80f9187069a225f8b6e61537923c7/nvd/2026/HIGH/CVE-2026-26324/README.md",
-"https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2026-26324.md",
-"https://github.com/github/advisory-database/blob/26d7afd7aa97d50454756aec5636fa553464ffd2/advisories/github-reviewed/2026/02/GHSA-jrvc-8ff5-2f9f/GHSA-jrvc-8ff5-2f9f.json",
-"https://github.com/jgamblin/OpenClawCVEs/blob/3bb47bb7401b637bc1868398eea55a397c005c64/ADVISORIES.md",
-"https://github.com/Zen-Open-Source/coyote-security-scanner/blob/05942524fa9d941b6b78179ffdc5e45bca625ac3/OpenClawCVEs.md",
-"https://github.com/Patrowl/PatrowlHearsData/blob/f73aeebc806b7ab5e9488498a056b9fa7bf30dd7/SSVC/data/2026/CVE-2026-26324.json",
-"https://nvd.nist.gov/vuln/detail/CVE-2026-26324",
+    "https://github.com/openclaw/openclaw/commit/c0c0e0f9aecb913e738742f73e091f2f72d39a19",
+    "https://github.com/openclaw/openclaw/releases/tag/v2026.2.14",
+    "https://github.com/openclaw/openclaw/security/advisories/GHSA-jrvc-8ff5-2f9f",
+    "https://nvd.nist.gov/vuln/detail/CVE-2026-26324",
 ]
-[exploit]
-poc_urls = []
-exp_urls = []
-[meta]
-status = "completed"
-collected_at = "2026-07-21T00:00:00Z"
