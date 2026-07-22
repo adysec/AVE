@@ -1,11 +1,11 @@
 [basic]
-description = "Vim 5.x 的备份文件和交换文件存在条件竞争漏洞，当受害者在全局可写目录中编辑文件时，本地攻击者可通过符号链接攻击修改其他用户正在编辑的文件。该漏洞影响 Vim 5.x 版本，CVSS 评分 2.1，危害等级低。攻击者需要拥有本地系统访问权限并具备目录写入条件，利用难度较高。"
+description = "Vim 5.x 的备份文件与交换文件存在竞争条件漏洞，属于本地利用的符号链接攻击。当用户在全局可写目录中编辑文件时，本地攻击者可通过预先创建符号链接指向目标文件，诱使 victim 的 Vim 在保存或备份时覆盖其他用户文件，导致非授权修改。该漏洞影响 Vim 5.x 版本及 gvim，攻击者需具有本地系统账户权限，CVSS 评分 2.1，危害等级低。"
 published = "2001-06-18T04:00:00.000"
-remediation = "升级到 Vim 6.0 及以上版本，该漏洞已在 6.0 版本中修复。如无法升级，避免在全局可写目录（如 /tmp）中编辑文件，或通过设置 `set backupdir=~/.vim/backup` 和 `set directory=~/.vim/swap` 将备份文件和交换文件重定向到用户私有目录，并确保该目录权限为 700 以防止其他用户访问。"
+remediation = "升级至 Vim 6.0 及以上版本，该版本已修复 swap 文件的竞争条件问题。如无法升级，设置 `set backupcopy=yes` 避免符号链接攻击，并将 swap 和 backup 目录改为私有路径（如 `set dir=~/.vim/swap//` 和 `set backupdir=~/.vim/backup//`），同时避免在有其他用户的共享目录（如 `/tmp`）中编辑文件。"
 score = 2.1
 severity = "LOW"
 sources = ["exploitdb"]
-title = "Vim 5.x Swap 文件竞争条件漏洞"
+title = "Vim 5.x Swap文件竞争条件漏洞"
 updated = "2026-06-16T21:54:15.247"
 
 [exploit]
@@ -26,7 +26,7 @@ urls = [
     "http://www.novell.com/linux/security/advisories/2001_012_vim.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6628",
     "https://www.exploit-db.com/exploits/20967",
-    "https://github.com/CVEProject/cvelistV5/blob/86060d5336eceede57f01ccb65fb3037638af8db/cves/2001/0xxx/CVE-2001-0409.json",
+    "https://github.com/CVEProject/cvelistV5/blob/7d4778b18ea29de57c8a889212050a9d38e2d2cb/cves/2001/0xxx/CVE-2001-0409.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0409",
     "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2001-0409.md",
     "https://github.com/Patrowl/PatrowlHearsData/blob/1b84eedba993546f37a880c6d2d084176a1f04a7/CVE/data/2001/CVE-2001-0409.json",
