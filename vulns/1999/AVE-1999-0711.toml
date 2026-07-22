@@ -1,55 +1,27 @@
-CVE-1999-0911 - Microsoft Site Server and Commercial Internet System (MCIS) do not set expiration for cookies.
-- Description: "Buffer overflow in ProFTPD, wu-ftpd, and beroftpd allows remote attackers to gain root access via a series of MKD and CWD commands that create nested directories."
-- CVSS v2.0: Base Score 10.0 HIGH, Vector: (AV:N/AC:L/Au:N/C:C/I:C/A:C)
-- Published: 08/27/1999
-- References:
-- http://www.debian.org/security/1999/19990210
-- http://www.securityfocus.com/bid/612
-Wait, the CVE in the TOML is CVE-1999-0910, but I fetched CVE-1999-0911 by mistake. Let me fetch the correct one.I now have the NVD data for CVE-1999-0910. Let me extract the key information:
-- Description: "Microsoft Site Server and Commercial Internet System (MCIS) do not set an expiration for a cookie, which could then be cached by a proxy and inadvertently used by a different user."
-- CVSS v2.0: Base Score 5.0 MEDIUM, Vector: (AV:N/AC:L/Au:N/C:P/I:N/A:N)
-- Published: 09/10/1999
-- References: http://www.securityfocus.com/bid/625, https://docs.microsoft.com/en-us/security-updates/securitybulletins/1999/ms99-035
-Now I need to fix the TOML. The issues are:
-1. title: needs to include security vulnerability keywords - current title is "Microsoft Site Server和商业Internet系统（MCIS）不会设置cookie的过期时间" - this is actually descriptive but could be improved to mention "信息泄露漏洞"
-2. description: empty - need to fill with ≥50 chars Chinese
-3. references: empty - need to add the URLs from NVD
-4. published/updated: empty - need to fill
-5. score: 5.0 is MEDIUM, which matches severity MEDIUM - OK
-6. remediation: needs to be more specific
-From NVD:
-- Description: "Microsoft Site Server and Commercial Internet System (MCIS) do not set an expiration for a cookie, which could then be cached by a proxy and inadvertently used by a different user."
-- CVSS v2.0: Score 5.0 MEDIUM, Vector: (AV:N/AC:L/Au:N/C:P/I:N/A:N)
-- Published: 09/10/1999
-- References: http://www.securityfocus.com/bid/625, https://docs.microsoft.com/en-us/security-updates/securitybulletins/1999/ms99-035
-From MS99-035 bulletin:
-- Affected: Site Server 3.0, Site Server 3.0 Commerce Edition, MCIS 2.0 and 2.5
-- The vulnerability is about Set-Cookie headers not having expiration, causing proxy caching issues
-Now let me fix the TOML:
-1. title: "Microsoft Site Server 和商业 Internet 系统 Cookie 未设置过期时间漏洞" - this is already decent, but I should add "信息泄露" to make it clear it's a security vulnerability
-2. description: Need to write a Chinese description ≥50 chars about the principle, impact, and attack conditions
-3. references: Add the two URLs from NVD
-4. remediation: Write specific advice based on the MS99-035 bulletin
-5. score: 5.0, severity: MEDIUM (matches CVSS v2.0)
-6. published: 1999-09-10
-7. updated: 2026-06-16 (from NVD last modified)
-8. sources: ["cve"] (since we got data from CVE/NVD)
-ave_id = "AVE-1999-0711"
-aliases = ["CVE-1999-0910"]
 [basic]
-title = "Microsoft Site Server 和商业 Internet 系统 Cookie 未设置过期时间导致信息泄露漏洞"
-description = "Microsoft Site Server 3.0 及商业 Internet 系统（MCIS）2.0/2.5 在发送包含 Set-Cookie 头的网页时未设置页面过期时间，导致此类页面可能被 Web 代理服务器缓存。多个用户通过同一代理访问站点时可能被返回同一缓存页面，其中包含相同的 Cookie 信息。若 Cookie 中包含用于数据库索引的 GUID，则一个客户的个人数据可能被其他用户获取，造成信息泄露。"
-severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
+description = "Microsoft Site Server 3.0 及商业 Internet 系统（MCIS）2.0/2.5 在发送包含 Set-Cookie 头的网页时未设置页面过期时间"
 published = "1999-09-10"
+remediation = "安装 Microsoft 安全公告 MS99-035 提供的补丁程序。同时建议关闭自动 Cookie 认证功能"
+score = 5.0
+severity = "MEDIUM"
+sources = ["cve"]
+title = "Microsoft Site Server 和商业 Internet 系统 Cookie 未设置过期时间导致信息泄露漏洞"
 updated = "2026-06-16"
-remediation = "安装 Microsoft 安全公告 MS99-035 提供的补丁程序。同时建议关闭自动 Cookie 认证功能，避免仅依赖 Cookie 中的 GUID 进行身份验证，并配置代理服务器不缓存包含 Set-Cookie 头的响应页面。"
-[references]
-urls = ["https://docs.microsoft.com/en-us/security-updates/securitybulletins/1999/ms99-035", "http://www.securityfocus.com/bid/625"]
+
 [exploit]
-poc_urls = []
 exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-1999-0910"]
+ave_id = "AVE-1999-0711"
+
 [meta]
-status = "completed"
 collected_at = "2026-07-19T00:04:47.928859403+00:00"
+status = "completed"
+
+[references]
+urls = [
+    "https://docs.microsoft.com/en-us/security-updates/securitybulletins/1999/ms99-035",
+    "http://www.securityfocus.com/bid/625",
+]
