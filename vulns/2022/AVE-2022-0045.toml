@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核 Mediatek 视频编解码器驱动（mtk-vcodec-dec）中存在空指针解引用漏洞。当驱动启用子设备（subdev）模式时，`mtk_vcodec_dec_remove` 函数中 `dev->pm.dev` 参数为空指针，在卸载模块（rmmod）时调用 `__pm_runtime_disable` 会触发空指针解引用，导致内核崩溃，造成拒绝服务。本地攻击者可通过加载并卸载受影响驱动模块触发该漏洞。CVSS 评分 5.5，危害等级中危。"
+published = "2025-02-26T07:01:25.800"
+remediation = "建议将 Linux 内核升级至 5.18.3 或更高版本，该版本已包含修复提交 c10c0086db68。如无法升级内核，可应用补丁：在 `drivers/media/platform/mediatek/vcodec/mtk_vcodec_dec_drv.c` 的 `pm_runtime_disable(dev->pm.dev)` 前添加 `if (!dev->vdec_pdata->is_subdev_supported)` 条件判断，避免在 subdev 模式下调用空指针。作为临时缓解措施，可禁止卸载 `mtk-vcodec-dec.ko` 模块（通过 `rmmod` 黑名单或模块锁定），减少触发崩溃的风险。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux MediaTek 视频编解码器驱动模块卸载空指针解引用漏洞"
+updated = "2026-06-17T05:18:14.353"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2022-49496"]
+ave_id = "AVE-2022-0045"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1fa37b00dc55a061a3eb82e378849862b4aeca9d",
+    "https://git.kernel.org/stable/c/c10c0086db688c95bb4e0e378e523818dff1551d",
+    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2022/49xxx/CVE-2022-49496.json",
+    "https://github.com/cisagov/vulnrichment/blob/3de260baf5452671b1860955d9815c2cdbc09bef/2022/49xxx/CVE-2022-49496.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2022/CVE-2022-49496.yaml",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2022-49496",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2022-49496.md",
+    "https://github.com/github/advisory-database/blob/60cf806ffc57d6909f887b4f3823ae39ed0d7c51/advisories/unreviewed/2025/03/GHSA-p4v4-q7w4-pw4w/GHSA-p4v4-q7w4-pw4w.json",
+    "https://github.com/keryanchpn/ia-data/blob/534363d1afb19db8eaf67f9cab2c9be27811247b/data_fallback/data/first/CVE-2022-49496",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--068d2dc5-00aa-473a-a23b-15323039a4c4.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2022/CVE-2022-49496.json",
+    "https://github.com/jgamblin/CVEWG/blob/6b61147c983d05006ce255b73c38853628033450/Data/Data.ipynb",
+]
