@@ -1,0 +1,94 @@
+[id]
+ave_id = "AVE-2026-0309"
+aliases = ["CVE-2026-49456","GHSA-43fc-v873-qw85"]
+
+[basic]
+title = "Waku has an Open Redirect via `unstable_redirect` Helper"
+description = "## Summary
+
+The `unstable_redirect()` helper exported from `waku/router/server` (`packages/waku/src/router/define-router.tsx:156–161`) accepts an arbitrary string and reflects it unchanged into the HTTP `Location` response header with no URL validation, scheme restriction, or path-only enforcement. Any application that passes user-controlled input to this helper — the natural pattern documented in the JSDoc and official fixtures — is vulnerable to open redirect attacks. An attacker who convinces a victim to click a crafted link can silently redirect the browser to an arbitrary external domain, enabling phishing, credential harvesting, and OAuth token theft. Additionally, scheme-relative URLs (`//evil.example/`) bypass naive `https?://`-only allow-list filters that developers might add as ad-hoc mitigations.
+
+Dynamic PoC confirmed against **waku 1.0.0-beta.0** (commit `8e9f542`) in an isolated Docker environment. Two independent dynamic runs produced identical results.
+
+---
+
+## Root Cause
+
+`packages/waku/src/router/define-router.tsx:156–161`:
+
+```ts
+export function unstable_redirect(
+  location: string, // only URL `pathname` is supported.
+  status: 303 | 307 | 308 = 307,
+): never {
+  throw createCustomError('Redirect', { status, location });
+}
+```
+
+The JSDoc comment states \"only URL `pathname` is supported\", but this constraint is expressed as documentation only — the function performs **no validation**. The `location` value propagates via `createCustomError` (`custom-errors.ts:22–26`) into an error digest, is recovered by `getErrorInfo` in the request handler (`handler.ts:79–89`), and reflected directly into `headers.location` of the outgoing `Response` with no sanitization:
+
+```ts
+if (info?.location) {
+  headers.location = info.location;   // handler.ts:87 — unvalidated reflection
+}
+return new Response(body, { status, headers });
+```
+
+---
+
+## Trigger (one-line summary)
+
+Any developer-supplied user input passed to `unstable_redirect()` is reflected unchanged into the HTTP `Location` header, enabling navigation to an attacker-controlled domain.
+
+---
+
+## Affected Entry Surfaces
+
+- `unstable_redirect(location, status?)` — `waku/router/server` public export
+- Any page/route component that passes `searchParams`, `query`, or other user-
+  controlled strings to `unstable_redirect` (the standard post-login or callback
+  redirect pattern)
+- All waku adapters (Node.js, Cloudflare Workers, Vercel Edge, Deno) share the same
+  `handler.ts` reflection path; cross-runtime CRLF parity is unaudited (see note
+  below)
+
+---
+
+## Additional Defense-in-Depth Concern
+
+On Node.js, CRLF injection via the `Location` header is rejected by `node:_http_outgoing.setHeader` (`ERR_INVALID_CHAR`). This defense is **platform-specific** and not present in the waku source. Cloudflare Workers, Deno Deploy, and other edge runtimes have not been verified to offer equivalent protection. A cross-runtime audit is recommended.
+
+---
+
+## Suggested Fix Outline
+
+Validate the `location` argument inside `unstable_redirect` before the error is thrown: reject any value that does not begin with a single `/` (no `//`), and reject any value containing control characters (`\x00`–`\x1f`). An opt-in allow-list for intentional cross-origin redirects can be provided via a framework configuration option.
+
+---
+
+## Disclosure
+
+| Field            | Value                              |
+|------------------|------------------------------------|
+| Reporter         | j0hndo (`dohyun4466@gmail.com`)    |
+| Discovery date   | 2026-05-17                         |
+| Embargo          | 90 days from acknowledgment        |
+| Patched version  | Not yet available                  |
+| Public references| CWE-601; OWASP A01:2021            |"
+severity = "LOW"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-22T21:41:05.169903329+00:00"
