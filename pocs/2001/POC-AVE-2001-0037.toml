@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "验证 Microsoft Internet Explorer 5.0-5.5 是否存在 INPUT TYPE=FILE 远程文件读取漏洞。检测目标是否返回包含 VBScript 文件上传表单劫持代码的 HTML 页面，该攻击可诱导受害者浏览器读取本地文件（如 SAM）并提交至攻击者服务器。"
+id = "POC-AVE-2001-0037"
+name = "Microsoft Internet Explorer 5 File Upload via Form PoC"
+severity = "medium"
+tags = [
+    "cve-2001-0089",
+    "ie",
+    "file-read",
+    "windows",
+]
+vuln_id = [
+    "CVE-2001-0089",
+    "AVE-2001-0037",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0)"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "INPUT TYPE=File",
+    "VBScript",
+    "window.event.keyCode",
+]
