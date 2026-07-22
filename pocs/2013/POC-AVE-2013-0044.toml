@@ -1,0 +1,85 @@
+[info]
+author = "AVE"
+description = "Oracle Java SE 7 Update 11及之前版本JMX组件安全沙箱绕过漏洞验证。攻击者通过HTTP托管包含恶意Applet的网页，利用JMX类缺陷绕过Java安全沙箱限制执行任意代码。检测目标服务器是否托管了CVE-2013-0431利用相关文件（Exploit.jar/Exploit.class/Exploit.ser/B.class）"
+id = "POC-AVE-2013-0044"
+name = "Oracle Java SE 7 JMX Applet 安全沙箱绕过漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2013-0431",
+    "oracle",
+    "java",
+    "jmx",
+    "applet",
+    "sandbox-bypass",
+    "rce",
+]
+vuln_id = [
+    "CVE-2013-0431",
+    "AVE-2013-0044",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<applet",
+    "Exploit.ser",
+    'object="Exploit.ser"',
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Exploit.jar"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["PK"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Exploit.class"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "javax.management",
+    "MBeanServer",
+    "MLet",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Exploit.ser"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["aced"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/B.class"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["java"]
