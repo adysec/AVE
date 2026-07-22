@@ -1,51 +1,29 @@
 [info]
-author = "ave"
-description = "验证目标 IIS 服务器是否安装易受攻击的 FrontPage 98 Server Extensions / InterDev 1.0 dvwssr.dll 组件。通过向 _vti_bin/_vti_aut/ 路径下的 dvwssr.dll 发送特制的超长文件名请求，观察服务端是否返回异常或存在该组件，从而确认漏洞存在。本 PoC 仅做无损探测，不触发实际溢出。"
+author = "AVE"
+description = "检测 Microsoft Visual InterDev 1.0 / FrontPage 98 Server Extensions dvwssr.dll 缓冲区溢出漏洞。通过 HTTP GET 请求验证 _vti_bin/_vti_aut/dvwssr.dll 端点是否存在，若存在则说明系统安装了存在漏洞的组件，攻击者可能通过特制请求触发缓冲区溢出导致拒绝服务或远程代码执行"
 id = "POC-AVE-2000-0806"
-name = "CVE-2000-0260 Microsoft FrontPage dvwssr.dll 文件名混淆 PoC"
+name = "CVE-2000-0260 PoC"
 severity = "high"
-tags = [
-    "cve-2000-0260",
-    "frontpage",
-    "dvwssr",
-]
+tags = ["cve-2000-0260"]
 vuln_id = [
     "CVE-2000-0260",
     "AVE-2000-0806",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/_vti_bin/_vti_aut/dvwssr.dll"
+path = "/{{BaseURL}}/_vti_bin/_vti_aut/dvwssr.dll"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 status = [
     200,
-    404,
-]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = '/_vti_bin/_vti_aut/dvwssr.dll?xxxxx{{repeat("A", 2048)}}'
-protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-status = [
-    200,
-    404,
+    401,
+    403,
     500,
 ]
 type = "status"
