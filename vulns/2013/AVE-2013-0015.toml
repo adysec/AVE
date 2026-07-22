@@ -1,73 +1,35 @@
-1. title: Way too long (1197 chars) - it's a mess of AI reasoning text. Need to replace with a proper short Chinese title.
-2. remediation: Empty - need to provide actual remediation text in Chinese.
-3. severity/score: Currently severity="MEDIUM" and score=5. MEDIUM range is 4.0-6.9, so 5 is fine. But let me think about whether this should be higher - it's an LFI that can lead to RCE via LDAP credential theft. That's pretty serious. Let me check the actual CVSS score.
-Actually, I need to search for the actual CVSS score and remediation for CVE-2013-7091.Let me analyze the issues:
-1. title: Too long (1197 chars) - needs to be a concise "厂商 产品 漏洞类型" format
-2. remediation: Empty - needs specific fix advice
-3. score/severity: Currently score=5, severity=MEDIUM - CVSS v2 is 5.0 MEDIUM, so this is correct
-4. sources: Currently `["nuclei"]` - should include `["cve"]` since it's from NVD
-From NVD I can see:
-- CVSS v2: 5.0 MEDIUM (AV:N/AC:L/Au:N/C:P/I:N/A:N)
-- CWE-22: Path Traversal
-- Affects Zimbra 7.2.2 and 8.0.2
-- The vulnerability is directory traversal in `/res/I18nMsg,AjxMsg,ZMsg,ZmMsg,AjxKeys,ZmKeys,ZdMsg,Ajx%20TemplateMsg.js.zgz` via the `skin` parameter
-- Can be leveraged to execute arbitrary code by obtaining LDAP credentials
-For remediation: The fix was in Zimbra 8.0.3 or later. Since this is an old vulnerability from 2013, the remediation should recommend upgrading to Zimbra 8.0.3 or later, or applying the vendor patch that sanitizes the `skin` parameter.
-Actually, I have enough info. Let me construct the fixed TOML:
-1. title: "Zimbra Zimbra Collaboration Server 目录遍历漏洞" - concise, vendor + product + vuln type
-2. remediation: "升级至 Zimbra Collaboration Server 8.0.3 及以上版本，该版本已修复 skin 参数路径遍历问题；如无法升级，在反向代理层过滤对 /res/ 路径下 skin 参数的恶意请求，限制 .. 目录跳转字符。"
-3. score: 5.0 (matches CVSS v2)
-4. severity: MEDIUM (matches score 5.0)
-5. sources: Should include "cve" since it's from NVD
-6. description: Already good, keep it
-7. urls: Clean up - remove the irrelevant ones (CVE-2020-11993, CVE-2013-7217, etc.)
-For the urls, I should keep the relevant ones and remove the ones that are clearly not about this CVE (like the CVE-2020-11993 one and CVE-2013-7217 one).
-1. title: Too long (1197 chars) - it contains the AI's internal reasoning. Need to replace with a proper short Chinese title.
-2. remediation: Empty - need to provide actual remediation text.
-3. severity/score: Currently MEDIUM/5.0 - NVD says CVSS v2.0 Base Score: 5.0 MEDIUM. But the description says it can lead to RCE. Let me check - CVSS v2 is 5.0 (MEDIUM) for the LFI part. The skill says MEDIUM≥4.0, so 5.0/MEDIUM is fine. But wait, the description says it can lead to RCE via LDAP credential theft. Let me keep MEDIUM/5.0 as that's what NVD says.
-Actually, looking more carefully at the NVD data: CVSS 2.0 Base Score: 5.0 MEDIUM, Vector: (AV:N/AC:L/Au:N/C:P/I:N/A:N). So it's MEDIUM with 5.0. That's fine.
-1. title: "Zimbra Collaboration Server 本地文件包含漏洞" - short and correct
-2. remediation: Need to write actual remediation. From the exploit info, the vulnerability affects Zimbra 7.2.2 and 8.0.2. The fix would be upgrading to a patched version. Since this is from 2013, the fix was in Zimbra 8.0.3 or later. Let me provide a reasonable remediation.
-Actually, I should not make up version numbers. Let me think about what I know:
-- Affected: Zimbra 7.2.2 and 8.0.2
-- The vulnerability is a directory traversal in the `skin` parameter
-- The fix would involve input sanitization of the `skin` parameter
-Since I can't find the exact patched version from the data I have, I should provide a reasonable remediation based on what I know. The skill says "不要编造不存在的 URL 或补丁版本". But I can say "升级到已修复该漏洞的版本" without specifying an exact version, or I can use the information that Zimbra 8.0.3 was released after 8.0.2.
-Actually, looking at the Zimbra release history from the AI's internal reasoning in the original TOML:
-- Zimbra 8.0.2: Dec 10, 2012 (vulnerable)
-- Zimbra 8.0.3: Mar 5, 2013
-- Zimbra 8.0.4: May 24, 2013
-- Zimbra 8.0.5: Sep 10, 2013
-- Zimbra 8.0.6: Dec 3, 2013
-The CVE was published Dec 2013. The fix was likely in 8.0.3 or later. But I shouldn't make up a specific version. Let me provide a general but actionable remediation.
-Actually, the skill says "不要编造不存在的 URL 或补丁版本" - don't fabricate non-existent URLs or patch versions. But I can provide reasonable remediation based on what I know. Let me say "升级到 Zimbra 8.0.3 或更高版本" since 8.0.3 was the next release after 8.0.2 and was released in March 2013, well before the CVE was published in Dec 2013.
-Wait, but I don't actually know if 8.0.3 fixed this specific issue. Let me be more careful and say something like "升级到 Zimbra 最新版本" or provide configuration-based mitigation.
-"升级 Zimbra Collaboration Server 至最新版本，限制对 /res/ 路径的访问，在反向代理层过滤 skin 参数中的目录遍历字符序列（如 ../），并确保 LDAP 管理端口（7071）不对外暴露。"
-This is actionable and doesn't claim a specific patched version.
-Now let me also clean up the URLs - some of them are very long GitHub links that are just forks of the same template. Let me keep the important ones.
-ave_id = "AVE-2013-0015"
-aliases = ["CVE-2013-7091"]
 [basic]
-title = "Zimbra Collaboration Server 本地文件包含漏洞"
-description = "Zimbra Collaboration Server 7.2.2 及 8.0.2 版本中存在目录遍历漏洞，远程攻击者可通过向 /res/I18nMsg,AjxMsg,ZMsg,ZmMsg,AjxKeys,ZmKeys,ZdMsg,Ajx%20TemplateMsg.js.zgz 发送特制请求，在 skin 参数中注入 ../ 序列读取服务器任意文件。攻击者可利用该漏洞获取 LDAP 凭据，进而通过 service/admin/soap API 创建管理员认证令牌，最终实现远程代码执行。Metasploit 框架已集成对应利用模块。"
-severity = "MEDIUM"
-score = 5.0
-sources = ["cve", "exploitdb", "nuclei"]
+description = "Zimbra Collaboration Server 7.2.2 及 8.0.2 版本中存在目录遍历漏洞，远程攻击者可通过向 /res/I18nMsg,AjxMsg,ZMsg,ZmMsg,AjxKeys,ZmKeys,ZdMsg,Ajx%20TemplateMsg.js.zgz 发送特制请求，在 skin 参数中注入 ../ 序列读取服务器任意文件。攻击者可利用该漏洞获取 LDAP 凭据，进而通过 service/admin/soap API 创建管理员认证令牌，最终实现远程代码执行。"
 published = "2013-12-14"
-updated = "2013-12-14"
 remediation = "升级 Zimbra Collaboration Server 至已修复该漏洞的版本，在反向代理或 WAF 层过滤 skin 参数中的目录遍历字符序列（如 ../），限制对 /res/ 路径的未授权访问，并将 LDAP 管理端口（7071）限制为仅内网可访问。"
+score = 5.0
+severity = "MEDIUM"
+sources = [
+    "cve",
+    "exploitdb",
+]
+title = "Zimbra Collaboration Server 目录遍历漏洞"
+updated = "2013-12-14"
+
+[exploit]
+exp_urls = ["https://www.exploit-db.com/exploits/30472"]
+poc_urls = ["https://www.exploit-db.com/exploits/30085"]
+
+[id]
+aliases = ["CVE-2013-7091"]
+ave_id = "AVE-2013-0015"
+
+[meta]
+collected_at = "2026-07-22T00:00:00Z"
+status = "completed"
+
 [references]
 urls = [
-"https://nvd.nist.gov/vuln/detail/CVE-2013-7091",
-"https://www.exploit-db.com/exploits/30472",
-"https://www.exploit-db.com/exploits/30085",
-"http://www.securityfocus.com/bid/64149",
-"http://osvdb.org/100747",
-"https://exchange.xforce.ibmcloud.com/vulnerabilities/89527",
+    "https://nvd.nist.gov/vuln/detail/CVE-2013-7091",
+    "https://www.exploit-db.com/exploits/30472",
+    "https://www.exploit-db.com/exploits/30085",
+    "http://www.securityfocus.com/bid/64149",
+    "http://osvdb.org/100747",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/89527",
+    "http://packetstormsecurity.com/files/124321",
 ]
-[exploit]
-poc_urls = ["https://www.exploit-db.com/exploits/30085"]
-exp_urls = ["https://www.exploit-db.com/exploits/30472"]
-[meta]
-status = "completed"
-collected_at = "2026-07-22T00:00:00Z"
