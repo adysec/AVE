@@ -1,10 +1,10 @@
 [basic]
-description = "FreeBSD 在 2000 年 1 月 14 日发布的 SSH 安全补丁中，错误地将 SSH 服务配置为同时在 722 和 22 两个端口上监听。远程攻击者利用这一配置错误，可在 22 端口被防火墙过滤的情况下，通过 722 端口绕过访问控制策略，未经授权访问目标系统的 SSH 服务。该漏洞影响 FreeBSD 系统，CVSS 评分 7.5，危害等级高危。"
+description = "FreeBSD 于 2000-01-14 发布的一个 SSH 补丁中，将 SSH 服务监听端口同时配置为 22 和 722。由于该补丁的安全配置缺陷，即便网络防火墙或过滤设备对标准 SSH 端口 22 进行了访问限制，远程攻击者仍可通过端口 722 直接连接到 SSH 服务，实现安全绕过后获得未经授权的远程 shell 访问权限。该漏洞影响安装了上述补丁的 FreeBSD 系统，攻击者无需身份认证即可利用，CVSS 评分为 7.5，危害等级为高危。攻击条件为目标系统运行了该版本的 SSH 且 22 端口被过滤但 722 端口可达，攻击者通过 SSH 客户端连接 722 端口即可绕过访问控制策略获取系统访问权。"
 published = "2000-06-07T04:00:00.000"
-remediation = "升级至 OpenSSH 2.1 及以上版本（此后的官方发布版已移除 722 端口的监听），或在 /etc/ssh/sshd_config 中显式设置 Port 22 且不包含 Port 722，重启 sshd 服务。临时缓解措施可在防火墙层面添加规则阻止外部对端口 722 的访问，例如 iptables -A INPUT -p tcp --dport 722 -j DROP。"
+remediation = "立即编辑 /etc/rc.conf 或 /etc/ssh/sshd_config，删除 Port 722 监听配置，将 SSH 限制为仅在 22 端口监听；执行 /etc/rc.d/sshd restart 重启 sshd 服务；通过 netstat -an | grep 722 确认 722 端口已停止监听；在 ipfw 或 pf 防火墙规则中阻断外部对 722 端口的访问作为临时缓解措施；升级到 FreeBSD 后续修正版本以彻底消除额外端口监听问题。"
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
+sources = ["epss"]
 title = "FreeBSD SSH 安全绕过漏洞"
 updated = "2026-06-16T21:51:56.300"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0532"]
 ave_id = "AVE-2000-0605"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.osvdb.org/1387",
     "http://www.securityfocus.com/bid/1323",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4638",
-    "https://github.com/CVEProject/cvelistV5/blob/9bf1bcd98df741ae892c1ba6b8127fb5da623fcc/cves/2000/0xxx/CVE-2000-0532.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4358541c3df4f2ba1793e172c3d7c89ba338eded/cves/2000/0xxx/CVE-2000-0532.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0532",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0532.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/84a8576323536424cfe4fe56907ba66e1ea3a744/CVE/data/2000/CVE-2000-0532.json",
-    "https://github.com/github/advisory-database/blob/9a3495eb833b3f1f2096187c4b14884afc98b67a/advisories/unreviewed/2022/04/GHSA-w5fx-fj77-4247/GHSA-w5fx-fj77-4247.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0532.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2bf475c962629ec6f02e5caa819697d3f035d100/CVE/data/2000/CVE-2000-0532.json",
+    "https://github.com/github/advisory-database/blob/bd18194e7d4afd6af63b4895317531a574628e62/advisories/unreviewed/2022/04/GHSA-w5fx-fj77-4247/GHSA-w5fx-fj77-4247.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0532.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--c77b308d-2e98-4027-a7aa-e2790abbc3f6.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/799a66efc1954ef9707fa6ae7d2e5535639696b5/2000.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/7d03e4f3df7d1c708e4cd65e70b5251f2830a284/2000.tsv",
     "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--c77b308d-2e98-4027-a7aa-e2790abbc3f6.owl",
 ]
