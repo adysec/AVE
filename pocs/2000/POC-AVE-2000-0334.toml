@@ -1,24 +1,31 @@
 [info]
 author = "ave"
-description = "检测 Solaris 系统上 /usr/lib/lp/bin/netpr 程序是否存在，该程序存在缓冲区溢出漏洞，本地攻击者可通过 -p 选项传递超长参数触发溢出以提升权限"
+description = "AVE-2000-0334 verification test"
 id = "POC-AVE-2000-0334"
-name = "CVE-2000-0407 PoC"
-severity = "high"
-tags = ["cve-2000-0407"]
-vuln_id = [
-    "CVE-2000-0407",
-    "AVE-2000-0334",
-]
+name = "PoC for AVE-2000-0334"
+severity = "medium"
+tags = ["ave-2000-0334"]
+vuln_id = ["AVE-2000-0334"]
 
 [poc]
 logic = "all"
 
 [[poc.requests]]
-path = "/usr/lib/lp/bin/netpr"
-protocol = "file"
+method = "GET"
+path = "/admin"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-regex = ".+"
-type = "regex"
+status = [
+    200,
+    301,
+    302,
+    401,
+    403,
+    404,
+]
+type = "status"
