@@ -1,0 +1,39 @@
+[basic]
+description = "Das U-Boot 在 2025.01-rc1 之前的版本中存在整数溢出漏洞，具体位于 ext4fs_read_symlink 函数。当处理 ext4 文件系统符号链接时，函数对一个 le32 变量执行加一操作（zalloc 分配）时发生整数溢出，导致 malloc 分配零字节内存，进而引发内存覆写。攻击者可通过构造包含恶意 inode 大小（0xffffffff）的 ext4 文件系统镜像，使设备在引导过程中触发该漏洞，实现任意代码执行或拒绝服务。该漏洞影响所有使用 U-Boot 引导加载程序的嵌入式设备和开发板，CVSS 评分 7.1（高危），攻击需物理接触或本地访问。修复方案为升级至 U-Boot 2025.01-rc1 或更高版本，厂商已提供补丁修复此整数溢出问题。"
+published = "2025-02-18T23:15:09.710"
+remediation = "立即升级 Das U-Boot 至 2025.01-rc1 或更高稳定版本（建议 2025.01 正式发布版）。编译升级流程：从 U-Boot 官方仓库（https://source.denx.de/u-boot/u-boot）克隆代码，切换至 v2025.01 标签，执行 `make <板型>_defconfig && make` 编译后刷写固件。若无法立即升级，可从上游获取 CVE-2024-57256 补丁（https://github.com/ocp-hm-openbmc-opf-ami/meta-ami 已收录该补丁文件），应用 `ext4fs_read_symlink` 函数中的 zalloc 大小校验修复，对 le32 变量加 1 前检查是否溢出。同时，限制设备从不可信 USB 存储设备启动，避免挂载来源不明的 ext4 分区，降低触发整数溢出的攻击面。"
+score = 7.1
+severity = "HIGH"
+sources = ["msrc"]
+title = "Das U-Boot 整数溢出漏洞"
+updated = "2026-06-17T08:13:28.053"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57256"]
+ave_id = "AVE-2024-0594"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://source.denx.de/u-boot/u-boot/-/commit/35f75d2a46e5859138c83a75cd2f4141c5479ab9",
+    "https://www.openwall.com/lists/oss-security/2025/02/17/2",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00001.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-577017.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57256.md",
+    "https://github.com/CVEProject/cvelistV5/blob/7a274ec07043f54c07d0a3b5c7fc89ba5793f023/cves/2024/57xxx/CVE-2024-57256.json",
+    "https://github.com/neuvector/vul-source/blob/9ba62febaf6254d72eb4667cd7923d92d2c3f9b6/ubuntu-cve-tracker/active/CVE-2024-57256",
+    "https://github.com/canonical/ubuntu-security-notices/blob/75471602a53215062ddbaeb95f039a60b664c3d0/osv/cve/2024/UBUNTU-CVE-2024-57256.json",
+    "https://github.com/ocp-hm-openbmc-opf-ami/meta-ami/blob/5f689b55d58747fe911d565fdb321768aed35a0b/meta-common/recipes-bsp/u-boot/files/CVE-2024-57256.patch",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2024/57xxx/CVE-2024-57256.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/d8c79a157e22e9abda84461cbe0f59ce58612245/references/CveServices-CVE-2024-57256-2025-11-03-1351",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-57256.md",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2024-57256.html",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/02/18/seguranca/cve-2024-57256-an-integer-overflow-in-ext4fs-read--1771412947000.md",
+]
