@@ -1,0 +1,74 @@
+[id]
+ave_id = "AVE-2026-0326"
+aliases = ["CVE-2026-49838","GHSA-frrj-87jh-2772"]
+
+[basic]
+title = "GoBGP confederation validation panics on empty AS_PATH attribute"
+description = "Found through variant analysis based on `CVE-2026-41643`
+
+## Summary
+GoBGP accepts a zero-length AS_PATH during UPDATE decoding and later panics while validating that attribute for a confederation eBGP peer. The vulnerable path is in the BGP UPDATE validator: a malformed UPDATE that should be rejected as a malformed AS_PATH instead reaches an unchecked `p.Value[0]` access, allowing a configured confederation eBGP peer to trigger a denial of service.
+
+## Affected
+- Project: gobgp
+- Repo: https://github.com/osrg/gobgp
+- Pinned ref: c24629411ba49f160d9dc09126f418218127e016
+
+## Root cause
+An established peer's receive path reads BGP bytes from the network connection in `pkg/server/fsm.go:1267`, parses UPDATE bodies through the BGP message decoder, and validates decoded UPDATEs with peer state at `pkg/server/fsm.go:1849`. The UPDATE decoder walks the path-attribute list in `pkg/packet/bgp/bgp.go:15773` and selects the concrete attribute parser from the attacker-controlled attribute type at `pkg/packet/bgp/bgp.go:15855`. For AS_PATH, `PathAttributeAsPath.DecodeFromBytes` returns nil when the decoded attribute length is zero (`pkg/packet/bgp/bgp.go:11533`, `pkg/packet/bgp/bgp.go:11538`), leaving `p.Value` empty rather than reporting a malformed attribute. Validation then dispatches each decoded attribute through `ValidateAttribute` (`pkg/packet/bgp/validate.go:34`); in the confederation eBGP branch, `pkg/packet/bgp/validate.go:162` indexes `p.Value[0]` before checking that any AS_PATH segment was decoded. The eBGP and confederation guards are normal peer-state gates: `pkg/config/oc/util.go:127` defines eBGP as peer AS differing from local AS, `pkg/config/oc/util.go:116` checks confederation membership, and `pkg/server/fsm.go:740` and `pkg/server/fsm.go:741` copy those results into the FSM state used by the validator.
+
+## Reproduction
+
+[INT-bgp-gobgp-confed-empty-aspath-panic.zip](https://github.com/user-attachments/files/28203698/INT-bgp-gobgp-confed-empty-aspath-panic.zip)
+
+```bash
+bash ./poc/run.sh
+```
+
+```text
+TRIGGERED: confed empty AS_PATH validation panic: runtime error: index out of range
+```
+
+The `TRIGGERED` line is the recovered panic fingerprint from the confederation eBGP validation path after a zero-length AS_PATH has decoded successfully. A build failure or any output without that fingerprint would not demonstrate this bug, because the signal is tied to the unchecked AS_PATH segment access.
+
+## Impact
+A remote unauthenticated peer that is configured as a confederation eBGP neighbor can establish a BGP session and send a single malformed UPDATE containing a syntactically valid AS_PATH attribute header with zero value length. Because the decode path does not turn that empty AS_PATH into a `MessageError`, normal malformed-attribute handling is bypassed and validation panics before GoBGP can return a BGP NOTIFICATION. The demonstrated effect is denial of service for the receive goroutine and peer session, with potential process termination if the panic is not recovered by the runtime path; no memory corruption, data disclosure, authentication bypass, or code execution is claimed.
+
+## Suggested fix
+```001-fix.diff
+diff --git a/pkg/packet/bgp/validate.go b/pkg/packet/bgp/validate.go
+index 2237afb..f07f4fa 100644
+--- a/pkg/packet/bgp/validate.go
++++ b/pkg/packet/bgp/validate.go
+@@ -159,6 +159,9 @@ func ValidateAttribute(a PathAttributeInterface, rfs map[Family]BGPAddPathMode,
+ 	case *PathAttributeAsPath:
+ 		if isEBGP {
+ 			if isConfed {
++				if len(p.Value) == 0 {
++					return false, NewMessageError(eCode, eSubCodeMalformedAspath, nil, \"empty AS_PATH for confederation eBGP\")
++				}
+ 				if segType := p.Value[0].GetType(); segType != BGP_ASPATH_ATTR_TYPE_CONFED_SEQ {
+ 					return false, NewMessageError(eCode, eSubCodeMalformedAspath, nil, fmt.Sprintf(\"segment type is not confederation seq (%d)\", segType))
+ 				}
+```
+
+## Resources
+- https://github.com/osrg/gobgp/blob/c24629411ba49f160d9dc09126f418218127e016/pkg/packet/bgp/bgp.go#L11533-L11540
+- https://github.com/osrg/gobgp/blob/c24629411ba49f160d9dc09126f418218127e016/pkg/packet/bgp/validate.go#L159-L164"
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-23T00:35:25.445673126+00:00"
