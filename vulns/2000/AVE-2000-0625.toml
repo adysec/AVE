@@ -1,11 +1,11 @@
 [basic]
-description = "Unix 系统 locale 子系统中的 gettext、catopen 等函数未能正确过滤用户注入的格式化字符串，存在格式化字符串漏洞。本地攻击者可通过向受影响函数传递特制的格式化字符串参数，利用该漏洞以目标进程权限执行任意命令，实现本地权限提升。该漏洞影响使用 GNU C Library (glibc) 的 Unix/Linux 系统，CVSS 评分 10.0，危害等级严重。目前已存在公开的本地提权利用代码。"
+description = "GLIBC 库的 locale 子系统中存在格式化字符串漏洞，gettext、catopen 等函数在处理用户可控的 locale 环境变量时未正确过滤格式化字符串参数，导致本地攻击者可通过构造恶意格式化字符串注入任意代码并以提升权限执行。该漏洞影响使用受影响 GLIBC 版本的各类 Unix/Linux 系统，攻击者仅需本地访问权限并能控制 LC_ALL、LANG 等环境变量即可触发漏洞，利用方式为通过格式化字符串漏洞覆盖内存关键地址实现任意代码执行并提升至 root 权限，CVSS 评分 10.0，影响严重。"
 published = "2000-11-14T05:00:00.000"
-remediation = "升级 glibc 至 2.2 及以上版本（该漏洞已在 glibc 2.2 中修复）。对于 Red Hat Linux 6.x 及以下版本，安装 RHSA-2000:087 提供的更新包；对于 Debian 2.2 及以下版本，升级 libc6 至 2.1.97 以上。如无法升级，可移除本地用户对系统区域设置文件的写入权限，并限制不可信用户本地登录作为临时缓解措施。"
+remediation = "升级 GLIBC 到 2.1.4 或更高版本（如 glibc-2.1.4-2 或更高版本）。若无法立即升级，可通过限制本地用户访问权限、移除不必要的 setuid 程序、设置环境变量 LC_ALL=C 禁用 locale 支持作为临时缓解措施。建议通过发行版官方渠道（如 Red Hat RHSA-2000:075、Debian DSA-069）获取对应版本的 glibc 更新包并立即安装。"
 score = 10
 severity = "CRITICAL"
-sources = ["redhat"]
-title = "GNU glibc locale 格式字符串注入本地权限提升漏洞"
+sources = ["cve"]
+title = "GNU GLIBC 格式化字符串本地权限提升漏洞"
 updated = "2026-06-16T21:52:35.100"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0844"]
 ave_id = "AVE-2000-0625"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -35,13 +35,13 @@ urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5176",
     "https://www.exploit-db.com/exploits/20190",
     "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2000/CVE-2000-1207.md",
-    "https://github.com/CVEProject/cvelistV5/blob/377bb49f7479dd297ab5004f75a37c291a136578/cves/2000/0xxx/CVE-2000-0844.json",
+    "https://github.com/CVEProject/cvelistV5/blob/9615a84be27b28681e8a92dcc11ff360547df421/cves/2000/0xxx/CVE-2000-0844.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0844",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0844.md",
-    "https://github.com/github/advisory-database/blob/db909d46c3d9b98ec1f95daa3c88d7a8990ea8f5/advisories/unreviewed/2022/04/GHSA-vcxc-2pg3-26ww/GHSA-vcxc-2pg3-26ww.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f2c577e1255b2c3fd617b7f1c499a222feb7b668/CVE/data/2000/CVE-2000-0844.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0844.md",
+    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2022/04/GHSA-vcxc-2pg3-26ww/GHSA-vcxc-2pg3-26ww.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1910cec3a272a9634d53e73996abe765ad48da86/CVE/data/2000/CVE-2000-0844.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2003/CVE-2003-0090.json",
-    "https://github.com/gadievron/raptor/blob/117ae98018f0e5f1508cde2ba2b4e30bfee2d63e/packages/cve_diff/data/cves/ALL_OPENSOURCE_CVES_COMPLETE_HISTORICAL.csv",
+    "https://github.com/gadievron/raptor/blob/88f6fa3c371823068f7fe72bd9e874794406a78b/packages/cve_diff/data/cves/ALL_OPENSOURCE_CVES_COMPLETE_HISTORICAL.csv",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/anchore/cve-data-enrichment/blob/7df86e19f521b07ab81fd13f88ac20e1b844ca8c/data/anchore/2000/CVE-2000-1207.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/65c78f9c2509d2b478aced0e7b0ea42a0af40ce8/data/anchore/2000/CVE-2000-1207.json",
 ]
