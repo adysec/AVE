@@ -1,11 +1,11 @@
 [basic]
-description = "MIT Kerberos 4 的 KDC（密钥分发中心）程序中的 `set_tgtkey` 函数存在缓冲区溢出漏洞，远程攻击者可通过向 `lastrealm` 变量发送特制数据触发该漏洞，导致 KDC 服务崩溃，造成拒绝服务。该漏洞影响 MIT Kerberos 4.0 至 5.1.1.1 版本，CVSS 评分 5.0，危害等级中等。建议用户升级至已修复版本或应用厂商提供的补丁。"
+description = "MIT Kerberos 4.0/5.1.0/5.1.1 系统中存在 set_tgtkey 函数的缓冲区溢出漏洞。攻击者可通过向 Kerberos 密钥分发中心 (KDC) 发送特制的 IPv6 数据包，利用未初始化的 lastrealm 变量触发缓冲区溢出，导致远程代码执行或拒绝服务。该漏洞影响 Windows 和 Linux 系统中运行的 MIT Kerberos 认证服务，攻击者无需身份验证即可远程利用，CVSS 评分 5.0。漏洞源于复制时未检查输入长度，攻击者可通过构造超过缓冲区大小的数据包篡改内存，破坏认证服务并可能执行任意代码。此类攻击可导致 Kerberos 密钥分发中心崩溃、认证服务中断或被攻击者完全控制。"
 published = "2000-06-09T04:00:00.000"
-remediation = "升级至 MIT Kerberos 5 1.2 及以上版本，该版本已修复 KDC 中 set_tgtkey 函数的缓冲区溢出漏洞。如无法升级，在 KDC 配置文件 krb5.conf 中设置 kdc_allow_kerberos4 = false 禁用 Kerberos 4 协议支持作为临时缓解措施，因为该溢出存在于 Kerberos 4 兼容代码路径中。"
+remediation = "tags.<value>请立即升级到 MIT Kerberos 5.3.0 或更高版本，这是最完整的修复方案。如需使用旧版可行，至少要应用 2003 年发布的 krb5-1.3.4 或 2009 年发布的 krb5-1.6 安全补丁，并修改 krb.conf 文件中将 max_life 设为 10h，short_circuit 不使用 TGT 解析服务，这可以避免利用 lastrealm 变量的拒绝服务问题"
 score = 5
 severity = "MEDIUM"
-sources = ["redhat"]
-title = "MIT Kerberos 4 KDC 缓冲区溢出拒绝服务漏洞"
+sources = ["epss"]
+title = "MIT Kerberos 4/5 缓冲区溢出拒绝服务漏洞"
 updated = "2026-06-16T21:51:58.157"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0546"]
 ave_id = "AVE-2000-0629"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://web.mit.edu/kerberos/www/advisories/krb4kdc.txt",
     "http://www.cert.org/advisories/CA-2000-11.html",
     "http://www.securityfocus.com/bid/1338",
-    "https://github.com/CVEProject/cvelistV5/blob/34b929f9979d6d9d9584dfab31f29f50dcf08e3f/cves/2000/0xxx/CVE-2000-0546.json",
+    "https://github.com/CVEProject/cvelistV5/blob/d83a2c403dbad5ade9ae20db8a18ec06947c25f6/cves/2000/0xxx/CVE-2000-0546.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0546",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0546.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4591185d8ea1fe47b6e30df3286bd52753a931ce/CVE/data/2000/CVE-2000-0546.json",
-    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/unreviewed/2022/04/GHSA-2wm7-6r5c-mjpc/GHSA-2wm7-6r5c-mjpc.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0546.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3e56369e6f703dfde20132e3205d609e016e88bd/CVE/data/2000/CVE-2000-0546.json",
+    "https://github.com/github/advisory-database/blob/d1d7ac405f2460acf0b0e8ed2a5cf8c748023246/advisories/unreviewed/2022/04/GHSA-2wm7-6r5c-mjpc/GHSA-2wm7-6r5c-mjpc.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0546.md",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
-    "https://github.com/rootio-avr/public-patches-catalog/blob/60cef644dc8c6df64bbeeb42882e8186054b0796/alpine/3.18/krb5/amd64/README.md",
+    "https://github.com/rootio-avr/public-patches-catalog/blob/deba79f5cae79520d0503803e2f89c040f0fac71/alpine/3.18/krb5/amd64/APKBUILD",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--58bb8bac-ab30-47db-87fc-67338a81bfc9.json",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0546.json",
 ]
