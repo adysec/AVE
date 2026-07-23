@@ -1,0 +1,44 @@
+[id]
+ave_id = "AVE-2026-0365"
+aliases = ["CVE-2026-52724","GHSA-wvmp-6r4v-j6cv"]
+
+[basic]
+title = "kuma-dp connects to control plane without verifying TLS certificate when no CA is configured"
+description = "When kuma-dp is started against an HTTPS control plane and the operator did not pass a CA certificate, the data plane connects with TLS peer verification disabled. The dataplane authentication token is sent over this unverified connection
+
+## Impact
+
+An on-path attacker can intercept the dataplane authentication token and impersonate the control plane to the data plane, allowing them to inject a forged bootstrap configuration and take over the proxy
+
+## Affected configurations
+
+- Universal mode `kuma-dp` started against an HTTPS control plane without `--ca-cert-file` (or `KUMA_CONTROL_PLANE_CA_CERT` unset)
+
+## Not affected
+
+- Kubernetes installs done through the standard installers (`kumactl install control-plane` or the official Helm chart). In both cases the control plane's mutating admission webhook injects `KUMA_CONTROL_PLANE_CA_CERT` into every sidecar at pod admission, so each `kuma-dp` starts with the CA already configured
+
+## Workarounds
+
+Set `--ca-cert-file` (or `KUMA_CONTROL_PLANE_CA_CERT`) on every Universal mode data plane and point it at the control plane's serving CA. Alternatively, terminate the control plane behind a publicly trusted certificate; the patched releases will verify successfully against the operating system trust store with no further configuration
+
+## Resources
+
+- Fix: https://github.com/kumahq/kuma/pull/16777"
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-23T09:57:10.343217109+00:00"

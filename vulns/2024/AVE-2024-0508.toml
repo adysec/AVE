@@ -1,33 +1,33 @@
-The user wants me to fix the TOML for AVE-2024-0508 (CVE-2024-42516). The main issue is that the `remediation` field is malformed - it contains a long analysis text instead of a proper Chinese remediation suggestion.
-
-Let me search for accurate information about this vulnerability to write a proper remediation fieldI found the CVE-2024-42516 entry. It's listed under "Fixed in Apache HTTP Server 2.4.64":
-
-> moderate: Apache HTTP Server: HTTP response splitting
-> (CVE-2024-42516)
-> HTTP response splitting in the core of Apache HTTP Server allows an attacker who can manipulate the Content-Type response headers of applications hosted or proxied by the server can split the HTTP response.This vulnerability was described as CVE-2023-38709 but the patch included in Apache HTTP Server 2.4.59 did not address the issue.Users are recommended to upgrade to version 2.4.64, which fixes this issue.
-> Reported to security team 2024-07-18
-> Update 2.4.64 released 2025-07-10
-> Affects 2.4.0 through 2.4.63
-
-Now I need to create a proper TOML with the correct remediation in Chinese. Let me construct the complete TOML.id = "AVE-2024-0508"
-title = "Apache HTTP Server HTTP 响应拆分漏洞"
-aliases = ["CVE-2024-42516", "GHSA-9phq-9g4h-pc6h"]
+[basic]
 description = "Apache HTTP Server 核心模块存在 HTTP 响应拆分漏洞（CVE-2024-42516）。攻击者若能操纵由服务器托管或代理的应用程序的 Content-Type 响应头，即可注入恶意响应头并拆分 HTTP 响应，导致缓存投毒、跨站脚本攻击（XSS）或会话劫持。该漏洞源于 Apache HTTP Server 2.4.59 中针对 CVE-2023-38709 的修补不完整，攻击者可通过控制后端应用或代理内容生成器的响应头，注入 CRLF 序列实现响应拆分。受影响版本为 Apache HTTP Server 2.4.0 至 2.4.63，攻击前提是攻击者能控制后端应用或代理内容的 Content-Type 响应头。"
-severity = "HIGH"
+published = "2024-07-18T00:00:00Z"
+remediation = '升级 Apache HTTP Server 至 2.4.64 或更高版本（官方修复版本）。若暂时无法升级，可通过配置 mod_headers 模块过滤或清理后端应用返回的 Content-Type 等响应头中的 CRLF 字符（\r\n），或在反向代理层（如 Nginx）增加响应头清洗规则拦截包含换行符的恶意响应头，防止响应拆分攻击。'
 score = 7.5
-vector = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
-published_at = "2024-07-18T00:00:00Z"
-updated_at = "2025-07-10T00:00:00Z"
-references = [
+severity = "HIGH"
+sources = ["cve"]
+title = "Apache HTTP Server HTTP 响应拆分漏洞"
+updated = "2025-07-10T00:00:00Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2024-42516",
+    "GHSA-9phq-9g4h-pc6h",
+]
+ave_id = "AVE-2024-0508"
+
+[meta]
+collected_at = "2024-11-15T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
     "https://httpd.apache.org/security/vulnerabilities_24.html",
     "https://nvd.nist.gov/vuln/detail/CVE-2024-42516",
     "https://github.com/apache/httpd/commit/r1919249",
     "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-42516",
     "https://github.com/advisories/GHSA-9phq-9g4h-pc6h",
 ]
-affected = [
-    {vendor = "Apache Software Foundation", product = "Apache HTTP Server", versions = ["2.4.0", "2.4.63"], status = "affected"},
-]
-remediation = "升级 Apache HTTP Server 至 2.4.64 或更高版本（官方修复版本）。若暂时无法升级，可通过配置 mod_headers 模块过滤或清理后端应用返回的 Content-Type 等响应头中的 CRLF 字符（\\r\\n），或在反向代理层（如 Nginx）增加响应头清洗规则拦截包含换行符的恶意响应头，防止响应拆分攻击。"
-poc = {poc = "", exp = "", verified = false, notes = ""}
-created_at = "2024-11-15T00:00:00Z"
