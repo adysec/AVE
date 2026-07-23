@@ -1,0 +1,44 @@
+[basic]
+description = "该漏洞存在于 Linux 核心 IIO 虚拟设备驱动程序 iio_simply_dummy_buffer 的触发缓冲区处理过程中。 由于使用 iio_for_each_active_channel 仅遍历活动通道，导致分配的 data 数组无法清空不活跃通道的数据。 这样的缺陷导致在向用户空间推送数据时，反复出现初始化不完整，从而形成信息泄漏。 攻击者仅需要低权限本地访问权限即可触发该漏洞，成功会导致严重的信息泄漏和可用性破坏。 通过修改内核代码，将 kmalloc 替换为 kzalloc，确保内存区域初始化完毕，此类方法可有效解决上述问题。"
+published = "2025-01-19T12:15:25.277"
+remediation = "升级内核到 ≥6.8 版本（含 CVE-2024-57911 修复），或针对 Debian/Ubuntu 执行 `apt-get install linux-image-$(uname -r | grep -E '^[0-9]+' | cut -d'.' -f1).$(uname -r | awk -F'-' '{print $1}' | cut -d'.' -f2) && reboot`。对于 RHEL/CentOS 使用 `yum update kernel` 或 `dnf install kernel`. 停用所有 iio 虚拟设备模块并避免使用 iio_simply_dummy_buffer 驱动程序，降低信息泄露风险。系统管理员应立即验证内核版本，确保基础补丁已安装。"
+score = 7.1
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Kernel IIO 子系统 信息泄露漏洞"
+updated = "2026-06-17T08:14:12.867"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57911"]
+ave_id = "AVE-2024-0632"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/006073761888a632c5d6f93e47c41760fa627f77",
+    "https://git.kernel.org/stable/c/03fa47621bf8fcbf5994c5716021527853f9af3d",
+    "https://git.kernel.org/stable/c/333be433ee908a53f283beb95585dfc14c8ffb46",
+    "https://git.kernel.org/stable/c/74058395b2c63c8a438cf199d09094b640f8c7f4",
+    "https://git.kernel.org/stable/c/b0642d9c871aea1f28eb02cd84d60434df594f67",
+    "https://git.kernel.org/stable/c/e1c1e8c05010103c9c9ea3e9c4304b0b7e2c8e4a",
+    "https://git.kernel.org/stable/c/ea703cda36da0dacb9a2fd876370003197d8a019",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57911.md",
+    "https://github.com/CVEProject/cvelistV5/blob/9615a84be27b28681e8a92dcc11ff360547df421/cves/2024/57xxx/CVE-2024-57911.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57911.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57911",
+    "https://github.com/cisagov/vulnrichment/blob/dde61f61b53e6605a407232356bfa1ca7643b1ec/2024/57xxx/CVE-2024-57911.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57911.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CveServices-CVE-2024-57911-2025-11-03-1440",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-57911.md",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/02/18/seguranca/cve-2024-57911-iio-dummy-iio-simply-dummy-buffer-f-1771412482000.md",
+    "https://github.com/github/advisory-database/blob/bd18194e7d4afd6af63b4895317531a574628e62/advisories/unreviewed/2025/01/GHSA-2w6v-cv9c-qwv2/GHSA-2w6v-cv9c-qwv2.json",
+]
