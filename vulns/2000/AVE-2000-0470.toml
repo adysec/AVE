@@ -1,12 +1,12 @@
 [basic]
-description = "SuSE Linux 的 aaa_base 软件包将部分系统账户（如 uucp、games 等）的家目录设置为 /tmp 临时目录，这些系统账户的 .profile、.bashrc 等启动脚本位于 /tmp 下，本地低权限用户可通过创建恶意启动脚本劫持这些系统账户的登录过程，从而获取系统账户的权限，实现本地权限提升。"
-published = "2000-05-02"
-remediation = "升级 SuSE Linux 的 aaa_base 软件包至 2000.5.2 或更新版本，或将系统账户的家目录从 /tmp 修改为非共享目录（如 /var/lib/<账户名>），并删除 /tmp 下对应的 .profile、.bashrc 等启动脚本文件。"
+description = "SuSE Linux 的 aaa_base 软件包将某些系统账户的主目录设置为 /tmp，本地用户可在 /tmp 下创建用户启动脚本（如 .profile、.bashrc 等），当这些系统账户登录或执行相关操作时会加载并执行攻击者植入的脚本，从而获得该系统账户的权限。该漏洞影响安装了有缺陷 aaa_base 包的 SuSE Linux 发行版，攻击者需具备本地访问权限并在 /tmp 目录写入恶意启动脚本，待目标系统账户登录或执行相关操作时触发代码执行，导致权限提升至对应系统账户权限，CVSS 评分 4.6（本地攻击、低复杂度、无需认证、部分机密性/完整性/可用性影响）。"
+published = "2000-05-02T04:00:00.000"
+remediation = "立即升级 SUSE Linux aaa_base 包到修复版本（建议升级至 SuSE 6.4 或更高版本的修复版本），通过 YaST 在线更新或从 SUSE 官方 FTP 下载修补包安装。临时缓解措施：检查 /etc/passwd 中系统账户（如 uucp、news 等）的主目录是否指向 /tmp，若是则修改为 /var/spool/该账户 等安全目录；同时设置 /tmp 目录粘滞位（chmod +t /tmp）并限制普通用户在 /tmp 创建可执行脚本的权限（chmod 1777 /tmp），防止本地用户通过放置恶意 profile 脚本劫持系统账户权限。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["cve"]
-title = "SUSE Linux aaa_base 本地权限提升漏洞"
-updated = "2026-06-16"
+sources = ["avd"]
+title = "Suse Linux 权限提升漏洞"
+updated = "2026-06-16T21:51:43.377"
 
 [exploit]
 exp_urls = []
@@ -17,8 +17,20 @@ aliases = ["CVE-2000-0433"]
 ave_id = "AVE-2000-0470"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["http://www.novell.com/linux/security/advisories/suse_security_announce_47.html"]
+urls = [
+    "http://www.novell.com/linux/security/advisories/suse_security_announce_47.html",
+    "https://github.com/CVEProject/cvelistV5/blob/9615a84be27b28681e8a92dcc11ff360547df421/cves/2000/0xxx/CVE-2000-0433.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0433",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0433.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2bf475c962629ec6f02e5caa819697d3f035d100/CVE/data/2000/CVE-2000-0433.json",
+    "https://github.com/github/advisory-database/blob/bd18194e7d4afd6af63b4895317531a574628e62/advisories/unreviewed/2022/04/GHSA-mpxg-5frr-vc3r/GHSA-mpxg-5frr-vc3r.json",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88298/info.html",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0433.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--01fdcccd-20e4-427f-963b-0c46e4cb466a.json",
+    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
+]
