@@ -1,0 +1,110 @@
+[id]
+ave_id = "AVE-2026-0375"
+aliases = ["CVE-2026-52774","GHSA-r5xw-gcgw-hwp5"]
+
+[basic]
+title = "YesWiki Vulnerable to Reflected XSS via Unescaped `id` Parameter in Bazar Widget HTML Attributes"
+description = "### Summary
+YesWiki's Bazar widget handler reflects the `id` `GET` parameter into HTML attributes using `strip_tags()` only. Because `strip_tags()` does not escape double quotes, an attacker can break out of the attribute value, inject an event handler such as `onmouseover`, and execute arbitrary JavaScript in the victim's browser.
+
+This issue is reachable without authentication. During validation, the vulnerable `widget` route returned the injected HTML for both `/HomePage/widget?id=...` and `/NoSuchPage/widget?id=...`, which shows that no login, no page ownership, no edit rights, and not even a valid page tag were required. The only routing prerequisite observed was that the Bazar extension is enabled and the request includes an `id` parameter.
+
+### Details
+The primary sink is in `tools/bazar/presentation/templates/widget.tpl.html` around lines `4-7`, where `$_GET['id']` is inserted into the `data-formid` attribute:
+
+```php
+data-formid=\"<?php echo strip_tags($_GET['id']); ?>\"
+```
+
+`strip_tags()` is not an output-encoding function. It removes HTML tags, but it does not escape characters such as double quotes, so an attacker can terminate the `data-formid` attribute and inject new attacker-controlled attributes.
+
+The route is served by `tools/bazar/handlers/__WidgetHandler.php` around lines `14-26`, which only checks whether `$_GET['id']` is present:
+
+```php
+if (!isset($_GET['id'])) {
+    return null;
+}
+```
+
+No `HasAccess('read')`, `HasAccess('write')`, or authentication check is performed before the vulnerable template is rendered.
+
+There is also a second reflection path in the same handler. The handler builds:
+
+```php
+$urlParams = 'id=' . strip_tags($_GET['id']) . ...
+```
+
+and then places the resulting value into the widget template's `data-iframeUrl` attribute:
+
+```php
+data-iframeUrl=\"<?php echo $GLOBALS['wiki']->href('bazariframe', '', $urlparams, false); ?>\"
+```
+
+During validation, a single payload injected into `id` was reflected into both `data-formid` and `data-iframeUrl`, which confirms that the handler exposes multiple attribute-level sinks from the same unsafely handled input.
+
+This issue maps to **CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')**.
+
+### PoC
+1. Set up a vulnerable YesWiki instance with the bundled Bazar extension enabled. This was validated locally on the official `doryphore 4.6.5` release.
+2. Confirm the minimum access requirements:
+   - No account is required.
+   - No `read` or `write` permission on a specific page is required.
+   - No valid existing page tag is required.
+   - No valid Bazar form identifier is required.
+   - The only observed requirements were that the Bazar widget handler is present and the request includes an `id` parameter.
+3. Request the widget handler with an attribute-breaking payload in `id`, for example:
+
+```text
+http://127.0.0.1:8085/NoSuchPage/widget?id=%22%20onmouseover=%22alert(1)%22%20x=%22
+```
+
+4. Open the URL in a browser as an unauthenticated visitor.
+5. Observe that the server returns HTTP `200` and renders the Bazar widget page even though the page tag is arbitrary.
+6. Inspect the returned HTML. The response contains attacker-controlled attributes in the widget root element:
+
+```html
+<div id=\"widgetapp\" v-cloak
+  data-formid=\"\" onmouseover=\"alert(1)\" x=\"\"
+  ...
+  data-iframeUrl=\"http://127.0.0.1:8085/NoSuchPage/bazariframe&id=\" onmouseover=\"alert(1)\" x=\"\"
+>
+```
+
+7. Move the mouse over the `widgetapp` element or otherwise trigger the injected event handler.
+8. The browser executes the injected JavaScript in the YesWiki origin.
+
+<img width=\"1600\" height=\"838\" alt=\"image\" src=\"https://github.com/user-attachments/assets/de592586-a6ee-48f4-bbde-137ab07aaa71\" />
+
+### Impact
+This is a **reflected XSS** vulnerability in the Bazar widget handler with very low attacker prerequisites.
+
+The practical access model is:
+
+- The attacker only needs to send a crafted public URL.
+- The victim does not need to authenticate.
+- The attacker does not need edit rights, ownership, or a valid page tag.
+- The route only needs to be reachable on a YesWiki instance with Bazar enabled.
+
+An attacker may be able to:
+
+- Execute arbitrary JavaScript in the victim's browser.
+- Steal browser-accessible sensitive data.
+- Perform actions in the victim's session if the victim is logged in.
+- Target public visitors and authenticated users alike because the route is reachable without access-control checks."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-23T23:48:04.258283694+00:00"
