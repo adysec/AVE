@@ -1,0 +1,39 @@
+[basic]
+description = "API Platform Core 的 JSON:API 和 HAL 序列化组件中存在跨用户属性泄漏漏洞。`#[ApiProperty(security: ...)]` 注解用于按请求评估属性是否可暴露，但 `ItemNormalizer` 中的 `componentsCache` 数组以 `$context['cache_key']` 为键进行缓存，该键在委托给父级规范化器之前被无条件设置，未包含用户权限信息。因此，一个请求计算出的属性结构（属性、关系、链接）可被后续不同权限用户的请求复用，导致低权限用户看到本应被安全谓词隐藏的属性结构。该漏洞影响 API Platform Core 2.6.0 至 4.1.29、4.2.26 及 4.3.12 之前版本，利用条件包括：应用通过 JSON:API 或 HAL 格式暴露资源、资源属性使用了依赖当前用户的 `security` 谓词、以及运行在 FrankenPHP/RoadRunner/Swoole 等长生命周期 PHP 运行时中（请求间缓存存活）。攻击者可通过构造特定请求顺序触发缓存重用，实现越权信息泄露。"
+published = "2026-07-01T20:17:10.153"
+remediation = "立即升级 api-platform/core、api-platform/json-api 和 api-platform/hal 至 4.1.29、4.2.26 或 4.3.12 及以上版本。如无法升级，可覆写 JSON:API 和 HAL 的 ItemNormalizer 服务，在 $context['cache_key'] 前增加资源类安全检查；或临时避免在 JSON:API/HAL 资源上使用 #[ApiProperty(security: ...)]。将部署切换为传统 php-fpm 工作模式也可缓解，因缓存不会跨请求存活。"
+score = 5.9
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "API Platform Core 跨用户属性泄漏漏洞"
+updated = "2026-07-02T18:41:35.990"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-49858",
+    "GHSA-pjhx-3c3w-9v23",
+]
+ave_id = "AVE-2026-0328"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/api-platform/core/security/advisories/GHSA-pjhx-3c3w-9v23",
+    "https://github.com/CVEProject/cvelistV5/blob/7a274ec07043f54c07d0a3b5c7fc89ba5793f023/cves/2026/49xxx/CVE-2026-49858.json",
+    "https://github.com/Tabll/gemnasium-db/blob/de1cbf8802a4c6060caaa5924b50812f2a62fead/packagist/api-platform/hal/CVE-2026-49858.yml",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2026/49xxx/CVE-2026-49858.json",
+    "https://github.com/TMA84/cvealert/blob/26fa6fb4c5bf093f7e54213d60f33d0f834a139c/content/posts/cve-2026-49858.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2026-49858.md",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/github-reviewed/2026/07/GHSA-pjhx-3c3w-9v23/GHSA-pjhx-3c3w-9v23.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1decc7ade63192f9f527bfb87145d1636c01cc59/SSVC/data/2026/CVE-2026-49858.json",
+    "https://github.com/ProjetsThibaut/sniperland/blob/c5c43f8f2e30e477faf3400b96c1aa0bf8107c93/docs/adr/ADR-035_auth_session_jwt_deferred.md",
+    "https://github.com/anchore/vulnerability-index-spec-files/blob/da07e4079d8e007fe062e5c4bb9628bb4caa2d74/data/2026/45/ANCHORE-2026-45773.toml",
+    "https://github.com/proshiba/vuln-intel-agent/blob/e215f3db28c5769217a5505035d513be33f7dce5/vulndb/vulns/nist/2026/07/VW-2026-19800.yaml",
+]
