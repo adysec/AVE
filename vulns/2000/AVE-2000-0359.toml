@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD 3.4/4.0/5.0 及 NetBSD 1.4.2 及更早版本的操作系统内核网络协议栈在处理 IP 时间戳选项时存在未对齐内存访问缺陷，远程攻击者无需认证即可向目标主机发送一个精心构造的包含未对齐 IP 时间戳选项的数据包，触发内核内存访问异常，导致目标系统崩溃或拒绝服务。该漏洞利用条件简单，攻击者仅需具备网络可达性即可实施攻击，影响范围涵盖多个 BSD 系操作系统版本。"
+description = "NetBSD 1.4.2 及更早版本存在 IP 时间戳选项拒绝服务漏洞。该漏洞原理为远程攻击者向目标系统发送包含未对齐 IP 时间戳选项的恶意数据包时，由于内核在处理带有非标准对齐方式的 IP 时间戳选项时缺乏充分验证，导致内核panic或服务崩溃，从而引发拒绝服务。影响范围包括 FreeBSD 3.4/4.0/5.0 以及 NetBSD 1.4.2 及更早版本系统。攻击条件为：攻击者具备网络可达性，且无需认证凭据即可完成攻击。攻击者仅需构造并发送一个包含未对齐 IP 时间戳选项的数据包即可触发漏洞，利用方式简单，可直接导致目标主机不可用或服务中断，对系统可用性造成严重影响。"
 published = "2000-05-01T04:00:00.000"
-remediation = "升级 NetBSD 至 1.4.2 以上版本，或下载安装官方补丁（20000507-ipopt142/141）修复 ip_input.c 和 ip.h 中 IP 选项处理的内存对齐与范围检查缺陷。如无法升级，可在边界防火墙上过滤包含异常 IP 时间戳选项的数据包作为临时缓解措施。"
+remediation = "NetBSD 用户应立即升级至 NetBSD 1.4.2 或更高版本，FreeBSD 用户应升级至 FreeBSD 4.1-STABLE、5.0-CURRENT 修复版本或更高版本。如无法立即升级，可在边界防火墙或路由器上配置 ACL，过滤携带 IP Timestamp 选项（option type 0x44）的数据包，以临时缓解拒绝服务风险。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "FreeBSD/NetBSD IP Timestamp 拒绝服务漏洞"
+sources = ["avd"]
+title = "NetBSD IP Timestamp 选项拒绝服务漏洞"
 updated = "2026-06-16T21:51:44.310"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0440"]
 ave_id = "AVE-2000-0359"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-05/0088.html",
     "http://www.securityfocus.com/bid/1173",
     "https://www.exploit-db.com/exploits/19896",
-    "https://github.com/CVEProject/cvelistV5/blob/97700d7e657426c8e1ee6cf44a0a2b88c60738c3/cves/2000/0xxx/CVE-2000-0440.json",
+    "https://github.com/CVEProject/cvelistV5/blob/84a32f54509ea69818fd2f28519fed9f2968cec3/cves/2000/0xxx/CVE-2000-0440.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0440",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0440.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f0111a41156462d46f484c055bdeafa69cf38c8e/CVE/data/2000/CVE-2000-0440.json",
-    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2022/05/GHSA-3fw7-2f85-c369/GHSA-3fw7-2f85-c369.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0440.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4efe50030f98e26c62a2548f14fe89d9f72e2021/CVE/data/2000/CVE-2000-0440.json",
+    "https://github.com/github/advisory-database/blob/e34faa994a969a96da73434c6e96d687fa245753/advisories/unreviewed/2022/05/GHSA-3fw7-2f85-c369/GHSA-3fw7-2f85-c369.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--55ba3501-8aef-42cc-a283-cb7ca217a369.json",
-    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0440.json",
+    "https://github.com/olbat/nvdcve/blob/a036095fb2c093f3863681adc5999690c37b930e/nvdcve/CVE-2000-0440.json",
     "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--55ba3501-8aef-42cc-a283-cb7ca217a369.owl",
 ]
