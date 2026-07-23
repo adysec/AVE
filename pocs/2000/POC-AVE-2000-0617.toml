@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测 Allaire JRun 2.3.x Servlet 示例文件是否可访问，包括泄露 HttpSession ID 的 SessionServlet。通过访问已知的 JRun 示例路径，若返回 JRun 特定标识字符串则判定存在漏洞。"
+description = "通过请求 Allaire JRun 2.3.x 自带的示例文件路径，检测目标是否存在敏感信息泄露漏洞。当示例文件未被移除时，攻击者可利用 SessionServlet 获取 HttpSession ID 等敏感信息。"
 id = "POC-AVE-2000-0617"
-name = "Allaire JRun Servlet 示例信息泄露 PoC"
+name = "JRun Sample Files Information Disclosure PoC"
 severity = "medium"
 tags = ["ave-2000-0617"]
 vuln_id = [
@@ -15,34 +15,12 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/servlet/SessionServlet"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "Session",
-    "HttpSession",
-    "session",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/docs/servlets/index.html"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["JRun Servlet Engine"]
-
-[[poc.requests]]
-method = "GET"
 path = "/{{BaseURL}}/cfanywhere/index.html"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
@@ -52,8 +30,27 @@ words = ["CFML Sample"]
 
 [[poc.requests]]
 method = "GET"
+path = "/{{BaseURL}}/docs/servlets/index.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["JRun Servlet Engine"]
+
+[[poc.requests]]
+method = "GET"
 path = "/{{BaseURL}}/jsp/index.html"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
@@ -65,6 +62,10 @@ words = ["JRun Scripting Examples"]
 method = "GET"
 path = "/{{BaseURL}}/webl/index.html"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
