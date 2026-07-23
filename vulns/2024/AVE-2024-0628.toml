@@ -1,0 +1,44 @@
+[basic]
+description = "Linux 内核工业 I/O (IIO) 子系统中 TI ADS8688 ADC 驱动的触发缓冲区实现存在信息泄漏漏洞。驱动在触发缓冲区模式下使用局部数组 buffer 向用户空间推送采样数据，但仅通过 iio_for_each_active_channel() 为活跃通道赋值，未初始化非活跃通道对应的数组元素。攻击者需具备本地低权限访问权限，通过触发 ADC 缓冲区读取操作，可读取内核栈上未初始化的内存残留数据（如指针、栈帧数据等），导致高机密性影响（内核内存泄露）和高可用性影响（可能引发内核崩溃）。影响搭载 TI ADS8688 ADC 芯片并启用 IIO 触发缓冲区功能的 Linux 内核版本（含主线内核及各发行版下游内核），攻击者需本地访问权限且能访问 IIO 设备节点，通过读取触发缓冲区数据即可触发信息泄露。Linux 内核已通过在推送数据前将 buffer 数组零初始化的方式修复该漏洞（CVE-2024-57906，CVSS 7.1 HIGH，CWE-908）。"
+published = "2025-01-19T12:15:24.800"
+remediation = "升级 Linux 内核到包含补丁 commit 1c80a0985a9a14f33dbf63cd703ca010f094f878 或更高版本（如 v6.6.72+、v6.12.10+、v6.13-rc6+），对 drivers/iio/adc/ti-ads8688.c 文件进行 patch 应用，确保 buffer 数组被初始化为零，防止非活跃通道的未初始化数据泄露给用户空间。"
+score = 7.1
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 开源项目 IIO ADC 驱动程序 ti-ads8688 信息泄漏漏洞"
+updated = "2026-06-17T08:14:11.857"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57906"]
+ave_id = "AVE-2024-0628"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1c80a0985a9a14f33dbf63cd703ca010f094f878",
+    "https://git.kernel.org/stable/c/2a7377ccfd940cd6e9201756aff1e7852c266e69",
+    "https://git.kernel.org/stable/c/3bf8d1e87939b8a19c9b738564fddf5b73322f2f",
+    "https://git.kernel.org/stable/c/455df95eb8f24a37abc549d6738fc8ee07eb623b",
+    "https://git.kernel.org/stable/c/485570ed82b7a6bb109fa1d0a79998e21f7f4c73",
+    "https://git.kernel.org/stable/c/aae96738006840533cf147ffd5f41830987f21c5",
+    "https://git.kernel.org/stable/c/ebe2672bc42a0dfe31bb539f8ce79d024aa7e46d",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57906.md",
+    "https://github.com/CVEProject/cvelistV5/blob/f02fdda2bd389f5492ddcbf2ad808b3b60f20645/cves/2024/57xxx/CVE-2024-57906.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57906.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57906",
+    "https://github.com/0xMarcio/cve/blob/ebd29ed5f9b5a2615e147ccbf1deed9bc7c5ae84/2024/CVE-2024-57906.md",
+    "https://github.com/cisagov/vulnrichment/blob/48383ebc821dc38e09ecfcea6060abac8038780f/2024/57xxx/CVE-2024-57906.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57906.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CveServices-CVE-2024-57906-2025-11-03-1440",
+    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2025/01/GHSA-f5w3-q6fx-5p9r/GHSA-f5w3-q6fx-5p9r.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57906",
+]
