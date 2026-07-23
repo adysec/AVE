@@ -1,0 +1,44 @@
+[basic]
+description = "Linux 内核 ILA (Identifier-Locator Addressing) IPv6 模块中存在竞争条件漏洞，源于 `ila_add_mapping()` 函数在处理并发 `ILA_CMD_ADD` 命令时，未对 `nf_register_net_hooks()` 调用进行同步保护。syzbot 发现并发执行时会导致 `nf_register_net_hooks()` 重复注册 netfilter 钩子，引发 rhashtable 哈希表的 use-after-free（释放后使用）漏洞。攻击者需具备本地低权限访问权限，通过并发发送 `ILA_CMD_ADD` 命令触发竞争条件，在 IPv6 数据包处理流程（`ipv6_rcv` -> `nf_hook_slow` -> `ila_nf_input` -> `ila_xlat_addr` -> `ila_lookup_wildcards` -> `rhashtable_lookup_fast`）中触发 KASAN 检测到的 slab-use-after-free 读取越界。该漏洞影响 Linux 内核 6.13-rc4 及相关版本，CVSS 3.1 评分 7.8 (HIGH)，攻击向量本地、低复杂度、低权限、无需用户交互，可导致高机密性/完整性/可用性影响。Linux 内核已通过引入互斥锁序列化 `nf_register_net_hooks()` 调用修复该漏洞（commit 031ae72825ce 尝试修复类似问题，后续补丁补充 mutex 保护）。"
+published = "2025-01-15T13:15:14.633"
+remediation = '建议立即升级 Linux 内核至 6.13.0-rc4 或更高版本（包含修复提交 031ae72825ce 及后续 mutex 串行化补丁），或应用各发行版回港补丁：Ubuntu 24.04 升级至 linux-image-6.8.0-52-generic 及以上（USN-7381-1），Debian 11 升级至 linux-image-6.1.123-1 及以上（DLA-4075-1），RHEL/Rocky/AlmaLinux 9 升级至 kernel-5.14.0-503.11.1.el9_5 及以上，SLES 15 SP6 Azure 内核升级至 kernel-azure-6.4.0-150600.9.9.1 及以上（SUSE-SU-2025:1177-1）。若暂无法升级内核，可临时禁用 ILA 模块：echo "blacklist ila" > /etc/modprobe.d/ila-blacklist.conf 并执行 update-initramfs -u 后重启，或在防火墙层面禁止 IPv6 ILA 流量作为临时缓解。'
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 ila 网络钩子序列化漏洞"
+updated = "2026-06-17T08:14:10.770"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57900"]
+ave_id = "AVE-2024-0625"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1638f430f8900f2375f5de45508fbe553997e190",
+    "https://git.kernel.org/stable/c/17e8fa894345e8d2c7a7642482267b275c3d4553",
+    "https://git.kernel.org/stable/c/260466b576bca0081a7d4acecc8e93687aa22d0e",
+    "https://git.kernel.org/stable/c/3d1b63cf468e446b9feaf4e4e73182b9cc82f460",
+    "https://git.kernel.org/stable/c/ad0677c37c14fa28913daea92d139644d7acf04e",
+    "https://git.kernel.org/stable/c/d3017895e393536b234cf80a83fc463c08a28137",
+    "https://git.kernel.org/stable/c/eba25e21dce7ec70e2b3f121b2f3a25a4ec43eca",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57900.md",
+    "https://github.com/CVEProject/cvelistV5/blob/f02fdda2bd389f5492ddcbf2ad808b3b60f20645/cves/2024/57xxx/CVE-2024-57900.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57900",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57900.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/48383ebc821dc38e09ecfcea6060abac8038780f/2024/57xxx/CVE-2024-57900.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57900.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CveServices-CVE-2024-57900-2025-11-03-1440",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-57900.md",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/02/18/seguranca/cve-2024-57900-ila-serialize-calls-to-nf-register--1771410250000.md",
+    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2025/01/GHSA-v298-p3h5-pc6r/GHSA-v298-p3h5-pc6r.json",
+]
