@@ -1,48 +1,11 @@
 [basic]
-description = "GNU Bash 在通过环境变量处理函数定义时，未正确截断后续字符串内容，导致攻击者可通过构造特制环境变量在目标系统上执行任意命令。该漏洞（又称 ShellShock）影响 GNU Bash 4.3 及更早版本，利用 OpenSSH 的 ForceCommand 功能、Apache HTTP Server 的 mod_cgi/mod_cgid 模块、DHCP 客户端脚本等多种向量，无需身份认证即可远程触发。攻击者仅需设置包含恶意代码的环境变量并触发 Bash 解释执行，即可在当前权限下获得远程代码执行能力，对服务器、Web 应用和网络设备构成严重威胁。该漏洞 CVSS 评分 9.8，危害等级严重，已列入 CISA KEV 目录，并被 Metasploit、Nuclei 等工具收录利用代码。"
+description = "GNU Bash 4.3 及之前版本在处理环境变量值中的函数定义后的后续字符串时存在缺陷，攻击者可通过构造恶意环境变量在 Bash 解析时注入并执行任意命令。该漏洞影响所有使用受影响 Bash 版本的 Linux/Unix 系统，广泛涉及使用 ForceCommand 特性的 OpenSSH、Apache mod_cgi/mod_cgid、DHCP 客户端等通过环境变量跨越权限边界调用 Bash 的场景。攻击者无需身份认证即可远程构造恶意 HTTP 请求、SSH 连接或 DHCP 请求注入恶意环境变量，在目标系统以服务进程权限执行任意代码，CVSS 3.1 评分 9.8（CRITICAL），影响极其广泛且危害极大。官方首个修复不完整，后续分配 CVE-2014-7169 覆盖残留漏洞。"
 published = "2014-09-24T18:48:04.477"
-remediation = '''
-# 下载并安装最新的bash源代码
-   wget https://ftp.gnu.org/gnu/bash/bash-5.2.tar.gz
-   tar xzf bash-5.2.tar.gz && cd bash-5.2
-   ./configure --prefix=/usr/local
-   make -j$(nproc) && make install
-   ```
-
-3. **系统配置强化**：
-   ```bash
-   # 限制危险Shell函数
-   echo 'alias. () { :;}; alias. () { :;}' >> /etc/bashrc
-   echo 'function. () { :;}' >> /etc/bashrc
-   echo '() { :;}' >> /etc/bashrc
-   
-   # 启用Bash安全限制（read 中的安全模式）
-   cat >> /etc/profile << 'EOF'
-   ulimit -S -n 4096
-   export SHELLOPTS=semblues
-   EOF
-   ```
-
-4. **应用层防护措施**：
-   - Apache HTTP Server：升级mod_cgi/mod_cgid到安全补丁版本
-   - OpenSSH服务：升级到包含安全补丁的版本，配置`"ForceCommand"`受限命令
-   - 所有Web应用：验证CGI脚本对环境变量的有效性限制
-   - DHCP服务：确保设备发送的安全环境变量过滤机制
-
-5. **临时缓解措施**：
-   - 停止启用CGI脚本或危险Shell命令功能
-   - 配置防火墙过滤包含`() {`或`eval `等危险模式的环境变量的网络包
-   - 使用web应用防火墙规则禁止可疑的环境变量注入攻击
-
-6. **后续监控与验证**：
-   ```bash
-   # 验证补丁是否成功应用
-   bash --version | grep "4.4\|5.0\|5.1\|5.2"
-   grep -r "(): {" /etc/profile /etc/bashrc /etc/bash.bashrc 2>/dev/null || true'''
+remediation = "立即升级到 Bash 4.3 及以上版本，如 Ubuntu/Debian 系用户运行 apt-get install bash>=4.3-3，然后重启服务或重启系统。如无法立即升级，可通过 Firewall 禁用/sh、rsh、rlogin 服务端口 514 及 23 作为临时缓解措施。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["nuclei"]
-title = "GNU Bash 命令执行漏洞"
+sources = ["kev"]
+title = "GNU Bash Shellshock 命令执行漏洞"
 updated = "2026-06-17T00:12:48.020"
 
 [exploit]
@@ -54,7 +17,7 @@ aliases = ["CVE-2014-6271"]
 ave_id = "AVE-2014-0044"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
