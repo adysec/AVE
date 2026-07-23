@@ -1,0 +1,40 @@
+[basic]
+description = "Fedify ActivityPub库在修复GHSA-p9cg-vqcc-grcx SSRF漏洞后，其IPv4公网地址验证逻辑isValidPublicIPv4Address()存在不完整绕过。该函数虽拦截了10.0.0.0/8、127.0.0.0/8、169.254.0.0/16、172.16.0.0/12、192.168.0.0/16等常见私有段，但错误地将100.64.0.0/10（运营级NAT）、198.18.0.0/15（基准测试）、224.0.0.0/4（组播）、240.0.0.0/4（保留）、192.0.0.0/24（IETF协议分配）及文档段192.0.2.0/24、198.51.100.0/24、203.0.113.0/24等特殊用途IPv4范围判定为合法公网地址。受影响版本为0.11.2至2.2.3（已在1.9.12/1.10.11/2.0.19/2.1.15/2.2.4修复），影响所有使用Fedify处理ActivityPub对象、活动、文档及媒体URL的联邦服务器。攻击者可构造指向上述特殊用途IPv4地址的恶意ActivityPub对象或媒体URL，诱导目标服务器发起出站请求，绕过SSRF防护访问内网、基准测试网络或保留地址空间，导致服务端请求伪造（SSRF），CVSS 8.6 HIGH。攻击条件为攻击者可控制联邦对象URL且目标服务器解析并发起获取请求，利用方式为构造指向特殊用途IP段的URL绕过validatePublicUrl()验证。建议升级至修复版本或使用成熟IP分类库替代手工黑名单验证。"
+published = "2026-06-10T22:17:01.543"
+remediation = "建议立即升级 Fedify 到修复版本：1.x 升级至 1.9.12 或 1.10.11，2.x 升级至 2.0.19、2.1.15 或 2.2.4。升级命令：npm update @fedify/fedify@latest 或 pnpm update @fedify/fedify@latest。如暂时无法升级，可在网络层面配置出站防火墙规则拦截对 100.64.0.0/10、198.18.0.0/15、224.0.0.0/4、240.0.0.0/4、192.0.0.0/24、192.0.2.0/24、198.51.100.0/24、203.0.113.0/24 等特殊用途 IPv4 段的出站连接，作为临时缓解措施。"
+score = 8.6
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Fedify URL验证安全绕过漏洞"
+updated = "2026-07-21T19:10:00.107"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-50131",
+    "GHSA-xw9q-2mv6-9fr8",
+]
+ave_id = "AVE-2026-0339"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/fedify-dev/fedify/security/advisories/GHSA-xw9q-2mv6-9fr8",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/4a0cf863db8d2032b534fdeb22ed679473499848/2026/CVE-2026-50131.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/9a0b7a19487f40b2e217de2ad9f19cbcad032a8a/pocs/2026/CVE-2026-50131.md",
+    "https://github.com/Tabll/gemnasium-db/blob/de1cbf8802a4c6060caaa5924b50812f2a62fead/npm/@fedify/fedify/CVE-2026-50131.yml",
+    "https://github.com/CVEProject/cvelistV5/blob/2c72b537371947a8374cf9848353741736f9e49d/cves/2026/50xxx/CVE-2026-50131.json",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/c6a7b446809d20910acd284474596c0b638aab06/nvd/2026/HIGH/CVE-2026-50131/README.md",
+    "https://github.com/TMA84/cvealert/blob/26fa6fb4c5bf093f7e54213d60f33d0f834a139c/content/posts/cve-2026-50131.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/e7c6991b7f94cb67229705ae6024a8abb41a02d5/cve/CVE-2026-50131.html",
+    "https://github.com/XiaomingX/data-cve-poc-py-v1/blob/9cd45c8ff86fc94d27c6255a665548fbf0c1c23f/2026/CVE-2026-50131/references.json",
+    "https://github.com/sari3l/Poc-Monitor/blob/927a9d84fb186283fa3c636924460ca0aefac60e/2026/CVE-2026-50131.json",
+    "https://github.com/fedify-dev/botkit/blob/da84d3a501fb62fa3c103d42f0e0dd8296bf126c/CHANGES.md",
+    "https://github.com/chaitanyagarware/CVE-2026-50131",
+]
