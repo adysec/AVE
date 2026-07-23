@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 RDMA/rxe（Soft RoCE）驱动中存在释放后使用（Use-After-Free）漏洞。该驱动维护了对 net_device 的直接指针引用，当网络设备被删除释放后，已排队等待处理的工作队列事件 ib_cache_event_task 仍会访问已释放的 net_device，触发 slab 释放后内存访问，导致系统崩溃或潜在的信息泄露。本地攻击者只需低权限即可通过构造特定的网络设备生命周期操作序列触发此漏洞，实现权限提升或系统拒绝服务。CVSS 评分 7.8，危害等级高。"
+published = "2025-01-15T13:15:11.563"
+remediation = "升级 Linux 内核至 6.12 及以上版本，该版本包含修复 RXE 驱动 use-after-free 的补丁。对于 Ubuntu 用户，运行 sudo apt update && sudo apt upgrade 安装安全更新（Ubuntu 24.04 LTS 对应 linux-image 6.8.0-2042-raspi-realtime 及更高版本）。若无法立即升级内核，可在不需要 RDMA 功能的系统中禁用 rxe 模块（执行 sudo modprobe -r rxe 或在 /etc/modprobe.d/ 中添加 blacklist rxe），消除攻击面。重启系统使更改生效。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Kernel RDMA/rxe 模块 net_device 释放后使用漏洞"
+updated = "2026-06-17T08:14:03.390"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57795"]
+ave_id = "AVE-2024-0598"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/2ac5415022d16d63d912a39a06f32f1f51140261",
+    "https://git.kernel.org/stable/c/32ca3557d968e662957131374a5f81c9c9cdbba8",
+    "https://git.kernel.org/stable/c/9f6f54e6a6863131442b40e14d1792b090c7ce21",
+    "https://github.com/CVEProject/cvelistV5/blob/7a274ec07043f54c07d0a3b5c7fc89ba5793f023/cves/2024/57xxx/CVE-2024-57795.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57795",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57795.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2024/57xxx/CVE-2024-57795.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57795.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2024-57795.md",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2025/01/GHSA-3h9j-8c2j-4jrj/GHSA-3h9j-8c2j-4jrj.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57795",
+    "https://github.com/microsoft/AzureLinuxVulnerabilityData/blob/49fc6c5c0668d68233834d9d61b1c916248edd25/osv/AZL-59091.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/75471602a53215062ddbaeb95f039a60b664c3d0/usn/8204-1.json",
+]
