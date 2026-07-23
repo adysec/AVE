@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "检测 Microsoft Internet Explorer InformationCardSigninHelper ActiveX 控件（icardie.dll）越界写入漏洞。通过构造特制网页尝试实例化该 ActiveX 控件，若目标系统存在该控件则存在漏洞风险。"
+id = "POC-AVE-2013-0409"
+name = "CVE-2013-3918 PoC"
+severity = "high"
+tags = ["ave-2013-0409"]
+vuln_id = [
+    "CVE-2013-3918",
+    "AVE-2013-0409",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = "<html><body><object classid='clsid:A9F2A5D5-3B6E-4F2A-9B5C-5A1F2D3E4C5B' id='cardspace'></object><script>try{var c=new ActiveXObject('InformationCardSigninHelper.InformationCardSigninHelper.1');document.write('VULNERABLE');}catch(e){document.write('NOT_VULNERABLE');}</script></body></html>"
+type = "raw"
+
+[poc.requests.headers]
+Accept = "text/html"
+User-Agent = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["VULNERABLE"]
