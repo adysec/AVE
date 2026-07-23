@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测目标是否为存在安全区域欺骗漏洞的 IE 5.5/5.01 版本。通过发送包含无点 IP 地址（DWORD 格式）的 URL，IE 会将其错误识别为 Intranet 区域而非 Internet 区域，从而绕过安全限制。本 PoC 通过 HTTP 请求携带 dotless IP 地址访问目标，并在响应中利用该漏洞执行 ActiveX 或脚本以验证区域欺骗成功。"
+id = "POC-AVE-2001-0283"
+name = "CVE-2001-0664 IE Zone Spoofing PoC"
+severity = "high"
+tags = ["ave-2001-0283"]
+vuln_id = [
+    "CVE-2001-0664",
+    "AVE-2001-0283",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0)"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "Windows",
+    "system32",
+]
