@@ -1,0 +1,43 @@
+[basic]
+description = "Linux 内核 Rockchip SARADC 驱动的触发缓冲区实现中存在信息泄漏漏洞。由于触发缓冲区中的 'data' 本地结构体在向用户空间推送数据时，仅通过 iio_for_each_active_channel() 为活跃通道赋值，未对非活跃通道进行初始化，导致未初始化的内核栈内存内容被泄露至用户空间。该漏洞影响搭载 Rockchip SoC 并使用 rockchip_saradc 驱动的 Linux 设备（如 Rockchip 平台的开发板、嵌入式设备等）。攻击条件为本地访问权限、低攻击复杂度、低权限且无需用户交互 (CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:H，CVSS 7.1 HIGH)。本地攻击者可通过触发 ADC 触发缓冲区读取操作，获取内核未初始化的栈内存数据，导致高机密性影响（信息泄漏）和高可用性影响（可能导致系统崩溃）。Linux 内核已通过在使用前将结构体初始化为零来修复该漏洞。"
+published = "2025-01-19T12:15:24.897"
+remediation = "建议立即升级 Linux 内核到已修复版本：Linux 6.12.8、6.11.11、6.6.73、6.1.123、5.15.176、5.10.235、5.4.289 或更高版本。Debian 11 请安装 DLA-4075-1 更新（linux 5.10.235-1），Ubuntu 24.04 请安装 USN-7381-1（linux 6.8.0-52.52），Ubuntu 20.04 请安装 USN-7459-1（linux 5.15.0-130.139），RHEL/Rocky/AlmaLinux 请关注 RHSA-2025 相关公告并升级内核。如无法立即重启内核，可临时禁用 rockchip_saradc 驱动（`modprobe -r rockchip_saradc` 或在内核命令行添加 `module_blacklist=rockchip_saradc`）作为缓解措施，但会导致 Rockchip ADC 功能不可用。"
+score = 7.1
+severity = "HIGH"
+sources = ["msrc"]
+title = "Rockchip SARADC 驱动触发缓冲区信息泄漏漏洞"
+updated = "2026-06-17T08:14:12.060"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57907"]
+ave_id = "AVE-2024-0629"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/38724591364e1e3b278b4053f102b49ea06ee17c",
+    "https://git.kernel.org/stable/c/5a95fbbecec7a34bbad5dcc3156700b8711d53c4",
+    "https://git.kernel.org/stable/c/64b79afdca7b27a768c7d3716b7f4deb1d6b955c",
+    "https://git.kernel.org/stable/c/7a07fb80ea886e9134284a27d0155cca7649e293",
+    "https://git.kernel.org/stable/c/8193941bc4fe7247ff13233f328aea709f574554",
+    "https://git.kernel.org/stable/c/85a9c98a5e0f22d911b00077d751e34fff1401aa",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57907.md",
+    "https://github.com/CVEProject/cvelistV5/blob/f02fdda2bd389f5492ddcbf2ad808b3b60f20645/cves/2024/57xxx/CVE-2024-57907.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57907.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57907",
+    "https://github.com/cisagov/vulnrichment/blob/48383ebc821dc38e09ecfcea6060abac8038780f/2024/57xxx/CVE-2024-57907.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57907.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CveServices-CVE-2024-57907-2025-11-03-1452",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-57907.md",
+    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2025/01/GHSA-6hmf-56g8-p898/GHSA-6hmf-56g8-p898.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57907",
+]
