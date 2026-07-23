@@ -1,12 +1,12 @@
 [basic]
-description = "Bugzilla 2.8 的 process_bug.cgi 脚本存在操作系统命令注入漏洞，该脚本在处理用户输入时未对 shell 元字符进行正确过滤和转义，远程未经身份认证的攻击者可通过向 process_bug.cgi 发送包含特殊 shell 元字符（如分号、管道符等）的恶意请求，在服务器端注入并执行任意操作系统命令，从而完全控制目标服务器。利用该漏洞无需任何用户交互，攻击复杂度低，可导致敏感信息泄露、系统权限被获取及服务瘫痪。Mozilla 曾发布安全公告建议用户升级以避免受影响。"
-published = "2000-05-11"
-remediation = "升级 Bugzilla 至 2.10 或更高版本（官方安全公告 https://www.bugzilla.org/security/2.10/）。临时缓解：在 process_bug.cgi 中对用户输入进行 Shell 元字符过滤，或通过 Web 应用防火墙 (WAF) 拦截包含反引号、分号、管道符等 Shell 元字符的请求参数。受影响版本为 Bugzilla 2.10 之前的所有版本，建议尽快升级至当前维护版本（如 5.0.6、4.4.13、5.4、6.0 等）以获得完整安全修复。"
-score = 5
-severity = "MEDIUM"
-sources = ["epss"]
-title = "Mozilla Bugzilla 远程代码执行漏洞"
-updated = "2000-05-11"
+description = "Bugzilla 的 process_bug.cgi 脚本存在命令注入漏洞，远程攻击者可通过向该脚本提交包含 shell 元字符（如反引号、管道符等）的特制请求，在目标服务器上以 Web 服务进程权限执行任意系统命令。该漏洞影响 Bugzilla 早期版本，攻击者无需身份认证即可利用，可能导致服务器被完全控制、数据泄露或进一步内网渗透。利用方式简单，仅需构造恶意 HTTP 请求即可触发。"
+published = "2000-05-11T04:00:00.000"
+remediation = "升级 Bugzilla 至 2.12 或更高版本。具体操作：从 https://www.bugzilla.org/download/ 下载 2.12 及以上版本，备份现有数据库和配置文件后执行升级脚本。如无法立即升级，可在 Web 服务器层面对 process_bug.cgi 实施访问控制，限制仅授权 IP 可访问，并禁用 CGI 对 shell 元字符的传递。"
+score = 7.5
+severity = "HIGH"
+sources = ["avd"]
+title = "Bugzilla process_bug.cgi 远程代码执行漏洞"
+updated = "2026-06-16T21:51:41.833"
 
 [exploit]
 exp_urls = []
@@ -17,19 +17,21 @@ aliases = ["CVE-2000-0421"]
 ave_id = "AVE-2000-0454"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "https://github.com/CVEProject/cvelistV5/blob/7d4778b18ea29de57c8a889212050a9d38e2d2cb/cves/2000/0xxx/CVE-2000-0421.json",
+    "http://archives.neohapsis.com/archives/bugtraq/2000-05/0128.html",
+    "http://www.securityfocus.com/bid/1199",
+    "https://github.com/CVEProject/cvelistV5/blob/2ee9e77ceac534c670c42073c99286dbb69e9733/cves/2000/0xxx/CVE-2000-0421.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0421",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0421.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1b84eedba993546f37a880c6d2d084176a1f04a7/CVE/data/2000/CVE-2000-0421.json",
-    "https://github.com/github/advisory-database/blob/1684cfa32e43376c48beb06819bce86de6ba421b/advisories/unreviewed/2022/04/GHSA-2pfv-488g-27p3/GHSA-2pfv-488g-27p3.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0421.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/45906bb48c7a525a11d1008ce22e1e5c2f2f58c2/CVE/data/2000/CVE-2000-0421.json",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2022/04/GHSA-2pfv-488g-27p3/GHSA-2pfv-488g-27p3.json",
     "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/pre2008/bugzilla_remote_exec.nasl",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0421.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x2000/1199/info.html",
     "https://github.com/jdkoftinoff/mb-linux-msli/blob/8adb103e34af9ff1d8d122e9ee2a1808836f0a14/uClinux-dist/user/nessus/nessus-plugins/scripts/bugzilla_remote_exec.nasl",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/3944e09fb28929da2e246a8b27f3b2564782fb22/2000.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/b12a3924bcdfa7af53ab2da329173ee04bf863bc/2000.tsv",
 ]
