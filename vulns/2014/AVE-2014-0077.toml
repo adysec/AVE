@@ -1,0 +1,67 @@
+[basic]
+description = "Linux 内核 drivers/tty/n_tty.c 文件中的 n_tty_write 函数在处理 LECHO 与 !OPOST 组合模式时存在条件竞争漏洞。当本地用户通过读写操作传入超长字符串时，由于 tty 驱动程序访问权限管理不当，可触发内存破坏，导致系统崩溃或权限提升。该漏洞影响 Linux 内核 3.14.3 及之前版本，攻击者需具备本地用户权限，利用公开的竞争条件利用程序（如 ExploitDB 33516）即可实现提权，危害较大。"
+published = "2014-05-07T10:55:04.337"
+remediation = "升级 Linux 内核至 3.15-rc4 或更高版本（commit 4291086b），该提交修复了 n_tty_write 函数在 LECHO & !OPOST 模式下的竞态条件问题。如无法升级内核，可通过限制本地用户对 PTY 设备的访问权限作为临时缓解措施，或使用 grsecurity/PaX 等内核加固补丁降低利用风险。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["kev"]
+title = "Linux kernel n_tty 条件竞争本地提权漏洞"
+updated = "2026-06-17T00:02:29.250"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2014-0196"]
+ave_id = "AVE-2014-0077"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://bugzilla.novell.com/show_bug.cgi?id=875690",
+    "http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git%3Ba=commit%3Bh=4291086b1f081b869c6d79e5b7441633dc3ace00",
+    "http://linux.oracle.com/errata/ELSA-2014-0771.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2014-05/msg00007.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2014-05/msg00012.html",
+    "http://pastebin.com/raw.php?i=yTSFUBgZ",
+    "http://rhn.redhat.com/errata/RHSA-2014-0512.html",
+    "http://secunia.com/advisories/59218",
+    "http://secunia.com/advisories/59262",
+    "http://secunia.com/advisories/59599",
+    "http://source.android.com/security/bulletin/2016-07-01.html",
+    "http://support.f5.com/kb/en-us/solutions/public/15000/300/sol15319.html",
+    "http://www.debian.org/security/2014/dsa-2926",
+    "http://www.debian.org/security/2014/dsa-2928",
+    "http://www.exploit-db.com/exploits/33516",
+    "http://www.openwall.com/lists/oss-security/2014/05/05/6",
+    "http://www.osvdb.org/106646",
+    "http://www.ubuntu.com/usn/USN-2196-1",
+    "http://www.ubuntu.com/usn/USN-2197-1",
+    "http://www.ubuntu.com/usn/USN-2198-1",
+    "http://www.ubuntu.com/usn/USN-2199-1",
+    "http://www.ubuntu.com/usn/USN-2200-1",
+    "http://www.ubuntu.com/usn/USN-2201-1",
+    "http://www.ubuntu.com/usn/USN-2202-1",
+    "http://www.ubuntu.com/usn/USN-2203-1",
+    "http://www.ubuntu.com/usn/USN-2204-1",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=1094232",
+    "https://github.com/torvalds/linux/commit/4291086b1f081b869c6d79e5b7441633dc3ace00",
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2014-0196",
+    "https://www.exploit-db.com/exploits/33516",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2014/CVE-2014-0196.md",
+    "https://github.com/linux-test-project/ltp/blob/7d3582a1881930a3b0d15f716988e38c5d82c9e4/testcases/cve/cve-2014-0196.c",
+    "https://github.com/SecWiki/linux-kernel-exploits/blob/2d2152cf9a58f668da720d12423e5a8a424eca3a/2014/CVE-2014-0196/README.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/4a0cf863db8d2032b534fdeb22ed679473499848/2014/CVE-2014-0196.json",
+    "https://github.com/hacktoolspack/hack-tools/blob/f2f00f75c5714295bd1157b8756f7bf2047bcc5d/VulScritp/linux/cve-2014-0196-md.c",
+    "https://github.com/infinite-horizon219/Unix-Privilege-Escalation-Exploits-Pack/blob/db431bdbb5e26432d062e56abfee98cdfb5fe4c7/2014/3.15-rc4%20and%20down/CVE-2014-0196.c",
+    "https://github.com/roadwy/DefenderYara/blob/59e39903d9e6667c7c3e55a1f2887f1faab0e423/Exploit/Linux/CVE-2014-0196/Exploit_Linux_CVE-2014-0196_A.yar",
+    "https://github.com/Al1ex/LinuxEelvation/blob/69cee23442f742c50809f75803b4ebca959f9927/CVE-2014-0196/cve-2014-0196.c",
+    "https://github.com/The-Z-Labs/linux-exploit-suggester/blob/937cf955501fe7da85994c98f0ca6151194e7c1d/linux-exploit-suggester.sh",
+    "https://github.com/l3m0n/pentest_tools/blob/d7525da7589a7eb8e3a89c7fdc4d3547af75e757/%E6%9D%83%E9%99%90%E6%94%BB%E9%98%B2/linux/%E5%86%85%E6%A0%B8%E6%8F%90%E6%9D%83/CVE-2014-0196/README.md",
+    "https://github.com/tempbottle/CVE-2014-0196",
+    "https://github.com/SunRain/CVE-2014-0196",
+]
