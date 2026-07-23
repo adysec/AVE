@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD Alpha 平台由于缺少 /dev/random 和 /dev/urandom 随机数设备，导致其上运行的 OpenSSL 0.9.4 及 OpenSSH 在密钥生成过程中无法获得足够的熵源，生成的加密密钥强度显著降低。攻击者可通过暴力破解或密码分析方式，以较低的计算成本还原私钥或会话密钥，从而窃听、解密或篡改受保护的网络通信。该漏洞影响 FreeBSD Alpha 架构上的 OpenSSL 0.9.4 及 OpenSSH，CVSS 评分 5.0，危害等级中等。"
+description = "OpenSSL 0.9.4 及 FreeBSD 平台上的 OpenSSH 未对 /dev/random 和 /dev/urandom 设备的存在性进行正确校验，而 FreeBSD Alpha 系统上并未提供上述熵源设备，导致这些应用程序在生成密钥对或会话密钥时依赖了可预测或不足的随机数源，从而生成了强度极弱的密钥。攻击者无需身份认证，只需在网络上捕获目标主机与服务器之间传输的加密通信数据包，即可利用弱密钥对加密流量进行离线破解或中间人攻击，进而窃取敏感信息或冒充合法用户。该漏洞影响运行 FreeBSD Alpha 并配置了 OpenSSL 0.9.4 或 OpenSSH 的系统环境。"
 published = "2000-06-12T04:00:00.000"
-remediation = "确保Alpha系统存在/dev/random和/dev/urandom设备节点，执行`cd /dev && ./MAKEDEV random urandom`创建；升级OpenSSL至0.9.4以上版本，该版本已修复随机设备检查逻辑；安装熵收集守护进程（如rndcontrol）确保系统拥有足够随机熵源，避免因缺少硬件随机数设备而产生弱密钥。"
+remediation = '升级 FreeBSD 操作系统至 4.0-RELEASE 或更高版本，确保 /dev/random 与 /dev/urandom 设备节点存在。若短期内无法升级系统，可在 /etc/rc.conf 中添加 devfs 规则集以确保随机设备自动创建：devfs_system_ruleset="devfsrules_system"，或手动在 devfs 规则文件（/etc/defaults/devfs.rules）中为 Alpha 平台添加 random 和 urandom 设备规则并重启 devfs。同时将 OpenSSL 升级至 0.9.5 或更高版本，使其具备更完善的随机设备检测机制。如无法立即完成上述操作，应临时禁用受影响服务（如 OpenSSH）并重新生成所有使用 OpenSSL 0.9.4 生成的密钥对，防止弱密钥被利用。'
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "FreeBSD Alpha 平台 OpenSSL/OpenSSH 因缺少随机数设备导致弱密钥生成漏洞"
+sources = ["epss"]
+title = "OpenSSL 随机数设备检查缺失弱密钥漏洞"
 updated = "2026-06-16T21:51:56.717"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-0535"]
 ave_id = "AVE-2000-0613"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://archives.neohapsis.com/archives/freebsd/2000-06/0083.html",
     "http://www.securityfocus.com/bid/1340",
-    "https://github.com/trickest/cve/blob/1b6397ca00ebc515023ce73df945527011e5cc49/2000/CVE-2000-0535.md",
-    "https://github.com/CVEProject/cvelistV5/blob/9bf1bcd98df741ae892c1ba6b8127fb5da623fcc/cves/2000/0xxx/CVE-2000-0535.json",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2000/CVE-2000-0535.md",
+    "https://github.com/CVEProject/cvelistV5/blob/d54cf7a1dffc29cd7b800e8dfe5162e425974620/cves/2000/0xxx/CVE-2000-0535.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0535",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/84a8576323536424cfe4fe56907ba66e1ea3a744/CVE/data/2000/CVE-2000-0535.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f633e81cd9f221a38aa74de486ce9d66b0984930/CVE/data/2000/CVE-2000-0535.json",
     "https://github.com/entrysky/mageni/blob/c58dcc9bc43b7fb267bb10a8083ada356fbc81d1/plugins/2020/openssl/gb_openssl_CVE-2000-0535.nasl",
     "https://github.com/secure-software-engineering/achilles-benchmark-depscanners/blob/78b391f47cbe64adf7a2e2182ff94be604eb94dd/detection/CVE-2000-0535__org.jruby_openssl_0.9.4.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-0535.md",
-    "https://github.com/github/advisory-database/blob/9a3495eb833b3f1f2096187c4b14884afc98b67a/advisories/unreviewed/2022/04/GHSA-7h84-xvh7-f4r4/GHSA-7h84-xvh7-f4r4.json",
+    "https://github.com/github/advisory-database/blob/e34faa994a969a96da73434c6e96d687fa245753/advisories/unreviewed/2022/04/GHSA-7h84-xvh7-f4r4/GHSA-7h84-xvh7-f4r4.json",
     "https://github.com/marcellodesales/aibbp-reverse-engineer/blob/960f610d597aae9fec1cc5f03c68679be00c222d/reverse_engineer/acunetix/vulnerabilities/vdb/2000/0xxx/cve-2000-0535.yaml",
     "https://github.com/SAP/fosstars-rating-core/blob/7b172f42f218f6cfad42f81bd9c9ef49de35b919/docs/oss/security/openssl/openssl.md",
 ]

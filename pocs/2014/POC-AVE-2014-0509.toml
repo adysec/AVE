@@ -1,0 +1,79 @@
+[info]
+author = "ave"
+description = "检测目标是否提供包含 Flash Player 内容的页面，并搜索响应中是否包含存在内存解引用漏洞的 Flash/AIR 版本信息。该漏洞为客户端漏洞，此 PoC 通过被动识别 Flash 内容和版本信息来评估目标风险。"
+id = "POC-AVE-2014-0509"
+name = "CVE-2014-8439 Adobe Flash Player 内存解引用漏洞 PoC"
+severity = "high"
+tags = ["ave-2014-0509"]
+vuln_id = [
+    "CVE-2014-8439",
+    "AVE-2014-0509",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    ".swf",
+    "application/x-shockwave-flash",
+    "<embed",
+    "AC_RunActiveContent",
+    "crossdomain.xml",
+    "swfobject",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/crossdomain.xml"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "cross-domain-policy",
+    "allow-access-from",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/version.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Flash Player",
+    "AIR",
+]
+
+[[poc.requests]]
+follow_redirects = true
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE-PoC/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Flash Player",
+    "swfobject",
+    "AC_RunActiveContent",
+]
