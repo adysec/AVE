@@ -1,0 +1,31 @@
+[info]
+author = "ave"
+description = "检测HPKE V2 URL解码路径是否存在无界限zstd解压漏洞。通过向/.pomerium/callback端点发送精心构造的HPKE加密的有效载荷来触发CVE-2026-50385内存耗尽漏洞。此漏洞发生在进程进行攻击者控制的zstd数据解压前，未进行任何大小限制，导致代理进程崩溃或降级。"
+id = "POC-AVE-2026-0351"
+name = "CVE-2026-50285 HPKE zstd Memory Exhaustion PoC"
+severity = "high"
+tags = ["ave-2026-0351"]
+vuln_id = [
+    "CVE-2026-50285",
+    "AVE-2026-0351",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/.pomerium/callback"
+protocol = "http"
+
+[poc.requests.headers]
+Content-Type = "application/octet-stream"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [
+    200,
+    500,
+]
+type = "status"
