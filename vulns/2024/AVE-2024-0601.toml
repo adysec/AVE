@@ -1,0 +1,44 @@
+[basic]
+description = "Linux 内核 Netrom 协议栈中 nr_route_frame 函数未在访问 skb->data 前验证 skb 缓冲区长度，导致通过 IEEE 802.15.4 发送原始消息时触发未初始化内存读取（KMSAN 报告 ax25cmp 中的 uninit-value）。该漏洞影响 Linux 内核 Netrom 子系统，攻击者需本地低权限访问且无需用户交互，通过发送特制的 IEEE 802.15.4 原始帧触发缓冲区越界读取，导致内核崩溃或拒绝服务（高可用性影响），CVSS 5.5（MEDIUM，AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H），Linux Verification Center 使用 Syzkaller 发现，已通过在 nr_route_frame 中添加 skb->len 校验修复。"
+published = "2025-01-15T13:15:11.853"
+remediation = "升级内核至支持netrom安全补丁的版本（如Linux 6.10及以上），或直接应用内核补丁以实现skb->len长度验证。通过编译启动参数`hardlockup_detector.unprivileged_only=1`强制启用内核硬锁进行实时监控，禁用不必要的netrom路由协议模块并配置net.ipv4.ipfrag_max_distinct=0以限制潜在的副作用攻击，定期执行`netstat -an | grep netrom`检查端口安全状态，并同时确保系统已应用最新的LTS安全补丁包以防止此类内核区域的缓冲区访问安全问题。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel netrom 缓冲区访问安全漏洞"
+updated = "2026-06-17T08:14:04.110"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57802"]
+ave_id = "AVE-2024-0601"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/3ba7f80d98d4965349cfcd258dd78418496c1625",
+    "https://git.kernel.org/stable/c/64e9f54a14f2887be8634fb85cd2f13bec18a184",
+    "https://git.kernel.org/stable/c/769e36c2119a51070faf58819c58274f57a088db",
+    "https://git.kernel.org/stable/c/78a110332ae268d0b005247c3b9a7d703b875c49",
+    "https://git.kernel.org/stable/c/a4fd163aed2edd967a244499754dec991d8b4c7d",
+    "https://git.kernel.org/stable/c/cf6befa7c569787f53440274bbed1405fc07738d",
+    "https://git.kernel.org/stable/c/f647d72245aadce30618f4c8fd3803904418dbec",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57802.md",
+    "https://github.com/CVEProject/cvelistV5/blob/2c72b537371947a8374cf9848353741736f9e49d/cves/2024/57xxx/CVE-2024-57802.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57802",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57802.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2024/57xxx/CVE-2024-57802.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57802.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CveServices-CVE-2024-57802-2025-11-03-1451",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-57802.md",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2025/01/GHSA-xm36-ph36-7r35/GHSA-xm36-ph36-7r35.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57802",
+]
