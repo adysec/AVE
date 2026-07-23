@@ -1,0 +1,45 @@
+[basic]
+description = "Linux内核的af_packet协议栈存在链路层数据包处理漏洞。由于vlan_get_tci()函数在处理MSG_PEEK标志位时验证不足，导致函数试图读取和修改内核中共享的socket缓冲区(skb)的数据，但同时没有正确处理多CPU并发访问的情况。攻击者可以向目标系统发送特定的IPv6数据包，触发函数对不受保护的skb成员进行读写操作，从而破坏内核内存一致性，诱发系统崩溃并产生核心转储。受影响的Linux内核版本主要包括Ubuntu 24.04 LTS、Ubuntu 20.04 LTS、Debian 11等系统网络子模块，攻击者通过本地socket接口发送恶意数据包即可触发漏洞，对系统稳定性造成严重影响。该漏洞通过修正vlan_get_tci()函数以完全避免直接操作skb、添加常量修饰符以及完善标志位检查来修复，目前厂商已发布安全补丁。"
+published = "2025-01-15T13:15:14.867"
+remediation = "建议立即升级 Linux 内核至 6.13.0 或更高版本（已修复 af_packet vlan_get_tci() MSG_PEEK 崩溃问题）。Debian 11 用户请安装 DLA-4075-1 更新（内核 5.10.223-1 及以上）；Ubuntu 24.04 LTS 用户安装 USN-7381-1 更新（linux-image-6.8.0-52-generic 及以上）；Ubuntu 20.04 LTS 用户安装 USN-7459-1 更新（linux-image-5.15.0-127-generic 及以上）。RHEL/Rocky/AlmaLinux 用户请通过 dnf/yum 更新至内核 5.14.0-503.11.1.el9_5 或更高版本。若无法立即重启内核，可暂时禁用 af_packet 模块（modprobe -r af_packet 并加入 modprobe.blacklist=af_packet 内核参数）作为临时缓解，但会导致抓包工具（如 tcpdump、Wireshark）失效，建议尽快安装内核更新并重启。请通过发行版官方仓库（apt/dnf/yum/zypper）安装更新，避免使用非官方内核。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 基金会 内核 af_packet 模块 VLAN TCI MSG_PEEK 处理缺陷"
+updated = "2026-06-17T08:14:11.207"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57902"]
+ave_id = "AVE-2024-0627"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/65c67049e9ed481f6b52264b39618b8c6dfb1d3e",
+    "https://git.kernel.org/stable/c/66ffb0cf2125dcf9e902eede4a43653a24fd9cb2",
+    "https://git.kernel.org/stable/c/77ee7a6d16b6ec07b5c3ae2b6b60a24c1afbed09",
+    "https://git.kernel.org/stable/c/7aa78d0d8546d8ce5a764add3f55d72e707c18f1",
+    "https://git.kernel.org/stable/c/b65292a548d847099a4fe0fff53122a06e798e25",
+    "https://git.kernel.org/stable/c/d91b4a9baa018a001d5c884e236c0cfd31f9f4a1",
+    "https://git.kernel.org/stable/c/fa57f07ba0622c8692f40e1300adca59277b0044",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-265688.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57902.md",
+    "https://github.com/CVEProject/cvelistV5/blob/f02fdda2bd389f5492ddcbf2ad808b3b60f20645/cves/2024/57xxx/CVE-2024-57902.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57902",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57902.yaml",
+    "https://github.com/0xMarcio/cve/blob/ebd29ed5f9b5a2615e147ccbf1deed9bc7c5ae84/2024/CVE-2024-57902.md",
+    "https://github.com/cisagov/vulnrichment/blob/48383ebc821dc38e09ecfcea6060abac8038780f/2024/57xxx/CVE-2024-57902.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57902.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CveServices-CVE-2024-57902-2025-11-03-1440",
+    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2025/01/GHSA-fr76-33m7-w46w/GHSA-fr76-33m7-w46w.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57902",
+]
