@@ -1,32 +1,36 @@
 [info]
-author = "AVE"
-description = "Matt Wright FormMail CGI 脚本（1.6/1.7/1.8 版本）存在环境变量信息泄露漏洞。远程攻击者通过向 formmail.cgi 传递恶意 env_report 参数，可获取服务器端敏感环境变量信息。"
+author = "ave"
+description = "Matt Wright FormMail 1.6/1.7/1.8 CGI 脚本存在信息泄露漏洞，远程攻击者通过向 env_report 参数发送请求，无需认证即可获取服务器环境变量（如 PATH、SERVER_ROOT 等敏感信息）。"
 id = "POC-AVE-2000-0339"
-name = "Matt Wright FormMail 环境变量泄露漏洞 PoC"
+name = "Matt Wright FormMail CGI 环境变量泄露漏洞 PoC"
 severity = "medium"
-tags = ["cve-2000-0411"]
+tags = ["ave-2000-0339"]
 vuln_id = [
     "CVE-2000-0411",
     "AVE-2000-0339",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/formmail.cgi"
+path = "/{{BaseURL}}/cgi-bin/FormMail.cgi"
 protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "PATH",
-    "DOCUMENT_ROOT",
-    "SERVER_PORT",
-]
+words = ["env_report"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/FormMail"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["env_report"]
