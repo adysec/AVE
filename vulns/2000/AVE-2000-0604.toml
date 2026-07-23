@@ -1,11 +1,11 @@
 [basic]
-description = "glibc 2.1.1 中的 unsetenv 函数在处理重复传入的环境变量时存在缺陷，当同一环境变量（如 LD_PRELOAD 或 LD_LIBRARY_PATH）被重复指定时，unsetenv 无法正确清除该变量。本地攻击者可利用此漏洞，在 setuid 程序中传入重复的恶意环境变量，绕过安全限制执行任意命令，从而获取提升后的权限。该漏洞影响使用 glibc 2.1.1 的 Linux 系统，CVSS 评分 7.2，危害等级高。"
+description = "glibc 2.1.1 的 unsetenv 函数存在缺陷，当程序接收到重复的环境变量（如 LD_PRELOAD 或 LD_LIBRARY_PATH）时，未能正确清除该变量，导致本地攻击者可在 setuid 程序（如 ProFTPd 1.2 pre6 等以 root 权限运行的服务）中注入恶意共享库，进而实现本地提权至 root。该漏洞影响使用 glibc 2.1.1 的 Linux 系统，攻击者需具备本地账户权限，通过设置重复环境变量启动 setuid 程序即可触发，利用方式为构造恶意 LD_PRELOAD/LD_LIBRARY_PATH 环境变量劫持动态链接器加载恶意 so 文件实现代码执行。CVSS 7.2（本地/低复杂度/无需认证/完全影响）。"
 published = "2000-11-14T05:00:00.000"
-remediation = "升级 glibc 至 2.1.2 或更高版本，该版本修复了 unsetenv 对重复环境变量处理不当的问题。对于无法立即升级的系统，可在启动 setuid 程序前手动清除 LD_PRELOAD、LD_LIBRARY_PATH 等危险环境变量，或移除受影响 setuid 程序的 suid 权限位作为临时缓解措施。"
+remediation = '立即升级 ProFTPd 至 1.2.0 正式版或更高版本（如 1.2.10），或升级 glibc 至 2.1.2 以上版本修复 unsetenv 漏洞。若无法立即升级，可临时在 /etc/ftpaccess 中添加 "DenyAll" 限制匿名访问，或在防火墙层面限制 FTP 端口 (21/tcp) 仅允许受信 IP 访问作为临时缓解措施。建议优先从 ProFTPd 官网 (http://www.proftpd.org/) 下载最新稳定版源码编译安装，或使用发行版包管理器 (如 apt upgrade proftpd / yum update proftpd) 更新至修复版本。若使用 Mandrake Linux，请安装官方安全补丁 MDKSA-2000:040。'
 score = 7.2
 severity = "HIGH"
-sources = ["redhat"]
-title = "GNU glibc 2.1.1 unsetenv 函数重复环境变量本地权限提升漏洞"
+sources = ["cve"]
+title = "ProFTPD ProFTPd 1.2 pre6 snprintf 格式化字符串漏洞"
 updated = "2026-06-16T21:52:32.550"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0824"]
 ave_id = "AVE-2000-0604"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -38,11 +38,11 @@ urls = [
     "http://www.turbolinux.com/pipermail/tl-security-announce/2000-September/000020.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5173",
     "https://www.exploit-db.com/exploits/19503",
-    "https://github.com/CVEProject/cvelistV5/blob/377bb49f7479dd297ab5004f75a37c291a136578/cves/2000/0xxx/CVE-2000-0824.json",
+    "https://github.com/CVEProject/cvelistV5/blob/2c72b537371947a8374cf9848353741736f9e49d/cves/2000/0xxx/CVE-2000-0824.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0824",
     "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0824.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1b84eedba993546f37a880c6d2d084176a1f04a7/CVE/data/2000/CVE-2000-0824.json",
-    "https://github.com/github/advisory-database/blob/db909d46c3d9b98ec1f95daa3c88d7a8990ea8f5/advisories/unreviewed/2022/04/GHSA-7573-6fcp-5wh3/GHSA-7573-6fcp-5wh3.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bae3e1da022eb7a639aee03446096716b0c4798f/CVE/data/2000/CVE-2000-0824.json",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2022/04/GHSA-7573-6fcp-5wh3/GHSA-7573-6fcp-5wh3.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152800_152900.json",
     "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/M/mandrake_MDKSA-2000-040.nasl",
