@@ -1,11 +1,11 @@
 [basic]
-description = 'S.u.S.E. Linux、Slackware、Turbolinux、OpenLinux 等多个 Linux 发行版中的 fdmount 工具存在栈缓冲区溢出漏洞，源于对 mountpoint 参数缺乏长度校验。本地攻击者若属于 "floppy" 用户组，可通过传递超长 mountpoint 参数触发溢出，覆盖栈上返回地址或函数指针，从而执行任意代码并提升至 root 权限。该漏洞影响 S.u.S.E. 4.x/5.x/6.x/7.0、Slackware 3.x/4.0、Turbolinux 6、OpenLinux 7.0 等版本，攻击向量为本地、低复杂度、无需认证，CVSS 7.2（HIGH），可导致系统完全失陷。厂商已发布补丁修复，用户需升级 fdmount 或移除其 setuid 位。'
+description = 'fdmount 是 Linux 系统中用于挂载软盘设备的工具，该工具在处理 mountpoint 参数时存在缓冲区溢出漏洞，以 "floppy" 组成员身份登录的本地攻击者可通过传入超长的挂载点路径参数触发溢出，进而以 root 权限执行任意命令。该漏洞影响 S.u.S.E. 4.x/5.x/6.x/7.x、Slackware 3.x/4.0、Turbolinux 6 以及 OpenLinux 7.0 等 Linux 发行版，CVSS v2 评分 7.2，危害等级高。'
 published = "2000-05-22T04:00:00.000"
-remediation = "升级到包含安全修复的Linux发行版版本，如升级S.u.S.E.到SPx以上版本、Slackware到4.1以上版本、Turbolinux到8以上版本、或OpenLinux到9.0以上版本，并移除过时的fdmount工具；如无法立即升级，可通过修改权限限制仅允许非root用户执行fdmount命令，并限制mount点参数长度为32字符以下，以降低被利用的风险。"
+remediation = "对于 fdmount 缓冲区溢出漏洞（CVE-2000-0438），应立即移除 fdmount 程序的 SUID 权限：执行 chmod u-s /usr/bin/fdmount 或用 ls -l /usr/bin/fdmount 确认 SUID 位已清除。同时将 floppy 组中非必要用户移除：执行 gpasswd -d <用户名> floppy，仅保留必须使用软驱的账户。如厂商已发布补丁，应升级至 fdmount 修复版本（如 S.u.S.E.、Slackware、Turbolinux、OpenLinux 及 Mandrake Linux 发行版安全更新）以彻底消除该漏洞。"
 score = 7.2
 severity = "HIGH"
-sources = ["epss"]
-title = "Linux fdmount 本地缓冲区溢出漏洞"
+sources = ["avd"]
+title = "S.u.S.E. Linux 等发行版 fdmount 本地缓冲区溢出漏洞"
 updated = "2026-06-16T21:51:44.043"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0438"]
 ave_id = "AVE-2000-0358"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,11 +25,11 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-05/0245.html",
     "http://www.securityfocus.com/bid/1239",
     "https://www.exploit-db.com/exploits/19954",
-    "https://github.com/CVEProject/cvelistV5/blob/60bbc98c39201e6f5661b9e41f1492ce39335948/cves/2000/0xxx/CVE-2000-0438.json",
+    "https://github.com/CVEProject/cvelistV5/blob/9eab3e49abff7d8657a641d028b9281334f27eaa/cves/2000/0xxx/CVE-2000-0438.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0438",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0438.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f0111a41156462d46f484c055bdeafa69cf38c8e/CVE/data/2000/CVE-2000-0438.json",
-    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2022/04/GHSA-fg2g-48g8-4xwm/GHSA-fg2g-48g8-4xwm.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0438.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/ee8b01743dd7b9fb9124ebc430ff19a67c89c1a6/CVE/data/2000/CVE-2000-0438.json",
+    "https://github.com/github/advisory-database/blob/905c759ea25c11a59e5c85d4af57ced286cebb3a/advisories/unreviewed/2022/04/GHSA-fg2g-48g8-4xwm/GHSA-fg2g-48g8-4xwm.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
