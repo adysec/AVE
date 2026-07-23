@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过将JSP文件扩展名改为大写(.JSP)绕过编译执行机制直接获取源代码，验证是否存在源代码泄露漏洞"
+description = "检测 IBM WebSphere Server 3.0.2 是否响应大写 JSP 扩展名请求并返回源码。通过发送 GET 请求访问 .JSP（大写）后缀文件，若响应包含 JSP 标签（<%等）或 Java 代码特征，则说明存在源代码泄露漏洞。"
 id = "POC-AVE-2000-0557"
-name = "IBM WebSphere Server JSP源代码泄露漏洞 PoC"
+name = "CVE-2000-0497 PoC"
 severity = "high"
 tags = ["ave-2000-0557"]
 vuln_id = [
@@ -18,15 +18,19 @@ method = "GET"
 path = "/{{BaseURL}}/index.JSP"
 protocol = "http"
 
-[poc.requests.headers]
-User-Agent = "Mozilla/5.0"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "<%@",
-    "out.println",
-    "page import",
+    "<%",
+    "page ",
+    "import",
+    "java.",
+    "Servlet",
+    "out.print",
 ]
