@@ -1,11 +1,11 @@
 [basic]
-description = "BEA Systems WebLogic Express 默认配置存在源代码泄露漏洞，远程攻击者无需认证即可向目标服务器发送以 `/file/` 开头的特制 URL 请求，触发默认 Servlet 直接返回文件源代码而非执行结果，导致 JSP、Java 源文件及配置文件等敏感信息泄露。该漏洞影响 WebLogic Express 3.1.8、4.x 及 5.1.0 版本，攻击者可据此进一步挖掘应用逻辑缺陷或获取数据库连接凭证。"
-published = "2000-06-21"
-remediation = "立即升级至 BEA WebLogic 5.1.0 Service Pack 1 或更高版本；若无法升级，编辑 weblogic.properties 文件，将 weblogic.http.default.servlet 设置为 none，或移除 weblogic.http.initFileServlet 中对 /file/ 路径的映射。同时在 Web 服务器层面禁止对 /file/ 路径的直接访问。"
-score = 5.0
+description = "BEA Systems WebLogic Express 3.1.8/4/5 默认配置存在源代码泄露漏洞，默认 Servlet 对以 /file/ 开头的 URL 请求未做处理直接返回文件内容，导致远程未授权攻击者可通过构造包含 /file/ 前缀的 URL 请求直接读取服务器上的应用程序源代码文件，获取业务逻辑、数据库配置、密钥等敏感信息。该漏洞影响 BEA WebLogic Express 3.1.8、4.x、5.x 版本，CVSS 评分 5.0（中危），攻击向量为网络、攻击复杂度低、无需认证、仅影响机密性。攻击者无需认证即可通过构造类似 /file/WEB-INF/classes/... 的 URL 直接下载类文件、JSP 源码及配置文件，进而进一步攻击应用系统。BEA 官方已发布补丁修复该默认配置缺陷，建议升级至修复版本或配置 Servlet 过滤 /file/ 路径请求。"
+published = "2000-06-21T04:00:00.000"
+remediation = "升级 BEA WebLogic Express 到支持安全补丁的 6.1 SP1 或更高版本，并禁用默认文件Servlet服务。具体操作：1）停止当前服务器并安装BEA 2001年6月发布的6.1 SP1安全更新；2）编辑WebLogic.xml配置文件，移除或注释掉`<param-name>enableDefaultServlet</param-name>`项；3）在AdminServer中重新部署应用，确保`/file/*`路径被URL重写过滤；4）如无法立即升级，可通过WebLogic控制台禁用默认Servlet功能或在应用层面添加安全规则阻止所有请求以`/file/`开头的路径。"
+score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "BEA WebLogic Express 源代码泄露漏洞"
+sources = ["epss"]
+title = "BEA Systems WebLogic Express 源代码泄露漏洞"
 updated = "2026-06-16T21:51:52.023"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0500"]
 ave_id = "AVE-2000-0419"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,4 +26,15 @@ urls = [
     "http://www.securityfocus.com/bid/1378",
     "http://www.weblogic.com/docs51/admindocs/http.html#file",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4775",
+    "https://www.exploit-db.com/exploits/20027",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2000/CVE-2000-0500.md",
+    "https://github.com/CVEProject/cvelistV5/blob/2c72b537371947a8374cf9848353741736f9e49d/cves/2000/0xxx/CVE-2000-0500.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0500",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-0500.md",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2022/04/GHSA-j4g2-g246-6526/GHSA-j4g2-g246-6526.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0500.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
+    "https://github.com/dark-warlord14/Unofficial-OSWE-Exam-Notes/blob/031d7fbe69f52a1f2fa93ab0e5fd5f355d9b98af/more_notes/perl.md",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--062d6540-cb36-4617-9700-335d747c1187.json",
 ]
