@@ -1,0 +1,44 @@
+[basic]
+description = "Linux 内核 IIO 子系统中的 Kionix KMX61 IMU 驱动触发缓冲区存在信息泄漏漏洞。漏洞原理是驱动使用的本地 buffer 数组在向用户空间推送触发缓冲区数据时，仅通过 iio_for_each_active_channel() 为活跃通道赋值，未初始化非活跃通道的数组元素，导致未初始化的内核栈内存被泄露至用户空间。影响范围为启用了 CONFIG_IIO_STM_SENSORS_KMX61 配置的 Linux 内核版本。攻击条件为本地攻击者拥有低权限访问权限，无需用户交互，可通过触发缓冲区读取操作获取内核内存敏感信息，导致高机密性影响和高可用性影响，CVSS 3.1 评分 7.1（HIGH）。修复方式为在使用 buffer 数组前将其初始化为零。Linux 内核已在相关版本中通过提交修复此漏洞。"
+published = "2025-01-19T12:15:24.990"
+remediation = '建议立即升级 Linux 内核至 6.12.10 或更高版本（包含修复补丁 0495104b0f2f36cb7a3413ea0cf997a2ae2a70e9）。Ubuntu/Debian 执行：apt-get update && apt-get install linux-image-6.12.10；CentOS/RHEL 执行：yum update kernel；Fedora 执行：dnf update kernel。如无法立即升级内核，可临时禁用 KMX61 驱动：echo "blacklist kmx61" > /etc/modprobe.d/kmx61.conf 并重启，或在内核配置中禁用 CONFIG_IIO_STM_SENSORS_KMX61 后重新编译内核。该漏洞影响内核 4.0 至 6.12.9 版本，本地低权限攻击者可读取内核栈内存，建议尽快应用厂商安全更新。'
+score = 7.1
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Kernel KMX61 IMU 驱动 信息泄漏漏洞"
+updated = "2026-06-17T08:14:12.337"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57908"]
+ave_id = "AVE-2024-0630"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0871eb8d700b33dd7fa86c80630d62ddaef58c2c",
+    "https://git.kernel.org/stable/c/565814cbbaa674d2901428796801de49a611e59d",
+    "https://git.kernel.org/stable/c/6985ba4467e4b15b809043fa7740d1fb23a1897b",
+    "https://git.kernel.org/stable/c/6ae053113f6a226a2303caa4936a4c37f3bfff7b",
+    "https://git.kernel.org/stable/c/a07f698084412a3ef5e950fcac1d6b0f53289efd",
+    "https://git.kernel.org/stable/c/a386d9d2dc6635f2ec210b8199cfb3acf4d31305",
+    "https://git.kernel.org/stable/c/cde312e257b59ecaa0fad3af9ec7e2370bb24639",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57908.md",
+    "https://github.com/CVEProject/cvelistV5/blob/9615a84be27b28681e8a92dcc11ff360547df421/cves/2024/57xxx/CVE-2024-57908.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57908.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57908",
+    "https://github.com/cisagov/vulnrichment/blob/48383ebc821dc38e09ecfcea6060abac8038780f/2024/57xxx/CVE-2024-57908.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57908.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CveServices-CVE-2024-57908-2025-11-03-1452",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-57908.md",
+    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2025/01/GHSA-f5j6-wv5v-rgw9/GHSA-f5j6-wv5v-rgw9.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57908",
+]

