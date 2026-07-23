@@ -1,0 +1,40 @@
+[basic]
+description = "Linux 内核 DRM DP MST（DisplayPort 多流传输）驱动中存在竞态条件漏洞。当 MST 拓扑在接收下行回复或上行请求边带消息过程中被移除时，`drm_dp_mst_topology_mgr` 的 `up_req_recv/down_rep_recv` 状态可能在一个线程中通过 `drm_dp_mst_set_mst(false)` 被重置，同时另一线程正在通过 `drm_dp_mst_handle_down_rep()` 或 `drm_dp_mst_handle_up_req()` 读取/解析消息，且读取/解析过程未持有锁保护接收状态，导致内存损坏。本地低权限攻击者可利用此竞态条件触发内存破坏，可能导致系统崩溃或权限提升。CVSS 评分 7.0，危害等级高。"
+published = "2025-01-11T15:15:07.930"
+remediation = "立即将 Linux 内核升级至以下修复版本：6.1.120、6.6.66、6.12.5 或更高版本。Ubuntu 22.04 LTS 用户可通过 `apt update && apt install linux-image-$(uname -r | sed 's/.*/generic/')` 安装 USN-7381-1 或 USN-7450-1 安全更新。如无法立即升级内核，可在 BIOS/引导参数中禁用 DisplayPort MST 功能（添加 `drm.dp_mst=0` 到内核引导参数）作为临时缓解措施。"
+score = 7
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux kernel DRM DP MST 竞态条件漏洞"
+updated = "2026-06-17T08:14:07.567"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57876"]
+ave_id = "AVE-2024-0614"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/94b33b2d7640e807869451384eb88321dd0ffbd4",
+    "https://git.kernel.org/stable/c/a6fa67d26de385c3c7a23c1e109a0e23bfda4ec7",
+    "https://git.kernel.org/stable/c/be826b4451fd187a7c0b04be4f8243d5df6e0450",
+    "https://git.kernel.org/stable/c/d834d20d2e86c52ed5cab41763fa61e6071680ef",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57876.md",
+    "https://github.com/CVEProject/cvelistV5/blob/2ee9e77ceac534c670c42073c99286dbb69e9733/cves/2024/57xxx/CVE-2024-57876.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57876.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57876",
+    "https://github.com/0xMarcio/cve/blob/ebd29ed5f9b5a2615e147ccbf1deed9bc7c5ae84/2024/CVE-2024-57876.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57876.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CveServices-CVE-2024-57876-2025-11-03-1439",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c872795777255e25a47f155fd6d323c05ea13ab9/CVE/data/2024/CVE-2024-57876.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2024-57876.html",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2025/01/GHSA-3gjf-8gc5-3w3x/GHSA-3gjf-8gc5-3w3x.json",
+]
