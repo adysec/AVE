@@ -1,11 +1,11 @@
 [basic]
-description = "HP-UX 10.20 及 11.0 系统中的 SNMP 守护进程（snmpd）的配置文件 snmpd.conf 存在权限配置不当漏洞，该文件被设置为全局可写权限。拥有本地访问权限的攻击者可利用此漏洞修改 SNMP 服务配置，例如更改 SNMP 团体字符串、启用或禁用管理功能，甚至通过注入恶意配置执行任意命令以提升权限至 root。该漏洞影响 HP-UX 10.20 和 11.0 版本，需本地用户身份才能利用。"
+description = "HP-UX操作系统SNMPD服务存在文件权限漏洞，该服务存储SNMP配置文件的权限设置不当，导致未授权攻击者可以读取或修改配置文件。攻击者可通过网络请求访问/snmpd.conf等敏感文件，获取系统配置信息，破坏SNMP服务正常运行，甚至可能利用配置漏洞提升系统权限。该漏洞影响HP-UX 10.20和11.0版本，攻击无需身份验证即可执行，安全风险极高。"
 published = "2000-06-07"
-remediation = "立即修复 /etc/snmpd.conf 权限：`chmod 600 /etc/snmpd.conf` 或 `chmod 644 /etc/snmpd.conf`，确保非 root 用户无法写入。安装 HP-UX 安全补丁（如 PHSS_21120 系列）。在 /etc/hosts.allow 中限制 snmpd 仅允许受信任管理站 IP 访问，必要时在防火墙层面封闭 UDP 161 端口的非授权访问。"
+remediation = "升级 HP-UX 至 11.0 补丁 PHNE_20004 或 10.20 补丁 PHNE_19987 修复 SNMPD 文件权限漏洞；或临时修改 /var/adm/snmpd/.snmpd 文件权限为 600 (chmod 600 /var/adm/snmpd/.snmpd) 并限制 snmpd 进程权限，防止非特权用户读取敏感配置文件。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "HP HP-UX SNMPD 文件权限漏洞"
+sources = ["epss"]
+title = "HP-UX 10.20/11.0 文件权限漏洞"
 updated = "2000-06-07"
 
 [exploit]
@@ -17,17 +17,17 @@ aliases = ["CVE-2000-0515"]
 ave_id = "AVE-2000-0429"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://www.exploit-db.com/exploits/20002",
-    "https://github.com/CVEProject/cvelistV5/blob/4441343672f486c63736487674c197dfd2a4f256/cves/2000/0xxx/CVE-2000-0515.json",
+    "https://github.com/CVEProject/cvelistV5/blob/f02fdda2bd389f5492ddcbf2ad808b3b60f20645/cves/2000/0xxx/CVE-2000-0515.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0515",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0515.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/81cdfffcd86317dec05d7dfba407f93d96d91273/CVE/data/2000/CVE-2000-0515.json",
-    "https://github.com/github/advisory-database/blob/9a3495eb833b3f1f2096187c4b14884afc98b67a/advisories/unreviewed/2022/04/GHSA-7pwx-75rm-fxfq/GHSA-7pwx-75rm-fxfq.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0515.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/45906bb48c7a525a11d1008ce22e1e5c2f2f58c2/CVE/data/2000/CVE-2000-0515.json",
+    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2022/04/GHSA-7pwx-75rm-fxfq/GHSA-7pwx-75rm-fxfq.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0515.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--4fb9def3-4814-451d-9cb3-eef0e78269d2.json",
