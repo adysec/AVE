@@ -1,0 +1,42 @@
+[basic]
+description = "libp2p的gossipsub模块在处理IHAVE和IWANT控制消息时存在未限制消息ID数量的缺陷。攻击者可向受影响的节点发送包含大量（约18万个）随机消息ID的4MB帧，导致节点同步迭代所有消息ID，阻塞Node.js事件循环约200毫秒。IHAVE变体需要约10个Sybil节点才能完全阻塞事件循环（阻塞时间超过心跳周期），而IWANT变体无速率限制，单个节点即可持续占用80%以上事件循环。该漏洞影响所有使用默认配置的@libp2p/gossipsub节点，包括以太坊共识客户端（如Lodestar）、启用pubsub的IPFS节点及任何调用createLibp2p并配置gossipsub服务的应用。攻击条件为节点接受入站连接且未自定义decodeRpcLimits参数。利用方式为连接目标节点并持续发送特制的超大IHAVE或IWANT控制消息。已在16.0.0版本中通过设置合理的解码限制修复。"
+published = "2026-07-08T21:16:49.137"
+remediation = "升级 @libp2p/gossipsub 至 16.0.0 或更高版本，该版本将 maxIhaveMessageIDs 和 maxIwantMessageIDs 默认值从 Infinity 改为 5000，限制单帧迭代的消息 ID 数量。若暂时无法升级，可在创建 gossipsub 实例时显式配置 decodeRpcLimits 参数，将 maxIhaveMessageIDs 和 maxIwantMessageIDs 设置为有限值（如 5000）。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "libp2p @libp2p/gossipsub CPU拒绝服务漏洞"
+updated = "2026-07-10T19:10:59.333"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-49866",
+    "GHSA-cwc9-cp4j-mcvv",
+]
+ave_id = "AVE-2026-0330"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/libp2p/js-libp2p/commit/773dd80ded24dbd6b19e675c89fd2f3b45f2d899",
+    "https://github.com/libp2p/js-libp2p/pull/3520",
+    "https://github.com/libp2p/js-libp2p/releases/tag/gossipsub-v16.0.0",
+    "https://github.com/libp2p/js-libp2p/security/advisories/GHSA-cwc9-cp4j-mcvv",
+    "https://github.com/CVEProject/cvelistV5/blob/7a274ec07043f54c07d0a3b5c7fc89ba5793f023/cves/2026/49xxx/CVE-2026-49866.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/9a0b7a19487f40b2e217de2ad9f19cbcad032a8a/pocs/2026/CVE-2026-49866.md",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2026/49xxx/CVE-2026-49866.json",
+    "https://github.com/Tabll/gemnasium-db/blob/de1cbf8802a4c6060caaa5924b50812f2a62fead/npm/@libp2p/gossipsub/CVE-2026-49866.yml",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/ef01d7e98bf039082d22217e9d85a4cfb59bb732/reports/2026-07-08/TIER_3_CVE-2026-49866.md",
+    "https://github.com/TMA84/cvealert/blob/26fa6fb4c5bf093f7e54213d60f33d0f834a139c/content/posts/cve-2026-49866.md",
+    "https://github.com/stevologic/security-recipes.ai/blob/62f018f20b9d742e5172b0bfe0117dd1e316969c/content/recipes/cve/cve-2026-49866-libp2p-cpu-dos-via-oversized-ihave-and-iwant-control-message-arrays.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1decc7ade63192f9f527bfb87145d1636c01cc59/CVE/data/2026/CVE-2026-49866.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2026-49866.md",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/github-reviewed/2026/07/GHSA-cwc9-cp4j-mcvv/GHSA-cwc9-cp4j-mcvv.json",
+]
