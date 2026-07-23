@@ -1,0 +1,46 @@
+[basic]
+description = "Linux 内核 af_packet 模块存在一个漏洞，源于 vlan_get_protocol_dgram() 函数在处理 IPv6 报文时未能正确处理 MSG_PEEK 操作。当攻击者向目标系统发送精心构造的 IPv6 报文时，该函数会因网络缓冲区管理不当而崩溃，导致内核 panic。这种漏洞可以远程触发，无需身份验证，可能导致系统崩溃和权限提升。受影响的 Linux 内核版本使用 af_packet 模块进行数据包捕获，特别是在处理 IPv6 流量时使用自定义的 socket 操作。该漏洞的根源在于函数在 MSG_PEEK 条件下无法安全管理报文缓冲区，导致内存访问失控并触发内核 BUG。"
+published = "2025-01-15T13:15:14.747"
+remediation = "建议立即升级 Linux 内核至已修复版本：Linux 6.13-rc4 及后续稳定版（含修复提交 af_packet: fix vlan_get_protocol_dgram() vs MSG_PEEK）。各发行版修复版本：Debian 11 升级至 linux-image-5.10.234-1 或更高（DLA-4075-1）；Ubuntu 24.04 LTS 升级至 linux-image-6.8.0-53-generic 或更高（USN-7381-1）；Ubuntu 20.04 LTS 升级至 linux-image-5.15.0-131-generic 或更高（USN-7459-1）；RHEL/CentOS 等待 RHSA-2025 补丁。暂无法升级内核时，可通过禁用 af_packet 模块（`modprobe -r af_packet` 并加入 blacklist）或限制本地非特权用户访问 AF_PACKET 套接字（`sysctl -w net.packet.enable=0`）作为临时缓解措施，但会影响抓包工具（如 tcpdump）功能。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Linux内核 af_packet模块MSG_PEEK处理不当导致内核崩溃漏洞"
+updated = "2026-06-17T08:14:10.977"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57901"]
+ave_id = "AVE-2024-0626"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0d3fa6c3c9ca7aa255696150f5b759ac4a4974e1",
+    "https://git.kernel.org/stable/c/560cbdd26b510626f3f4f27d34c44dfd3dd3499d",
+    "https://git.kernel.org/stable/c/5d336714db324bef84490c75dcc48b387ef0346e",
+    "https://git.kernel.org/stable/c/a693b87692b4d7c50f4fc08a996678d60534a9da",
+    "https://git.kernel.org/stable/c/cd8488fdc7116f6da277515647b167859d4f72b1",
+    "https://git.kernel.org/stable/c/de4f8d477c67ec1d7c28f3486c3e47d147d90a01",
+    "https://git.kernel.org/stable/c/f91a5b8089389eb408501af2762f168c3aaa7b79",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-265688.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-398330.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57901.md",
+    "https://github.com/CVEProject/cvelistV5/blob/f02fdda2bd389f5492ddcbf2ad808b3b60f20645/cves/2024/57xxx/CVE-2024-57901.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57901",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57901.yaml",
+    "https://github.com/0xMarcio/cve/blob/ebd29ed5f9b5a2615e147ccbf1deed9bc7c5ae84/2024/CVE-2024-57901.md",
+    "https://github.com/cisagov/vulnrichment/blob/48383ebc821dc38e09ecfcea6060abac8038780f/2024/57xxx/CVE-2024-57901.json",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57901.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CveServices-CVE-2024-57901-2025-11-03-1440",
+    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2025/01/GHSA-j9xh-8839-85hc/GHSA-j9xh-8839-85hc.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57901",
+]
