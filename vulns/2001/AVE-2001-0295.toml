@@ -1,11 +1,11 @@
 [basic]
-description = "标签中。<value>Exim 邮件传输代理多个版本在批处理 SMTP 模式下存在格式字符串漏洞，远程攻击者无需身份认证即可通过在 SMTP 邮件头中构造恶意的格式字符串触发该漏洞，进而在目标系统上执行任意代码。该漏洞影响包括 Red Hat 3.22-10、Debian 3.12 及 Conectiva 3.16 在内的多个 Linux 发行版所打包的 Exim 3.x 版本，CVSS 评分 7.5，危害等级高。攻击者可通过发送特制的 SMTP 流量即可利用此漏洞，实现远程代码执行。"
+description = "Exim 3.x 邮件传输代理（MTA）在批量 SMTP 模式（-bS）下存在格式字符串漏洞。该漏洞源于 Exim 在处理邮件头部的域名字符串时未正确过滤格式字符串控制符，当管理员启用了语法检查（syntax checking）模式后，远程攻击者可以通过向 From 邮件头中注入格式字符串（如 %p），触发栈上内存信息泄露并进一步覆盖栈帧执行任意代码，最终以 root 权限完全控制目标服务器。该漏洞影响多种 Linux 发行版所打包的 Exim 3.x 版本，包括 Red Hat 3.22-10、Debian 3.12 及 Conectiva 3.16，利用门槛极低——仅需通过 SMTP 协议发送一封包含特制头部的邮件即可触发，无需身份认证。ExploitDB（EDB-ID: 20900）已公开可利用的本地提权利用代码，CVSS 评分为 7.5，危害等级较高。"
 published = "2001-09-20T04:00:00.000"
-remediation = "升级至 Exim 4.00 或更高版本，Exim 3.x 已停止开发且存在该漏洞。若短期内无法升级，编辑 Exim 配置文件将 syntax_checking 设置为 false 以禁用语法检查模式作为临时缓解措施。同时建议立即安装所属 Linux 发行版的安全更新：Debian 用户执行 apt-get upgrade exim，Red Hat 用户应用 RHSA-2001:078 补丁包，Conectiva 用户应用 CLA-2001:402 更新。"
+remediation = "升级 Exim 至修复版本：Debian 系统升级至 exim 3.12-10.1（DSA-058），Red Hat 系统应用 RHSA-2001-078 安全补丁，Conectiva 系统安装公告 000402 对应更新包。若无法立即升级，可在 exim 配置文件中禁用语法检查模式（syntax checking）及批处理 SMTP 模式（-bS），避免攻击者利用格式字符串漏洞执行任意代码；同时建议限制本地用户对 /usr/sbin/exim 二进制文件的访问权限，仅允许必要的的执行权限。"
 score = 7.5
 severity = "HIGH"
-sources = ["exploitdb"]
-title = "Exim 3.x 邮件传输代理格式字符串远程代码执行漏洞"
+sources = ["redhat"]
+title = "University of Cambridge Exim 3.x 邮件传输代理格式字符串漏洞"
 updated = "2026-06-16T21:54:46.620"
 
 [exploit]
@@ -29,14 +29,14 @@ urls = [
     "http://www.securityfocus.com/bid/2828",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6671",
     "https://www.exploit-db.com/exploits/20900",
-    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2001/CVE-2001-0690.md",
-    "https://github.com/CVEProject/cvelistV5/blob/d54cf7a1dffc29cd7b800e8dfe5162e425974620/cves/2001/0xxx/CVE-2001-0690.json",
+    "https://github.com/trickest/cve/blob/efd7fc726910da5a47b5ea864d60bf92f66b594e/2001/CVE-2001-0690.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b4a89b44478cf1ae516da29bd6f16b00a8bec011/cves/2001/0xxx/CVE-2001-0690.json",
     "https://github.com/x0rz/EQGRP/blob/0c2354ff1073099b2aa417030b3167ec29d7279c/README.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f633e81cd9f221a38aa74de486ce9d66b0984930/CVE/data/2001/CVE-2001-0690.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1d2521a6a6a6b95fdd6c2651e419302899bbee89/CVE/data/2001/CVE-2001-0690.json",
     "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/debian_DSA-058.nasl",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2001/CVE-2001-0690.md",
-    "https://github.com/github/advisory-database/blob/e34faa994a969a96da73434c6e96d687fa245753/advisories/unreviewed/2022/04/GHSA-wmjp-jcfp-7jf8/GHSA-wmjp-jcfp-7jf8.json",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0690",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--812d3ee0-0e4f-4045-aab8-312f9121ca7a.json",
+    "https://github.com/github/advisory-database/blob/99cae226d61b8e74336dc0c5e362f6c067c34ab5/advisories/unreviewed/2022/04/GHSA-wmjp-jcfp-7jf8/GHSA-wmjp-jcfp-7jf8.json",
+    "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/2001/dsa-058.data",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_151500_151600.json",
+    "https://github.com/runZeroInc/divining-risk/blob/286d414a20238d70344afbbc3869527af7cea8e5/data/VulnCheck-KEV.txt",
 ]
