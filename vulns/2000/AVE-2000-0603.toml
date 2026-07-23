@@ -1,11 +1,11 @@
 [basic]
-description = "Linux tmpwatch 工具的 --fuser 选项在处理文件时未对文件名中的特殊字符进行转义过滤，本地攻击者可通过创建包含 shell 元字符（如反引号、$() 等）的文件名，当系统管理员或 cron 任务调用 tmpwatch --fuser 清理临时文件时，恶意文件名中的 shell 命令会被执行，从而导致本地权限提升或任意命令执行。该漏洞影响 RedHat 6.2/7.0 等发行版，CVSS 评分 2.1，危害等级低，利用条件需要本地用户权限。"
+description = "RedHat 6.2/7.0 版本中 tmpwatch 工具的 --fuser 选项存在命令注入漏洞，由于对文件名中的 Shell 元字符（如反引号、分号、管道符等）缺乏过滤和转义，本地攻击者可通过创建包含恶意 Shell 元字符的文件名，诱使 tmpwatch 在执行 --fuser 选项处理临时文件清理时触发命令注入，从而以 tmpwatch 进程权限（通常为 root 权限）执行任意命令。该漏洞影响 RedHat Linux 6.2 和 7.0 版本，攻击条件为本地用户具备创建文件权限，CVSS 2.1 评分（本地攻击、低复杂度、部分完整性影响），属于本地权限提升漏洞，RedHat 已发布补丁修复（MDKSA-2000-056）。"
 published = "2000-10-06T04:00:00.000"
-remediation = "升级 tmpwatch 至修复版本（如 Red Hat 的 tmpwatch-1.2-3 或更新版本），该版本已修复 --fuser 选项对文件名中 shell 元字符的转义处理。如无法升级，应避免使用 tmpwatch --fuser 功能，改用 find 命令配合 -exec 或 -delete 参数清理临时文件，并确保临时目录权限严格限制，防止低权限用户创建含特殊字符的文件名。"
+remediation = "建议升级 tmpwatch 到 2.8.4 或更高版本（RedHat 6.2 升级至 tmpwatch-2.8.4-2，RedHat 7.0 升级至 tmpwatch-2.8.4-3）。若无法立即升级，可编辑 /etc/cron.daily/tmpwatch 移除 --fuser 参数，或使用 chattr +i 锁定 /tmp 防止创建包含 shell 元字符的文件名作为临时缓解。"
 score = 2.1
 severity = "LOW"
-sources = ["redhat"]
-title = "RedHat Tmpwatch 本地任意命令执行漏洞"
+sources = ["cve"]
+title = "RedHat Tmpwatch 任意命令执行漏洞"
 updated = "2026-06-16T21:52:32.177"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0816"]
 ave_id = "AVE-2000-0603"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,11 +28,11 @@ urls = [
     "http://xforce.iss.net/alerts/advise64.php",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5320",
     "https://www.exploit-db.com/exploits/20285",
-    "https://github.com/CVEProject/cvelistV5/blob/377bb49f7479dd297ab5004f75a37c291a136578/cves/2000/0xxx/CVE-2000-0816.json",
+    "https://github.com/CVEProject/cvelistV5/blob/2c72b537371947a8374cf9848353741736f9e49d/cves/2000/0xxx/CVE-2000-0816.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0816",
     "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0816.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1b84eedba993546f37a880c6d2d084176a1f04a7/CVE/data/2000/CVE-2000-0816.json",
-    "https://github.com/github/advisory-database/blob/db909d46c3d9b98ec1f95daa3c88d7a8990ea8f5/advisories/unreviewed/2022/04/GHSA-pv6p-xwqp-cf4x/GHSA-pv6p-xwqp-cf4x.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bae3e1da022eb7a639aee03446096716b0c4798f/CVE/data/2000/CVE-2000-0816.json",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2022/04/GHSA-pv6p-xwqp-cf4x/GHSA-pv6p-xwqp-cf4x.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/M/mandrake_MDKSA-2000-056.nasl",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0816.json",
