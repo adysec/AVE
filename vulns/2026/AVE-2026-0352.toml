@@ -1,0 +1,41 @@
+[basic]
+description = '''systeminformation 库的 networkInterfaces() 函数在 Linux 上存在操作系统命令注入漏洞（CWE-78）。漏洞根因在于 lib/network.js 的 checkLinuxDCHPInterfaces() 函数在解析 Debian/Ubuntu interfaces(5) 配置文件时，读取 /etc/network/interfaces 及其递归 source 指令引用的文件，将解析出的 source 路径直接未加引号地插入到 shell 命令字符串 `cat ${file} 2> /dev/null | grep 'iface\\|source'` 中，并通过 execSync() 经 /bin/sh 执行。攻击者若能控制 source 指令中的路径字符串（如写入包含 `;id>/tmp/PWNED;` 等 shell 元字符的路径），即可在调用 networkInterfaces() 的 Node.js 进程权限下执行任意命令。该函数被 networkInterfaces()、getStaticData()、getAllData() 等核心 API 间接调用，影响 systeminformation@5.31.7 之前版本，波及使用该库的资产清点、监控诊断、管理面板后端、设备管理代理等大量 Node.js 应用。攻击前置条件为攻击者能写入或影响被 source 递归引用的 interfaces 配置片段文件（如 /etc/network/interfaces.d/ 下的文件），无需 NetworkManager 或特殊硬件。利用方式为构造恶意 source 路径触发命令注入，PoC 验证显示可成功执行 id 命令并写入标记文件。CVSS 4.0 评分 8.7（HIGH），已在 5.31.7 版本修复，建议升级至该版本或更高版本。'''
+published = "2026-07-17T20:17:24.857"
+remediation = "建议立即升级 systeminformation 包到 5.31.7 或更高版本（npm install systeminformation@latest）。升级后该库将使用 fs.readFileSync 直接读取 /etc/network/interfaces 文件内容并通过 JS 逻辑解析，彻底移除 execSync 拼接 shell 命令的方式，从而彻底修复 OS 命令注入漏洞。如无法立即升级，可临时在应用层避免在 Linux 环境下调用 networkInterfaces()、getStaticData()、getAllData() 等会触及 networkInterfaces() 的 API，或在应用启动前确保 /etc/network/interfaces 及其 source 引用的文件不可被低权限用户写入（如 chmod 644 并限制写入权限）作为临时缓解。建议优先升级至 5.31.7+ 版本彻底修复。建议执行：npm audit fix --force 或 npm install systeminformation@5.31.7 完成升级。升级后建议运行现有测试用例验证网络接口信息采集功能正常。升级前建议备份 node_modules 并做回滚预案。升级后请重启所有依赖 systeminformation 的 Node.js 进程使新版本生效。如使用 Docker 部署，请重新构建镜像并拉取最新依赖。请参考官方修复提交：https://github.com/sebhildebrandt/systeminformation/commit/bbfddde48672d0ee124fefdb3cb4442fd9dd4f03"
+score = 8.7
+severity = "HIGH"
+sources = ["ghsa"]
+title = "systeminformation systeminformation OS 命令注入漏洞"
+updated = "2026-07-20T17:17:14.860"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-50289",
+    "GHSA-5xpp-75jx-m839",
+]
+ave_id = "AVE-2026-0352"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/sebhildebrandt/systeminformation/commit/bbfddde48672d0ee124fefdb3cb4442fd9dd4f03",
+    "https://github.com/sebhildebrandt/systeminformation/releases/tag/v5.31.7",
+    "https://github.com/sebhildebrandt/systeminformation/security/advisories/GHSA-5xpp-75jx-m839",
+    "https://github.com/CVEProject/cvelistV5/blob/f02fdda2bd389f5492ddcbf2ad808b3b60f20645/cves/2026/50xxx/CVE-2026-50289.json",
+    "https://github.com/giselles-ai/giselle/blob/4b497a5d3aff88100301329938f2f97db1b4a234/.continuity/20260717-000000-agent__fix-systeminformation-cve-2026-50289.md",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/ef01d7e98bf039082d22217e9d85a4cfb59bb732/reports/2026-07-17/TIER_2_CVE-2026-50289.md",
+    "https://github.com/neuvector/vul-source/blob/9ba62febaf6254d72eb4667cd7923d92d2c3f9b6/ubuntu-cve-tracker/active/CVE-2026-50289",
+    "https://github.com/Tabll/gemnasium-db/blob/de1cbf8802a4c6060caaa5924b50812f2a62fead/npm/systeminformation/CVE-2026-50289.yml",
+    "https://github.com/cisagov/vulnrichment/blob/48383ebc821dc38e09ecfcea6060abac8038780f/2026/50xxx/CVE-2026-50289.json",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/c6a7b446809d20910acd284474596c0b638aab06/nvd/2026/HIGH/CVE-2026-50289/README.md",
+    "https://github.com/TMA84/cvealert/blob/76fdd7fe4cd9d55f9aa8c105cb90aa42e34c98b9/content/posts/cve-2026-50289.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2026-50289.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/9d5a7d1c566e3b3d2231325259c035dd0347ef0d/posts/cve-2026-50289-npm-systeminformation.html",
+]
