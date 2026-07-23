@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 net/mlx5e 驱动在卸载 vport representor 时存在释放后使用漏洞。驱动卸载过程中，unregister_netdev 在 vport rep 卸载后调用，导致 mlx5e_rep_priv 已被释放，但代码仍尝试访问 rpriv->netdev 或遍历 rpriv->tc_ht，触发 UAF。攻击者需本地低权限访问，通过触发驱动卸载/重载流程利用 UAF 实现提权，影响搭载 Mellanox 网卡的 Linux 内核，CVSS 7.8 高危。Linux 内核已通过增加 loaded 标志检查修复该漏洞。"
+published = "2025-01-15T13:15:11.713"
+remediation = "建议立即升级 Linux 内核至 6.6.70、6.11.9、6.12.2 或更高版本（包含修复补丁 commit 8f8a5b3e8f7a）。Ubuntu 24.04 LTS 用户请执行 `sudo apt update && sudo apt install linux-image-generic` 安装 USN-7381-1/USN-7514-1 提供的内核更新（版本 ≥ 6.8.0-52.52 或 6.11.0-14.14）。如暂时无法重启内核，可通过 `echo 0 > /sys/module/mlx5_core/parameters/prof_sel` 禁用 mlx5e TC 规则卸载功能作为临时缓解，但需重启网卡驱动生效。建议优先通过发行版官方渠道（如 `apt upgrade linux-generic`、`yum update kernel`、`dnf update kernel`）应用官方内核补丁。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Kernel mlx5e 驱动 使用后释放漏洞"
+updated = "2026-06-17T08:14:03.957"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57801"]
+ave_id = "AVE-2024-0600"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/3e45dd1622a2c1a83c11bf42fdd8c1810123d6c0",
+    "https://git.kernel.org/stable/c/47c78d3fc26e38ab805613a0f592dc8a820c7c64",
+    "https://git.kernel.org/stable/c/5a03b368562a7ff5f5f1f63b5adf8309cbdbd5be",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57801.md",
+    "https://github.com/CVEProject/cvelistV5/blob/2c72b537371947a8374cf9848353741736f9e49d/cves/2024/57xxx/CVE-2024-57801.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57801.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2024/57xxx/CVE-2024-57801.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57801",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57801.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-57801.md",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/02/18/seguranca/cve-2024-57801-netmlx5e-skip-restore-tc-rules-for--1771409919000.md",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2025/01/GHSA-7q6q-ppp8-9gr5/GHSA-7q6q-ppp8-9gr5.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57801",
+]
