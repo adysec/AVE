@@ -1,0 +1,229 @@
+[id]
+ave_id = "AVE-2026-0373"
+aliases = ["CVE-2026-52772","GHSA-xc7j-3g8q-9vh4"]
+
+[basic]
+title = "YesWiki has stored XSS in Bazar form-field templates via unescaped field.label / field.hint (|raw('html'))"
+description = "# Bazar form-field templates still apply `|raw('html')` to `field.label` / `field.hint` in attribute and label-body contexts — stored XSS in form renders (sibling class of commit `e6b66aa`)
+
+**CWE**: CWE-79 (Improper Neutralization of Input During Web Page Generation, \"Cross-site Scripting\") via CWE-116 (Improper Encoding or Escaping of Output) — same class as the partial fix at commit `e6b66aa`
+
+**CVSS v3.1**: `CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:C/C:L/I:L/A:N` → 4.7 (Medium)
+
+(Privileges Required = High because writing the field definitions requires `saisie_formulaire`, which `tools/bazar/services/Guard.php:58-61` grants only to admins by default; Scope = Changed because the XSS payload set by a form-editor admin executes in the origin context of arbitrary viewers, including unauthenticated visitors.)
+
+## Summary
+
+Commit `e6b66aa` (\"fix(bazar): leave the twig escape placeholder as is\", 2026-05-19) recognised that emitting `field.label` through Twig's `raw('html')` filter into an HTML attribute is unsafe — Twig's `raw` marker suppresses the attribute auto-escape, `striptags` removes `<…>` tags but not `\"`, so a label containing `\"` can break out of the attribute and inject event-handler attributes. The commit fixed `tools/bazar/templates/inputs/text.twig:19` and `tools/bazar/templates/inputs/textarea.twig:3`.
+
+At least seven additional templates have the same pattern and were not touched by the fix:
+
+- `tools/bazar/templates/inputs/range.twig:19` — `placeholder=\"{{ field.label|raw('html')|striptags }}\"`
+- `tools/bazar/templates/inputs/email.twig:13` — `placeholder=\"{{ field.label|raw('html')|striptags }}\"`
+- `tools/bazar/templates/layouts/input.twig:7` — `title=\"{{ field.hint|raw('html') }}\" alt=\"{{ field.hint|raw('html') }}\"`
+- `tools/bazar/templates/inputs/textarea.twig:14` — same `title=`/`alt=` pattern (the commit only fixed line 3, line 14 remains)
+- `tools/bazar/templates/inputs/user.twig:41, 55` — same
+- `tools/bazar/templates/inputs/bookmarklet.twig:4` — same
+- `tools/bazar/templates/layouts/input.twig:9`, `tools/bazar/templates/layouts/field.twig:5`, `tools/bazar/templates/inputs/subscribe.twig:16`, `tools/bazar/templates/inputs/linked-entry.twig:4`, `tools/bazar/templates/inputs/textarea.twig:16`, `tools/bazar/templates/inputs/bookmarklet.twig:6` — `{{ field.label|raw }}` *outside* an attribute (label-body), with no `striptags` at all, so direct tag injection (`<img src=x onerror=…>`) executes
+
+The `layouts/input.twig` and `layouts/field.twig` files are base layouts inherited by **every** Bazar field type, so a single malicious `field.hint` reaches into every form that uses that field.
+
+## Affected
+
+- YesWiki `doryphore` at HEAD `6c653dd` (the audit checkout)
+- All releases that ship the listed templates with the `|raw('html')` / `|raw` filter in attribute or label-body context
+
+## Vulnerability details
+
+### [A] — Source: `field.label` and `field.hint` are populated from form definitions
+
+`tools/bazar/fields/BazarField.php:46-53`:
+
+```php
+$this->label = empty($values[self::FIELD_LABEL]) ? '' : html_entity_decode($values[self::FIELD_LABEL]);
+$this->size = $values[self::FIELD_SIZE];
+$this->maxChars = $values[self::FIELD_MAX_CHARS];
+$this->default = $values[self::FIELD_DEFAULT];
+$this->required = $values[self::FIELD_REQUIRED] == 1;
+$this->searchable = $values[self::FIELD_SEARCHABLE];
+$this->hint = $values[self::FIELD_HINT];                       // [A] no decoding/escaping
+```
+
+`field.label` is `html_entity_decode($values[FIELD_LABEL])` — the decode actively *turns* HTML-entity-encoded payloads (`&quot;`, `&#34;`) back into raw `\"`, defeating any entity-encoded mitigation a form author might apply. `field.hint` is the raw string from the form definition. Both flow into the field's `__toString`-like context unchanged. Form definitions are written by users with the `saisie_formulaire` ACL (`tools/bazar/services/Guard.php:45-62` — admins by default; the same ACL the audit team chose to gate `imported-form` POST handling under in commit `fe7244b`).
+
+### [B] — Sink class 1: attribute-context `|raw('html')|striptags` (placeholder breakout)
+
+`tools/bazar/templates/inputs/range.twig:19`:
+
+```twig
+placeholder=\"{{ field.label|raw('html')|striptags }}\"
+```
+
+`tools/bazar/templates/inputs/email.twig:13`:
+
+```twig
+placeholder=\"{{ field.label|raw('html')|striptags }}\"
+```
+
+`raw('html')` marks the value as a `Markup` object, which causes Twig's HTML auto-escaper to skip it (`Twig\Markup::__toString`). `striptags` removes `<…>` sequences but does not touch `\"`, `'`, or `=`. A `field.label` of:
+
+```
+hi\" onmouseover=\"alert(document.cookie)\" x=\"
+```
+
+passes `striptags` unchanged, is marked safe by `raw('html')`, and lands inside the attribute as:
+
+```html
+placeholder=\"hi\" onmouseover=\"alert(document.cookie)\" x=\"\"
+```
+
+The injected `onmouseover` fires when a viewer hovers the input. Same vector as the pre-fix `text.twig:19`.
+
+### [C] — Sink class 2: attribute-context `|raw('html')` *without* `striptags` (worse)
+
+`tools/bazar/templates/layouts/input.twig:7`:
+
+```twig
+{% if field.hint %}
+    <img loading=\"lazy\" class=\"tooltip_aide\" title=\"{{ field.hint|raw('html') }}\" alt=\"{{ field.hint|raw('html') }}\" src=\"tools/bazar/presentation/images/aide.png\" width=\"16\" height=\"16\" />
+{% endif %}
+```
+
+Identical patterns in `tools/bazar/templates/inputs/textarea.twig:14`, `tools/bazar/templates/inputs/user.twig:41`, `tools/bazar/templates/inputs/user.twig:55`, `tools/bazar/templates/inputs/bookmarklet.twig:4`.
+
+There is no `striptags` here at all, so the attacker has the full attribute-injection alphabet plus full HTML if the parser desynchronises. Setting `field.hint = '\"><script>alert(1)</script>'` gives:
+
+```html
+<img … title=\"\"><script>alert(1)</script>\" alt=\"…\" …
+```
+
+The `<script>` runs at page parse time. Because `layouts/input.twig` is extended by **every** field-type template, a single malicious `field.hint` on any field in any form propagates into every form render.
+
+### [D] — Sink class 3: label-body `|raw` (direct DOM injection)
+
+`tools/bazar/templates/layouts/input.twig:9`:
+
+```twig
+{{ field.label|raw }}
+```
+
+`tools/bazar/templates/layouts/field.twig:5`:
+
+```twig
+{%- block label -%}{{ field.label|raw }}{%- endblock -%}
+```
+
+Plus `subscribe.twig:16`, `linked-entry.twig:4`, `textarea.twig:16`, `bookmarklet.twig:6`.
+
+These are outside any attribute, in the body of a `<label>` element. `raw` suppresses escaping, there is no `striptags`. `field.label = '<img src=x onerror=alert(1)>'` injects an `<img>` tag straight into the label DOM; the `onerror` fires the moment the page renders, with no user interaction.
+
+### Why the fix at `e6b66aa` is incomplete
+
+The fix correctly replaced `field.label | raw('html') | striptags` with `field.label | striptags | trim` (no `raw`) in `text.twig`'s placeholder and `textarea.twig`'s textarea placeholder. The fix is the right pattern — drop the `raw` so Twig's attribute-context autoescaper does its job — but it was applied at two specific call sites instead of being treated as a class-wide replacement. The siblings above use the same `|raw('html')|striptags` or `|raw('html')` idiom and are all currently exploitable.
+
+## Proof of concept
+
+### Setup
+
+1. Install YesWiki and log in as admin (or as any user with the `saisie_formulaire` ACL).
+2. Navigate to *Bazar → Formulaires → Nouveau formulaire* and create a form. Add any field of type `range`, `email`, or any other field type (every field type renders through `layouts/input.twig`, so the `title=` / `alt=` / label-body vectors apply universally).
+
+### PoC 1 — `range.twig` placeholder attribute breakout (Sink class [B])
+
+Set the field's label to:
+
+```
+Enter value\" onmouseover=\"alert('XSS via field.label in range.twig')\" x=\"
+```
+
+Save the form. Have any visitor (including unauthenticated guests if the form is published) open a page that renders the form. Hovering the range input fires the injected handler.
+
+Rendered HTML:
+
+```html
+<input type=\"range\" … placeholder=\"Enter value\" onmouseover=\"alert('XSS via field.label in range.twig')\" x=\"\" required />
+```
+
+### PoC 2 — `layouts/input.twig` tooltip injection (Sink class [C])
+
+Set the field's `hint` (Aide) to:
+
+```
+\"><script>alert('XSS via field.hint in layouts/input.twig — fires on EVERY field type')</script><span x=\"
+```
+
+Save. Any page that renders the form executes the script at parse time, before any user interaction. The vector is universal because `layouts/input.twig` is the base template extended by every field type.
+
+### PoC 3 — `layouts/input.twig` label-body injection (Sink class [D])
+
+Set the field's label to:
+
+```
+<img src=x onerror=\"alert('XSS via field.label in layouts/input.twig')\">
+```
+
+Save. Page render fires the `onerror` immediately — no hover, no click, no `striptags` filter in the way.
+
+## Impact
+
+### Direct
+
+- **Stored XSS on every visitor of any Bazar form page** — a privileged form editor injects script into a field's label/hint and the script runs in the wiki origin against every viewer of the form, including unauthenticated guests. Cookie theft, session hijack of any admin who visits, full content modification, phishing overlays.
+- **Universal sink in `layouts/input.twig`** — sinks [C] and [D] live in the base layout extended by every field type, so a single field with a malicious hint poisons every form render across the wiki, not just forms using a specific input type.
+
+### Indirect / second-order
+
+- **Privilege amplification despite `saisie_formulaire` being admin-only by default** — many deployments grant `saisie_formulaire` to specific user groups (per-deployment ACL configured via `config['permissions']['action']['saisie_formulaire']`). For those deployments, the bug is exploitable by any user in those groups against any visitor. The audit pattern at commit `fe7244b` (the same team explicitly gated `imported-form` POST handling on `saisie_formulaire`) demonstrates that `saisie_formulaire` is in fact a \"trusted-input\" boundary — outputs of that boundary should not assume HTML-safety.
+- **Composability with the unpatched POI/CSRF in `BazarImportAction` (reported separately as `01-bazarimport-poi-csrf.md`)** — once any XSS exists in the wiki origin, an attacker can fetch a CSRF token (if added as part of the POI fix) and chain XSS → POI → RCE without needing to phish the admin onto a third-party origin.
+- **The pre-`fe7244b` window** — for any deployment still running a build that predates `fe7244b` (the `imported-form` auth fix from 2026-05-12), the source of `field.label` / `field.hint` was reachable from **unauthenticated** POST to the `imported-form` handler, making this finding unauth-stored-XSS on those builds. The current code path closes that source side, but reinforces that the sink-side fix at `e6b66aa` should be applied class-wide.
+
+## Suggested fix
+
+Apply the same transformation `e6b66aa` applied to `text.twig` / `textarea.twig` placeholders, class-wide:
+
+- For attribute contexts (`placeholder=`, `title=`, `alt=`, etc.) — drop the `raw` filter. Let Twig's attribute-context autoescape handle the value:
+
+  ```twig
+  placeholder=\"{{ field.label|striptags|trim }}\"
+  title=\"{{ field.hint|striptags|trim }}\"
+  alt=\"{{ field.hint|striptags|trim }}\"
+  ```
+
+  `striptags` is fine to keep if there's a UX reason to strip incidental HTML; the security is in the absence of `raw`.
+
+- For label-body contexts (`<label>{{ field.label|raw }}</label>`) — decide which is the design intent and apply it everywhere:
+  - If labels really need to render bold/italic/links: pass `field.label` through `HtmlPurifierService::cleanHTML()` at the point where the field object is constructed (i.e. `BazarField::__construct`'s `$this->label = …` line), so any subsequent template emits already-purified HTML and `raw` becomes safe.
+  - If labels are plain text: drop the `raw` filter and let `{{ field.label }}` autoescape.
+
+The label-body case in `layouts/input.twig:9`, `layouts/field.twig:5`, and the four `inputs/*.twig` files is the highest-impact patch target because it's reached by every field type; the attribute-context cases are more surgical.
+
+Sweep target list (all in `tools/bazar/templates/`):
+
+- `inputs/range.twig:19`
+- `inputs/email.twig:13`
+- `layouts/input.twig:7, 9`
+- `layouts/field.twig:5`
+- `inputs/textarea.twig:14, 16`
+- `inputs/user.twig:41, 55`
+- `inputs/bookmarklet.twig:4, 6`
+- `inputs/subscribe.twig:16`
+- `inputs/linked-entry.twig:4`
+
+A grep-driven CI check for `|raw('html')` and `|raw` inside Bazar twig templates would surface any future reintroduction."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-23T23:28:05.181653456+00:00"
