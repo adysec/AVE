@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "检测 MRLG Multi-Router Looking Glass 5.5.0 之前版本是否存在 fastping.c 远程内存破坏漏洞。此漏洞允许攻击者无需认证即可通过特制 ICMP 数据包触发任意内存写入，导致服务崩溃或 RCE。"
+id = "POC-AVE-2014-0222"
+name = "CVE-2014-3931 MRLG fastping.c 远程内存破坏漏洞检测"
+severity = "critical"
+tags = ["ave-2014-0222"]
+vuln_id = [
+    "CVE-2014-3931",
+    "AVE-2014-0222",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/fastping"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "mem",
+    "overflow",
+    "corrupt",
+    "vulnerable",
+]
