@@ -1,11 +1,11 @@
 [basic]
-description = "YaBB Bulletin Board 9.1.2000 存在目录遍历漏洞，远程攻击者可通过向服务器发送包含 `../` 序列的特制 HTTP 请求，绕过路径限制读取服务器上的任意文件（如 `/etc/passwd` 等敏感文件）。该漏洞源于对用户输入的路径参数缺乏充分的过滤与校验，攻击无需身份认证，利用难度低，可导致敏感信息泄露。"
+description = 'YaBB Bulletin Board（Yet Another Bulletin Board）9.1.2000 版本存在路径遍历漏洞，远程攻击者无需身份认证即可利用。漏洞原理在于应用程序在读取文件时未对用户输入进行充分的路径校验，攻击者可通过构造包含 ".."（点号）序列的请求参数绕过目录限制，从而访问 Web 服务器上任意文件的内容。该漏洞影响运行 YaBB 9.1.2000 版本的所有论坛系统，攻击者利用该漏洞可读取 Web 根目录之外的文件，可能导致配置文件、数据库凭证等敏感信息泄露，进而辅助后续攻击。攻击条件极为宽松：攻击者只需从网络层面即可向目标 YaBB 论坛发送特制请求，攻击复杂度低且无需任何身份凭据。利用方式简单直接，攻击者仅需在请求中使用 "../" 路径穿越序列即可遍历目录并读取任意文件，造成部分信息泄露风险。'
 published = "2000-11-14T05:00:00.000"
-remediation = '升级 YaBB 至 9.1.2000 之后的版本，或手动在 CGI 脚本中对用户输入的文件名参数过滤 `../` 及 `..\` 等路径遍历字符，禁止访问非 `www` 目录外的文件。如无法升级，可在 Web 服务器层（如 Apache 的 `mod_rewrite`）限制对 `cgi-bin` 目录的访问范围。'
+remediation = "立即将 YaBB Bulletin Board 从 9.1.2000 升级至 YaBB 1 Gold SP1（9.1.2001）或更高版本，该补丁版本已在 YaBB.pl 的 Files.pm 和 Display.pm 模块中对 num 参数增加了输入验证，过滤 ..（点号）路径遍历序列及 %00 空字节，阻止攻击者通过 board=news＆action=display＆num=../../etc/passwd%00 读取服务器敏感文件。在无法立即升级的情况下，可通过 Web 服务器配置文件（如 Apache httpd.conf 或 .htaccess）对 YaBB.cgi 的 num 参数使用正则表达式规则拒绝包含 ../ 或 %00 的请求，并严格限制 YaBB 运行目录的 Web 服务器进程权限，将 Web 服务器使用账户的访问权限降至最低，防止 /etc/passwd、/etc/shadow 等系统文件被泄露。"
 score = 5
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "YaBB Bulletin Board 9.1.2000 任意文件读取漏洞"
+sources = ["cve"]
+title = "YaBB Bulletin Board 任意文件读取漏洞"
 updated = "2026-06-16T21:52:36.267"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0853"]
 ave_id = "AVE-2000-0633"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,12 +26,12 @@ urls = [
     "http://www.securityfocus.com/bid/1668",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5254",
     "https://www.exploit-db.com/exploits/20218",
-    "https://github.com/CVEProject/cvelistV5/blob/cb31df1745cb795b327f3818ad29a4b3cf1cd125/cves/2000/0xxx/CVE-2000-0853.json",
+    "https://github.com/CVEProject/cvelistV5/blob/10542eebf1e993745def113b14941719ae818f2d/cves/2000/0xxx/CVE-2000-0853.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0853",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0853.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/be827cc2d99405b0a015aad2694b62cec4eb4f9e/CVE/data/2000/CVE-2000-0853.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0853.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cc4d86fa626798689c9cd6668d1881354e44e4cf/CVE/data/2000/CVE-2000-0853.json",
     "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/yabb.nasl",
-    "https://github.com/NetBSD/pkgsrc-wip/blob/9e3977ed9f15f6c486fe075e4eba82c46dc5b756/sara/PLIST",
+    "https://github.com/NetBSD/pkgsrc-wip/blob/e7a1e0098ca50c8dc77455488033ca407ec81282/sara/PLIST",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0853.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--2c460adf-c55a-4ba5-b37a-3bedf6d38ddb.json",
