@@ -1,0 +1,117 @@
+[id]
+ave_id = "AVE-2026-0374"
+aliases = ["CVE-2026-52773","GHSA-35f3-pg38-486f"]
+
+[basic]
+title = "YesWiki Vulnerable to Reflected XSS via Unescaped Archived-Revision `time` Parameter in `handlers/page/show.php`"
+description = "### Summary
+YesWiki's archived-revision view reflects the `time` `GET` parameter into a hidden HTML input in `handlers/page/show.php` without escaping. Because MySQL coerces malformed `DATETIME` strings, an attacker can append HTML or JavaScript to a valid archived revision timestamp, still load that archived revision, and execute arbitrary JavaScript in the victim's browser.
+
+The vulnerable form is only rendered when the victim can both read and edit the target page. In restricted deployments this requires a victim with `read` and `write` access to that page. On a default `doryphore 4.6.5` install, public pages such as `PagePrincipale` were editable anonymously during validation, so the issue can also affect unauthenticated visitors in that configuration.
+
+### Details
+The request routing path uses the user-controlled `time` parameter to load a specific page revision. In `includes/YesWiki.php` around `Run()` line `1223`, the request is routed through:
+
+```php
+$this->SetPage($this->LoadPage($tag, isset($_REQUEST['time']) ? $_REQUEST['time'] : ''));
+```
+
+`LoadPage()` delegates to `PageManager::getOne()` in `includes/services/PageManager.php` around line `75`, which builds a SQL predicate directly from the supplied revision time:
+
+```php
+$timeQuery = $time ? \"time = '{$this->dbService->escape($time)}'\" : \"latest = 'Y'\";
+```
+
+If the loaded page is an archived revision (`latest == 'N'`) and the current user has `write` access, `handlers/page/show.php` around lines `43-49` renders an edit form for that archived revision and copies `$_GET['time']` into a hidden input without `htmlspecialchars()`:
+
+```php
+$time = isset($_GET['time']) ? $_GET['time'] : '';
+echo $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit', '', 'get');
+<input type=\"hidden\" name=\"time\" value=\"<?php echo $time; ?>\" />
+```
+
+That sink is reachable only when all of the following are true:
+
+1. The target page has at least one archived revision.
+2. The victim can `read` the target page.
+3. The victim can `write` the target page, because the archived revision edit form is rendered only inside the `if ($this->HasAccess('write'))` branch.
+
+In practice, the payload must begin with a real archived revision timestamp. A completely invalid `time` value does not reach the archived branch because YesWiki only updates the current page object when the revision lookup returns a non-empty row.
+
+During local validation on the official `doryphore 4.6.5` package, the exploit worked because MySQL accepted a malformed timestamp string as matching an existing archived revision row. For example, the following expression was coerced to the stored revision time:
+
+```sql
+CAST(CONCAT('2026-05-24 04:30:00', CHAR(34), CHAR(62), CHAR(60), 'script', CHAR(62), 'alert(1)', CHAR(60), '/script', CHAR(62)) AS DATETIME)
+```
+
+and the corresponding query predicate still matched the archived row:
+
+```sql
+WHERE time = '2026-05-24 04:30:00\"><script>alert(1)</script>'
+```
+
+This means a payload can begin with a valid archived revision timestamp, still resolve to the archived revision, and then be reflected unescaped into the hidden HTML field.
+
+For comparison, `tools/bazar/handlers/page/show__.php` around lines `13-14` escapes the same `time` value with `htmlspecialchars()`, which shows that the core handler's behavior is inconsistent and unsafe.
+
+This issue maps to **CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')**.
+
+### PoC
+1. Set up a vulnerable YesWiki instance. This was validated locally on the official `doryphore 4.6.5` release.
+2. Use a target page that has at least one archived revision. Any page with revision history is sufficient.
+3. Confirm the victim has the rights needed to reach the vulnerable sink:
+   - The victim must have `read` access to the page.
+   - The victim must have `write` access to the page.
+   - On the default validation install, these rights were available anonymously on public pages such as `PagePrincipale`, so no login was required in that configuration.
+4. Identify the timestamp of an archived revision. In the validated setup, an archived `PagePrincipale` revision existed at `2026-05-24 04:30:00`.
+5. Send the victim a crafted URL that starts with that valid archived revision timestamp and then appends an attribute-breaking payload:
+
+```text
+http://127.0.0.1:8085/PagePrincipale?time=2026-05-24%2004:30:00%22%3E%3Cscript%3Ealert(1)%3C/script%3E%3Cinput%20value=%22
+```
+
+6. Open the URL in a browser as a victim who has the required `read` and `write` rights.
+7. Observe that YesWiki still loads the archived revision view and displays the archived-revision warning block, proving the malformed `time` value matched the stored archived revision.
+8. Inspect the returned HTML. The response contains the injected payload inside the hidden form field:
+
+```html
+<input type=\"hidden\" name=\"time\" value=\"2026-05-24 04:30:00\"><script>alert(1)</script><input value=\"\" />
+```
+
+9. The browser executes the injected JavaScript in the YesWiki origin. A simple payload such as `alert(1)` demonstrates code execution; a real payload could read browser-accessible data or perform actions in the victim's session.
+
+<img width=\"1600\" height=\"829\" alt=\"image\" src=\"https://github.com/user-attachments/assets/d0b85a7c-2213-4459-908c-969934f06358\" />
+
+### Impact
+This is a **reflected XSS** vulnerability in the archived-revision workflow.
+
+The practical access model is:
+
+- The attacker only needs to send a crafted link.
+- The victim must have `read` and `write` access to the target page.
+- The target page must have at least one archived revision.
+- On deployments where anonymous visitors can edit public pages, the issue can be exploited against unauthenticated visitors as well.
+
+An attacker may be able to:
+
+- Execute arbitrary JavaScript in the victim's browser.
+- Steal browser-accessible sensitive data.
+- Perform actions as the victim inside YesWiki.
+- Abuse the trusted YesWiki origin for phishing, UI redressing, or follow-on attacks."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-23T23:37:45.267302366+00:00"
