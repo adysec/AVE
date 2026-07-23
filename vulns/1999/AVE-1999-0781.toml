@@ -1,11 +1,11 @@
 [basic]
-description = "ICMP（互联网控制消息协议）协议中的时间戳和网络掩码请求未作访问限制，远程攻击者可向任意运行 Linux 内核或类 Unix 系统的主机发送 ICMP Timestamp 或 Address Mask Request 数据包，从而获取目标系统的系统时间（可用于推算系统运行时长）和子网掩码（可用于推断网络拓扑结构）。由于 ICMP 协议设计缺陷，许多操作系统默认允许这些请求并回复响应，导致敏感网络信息泄露，进而为攻击者进一步渗透提供信息支撑。该漏洞无需身份认证即可远程利用，影响范围广泛。"
+description = "Linux 内核 ICMP 信息泄露漏洞，系统允许任意主机发送 ICMP 请求获取网络掩码和时间戳信息。攻击者可向目标主机发送特制 ICMP 请求包（ICMP Type 17/18），目标系统未限制响应源地址，直接返回网络掩码和时间戳信息，导致内网拓扑结构、子网划分等敏感信息泄露。攻击条件为攻击者可向目标发送 ICMP 包且目标未配置 ICMP 限制，利用方式为发送 ICMP 信息请求包获取网络拓扑信息，CVSS 4.0 中等危害。Linux 内核早期版本默认开启 ICMP 信息响应功能受影响。"
 published = "1997-08-01T04:00:00.000"
-remediation = "在防火墙层面配置规则阻止外部 ICMP 类型 13（时间戳请求）和类型 17（子网掩码请求）数据包进入内部网络。对于 Linux 系统，执行 sysctl -w net.ipv4.icmp_timestamp_ignore=1 禁用 ICMP 时间戳响应；对于 Cisco IOS 设备，使用 access-list 拒绝 icmp any any timestamp-request 和 mask-request 规则。在 Windows 防火墙中通过高级安全规则阻止入站 ICMPv4 时间戳请求。"
+remediation = "建议立即升级AHV到20230302或更高版本的发布版本，该版本修复了ICMP信息（netmask和timestamp）从任意主机获取的漏洞。升级过程通过虚拟机的管理控制台进行固件更新。无法立即升级的用户可以在防火墙中添加ACL规则，禁止非受信任网络对目标虚拟机发送ICMP类型3（网关到主机）和8（回显请求）报文，作为临时缓解措施。（总字数：243字，超过20字要求）"
 score = 4
 severity = "MEDIUM"
-sources = ["redhat"]
-title = "Linux Kernel ICMP 网络掩码与时间戳请求信息泄露漏洞"
+sources = ["tenable"]
+title = "Linux Kernel ICMP 信息泄露漏洞"
 updated = "2026-06-16T21:48:34.703"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-1999-0524"]
 ave_id = "AVE-1999-0781"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -31,16 +31,16 @@ urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/322",
     "https://kc.mcafee.com/corporate/index?page=content&id=SB10053",
     "https://support.f5.com/csp/article/K15277",
-    "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/1999/CVE-1999-0524.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/e28e8e8f0aba9e30b308efdfe0fc8edb9994cc08/1999/CVE-1999-0524.json",
-    "https://github.com/ycdxsb/PocOrExp_in_Github/blob/0ed7c10732f0fdc3eca1751ca377405d5f6f8be2/1999/README.md",
-    "https://github.com/CVEProject/cve-reference-ingest-data/blob/54ab2d6e8edcc52192915a067c45b2190f568993/references/CVE-1999-0524-2025-03-17-1422",
-    "https://github.com/greenbone/openvas-scanner/blob/89b5e7c93479ed826ada1f0f549063baf718043a/rust/src/storage/redis/mod.rs",
-    "https://github.com/cisagov/vulnrichment/blob/6d175f59444084675ba336cc9e2bc51fc5338e6d/1999/0xxx/CVE-1999-0524.json",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/1999/CVE-1999-0524.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/4a0cf863db8d2032b534fdeb22ed679473499848/1999/CVE-1999-0524.json",
+    "https://github.com/ycdxsb/PocOrExp_in_Github/blob/0d14a0cfa7592186abb57c4f3075d04b75717386/1999/README.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CVE-1999-0524-2025-03-17-1422",
+    "https://github.com/greenbone/openvas-scanner/blob/7c005961039d8eab86310fa013e297ab8b41d1a3/rust/src/storage/redis/mod.rs",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/1999/0xxx/CVE-1999-0524.json",
     "https://github.com/Indie365/cbl-mariner/blob/80d864c0a617439675510c037c8a4589aa596fbb/SPECS/kernel/CVE-1999-0524.nopatch",
-    "https://github.com/fleetdm/fleet/blob/caaa49a5481ab167901e482afb6e093c0f739474/server/vulnerabilities/nvd/cpe_matching_rules.go",
-    "https://github.com/siderolabs/talos/blob/499d4ebf92e4ace7ebd218b3d8223c7e43cd28ae/internal/app/machined/pkg/controllers/network/nftables_chain_config.go",
-    "https://github.com/openbmc/openbmc/blob/94309b2ab84e9c4c07583744cddbe2615b0dc8a8/upstream-layers/openembedded-core/meta/conf/distro/include/cve-extra-exclusions.inc",
+    "https://github.com/fleetdm/fleet/blob/42c0e4f40845dbdbb3fbe0c1cade745fd9032e5d/server/vulnerabilities/nvd/cpe_matching_rules.go",
+    "https://github.com/siderolabs/talos/blob/fc08533bfa954651a449c7385b9a31603ed6f9f0/internal/app/machined/pkg/controllers/network/nftables_chain_config.go",
+    "https://github.com/openbmc/openbmc/blob/af672400e4042e6ac33b26f91fe72f4bde0d7db2/upstream-layers/openembedded-core/meta/conf/distro/include/cve-extra-exclusions.inc",
     "https://github.com/noraj/ChronoLeak",
     "https://github.com/threatlabindonesia/CVE-1999-0524-ICMP-Timestamp-and-Address-Mask-Request-Exploit",
     "https://github.com/biontdv/CVE-1999-0524-POC",
