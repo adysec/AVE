@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核工作队列（workqueue）子系统存在不正确的警告检测逻辑缺陷。在提交 746ae46c1113 将 amdgpu 调度器工作队列标记为 WQ_MEM_RECLAIM 后，当从非 WQ_MEM_RECLAIM 上下文调用 cancel_delayed_work_sync() 取消内存回收相关工作项时，check_flush_dependency 会误报依赖冲突警告。该问题本质上是取消操作的安全性与刷新操作的依赖性检查之间的语义混淆——取消正在运行或尚未运行的工作项是安全的，不应触发警告。本地攻击者可通过触发特定 GPU 调度场景利用此缺陷，导致内核日志被大量误报信息淹没，影响系统可用性。该漏洞影响 Linux 内核中使用了 amdgpu 驱动的系统，CVSS 评分 5.5，危害等级中危。"
+published = "2025-01-15T13:15:13.240"
+remediation = "立即更新 Linux 内核至包含该补丁的版本：对于 Ubuntu 24.04 LTS，安装 USN-7381-1 或 USN-7514-1 安全更新（`sudo apt update && sudo apt upgrade linux-image-$(uname -r)`）；对于其他发行版，升级内核至 6.12 及以上版本。如无法立即升级，可通过内核启动参数 `workqueue.watchdog_thresh=0` 临时关闭 workqueue 依赖检查告警作为缓解措施，但建议优先完成内核更新。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel 工作队列 WQ_MEM_RECLAIM 取消操作告警误报漏洞"
+updated = "2026-06-17T08:14:09.180"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57888"]
+ave_id = "AVE-2024-0617"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1fd2a57dcb4de3cb40844a29c71b5d7b46a84334",
+    "https://git.kernel.org/stable/c/de35994ecd2dd6148ab5a6c5050a1670a04dec77",
+    "https://git.kernel.org/stable/c/ffb231471a407c96e114070bf828cd2378fdf431",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57888.md",
+    "https://github.com/CVEProject/cvelistV5/blob/2ee9e77ceac534c670c42073c99286dbb69e9733/cves/2024/57xxx/CVE-2024-57888.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57888.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57888",
+    "https://github.com/openharmony/security/blob/f47b282130050082f1bcf6813aaced4157bd1771/vulntest/SSTSTestcases/2025/06/CVE-2024-57888/CVE-2024-57888.yara",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57888.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-57888.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c872795777255e25a47f155fd6d323c05ea13ab9/CVE/data/2024/CVE-2024-57888.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2024-57888.html",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2025/01/GHSA-5fgm-r8gc-2w6h/GHSA-5fgm-r8gc-2w6h.json",
+]
