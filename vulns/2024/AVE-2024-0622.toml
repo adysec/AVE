@@ -1,0 +1,43 @@
+[basic]
+description = "Linux 内核 btrfs 文件系统在卸载（unmount）过程中存在释放后使用（Use-After-Free）漏洞。在 close_ctree() 卸载路径中，内核先通过 kthread_stop() 停止 cleaner 内核线程并释放其 task_struct，随后才停止并销毁 delalloc 工作队列。然而 delalloc_workers 队列中的 worker 可能仍在执行 submit_compressed_extents() 函数，该函数调用 btrfs_add_delayed_iput() 时会尝试唤醒已被销毁的 cleaner 内核线程，导致对已释放 task_struct 的访问，引发内核崩溃或潜在权限提升。本地攻击者需具备低权限即可触发此漏洞，影响系统机密性、完整性和可用性。该漏洞影响 Linux 内核 btrfs 文件系统，CVSS 评分 7.8，危害等级高。"
+published = "2025-01-15T13:15:14.200"
+remediation = "立即升级 Linux 内核至以下已修复版本：6.13 及以上、6.12.9、6.6.70、6.1.124、5.15.176 或 5.10.233。Debian 用户请更新至 DLA-4075-1 对应内核版本；Ubuntu 用户请安装 USN-7381-1 安全更新。如无法立即升级，可在卸载 btrfs 文件系统前确保所有 delalloc 工作队列已排空完毕，避免触发释放后使用。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Kernel Btrfs 释放后使用漏洞"
+updated = "2026-06-17T08:14:10.200"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57896"]
+ave_id = "AVE-2024-0622"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1ea629e7bb2fb40555e5e01a1b5095df31287017",
+    "https://git.kernel.org/stable/c/35916b2f96505a18dc7242a115611b718d9de725",
+    "https://git.kernel.org/stable/c/63f4b594a688bf922e8691f0784679aa7af7988c",
+    "https://git.kernel.org/stable/c/a2718ed1eb8c3611b63f8933c7e68c8821fe2808",
+    "https://git.kernel.org/stable/c/d77a3a99b53d12c061c007cdc96df38825dee476",
+    "https://git.kernel.org/stable/c/f10bef73fb355e3fc85e63a50386798be68ff486",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57896.md",
+    "https://github.com/CVEProject/cvelistV5/blob/2ee9e77ceac534c670c42073c99286dbb69e9733/cves/2024/57xxx/CVE-2024-57896.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57896",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57896.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/48383ebc821dc38e09ecfcea6060abac8038780f/2024/57xxx/CVE-2024-57896.json",
+    "https://github.com/0xMarcio/cve/blob/ebd29ed5f9b5a2615e147ccbf1deed9bc7c5ae84/2024/CVE-2024-57896.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57896.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CveServices-CVE-2024-57896-2025-11-03-1452",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/02/18/seguranca/cve-2024-57896-btrfs-flush-delalloc-workers-queue--1771410125000.md",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2025/01/GHSA-w28c-hqg3-44gm/GHSA-w28c-hqg3-44gm.json",
+]
