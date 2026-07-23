@@ -1,11 +1,11 @@
 [basic]
-description = "BRU 备份软件 15.1 及 16.0 版本中存在环境变量处理缺陷，本地攻击者可通过设置 BRUEXECLOG 环境变量指定任意配置文件路径，从而将恶意数据追加到系统任意文件尾部。该漏洞允许低权限用户实现权限提升，影响 BRU 备份软件全系列部署环境。攻击者需具备本地系统访问权限，无需用户交互即可触发，CVSS 评分 7.2，危害等级高。建议升级至最新版本或限制 BRUEXECLOG 环境变量使用。"
+description = "BRU 备份软件存在环境变量注入漏洞，本地低权限用户可通过设置 BRUEXECLOG 环境变量指定一个备用的配置文件路径，使得 BRU 程序启动时读取该配置文件并向其中写入日志数据。攻击者利用此特性可将任意数据追加写入到文件系统中任意文件内，从而篡改系统文件、提升权限或造成拒绝服务。该漏洞影响 BRU 15.1 和 16.0 版本，攻击条件为攻击者已获得目标主机的本地登录权限，且 BRU 软件以具有写入关键文件权限的用户身份运行。成功利用该漏洞可导致文件完整性被破坏，进而危害整个系统的安全性。"
 published = "2000-06-05T04:00:00.000"
-remediation = "升级 BRU 至 16.1 或更高版本以修复环境变量注入问题；限制非授权用户对系统的本地访问权限；移除 BRU 相关二进制文件的 setuid 位（如 `chmod u-s /usr/local/bru`）以防止低权限用户通过 BRUEXECLOG 向任意文件追加内容；通过 SELinux/AppArmor 策略限制 BRU 进程的文件写入路径。"
+remediation = "建议升级 BRU 至修复此漏洞的安全版本，或联系 Enhanced Software Technologies 获取补丁。临时缓解措施：通过命令 `chmod u-s /usr/sbin/bru` 移除 BRU 的 setuid 位，限制普通用户无法以 root 权限执行 BRU，从而阻止通过 BRUEXECLOG 环境变量修改系统文件。如业务允许，亦可暂时停用 BRU 备份服务，改用其他备份工具替代。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "BRU 备份软件 BRUEXECLOG 环境变量本地权限提升漏洞"
+sources = ["epss"]
+title = "Tolis Group BRU 备份软件 环境变量本地文件任意写入漏洞"
 updated = "2026-06-16T21:51:57.010"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0537"]
 ave_id = "AVE-2000-0442"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/1321",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4644",
     "https://www.exploit-db.com/exploits/19999",
-    "https://github.com/CVEProject/cvelistV5/blob/9bf1bcd98df741ae892c1ba6b8127fb5da623fcc/cves/2000/0xxx/CVE-2000-0537.json",
+    "https://github.com/CVEProject/cvelistV5/blob/fe1f2cb931ec10d1e039a6fd54386a966f969658/cves/2000/0xxx/CVE-2000-0537.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0537",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0537.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/84a8576323536424cfe4fe56907ba66e1ea3a744/CVE/data/2000/CVE-2000-0537.json",
-    "https://github.com/github/advisory-database/blob/9a3495eb833b3f1f2096187c4b14884afc98b67a/advisories/unreviewed/2022/04/GHSA-q4v2-vr66-2qp6/GHSA-q4v2-vr66-2qp6.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0537.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e42471f11b569c31aa66236a559376c1c33d96f2/CVE/data/2000/CVE-2000-0537.json",
+    "https://github.com/github/advisory-database/blob/0028562b44fe8ba49728d9c355cac8b5dcaf39ca/advisories/unreviewed/2022/04/GHSA-q4v2-vr66-2qp6/GHSA-q4v2-vr66-2qp6.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_5.list.dict",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--3dd04a06-2e0d-4ac3-83db-e86d1f1d1406.json",
-    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0537.json",
+    "https://github.com/olbat/nvdcve/blob/a036095fb2c093f3863681adc5999690c37b930e/nvdcve/CVE-2000-0537.json",
 ]
