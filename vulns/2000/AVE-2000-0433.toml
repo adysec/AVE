@@ -1,11 +1,11 @@
 [basic]
-description = "dump 软件包中的 restore 程序 0.4b17 及更早版本存在缓冲区溢出漏洞，当处理超长的磁带名称参数时，由于未对输入长度进行充分边界检查，本地攻击者可利用该漏洞覆盖栈上返回地址，从而执行任意命令以提升权限。该漏洞影响 Linux/Unix 系统上使用 dump 数据备份工具的环境，利用条件为攻击者拥有本地系统访问权限。成功利用后攻击者可获取目标系统的完全控制权，CVSS 评分 7.2，危害等级高。"
+description = "Stelian Pop dump 0.4 及更早版本中的 restore 程序存在缓冲区溢出漏洞，由于对磁带名称输入长度缺乏边界检查，本地攻击者可通过传递超长的磁带名称参数覆盖栈缓冲区，从而执行任意代码并提升权限。该漏洞影响 dump 软件包 0.4b17 及之前版本，攻击向量为本地（AV:L），利用复杂度低（AC:L），无需认证（Au:N），可导致机密性、完整性、可用性完全丧失（C:C/I:C/A:C），CVSS 评分 7.2。攻击者需具备本地系统访问权限，通过构造恶意磁带名称参数调用 restore 程序触发溢出，进而获得进程权限执行任意命令。"
 published = "2000-06-07T04:00:00.000"
-remediation = "立即升级 dump 软件包至 0.4b18 或更高版本（最新版本为 0.4b46）。对基于 Red Hat/Fedora 的发行版运行 `yum update dump`，Debian/Ubuntu 运行 `apt upgrade dump`。如无法升级，可移除 restore 程序的 SUID 位作为临时缓解：`chmod u-s /sbin/restore`，并限制仅授信用户可本地登录。"
+remediation = "建议立即升级 dump 包至 0.4b18 或更高版本（Stelian Pop dump 修复了 restore 程序的缓冲区溢出）。若无法立即升级，可通过以下缓解措施降低风险：1) 限制 restore 命令仅允许 root 或受信用户执行（chmod 700 /usr/sbin/restore）；2) 使用 sudo 限制普通用户执行 restore；3) 监控异常长磁带名称参数的调用日志；4) 考虑替换为 GNU tar 或其他维护中的备份工具。"
 score = 7.2
 severity = "HIGH"
-sources = ["redhat"]
-title = "dump restore 程序缓冲区溢出漏洞"
+sources = ["epss"]
+title = "Stelian Pop dump 缓冲区溢出漏洞"
 updated = "2026-06-16T21:51:54.720"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0520"]
 ave_id = "AVE-2000-0433"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=96240393814071&w=2",
     "http://www.securityfocus.com/bid/1330",
     "https://www.exploit-db.com/exploits/20004",
-    "https://github.com/CVEProject/cvelistV5/blob/34b929f9979d6d9d9584dfab31f29f50dcf08e3f/cves/2000/0xxx/CVE-2000-0520.json",
+    "https://github.com/CVEProject/cvelistV5/blob/f02fdda2bd389f5492ddcbf2ad808b3b60f20645/cves/2000/0xxx/CVE-2000-0520.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0520",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0520.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/475f53ac063af305fc146a443cce993188109d56/CVE/data/2000/CVE-2000-0520.json",
-    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/unreviewed/2022/04/GHSA-396q-53q6-gx75/GHSA-396q-53q6-gx75.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0520.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1910cec3a272a9634d53e73996abe765ad48da86/CVE/data/2000/CVE-2000-0520.json",
+    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2022/04/GHSA-396q-53q6-gx75/GHSA-396q-53q6-gx75.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0520.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--dd5c5d56-d7c2-4f34-8714-7bbf334821ff.json",
     "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_overflow.txt",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/1e58254e5bdaf937b4bd41c6a50d0d633bef0eb7/2000.tsv",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/713ffae93113b598a59dcb6e71997a603904c107/2000.tsv",
 ]
