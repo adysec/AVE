@@ -1,12 +1,8 @@
-[id]
-ave_id = "AVE-2026-0301"
-aliases = ["CVE-2026-48737","GHSA-m5x5-28jr-gpjj"]
-
 [basic]
-title = "pyLoad: SSRF guard bypass via IPv6 6to4/NAT64 transition wrappers of internal IPs"
-description = "## Summary
+description = """
+## Summary
 
-`is_global_address` in [`src/pyload/core/utils/web/check.py`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/src/pyload/core/utils/web/check.py) is the central guard against SSRF-style outbound connections in pyload-ng. It tests whether a given IP is \"globally routable\" via Python's `ipaddress.ip_address(value).is_global`, and callers treat `not is_global` as \"deny\":
+`is_global_address` in [`src/pyload/core/utils/web/check.py`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/src/pyload/core/utils/web/check.py) is the central guard against SSRF-style outbound connections in pyload-ng. It tests whether a given IP is "globally routable" via Python's `ipaddress.ip_address(value).is_global`, and callers treat `not is_global` as "deny":
 
 ```python
 def is_global_address(value):
@@ -76,7 +72,7 @@ def is_global_address(value):
 
 ## Reproduction
 
-[`research_wave5/poc/pyload_ipv6_ssrf/poc.py`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/research_wave5/poc/pyload_ipv6_ssrf/poc.py) drives both `is_global_address` and `is_global_host` against IPv6 transition forms whose embedded IPv4 points at loopback, RFC 1918, and AWS IMDS. The helper returns \"globally routable\" for every form. A second pass replays the same forms through the `PREREQFUNC` logic in [`http_request.py:680`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/http_request.py#L680) and shows the connection would be ALLOWED in each case.
+[`research_wave5/poc/pyload_ipv6_ssrf/poc.py`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/research_wave5/poc/pyload_ipv6_ssrf/poc.py) drives both `is_global_address` and `is_global_host` against IPv6 transition forms whose embedded IPv4 points at loopback, RFC 1918, and AWS IMDS. The helper returns "globally routable" for every form. A second pass replays the same forms through the `PREREQFUNC` logic in [`http_request.py:680`](https://github.com/pyload/pyload/blob/1b12dc7f348db8c144e0f39215680415e90ca4d2/http_request.py#L680) and shows the connection would be ALLOWED in each case.
 
 ## Suggested fix
 
@@ -85,8 +81,8 @@ Treat IPv6 transition-encoding forms by unwrapping the embedded IPv4 and re-runn
 ```python
 import ipaddress
 
-_NAT64_WELL_KNOWN = ipaddress.IPv6Network(\"64:ff9b::/96\")
-_NAT64_DISCOVERY = ipaddress.IPv6Network(\"64:ff9b:1::/48\")
+_NAT64_WELL_KNOWN = ipaddress.IPv6Network("64:ff9b::/96")
+_NAT64_DISCOVERY = ipaddress.IPv6Network("64:ff9b:1::/48")
 
 
 def _embedded_ipv4(addr):
@@ -115,21 +111,29 @@ A patch implementing this approach (plus tests covering 6to4 and NAT64 wraps for
 
 ## Credits
 
-Reported by tonghuaroot."
-severity = "MEDIUM"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+Reported by tonghuaroot."""
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "pyLoad: SSRF guard bypass via IPv6 6to4/NAT64 transition wrappers of internal IPs"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-48737",
+    "GHSA-m5x5-28jr-gpjj",
+]
+ave_id = "AVE-2026-0301"
+
+[meta]
+collected_at = "2026-07-22T20:08:27.663323966+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-22T20:08:27.663323966+00:00"

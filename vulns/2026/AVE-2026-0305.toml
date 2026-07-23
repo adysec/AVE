@@ -1,12 +1,8 @@
-[id]
-ave_id = "AVE-2026-0305"
-aliases = ["CVE-2026-49259","GHSA-w2w5-w2pw-r929"]
-
 [basic]
-title = "NukeViet: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
-description = "## Summary
+description = """
+## Summary
 
-A stored cross-site scripting (XSS) vulnerability exists in NukeViet CMS versions 4.x through 4.5.08. A low-privileged authenticated user can store a JavaScript payload in their profile's display name fields. The payload executes in the browser of any visitor — including administrators — who clicks the **Reply** (\"Answer\") link on a comment posted by that user.
+A stored cross-site scripting (XSS) vulnerability exists in NukeViet CMS versions 4.x through 4.5.08. A low-privileged authenticated user can store a JavaScript payload in their profile's display name fields. The payload executes in the browser of any visitor — including administrators — who clicks the **Reply** ("Answer") link on a comment posted by that user.
 
 ## Affected Component
 
@@ -16,7 +12,7 @@ The `{COMMENT.post_name}` template variable is interpolated without JavaScript-c
 - `themes/default/modules/comment/comment.tpl` line 64 (nested/reply comments)
 
 ```html
-onclick=\"nv_commment_feedback(event, {COMMENT.cid}, '{COMMENT.post_name}')\"
+onclick="nv_commment_feedback(event, {COMMENT.cid}, '{COMMENT.post_name}')"
 ```
 
 ## Root Cause
@@ -74,7 +70,7 @@ Practical consequences include:
 
 ## Remediation
 
-**Preferred fix:** Remove `post_name` from the inline handler entirely. Pass only `cid` to `nv_commment_feedback` and have the function retrieve the display name from the already-rendered DOM (e.g., the adjacent `<strong class=\"cm_item\">` element).
+**Preferred fix:** Remove `post_name` from the inline handler entirely. Pass only `cid` to `nv_commment_feedback` and have the function retrieve the display name from the already-rendered DOM (e.g., the adjacent `<strong class="cm_item">` element).
 
 **Alternative fix:** If the value must be passed inline, encode it with `json_encode($post_name)` (PHP) so that the output is a properly escaped JavaScript string literal, not an HTML-entity-encoded one. HTML numeric character references must not be relied upon for JavaScript string escaping.
 
@@ -84,21 +80,29 @@ As a general note, the result of `get_title(..., $specialchars=true)` is safe fo
 
 - OWASP: Cross Site Scripting Prevention — Rule 2: Attribute Encoding is Not Sufficient for JS Contexts
 - CWE-79: Improper Neutralization of Input During Web Page Generation
-- CWE-116: Improper Encoding or Escaping of Output"
-severity = "HIGH"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+- CWE-116: Improper Encoding or Escaping of Output"""
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "NukeViet: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-49259",
+    "GHSA-w2w5-w2pw-r929",
+]
+ave_id = "AVE-2026-0305"
+
+[meta]
+collected_at = "2026-07-22T20:39:58.232300057+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-22T20:39:58.232300057+00:00"

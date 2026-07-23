@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0287"
-aliases = ["CVE-2026-45710","GHSA-3x7p-v8hj-xh5m"]
-
 [basic]
-title = "FacturaScripts: Stored XSS in WidgetVariante and WidgetSubcuenta modal lists via HTML-attribute decoding of `Tools::noHtml`-escaped quotes inside `onclick=`"
-description = "## Summary
+description = '''
+## Summary
 
 `WidgetVariante::renderVariantList` (`Core/Lib/Widget/WidgetVariante.php:298-330`) and `WidgetSubcuenta::renderSubaccountList` (`Core/Lib/Widget/WidgetSubcuenta.php:290-321`) build the `<tr onclick=\"...\">` row for each modal hit by concatenating the user-controlled `referencia` / `codsubcuenta` field directly into a single-quoted JavaScript string literal inside an HTML `onclick` attribute. The defender's intuition is that `Tools::noHtml` (called in `Variante::test()` and `Subcuenta::test()`) replaces `'` with the HTML entity `&#39;`, neutralising the JavaScript string break. The intuition is wrong: HTML attribute parsing **decodes character references before** the JavaScript fragment is parsed, so `&#39;` becomes a literal `'` in the JavaScript context. An attacker who can store a value such as `1',alert(1),'2` in `Variante.referencia` (no special characters required, just one apostrophe) ends up with `widgetVarianteSelect('id', '1',alert(1),'2');` executing in any user's browser the moment they open the variant-picker modal.
 
@@ -159,21 +155,30 @@ $items[] = '<tr class=\"clickableRow\" data-match=\"' . $encMatch . '\"'
 * `WidgetSubcuenta::renderExerciseFilter` (`Core/Lib/Widget/WidgetSubcuenta.php:251-255`) where `$item->codejercicio` is interpolated into `<option value=\"...\">`. Codes are short and predictable but the same escaping consideration applies for defence in depth.
 * `WidgetVariante::renderManufacturerFilter` (line 213) and `renderFamilyFilter` (line 197).
 
-Long term, the `BaseWidget::onclickHtml` and `inputHtml` builders (`Core/Lib/Widget/BaseWidget.php:163-167`, `234-239`, `273-283`) likewise concatenate `$this->value` into HTML attributes without context-aware escaping. Migrating them to use Twig (or at least `htmlspecialchars` with `ENT_QUOTES`) closes a class of bugs that today rely on every model's `test()` to be defensive. A regression test should plant a `Variante.referencia` of `1',alert(1),'2`, render the page through the live HTTP stack, and assert that no JavaScript dialog fires (e.g. via Playwright `page.on('dialog', ...)`)."
-severity = "LOW"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+Long term, the `BaseWidget::onclickHtml` and `inputHtml` builders (`Core/Lib/Widget/BaseWidget.php:163-167`, `234-239`, `273-283`) likewise concatenate `$this->value` into HTML attributes without context-aware escaping. Migrating them to use Twig (or at least `htmlspecialchars` with `ENT_QUOTES`) closes a class of bugs that today rely on every model's `test()` to be defensive. A regression test should plant a `Variante.referencia` of `1',alert(1),'2`, render the page through the live HTTP stack, and assert that no JavaScript dialog fires (e.g. via Playwright `page.on('dialog', ...)`).
+'''
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "FacturaScripts: Stored XSS in WidgetVariante and WidgetSubcuenta modal lists via HTML-attribute decoding of `Tools::noHtml`-escaped quotes inside `onclick=`"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-45710",
+    "GHSA-3x7p-v8hj-xh5m",
+]
+ave_id = "AVE-2026-0287"
+
+[meta]
+collected_at = "2026-07-22T18:43:31.682895298+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-22T18:43:31.682895298+00:00"

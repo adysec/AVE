@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0326"
-aliases = ["CVE-2026-49838","GHSA-frrj-87jh-2772"]
-
 [basic]
-title = "GoBGP confederation validation panics on empty AS_PATH attribute"
-description = "Found through variant analysis based on `CVE-2026-41643`
+description = """
+Found through variant analysis based on `CVE-2026-41643`
 
 ## Summary
 GoBGP accepts a zero-length AS_PATH during UPDATE decoding and later panics while validating that attribute for a confederation eBGP peer. The vulnerable path is in the BGP UPDATE validator: a malformed UPDATE that should be rejected as a malformed AS_PATH instead reaches an unchecked `p.Value[0]` access, allowing a configured confederation eBGP peer to trigger a denial of service.
@@ -41,34 +37,42 @@ index 2237afb..f07f4fa 100644
 --- a/pkg/packet/bgp/validate.go
 +++ b/pkg/packet/bgp/validate.go
 @@ -159,6 +159,9 @@ func ValidateAttribute(a PathAttributeInterface, rfs map[Family]BGPAddPathMode,
- 	case *PathAttributeAsPath:
- 		if isEBGP {
- 			if isConfed {
-+				if len(p.Value) == 0 {
-+					return false, NewMessageError(eCode, eSubCodeMalformedAspath, nil, \"empty AS_PATH for confederation eBGP\")
-+				}
- 				if segType := p.Value[0].GetType(); segType != BGP_ASPATH_ATTR_TYPE_CONFED_SEQ {
- 					return false, NewMessageError(eCode, eSubCodeMalformedAspath, nil, fmt.Sprintf(\"segment type is not confederation seq (%d)\", segType))
- 				}
+ \tcase *PathAttributeAsPath:
+ \t\tif isEBGP {
+ \t\t\tif isConfed {
++\t\t\t\tif len(p.Value) == 0 {
++\t\t\t\t\treturn false, NewMessageError(eCode, eSubCodeMalformedAspath, nil, "empty AS_PATH for confederation eBGP")
++\t\t\t\t}
+ \t\t\t\tif segType := p.Value[0].GetType(); segType != BGP_ASPATH_ATTR_TYPE_CONFED_SEQ {
+ \t\t\t\t\treturn false, NewMessageError(eCode, eSubCodeMalformedAspath, nil, fmt.Sprintf("segment type is not confederation seq (%d)", segType))
+ \t\t\t\t}
 ```
 
 ## Resources
 - https://github.com/osrg/gobgp/blob/c24629411ba49f160d9dc09126f418218127e016/pkg/packet/bgp/bgp.go#L11533-L11540
-- https://github.com/osrg/gobgp/blob/c24629411ba49f160d9dc09126f418218127e016/pkg/packet/bgp/validate.go#L159-L164"
-severity = "MEDIUM"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+- https://github.com/osrg/gobgp/blob/c24629411ba49f160d9dc09126f418218127e016/pkg/packet/bgp/validate.go#L159-L164"""
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "GoBGP confederation validation panics on empty AS_PATH attribute"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-49838",
+    "GHSA-frrj-87jh-2772",
+]
+ave_id = "AVE-2026-0326"
+
+[meta]
+collected_at = "2026-07-23T00:35:25.445673126+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-23T00:35:25.445673126+00:00"

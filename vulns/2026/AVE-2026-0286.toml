@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0286"
-aliases = ["CVE-2026-45693","GHSA-cv65-7cg8-r623"]
-
 [basic]
-title = "FacturaScripts: Unauthenticated Path Traversal in Static File Controllers Reads Private MyFiles Documents"
-description = "### Summary
+description = """
+### Summary
 
 The static file controllers in FacturaScripts decide whether a request is authorized by looking at the URL string instead of the canonical filesystem path. A request that starts with an allow-listed folder name but contains a `../` segment in the middle ends up serving a file from a different directory than the one the URL pretended to point at. This makes any file inside the FacturaScripts installation readable without authentication as long as the file's extension is on the controllers' allow-list (`pdf`, `xlsx`, `docx`, `csv`, `sql`, `zip`, `xml`, `json`, `xsig`, etc.). In practice this leaks the documents the application is specifically designed to protect: customer invoices, supplier invoices, document attachments and database backups stored under `MyFiles/Private/` and other non-public subfolders.
 
@@ -83,7 +79,7 @@ A request to `/MyFiles/Public/../Private/invoice-2026-001.pdf` satisfies `strpos
 
 This second path is only exploitable when a `MyFiles/Public/` directory exists on disk, which is the case in any installation that has ever published a public asset (company logo, theme file, plugin static resource).
 
-#### Why this is not the documented \"Public folder\" behaviour
+#### Why this is not the documented "Public folder" behaviour
 
 `MyFiles/Public/` is intentionally tokenless for assets that live inside it, and that part is by design. The behaviour shown here is different: the URL appears to point at `MyFiles/Public/...` but the file ultimately returned lives in `MyFiles/Private/`. The same file (`MyFiles/Private/invoice-2026-001.pdf`) is returned with HTTP 403 (`Invalid token`) when requested directly, and HTTP 200 with the file body when requested through the traversal sequence. The access decision is not consistent with the actual file location, which is the textbook definition of a path traversal flaw.
 
@@ -115,7 +111,7 @@ HTTP/1.1 403 Forbidden
 <p>The access token for the file MyFiles/Private/invoice-2026-001-ACME.pdf is invalid or has expired</p>
 ```
 
-<img width=\"1584\" height=\"788\" alt=\"01-control-direct-private-file-blocked\" src=\"https://github.com/user-attachments/assets/37d55f79-55ab-4f69-a9e0-827fc39c0b33\" />
+<img width="1584" height="788" alt="01-control-direct-private-file-blocked" src="https://github.com/user-attachments/assets/37d55f79-55ab-4f69-a9e0-827fc39c0b33" />
 
 
 
@@ -142,7 +138,7 @@ PAID: 2026-05-09
 INTERNAL NOTE: confidential customer financial data
 ```
 
-<img width=\"1585\" height=\"791\" alt=\"02-exploit-path1-plugins-leak\" src=\"https://github.com/user-attachments/assets/bccab788-a369-49bf-84dd-8f2f74addecf\" />
+<img width="1585" height="791" alt="02-exploit-path1-plugins-leak" src="https://github.com/user-attachments/assets/bccab788-a369-49bf-84dd-8f2f74addecf" />
 
 The same file that returned 403 in Step 1 is now returned without authentication. `/Core/Assets/*` and `/Dinamic/Assets/*` behave the same way against the same controller; `/Plugins/*` is used here because the folder is guaranteed to exist.
 
@@ -163,7 +159,7 @@ Content-Type: application/pdf
 ...
 ```
 
-<img width=\"1582\" height=\"789\" alt=\"03-exploit-path2-myfiles-public-token-bypass\" src=\"https://github.com/user-attachments/assets/2f95d0c1-4545-453c-a613-5ed035af7957\" />
+<img width="1582" height="789" alt="03-exploit-path2-myfiles-public-token-bypass" src="https://github.com/user-attachments/assets/2f95d0c1-4545-453c-a613-5ed035af7957" />
 
 
 A quick check shows that several encoding variants of `..` also work: `%2e%2e`, `%2E%2E`, `.%2e`, `///../`. The flaw lives in the prefix check, not in any specific Apache normalization.
@@ -171,7 +167,7 @@ A quick check shows that several encoding variants of `..` also work: `%2e%2e`, 
 The file is confirmed present on disk:
 
 
-<img width=\"1918\" height=\"328\" alt=\"04-lab-evidence-file-on-disk\" src=\"https://github.com/user-attachments/assets/2db5875a-d349-4861-bbdd-8f202eb80d5a\" />
+<img width="1918" height="328" alt="04-lab-evidence-file-on-disk" src="https://github.com/user-attachments/assets/2db5875a-d349-4861-bbdd-8f202eb80d5a" />
 
 
 #### Affected request paths
@@ -231,21 +227,29 @@ The same pattern applies to `Myfiles::__construct`: compare the canonical resolv
 
 ### Affected Versions
 
-Confirmed on the current `master` branch (commit `de01369`) and on the latest tagged release (`v2026.2`)."
-severity = "HIGH"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+Confirmed on the current `master` branch (commit `de01369`) and on the latest tagged release (`v2026.2`)."""
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "FacturaScripts: Unauthenticated Path Traversal in Static File Controllers Reads Private MyFiles Documents"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-45693",
+    "GHSA-cv65-7cg8-r623",
+]
+ave_id = "AVE-2026-0286"
+
+[meta]
+collected_at = "2026-07-22T18:30:37.606691844+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-22T18:30:37.606691844+00:00"

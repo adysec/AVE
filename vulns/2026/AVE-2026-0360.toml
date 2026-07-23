@@ -1,14 +1,10 @@
-[id]
-ave_id = "AVE-2026-0360"
-aliases = ["CVE-2026-50554","GHSA-588f-fvcv-xhvf"]
-
 [basic]
-title = "Note Mark: Unauthenticated disclosure of soft-deleted note metadata via deleted=true on public books"
-description = "Summary
+description = """
+Summary
 
-  GET /api/books/{bookID}/notes is an unauthenticated endpoint that accepts a \"deleted\" query parameter. When the request is ?deleted=true, the
-  service runs the query with Unscoped() (bypassing GORM's soft-delete scope) but keeps the read-authorization clause as \"owner_id = ? OR is_public
-  = ?\". As a result, any unauthenticated caller can enumerate the metadata of soft-deleted (\"trashed\") notes belonging to any public book — notes
+  GET /api/books/{bookID}/notes is an unauthenticated endpoint that accepts a "deleted" query parameter. When the request is ?deleted=true, the
+  service runs the query with Unscoped() (bypassing GORM's soft-delete scope) but keeps the read-authorization clause as "owner_id = ? OR is_public
+  = ?". As a result, any unauthenticated caller can enumerate the metadata of soft-deleted ("trashed") notes belonging to any public book — notes
   the owner explicitly deleted and expected to be removed from public view.
 
   Affected component (code-verified)
@@ -21,21 +17,21 @@ description = "Summary
                 tx = tx.Unscoped() // <-- bypasses soft-delete scope
         }
         tx = tx.
-                Preload(\"Book\").
-                Joins(\"JOIN books ON books.id = notes.book_id\").
+                Preload("Book").
+                Joins("JOIN books ON books.id = notes.book_id").
                 Where(
-                        db.DB.Where(\"books.id = ?\", bookID),
-                        db.DB.Where(\"owner_id = ? OR is_public = ?\", currentUserID, true), // <-- is_public still honored for trash
+                        db.DB.Where("books.id = ?", bookID),
+                        db.DB.Where("owner_id = ? OR is_public = ?", currentUserID, true), // <-- is_public still honored for trash
                 )
         if deleted {
-                tx = tx.Where(\"notes.deleted_at IS NOT NULL\")
+                tx = tx.Where("notes.deleted_at IS NOT NULL")
         }
         var notes []db.Note
         return notes, dbErrorToServiceError(tx.Find(&notes).Error)
   }
 
   Route registration confirms the endpoint has no AuthRequiredMiddleware (backend/handlers/notes.go:37), and the deleted flag is attacker-controlled
-   (backend/handlers/notes.go:86 — Deleted bool with query:\"deleted\").
+   (backend/handlers/notes.go:86 — Deleted bool with query:"deleted").
 
   Proof of concept
 
@@ -49,7 +45,7 @@ description = "Summary
 
   Exposure of soft-deleted note metadata (title, slug, timestamps) of public books to unauthenticated actors. The note body is not exposed — the
   content endpoint (GetNoteContent) does not use Unscoped(), so its count query returns 0 for soft-deleted notes and yields 404. Impact is therefore
-   limited to metadata disclosure and the bypass of the intended \"delete\" semantics on public books.
+   limited to metadata disclosure and the bypass of the intended "delete" semantics on public books.
 
   Remediation
 
@@ -60,21 +56,21 @@ description = "Summary
         if deleted {
                 tx = tx.Unscoped()
         }
-  +     // Soft-deleted (\"trash\") notes must only ever be listed to the book owner.
-  +     authz := db.DB.Where(\"owner_id = ? OR is_public = ?\", currentUserID, true)
+  +     // Soft-deleted ("trash") notes must only ever be listed to the book owner.
+  +     authz := db.DB.Where("owner_id = ? OR is_public = ?", currentUserID, true)
   +     if deleted {
-  +             authz = db.DB.Where(\"owner_id = ?\", currentUserID)
+  +             authz = db.DB.Where("owner_id = ?", currentUserID)
   +     }
         tx = tx.
-                Preload(\"Book\").
-                Joins(\"JOIN books ON books.id = notes.book_id\").
+                Preload("Book").
+                Joins("JOIN books ON books.id = notes.book_id").
                 Where(
-                        db.DB.Where(\"books.id = ?\", bookID),
-  -                     db.DB.Where(\"owner_id = ? OR is_public = ?\", currentUserID, true),
+                        db.DB.Where("books.id = ?", bookID),
+  -                     db.DB.Where("owner_id = ? OR is_public = ?", currentUserID, true),
   +                     authz,
                 )
         if deleted {
-                tx = tx.Where(\"notes.deleted_at IS NOT NULL\")
+                tx = tx.Where("notes.deleted_at IS NOT NULL")
         }
         var notes []db.Note
         return notes, dbErrorToServiceError(tx.Find(&notes).Error)
@@ -96,21 +92,29 @@ description = "Summary
   - Prior note-mark authorization fix (CVE-2026-40265) established that read paths must scope by owner_id OR is_public; this report covers the trash
    path that the scope did not fully cover.
 
-  ---"
-severity = "MEDIUM"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+  ---"""
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Note Mark: Unauthenticated disclosure of soft-deleted note metadata via deleted=true on public books"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-50554",
+    "GHSA-588f-fvcv-xhvf",
+]
+ave_id = "AVE-2026-0360"
+
+[meta]
+collected_at = "2026-07-23T05:56:53.063440202+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-23T05:56:53.063440202+00:00"

