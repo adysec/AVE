@@ -1,0 +1,44 @@
+[basic]
+description = "Linux 内核 NFS 服务器（NFSD）在处理并发 nfsd4_open 请求时存在 nfs4_openowner 内存泄漏漏洞。当客户端执行强制卸载（umount -f）操作时，会终止所有正在进行的 RPC 任务，导致客户端可能同时发送两个 RPC 任务到 NFS 服务器处理同一文件的打开请求。由于 NFSD 可并发运行多个实例，两个 nfsd 线程同时处理同一文件的打开操作时会触发竞态条件：一个线程分配或查找 nfs4_openowner 后，另一个线程发现该 owner 未标记为 NFS4_OO_CONFIRMED 而将其释放并从客户端链表中删除，但第一个线程继续使用已释放的 owner 关联 stateid 和 nfsd_file，导致 nfs4_openowner、stateid、nfsd_file 及 nfsd_file_mark 等多重对象泄漏。大量内存泄漏最终在关闭 NFSD 线程时触发内核 slab 内存池警告，造成拒绝服务。该漏洞需本地低权限用户触发，CVSS 评分 5.5。"
+published = "2025-01-08T18:15:18.793"
+remediation = "立即升级 Linux 内核至以下安全版本：5.4.287、5.10.231、5.15.174、6.1.120、6.6.64 或 6.12.4 及以上。对于无法立即升级的系统，可限制本地用户执行强制卸载（umount -f）操作，并避免在 NFS 服务端并发处理大量打开请求，以降低内存泄漏风险。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel nfsd 并发打开操作导致内存泄漏漏洞"
+updated = "2026-06-17T08:12:58.457"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-56779"]
+ave_id = "AVE-2024-0582"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0ab0a3ad24e970e894abcac58f85c332d1726749",
+    "https://git.kernel.org/stable/c/2d505a801e57428057563762f67a5a62009b2600",
+    "https://git.kernel.org/stable/c/37dfc81266d3a32294524bfadd3396614f8633ee",
+    "https://git.kernel.org/stable/c/45abb68c941ebc9a35c6d3a7b08196712093c636",
+    "https://git.kernel.org/stable/c/6f73f920b7ad0084373e46121d7ac34117aed652",
+    "https://git.kernel.org/stable/c/98100e88dd8865999dc6379a3356cd799795fe7b",
+    "https://git.kernel.org/stable/c/a85364f0d30dee01c5d5b4afa55a9629a8f36d8e",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-56779.md",
+    "https://github.com/CVEProject/cvelistV5/blob/7a274ec07043f54c07d0a3b5c7fc89ba5793f023/cves/2024/56xxx/CVE-2024-56779.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-56779",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-56779.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2024/56xxx/CVE-2024-56779.json",
+    "https://github.com/0xMarcio/cve/blob/c6c9e305761264e104c5de70e59376c519bbfef3/2024/CVE-2024-56779.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-56779.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/d8c79a157e22e9abda84461cbe0f59ce58612245/references/CveServices-CVE-2024-56779-2025-11-03-1451",
+    "https://github.com/github/advisory-database/blob/7007cbf91cfd56bead27c222fc520c733ed0ad71/advisories/unreviewed/2025/01/GHSA-v6jm-7r7p-9979/GHSA-v6jm-7r7p-9979.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-56779",
+]
