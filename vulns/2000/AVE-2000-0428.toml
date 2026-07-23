@@ -1,10 +1,10 @@
 [basic]
-description = "Microsoft SQL Server 7.0 混合模式认证功能存在敏感信息泄露漏洞。当 SQL Server 服务启动时，系统管理员 (sa) 账户的密码以明文形式记录在日志文件中，而该日志文件可被任意本地用户读取。攻击者若能够登录到目标系统，即可通过读取日志文件获取 sa 账户密码，进而以数据库管理员权限访问 SQL Server，可能导致数据库中的敏感数据泄露或进一步横向移动。该漏洞影响 Microsoft SQL Server 7.0 版本，CVSS 评分 2.1，危害等级低。"
+description = "Microsoft SQL Server 7.0 的混合模式认证（Mixed Mode Authentication）功能存在敏感信息泄露漏洞。该数据库系统在日志文件中以明文形式存储系统管理员（sa）账户密码，任何具有本地系统访问权限的用户均可读取该日志文件并获取 sa 密码。攻击者利用该密码可登录 SQL Server 数据库并以最高权限执行任意 SQL 语句，甚至通过 xp_cmdshell 等扩展存储过程在服务器上执行系统命令，实现远程代码执行。该漏洞主要影响 SQL Server 7.0 版本，攻击者无需数据库认证即可通过本地文件系统访问获取高权限凭据，危害范围覆盖所有使用混合模式认证的 SQL Server 7.0 实例。Microsoft 已在后续 Service Pack 中修复此安全缺陷，建议用户升级至 SQL Server 7.0 SP3 或更高版本。"
 published = "2000-05-30T04:00:00.000"
-remediation = '立即安装 Microsoft 安全公告 MS00-035 提供的补丁程序，或使用 KB263968 中的密码清除工具删除 sqlsp.log 和 setup.iss 文件中记录的 SA 密码。同时将 SQL Server 身份验证模式从混合模式改为更安全的 Windows NT 身份验证模式，并使用 sp_password 存储过程更改 SA 账户密码。最后手动删除 %TEMP%\sqlsp.log 和 %WINNT%\setup.iss 文件（按住 Shift 键拖入回收站彻底删除），防止被恢复。'
+remediation = "立即安装 Microsoft SQL Server 7.0 Service Pack 2 或更高版本，该补丁已修复 sa 密码明文记录问题。如无法升级，建议将认证模式从 Mixed Mode 切换为 Windows 身份验证模式，并限制对 SQL Server 日志文件（ERRORLOG 等）的访问权限，仅允许管理员账户读取。"
 score = 2.1
 severity = "LOW"
-sources = ["epss"]
+sources = ["avd"]
 title = "Microsoft SQL Server 7.0 明文密码存储漏洞"
 updated = "2026-06-16T21:51:38.473"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0402"]
 ave_id = "AVE-2000-0428"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,11 +25,11 @@ urls = [
     "http://www.microsoft.com/technet/support/kb.asp?ID=263968",
     "http://www.securityfocus.com/bid/1281",
     "https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-035",
-    "https://github.com/CVEProject/cvelistV5/blob/34b929f9979d6d9d9584dfab31f29f50dcf08e3f/cves/2000/0xxx/CVE-2000-0402.json",
+    "https://github.com/CVEProject/cvelistV5/blob/7a274ec07043f54c07d0a3b5c7fc89ba5793f023/cves/2000/0xxx/CVE-2000-0402.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0402",
     "https://github.com/e-m-b-a/emba/blob/4d0f24b3edae0bdb5391177851bad3be54ecea0f/config/msf_cve-db.txt",
     "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0402.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/475f53ac063af305fc146a443cce993188109d56/CVE/data/2000/CVE-2000-0402.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1decc7ade63192f9f527bfb87145d1636c01cc59/CVE/data/2000/CVE-2000-0402.json",
     "https://github.com/dependency-check/DependencyCheck/blob/7dcfc0737c21744b423c2198ae979003c2eb67e2/core/src/main/resources/dependencycheck-base-suppression.xml",
     "https://github.com/wick2o/osf_db/blob/5ff9e4fe46911948aa9cbb9aa2416b4ad7cc2e2b/exploits/5411_0.nasl",
     "https://github.com/Chudry/Xerror/blob/07ec57cabcd27cdb47c89af452bdf4ed07207347/xerror/parsing/msf_module_result/msf_module_cve.txt",
