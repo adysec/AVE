@@ -1,0 +1,42 @@
+[basic]
+description = "Zalando Skipper 的 OpenPolicyAgent 集成存在请求体绕过漏洞。当使用 opaAuthorizeRequestWithBody 过滤器时，HTTP/1.1 的 Transfer-Encoding: chunked 编码请求或 HTTP/2 中省略 content-length 伪标头的请求，会导致 ExtractHttpBodyOptionally 函数因 ContentLength 为 -1 而生成空的 raw_body，OPA 策略因此评估到空文档而放行请求，但上游服务却接收到完整的攻击载荷。未经身份认证的远程攻击者可利用此漏洞绕过基于请求体内容的授权策略（如字段黑名单、内容审核标记等），将恶意载荷透传至后端服务。该漏洞影响 Skipper ≤v0.26.8 版本，CVSS 评分 7.8，危害等级高。官方已在 v0.26.10 版本中修复。"
+published = "2026-07-17T20:17:24.087"
+remediation = "立即将 zalando/skipper 升级至 v0.26.10 或更高版本（commit 3152f3b0bb52ca89c3564be42434db0a2a1cea23）。如无法立即升级，须在 OPA Rego 策略中额外检查 `input.attributes.request.http.truncated_body` 字段，当该字段为 true 时拒绝请求，防止超长或分块请求体绕过 body 内容检查。"
+score = 7.8
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Zalando Skipper OpenPolicyAgent请求体检查绕过漏洞"
+updated = "2026-07-20T16:17:04.550"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-50197",
+    "GHSA-659f-rgp5-w4wf",
+]
+ave_id = "AVE-2026-0344"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/zalando/skipper/commit/3152f3b0bb52ca89c3564be42434db0a2a1cea23",
+    "https://github.com/zalando/skipper/pull/4041",
+    "https://github.com/zalando/skipper/releases/tag/v0.26.10",
+    "https://github.com/zalando/skipper/security/advisories/GHSA-659f-rgp5-w4wf",
+    "https://github.com/CVEProject/cvelistV5/blob/2ee9e77ceac534c670c42073c99286dbb69e9733/cves/2026/50xxx/CVE-2026-50197.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/ef01d7e98bf039082d22217e9d85a4cfb59bb732/reports/2026-07-17/TIER_2_CVE-2026-50197.md",
+    "https://github.com/cisagov/vulnrichment/blob/dee3a736a4e988cc248dc4d7530452b86aa0546e/2026/50xxx/CVE-2026-50197.json",
+    "https://github.com/Tabll/gemnasium-db/blob/de1cbf8802a4c6060caaa5924b50812f2a62fead/go/github.com/zalando/skipper/CVE-2026-50197.yml",
+    "https://github.com/TMA84/cvealert/blob/26fa6fb4c5bf093f7e54213d60f33d0f834a139c/content/posts/cve-2026-50197.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2026-50197.md",
+    "https://github.com/golang/vulndb/blob/61f6b2d4b98e3e29e30dc34c4c2a4eb43c8f5a51/data/reports/GO-2026-5944.yaml",
+    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/github-reviewed/2026/07/GHSA-8qqm-fp2q-v734/GHSA-8qqm-fp2q-v734.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/93d5167c4976c9015270e856ca23ec6140d458aa/cve/CVE-2026-50197.html",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c872795777255e25a47f155fd6d323c05ea13ab9/SSVC/data/2026/CVE-2026-50197.json",
+]
