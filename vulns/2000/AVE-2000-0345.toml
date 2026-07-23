@@ -1,12 +1,12 @@
 [basic]
-description = "George Burgyan CGI Counter 4.0.2及4.0.7版本存在输入验证漏洞，远程攻击者可通过向CGI脚本提交包含shell元字符（如分号、管道符等）的特制请求，利用程序未对用户输入进行充分过滤的缺陷，在服务器端执行任意系统命令。攻击者无需身份认证即可利用该漏洞，可能导致服务器被完全控制、数据泄露或进一步横向移动。该漏洞影响广泛部署的CGI Counter应用，公开的利用代码已在ExploitDB发布，攻击门槛较低。"
-published = "2000-05-15T04:00:00.000"
-remediation = "立即升级 CGI Counter 至 4.0.8 或更高版本，该版本已修复输入验证缺陷。如无法升级，修改 counter.cgi 源码，对用户输入的所有参数使用 Perl 的 `quotemeta()` 函数转义 shell 元字符（如 `;` `|` `` ` `` `$`），并在脚本首行启用 Perl 的 taint 模式（`#!/usr/bin/perl -T`）。若业务不需要该功能，直接删除或禁用 counter.cgi 脚本。"
-score = 7.5
-severity = "HIGH"
-sources = ["epss"]
-title = "George Burgyan CGI Counter 远程命令执行漏洞"
-updated = "2026-06-16T21:51:42.193"
+description = 'George Burgyan CGI Counter 4.0.2 和 4.0.7 版本存在输入验证漏洞，攻击者可通过构造恶意的查询字符串参数（如 "count" 参数）向 CGI 计数器程序发送特制请求，利用程序对用户输入缺乏有效过滤和验证，导致命令注入或任意命令执行。该漏洞影响使用受影响版本 CGI Counter 的 Web 服务器，攻击者无需身份认证即可远程发起攻击，通过构造包含 shell 元字符（如分号、反引号、管道符）的参数值，在服务器上以 Web 服务器进程权限执行任意系统命令，可能导致服务器完全被攻控。攻击条件为目标服务器部署了受影响版本的 CGI Counter 且 CGI 执行权限配置不当。攻击者可通过构造类似 `/cgi-bin/counter?count=;cat+/etc/passwd` 的恶意 URL 实现远程命令执行，获取服务器敏感信息或进一步控制服务器。建议升级至修复版本或禁用该 CGI 程序。'
+published = "2000-05-15"
+remediation = "立即将 George Burgyan CGI Counter 从 4.0.2/4.0.7 升级到最新可用版本或卸载该软件。该软件已停止维护，无法获得安全补丁。作为临时缓解措施，禁止访问 cgie/private 目录并限制 CGI 脚本执行权限至仅限 root 用户。"
+score = 5
+severity = "MEDIUM"
+sources = ["avd"]
+title = "George Burgyan CGI Counter 4.0.2/4.0.7 输入验证漏洞"
+updated = "2000-05-15"
 
 [exploit]
 exp_urls = []
@@ -17,21 +17,19 @@ aliases = ["CVE-2000-0424"]
 ave_id = "AVE-2000-0345"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "http://www.securityfocus.com/bid/1202",
-    "http://www.securityfocus.com/templates/archive.pike?list=1&msg=200005151024.aa01811%40blaze.arl.mil",
     "https://www.exploit-db.com/exploits/19913",
-    "https://github.com/CVEProject/cvelistV5/blob/377bb49f7479dd297ab5004f75a37c291a136578/cves/2000/0xxx/CVE-2000-0424.json",
+    "https://github.com/CVEProject/cvelistV5/blob/f02fdda2bd389f5492ddcbf2ad808b3b60f20645/cves/2000/0xxx/CVE-2000-0424.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0424",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0424.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f2c577e1255b2c3fd617b7f1c499a222feb7b668/CVE/data/2000/CVE-2000-0424.json",
-    "https://github.com/github/advisory-database/blob/db909d46c3d9b98ec1f95daa3c88d7a8990ea8f5/advisories/unreviewed/2022/04/GHSA-c2w5-h6v5-wf8j/GHSA-c2w5-h6v5-wf8j.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0424.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/45906bb48c7a525a11d1008ce22e1e5c2f2f58c2/CVE/data/2000/CVE-2000-0424.json",
+    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2022/04/GHSA-c2w5-h6v5-wf8j/GHSA-c2w5-h6v5-wf8j.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0424.json",
+    "https://github.com/olbat/nvdcve/blob/a036095fb2c093f3863681adc5999690c37b930e/nvdcve/CVE-2000-0424.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
     "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001378.txt",
