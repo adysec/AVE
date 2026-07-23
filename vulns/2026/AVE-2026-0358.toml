@@ -1,0 +1,40 @@
+[basic]
+description = "Koel v9.5.0 广播电台创建接口 (POST /api/radio/stations) 存在服务端请求伪造 (SSRF) 漏洞。根因在于 Laravel 验证规则中 url 字段缺少 `bail` 关键字，导致 SafeUrl 规则拦截私有/保留地址后，HasAudioContentType 规则仍会继续执行并向该 URL 发起 HEAD/GET 请求。任意已认证的非管理员用户均可利用此漏洞，强制服务器向任意内网主机/端口发起 HTTP 请求，形成盲 SSRF。该漏洞影响 Koel v9.5.0 版本，已在 v9.7.1 中修复。攻击条件为：仅需普通用户认证凭证，无需管理员权限。利用方式：攻击者向 /api/radio/stations 发送包含内网地址（如 http://127.0.0.1:6379）的 POST 请求，通过观察返回的两种不同错误信息（“The url couldn't be reached.” 与 “The url doesn't look like a valid radio station URL.”）即可实现内网存活主机/端口探测，并可触发基于 GET/HEAD 的内网状态变更操作。CVSS 3.1 评分 6.3 (MEDIUM)，CVE-2026-50552，CWE-918。"
+published = "2026-06-12T20:16:47.080"
+remediation = "建议立即升级 Koel 至 9.7.1 或更高版本（已修复该 SSRF 漏洞）。若暂时无法升级，请手动修改 app/Http/Requests/API/Radio/RadioStationStoreRequest.php 的 url 验证规则数组，在 SafeUrl 规则前插入 'bail' 关键字，使验证在 SafeUrl 失败后停止，阻止 HasAudioContentType 继续发起 HTTP 请求。作为纵深防御，建议同时在 HasAudioContentType::resolveContentType() 中复用 Network::isPublicHost() 再次校验主机是否为公网地址，仅在公网地址通过时才发起 HEAD/GET 请求。若暂无法修改代码，可在反向代理/防火墙层面限制 Koel 服务器仅能访问公网 IP，禁止访问内网/保留地址段（10.0.0.0/8、172.16.0.0/12、192.168.0.0/16、127.0.0.0/8、169.254.0.0/16 等）作为临时缓解措施。"
+score = 6.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Koel Koel 服务器端请求伪造漏洞"
+updated = "2026-06-17T10:57:42.553"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-50552",
+    "GHSA-jr4p-4xjh-fwvw",
+]
+ave_id = "AVE-2026-0358"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/koel/koel/commit/5f6ce2cefd08f437a269236b677ad971517ccbb6",
+    "https://github.com/koel/koel/security/advisories/GHSA-jr4p-4xjh-fwvw",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2026/CVE-2026-50552.md",
+    "https://github.com/CVEProject/cvelistV5/blob/9615a84be27b28681e8a92dcc11ff360547df421/cves/2026/50xxx/CVE-2026-50552.json",
+    "https://github.com/cisagov/vulnrichment/blob/dde61f61b53e6605a407232356bfa1ca7643b1ec/2026/50xxx/CVE-2026-50552.json",
+    "https://github.com/Tabll/gemnasium-db/blob/de1cbf8802a4c6060caaa5924b50812f2a62fead/packagist/phanan/koel/CVE-2026-50552.yml",
+    "https://github.com/TMA84/cvealert/blob/76fdd7fe4cd9d55f9aa8c105cb90aa42e34c98b9/content/posts/cve-2026-50552.md",
+    "https://github.com/sec-dojo-com/cve-poc/blob/9a0b7a19487f40b2e217de2ad9f19cbcad032a8a/pocs/2026/CVE-2026-50552.md",
+    "https://github.com/github/advisory-database/blob/bd18194e7d4afd6af63b4895317531a574628e62/advisories/github-reviewed/2026/07/GHSA-jr4p-4xjh-fwvw/GHSA-jr4p-4xjh-fwvw.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2bf475c962629ec6f02e5caa819697d3f035d100/CVE/data/2026/CVE-2026-50552.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2026-50552.md",
+    "https://github.com/anchore/vulnerability-index-spec-files/blob/da07e4079d8e007fe062e5c4bb9628bb4caa2d74/data/2026/39/ANCHORE-2026-39382.toml",
+]
