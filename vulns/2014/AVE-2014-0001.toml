@@ -1,11 +1,11 @@
 [basic]
-description = "OpenSSL 1.0.1 至 1.0.1f 版本中的 TLS 和 DTLS 实现未正确检测 Heartbeat 扩展报文长度，远程攻击者可通过发送精心构造的 Heartbeat 请求触发缓冲区越界读取（Buffer Over-Read），从而泄露进程内存中的敏感数据（包括私钥、用户名密码、会话票据等）。该漏洞无需认证即可远程利用，影响大量网络设备和服务器，CVSS 评分 7.5，危害等级高。"
+description = "OpenSSL 1.0.1 至 1.0.1f 版本中的 TLS 和 DTLS 实现未正确验证 Heartbeat 扩展包的长度字段，存在缓冲区越界读取漏洞（CWE-125）。远程攻击者无需任何身份认证，即可通过向目标服务器发送精心构造的 Heartbeat 请求包，从服务器进程内存中读取最多 64KB 的敏感数据，包括私钥、会话密钥、用户密码和会话 Cookie 等。该漏洞被称为心脏滴血（Heartbleed），影响全球约 17% 的 HTTPS 服务器，攻击者可在不留下任何日志痕迹的情况下持续窃取内存数据，危害极为严重。OpenSSL 1.0.1g 版本已修复此漏洞。"
 published = "2014-04-07T22:55:03.893"
-remediation = "立即升级 OpenSSL 至 1.0.1g 或更高版本（1.0.2 用户升级至 1.0.2-beta2）。如无法立即升级，可重新编译 OpenSSL 时添加 -DOPENSSL_NO_HEARTBEATS 禁用心跳扩展作为临时缓解措施。升级后必须重新生成并替换所有服务器私钥和证书，因为内存泄露可能导致私钥已被窃取。"
+remediation = "立即升级 OpenSSL 至 1.0.1g 或更高版本（1.0.2、1.1.0 等），或重新编译 OpenSSL 时添加 -DOPENSSL_NO_HEARTBEATS 禁用心跳扩展。同时撤销所有现有 TLS 证书并重新签发，更换服务器私钥，强制用户重置密码和会话令牌。"
 score = 7.5
 severity = "HIGH"
-sources = ["nuclei"]
-title = "OpenSSL 心跳扩展缓冲区过度读取漏洞"
+sources = ["kev"]
+title = "OpenSSL TLS/DTLS 心跳扩展缓冲区越界读取漏洞（心脏滴血）"
 updated = "2026-06-17T00:02:24.467"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2014-0160"]
 ave_id = "AVE-2014-0001"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -152,16 +152,16 @@ urls = [
     "https://yunus-shn.medium.com/ricon-industrial-cellular-router-heartbleed-attack-2634221c02bd",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2014-0160",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/code/cves/2014/CVE-2014-0160.yaml",
-    "https://github.com/0xMarcio/cve/blob/ad05f692bdc2a0af2a34a2775ccc3bbb8c03507e/2014/CVE-2014-0160.md",
+    "https://github.com/0xMarcio/cve/blob/c6c9e305761264e104c5de70e59376c519bbfef3/2014/CVE-2014-0160.md",
     "https://github.com/carpedm20/awesome-hacking/blob/fcd725e328ffcd7c2f19dd09d3069c5c1c5b4dbf/README.md",
     "https://github.com/FiloSottile/Heartbleed/blob/4a3332ca1dc07aedf24b8540857792f72624cdf7/main.go",
-    "https://github.com/xroche/httrack/blob/8f7bfbb2f6d7e5a63ebd51d31eddfb026b80e7c0/history.txt",
-    "https://github.com/OWASP/Nettacker/blob/09207f94b6b4410b25f65d64dc94fb7eb37ad77f/docs/Modules.md",
+    "https://github.com/xroche/httrack/blob/e1d4c35ee658ba8eef7ba665f06ff0346cf88f2e/history.txt",
     "https://github.com/jekil/awesome-hacking/blob/3cb71ba9ab1ba31737dfbde9d3f1bba6c10627ba/_pages/index.rst",
     "https://github.com/Lekensteyn/pacemaker/blob/e46f3549ce5651deb688c73f67ff348b53c1601b/ssltest.py",
     "https://github.com/e-m-b-a/emba/blob/4d0f24b3edae0bdb5391177851bad3be54ecea0f/config/msf_cve-db.txt",
-    "https://github.com/OpenSecurityResearch/hostapd-wpe/blob/53b7a04e2098606972442e5b4dd41503356903ef/README",
     "https://github.com/sakura26/DADA/blob/ac4ade5bdc5c08e568bdfdca09972a5fde23add2/dev_php_defense.md",
+    "https://github.com/OpenSecurityResearch/hostapd-wpe/blob/53b7a04e2098606972442e5b4dd41503356903ef/README",
+    "https://github.com/RoseSecurity/Red-Teaming-TTPs/blob/2654a3b01e9413e202c2c7b5fd806f00be9e2f5e/Linux.md",
     "https://github.com/FiloSottile/Heartbleed",
     "https://github.com/musalbas/heartbleed-masstest",
     "https://github.com/titanous/heartbleeder",
