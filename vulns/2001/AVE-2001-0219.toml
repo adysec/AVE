@@ -1,11 +1,11 @@
 [basic]
-description = "基于 BSD 的 telnetd 守护进程在处理 telnet 协议选项时存在缓冲区溢出漏洞。远程攻击者可通过向目标系统发送特制的 AYT（Are You There）选项序列触发该漏洞，导致在目标系统上以 root 权限执行任意命令。该漏洞影响 Solaris 2.x/7.0/8、IRIX 6.5.x、OpenBSD 2.x、NetBSD 1.x、Debian 3 及 HP-UX 10 等多个操作系统，CVSS 评分 10.0，危害等级严重。攻击者无需身份认证即可远程利用，影响范围广泛。"
+description = "多个 BSD 基础的操作系统中的 Telnet 守护程序 (Telnet Daemon, telnetd) 存在严重缓冲区溢出漏洞，攻击者可通过发送特制选项（包括 AYT（Are You There）命令）触发 telrcv 函数的未验证输入导致内存缓冲区溢出，从而在目标系统上执行任意代码。受影响的操作系统包括 Solaris 2.x/7.0/8、IRIX 6.5.x、OpenBSD 2.x、NetBSD 1.x、Debian 3 和 HP-UX 10，所有版本均存在该漏洞。攻击者无需身份验证即可远程利用此漏洞，CVSS 评分高达 10.0（CVSS：AV:N/AC:L/Au:N/C:C/I:C/A:C），对系统的保密性、完整性和可用性构成完全破坏。该漏洞源于 TelnetD 在处理协议选项时缺乏长度检查，攻击者可通过精心构造的网络包触发缓冲区溢出。操作系统厂商已发布安全补丁，建议用户升级到最新版本以修复此漏洞。"
 published = "2001-08-14T04:00:00.000"
-remediation = "立即禁用 telnetd 服务（`systemctl stop telnetd && systemctl disable telnetd`），改用 SSH 进行远程管理。如无法立即替换，在防火墙层面限制 telnet（端口 23）仅允许受信任 IP 访问，并升级到各厂商已修复版本：Solaris 8 补丁 108906-11、OpenBSD 3.0+、NetBSD 1.6+、Debian 3.0 r1+、HP-UX 11.0 PHCO_24190。"
+remediation = "建议立即禁用 telnet 服务并改用 SSH 协议（如 OpenSSH 3.4+），在防火墙层面封禁 TCP 23 端口；若必须保留 telnet，请升级至各厂商修复版本：Solaris 8 安装补丁 108968-18、108993-18；OpenBSD 升级至 3.0+；NetBSD 升级至 1.5.2+；Debian 3.0 安装 telnetd_0.17-14.1 补丁包（DSA-070）；HP-UX 10.20 安装 PHNE_22621；IRIX 6.5.x 安装补丁 3521；Gentoo 执行 emerge --update net-misc/netkit-telnetd（GLSA-200410-03）。"
 score = 10
 severity = "CRITICAL"
-sources = ["exploitdb"]
-title = "多操作系统 BSD TelnetD 远程缓冲区溢出漏洞"
+sources = ["redhat"]
+title = "多厂商 TelnetD 缓冲区溢出漏洞"
 updated = "2026-06-16T21:54:31.283"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0554"]
 ave_id = "AVE-2001-0219"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-23T00:00:00Z"
 status = "completed"
 
 [references]
@@ -45,13 +45,13 @@ urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6875",
     "https://www.exploit-db.com/exploits/21018",
     "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2001/CVE-2001-0554.md",
-    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2001/0xxx/CVE-2001-0554.json",
+    "https://github.com/CVEProject/cvelistV5/blob/9615a84be27b28681e8a92dcc11ff360547df421/cves/2001/0xxx/CVE-2001-0554.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0554",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2001/CVE-2001-0554.md",
-    "https://github.com/github/advisory-database/blob/7007cbf91cfd56bead27c222fc520c733ed0ad71/advisories/unreviewed/2022/05/GHSA-cxg3-hwc8-9mx4/GHSA-cxg3-hwc8-9mx4.json",
+    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2022/05/GHSA-cxg3-hwc8-9mx4/GHSA-cxg3-hwc8-9mx4.json",
     "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/debian_DSA-070.nasl",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/7b14132e5983d4643412f6d4f89beb409b809e9f/CVE/data/2001/CVE-2001-0554.json",
-    "https://github.com/NetBSD/pkgsrc-wip/blob/b49c6ea2ab1d18335135f04a4ae84f6b2f615328/sara/PLIST",
-    "https://github.com/gentoo-mirror/gentoo/blob/2b62e6d4598bc44361f63250d9b3374e279e3161/metadata/glsa/glsa-200410-03.xml",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1910cec3a272a9634d53e73996abe765ad48da86/CVE/data/2001/CVE-2001-0554.json",
+    "https://github.com/NetBSD/pkgsrc-wip/blob/e7a1e0098ca50c8dc77455488033ca407ec81282/sara/PLIST",
+    "https://github.com/gentoo-mirror/gentoo/blob/817cbe7010b981e669b9f2f89a6c7614bbc842ae/metadata/glsa/glsa-200410-03.xml",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2004/CVE-2004-0911.json",
 ]
