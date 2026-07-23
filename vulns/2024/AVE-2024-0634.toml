@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核 USB gadget 子系统的 FunctionFS（f_fs）驱动中存在条件竞争漏洞。当系统启用 `panic_on_warn` 参数时，`functionfs_bind` 函数中不必要的 `WARN_ON` 调用会触发内核恐慌（kernel panic），导致系统重启或不可用。该漏洞影响运行 Linux 内核且使用 USB gadget 功能的设备，CVSS 评分为 4.7（中危）。攻击者需在本地具有一定权限并能够触发 ADB 功能路径与 UDC 写操作的竞争场景才能利用此漏洞。攻击利用会导致系统服务中断（可用性影响），但无法获取敏感数据或提升权限。上游社区已通过移除 `functionfs_bind` 中的 `WARN_ON` 调用来修复此问题。"
+published = "2025-01-19T12:15:25.477"
+remediation = '升级 Linux 内核至 >=5.15.0 或 >=6.1.0（具体取决于发行版的补丁策略），并重启系统。Debian 12 (bookworm) 应升级到 学士计划中的补丁版本；Ubuntu 24.04 LTS 应应用 USN-7381-1 安全更新；所有 RHEL/CentOS/Fedora 系统应更新到官方提供的内核补丁。升级后验证内核版本包含对 CVE-2024-57913 的修复（检查补丁日志中的 "usb: gadget: f_fs: Remove WARN_ON in functionfs_bind"）。如无法立即升级，可通过 `/proc/sys/kernel/panic_on_oops` 设置为 0 临时禁用 panic_on_warn 以减少风险。重启后检查 functionfs 驱动状态，确保 none 警告已被移除。'
+score = 4.7
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 USB Gadget FunctionFS 竞态条件导致内核恐慌漏洞"
+updated = "2026-06-17T08:14:13.227"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57913"]
+ave_id = "AVE-2024-0634"
+
+[meta]
+collected_at = "2026-07-23T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/19fc1c83454ca9d5699e39633ec79ce26355251c",
+    "https://git.kernel.org/stable/c/3e4d32cc145955d5c56c5498a3ff057e4aafa9d1",
+    "https://git.kernel.org/stable/c/82f60f3600aecd9ffcd0fbc4e193694511c85b47",
+    "https://git.kernel.org/stable/c/a8b6a18b9b66cc4c016d63132b59ce5383f7cdd2",
+    "https://git.kernel.org/stable/c/bfe60030fcd976e3546e1f73d6d0eb3fea26442e",
+    "https://git.kernel.org/stable/c/dfc51e48bca475bbee984e90f33fdc537ce09699",
+    "https://git.kernel.org/stable/c/ea6a1498742430eb2effce0d1439ff29ef37dd7d",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-265688.html",
+    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2024/CVE-2024-57913.md",
+    "https://github.com/CVEProject/cvelistV5/blob/9615a84be27b28681e8a92dcc11ff360547df421/cves/2024/57xxx/CVE-2024-57913.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57913",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57913.yaml",
+    "https://github.com/cisagov/vulnrichment/blob/dde61f61b53e6605a407232356bfa1ca7643b1ec/2024/57xxx/CVE-2024-57913.json",
+    "https://github.com/0xMarcio/cve/blob/ebd29ed5f9b5a2615e147ccbf1deed9bc7c5ae84/2024/CVE-2024-57913.md",
+    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2024-57913.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/f8224d6e888aa8987939b8288dc9909ca3aff5bd/references/CveServices-CVE-2024-57913-2025-11-03-1440",
+    "https://github.com/github/advisory-database/blob/bd18194e7d4afd6af63b4895317531a574628e62/advisories/unreviewed/2025/01/GHSA-5m3g-gpvq-34jp/GHSA-5m3g-gpvq-34jp.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57913",
+]
