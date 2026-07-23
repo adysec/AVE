@@ -1,0 +1,63 @@
+[info]
+author = "ave"
+description = "检测 JBoss EJBInvokerServlet/JMXInvokerServlet 反序列化远程代码执行漏洞。向 /invoker/EJBInvokerServlet 发送 POST 请求，若返回 200 状态码则表明目标存在该漏洞端点，攻击者可利用序列化 Java 对象实现远程代码执行。"
+id = "POC-AVE-2013-0506"
+name = "CVE-2013-4810 PoC"
+severity = "critical"
+tags = ["ave-2013-0506"]
+vuln_id = [
+    "CVE-2013-4810",
+    "AVE-2013-0506",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/invoker/EJBInvokerServlet"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-java-serialized-object"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/invoker/JMXInvokerServlet"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-java-serialized-object"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/web-console/Invoker"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
