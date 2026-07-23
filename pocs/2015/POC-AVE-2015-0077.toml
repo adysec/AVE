@@ -1,0 +1,49 @@
+[info]
+author = "ave"
+description = "检测目标浏览器 Flash Player 版本是否受 CVE-2015-0311 影响（Windows/OS X ≤16.0.0.287，Linux ≤11.2.202.438）"
+id = "POC-AVE-2015-0077"
+name = "CVE-2015-0311 Adobe Flash Player Use-After-Free PoC"
+severity = "critical"
+tags = ["ave-2015-0077"]
+vuln_id = [
+    "CVE-2015-0311",
+    "AVE-2015-0077",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc/cve-2015-0311-detect.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Flash Player",
+    "VULNERABLE",
+    "CVE-2015-0311",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc/cve-2015-0311.swf"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "CWS",
+    "FWS",
+]
