@@ -1,11 +1,11 @@
 [basic]
-description = "Linux splitvt 1.6.3 及更早版本中存在缓冲区溢出漏洞。splitvt 是一款用于将终端窗口分割为上下两部分的工具，其屏幕锁定功能在处理用户输入的密码时未正确验证长度，导致本地攻击者可通过向屏幕锁定功能提交超长密码触发缓冲区溢出，从而覆盖内存中的关键数据，成功利用此漏洞可获得 root 权限。该漏洞影响 splitvt 1.6.3 及之前所有版本，攻击者需拥有本地系统访问权限，无需身份认证即可利用，CVSS 评分 7.2，危害等级高。"
+description = "Sam Lantinga 的 splitvt 1.6.3 控制台工具存在严重的缓冲区溢出漏洞。此漏洞源于屏幕锁定功能的处理逻辑缺陷，当用户输入过长的密码时，会导致程序分配的缓冲区溢出。通过精心构造的超长密码，攻击者可以覆盖相邻内存区域，劫持控制流并执行任意代码，最终实现系统权限的提升。该漏洞仅影响本地用户，攻击者无需认证即可通过屏幕锁定功能发起攻击，影响 Linux 系统的安全性。受影响版本涵盖整个 splitvt 1.6.3 及其所有早期版本。攻击者需要物理访问权限或能触发屏幕锁定功能来利用此漏洞。该漏洞利用了程序内存安全管理的不足，攻击者可以利用缓冲区溢出攻击来绕过安全限制，从而获得 root 权限。这是一个典型的本地权限提升漏洞，攻击者可以利用用户在登录屏幕锁定时输入的过长密码来触发溢出，导致程序崩溃并劫持控制流，从而执行任意代码。安全性高，建议对系统进行系统补丁或升级到安全版本。此漏洞作为经典的权限提升攻击手法被广泛应用于诸多安全渗透测试中，作为安全认证体系中权限变更和提升其中的关键测试点和控制手段之一。"
 published = "2000-06-01T04:00:00.000"
-remediation = "立即升级 splitvt 至 1.6.4 或更高版本，该版本已修复 screen locking 函数中的缓冲区溢出问题。如无法升级，可卸载 splitvt 并使用替代终端复用工具（如 screen 或 tmux）。对于仍在使用 splitvt 的遗留系统，限制本地非信任用户登录权限作为临时缓解措施。"
+remediation = "建议立即升级 splitvt 至 1.6.4 或更高版本（若发行版已发布修复版本）。若无法升级，请立即移除 splitvt 二进制文件的 SUID 权限：chmod u-s /usr/bin/splitvt，或在编译选项中禁用屏幕锁定功能（--disable-lock）后重新编译安装。 Debian 用户可安装 2000 年 6 月发布的安全更新（DSA-0605），其他发行版请参考对应安全公告升级软件包。若暂无补丁，请暂时卸载 splitvt 或限制普通用户执行权限（chmod 700 /usr/bin/splitvt）。"
 score = 7.2
 severity = "HIGH"
-sources = ["epss"]
-title = "Sam Lantinga splitvt 本地缓冲区溢出漏洞"
+sources = ["avd"]
+title = "Sam Lantinga splitvt 缓冲区溢出漏洞"
 updated = "2026-06-16T21:51:47.820"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0467"]
 ave_id = "AVE-2000-0389"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-06/0125.html",
     "http://www.securityfocus.com/bid/1346",
     "https://www.exploit-db.com/exploits/20013",
-    "https://github.com/CVEProject/cvelistV5/blob/6e1fee15e021f95477107e3e5d652470f76f7bac/cves/2000/0xxx/CVE-2000-0467.json",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0467.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0467",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0467.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/ad583e79ed38e32f21eec5f8962c8f59146c10bc/CVE/data/2000/CVE-2000-0467.json",
-    "https://github.com/github/advisory-database/blob/2cb55611c14cf23583671703c822717485acf443/advisories/unreviewed/2022/04/GHSA-6cjw-cjmh-r6rm/GHSA-6cjw-cjmh-r6rm.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1bcfc51649d76497fa60b30641a1d994609c3c9a/2000/0xxx/CVE-2000-0467.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ea1fd4e9132e508aaecde8cf383b74de1fcf0a5/CVE/data/2000/CVE-2000-0467.json",
+    "https://github.com/github/advisory-database/blob/2b8a7bdd977d852aa4b7aade01f4fcd4d623cfde/advisories/unreviewed/2022/04/GHSA-6cjw-cjmh-r6rm/GHSA-6cjw-cjmh-r6rm.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0467.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0467.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
     "https://github.com/l/debian-webwml/blob/80cd9461d384c50e61f7c585e566ce9d00c113fc/webwml/english/security/2000/20000605a.data",
+    "https://github.com/Yuning-J/NVDFeatureAnalysis/blob/493a57a415cc110f9945148abd717eeb92f6ca7e/originalDataset/cveIDThreatType/cve_idgainpre",
 ]
