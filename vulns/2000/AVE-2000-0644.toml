@@ -1,11 +1,11 @@
 [basic]
-description = "AIX 4.2/4.3 操作系统中 netstat 命令的 -Zi 选项未正确限制访问权限，导致本地低权限用户可通过执行 netstat -Zi 命令清除网络接口统计数据，从而掩盖异常网络活动的痕迹。该漏洞影响 AIX 4.x.x 系列版本，CVSS 评分 2.1，危害等级低。攻击者需具有本地系统访问权限方可利用。"
+description = "该漏洞存在于AIX 4.2/4.3系统中的netstat命令中，该命令对-Zi选项缺乏访问控制验证。当本地用户在系统中执行netstat -Zar时，他们可以清除网络接口的统计信息，并可能因此对异常的网络活动进行伪装，以隐藏攻击痕迹。攻击者无需身份验证即可利用此漏洞清除系统网络统计数据，影响范围限于本地用户，能够对网络审计和异常检测造成严重干扰。该漏洞源于netstat程序未能对其特权选项进行充分的权限验证，攻击者可以轻易通过调用netstat的-Zi选项清除所有网络接口统计数据，随后直接从系统中抹除任何可疑的活动记录，导致安全工具无法获取有效的证据支持。"
 published = "2000-11-14T05:00:00.000"
-remediation = "IBM 已通过 AIX 4.3.3 Maintenance Level 及后续 APAR 修复此问题，建议升级至 AIX 4.3.3 及更高维护级别。临时缓解措施：以 root 执行 `chmod 500 /usr/bin/netstat` 移除 netstat 的 setgid 权限（原始权限为 2555 → 调整为 0555），限制非 root 用户执行；或通过 `ls -l /usr/bin/netstat` 确认权限后，仅允许可信本地用户组运行。长期方案建议升级至 IBM 当前仍支持的主流 AIX 版本（如 AIX 7.2/7.3），这些版本中已彻底修复此权限缺失问题。"
+remediation = "建议升级 AIX 至 4.3.3 维护级别 08 或更高版本（安装 IBM 官方补丁 IY16543/IY16544），或通过 chmod 700 /usr/sbin/netstat 限制 netstat 执行权限仅限 root，配合 sudo 限制普通用户执行 netstat -Zi 参数，并开启 AIX 审计子系统 (audit) 监控 netstat -Zi 执行记录以便审计异常网络统计清除行为。"
 score = 2.1
 severity = "LOW"
-sources = ["exploitdb"]
-title = "IBM AIX netstat 本地权限管理不当漏洞"
+sources = ["cve"]
+title = "IBM AIX netstat -Zi 选项访问控制不当漏洞"
 updated = "2026-06-16T21:52:38.860"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0873"]
 ave_id = "AVE-2000-0644"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1660",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5214",
     "https://www.exploit-db.com/exploits/20213",
-    "https://github.com/CVEProject/cvelistV5/blob/e37edb84f090321c2ab4b4aefc57f84a75b1b940/cves/2000/0xxx/CVE-2000-0873.json",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0873.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0873",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0873.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f73aeebc806b7ab5e9488498a056b9fa7bf30dd7/CVE/data/2000/CVE-2000-0873.json",
-    "https://github.com/github/advisory-database/blob/26d7afd7aa97d50454756aec5636fa553464ffd2/advisories/unreviewed/2022/04/GHSA-2hrr-6728-qg8v/GHSA-2hrr-6728-qg8v.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/51d462e668438eaead0d5fabdd60f13269763472/2000/0xxx/CVE-2000-0873.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c52ac29e3e33d673083c7aada18d2fe25f185ca8/CVE/data/2000/CVE-2000-0873.json",
+    "https://github.com/github/advisory-database/blob/2b8a7bdd977d852aa4b7aade01f4fcd4d623cfde/advisories/unreviewed/2022/04/GHSA-2hrr-6728-qg8v/GHSA-2hrr-6728-qg8v.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0873.md",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152800_152900.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--19311b12-ae28-4f55-bcd2-0ec5e8a2f3fe.json",
-    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0873.json",
 ]
