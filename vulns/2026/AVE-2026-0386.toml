@@ -1,0 +1,62 @@
+[id]
+ave_id = "AVE-2026-0386"
+aliases = ["CVE-2026-52826","GHSA-2xgg-2x8h-8xw4"]
+
+[basic]
+title = "Kimai: Improper Authorization in Project, Customer, and Activity Rate Edit Endpoints Allows Cross-Scope Rate Manipulation"
+description = "### Summary
+
+Kimai 2.56.0 contains an authenticated improper authorization vulnerability in the Web rate editing flows for projects, customers, and activities. A user who can edit one authorized parent object can combine that authorized parent ID with the rate ID of a different, unauthorized parent object and thereby modify the unauthorized rate record.
+
+This affects `ProjectRate`, `CustomerRate`, and `ActivityRate` editing. The issue is caused by missing parent-child consistency validation and allows cross-project, cross-customer, or cross-activity tampering of billing-related configuration.
+
+### Details
+
+The issue affects the following Web routes:
+
+- `GET/POST /en/admin/project/{id}/rate/{rate}`
+- `GET/POST /en/admin/customer/{id}/rate/{rate}`
+- `GET/POST /en/admin/activity/{id}/rate/{rate}`
+
+In both cases, the parent object and the rate object are resolved independently from user-controlled route parameters. The controller only checks whether the current user may edit the parent object referenced by `{id}`, but it does not verify that the child rate object referenced by `{rate}` actually belongs to that same parent.
+
+In these controllers, there is no validation such as:
+
+- `$rate->getProject() === $project`
+- `$rate->getCustomer() === $customer`
+- `$rate->getActivity() === $activity`
+
+This missing binding check is especially notable because the API delete endpoints already enforce the expected parent-child relationship.
+
+This shows that parent-child consistency is already a recognized invariant in the application design, but the Web edit endpoints fail to enforce it for projects, customers, and activities.
+
+*A PoC was provided, but removed for security reasons.*
+
+### Impact
+
+This vulnerability allows authenticated users to tamper with billing-related rate configuration outside their authorized project, customer, or activity scope. An attacker can modify rate values belonging to other teams or business domains, which can affect time-based settlement, inherited pricing, cost calculations, budget reporting, revenue reporting, and downstream invoice generation.
+
+Because the issue directly persists changes into `kimai2_projects_rates`, `kimai2_customers_rates`, and `kimai2_activities_rates`, it is a real cross-scope integrity vulnerability rather than a UI-only flaw. The attack breaks team-based isolation boundaries for high-value financial configuration.
+
+# Solution
+
+The rate edit forms for `customers`, `projects` and `activities` now verify that the rate belongs to the parent referenced in the URL and reject the request otherwise.
+
+See [https://www.kimai.org/en/security/ghsa-2xgg-2x8h-8xw4](https://www.kimai.org/en/security/ghsa-2xgg-2x8h-8xw4) for more information."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-24T02:20:51.668702203+00:00"

