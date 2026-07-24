@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "检测 Microsoft Visual Studio ATL COM 初始化漏洞。通过构造包含恶意 ATL 组件或控件的 HTML 文档，利用 Active Template Library 组件在OleLoadFromStream 调用过程中的安全限制不足漏洞，实现远程代码执行。验证需检查目标系统是否正确限制此类流媒体数据的实例化功能。"
+id = "POC-AVE-2009-0029"
+name = "Microsoft Visual Studio ATL COM 初始化远程代码执行漏洞 PoC"
+severity = "high"
+tags = ["ave-2009-0029"]
+vuln_id = [
+    "CVE-2009-2493",
+    "AVE-2009-0029",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "<!-- 疑似 ATL 组件加载测试载荷，由安全验证工具自动生成，用于检测 Active Template Library OleLoadFromStream 处理漏洞 -->"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-msdownload"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "response"
+status = [
+    200,
+    500,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ATL",
+    "com:clsid:",
+    "object",
+    "stream",
+]

