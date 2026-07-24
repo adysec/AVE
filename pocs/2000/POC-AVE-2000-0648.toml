@@ -1,25 +1,28 @@
 [info]
 author = "ave"
-description = "Mandrake Linux 6.1-7.1 中 Apache mod_perl 默认配置将 /perl/ 设为可索引（Indexes），远程攻击者直接访问 /perl/ 即可获得目录文件列表，泄露脚本路径与文件名。发送 GET 请求至 /perl/ 目录，若响应包含 Index of /perl 等目录列表特征字符串则确认漏洞存在"
+description = "验证 Mandrake Linux 6.1-7.1 版本中 mod_perl 模块的 /perl/ 目录是否被设置为可浏览，测试攻击者能否通过 HTTP 请求访问该目录并列出其中的文件内容，导致敏感信息泄露。"
 id = "POC-AVE-2000-0648"
-name = "Mandrake Linux Apache mod_perl /perl/ 目录浏览漏洞 PoC"
+name = "CVE-2000-0883 Mandrake mod_perl /perl 目录浏览漏洞 PoC"
 severity = "medium"
-tags = ["cve-2000-0883"]
+tags = ["ave-2000-0648"]
 vuln_id = [
     "CVE-2000-0883",
     "AVE-2000-0648",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/perl/"
+path = "/perl/"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["Index of /perl"]
+words = [
+    "index of /perl",
+    "Directory listing",
+]
