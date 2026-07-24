@@ -1,0 +1,108 @@
+[id]
+ave_id = "AVE-2026-0379"
+aliases = ["CVE-2026-52819","GHSA-4m8q-55qv-9pwp"]
+
+[basic]
+title = "Kimai: Teamlead authorization bypass in GET /api/timesheets allows reading other users' timesheet records without being teamlead of the target"
+description = "## Summary
+
+`GET /api/timesheets?user=<id>` (and `users[]=<id>`) returns the targeted user's timesheet records to any caller that has the `view_other_timesheet` permission, without verifying that the caller is teamlead of any team containing the target user. The per-record endpoint `GET /api/timesheets/{id}` correctly enforces this check via `TimesheetVoter`/`RolePermissionManager::checkTeamAccessTimesheet` → `checkTeamLeadAccess`, but the list endpoint only filters projects/customers by team membership and never validates `t.user`. A `ROLE_TEAMLEAD` user can therefore enumerate any user's records — including the `rate` field — as long as those records are on a project with no team scoping (Kimai's default) or on any project that shares any team (membership, not lead) with the requester.
+
+## Details
+
+**Root cause:** authorization mismatch between the per-record voter and the list endpoint.
+
+### Per-record path (correct)
+
+`src/Voter/TimesheetVoter.php:138`:
+```php
+if (!$this->permissionManager->checkTeamAccessTimesheet($subject, $user)) {
+    return false;
+}
+return $this->permissionManager->hasRolePermission($user, $permission . '_other_timesheet');
+```
+
+`checkTeamLeadAccess` (RolePermissionManager.php:143-160) requires `isTeamleadOf` (not just member) one of the **target user's** teams. The unit test `testTeamleadDeniedWhenOnlyPlainMemberOfOwnerTeam` (tests/Voter/TimesheetVoterTest.php:253-269) codifies this:
+
+> *\"a TEAMLEAD role with `view_other_timesheet` must not access another user's timesheet by being a plain team member — they must be the team's teamlead.\"*
+
+### List path (vulnerable)
+
+`src/API/TimesheetController.php:97-119`:
+```php
+public function cgetAction(ParamFetcherInterface $paramFetcher, ..., UserRepository $userRepository): Response
+{
+    $query = new TimesheetQuery(false);
+    $this->prepareQuery($query, $paramFetcher);
+    $seeAll = false;
+
+    if ($this->isGranted('view_other_timesheet')) {
+        /** @var array<int> $users */
+        $users = $paramFetcher->get('users');
+        $userId = $paramFetcher->get('user');
+
+        if ('all' === $userId) {
+            $seeAll = true;
+        } elseif (\is_string($userId) && $userId !== '') {
+            $users[] = (int) $userId;
+        }
+
+        if (!$seeAll) {
+            foreach ($userRepository->findByIds($users) as $user) {
+                $query->addUser($user);   // <-- no teamlead-of-target check
+            }
+        }
+    }
+    ...
+```
+
+`config/packages/kimai.yaml:96,115` grants `TIMESHEET_OTHER` (which contains `view_other_timesheet`) to `ROLE_TEAMLEAD`, so the gate at line 103 passes for any teamlead. The `user=` / `users[]=` IDs are pushed straight into the query.
+
+### Net effect
+
+For any victim `bob` who:
+- has at least one team that the requester `alice` is **not** teamlead of (so the voter denies per-record access), AND
+- has timesheets either on a project with no team (Kimai's default), or on a project that shares any team with `alice` (membership, not lead)
+
+`alice` is denied via `GET /api/timesheets/{id}` but receives `bob`'s records via `GET /api/timesheets?user=<bob_id>`.
+
+Disclosed fields in the collection response include `description`, `begin`, `end`, `duration`, `billable`, `exported`, `tags`, `rate`, `internalRate`, plus project/activity/user IDs (Default/Collection serializer groups, Timesheet.php:164-173). `rate` is financial data that the per-record voter is supposed to gate via the separate `view_rate_other_timesheet` permission.
+
+### Why other proposed mitigations don't apply
+- The `view_other_timesheet` `IsGranted` on the route is the only authorization layer in the list path; ROLE_TEAMLEAD has it globally.
+- `prepareQuery` only sets `currentUser`, not authorization (BaseApiController.php:68-71).
+- The serializer does not filter `rate` per caller — it is a static `Default`-group property.
+- Recent commit 20c7b03 \"Re-usable ACL checks on teams\" hardened the voter side but left the list endpoint unchanged.
+
+*A PoC was provided, but removed for security reasons.*
+
+## Impact
+
+- **Authorization bypass**: a `ROLE_TEAMLEAD` (a non-admin role typically granted to multiple users in a Kimai instance) can read any other user's timesheet records
+- **Financial data disclosure**: the `rate` and `internalRate` fields are returned in the collection serializer group, leaking what gets billed/costed against any user's records.
+- **PII / activity disclosure**: per-entry `description`, `begin`, `end`, `duration`, `billable`, `exported`, project/activity/customer IDs, and tags are leaked, allowing reconstruction of any user's activity timeline.
+
+# Solution
+
+The list of requested user `TimesheetController::cgetAction()` is now guarded with the `access_user` permission.
+The `access_user` permission verifies that the requesting user is allowed to see each of the requested user.
+If any of the requested users may not be seen, the entire call will fail.
+
+Find out more at [https://www.kimai.org/en/security/ghsa-4m8q-55qv-9pwp](https://www.kimai.org/en/security/ghsa-4m8q-55qv-9pwp)"
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-24T00:53:51.632059744+00:00"
