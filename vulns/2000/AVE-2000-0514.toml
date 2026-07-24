@@ -1,10 +1,10 @@
 [basic]
-description = "BSD 系统内核中未公开文档的 semconfig 系统调用存在设计缺陷，由于未对调用者权限进行充分限制，本地攻击者可利用该调用冻结系统中所有信号量的状态，导致信号量子系统无法响应任何操作而陷入拒绝服务状态。该漏洞影响 BSD 系列操作系统，包括 NetBSD 等衍生版本。攻击者需要有本地系统访问权限才能利用此漏洞，无法远程触发，但一旦成功将直接导致系统信号量功能瘫痪，影响依赖信号量机制的应用正常运行。"
+description = "NetBSD 及 BSD 衍生系统中存在未文档化的 semconfig 系统调用漏洞，该调用会冻结信号量的状态，导致本地用户可通过调用 semconfig 系统调用使信号量系统陷入拒绝服务状态。该漏洞影响 NetBSD 及相关 BSD 衍生系统，CVSS 评分 2.1（AV:L/AC:L/Au:N/C:N/I:N/A:P），属于本地拒绝服务漏洞，攻击者需具备本地用户权限且能调用 semconfig 系统调用即可触发，利用方式为直接调用该未文档化系统调用冻结信号量状态导致系统信号量机制失效，造成拒绝服务影响。"
 published = "2000-05-29T04:00:00.000"
-remediation = "FreeBSD 用户应立即应用 FreeBSD-SA-00:19 安全公告中的内核补丁；NetBSD 用户应安装 NetBSD-SA2000-004 公告提供的补丁；OpenBSD 2.6 用户需应用 errata 024 号内核补丁，移除未文档化的 semconfig 系统调用。如无法立即打补丁，可通过内核配置禁用 System V 信号量支持作为临时缓解措施。"
+remediation = "建议立即升级至 NetBSD 9.3 或 10.0 及以上版本（该版本已移除/修复未文档化的 semconfig 系统调用）。若无法立即升级，可编译内核时排除 semconfig 系统调用（在内核配置文件中移除 semconfig 支持），或通过文件系统权限限制本地用户访问 /dev/ksyms 等接口作为临时缓解措施。同时建议限制本地用户权限，避免非必要用户获取 shell 访问权限。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
+sources = ["avd"]
 title = "NetBSD semconfig 系统调用拒绝服务漏洞"
 updated = "2026-06-16T21:51:47.067"
 
@@ -17,20 +17,20 @@ aliases = ["CVE-2000-0461"]
 ave_id = "AVE-2000-0514"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.openbsd.org/errata26.html#semconfig",
     "http://www.securityfocus.com/bid/1270",
-    "https://github.com/trickest/cve/blob/1b6397ca00ebc515023ce73df945527011e5cc49/2000/CVE-2000-0461.md",
-    "https://github.com/CVEProject/cvelistV5/blob/b5102a7cca13b4c0a0e55e628783c406707da47e/cves/2000/0xxx/CVE-2000-0461.json",
+    "https://github.com/trickest/cve/blob/efd7fc726910da5a47b5ea864d60bf92f66b594e/2000/CVE-2000-0461.md",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0461.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0461",
     "https://github.com/edoardottt/missing-cve-nuclei-templates/blob/115c94bd1da3cc18977d652d6e78c9f4a5dfc13b/data/year/2000.txt",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2cba6a622b2958fa1ec3a506e7b58871edec19fb/CVE/data/2000/CVE-2000-0461.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c52ac29e3e33d673083c7aada18d2fe25f185ca8/CVE/data/2000/CVE-2000-0461.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-0461.md",
-    "https://github.com/github/advisory-database/blob/78550cb05ca9623089e78169330acf979f4b64ca/advisories/unreviewed/2022/05/GHSA-3rxh-gp2j-2w4m/GHSA-3rxh-gp2j-2w4m.json",
+    "https://github.com/github/advisory-database/blob/2b8a7bdd977d852aa4b7aade01f4fcd4d623cfde/advisories/unreviewed/2022/05/GHSA-3rxh-gp2j-2w4m/GHSA-3rxh-gp2j-2w4m.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--c2e7ec15-6d13-4232-b36f-4ee9b37ad606.json",

