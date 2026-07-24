@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "Citrix Nfuse 1.51 launch.asp 缺少 session 参数时泄露 Web 根目录绝对路径"
+id = "POC-AVE-2001-0336"
+name = "CVE-2001-0760 PoC"
+severity = "medium"
+tags = ["ave-2001-0336"]
+vuln_id = [
+    "CVE-2001-0760",
+    "AVE-2001-0336",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/Citrix/Nfuse/launch.asp"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    '\',
+    ":",
+    "Inetpub",
+    "wwwroot",
+    "cfusion",
+    "webroot",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+]
+type = "status"
