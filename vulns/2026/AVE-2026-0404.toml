@@ -1,0 +1,42 @@
+[basic]
+description = "Better Auth 的组织插件（organization plugin）中 `acceptInvitation`、`rejectInvitation`、`getInvitation` 和 `listUserInvitations` 四个邀请接收端点依赖 `session.user.email` 与 `invitation.email` 的字符串匹配来验证邀请者身份，但未强制要求邮箱已验证。当应用使用 `emailAndPassword: { enabled: true }` 且未启用 `requireEmailVerification` 时，攻击者可先用受害者的邮箱地址注册一个未经身份验证的账户并自动登录，随后获取组织管理员发出的邀请链接中的 `invitationId`，即可冒充受害者接受该邀请，以被邀请角色加入目标组织并读取组织范围内的敏感数据。该漏洞影响所有使用 better-auth 组织插件且未配置邮箱验证要求的应用程序，CVSS 评分为 7.7（高危）。修复方案为升级至 better-auth 1.6.11 或更高版本，该版本默认启用 `requireEmailVerificationOnInvitation` 并在所有四个端点中强制校验 `emailVerified` 状态。"
+published = "2026-07-15T18:16:47.683"
+remediation = "升级 better-auth 到 1.6.11 或更高版本，该版本默认启用 requireEmailVerificationOnInvitation 并对所有邀请端点增加已验证邮箱校验。如暂时无法升级，应在 organization 插件选项中设置 requireEmailVerificationOnInvitation: true，在 emailAndPassword 配置中启用 requireEmailVerification: true，并在组织邀请路由层添加中间件强制要求 session.user.emailVerified 为 true。"
+score = 7.7
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Better Auth better-auth 组织插件未授权邀请接受漏洞"
+updated = "2026-07-21T13:41:03.313"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-53514",
+    "GHSA-fmh4-wcc4-5jm3",
+]
+ave_id = "AVE-2026-0404"
+
+[meta]
+collected_at = "2026-07-24T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/better-auth/better-auth/commit/23094a628f007f801be6d26e5b15dc5fc6fc4eb8",
+    "https://github.com/better-auth/better-auth/pull/9577",
+    "https://github.com/better-auth/better-auth/releases/tag/v1.6.11",
+    "https://github.com/better-auth/better-auth/security/advisories/GHSA-fmh4-wcc4-5jm3",
+    "https://github.com/CVEProject/cvelistV5/blob/12b3733bfd1230e92fdd480cbc71e829b404ab11/cves/2026/53xxx/CVE-2026-53514.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/f352693f226c45464267beeea27f2ecfa0372f11/reports/2026-07-15/TIER_2_CVE-2026-53514.md",
+    "https://github.com/Tabll/gemnasium-db/blob/61c26bb0fa513d67ff37c47a0aee18a8017dee2d/npm/better-auth/CVE-2026-53514.yml",
+    "https://github.com/cisagov/vulnrichment/blob/7fa480de4a35333628fd1174156087809fb9b203/2026/53xxx/CVE-2026-53514.json",
+    "https://github.com/TMA84/cvealert/blob/9af7ba4257c96e587dd93d2c4f7608ad02094e96/content/posts/cve-2026-53514.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2026-53514.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/7382c2b06ced5c0a9e3a3235f920776f951ff316/posts/cve-2026-53514-npm-better-auth.html",
+    "https://github.com/github/advisory-database/blob/5ceb7b7e2bbbdef1e6ada0d3ecfe09bafdfb663e/advisories/github-reviewed/2026/07/GHSA-fmh4-wcc4-5jm3/GHSA-fmh4-wcc4-5jm3.json",
+    "https://github.com/stevologic/security-recipes.ai/blob/f55e6317cf39bbe423517d172b0edcb8b78ff702/content/recipes/cve/cve-2026-53514-better-auth-vulnerable-to-unauthorized-invitation-acceptance-via-unverified-email-match-in-organization-plugin.md",
+    "https://github.com/anchore/nvd-data-overrides/blob/20783e837c8d3900447582f2695481bf39f8f7ff/data/2026/CVE-2026-53514.json",
+]
