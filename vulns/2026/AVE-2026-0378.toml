@@ -1,0 +1,41 @@
+[basic]
+description = "YesWiki Wiki 系统的 Bazar 表单字段计算器 (CalcField.php) 存在不安全的 eval() 代码执行漏洞。该漏洞存在于 formatValuesBeforeSave() 方法中，应用尝试通过复杂的递归正则表达式验证用户定义的数学公式后再传递给 PHP eval() 函数执行。该实现存在两大架构缺陷：一是递归正则表达式 (?1)+ 依赖 PCRE 栈处理深层嵌套，攻击者可构造数千层嵌套括号的数学公式触发 PCRE 栈溢出或 ReDoS，导致 PHP-FPM 工作进程崩溃造成拒绝服务；二是验证逻辑在 tokenization 重组后才对 $formula 进行正则校验，若底层 tokenization 函数泄露意外字符串格式，或攻击者利用 PCRE 引擎边缘情况绕过正则，恶意 PHP 代码将直接经由 eval() 执行，导致远程代码执行（RCE），攻击者可获取 Web 服务器权限（如 www-data）实现完全主机沦陷。影响范围：YesWiki 4.6.6 之前版本，影响文件 tools/bazar/fields/CalcField.php。攻击条件：攻击者需具备创建或编辑 Bazar 表单并添加 Calc 字段的权限（通常为认证用户或开放注册场景）。利用方式：1) DoS：提交形如 `((((...(1+1))...)))` 含数千层嵌套括号的公式触发 PCRE 栈溢出崩溃 PHP 进程；2) RCE：若正则校验被绕过，提交 `abs(1) + system('id')` 等 PHP 代码片段经 eval() 执行实现任意命令执行。CVSS 3.1 评分 9.8 (CRITICAL)，影响机密性/完整性/可用性均为 HIGH。YesWiki 4.6.6 版本已修复，建议升级并替换 eval() 为安全的 AST 数学表达式解析器。"
+published = "2026-06-08T19:16:46.683"
+remediation = "立即升级 YesWiki 至 4.6.6 或更高版本，该版本已移除 CalcField.php 中通过 eval() 执行用户公式的不安全逻辑，改用专用数学表达式解析器。如暂无法升级，可临时在 Bazar 表单配置中禁用 Calc 计算字段，并严格限制具备表单创建/编辑权限的用户范围，同时检查 Web 服务器日志中是否存在异常嵌套括号或 PHP 代码注入痕迹。"
+score = 9.8
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "YesWiki YesWiki Bazar表单计算器 不安全eval() 远程代码执行和拒绝服务漏洞"
+updated = "2026-07-23T08:10:00.137"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-52778",
+    "GHSA-px5m-h76g-p7p8",
+]
+ave_id = "AVE-2026-0378"
+
+[meta]
+collected_at = "2026-07-24T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/YesWiki/yeswiki/commit/dd2bd8fb099de0d21504bda8a810693b3fcb8e52",
+    "https://github.com/YesWiki/yeswiki/releases/tag/v4.6.6",
+    "https://github.com/YesWiki/yeswiki/security/advisories/GHSA-px5m-h76g-p7p8",
+    "https://github.com/trickest/cve/blob/efd7fc726910da5a47b5ea864d60bf92f66b594e/2026/CVE-2026-52778.md",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2026/52xxx/CVE-2026-52778.json",
+    "https://github.com/Tabll/gemnasium-db/blob/3a636e9ca4dec610ea52bddffa3cd59a180b7252/packagist/yeswiki/yeswiki/CVE-2026-52778.yml",
+    "https://github.com/cisagov/vulnrichment/blob/2515f07573bc23c1f79f0d197a09a6f29d3e20ae/2026/52xxx/CVE-2026-52778.json",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/f15100526750b2cf9bd4dc0cc587f58f968afb29/nvd/2026/CRITICAL/CVE-2026-52778/README.md",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/f352693f226c45464267beeea27f2ecfa0372f11/reports/2026-06-08/TIER_2_CVE-2026-52778.md",
+    "https://github.com/TMA84/cvealert/blob/fda1b93e4e10d8f7d6b98784e4ad319f13381845/content/posts/cve-2026-52778.md",
+    "https://github.com/github/advisory-database/blob/d1d7ac405f2460acf0b0e8ed2a5cf8c748023246/advisories/github-reviewed/2026/07/GHSA-px5m-h76g-p7p8/GHSA-px5m-h76g-p7p8.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/9a0b7a19487f40b2e217de2ad9f19cbcad032a8a/pocs/2026/CVE-2026-52778.md",
+    "https://github.com/stevologic/security-recipes.ai/blob/f55e6317cf39bbe423517d172b0edcb8b78ff702/content/recipes/cve/cve-2026-52778-yeswiki-has-unsafe-eval-in-its-formula-calculato-leading-to-remote-code-execution-denial-of-service.md",
+]
