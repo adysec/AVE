@@ -1,0 +1,88 @@
+[id]
+ave_id = "AVE-2026-0403"
+aliases = ["CVE-2026-53513","GHSA-5rr4-8452-hf4v"]
+
+[basic]
+title = "@better-auth/sso provider registration has server-side request forgery via unvalidated OIDC endpoints"
+description = "### Am I affected?
+
+Users are affected if all of the following are true:
+
+- Their application uses `@better-auth/sso` at a version `>= 0.1.0, < 1.6.11` on the stable line, or any `1.7.0-beta.x` on the pre-release line.
+- The `sso()` plugin is added to their application's `betterAuth({ plugins: [...] })` array.
+- Any user with a valid Better Auth session can reach `POST /sso/register` (the plugin's default gate accepts any session).
+
+For the non-blind SSRF impact (full IAM credential or internal HTTP body exfiltration), no further configuration is required.
+
+For the account takeover escalation, additionally:
+
+- Developers set `sso({ trustEmailVerified: true, ... })`.
+- The developer's application deployment has accounts whose `email` overlaps with attacker-chosen domains.
+
+If developers do not enable the SSO plugin, their application is not affected.
+
+Fix:
+
+1. Upgrade to `@better-auth/sso@1.6.11` or later.
+2. If developers cannot upgrade, see workarounds below.
+
+### Summary
+
+The `@better-auth/sso` plugin's `POST /sso/register` endpoint accepts attacker-controlled `oidcConfig.userInfoEndpoint`, `tokenEndpoint`, and `jwksEndpoint` URLs when `skipDiscovery: true` is set, persists them on the `ssoProvider` row without origin validation, then issues server-side fetches to those URLs during the OIDC callback. The fetched response body is reflected through the user profile, producing a non-blind SSRF reachable by any authenticated session. The same primitive exists on `POST /sso/update-provider`.
+
+### Details
+
+The schema field types accept bare strings: no `.url()` validator, no origin gate. The discovery branch (`skipDiscovery: false`) routes URLs through `validateDiscoveryUrl`; the skip-discovery branch persists them as-is. At callback time three fetch sites read the stored URLs: `validateAuthorizationCode` for the token endpoint, `betterFetch` for the userInfo endpoint, and `validateToken` for the JWKS endpoint.
+
+When `trustEmailVerified: true` is configured, the attacker can escalate to account linking. A malicious userInfo response with `emailVerified: true` and a chosen `email` triggers OAuth auto-link against any pre-existing user row with that email, compounding the SSRF into account takeover.
+
+### Patches
+
+Fixed in `@better-auth/sso@1.6.11`. Provider registration (`POST /sso/register` with `skipDiscovery: true`) and every `POST /sso/update-provider` request now validate each supplied OIDC endpoint URL (`authorizationEndpoint`, `tokenEndpoint`, `userInfoEndpoint`, `jwksEndpoint`, `discoveryEndpoint`) at registration time. A URL is rejected unless it satisfies one of two conditions:
+
+1. Its host is publicly routable on the internet, evaluated through the `@better-auth/core/utils/host.isPublicRoutableHost` gate. RFC 1918 private ranges, RFC 4193 unique-local addresses, link-local addresses (including the cloud-metadata IP `169.254.169.254`), loopback, multicast, broadcast, and reserved ranges are rejected, along with cloud-metadata FQDNs.
+2. Its origin is already listed in the application's `trustedOrigins` configuration. This preserves the documented escape hatch for customers running internal IdPs intentionally on private networks.
+
+The schema also tightens from `z.string()` to `z.url()` on those fields, so malformed URLs fail at parse time rather than at fetch time. Deployments running internal IdPs that previously worked must add the IdP's origin to `trustedOrigins` to keep working after upgrade.
+
+### Workarounds
+
+If developers cannot upgrade immediately:
+
+- **Disable provider self-registration**: set `sso({ providersLimit: 0 })`. The limit is enforced before the schema branch, blocking every `/sso/register` regardless of `skipDiscovery`.
+- **Reverse-proxy gate**: block `POST /sso/register` and `POST /sso/update-provider` at the edge, or restrict to a denylist of source IPs and a small admin user list.
+- **Network-level egress controls**: block egress from the auth server to RFC 1918, RFC 4193, link-local ranges (`169.254.0.0/16`, `fe80::/10`), and the cloud-metadata FQDN list at the firewall or VPC level. AWS users should additionally enforce IMDSv2 (`HttpTokens: required`).
+- **Set `trustEmailVerified: false`** until upgrade. This caps the impact at non-blind SSRF and removes the account-takeover escalation, but does not stop the SSRF.
+
+### Impact
+
+- **Server-Side Request Forgery (non-blind)**: the attacker reads response bodies from any HTTP endpoint reachable from the auth server, including cloud metadata services (AWS IMDS, GCP metadata FQDN), internal-only APIs, and infrastructure services such as Redis or admin panels bound to localhost.
+- **Account takeover** (when `trustEmailVerified: true`): the attacker mints a malicious userInfo response asserting `emailVerified: true` for an arbitrary email, triggering OAuth auto-link against pre-existing user rows.
+
+### Credit
+
+Reported by Vaadata.
+
+### Resources
+
+- [CWE-918: Server-Side Request Forgery (SSRF)](https://cwe.mitre.org/data/definitions/918.html)
+- [CWE-20: Improper Input Validation](https://cwe.mitre.org/data/definitions/20.html)
+- [CWE-441: Unintended Proxy or Intermediary](https://cwe.mitre.org/data/definitions/441.html)
+- [CWE-345: Insufficient Verification of Data Authenticity](https://cwe.mitre.org/data/definitions/345.html)"
+severity = "CRITICAL"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-24T14:24:56.037743129+00:00"
