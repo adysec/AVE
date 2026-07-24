@@ -1,11 +1,11 @@
 [basic]
-description = "Windows 2000 桌面隔离机制存在访问控制缺陷，同一窗口站（Window Station）内的本地用户进程可越权访问其他用户的桌面会话，导致敏感信息泄露或权限提升。攻击者需拥有本地账户权限并登录系统，通过调用窗口站相关 API 即可跨用户桌面读取剪贴板内容、捕获键盘输入或注入窗口消息。该漏洞影响 Windows 2000 所有版本，CVSS 评分 4.6，危害等级中危。微软尚未发布官方补丁，建议通过限制本地用户登录或启用安全策略缓解风险。"
+description = "Windows 2000 存在桌面分离访问控制漏洞，本地用户进程可突破会话隔离，访问同一窗口站内其他用户的桌面会话。攻击者需具备本地登录权限且处于同一窗口站，通过调用窗口站API函数枚举并附加到其他用户桌面，可窃取敏感信息、键盘记录或注入恶意代码实现权限提升。该漏洞影响 Windows 2000 所有版本，CVSS 4.6 分（本地/低复杂度/无需认证/部分机密性/完整性/可用性影响），属于会话隔离缺陷导致的本地权限提升漏洞。微软已发布安全补丁修复该桌面隔离缺陷。"
 published = "2000-06-15T04:00:00.000"
-remediation = '建议立即升级到 Windows 10/11 或 Windows Server 2019/2022 等受支持版本，Windows 2000 已停止支持不再有安全更新。如无法升级，可通过组策略编辑器 (gpedit.msc) 依次展开「计算机配置 → Windows 设置 → 安全设置 → 本地策略 → 用户权限分配」，将「创建桌面」和「创建窗口站」权限仅授予 Administrators 组，移除 Users 组。同时配置注册表 `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Kernel\ObjectDirectories` 下的窗口站对象权限，限制非管理员进程的桌面访问。'
+remediation = '建议立即安装 Microsoft Windows 2000 Security Rollup 1 (SR-1) 及 2000 年的累计安全更新，或应用 2000 年 6 月针对漏洞 CVE-2000-0475 的特定补丁。关闭所有非必需的本地用户账户、更换所有默认密码，并通过 GPO 禁用所有未认证的网络访问。如无法立即更新，可临时通过注册表禁用桌面共享功能（HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Policy\NoDesktopPolicy=1）以缓解桌面权限提升风险。'
 score = 4.6
 severity = "MEDIUM"
-sources = ["epss"]
-title = "Microsoft Windows 2000 桌面隔离访问控制漏洞"
+sources = ["avd"]
+title = "微软 Windows 2000 访问控制漏洞"
 updated = "2026-06-16T21:51:48.863"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0475"]
 ave_id = "AVE-2000-0528"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://www.securityfocus.com/bid/1350",
     "https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-020",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4714",
-    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2000/0xxx/CVE-2000-0475.json",
+    "https://github.com/CVEProject/cvelistV5/blob/2191d577d2d643f301487a89dd6359b1113a07b9/cves/2000/0xxx/CVE-2000-0475.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0475",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0475.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/7b14132e5983d4643412f6d4f89beb409b809e9f/CVE/data/2000/CVE-2000-0475.json",
-    "https://github.com/github/advisory-database/blob/0b54eddb6b01c4a2bdae016ba668128b1a8b9336/advisories/unreviewed/2022/04/GHSA-jw6j-588w-5rcx/GHSA-jw6j-588w-5rcx.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1bcfc51649d76497fa60b30641a1d994609c3c9a/2000/0xxx/CVE-2000-0475.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cc202af7c41ce1218ba7619eda84142fd5c7f1cf/CVE/data/2000/CVE-2000-0475.json",
+    "https://github.com/github/advisory-database/blob/292f77a8e015ead047ef178a4e7ea4de6f3945c3/advisories/unreviewed/2022/04/GHSA-jw6j-588w-5rcx/GHSA-jw6j-588w-5rcx.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0475.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0475.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--663f0d72-56c9-42e7-932b-e6c77f3923c5.json",
+    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
 ]
