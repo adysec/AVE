@@ -1,11 +1,11 @@
 [basic]
-description = "IMP 中的 MSWordView 组件在处理 Word 附件时会创建临时文件并保存至 /tmp 目录，但这些临时文件被设置为全局可读（world-readable）权限，导致其他本地用户可读取其中的敏感内容，造成信息泄露。该漏洞影响 Horde IMP 的 MSWordView 组件，攻击条件为拥有目标系统的本地账户访问权限，攻击复杂度低，CVSS 评分 2.1，危害等级低。"
+description = "IMP/MSWordView 应用程序存在严重的文件权限漏洞。该应用创建的临时文件存储在 /tmp 目录，并设置了世界可读权限，导致任何本地用户均可访问这些临时文件，读取其中存储的敏感信息。这种漏洞源于不安全的文件权限配置，暴露了用户的隐私数据、配置信息和日志记录。攻击者可利用此漏洞读取系统内的敏感信息，可能导致信息泄漏和进一步安全风险。该漏洞影响 IMP/MSWordView 应用的用户及本地系统账户，攻击条件简单，只需获得本地访问权限即可轻易读取临时文件中的敏感数据。"
 published = "2000-04-22T04:00:00.000"
-remediation = "升级 IMP 至 2.2 beta 及以上版本（pre11 起已修复 umask 为 077）；如无法升级，在 imp/lib/mimetypes.lib 中修改临时文件存储路径，创建仅 web 进程可读写（700 权限）的专用目录替代 /tmp；同时设置 cron 定时清理超过 30 分钟的 IMP 临时文件以防磁盘耗尽。"
+remediation = "建议升级 IMP (Internet Messaging Program) 至 2.2 版本或更高版本，该版本已修复 MSWordView 在 /tmp 目录创建全局可读文件的问题。若无法立即升级，可通过设置 /tmp 目录粘滞位 (chmod +t /tmp) 或配置 MSWordView 使用用户私有临时目录 (设置 TMPDIR 环境变量指向 $HOME/tmp 并 chmod 700) 作为临时缓解措施，限制本地用户读取临时文件内容。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "IMP MSWordView 临时文件权限不安全漏洞"
+sources = ["avd"]
+title = "IMP MSWordView /tmp文件权限不当导致本地信息泄露漏洞"
 updated = "2026-06-16T21:51:46.667"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-0458"]
 ave_id = "AVE-2000-0507"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://marc.info/?l=bugtraq&m=95672120116627&w=2",
     "http://www.securityfocus.com/bid/1360",
-    "https://github.com/CVEProject/cvelistV5/blob/4035b63c9f7b02a7407eb5dd431d3b6ffb26cebc/cves/2000/0xxx/CVE-2000-0458.json",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0458.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0458",
-    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-2000-0458.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2cba6a622b2958fa1ec3a506e7b58871edec19fb/CVE/data/2000/CVE-2000-0458.json",
-    "https://github.com/github/advisory-database/blob/1437193e4a8af1a3132cc4f7f574953eb98f729b/advisories/unreviewed/2022/04/GHSA-j88w-3rg6-x4gj/GHSA-j88w-3rg6-x4gj.json",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0458.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0458.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c52ac29e3e33d673083c7aada18d2fe25f185ca8/CVE/data/2000/CVE-2000-0458.json",
+    "https://github.com/github/advisory-database/blob/2b8a7bdd977d852aa4b7aade01f4fcd4d623cfde/advisories/unreviewed/2022/04/GHSA-j88w-3rg6-x4gj/GHSA-j88w-3rg6-x4gj.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0458.md",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152300_152400.json",
+    "https://github.com/olbat/nvdcve/blob/a036095fb2c093f3863681adc5999690c37b930e/nvdcve/CVE-2000-0458.json",
     "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001310.txt",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--6a4166c9-9529-4300-9768-31acdea61588.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/3ff80c5b3b825d7f48ed77b5e27dd49f02502867/2000.tsv",
 ]
