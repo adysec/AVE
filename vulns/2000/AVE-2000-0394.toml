@@ -1,11 +1,11 @@
 [basic]
-description = "Solaris 8 及更早版本中的 ufsrestore 工具存在缓冲区溢出漏洞，由于程序在处理超长路径名时未正确检查输入长度，导致栈缓冲区溢出。本地攻击者可通过向 ufsrestore 命令传递特制的长路径名参数触发该漏洞，成功利用可获得 root 权限，完全控制受影响系统。该漏洞影响 Solaris 2.5/2.6/7.0/8 版本，CVSS 评分 7.2，危害等级高。需系统本地访问权限，无需认证即可利用。"
+description = "通过 ufsrestore 命令的缓冲区溢出漏洞影响原始的 Solaris 系列操作系统。由于 ufsrestore 程序对用户输入的路径参数处理存在缺陷，导致其分配的缓冲区大小不足以容纳过长的路径字符串。当攻击者向系统提供超过缓冲区容量的路径名时，程序会发生缓冲区溢出，允许攻击者执行注入的shell代码。根据 CVSS 向量评分（AV:L/AC:L/Au:N/C:C/I:C/A:C），该漏洞允许身份验证或授权的本地攻击者完全控制操作系统权限（可读、可写、可执行），并可能永久破坏系统可用性。该漏洞主要影响 Solaris 2.5、2.6、7.0 和 8 版本，在上述操作系统上执行 ufsrestore 命令的本地用户或进程均可触发此漏洞。攻击者通过向 ufsrestore 命令传递超长路径名，即可绕过对输入长度的常规限制，从而劫持程序控制权，最终达到获取权限的攻击目的。仅要求本地访问权限，且利用方式相对简单，但风险极高，可能导致系统被完全控制，数据泄露或破坏。该漏洞最早出现在 2000 年 6 月 14 日，至今已有十余年历史，但针对此漏洞的补丁相对较晚，许多旧版 Solaris 系统可能仍然受到影响。"
 published = "2000-06-14T04:00:00.000"
-remediation = "立即安装 Sun Security Bulletin #210 中提供的对应补丁：Solaris 2.5/2.5.1 安装补丁 105721-xx，Solaris 2.6 安装补丁 105722-xx，Solaris 7 安装补丁 107256-xx，Solaris 8 安装补丁 108528-xx。如无法打补丁，可通过 chmod 700 /usr/lib/fs/ufs/ufsrestore 限制 ufsrestore 仅 root 可执行，或使用 RBAC 移除普通用户的 ufsrestore 执行权限作为临时缓解措施。"
+remediation = "建议立即安装 Sun Microsystems 发布的官方安全补丁：Solaris 8 安装补丁 108993-01 或更高版本，Solaris 7 安装 107544-01 或更高版本，Solaris 2.6 安装 106089-01 或更高版本，Solaris 2.5.1 安装 103642-01 或更高版本。可通过 SunSolve (sunsolve.sun.com) 下载对应补丁包并使用 patchadd 命令安装。如无法立即打补丁，建议暂时移除 ufsrestore 的 setuid 位（chmod u-s /usr/lib/fs/ufs/ufsrestore）作为临时缓解措施，并限制本地用户对 ufsrestore 命令的执行权限。建议尽快升级至 Solaris 9 或更高版本彻底修复该漏洞。"
 score = 7.2
 severity = "HIGH"
-sources = ["epss"]
-title = "Sun Solaris ufsrestore 本地缓冲区溢出漏洞"
+sources = ["avd"]
+title = "Sun Solaris ufsrestore 缓冲区溢出漏洞"
 updated = "2026-06-16T21:51:48.330"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0471"]
 ave_id = "AVE-2000-0394"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -29,14 +29,14 @@ urls = [
     "http://www.securityfocus.com/bid/1348",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4711",
     "https://www.exploit-db.com/exploits/20014",
-    "https://github.com/CVEProject/cvelistV5/blob/58bdedd85e346c3efc30a2f8424c96c50aa4db2e/cves/2000/0xxx/CVE-2000-0471.json",
+    "https://github.com/CVEProject/cvelistV5/blob/2191d577d2d643f301487a89dd6359b1113a07b9/cves/2000/0xxx/CVE-2000-0471.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0471",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0471.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/ad583e79ed38e32f21eec5f8962c8f59146c10bc/CVE/data/2000/CVE-2000-0471.json",
-    "https://github.com/github/advisory-database/blob/f085197f4312eebb5b5d2a4ae57205b512d529b1/advisories/unreviewed/2022/04/GHSA-vw5f-6vw7-vhhj/GHSA-vw5f-6vw7-vhhj.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1bcfc51649d76497fa60b30641a1d994609c3c9a/2000/0xxx/CVE-2000-0471.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/80dda50d8d5f7811125252929942fe793daf4c0a/CVE/data/2000/CVE-2000-0471.json",
+    "https://github.com/github/advisory-database/blob/292f77a8e015ead047ef178a4e7ea4de6f3945c3/advisories/unreviewed/2022/04/GHSA-vw5f-6vw7-vhhj/GHSA-vw5f-6vw7-vhhj.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2000-0471.md",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_5.list.dict",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0471.json",
-    "https://github.com/dong-xs/Vul-PAG/blob/7eb3b32094a5270cfd8495366e0e4a7df5a874ce/aspect_prediction/org_pred_diff.txt",
 ]
