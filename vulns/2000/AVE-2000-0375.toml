@@ -1,11 +1,11 @@
 [basic]
-description = "XFree86 X11R6 3.3.5/3.3.6/4.0 版本的 Xserver 在处理 TCP 数据包时存在拒绝服务漏洞。远程攻击者可通过向目标系统的 6000 端口发送特制的畸形 TCP 数据包，其中包含负数的计数器值，导致 Xserver 处理异常而崩溃，造成拒绝服务。该漏洞影响 XFree86 3.3.x 及 4.0 系列版本，CVSS 评分 5.0，危害等级中危。目前已有公开的 PoC 利用代码，攻击者无需身份认证即可远程触发。"
+description = "XFree86 X11R6 3.3.5/3.3.6/4.0 版本的 X 服务器在处理发送到 6000 端口的 TCP 数据包时，未正确验证数据包中的计数器字段值。远程攻击者可构造包含负数计数器值的畸形 TCP 数据包发送至目标系统的 6000 端口（X11 服务默认端口），触发整数溢出或逻辑错误导致 X 服务器崩溃，造成拒绝服务攻击。该漏洞影响 XFree86 3.3.x 及 4.0 版本，CVSS 评分 5.0（AV:N/AC:L/Au:N/C:N/I:N/A:P），攻击无需认证、网络可远程发起，仅影响可用性。攻击者无需认证即可远程发起攻击，利用方式为向目标主机 6000 端口发送精心构造的恶意 TCP 数据包导致 X 服务崩溃拒绝服务。ExploitDB 已公开 PoC（EDB-19950）。"
 published = "2000-05-18T04:00:00.000"
-remediation = "升级 XFree86 至 4.0.1 或更高版本（该版本已修复负数计数器处理缺陷），或迁移至 X.Org 作为替代方案。如无法升级，在防火墙层面限制 TCP 6000 端口的入站连接，仅允许可信来源 IP 访问；同时避免使用 `xhost +` 开放 X 服务到网络，建议通过 SSH X11 转发替代直接 TCP 连接。"
+remediation = "升级XFree86 X11r6至CVE-2000-0453官方补丁版本（如3.3.8或更高版本），修补TCP数据包处理中的负数计数器漏洞。如无法立即打补丁，可在防火墙上禁用或限制访问端口6000（X11服务端口），临时缓解服务崩溃风险。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "XFree86 X11R6 Xserver TCP数据包拒绝服务漏洞"
+sources = ["avd"]
+title = "XFree86 X11r6 TCP包拒绝服务漏洞"
 updated = "2026-06-16T21:51:46.020"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0453"]
 ave_id = "AVE-2000-0375"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-05/0223.html",
     "http://www.securityfocus.com/bid/1235",
     "https://www.exploit-db.com/exploits/19950",
-    "https://github.com/CVEProject/cvelistV5/blob/6e1fee15e021f95477107e3e5d652470f76f7bac/cves/2000/0xxx/CVE-2000-0453.json",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0453.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0453",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0453.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/d449633638bc4d33beb359a70dee0dbe66d39a20/CVE/data/2000/CVE-2000-0453.json",
-    "https://github.com/github/advisory-database/blob/c91b667a34faaae3b0a33048a22e9eae624cf0e4/advisories/unreviewed/2022/05/GHSA-3vr3-fvrq-86x3/GHSA-3vr3-fvrq-86x3.json",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0453.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0453.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/dc46d37c28bb275abd05bf31414b33cf4107e07c/CVE/data/2000/CVE-2000-0453.json",
+    "https://github.com/github/advisory-database/blob/d1d7ac405f2460acf0b0e8ed2a5cf8c748023246/advisories/unreviewed/2022/05/GHSA-3vr3-fvrq-86x3/GHSA-3vr3-fvrq-86x3.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0453.md",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
+    "https://github.com/olbat/nvdcve/blob/a036095fb2c093f3863681adc5999690c37b930e/nvdcve/CVE-2000-0453.json",
     "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_001395.txt",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--8f6066ba-2a53-454d-bcd9-3aaef7ee4077.json",
-    "https://github.com/cmjayasinghe/Threat-Intelligence-Dashboard/blob/ccfec8014cc85c9e776b8f657bdb7879139ab5ed/data/cves.csv",
 ]
