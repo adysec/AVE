@@ -1,11 +1,11 @@
 [basic]
-description = "Intel Express 8100 ISDN 路由器在处理 ICMP 数据包时存在拒绝服务漏洞。远程攻击者可通过向目标设备发送特制的超大或分片 ICMP 数据包，导致路由器 CPU 资源耗尽或系统崩溃，造成网络服务中断。攻击无需身份认证，仅需网络可达即可触发。该漏洞影响 Intel Express 8100 ISDN 路由器设备，CVSS 评分 5.0，危害等级中等。目前已有公开的利用代码，建议用户升级固件或配置访问控制列表（ACL）过滤异常 ICMP 数据包以缓解风险。"
+description = "Intel Express 8100 ISDN 路由器存在 ICMP 数据包处理漏洞，该设备在接收到超大或分片的 ICMP 数据包时未能正确处理，导致系统崩溃或无响应。未经身份认证的远程攻击者可向目标路由器发送特制的超大 ICMP Echo 请求（ping）或分片 ICMP 数据包，触发设备异常并造成拒绝服务，使路由器停止转发网络流量，影响所有通过该设备的网络通信。该漏洞影响所有运行原始固件的 Intel Express 8100 ISDN 路由器，由于攻击只需网络可达且无需任何认证，威胁程度较高。目前厂商已停止对该设备的支持，建议升级至不受影响的替代产品。"
 published = "2000-05-19T04:00:00.000"
-remediation = "该设备已停产且不再受 Intel 支持，建议立即将 Intel Express 8100 ISDN 路由器替换为支持安全更新的现代设备。如无法替换，可在上游防火墙配置规则丢弃超大 ICMP 数据包（iptables 规则：iptables -A INPUT -p icmp -m length --length 1480:65535 -j DROP），并限制 ICMP 分片包速率（iptables -A INPUT -p icmp -f -m limit --limit 10/s -j ACCEPT），同时禁用不必要的 ICMP 类型（如 ICMP timestamp、address mask 请求）以降低攻击面。"
+remediation = "该漏洞影响已停产的 Intel Express 8100 ISDN 路由器硬件设备，Intel 未发布固件补丁。建议采取以下措施：1）在上游防火墙或路由器上配置访问控制列表（ACL）过滤所有入站 ICMP 流量，阻止超大分片和分片 ICMP 包到达该设备；2）将该设备替换为支持 ICMP 分片防护的现代路由器或防火墙（如 Cisco ISR 系列或 Palo Alto 防火墙），并在新设备上启用 ICMP 分片检测与丢弃策略；3）如短期无法替换设备，使用网络入侵检测系统（IDS/IPS）部署针对分片 ICMP DoS 攻击的检测规则，并限制仅授权管理 IP 可访问该路由器的管理接口。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "Intel Express 8100 ISDN 路由器 ICMP 数据包拒绝服务漏洞"
+sources = ["avd"]
+title = "Intel Express 8100 ISDN路由器ICMP数据包拒绝服务漏洞"
 updated = "2026-06-16T21:51:45.740"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0451"]
 ave_id = "AVE-2000-0373"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-05/0229.html",
     "http://www.securityfocus.com/bid/1228",
     "https://www.exploit-db.com/exploits/19943",
-    "https://github.com/CVEProject/cvelistV5/blob/27eee309d10a00ce5571c5ab1765599e23f1725f/cves/2000/0xxx/CVE-2000-0451.json",
+    "https://github.com/CVEProject/cvelistV5/blob/d83a2c403dbad5ade9ae20db8a18ec06947c25f6/cves/2000/0xxx/CVE-2000-0451.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0451",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0451.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/800f04b3cfadd1b9ab0343f5b9acd785dbc1e953/CVE/data/2000/CVE-2000-0451.json",
-    "https://github.com/github/advisory-database/blob/b21976b5bf1b11783559cbe4f375f11636b79518/advisories/unreviewed/2022/04/GHSA-q6wc-wpm6-pf8j/GHSA-q6wc-wpm6-pf8j.json",
-    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0451.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0451.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3e56369e6f703dfde20132e3205d609e016e88bd/CVE/data/2000/CVE-2000-0451.json",
+    "https://github.com/github/advisory-database/blob/d1d7ac405f2460acf0b0e8ed2a5cf8c748023246/advisories/unreviewed/2022/04/GHSA-q6wc-wpm6-pf8j/GHSA-q6wc-wpm6-pf8j.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0451.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--ebe12690-ee45-4401-b2f5-a809a7adaa87.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/864adb9ddf294417a5a4e84f90f9adf54e9dca89/2000.tsv",
+    "https://github.com/wisoffe/exploits-predict/blob/5a78ced1357472afaaece2c8acf2b8b68f9ede8d/notebooks/02-ik-initial-eda--data-analysis.ipynb",
 ]
