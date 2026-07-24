@@ -1,11 +1,11 @@
 [basic]
-description = "MIT Kerberos 4 KDC 组件在处理 AUTH_MSG_KDC_REQUEST 请求时未正确验证空终止符，远程攻击者可通过向目标系统发送特制的畸形请求触发内存错误，导致 KDC 服务崩溃并引发拒绝服务。该漏洞影响 MIT Kerberos 4.0 及 Kerberos 5 1.0/1.1/1.1.1 等多个版本，CVSS 评分 5.0，危害等级中等，攻击者无需身份认证即可利用。"
+description = "MIT Kerberos 4 的 KDC（密钥分发中心）程序存在拒绝服务漏洞。该程序在处理 AUTH_MSG_KDC_REQUEST 类型的认证请求时，未对请求数据进行正确的空字符终止检查，导致可接受未正确终止的畸形请求。远程攻击者无需身份认证，仅需向目标 KDC 服务发送特制的 AUTH_MSG_KDC_REQUEST 请求即可触发漏洞，使 KDC 进程异常终止或崩溃。由于 KDC 是 Kerberos 认证系统的核心组件，一旦服务中断将导致整个依赖 Kerberos 的网络认证体系瘫痪，影响范围包括使用 Kerberos 4 的所有客户端和服务端。该漏洞危害等级为中等（CVSS 5.0），主要影响网络可用性。"
 published = "2000-06-09T04:00:00.000"
-remediation = "立即升级 MIT Kerberos 5 至 1.2 及以上版本，或对 krb5-1.0.x 应用 MIT krb4kdc_10x_patch 补丁、对 krb5-1.1.x 应用 krb4kdc_111_patch 补丁；Kerberos 4 用户需升级至 Patch 10 以上并打对应补丁；KTH-krb4 用户升级至 0.10 及以上版本；Red Hat 用户安装 RHSA-2000-031 安全更新。"
+remediation = "升级 MIT Kerberos 到 krb5-1.2 或更高版本，该版本已包含对 KRB4 KDC 缓冲区溢出及空终止符检查缺陷的修复。若使用 krb5-1.0.x，需从 http://web.mit.edu/kerberos/www/advisories/index.html 下载 krb4kdc_10x_patch.txt 补丁并应用到 kdc/kerberos_v4.c；若使用 krb5-1.1.1，需应用 krb4kdc_111_patch.txt 补丁，同时更新 kfree.c 修复 double-free 问题。Red Hat 用户应安装 RHSA-2000:031 安全更新（up2date 或 rpm -Fvh）。对于仍在使用 KTH-krb4 的系统，务必升级至 0.10 或更高版本。临时缓解措施：在 KDC 主机防火墙规则中限制对 88 端口（UDP/TCP）的访问来源，仅允许可信的 Kerberos 客户端网段连接；同时在 kdc.conf 中设置 v4_mode = none 以禁用 Kerberos 4 兼容模式，消除攻击面。"
 score = 5
 severity = "MEDIUM"
-sources = ["redhat"]
-title = "MIT Kerberos KDC 拒绝服务漏洞"
+sources = ["epss"]
+title = "MIT Kerberos 4 KDC AUTH_MSG_KDC_REQUEST 空终止符检查缺失拒绝服务漏洞"
 updated = "2026-06-16T21:51:58.560"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0549"]
 ave_id = "AVE-2000-0634"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://web.mit.edu/kerberos/www/advisories/krb4kdc.txt",
     "http://www.cert.org/advisories/CA-2000-11.html",
     "http://www.redhat.com/support/errata/RHSA-2000-031.html",
-    "https://github.com/CVEProject/cvelistV5/blob/362345baaa3b0376b2369a7901885756e250334b/cves/2000/0xxx/CVE-2000-0549.json",
+    "https://github.com/CVEProject/cvelistV5/blob/d83a2c403dbad5ade9ae20db8a18ec06947c25f6/cves/2000/0xxx/CVE-2000-0549.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0549",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0549.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4591185d8ea1fe47b6e30df3286bd52753a931ce/CVE/data/2000/CVE-2000-0549.json",
-    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/unreviewed/2022/04/GHSA-5pwv-v67v-mf36/GHSA-5pwv-v67v-mf36.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0549.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3e56369e6f703dfde20132e3205d609e016e88bd/CVE/data/2000/CVE-2000-0549.json",
+    "https://github.com/github/advisory-database/blob/d1d7ac405f2460acf0b0e8ed2a5cf8c748023246/advisories/unreviewed/2022/04/GHSA-5pwv-v67v-mf36/GHSA-5pwv-v67v-mf36.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0549.md",
     "https://github.com/anonymous-55443259/CVE_Vul_File_Localization/blob/24756649f99ff5cea566f1e66a7fdd2ed0e7aced/Result/repository/repository_collection/repo_from_gpt/result/CVE-2000-0549/1.json",
     "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x2000/1338/info.html",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
     "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--c3a64174-b016-4ede-adcf-0bdd038984ec.json",
 ]
