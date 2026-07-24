@@ -1,11 +1,11 @@
 [basic]
-description = "cfingerd 1.4.3 及更早版本在启用 ALLOW_LINE_PARSING 选项时存在缓冲区溢出漏洞。本地攻击者可通过在 .nofinger 文件中构造超长行数据触发该漏洞，导致任意代码执行。该漏洞影响 cfingerd 1.4.1/1.4.2/1.4.3 版本，CVSS 评分 7.2，危害等级高。建议升级至最新版本或禁用 ALLOW_LINE_PARSING 选项。"
+description = "cfingerd 是一个安全的 finger 守护进程实现，在 1.4.1 至 1.4.3 版本中存在缓冲区溢出漏洞。当启用 ALLOW_LINE_PARSING 配置选项时（该选项默认开启），守护进程在解析用户家目录下的 .nofinger 文件时会逐行读取内容。由于缺乏对输入行长度的充分验证，攻击者可在 .nofinger 文件中写入超长行内容，触发栈缓冲区溢出并覆盖返回地址，从而在上下文中执行任意代码。由于 cfingerd 通常由 inetd 以 root 权限调用，且官方文档甚至鼓励这样配置，因此该漏洞可导致本地普通用户直接获得 root 权限。该漏洞影响 1.4.3 及所有更早版本，在 Red Hat Linux 6.2 及多个 Linux 发行版上均有利用代码验证。CVSS v2 评分 7.2，攻击向量为本地，无需身份认证即可利用。利用方式为在 .nofinger 文件中植入包含 shellcode 的超长行，覆盖函数返回地址指向 shellcode，再通过本地 finger 服务（端口 79）触发代码执行获取 root shell。"
 published = "2001-10-18T04:00:00.000"
-remediation = "升级 cfingerd 至 1.4.3-3+squeeze1 及以上版本（对应 Debian DSA-2635-1），或在 cfingerd 配置中关闭 ALLOW_LINE_PARSING 选项（禁用后该缓冲区溢出路径不可用）。建议直接移除 finger 服务（注释 inetd/xinetd 中 finger 端口），改用更安全的替代方案或完全禁用该协议。"
+remediation = "升级到 cfingerd 1.5 或更高版本，该版本修复了缓冲区溢出漏洞；禁用 .nofinger 文件中的 ALLOW_LINE_PARSING 选项或限制其解析长度；验证所有输入的 .nofinger 文件行长度，并确保其大于缓冲区大小；如无法立即升级，建议使用 chroot  jails 或其他访问控制机制限制对 cfingerd 的本地访问权限。"
 score = 7.2
 severity = "HIGH"
-sources = ["osv"]
-title = "cfingerd 缓冲区溢出漏洞"
+sources = ["exploitdb"]
+title = "cfingerd cfingerd 1.4.1/1.4.2/1.4.3 缓冲区溢出漏洞"
 updated = "2026-06-16T21:54:51.640"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0735"]
 ave_id = "AVE-2001-0105"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.securityfocus.com/bid/2914",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6744",
     "https://www.exploit-db.com/exploits/20964",
-    "https://github.com/CVEProject/cvelistV5/blob/b5b2b32751baccad543d82143784e310554463ae/cves/2001/0xxx/CVE-2001-0735.json",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2001/0xxx/CVE-2001-0735.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0735",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2001-0735.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/affa68d6539dbc90b6b6e0e1e746facb4aae08df/CVE/data/2001/CVE-2001-0735.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2001/0xxx/CVE-2001-0735.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/dc46d37c28bb275abd05bf31414b33cf4107e07c/CVE/data/2001/CVE-2001-0735.json",
     "https://github.com/zercurity/vulnerabilities/blob/8eb5f158d91688a46557263c708774d5f8d3956c/2001/CVE-2001-0735",
-    "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-j7gx-9mq3-49g8/GHSA-j7gx-9mq3-49g8.json",
+    "https://github.com/github/advisory-database/blob/2b8a7bdd977d852aa4b7aade01f4fcd4d623cfde/advisories/unreviewed/2022/04/GHSA-j7gx-9mq3-49g8/GHSA-j7gx-9mq3-49g8.json",
     "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/debian_DSA-066.nasl",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2001-0735.md",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_151600_151700.json",
-    "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/2001/dsa-066.data",
 ]
