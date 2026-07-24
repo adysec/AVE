@@ -1,15 +1,12 @@
 [basic]
-description = "PhotoAlbum 0.9.9 的 explorer.php 页面存在目录遍历漏洞，远程攻击者无需任何认证即可通过向 URL 中传入 `../` 路径穿越序列，突破 Web 根目录限制，读取服务器上任意可读文件（如系统配置文件、数据库凭证等敏感信息）。该漏洞源于程序未对用户输入的路径参数进行充分过滤与验证，属于典型的路径遍历攻击。CVSS 评分 5.0，危害等级中等。"
-published = "2000-11-14"
-remediation = '建议立即将 PhotoAlbum 升级到 0.9.9 以上版本，或移除 explorer.php 文件。如无法升级，在 Web 服务器层面（Apache/Nginx）配置 URL 重写规则，拦截包含 `../` 或 `..\` 等目录遍历特征的请求；同时修改 PHP 代码，对 `$HTTP_GET_VARS` 中传入的路径参数进行 `realpath()` 校验，拒绝包含 `..` 的输入。作为临时缓解措施，可设置 Web 服务器禁用该脚本的访问权限。'
+description = 'PhotoAlbum 0.9.9 的 explorer.php 存在目录遍历漏洞，未经身份认证的远程攻击者可通过构造包含 ".." 序列的请求参数，绕过路径限制读取服务器上任意文件。该漏洞源于程序对用户输入的路径参数未进行有效过滤和规范化处理，导致攻击者可利用相对路径遍历到 Web 根目录之外的敏感文件。影响范围为 PhotoAlbum 0.9.9 版本，CVSS 评分 5.0（AV:N/AC:L/Au:N/C:P/I:N/A:N），属于中危漏洞。攻击条件为：目标系统运行受影响版本的 PhotoAlbum，攻击者可远程访问 explorer.php 接口，无需认证即可发起攻击。利用方式为向 explorer.php 发送包含目录遍历序列（如 ../../etc/passwd）的参数，成功时可泄露系统敏感文件内容，可能导致信息泄露、配置文件读取等后果。'
+published = "2000-11-14T05:00:00.000"
+remediation = '建议立即停止使用 Nathan Purciful PHP Photo Album 0.9.9 并迁移至现代维护中的相册系统（如 Piwigo、Lychee 或 PhotoPrism）。若必须继续使用，请在 Web 服务器层面配置路径遍历防护：Nginx 添加 `location ~ \.\./ { deny all; }`，Apache 配置 `RewriteRule \.\. - [F]`；PHP 代码层面在 explorer.php 中添加 `basename()` 校验并使用 `realpath()` 验证路径在允许目录内；部署 WAF 规则拦截 `../` 等路径遍历载荷；配置 open_basedir 限制 PHP 脚本访问目录。建议尽快迁移至现代维护中的相册系统以彻底消除风险。'
 score = 5
 severity = "MEDIUM"
-sources = [
-    "cve",
-    "exploitdb",
-]
-title = "Nathan Purciful PhotoAlbum 0.9.9 目录遍历漏洞"
-updated = "2026-06-16"
+sources = ["cve"]
+title = "Nathan Purciful PhotoAlbum 目录遍历漏洞"
+updated = "2026-06-16T21:52:38.740"
 
 [exploit]
 exp_urls = []
@@ -20,7 +17,7 @@ aliases = ["CVE-2000-0872"]
 ave_id = "AVE-2000-0642"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -29,4 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1650",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5198",
     "https://www.exploit-db.com/exploits/20208",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0872.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0872",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0872.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c52ac29e3e33d673083c7aada18d2fe25f185ca8/CVE/data/2000/CVE-2000-0872.json",
+    "https://github.com/github/advisory-database/blob/2b8a7bdd977d852aa4b7aade01f4fcd4d623cfde/advisories/unreviewed/2022/04/GHSA-8c87-7q9f-g37m/GHSA-8c87-7q9f-g37m.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0872.md",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x2000/1650/info.html",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0872.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--5509833b-66e3-4b85-8feb-dbfa44008e6a.json",
 ]
