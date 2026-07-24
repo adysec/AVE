@@ -1,0 +1,44 @@
+[basic]
+description = "MCP Python SDK (PyPI 包名 mcp) 在 1.27.2 版本前存在会话认证绕过漏洞。其 SSE 传输 (mcp.server.sse.SseServerTransport) 和有状态 Streamable HTTP 传输 (mcp.server.streamable_http_manager.StreamableHTTPSessionManager) 在路由请求到现有会话时，仅依据会话标识符 (SSE 使用 session_id 查询参数，Streamable HTTP 使用 Mcp-Session-Id 头) 进行查找，未验证请求的认证主体是否与创建会话时的主体一致。导致任意获取或猜测到会话 ID 的攻击者，可使用不同的 Bearer Token 向该会话注入 JSON-RPC 消息，绕过基于 Bearer Token 的客户端隔离机制。SSE 传输会将响应返回给原客户端的事件流，Streamable HTTP 则直接在注入请求中返回结果，攻击者可读取执行结果。影响范围：使用 SSE 或有状态 Streamable HTTP 传输且启用了 SDK 内置 Bearer Token 认证的服务器（stdio 传输、无状态 Streamable HTTP、未启用认证的服务器不受影响）。攻击条件：攻击者需通过日志泄露、网络监听等途径获取合法会话 ID（随机 UUID，需窃取）。利用方式：攻击者携带窃取的会话 ID 发送携带恶意 JSON-RPC 消息的 HTTP 请求，劫持目标会话执行任意操作。CVSS 3.1 评分 7.1 (HIGH)，向量 CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:L，CWE-639。官方已在 1.27.2 版本修复，修复版本会记录创建会话时的认证主体（OAuth client_id 及 token 的 issuer/subject），拒绝不同主体的请求。"
+published = "2026-07-15T20:17:38.427"
+remediation = "立即升级 MCP Python SDK 到 1.27.2 或更高版本，该版本记录了创建会话时的认证主体信息（OAuth 客户端 ID + 令牌的颁发者和主题），并通过 404 响应拒绝不同主体的认证请求。确保自定义认证后端或其他令牌验证器实现类似比对逻辑，如：从令牌的 sub 声明中提取 subject 字段，实现细粒度的用户级会话隔离。"
+score = 7.1
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Model Context Protocol Python SDK HTTP 传输会话认证绕过漏洞"
+updated = "2026-07-17T18:06:50.957"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-52869",
+    "GHSA-jpw9-pfvf-9f58",
+]
+ave_id = "AVE-2026-0393"
+
+[meta]
+collected_at = "2026-07-24T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/modelcontextprotocol/python-sdk/commit/1abcca2408a6b50e10ec601181f63f9978705c00",
+    "https://github.com/modelcontextprotocol/python-sdk/commit/ce267b6fc515dc4efc1dc70b6975b16ff0feef0a",
+    "https://github.com/modelcontextprotocol/python-sdk/pull/2690",
+    "https://github.com/modelcontextprotocol/python-sdk/pull/2719",
+    "https://github.com/modelcontextprotocol/python-sdk/releases/tag/v1.27.2",
+    "https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-jpw9-pfvf-9f58",
+    "https://github.com/CVEProject/cvelistV5/blob/2191d577d2d643f301487a89dd6359b1113a07b9/cves/2026/52xxx/CVE-2026-52869.json",
+    "https://github.com/mcp-security-project/mcp-cve-project/blob/8f19c6692789742733d784a4d63207b68cb14525/cves/CVE-2026-52869.md",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/f792732d95fcd5791350336c3993c8569599affe/proposals/nvd/CVE-2026-52869.proposal.yaml",
+    "https://github.com/velesnitski/yt-mcp/blob/52dfb763e45cbfe7e9957fbb53e0cf86e504c874/docs/adr/030-bump-mcp-sdk-cve-2026-52869.md",
+    "https://github.com/Tabll/gemnasium-db/blob/3a636e9ca4dec610ea52bddffa3cd59a180b7252/pypi/mcp/CVE-2026-52869.yml",
+    "https://github.com/cisagov/vulnrichment/blob/a257431e220101b25f51c7e22239ee65d73c4dbf/2026/52xxx/CVE-2026-52869.json",
+    "https://github.com/oxsecurity/megalinter/blob/8a18f344792f20d1c2a7515315a80b5fa6191d7d/.trivyignore",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/f352693f226c45464267beeea27f2ecfa0372f11/reports/2026-07-15/TIER_3_CVE-2026-52869.md",
+    "https://github.com/TMA84/cvealert/blob/2e88aa481ab4f16d3555ecf032c6cd4a38f5e2ff/content/posts/cve-2026-52869.md",
+    "https://github.com/SolaceLabs/solace-agent-mesh/blob/f76d8972fecac522055e8195b704ec631c698c99/pyproject.toml",
+]
