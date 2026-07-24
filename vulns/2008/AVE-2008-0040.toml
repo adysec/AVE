@@ -1,0 +1,45 @@
+[basic]
+description = '''libpng 的 png_check_keyword 函数（位于 pngwutil.c 中）在处理 PNG 图像的关键字（keyword）时，存在一种隐式类型转换漏洞。由于代码将字符常量 '\0' 错误地隐式转换为 NULL 指针，攻击者可通过构造包含特制关键字的恶意 PNG 文件，使该函数将任意内存位置的值设为 0，从而破坏内存数据的完整性。该漏洞影响 1.0.42 版本之前的 libpng 以及 1.2.x 系列 1.2.34 版本之前的 libpng 均受影响。攻击条件为攻击者能够诱使目标应用程序或服务使用受影响版本的 libpng 解析恶意 PNG 图像文件。攻击方式为攻击者构造一个包含特定 crafted 关键字的 PNG 图像，当目标系统使用漏洞版本的 libpng 加载该图像时，即可触发内存篡改，导致数据损坏或潜在的其他安全风险。'''
+published = "2009-01-15T17:30:00.453"
+remediation = "建议立即升级 libpng 至 1.0.42 或 1.2.34 及以上版本。Ubuntu 用户可执行 `apt-get update && apt-get install libpng12-0=1.2.27-2ubuntu2.1`（或更高版本）；Debian 用户升级至 libpng12-0 1.2.27-2etch1 或更高；RHEL/CentOS 用户通过 `yum update libpng` 升级至 1.2.10-7.1.el5_3 或更高；Gentoo 用户执行 `emerge -u '>=media-libs/libpng-1.2.34'`。若暂无法升级，建议在应用层禁止处理不可信 PNG 文件，并在防火墙/应用层限制 PNG 文件上传与解析，作为临时缓解措施。"
+score = 5
+severity = "MEDIUM"
+sources = ["tenable"]
+title = "libpng 未初始化内存访问漏洞（png_check_keyword 函数处理关键词时可篡改任意内存）"
+updated = "2026-06-16T23:01:12.240"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2008-5907"]
+ave_id = "AVE-2008-0040"
+
+[meta]
+collected_at = "2026-07-24T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://libpng.sourceforge.net/index.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2009-02/msg00000.html",
+    "http://openwall.com/lists/oss-security/2009/01/09/1",
+    "http://secunia.com/advisories/34320",
+    "http://secunia.com/advisories/34388",
+    "http://security.gentoo.org/glsa/glsa-200903-28.xml",
+    "http://sourceforge.net/mailarchive/forum.php?thread_name=4B6F0239C13D0245820603C036D180BC79FBAA%40CABOTUKEXCH01.cabot.local&forum_name=png-mng-implement",
+    "http://www.debian.org/security/2009/dsa-1750",
+    "http://www.mandriva.com/security/advisories?name=MDVSA-2009:051",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/48128",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2008/5xxx/CVE-2008-5907.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2008/CVE-2008-5907",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2008-5907.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/dc46d37c28bb275abd05bf31414b33cf4107e07c/CVE/data/2008/CVE-2008-5907.json",
+    "https://github.com/kees/ubuntu-cve-tracker/blob/66a43c37da527bc16621fb5548dca8aa1f46e537/retired/CVE-2008-5907",
+    "https://github.com/sgidevnet/sgug-rse/blob/32b85d9866610a7d10b228f8f92f1ed8df610b48/packages/libpng10/libpng10.spec",
+    "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/2015/glsa-201412-08.nasl",
+    "https://github.com/gentoo-mirror/gentoo/blob/0a238e22d266bcab732a0143b7631823c3759fed/metadata/glsa/glsa-200903-28.xml",
+    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/S/suse9_12339.nasl",
+    "https://github.com/canonical/ubuntu-security-notices/blob/92dda528ca97f3539c8b045b34ac3d199130422b/usn/730-1.json",
+]
