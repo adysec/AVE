@@ -1,11 +1,11 @@
 [basic]
-description = "LPRng 是 Red Hat Linux 7.0/7.1 系统中广泛使用的打印服务守护进程，该软件在降低进程权限时未正确放弃补充组（supplementary groups）成员身份。正常情况下，LPRng 在完成特权操作后应从 root 降权至低权限用户运行，但由于漏洞的存在，进程仍保留了不必要的补充组权限。本地攻击者可利用此缺陷，通过与 LPRng 守护进程交互，在权限降低后的进程中继承其未释放的补充组身份，从而提升自身权限，获得对系统中敏感文件或资源的未授权访问。该漏洞攻击条件简单（AV:L/AC:L），仅需本地访问即可触发，影响范围覆盖所有使用存在缺陷版本 LPRng 的 Red Hat Linux 系统。"
+description = "LPRng 打印守护进程在初始化降低权限时未能正确丢弃继承的补充组（supplementary groups）成员关系，导致守护进程及其所有子进程仍保留启动 LPRng 时获得的补充组权限。攻击者可在受影响系统上利用此缺陷提升本地权限。具体而言，运行权限已被降低的进程或例程仍带有补充组权限，若 LPRng 同时存在其他易受攻击的代码路径，攻击者可通过 tmp 文件处理不当等漏洞修改 lp 用户配置文件，进而将恶意代码注入由主打印过滤器执行的配置文件中，最终以 lp 用户或 root 身份执行任意命令。该漏洞影响 Red Hat Linux 7.0 和 7.1 上 LPRng 3.6.x 至 3.7.4-23 版本，攻击条件为攻击者拥有目标系统的本地访问权限，CVSS 评分 4.6，危害等级中等。"
 published = "2001-10-18T04:00:00.000"
-remediation = "升级 LPRng 到 3.6.24 或更高版本，该版本已修复降权时未正确放弃补充组成员身份的问题。Red Hat Linux 7.0/7.1 用户应执行 `up2date lprng` 或使用 `rpm -Uvh` 安装官方安全更新包。如无法立即升级，可临时将 lpd 服务配置为以专用低权限用户身份运行（在 /etc/lpd.conf 中设置 lpd_user 和 lpr_user 指令），并确保该用户不属于 wheel、root 等特权组。同时建议限制 /var/spool/lpd 目录权限为 0700，仅允许 lpd 进程访问。"
+remediation = "对于 Red Hat Linux 7.0 和 7.1 系统，建议立即安装 Red Hat 官方安全公告 RHSA-2001-077 中发布的修复包，将 LPRng 升级至 LPRng-3.7.4-23 或更高版本，并将 tetex 组件升级至 tetex-1.0.7-18 或更高版本。升级前请使用 rpm -q LPRng tetex 确认当前版本，若仍为 LPRng-3.7.4-23 及更早版本或 tetex-1.0.7-7 及更早版本则存在风险。可通过 yum update LPRng tetex 完成升级，升级后重启打印服务 systemctl restart lpd。如暂时无法打补丁，可临时通过 /etc/hosts.deny 限制对 lpc（端口 515）的本地访问，或禁用 LPRng 打印服务以减少攻击面。如业务无需打印服务，可直接执行 systemctl stop lpd && systemctl disable lpd 彻底禁用。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["redhat"]
-title = "Red Hat Linux LPRng 补充组权限提升漏洞"
+sources = ["exploitdb"]
+title = "LPRng 打印系统 本地权限提升漏洞"
 updated = "2026-06-16T21:54:57.513"
 
 [exploit]
@@ -27,12 +27,12 @@ urls = [
     "http://www.securityfocus.com/bid/2865",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6703",
     "https://www.exploit-db.com/exploits/20923",
-    "https://github.com/CVEProject/cvelistV5/blob/d83a2c403dbad5ade9ae20db8a18ec06947c25f6/cves/2001/0xxx/CVE-2001-0787.json",
+    "https://github.com/CVEProject/cvelistV5/blob/6e1781cc6a314747dfce9d8864a3f090ef8f0a6f/cves/2001/0xxx/CVE-2001-0787.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0787",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2001/0xxx/CVE-2001-0787.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3e56369e6f703dfde20132e3205d609e016e88bd/CVE/data/2001/CVE-2001-0787.json",
-    "https://github.com/github/advisory-database/blob/d1d7ac405f2460acf0b0e8ed2a5cf8c748023246/advisories/unreviewed/2022/04/GHSA-8cwj-qxjh-6vq7/GHSA-8cwj-qxjh-6vq7.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2001-0787.md",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/21f29c262df67f8fba785d468c4552b0e1fc4211/2001/0xxx/CVE-2001-0787.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/426b24561da5907e2706f7cda3b65ab75123f3ba/CVE/data/2001/CVE-2001-0787.json",
+    "https://github.com/github/advisory-database/blob/292f77a8e015ead047ef178a4e7ea4de6f3945c3/advisories/unreviewed/2022/04/GHSA-8cwj-qxjh-6vq7/GHSA-8cwj-qxjh-6vq7.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2001-0787.md",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0787.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_151700_151800.json",
