@@ -1,0 +1,51 @@
+[id]
+ave_id = "AVE-2026-0383"
+aliases = ["CVE-2026-52823","GHSA-r8vr-m544-qh4h"]
+
+[basic]
+title = "Kimai: Login CSRF in the Timesheet Stop and Restart API Endpoints Allows Unauthorized State Changes"
+description = "### Summary
+
+Kimai 2.56.0 contains authenticated cross-site request forgery issues in its timesheet state-changing API endpoints. The application reuses the browser's existing session for `/api/*` requests, and both the `stop` and `restart` operations are exposed through `GET` and `PATCH` routes that directly modify business state.
+
+As a result, an attacker can trick a logged-in user into visiting a malicious page and cause unauthorized timesheet actions without the victim's consent. Depending on the endpoint, this can stop a running timesheet or create and start a new one from historical data.
+
+### Details
+
+The issue affects at least the following API routes:
+
+- `GET /api/timesheets/{id}/stop`
+- `GET /api/timesheets/{id}/restart`
+
+Both routes are non-read-only operations but are still exposed as `GET`. In `src/API/TimesheetController.php`.
+
+*A PoC was provided, but removed for security reasons.*
+
+### Impact
+
+This vulnerability allows an attacker to trigger unauthorized business-state changes as a logged-in victim. In the validated `stop` case, a running timesheet can be stopped, affecting time tracking integrity and potentially availability of ongoing work tracking. In the `restart` case, a historical timesheet can be restarted and a new record can be created without the victim's knowledge.
+
+These actions can corrupt time records, distort billing and reporting, interfere with approvals or audits, and create persistent database-side side effects. Because exploitation requires only that the victim visit a malicious page while authenticated, the attack barrier is low.
+
+# Solution
+
+The `GET` routes were removed, both `stop` and `restart` are only available via `PATCH`.
+
+See [https://www.kimai.org/en/security/ghsa-r8vr-m544-qh4h](https://www.kimai.org/en/security/ghsa-r8vr-m544-qh4h) for more information."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-24T01:46:14.571408711+00:00"
