@@ -1,11 +1,11 @@
 [basic]
-description = "GNOME esound 0.2.19 及更早版本在创建 Unix 域套接字时存在竞争条件漏洞。本地攻击者可通过符号链接攻击，在 esound 创建套接字的过程中替换目标文件，从而修改任意文件或目录的权限，实现本地权限提升。攻击需要本地用户身份且利用条件较为复杂，但成功利用后可获取额外系统权限，影响系统安全性。"
+description = "GNOME esound（Enlightened Sound Daemon）0.2.19 及更早版本在创建 Unix 域套接字时存在竞争条件漏洞（CWE-362）。该漏洞源于程序在建立套接字过程中未正确处理符号链接，本地攻击者可利用该竞争窗口，通过创建指向目标文件或目录的符号链接进行符号链接攻击（symlink attack），从而在套接字创建时覆盖或修改任意文件和目录的权限。攻击成功后，本地用户可获得额外特权，实现权限提升。该漏洞仅影响本地环境（AV:L），攻击复杂度较高（AC:H），无需身份认证（Au:N），但一旦利用成功，将对机密性、完整性和可用性造成完全影响（C:C/I:C/A:C）。受影响系统包括使用 esound 0.2.19 及更早版本的 Linux/Unix 平台，CVSS 评分为 6.2。攻击者需具备本地访问权限，通过构造恶意符号链接并触发 esound 创建套接字的操作来触发漏洞。建议升级至修复版本或禁用不必要的 esound 服务以消除风险。"
 published = "2000-11-14T05:00:00.000"
-remediation = "升级 GNOME esound 至 0.2.20 或更高版本，该版本修复了 Unix 域套接字创建中的竞争条件问题。如无法升级，可删除 esound 的 setuid 位（chmod u-s /usr/bin/esd）并限制仅受信任用户可访问音频设备，以降低 symlink 提权攻击风险。各发行版对应公告：Debian DSA-20001008、RedHat RHSA-2000-077、SuSE 安全公告。"
+remediation = "升级 esound 至 0.2.20 或更高版本，该版本已将 Unix domain socket 目录从全局可写的 `/tmp/.esd` 移至用户主目录 `~/.esd`，并移除了 socket 及目录的 world-write 权限。若无法升级，可手动应用官方补丁：修改 `esd.h` 中 `ESD_UNIX_SOCKET_DIR` 宏为动态获取用户 home 目录的函数，修改 `esd.c` 中 `mkdir` 和 `chmod` 调用移除 `S_IWOTH`（other write）权限位，同时删除 `/tmp/.esd` 目录并设置 sticky bit（`chmod 1755 /tmp/.esd`）作为临时缓解措施，防止其他用户在该目录下创建符号链接。"
 score = 6.2
 severity = "MEDIUM"
-sources = ["redhat"]
-title = "GNOME esound Unix 域套接字竞争条件漏洞"
+sources = ["cve"]
+title = "GNOME esound Unix Domain Socket 竞争条件权限提升漏洞"
 updated = "2026-06-16T21:52:37.687"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0864"]
 ave_id = "AVE-2000-0637"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -32,14 +32,14 @@ urls = [
     "http://www.securityfocus.com/bid/1659",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5213",
     "https://www.exploit-db.com/exploits/20212",
-    "https://github.com/CVEProject/cvelistV5/blob/377bb49f7479dd297ab5004f75a37c291a136578/cves/2000/0xxx/CVE-2000-0864.json",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0864.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0864",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0864.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f2c577e1255b2c3fd617b7f1c499a222feb7b668/CVE/data/2000/CVE-2000-0864.json",
-    "https://github.com/github/advisory-database/blob/db909d46c3d9b98ec1f95daa3c88d7a8990ea8f5/advisories/unreviewed/2022/04/GHSA-6743-8vvq-693c/GHSA-6743-8vvq-693c.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0864.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3e56369e6f703dfde20132e3205d609e016e88bd/CVE/data/2000/CVE-2000-0864.json",
+    "https://github.com/github/advisory-database/blob/d1d7ac405f2460acf0b0e8ed2a5cf8c748023246/advisories/unreviewed/2022/04/GHSA-6743-8vvq-693c/GHSA-6743-8vvq-693c.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0864.md",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/2000/20001008.data",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0864.json",
     "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/M/mandrake_MDKSA-2000-051.nasl",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--411be020-c7bc-4148-85d7-40083efc5805.json",
 ]
