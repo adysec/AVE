@@ -1,15 +1,12 @@
 [basic]
-description = "Kerberos 4 KDC 程序的 kerb_err_reply 函数在处理 e_msg 变量时存在缓冲区溢出漏洞，由于未对输入数据长度进行有效验证，远程攻击者可通过向目标 KDC 服务器发送特制的恶意认证请求数据包触发缓冲区溢出，导致 Kerberos 认证服务进程崩溃，造成拒绝服务。该漏洞影响运行 Kerberos 4 版本的系统，CVSS 评分 5.0，危害等级中等。修复方式包括升级到已修复版本或应用厂商提供的安全补丁。"
-published = "2000-06-09"
-remediation = "升级 MIT Kerberos 4 至 patch10 以上版本，或升级 MIT Kerberos 5 至 1.2 版本；KTH-krb4 用户升级至 0.10 及以上版本。具体修复为将 kerb_err_reply 函数中 strcat 替换为 strncat 以限制 e_msg 缓冲区写入长度，同时增加对请求包中各字段长度的边界检查。如无法升级，建议在 KDC 主机上通过防火墙限制对 750/751/752 端口的访问来源。"
-score = 5.0
+description = "Kerberos 4 密钥分发中心（KDC）程序的 kerb_err_reply 函数中存在基于 e_msg 变量的缓冲区溢出漏洞（CWE-120）。未经身份认证的远程攻击者可通过向目标 Kerberos 服务发送特制网络数据包触发该溢出，导致 KDC 服务崩溃或不可用，进而造成拒绝服务。该漏洞影响 MIT Kerberos 4 全系列（含 4.0 及 patch10）、MIT Kerberos 5 1.0 至 1.1.1 版本以及 Cygnus Network Security/KerbNet 产品。攻击者无需任何凭据即可在网络可达的情况下利用此漏洞，攻击复杂度低，仅造成可用性部分损失，不涉及数据泄露或篡改。CERT 发布了 CA-2000-11 安全公告，RedHat 同步发布了 RHSA-2000-031 修复补丁，MIT Kerberos 团队也发布了 krb4kdc.txt 公告和补丁程序，受影响用户应升级至安全版本以消除风险。"
+published = "2000-06-09T04:00:00.000"
+remediation = "升级 MIT Kerberos 5 至 krb5-1.2 正式版或更高版本，该版本已包含修复补丁；若仍在使用 krb5-1.0.x 或 krb5-1.1.x，须从 MIT 官方安全公告页面（web.mit.edu/kerberos/www/advisories/index.html）下载对应的 krb4kdc 补丁并应用至源码 kdc/kerberos_v4.c，补丁核心是将 kerb_err_reply 函数中的 strcat 替换为 strncat 并限制长度，同时在 APPL 请求处理中增加 MAX_KTXT_LEN 边界检查。若使用 MIT Kerberos 4，需应用 Patch 10 之后的安全补丁。若使用 KTH-krb4，须升级至 0.10 或更高版本。若暂时无法升级，可在 KDC 配置中禁用 Kerberos 4 兼容模式（设置 kdc_v4 = KDC_V4_DISABLE），或在防火墙层面仅允许受信客户端访问 KDC 端口 88，以限制攻击面。Red Hat 用户可安装 RHSA-2000:031 安全通告中的更新包。"
+score = 5
 severity = "MEDIUM"
-sources = [
-    "cve",
-    "mit",
-]
-title = "MIT Kerberos 4 KDC 缓冲区溢出拒绝服务漏洞"
-updated = "2026-06-16"
+sources = ["epss"]
+title = "MIT Kerberos 4 缓冲区溢出拒绝服务漏洞"
+updated = "2026-06-16T21:51:58.423"
 
 [exploit]
 exp_urls = []
@@ -20,7 +17,7 @@ aliases = ["CVE-2000-0548"]
 ave_id = "AVE-2000-0632"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -31,4 +28,14 @@ urls = [
     "http://www.cert.org/advisories/CA-2000-11.html",
     "http://www.osvdb.org/4875",
     "http://www.redhat.com/support/errata/RHSA-2000-031.html",
+    "https://github.com/CVEProject/cvelistV5/blob/d83a2c403dbad5ade9ae20db8a18ec06947c25f6/cves/2000/0xxx/CVE-2000-0548.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0548",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0548.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3e56369e6f703dfde20132e3205d609e016e88bd/CVE/data/2000/CVE-2000-0548.json",
+    "https://github.com/github/advisory-database/blob/d1d7ac405f2460acf0b0e8ed2a5cf8c748023246/advisories/unreviewed/2022/04/GHSA-gpr4-gfq8-c66q/GHSA-gpr4-gfq8-c66q.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0548.md",
+    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88334/info.html",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--d29f330a-3c94-4fa9-8da6-9f1cc47c1829.json",
+    "https://github.com/rootio-avr/public-patches-catalog/blob/deba79f5cae79520d0503803e2f89c040f0fac71/alpine/3.18/krb5/amd64/APKBUILD",
 ]
