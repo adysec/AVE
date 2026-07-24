@@ -1,11 +1,11 @@
 [basic]
-description = "ISC DHCP 客户端程序 dhclient 存在远程命令执行漏洞，该程序在处理 DHCP 服务器返回的响应数据时，未能对主机名、域名等字段中的 shell 元字符（如反引号、$() 等）进行安全过滤。攻击者可搭建恶意 DHCP 服务器，在本地网段向目标主机发送包含特制 shell 元字符的 DHCP 响应报文，当 dhclient 处理该响应时会将元字符传递给 shell 解释执行，导致以 root 权限执行任意系统命令。该漏洞影响 FreeBSD、NetBSD、Debian、SuSE Linux 等操作系统中的 ISC DHCP 客户端，CVSS 评分 10.0，危害等级严重，完全威胁系统机密性、完整性和可用性。"
+description = "ISC DHCP 客户端程序 dhclient 存在命令注入漏洞，远程攻击者可通过在 DHCP 响应报文中注入 shell 元字符，使客户端在处理 DHCP 选项时执行任意系统命令。由于 DHCP 客户端通常以 root 权限运行，攻击者无需身份认证即可在目标系统上获得完全控制权，造成机密性、完整性和可用性的全面破坏。该漏洞影响运行 ISC DHCP 客户端的主流 Linux 及 Unix 类操作系统，CVSS 评分 10.0，危害等级严重。攻击者可在目标主机接入网络时，通过伪造 DHCP 服务器响应向客户端发送特制数据包完成利用，建议升级至 ISC DHCP 已修复版本以消除风险。"
 published = "2000-06-24T04:00:00.000"
-remediation = "立即升级 dhclient 至修复版本：FreeBSD 用户应用 FreeBSD-SA-00:34 补丁，Debian 用户安装 2000 年 6 月 28 日安全更新，SuSE Linux 用户应用公告 #56 补丁。核心修复措施为对 DHCP 服务器返回的选项字段中的 shell 元字符（如 `;&|`）进行严格转义过滤，防止拼接至命令执行。如无法升级，可在 dhclient-script 中手动过滤处置变量中的特殊字符作为临时缓解。"
+remediation = "立即将 ISC DHCP 客户端升级到 dhclient 2.0pl3 及以上（2.x 系列）或 3.0b1pl17 及以上（3.x 系列）；FreeBSD 用户可升级至 4.1-RELEASE 或之后基系统（已含 2.0pl3）。Debian 用户请安装官方安全更新后的 dhcp-client / dhcp-client-beta 包。若暂时无法升级，在 /etc/rc.conf 或网络配置文件中将 DHCP 客户端禁用，改为静态 IP 配置并重启网络服务，避免从不可信 DHCP 服务器获取配置。"
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "ISC DHCP Client 远程代码执行漏洞"
+sources = ["epss"]
+title = "ISC DHCP client 远程代码执行漏洞"
 updated = "2026-06-16T21:52:03.183"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0585"]
 ave_id = "AVE-2000-1300"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.novell.com/linux/security/advisories/suse_security_announce_56.html",
     "http://www.securityfocus.com/bid/1388",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4772",
-    "https://github.com/CVEProject/cvelistV5/blob/c8f1603cb76d37d7aca26a74458e0aff33b0985a/cves/2000/0xxx/CVE-2000-0585.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0ff539514ffae70ea73031a227022cb4e6068a50/cves/2000/0xxx/CVE-2000-0585.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0585",
     "https://github.com/fankh/vulnerability-poc/blob/ffa50060b7ba6ae58d60d6d90533e77eaf10d466/2000/CVE-2000-0585/README.md",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0585.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1baa87c09640becdfd7ca993d7d2150d97be85a6/CVE/data/2000/CVE-2000-0585.json",
-    "https://github.com/github/advisory-database/blob/23c72f0e29729596bf60b6750cbec12b936da4bf/advisories/unreviewed/2022/05/GHSA-c3g3-gg38-8jjw/GHSA-c3g3-gg38-8jjw.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/e10c449b2000a2439910055eb21748030356eb7d/2000/0xxx/CVE-2000-0585.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e8cef73228affbb0d7f27f3d9e33baf98c2660a4/CVE/data/2000/CVE-2000-0585.json",
+    "https://github.com/github/advisory-database/blob/734adcc0a68fbe95325e836d2469be64740b89d7/advisories/unreviewed/2022/05/GHSA-c3g3-gg38-8jjw/GHSA-c3g3-gg38-8jjw.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2000-0585.md",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
     "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/2000/20000628.data",
-    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0585.json",
+    "https://github.com/olbat/nvdcve/blob/ebc4d73723464668b97400aaa2d8410c6ff78a81/nvdcve/CVE-2000-0585.json",
 ]
