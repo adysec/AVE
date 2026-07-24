@@ -1,12 +1,12 @@
 [basic]
-description = "SSH 1.2.27 在集成 Kerberos 认证支持时，会将 Kerberos 票据缓存文件创建在用户登录时的当前工作目录下，而非安全的临时目录。当用户主目录挂载在 NFS 等共享文件系统上时，远程攻击者可通过网络嗅探窃取该目录下的票据缓存文件，从而获取 Kerberos 认证凭据，实现身份伪造和越权访问。此漏洞影响 SSH 1.2.27 的 Kerberos 认证功能，CVSS 评分 7.2，危害等级高危。"
-published = "2000-07-05"
-remediation = "升级至 SSH 2.x 或 OpenSSH 版本，这些版本已修复票据缓存文件创建位置问题；配置 Kerberos 票据缓存路径为安全的本地临时目录，如设置 KRB5CCNAME 环境变量指向 /tmp 目录，而非使用当前工作目录；避免将用户主目录挂载在 NFS 等共享文件系统上，或启用 NFS 安全挂载选项防止远程嗅探票据缓存。"
+description = "该漏洞存在于支持Kerberos认证的SSH 1.2.27协议栈中，其Kerberos认证票据存储于用户登录时的当前目录文件中。由于系统可能将用户主目录挂载在NFS网络文件系统上，远程攻击者能够通过网络嗅探目标主机上的该文件，从而获取受害者的Kerberos认证票据。这可能导致攻击者完整窃取、篡改和破坏系统的完整性与可用性，CVSS评分高达7.2，威胁等级严重。"
+published = "2000-07-05T04:00:00.000"
+remediation = "建议升级至 OpenSSH 2.0 或更高版本（已修复该漏洞），或升级至 SSH 1.2.28 及以上版本。若无法立即升级，请将 Kerberos 凭据缓存目录配置为本地非 NFS 目录（如通过 KRB5CCNAME 环境变量指定本地路径），并禁用 SSH 1 协议强制使用 SSH 2 协议；若必须使用 NFS 家目录，请配置 NFS 启用 Kerberos 认证并启用安全选项（sec=krb5p）以加密传输。建议同时禁用 SSH 1 协议的 Kerberos 认证功能，改用 SSH 2 公钥认证。立即检查并修改 /etc/ssh/sshd_config 设置 Protocol 2 和 KerberosAuthentication no。定期轮换 Kerberos 凭据并监控异常票据访问。立即部署补丁并验证 SSH 版本 ≥ 2.0。如无法升级，请配置 Kerberos 缓存目录为本地路径 export KRB5CCNAME=/tmp/krb5cc_%{uid} 并确保目录权限 700。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "SSH 1.2.27 Kerberos认证票据缓存嗅探漏洞"
-updated = "2026-07-21"
+sources = ["epss"]
+title = "SSH Communications Security SSH 1.2.27 Kerberos 票据缓存嗅探漏洞"
+updated = "2026-06-16T21:52:01.930"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0575"]
 ave_id = "AVE-2000-0671"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,5 +25,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=96256265914116&w=2",
     "http://www.securityfocus.com/bid/1426",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4903",
-    "https://github.com/github/advisory-database/blob/23c72f0e29729596bf60b6750cbec12b936da4bf/advisories/unreviewed/2022/04/GHSA-fwxc-qvhc-7v9m/GHSA-fwxc-qvhc-7v9m.json",
+    "https://github.com/CVEProject/cvelistV5/blob/2191d577d2d643f301487a89dd6359b1113a07b9/cves/2000/0xxx/CVE-2000-0575.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0575",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1bcfc51649d76497fa60b30641a1d994609c3c9a/2000/0xxx/CVE-2000-0575.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cc202af7c41ce1218ba7619eda84142fd5c7f1cf/CVE/data/2000/CVE-2000-0575.json",
+    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/ssh_kerberos.nasl",
+    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2000-0575.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0575.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152600_152700.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--dfd01263-5503-453b-857e-28b5ed8c250a.json",
+    "https://github.com/jdkoftinoff/mb-linux-msli/blob/8adb103e34af9ff1d8d122e9ee2a1808836f0a14/uClinux-dist/user/nessus/nessus-plugins/scripts/ssh_kerberos.nasl",
 ]
