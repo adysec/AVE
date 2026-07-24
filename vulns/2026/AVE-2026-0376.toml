@@ -1,0 +1,63 @@
+[id]
+ave_id = "AVE-2026-0376"
+aliases = ["CVE-2026-52775","GHSA-4pf7-cc4r-g63h"]
+
+[basic]
+title = "YesWiki has Authenticated SQL Injection via ReactionManager "
+description = "## Summary
+
+YesWiki through the latest development branch contains a SQL injection vulnerability in `ReactionManager::deleteUserReaction()` that allows any authenticated user to inject arbitrary SQL via the `{idreaction}` and `{id}` URL path parameters. The parameters are concatenated directly into a SQL LIKE clause without escaping or parameterization.
+
+This is a sibling of CVE-2026-46670 (unauthenticated SQLi in `FormManager::create()`). Both share the same root cause — raw string concatenation into SQL queries — but exist in different components.
+
+## Root Cause
+
+`includes/controllers/ApiController.php` line 726:
+```php
+/**
+ * @Route(\"/api/reactions/{idreaction}/{id}/{page}/{username}\", methods={\"DELETE\"}, options={\"acl\":{\"+\"}})
+ */
+```
+
+ACL `\"+\"` = any authenticated user. Parameters flow into `ReactionManager::deleteUserReaction()` → `TripleStore::delete()` with raw string concatenation into SQL LIKE clause (line 356).
+
+The `if` branch (lines 340-354) properly uses `$this->dbService->escape()`. The `else` branch does not — the developer applied escaping to one code path but not the other.
+
+## PoC
+
+```
+DELETE /wiki/?api/reactions/x%27%20OR%201=1%20OR%20value%20LIKE%20%27/test/SomePage/attacker
+Host: localhost:8085
+Cookie: <session cookie>
+```
+
+Time-based blind variant via `{id}` parameter for data exfiltration.
+
+## Impact
+
+Full database read/write. Any self-registered user can extract `yeswiki_users` password hashes and emails.
+
+## Suggested Fix
+
+Apply `$this->dbService->escape()` to all parameters in the `else` branch, matching the `if` branch pattern. Also audit all `TripleStore::delete()` callers that pass `$extraSQL`.
+
+## Credits
+
+Kai Aizen / SnailSploit"
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-24T00:10:15.817184059+00:00"

