@@ -1,0 +1,39 @@
+[basic]
+description = "FreeBSD 系统中的 periodic 命令在 4.1.1 及更早版本存在符号链接竞争条件漏洞。该命令以 root 权限执行系统定期维护任务时，会在临时目录创建日志文件，但由于未对文件创建过程进行安全校验，具有本地访问权限的低权限攻击者可预先在目标路径放置指向系统关键文件的符号链接。当 periodic 进程打开并写入该文件时，实际会以 root 权限覆写符号链接所指向的任意文件内容，例如 /etc/passwd、/etc/crontab 或 /etc/rc.conf 等核心配置文件。该漏洞影响 FreeBSD 4.1.1 及更早版本系统，要求攻击者拥有本地用户账户或 shell 访问权限即可发起利用。成功利用后攻击者可篡改系统配置文件、植入持久化后门或提升至 root 权限，严重威胁系统完整性与可用性。"
+published = "2001-02-16T05:00:00.000"
+remediation = "立即运行 sysinstall 或 freebsd-update 升级 FreeBSD 到修复版本（4.1.1-RELEASE 或更高版本）；或手动修改 /etc/periodic.conf 将临时目录从 /tmp 改为 /var/tmp，并确保 periodic 脚本使用 mktemp 创建不可预测的临时文件名，避免使用 /tmp/periodic.$PID 形式。临时缓解措施：以 root 身份执行 rm /tmp/periodic.* 清除所有可疑符号链接文件，并定期检查 /tmp 目录下是否存在指向敏感文件的 symbolic link。"
+score = 1.2
+severity = "LOW"
+sources = ["cve"]
+title = "FreeBSD periodic 任意文件写入漏洞"
+updated = "2026-06-16T21:52:41.107"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2000-0890"]
+ave_id = "AVE-2000-0994"
+
+[meta]
+collected_at = "2026-07-24T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://www.kb.cert.org/vuls/id/626919",
+    "http://www.osvdb.org/1754",
+    "http://www.securityfocus.com/bid/2325",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/6047",
+    "https://github.com/CVEProject/cvelistV5/blob/2a32ec57edd83fdc49e3ed310ea4dfd02c6ae080/cves/2000/0xxx/CVE-2000-0890.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0890",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/21f29c262df67f8fba785d468c4552b0e1fc4211/2000/0xxx/CVE-2000-0890.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7d8adad2ca0fd0f45e0565820d22b5b3d75da10a/CVE/data/2000/CVE-2000-0890.json",
+    "https://github.com/github/advisory-database/blob/734adcc0a68fbe95325e836d2469be64740b89d7/advisories/unreviewed/2022/04/GHSA-4c95-3x3c-f7fm/GHSA-4c95-3x3c-f7fm.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0890.json",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150500_150600.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--02649480-cef8-43db-8ee8-79c88113d85c.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2000-0890.md",
+]
