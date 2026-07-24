@@ -1,11 +1,11 @@
 [basic]
-description = "HP-UX 10.20 及 11.0 系统中的 man 命令存在不安全的临时文件创建漏洞，本地攻击者可通过在 /tmp 目录下创建符号链接（symlink）指向目标文件，诱使 man 命令在处理帮助文档时以 root 权限覆盖任意系统文件。该漏洞利用条件为攻击者拥有本地 shell 访问权限，可导致权限提升或系统文件破坏，CVSS 评分 4.6，危害等级中危。"
+description = "该漏洞存在于 HP-UX 10.20 和 11.0 操作系统中，其 `man` 命令在处理临时文件时存在符号链接攻击漏洞。本地攻击者可在 /tmp 等可写目录下创建恶意符号链接指向敏感系统文件，当 `man` 命令卸载帮助手册文件时会意外写入数据到攻击者控制的目标文件，导致任意文件被覆盖或破坏。攻击者无需认证即可利用此漏洞，仅需拥有本地访问权限及对 /tmp 目录的写入权限，即可实现对系统关键文件的篡改，威胁系统的完整性和可用性，机密性影响较小。该漏洞属于经典的 Unix 符号链接竞争条件漏洞，反映了早期 Unix 系统在临时文件处理上的安全设计缺陷，攻击者通过精心构造的符号链接实现权限提升或系统破坏。建议用户及时应用 HP 官方发布的安全补丁，并加强 /tmp 目录的权限控制，禁止普通用户创建硬链接和符号链接。"
 published = "2000-06-02T04:00:00.000"
-remediation = "建议升级 HP-UX 至 11.11 或更高版本，或安装 HP 安全补丁 PHCO_21674（10.20）/ PHCO_21675（11.0）。临时缓解措施：以 root 身份执行 `chmod 1777 /tmp` 确保 /tmp 目录 sticky 位已设置，并限制本地非授信用户登录系统。"
+remediation = "建议修补HP-UX系统安全漏洞，立即应用HP-UX安全更新补丁以修复man命令的缺陷；同时加强/tmp目录的安全控制，禁止普通用户在/tmp中创建硬链接和符号链接，并定期清理/tmp目录中的可疑链接文件。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["epss"]
-title = "HP HP-UX man 命令符号链接漏洞"
+sources = ["avd"]
+title = "惠普 HP-UX 10.20/11.0 man 符号链接攻击漏洞"
 updated = "2026-06-16T21:51:47.947"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0468"]
 ave_id = "AVE-2000-0391"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://www.securityfocus.com/bid/1302",
     "http://www.securityfocus.com/templates/archive.pike?list=1&msg=Pine.SOL.4.02.10006021014400.4779-100000%40nofud.nwest.attws.com",
     "https://www.exploit-db.com/exploits/19990",
-    "https://github.com/CVEProject/cvelistV5/blob/6e1fee15e021f95477107e3e5d652470f76f7bac/cves/2000/0xxx/CVE-2000-0468.json",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0468.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0468",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0468.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/ad583e79ed38e32f21eec5f8962c8f59146c10bc/CVE/data/2000/CVE-2000-0468.json",
-    "https://github.com/github/advisory-database/blob/9608541b971a314a928294c8f88371b45ef3f307/advisories/unreviewed/2022/04/GHSA-4xc4-j2qx-w95p/GHSA-4xc4-j2qx-w95p.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1bcfc51649d76497fa60b30641a1d994609c3c9a/2000/0xxx/CVE-2000-0468.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ea1fd4e9132e508aaecde8cf383b74de1fcf0a5/CVE/data/2000/CVE-2000-0468.json",
+    "https://github.com/github/advisory-database/blob/2b8a7bdd977d852aa4b7aade01f4fcd4d623cfde/advisories/unreviewed/2022/04/GHSA-4xc4-j2qx-w95p/GHSA-4xc4-j2qx-w95p.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0468.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0468.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--19a2e879-672d-4af8-bf07-664ff493d956.json",
+    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
 ]
