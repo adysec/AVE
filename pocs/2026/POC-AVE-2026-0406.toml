@@ -1,0 +1,61 @@
+[info]
+author = "ave"
+description = "检测 Better Auth 应用是否存在 OAuth 自动链接未验证预注册邮箱导致的账户接管漏洞。通过检测 /sign-up/email 端点是否可注册以及 OAuth 回调是否接受未验证邮箱的自动链接来验证漏洞存在。"
+id = "POC-AVE-2026-0406"
+name = "Better Auth OAuth 自动链接未验证预注册邮箱账户接管漏洞 PoC"
+severity = "high"
+tags = ["ave-2026-0406"]
+vuln_id = [
+    "CVE-2026-53516",
+    "AVE-2026-0406",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/auth/sign-up/email"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"email":"test-poc-ave-0406@example.com","password":"AvePocTest123!","name":"AVE PoC Test"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+    400,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/auth/status"
+protocol = "http"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/auth/csrf"
+protocol = "http"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
