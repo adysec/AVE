@@ -1,0 +1,54 @@
+[id]
+ave_id = "AVE-2026-0400"
+aliases = ["CVE-2026-53508","GHSA-2jcc-mxv7-p3f9"]
+
+[basic]
+title = "oasdiff does not enforce --allow-external-refs=false on the git-revision load path (SSRF / local file read)"
+description = "## Summary
+
+From **v1.13.2** through **v1.18.0**, oasdiff did not enforce `--allow-external-refs=false` (library: `openapi3.Loader.IsExternalRefsAllowed = false`) when loading a spec from a **git revision** (the `rev:path` form, e.g. `main:openapi.yaml`). External `$ref`s were resolved on that load path even when external refs were explicitly disabled, so the mitigation silently did not apply there.
+
+## Impact
+
+A caller who set `--allow-external-refs=false` *specifically to safely process untrusted specs* remained exposed — on the git-revision load path only — to:
+
+- **SSRF** via `$ref: \"http://<internal-host>/…\"`, and
+- **Local file reads** via `$ref: \"/path\"` or `file://`.
+
+Affected callers:
+
+- **CLI:** `oasdiff diff main:openapi.yaml HEAD:openapi.yaml --allow-external-refs=false` (and `breaking` / `changelog` / `summary`, and the `git-diff-driver`) run over untrusted spec content.
+- **Go library consumers** of `github.com/oasdiff/oasdiff/load` that set `IsExternalRefsAllowed = false` and load from a git-revision source via `load.NewSpecInfo`.
+
+The file and URL load paths correctly enforced the setting; only the git-revision path was affected. Callers that left external refs at the default (`true`) are not in scope for *this* advisory.
+
+## Patches
+
+**v1.18.1** enforces the external-refs policy on the git-revision path (so `--allow-external-refs=false` now blocks external `$ref`s there) and returns a dedicated exit code (`123`) when an external `$ref` is refused.
+
+## Workarounds
+
+- Upgrade to **v1.18.1**, or
+- Avoid the git-revision input form when processing untrusted specs with external refs disabled.
+
+## Notes
+
+- Introduced in **v1.13.2** (#832, which added `$ref`-chain resolution on the git-revision path); fixed in **v1.18.1** (#974, #975).
+- The permissive **default** (`allow-external-refs: true`) and its zero-interaction exposure in CI via the GitHub Action is tracked separately in GHSA-fhj3-7267-7vv5 (oasdiff-action)."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-24T10:28:27.280220696+00:00"
