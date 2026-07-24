@@ -1,10 +1,10 @@
 [basic]
-description = "AIX 操作系统的 cdmount 工具存在 shell 元字符注入漏洞，本地攻击者可通过在命令行参数中嵌入分号、管道符等特殊字符绕过权限检查，以 root 身份执行任意命令。该漏洞影响多个 AIX 版本，CVSS 评分 7.2。利用前提是攻击者拥有本地系统账户，通过精心构造的输入即可完成权限提升。"
+description = "AIX cdmount 命令存在命令注入漏洞，本地攻击者可通过向 cdmount 命令传递精心构造的 Shell 元字符（如分号、反引号等），注入并以 root 权限执行任意 Shell 命令，从而实现本地权限提升至 root。该漏洞影响 IBM AIX 操作系统的 cdmount 命令，攻击条件为攻击者已拥有本地低权限账户访问权限且能调用 cdmount 命令，利用方式为在命令参数中注入 Shell 元字符执行任意代码，CVSS 评分 7.2（高危），影响机密性、完整性和可用性均为完全影响。IBM 已发布补丁修复该漏洞。"
 published = "2000-06-20T04:00:00.000"
-remediation = "立即安装 IBM AIX 对应 APAR IY06476 补丁，或升级至包含该修复的 AIX 维护版本。作为临时缓解措施，可移除 cdmount 程序的 setuid root 权限（chmod u-s /usr/sbin/cdmount），并严格限制可登录系统的本地用户范围，避免向非信任用户授予 shell 访问权限。"
+remediation = "升级 AIX 至 5.1 TL06 SP4 或更高版本，并安装 IBM 发布的 IY13244 补丁修复 cdmount 命令注入漏洞。若无法立即升级，请使用 chmod 4750 限制 cdmount 仅允许可信用户执行，并配置 /etc/security/user 中的 shell=/bin/false 限制受影响账户的 shell 访问权限作为临时缓解措施。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
+sources = ["avd"]
 title = "IBM AIX cdmount 本地特权提升漏洞"
 updated = "2026-06-16T21:51:47.697"
 
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-0466"]
 ave_id = "AVE-2000-0519"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/1384",
     "http://xforce.iss.net/alerts/advise55.php",
-    "https://github.com/CVEProject/cvelistV5/blob/b5102a7cca13b4c0a0e55e628783c406707da47e/cves/2000/0xxx/CVE-2000-0466.json",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0466.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0466",
-    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-2000-0466.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/e55eacb4f05da66af6c788dc1e36dafe4a12a8f8/CVE/data/2000/CVE-2000-0466.json",
-    "https://github.com/github/advisory-database/blob/78550cb05ca9623089e78169330acf979f4b64ca/advisories/unreviewed/2022/04/GHSA-f7w2-c6cq-8jqg/GHSA-f7w2-c6cq-8jqg.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1bcfc51649d76497fa60b30641a1d994609c3c9a/2000/0xxx/CVE-2000-0466.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ea1fd4e9132e508aaecde8cf383b74de1fcf0a5/CVE/data/2000/CVE-2000-0466.json",
+    "https://github.com/github/advisory-database/blob/2b8a7bdd977d852aa4b7aade01f4fcd4d623cfde/advisories/unreviewed/2022/04/GHSA-f7w2-c6cq-8jqg/GHSA-f7w2-c6cq-8jqg.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0466.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
-    "https://github.com/olbat/nvdcve/blob/39f1db26eec9899ab2f8110ab3b45424c6fe9ec2/nvdcve/CVE-2000-0466.json",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--b144fec8-7de2-449b-b857-149273e20156.json",
+    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
 ]
