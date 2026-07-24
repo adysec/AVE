@@ -1,12 +1,12 @@
 [basic]
-description = "NetBSD 1.4.2 系统中的 ftpd 守护程序在解析 /etc/ftpchroot 配置文件条目时存在逻辑缺陷，无法正确对指定用户执行 chroot 操作，导致本应被限制在用户主目录内的 FTP 用户可绕过目录隔离机制，访问系统中其他目录及文件。攻击者只需拥有合法 FTP 账号并被列入 ftpchroot 列表即可利用此漏洞，属于低权限用户越权访问。该漏洞影响 NetBSD 1.4.2 版本，CVSS 评分 2.1，危害等级低。"
-published = "2000-05-28T04:00:00.000"
-remediation = "升级 NetBSD 至 1.4.3 或更高版本，该版本已修复 ftpd 对 /etc/ftpchroot 的解析逻辑。如无法升级，手动检查 /etc/ftpchroot 配置确保每个用户条目格式正确，并限制受影响用户的 shell 访问权限作为临时缓解。"
-score = 2.1
-severity = "LOW"
-sources = ["cve"]
-title = "NetBSD ftpd chroot 绕过漏洞"
-updated = "2026-06-16T21:51:47.193"
+description = 'NetBSD ftpd 的 ftpchroot 功能存在路径解析漏洞，攻击者可通过构造包含 ".." 路径遍历序列的 FTP 命令（如 CWD、RETR 等），绕过 chroot 限制跳出受限目录，读取或写入服务器文件系统任意位置的文件。影响 NetBSD 1.4.x 及更早版本的 ftpd 服务，攻击者需拥有合法 FTP 账号并具备登录权限，通过发送精心构造的路径遍历序列即可突破 chroot 限制，导致敏感文件泄露或任意文件写入，进而可能进一步提权控制服务器。NetBSD 官方已发布补丁修复该路径解析缺陷。'
+published = "2000-05-28"
+remediation = "建议升级 NetBSD 至 1.5 及以上版本，或应用 NetBSD 官方发布的 ftpchroot 补丁（ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-012.txt.asc）。若无法立即升级，可临时禁用 ftpchroot 功能或限制 FTP 服务仅允许受信 IP 访问。"
+score = 5
+severity = "MEDIUM"
+sources = ["avd"]
+title = "NetBSD ftpchroot 分析漏洞"
+updated = "2000-05-28"
 
 [exploit]
 exp_urls = []
@@ -17,21 +17,19 @@ aliases = ["CVE-2000-0462"]
 ave_id = "AVE-2000-0516"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "http://www.osvdb.org/1366",
-    "http://www.securityfocus.com/bid/1273",
-    "https://github.com/CVEProject/cvelistV5/blob/b5102a7cca13b4c0a0e55e628783c406707da47e/cves/2000/0xxx/CVE-2000-0462.json",
+    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0462.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0462",
-    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-2000-0462.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2cba6a622b2958fa1ec3a506e7b58871edec19fb/CVE/data/2000/CVE-2000-0462.json",
-    "https://github.com/github/advisory-database/blob/78550cb05ca9623089e78169330acf979f4b64ca/advisories/unreviewed/2022/05/GHSA-q428-rghj-777v/GHSA-q428-rghj-777v.json",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0462.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0462.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c52ac29e3e33d673083c7aada18d2fe25f185ca8/CVE/data/2000/CVE-2000-0462.json",
+    "https://github.com/github/advisory-database/blob/2b8a7bdd977d852aa4b7aade01f4fcd4d623cfde/advisories/unreviewed/2022/05/GHSA-q428-rghj-777v/GHSA-q428-rghj-777v.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0462.md",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
+    "https://github.com/olbat/nvdcve/blob/a036095fb2c093f3863681adc5999690c37b930e/nvdcve/CVE-2000-0462.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--a083d977-81b4-482d-b781-4a5a5f4218fd.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/5721d007794215ff21176b4cb4c7f370781f5dd1/2000.tsv",
-    "https://github.com/cmjayasinghe/Threat-Intelligence-Dashboard/blob/ccfec8014cc85c9e776b8f657bdb7879139ab5ed/data/cves.csv",
 ]
