@@ -1,11 +1,11 @@
 [basic]
-description = "Canna 3.5 b2 版本输入系统中存在缓冲区溢出漏洞，远程攻击者可通过向目标系统发送特制的 SR_INIT 命令，并在其中包含超长用户名或组名字段，触发缓冲区溢出，从而在目标系统上执行任意命令。该漏洞无需身份认证即可利用，危害等级严重，CVSS 评分高达 10.0，影响使用 Canna 3.5 b2 版本的系统。"
+description = "Canna 日文输入系统（cannaserver）的 SR_INIT 命令在处理用户名或组名参数时存在栈缓冲区溢出漏洞。远程攻击者无需身份认证，即可通过向目标主机的 5680 端口发送携带超长用户名或组名的 SR_INIT 数据包触发溢出，覆盖栈上的返回地址并执行任意代码，从而获得与 cannaserver 进程相同权限的远程 shell。该漏洞影响 Canna 3.5 b2 及更早版本，广泛存在于搭载该软件的 Linux、FreeBSD 等 Unix 类操作系统中，CVSS v2 评分满分 10.0，危害等级为严重。修复方式为升级 Canna 至安全版本或限制 cannaserver 服务仅监听本地地址。"
 published = "2000-07-02T04:00:00.000"
-remediation = "升级 Canna 至 3.2.2 或更高稳定版本；在配置文件 /etc/hosts.canna 中限制允许访问的主机列表，仅放行 localhost 和必要可信主机；如非必需使用 Canna 服务，可直接卸载该软件包；使用 ipfw/ipf 防火墙限制外部对 Canna 端口（tcp/5680）的访问作为临时缓解。"
+remediation = "升级 Canna 至 3.2.2 或更高版本以修复 SR_INIT 命令中的缓冲区溢出漏洞。FreeBSD 系统可升级 ports 集合并重新编译 Canna 端口，或下载 ja-Canna-3.2.2 软件包替换旧版本；Linux 及其他系统应替换为厂商发布的安全补丁版本。临时缓解措施：创建 /etc/hosts.canna 文件并写入仅允许访问 Canna 服务器的主机列表（如 localhost 和 unix），限制远程访问范围；或通过防火墙规则阻断对 Canna 服务端口 5680 的入站连接；亦可直接停用 cannaserver 服务以消除攻击面。"
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "Canna Canna 输入法系统 远程缓冲区溢出漏洞"
+sources = ["epss"]
+title = "Canna 输入系统远程缓冲区溢出漏洞"
 updated = "2026-06-16T21:52:03.060"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0584"]
 ave_id = "AVE-2000-0464"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,12 +26,12 @@ urls = [
     "http://www.securityfocus.com/bid/1445",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4912",
     "https://www.exploit-db.com/exploits/20061",
-    "https://github.com/CVEProject/cvelistV5/blob/c729733510a7fb9b2cb302c6d8fbcecf1fc7ba0f/cves/2000/0xxx/CVE-2000-0584.json",
+    "https://github.com/CVEProject/cvelistV5/blob/6e1781cc6a314747dfce9d8864a3f090ef8f0a6f/cves/2000/0xxx/CVE-2000-0584.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0584",
     "https://github.com/fankh/vulnerability-poc/blob/ffa50060b7ba6ae58d60d6d90533e77eaf10d466/2000/CVE-2000-0584/README.md",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0584.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1baa87c09640becdfd7ca993d7d2150d97be85a6/CVE/data/2000/CVE-2000-0584.json",
-    "https://github.com/github/advisory-database/blob/23c72f0e29729596bf60b6750cbec12b936da4bf/advisories/unreviewed/2022/05/GHSA-756c-jfq2-c688/GHSA-756c-jfq2-c688.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/21f29c262df67f8fba785d468c4552b0e1fc4211/2000/0xxx/CVE-2000-0584.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/aa5f2f0cb1791a7f76244bf9f9a0c7e17c4a2f8d/CVE/data/2000/CVE-2000-0584.json",
+    "https://github.com/github/advisory-database/blob/292f77a8e015ead047ef178a4e7ea4de6f3945c3/advisories/unreviewed/2022/05/GHSA-756c-jfq2-c688/GHSA-756c-jfq2-c688.json",
     "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/C/canna_overflow.nasl",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0584.json",
