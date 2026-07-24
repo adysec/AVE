@@ -1,0 +1,63 @@
+[id]
+ave_id = "AVE-2026-0382"
+aliases = ["CVE-2026-52822","GHSA-c6w6-57jj-62vh"]
+
+[basic]
+title = "Improper Authorization in Kimai Timesheet Restart and Duplicate Allows New Timesheets After Project Access Revocation"
+description = "### Summary
+
+Kimai 2.56.0 contains an authenticated authorization bypass in the timesheet `restart` and `duplicate` workflows. After a user loses access to a project, the user can still derive a new timesheet from one of their historical entries and create a new record under that now-unauthorized project and activity combination.
+
+This is a permission revocation bypass with persistent write impact. The issue affects both `restart` and `duplicate`, which trust ownership of an old timesheet more than the user's current access to the underlying project, activity, and customer.
+
+### Details
+
+The issue affects the following operations:
+
+- `PATCH /api/timesheets/{id}/restart`
+- `PATCH /api/timesheets/{id}/duplicate`
+
+The root cause is that authorization gives too much weight to the fact that the original timesheet belongs to the current user. In `src/Voter/TimesheetVoter.php`, the `*_own_timesheet` branch is evaluated before team-based access checks.
+
+The restart/duplicate capability check also verifies only object visibility, not whether the current user still has team-based access to the referenced objects. 
+
+In `src/API/TimesheetController.php`, the restart flow copies the historical `project` and `activity` into a new candidate timesheet.
+
+The duplicate flow similarly clones the historical record and saves it.
+
+In `src/Timesheet/TimesheetService.php`, creation of a new running entry still relies on `isGranted('start', $timesheet)`.
+
+For historical entries that belong to the current user, this logic can still succeed through the `*_own_timesheet` branch even after project access has been revoked. As a result, normal creation pages correctly stop offering the revoked project, but `restart` and `duplicate` can still create new records under it.
+
+The same weakness also affects the Web duplicate flow because the UI path ultimately calls the same save logic in `src/Controller/TimesheetAbstractController.php`:
+
+*A PoC was provided, but removed for security reasons.*
+
+### Impact
+
+This vulnerability allows a user to keep writing new time entries into a project after project access has been revoked. That undermines administrative access-control changes and can pollute project time tracking, budget calculations, statistics, reports, and invoicing workflows.
+
+Because both `restart` and `duplicate` can reuse historical project/activity bindings, old timesheet records effectively become reusable capability tokens that survive later access-control changes. This is not a UI artifact or a caching problem: new database rows are persisted after revocation.
+
+# Solution
+
+The metoid `TimesheetVoter::canStart()` now checks team access for project and activity. This verification is used for new timesheets and also for the `duplication` and `restart` workflows.
+
+See [https://www.kimai.org/en/security/ghsa-c6w6-57jj-62vh](https://www.kimai.org/en/security/ghsa-c6w6-57jj-62vh) for more information."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-24T01:31:29.573409235+00:00"
