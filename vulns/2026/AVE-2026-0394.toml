@@ -1,0 +1,42 @@
+[basic]
+description = "MCP Python SDK 实验性任务处理器存在授权缺失漏洞（CWE-862），受影响版本 1.23.0 至 1.27.1。漏洞原理：实验性任务功能启用后，默认处理器（tasks/list、tasks/get、tasks/result、tasks/cancel）仅基于任务标识符操作，未记录创建任务的会话，导致任务隔离失效。影响范围：调用 server.experimental.enable_tasks() 且服务多客户端的 MCP 服务器，CVSS 7.6（HIGH）。攻击条件：攻击者需作为已连接客户端，服务器需启用实验性任务功能且服务多客户端。利用方式：攻击者通过 tasks/list 枚举所有任务，通过 tasks/get 和 tasks/result 读取任意任务状态与结果，消费本应发送给任务创建者的引导消息（如 elicitation 请求），并通过 tasks/cancel 取消他人任务。修复：升级至 1.27.2 或更高版本，或禁用实验性任务功能，或自行实现会话归属校验的任务处理器。修复版本中任务 ID 嵌入不透明会话标记，默认处理器限制会话仅访问自身任务。"
+published = "2026-07-15T20:17:38.577"
+remediation = "立即升级 MCP Python SDK 至 1.27.2 或更高版本（pip install -U mcp），修复版本会在任务 ID 中嵌入会话标记并限制会话仅访问自身任务。若无法立即升级，请移除代码中 server.experimental.enable_tasks() 调用以禁用实验性任务功能，或自行实现带会话归属校验的自定义任务处理器作为临时缓解措施。建议同时检查依赖该 SDK 的所有 MCP 服务端部署并同步升级。"
+score = 7.6
+severity = "HIGH"
+sources = ["ghsa"]
+title = "MCP Python SDK 实验性任务功能未授权访问与权限绕过漏洞"
+updated = "2026-07-17T18:07:07.873"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-52870",
+    "GHSA-hvrp-rf83-w775",
+]
+ave_id = "AVE-2026-0394"
+
+[meta]
+collected_at = "2026-07-24T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/modelcontextprotocol/python-sdk/commit/62137874ff26dd74d2fea80ff528a7fd9ca7a5e7",
+    "https://github.com/modelcontextprotocol/python-sdk/pull/2720",
+    "https://github.com/modelcontextprotocol/python-sdk/releases/tag/v1.27.2",
+    "https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-hvrp-rf83-w775",
+    "https://github.com/CVEProject/cvelistV5/blob/2191d577d2d643f301487a89dd6359b1113a07b9/cves/2026/52xxx/CVE-2026-52870.json",
+    "https://github.com/mcp-security-project/mcp-cve-project/blob/8f19c6692789742733d784a4d63207b68cb14525/cves/CVE-2026-52870.md",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/f792732d95fcd5791350336c3993c8569599affe/proposals/nvd/CVE-2026-52870.proposal.yaml",
+    "https://github.com/Tabll/gemnasium-db/blob/3a636e9ca4dec610ea52bddffa3cd59a180b7252/pypi/mcp/CVE-2026-52870.yml",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/f352693f226c45464267beeea27f2ecfa0372f11/reports/2026-07-15/TIER_3_CVE-2026-52870.md",
+    "https://github.com/cisagov/vulnrichment/blob/a257431e220101b25f51c7e22239ee65d73c4dbf/2026/52xxx/CVE-2026-52870.json",
+    "https://github.com/oxsecurity/megalinter/blob/8a18f344792f20d1c2a7515315a80b5fa6191d7d/.trivyignore",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/f15100526750b2cf9bd4dc0cc587f58f968afb29/nvd/2026/HIGH/CVE-2026-52870/README.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/9ab526ab0d836fa102f77f626060e2b9458bc808/cve/CVE-2026-52870.html",
+    "https://github.com/aws-solutions/generative-ai-application-builder-on-aws/blob/483ace2fb897a5a862c7d51cb6dd41064220d18f/CHANGELOG.md",
+]
