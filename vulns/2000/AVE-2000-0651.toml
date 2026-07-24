@@ -1,11 +1,11 @@
 [basic]
-description = 'ISC BIND 8.2 至 8.2.2-P6 版本的 named 服务中存在拒绝服务漏洞。远程攻击者无需身份认证即可向目标 DNS 服务器发送特制的压缩区域传输（ZXFR）请求，随后查询一个未缓存的权威记录，导致 named 服务崩溃或进入异常状态，造成拒绝服务。该漏洞影响运行 BIND 8.2 系列版本的 DNS 服务器，攻击者只需具备网络访问能力即可触发，无需任何权限。此漏洞也被称为 "zxfr bug"。'
+description = "ISC BIND 8.2 至 8.2.2-P6 版本存在拒绝服务漏洞，攻击者可通过向目标系统发送特制的压缩区域传输（ZXFR）请求并在未缓存的授权记录上执行名称服务查询触发漏洞，导致 BIND 进程崩溃或DNS服务中断。该漏洞影响范围涵盖使用受影响版本BIND的各种组织，可能导致网络服务中断。攻击者无需身份验证即可通过网络连接发起攻击，通过特定的请求模式利用BIND软件的查询处理机制中的资源耗尽或逻辑错误，触发系统资源耗尽或内存损坏，导致服务完全不可用。虽然该漏洞不影响保密性和完整性，但可用性影响程度达到部分影响（CVSS 评分 5.0）。Microsoft 及其他BIND相关厂商已发布安全更新修复此漏洞，用户应及时升级到支持版本。"
 published = "2000-12-19T05:00:00.000"
-remediation = "升级 ISC BIND 至 8.2.2-P7 或更高版本（该漏洞在 8.2.2-P7 中修复），或迁移至 BIND 9.x 系列以获得长期支持。如无法立即升级，可在 DNS 服务器上限制 zone transfer 仅允许受信任的从服务器 IP 地址，并在防火墙上过滤入站的 ZXFR 请求。对于生产环境，建议直接迁移至 BIND 9.x，因 BIND 8 系列已停止维护。"
+remediation = "立即升级ISC BIND至8.2.3-P1或更高版本（如9.x稳定版），获取ISC官方安全补丁修复ZXFR漏洞。修改named.conf配置添加allow-transfer限制区域传输权限，配置allow-query限制查询来源，重启named服务生效。如无法立即升级，配置防火墙限制UDP/TCP 53端口仅允许信任网络访问，部署DNS缓存服务器预缓存权威记录以绕过ZXFR请求，监控named进程异常重启并配置自动重启机制作为临时缓解措施。"
 score = 5
 severity = "MEDIUM"
-sources = ["redhat"]
-title = "ISC BIND 8.2 ZXFR 压缩区域传输请求拒绝服务漏洞"
+sources = ["cve"]
+title = "ISC BIND 8.2.2 ZXFR 请求拒绝服务漏洞"
 updated = "2026-06-16T21:52:40.657"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0887"]
 ave_id = "AVE-2000-0651"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-24T00:00:00Z"
 status = "completed"
 
 [references]
@@ -34,14 +34,14 @@ urls = [
     "http://www.securityfocus.com/bid/1923",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5540",
     "https://www.exploit-db.com/exploits/20388",
-    "https://github.com/CVEProject/cvelistV5/blob/528991f6906b29893dd0e43e65862cd92fd607c8/cves/2000/0xxx/CVE-2000-0887.json",
+    "https://github.com/CVEProject/cvelistV5/blob/3dd627d6b90f81690ae15e5d5fb02176cc79caf3/cves/2000/0xxx/CVE-2000-0887.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0887",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0887.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f2c577e1255b2c3fd617b7f1c499a222feb7b668/CVE/data/2000/CVE-2000-0887.json",
-    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2022/04/GHSA-fjf9-x8mw-r853/GHSA-fjf9-x8mw-r853.json",
-    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/B/bind_zxfr_bug.nasl",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/JaewoongMoon/jaewoongmoon.github.io/blob/51b2daea99d57acdf91ba5537f1b522c22de790a/_posts/2023-12-07-dns-bind-dos.md",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152900_153000.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_0.list.dict",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cc202af7c41ce1218ba7619eda84142fd5c7f1cf/CVE/data/2000/CVE-2000-0887.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0887.json",
+    "https://github.com/opencve/opencve-kb/blob/aa53db02d27e1533ead482d079a27925c7448f01/2000/CVE-2000-0887.json",
+    "https://github.com/olbat/nvdcve/blob/ebc4d73723464668b97400aaa2d8410c6ff78a81/nvdcve/CVE-2000-0887.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1bcfc51649d76497fa60b30641a1d994609c3c9a/2000/0xxx/CVE-2000-0887.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/1e95eda078cc027662ac8a3d9af8be2d7132ec73/CVE-2000/CVE-2000-08xx/CVE-2000-0887.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0887.json",
+    "https://github.com/justakazh/CVE_Database/blob/06bd07f32c89b43f30d59ff450dfbb661e471cbe/2000/CVE-2000-0887.json",
 ]
