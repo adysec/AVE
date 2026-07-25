@@ -1,0 +1,227 @@
+[id]
+ave_id = "AVE-2026-0423"
+aliases = ["CVE-2026-53637","GHSA-5597-7rmh-97q5"]
+
+[basic]
+title = "Sylius: Cart FormComponent allows modification or deletion of an already-completed order"
+description = "### Impact
+A user opens the cart page in the browser. In the background, the order gets completed, e.g. an admin changes the status, or the user finalizes payment in another tab. The browser still displays the old cart: the LiveComponent is unaware the underlying order state has changed.
+
+If the user then:
+
+- **clears the cart** → `clearCart()` calls `manager->remove()` on the
+  completed order: the order is permanently **deleted** from the database;
+- **removes a product** → `removeItem()` mutates an item on the completed
+  order;
+- **changes quantity** → `saveCart()` overwrites data on the completed order.
+
+In all cases, the customer's order data is irreversibly corrupted or lost, even though the order has already been placed and paid for. The same vector can be triggered deliberately by an authenticated customer (keep the cart page open, complete checkout in another tab, then modify the \"cart\" to add quantity beyond what was paid for).
+
+### Patches
+The issue is fixed in versions: 2.0.18, 2.1.15, 2.2.6 and above.
+
+### Workarounds
+If users cannot update Sylius immediately, they should create a patched copy of the affected class in their application's `src/` directory and override the Sylius service definition to use it.
+
+#### Step 1. Create `src/Twig/Component/Cart/FormComponent.php`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Twig\Component\Cart;
+
+use Doctrine\Persistence\ObjectManager;
+use Sylius\Bundle\UiBundle\Twig\Component\ResourceFormComponentTrait;
+use Sylius\Bundle\UiBundle\Twig\Component\TemplatePropTrait;
+use Sylius\Component\Core\Model\OrderInterface;
+use Sylius\Component\Core\OrderCheckoutStates;
+use Sylius\Component\Core\Repository\OrderRepositoryInterface;
+use Sylius\Component\Order\SyliusCartEvents;
+use Sylius\Resource\Model\ResourceInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\UX\LiveComponent\Attribute\LiveAction;
+use Symfony\UX\LiveComponent\Attribute\LiveArg;
+use Symfony\UX\LiveComponent\Attribute\PreReRender;
+use Symfony\UX\LiveComponent\ComponentToolsTrait;
+
+class FormComponent
+{
+    use ComponentToolsTrait;
+
+    /** @use ResourceFormComponentTrait<OrderInterface> */
+    use ResourceFormComponentTrait;
+
+    use TemplatePropTrait;
+
+    public const SYLIUS_SHOP_CART_CHANGED = 'sylius:shop:cart_changed';
+
+    public const SYLIUS_SHOP_CART_CLEARED = 'sylius:shop:cart_cleared';
+
+    public bool $shouldSaveCart = true;
+
+    /** @param OrderRepositoryInterface<OrderInterface> $orderRepository */
+    public function __construct(
+        OrderRepositoryInterface $orderRepository,
+        FormFactoryInterface $formFactory,
+        string $resourceClass,
+        string $formClass,
+        protected readonly ObjectManager $manager,
+        protected readonly EventDispatcherInterface $eventDispatcher,
+    ) {
+        $this->initialize($orderRepository, $formFactory, $resourceClass, $formClass);
+    }
+
+    public function hydrateResource(mixed $value): ?ResourceInterface
+    {
+        if (empty($value)) {
+            return $this->createResource();
+        }
+
+        /** @var OrderInterface|null $order */
+        $order = $this->repository->find($value);
+
+        if (
+            !$order instanceof OrderInterface
+            || $order->getCheckoutState() === OrderCheckoutStates::STATE_COMPLETED
+        ) {
+            return $this->createResource();
+        }
+
+        return $order;
+    }
+
+    #[PreReRender(priority: -100)]
+    public function saveCart(): void
+    {
+        if ($this->shouldSaveCart && $this->resource?->getId() !== null) {
+            $form = $this->getForm();
+            if ($form->isValid()) {
+                $this->eventDispatcher->dispatch(new GenericEvent($form->getData()), SyliusCartEvents::CART_CHANGE);
+                $this->manager->flush();
+                $this->emit(self::SYLIUS_SHOP_CART_CHANGED, ['cartId' => $this->resource->getId()]);
+            }
+        }
+    }
+
+    #[LiveAction]
+    public function removeItem(#[LiveArg] int $index): void
+    {
+        if ($this->resource?->getId() === null) {
+            return;
+        }
+
+        $data = $this->formValues['items'];
+        unset($data[$index]);
+        $this->formValues['items'] = array_values($data);
+
+        $orderItem = $this->resource->getItems()->get($index);
+        $this->eventDispatcher->dispatch(new GenericEvent($orderItem), SyliusCartEvents::CART_ITEM_REMOVE);
+
+        $this->manager->persist($this->resource);
+        $this->manager->flush();
+        $this->manager->refresh($this->resource);
+
+        $this->shouldSaveCart = false;
+        $this->submitForm();
+        $this->emit(self::SYLIUS_SHOP_CART_CHANGED, ['cartId' => $this->resource->getId()]);
+    }
+
+    #[LiveAction]
+    public function clearCart(): void
+    {
+        if ($this->resource?->getId() === null) {
+            return;
+        }
+
+        $this->formValues['items'] = [];
+        $this->eventDispatcher->dispatch(new GenericEvent($this->resource), SyliusCartEvents::CART_CLEAR);
+        $this->manager->remove($this->resource);
+        $this->manager->flush();
+
+        $this->resource = $this->createResource();
+        $this->resetForm();
+        $this->isValidated = false;
+        $this->validatedFields = [];
+
+        $this->shouldSaveCart = false;
+        $this->submitForm();
+        $this->emit(self::SYLIUS_SHOP_CART_CLEARED);
+    }
+
+    #[LiveAction]
+    public function removeCoupon(): void
+    {
+        $this->formValues['promotionCoupon'] = '';
+
+        $this->submitForm();
+    }
+
+    private function getDataModelValue(): string
+    {
+        return 'debounce(500)|*';
+    }
+}
+```
+
+#### Step 2. Override the Sylius service in `config/services.yaml`
+
+Append to the application's `config/services.yaml` (or a dedicated file loaded by the kernel, e.g. `config/packages/sylius_security_cart.yaml`):
+
+```yaml
+services:
+    sylius_shop.twig.component.cart.form:
+        class: App\Twig\Component\Cart\FormComponent
+        arguments:
+            - '@sylius.repository.order'
+            - '@form.factory'
+            - '%sylius.model.order.class%'
+            - 'Sylius\Bundle\ShopBundle\Form\Type\CartType'
+            - '@doctrine.orm.entity_manager'
+            - '@event_dispatcher'
+        calls:
+            - [setLiveResponder, ['@ux.live_component.live_responder']]
+        tags:
+            - { name: sylius.live_component.shop, key: 'sylius_shop:cart:form' }
+```
+
+This redeclares the existing Sylius service id `sylius_shop.twig.component.cart.form` so it instantiates the patched class from `App\` while preserving every argument, call and tag from the original Sylius XML definition. The cart twig hook keeps resolving to the same Live Component key (`sylius_shop:cart:form`).
+
+#### Step 3. Clear the cache
+
+```bash
+bin/console cache:clear
+```
+
+### Reporters
+
+We would like to extend our gratitude to the following individuals for their detailed reporting and responsible disclosure of this vulnerability:
+- Kévin Gonella (@kgonella)
+- Sam V.
+
+### For more information
+
+If there are any questions or comments about this advisory:
+
+- Open an issue in [Sylius issues](https://github.com/Sylius/Sylius/issues?q=sort%3Aupdated-desc+is%3Aissue+is%3Aopen)
+- Send an email to [security@sylius.com](mailto:security@sylius.com)"
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-25T08:55:25.767292363+00:00"
