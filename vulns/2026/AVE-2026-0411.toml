@@ -1,0 +1,47 @@
+[id]
+ave_id = "AVE-2026-0411"
+aliases = ["CVE-2026-53533","GHSA-v3q9-hj7j-63hq"]
+
+[basic]
+title = "aiosmtplib vulnerable to SMTP command injection via CR/LF in sender/recipient address"
+description = "### Summary
+
+`aiosmtplib`'s `SMTP.mail()`, `SMTP.rcpt()`, `SMTP.vrfy()` and `SMTP.expn()` send the caller-supplied email address to the server without rejecting embedded CR/LF (`\r\n`) bytes. An address that contains a CR/LF is written verbatim onto the SMTP control connection, so the bytes after the CRLF are framed by the server as one or more **additional, standalone SMTP command lines**. A caller that passes an attacker-influenced sender or recipient address into `mail()`/`rcpt()` (or `vrfy()`/`expn()`) therefore allows **SMTP command injection** (CWE-93 / CWE-77): the attacker can smuggle arbitrary SMTP verbs such as `MAIL FROM`, `RCPT TO`, `RSET`, `DATA`, or `AUTH` into the session. Injected commands will cause the `SMTP` instance to hang, but all commands required to complete the envelope could be sent in one address string.
+
+The `SMTP.sendmail()` command will pass sender and recipient addresses verbatim through to `SMTP.mail()` & `SMTP.rcpt()`, and so is also vulnerable. `SMTP.send_message()` is not affected.
+
+### Impact
+
+Severity: medium. Type: SMTP protocol command injection (CWE-93 — Improper Neutralization of CRLF Sequences; CWE-77 — Command Injection).
+
+When an application built on `aiosmtplib` derives the envelope sender or any recipient from data an attacker can influence (a web form etc.) and passes it to `mail()`/`rcpt()` (directly, or via `sendmail()`/`send()` without a `Message` object), the attacker can:
+
+- desynchronize the command/response pipeline and cause the aiosmtplib client to hang, resulting in a possible denial of service
+- inject multiple commands in one address to send an arbitrary message
+
+The address only needs to reach `mail()`/`rcpt()`/`vrfy()`/`expn()`; no attacker control over the SMTP server is required.
+
+### Vulnerable versions
+
+Affected version: `aiosmtplib` 5.1.0 (latest at time of report) and all earlier releases.
+
+### Credit
+
+Reported by tonghuaroot."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-25T00:33:19.279879880+00:00"
