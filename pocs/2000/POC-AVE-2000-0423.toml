@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "验证Linux内核capabilities权限提升漏洞：本地攻击者可利用setcap设置capabilities阻止setuid程序降权导致权限提升或拒绝服务，攻击条件为攻击者具有本地账户访问权限，目标运行Linux内核2.2.16之前版本且启用了capabilities支持"
+id = "POC-AVE-2000-0423"
+name = "CVE-2000-0506 PoC"
+severity = "critical"
+tags = ["ave-2000-0423"]
+vuln_id = [
+    "CVE-2000-0506",
+    "AVE-2000-0423",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/etc/passwd"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[[poc.requests]]
+method = "GET"
+path = "/proc/self/status"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Cap"]
