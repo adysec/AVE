@@ -1,0 +1,60 @@
+[id]
+ave_id = "AVE-2026-0427"
+aliases = ["CVE-2026-53656","GHSA-q78p-hj9h-5466"]
+
+[basic]
+title = "FiftyOne App server uses wildcard CORS (Access-Control-Allow-Origin: *), enabling cross-origin reads of local server data"
+description = "### Impact
+
+The FiftyOne App/API server (`fiftyone/server/app.py`) and the `/media` route (`fiftyone/server/routes/media.py`) unconditionally set a permissive CORS header (`Access-Control-Allow-Origin: *`) on their responses. Because the embedded App server runs locally and is unauthenticated, this allows **any website a user visits to make cross-origin requests to that user's running FiftyOne server and read the responses**.
+
+Combined with the unauthenticated `/media` endpoint — which serves files from the local filesystem by path — the wildcard CORS policy turns a local-only file read into a **remotely exploitable, drive-by data exfiltration** vulnerability. A malicious web page can silently issue requests such as `http://localhost:5151/media?filepath=/etc/passwd` and read arbitrary files accessible to the server process (SSH keys, cloud credentials, `.env` files, dataset media, etc.), then exfiltrate them to an attacker-controlled endpoint.
+
+The victim only needs to have a FiftyOne server running locally and visit a malicious page — no clicks or other interaction are required. Browsers that have shipped Private Network Access / local-network-access protections (e.g. Chromium 142+) mitigate this for some users, but Safari and Firefox do not yet, so the attack remains viable in common configurations.
+
+**Who is impacted:** any user running FiftyOne (the open-source, embedded App server) locally while also browsing the web.
+
+**Not affected:** media stored in cloud buckets, which is served via signed URLs on a separate origin.
+
+### Patches
+
+Fixed in **FiftyOne 1.17.0**. The hard-coded `Access-Control-Allow-Origin: *` has been removed and the server now responds **same-origin only by default**, which covers local desktop usage and the supported notebook integrations (each served through a same-origin proxy or iframe).
+
+Cross-origin access is now opt-in via a new `allowed_origins` config option (environment variable `FIFTYONE_ALLOWED_ORIGINS`), an explicit comma-separated list of trusted origins, e.g.:
+
+```shell
+export FIFTYONE_ALLOWED_ORIGINS='https://app.example.com,http://localhost:3000'
+```
+
+The literal value `*` restores the legacy wildcard behavior for users who explicitly require it and emits a warning.
+
+**Users should upgrade to FiftyOne 1.17.0 or later.**
+
+### Workarounds
+
+In affected versions there is no configuration flag to disable the wildcard CORS header without upgrading. Until you can upgrade:
+
+- Do not run the FiftyOne App server while browsing untrusted websites.
+- Keep the App server bound to `localhost` (the default) and avoid exposing it on a network interface.
+- Use a browser that enforces Private Network Access protections.
+
+### Resources
+
+- OWASP A01:2025 – Broken Access Control: https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/"
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-25T15:45:40.378543277+00:00"
