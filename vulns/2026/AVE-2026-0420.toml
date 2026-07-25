@@ -1,0 +1,47 @@
+[id]
+ave_id = "AVE-2026-0420"
+aliases = ["CVE-2026-53604","GHSA-2p2f-px33-4vv5"]
+
+[basic]
+title = "nebula-mesh: CA private key not zeroized on web mobile-bundle error paths"
+description = "## Impact
+
+The web handler `renderMobileBundle` (`internal/web/handlers.go:1325`) passes the real `*pki.CAResolver` directly into `mobilebundle.Build`. Inside `Build` (`internal/mobilebundle/builder.go:54`), `resolver.LoadByID` decrypts the CA's ed25519 private key into a `*pki.CAManager`, but `Build` never calls `CAManager.Wipe()` on any return path (success or any of the error paths at lines 56, 62, 68, 80, 86, 92, 98, 102, 109, 118, 150).
+
+As a result, when a mobile-bundle request goes through the **web** UI and `Build` returns — especially on error (missing network, invalid prefix, DB error, signing failure) — the plaintext CA private key remains on the Go heap, unwiped, until garbage collection. An attacker able to read process memory (core dump, swap, memory-scraping) can recover the CA signing key, which would allow minting arbitrary host certificates for the mesh.
+
+The **API** handler (`internal/api/mobile_bundle.go:74`) already does this correctly: it loads the `CAManager`, `defer caMgr.Wipe()`, and wraps it in `caManagerResolver`. Only the web path is affected.
+
+This is the same key-zeroization class previously addressed in GHSA-8h84-fhqq-q58v.
+
+## Patches
+
+Add `defer caMgr.Wipe()` inside `mobilebundle.Build` immediately after the `LoadByID` call so every caller (web and API) is protected on all return paths. Ensure `CAManager.Wipe()` is idempotent, since the API handler also wipes the same manager.
+
+## Workarounds
+
+None at the configuration level; requires a code fix.
+
+## Resources
+
+- `internal/web/handlers.go:1325`
+- `internal/mobilebundle/builder.go:54`
+- `internal/api/mobile_bundle.go:74` (correct reference implementation)
+- Prior related advisory: GHSA-8h84-fhqq-q58v"
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-25T03:29:16.669760385+00:00"
