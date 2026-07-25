@@ -1,0 +1,56 @@
+[basic]
+description = '''
+Rational ClearCase 3.2/4.x 及更早版本中的 db_loader 组件存在缓冲区溢出漏洞。程序在处理 TERM 环境变量时未正确校验长度，本地攻击者可通过设置过长的 TERM 环境变量触发栈溢出，进而以 root 权限执行任意代码。该漏洞影响 ClearCase 4.2 及更早版本（含 3.2/4.x），攻击条件为具备本地用户权限且无需额外认证；成功利用后可完全破坏机密性、完整性与可用性，CVSS 评分为 7.2，危害等级高。"""
+```
+
+I see the problem - the description field has a newline and then `<value>` inside the triple quotes, which would make the description start with "Rational ClearCase 3.2/4." followed by a newline and then the actual content. Actually wait, looking more carefully:
+
+```
+description = """
+Rational ClearCase 3.2/4.
+
+<value>Rational ClearCase 3.2/4.x 及更早版本中的 db_loader 组件存在缓冲区溢出漏洞。...
+```
+
+This seems like a malformed TOML/insertion. The description string contains "Rational ClearCase 3.2/4." on one line, then a blank line, then `<value>Rational...` 
+
+But the task says the error is `description: description 字段为空`. This might mean the validator sees the description as empty for some reason, or there might be parsing issues.
+
+Wait, the task asks me to fix the description field. The content between `<value>` and `'''
+published = "2001-12-06T05:00:00.000"
+remediation = "将 Rational ClearCase 从受影响的 3.2/4.0/4.1/4.2 及更早版本升级到 4.2 之后的修复版本；若无法立即升级，以 root 执行 chmod a-s /usr/atria/etc/db_loader 去掉 setuid 位，并限制普通用户执行该程序及本地登录权限，防止通过超长 TERM 环境变量触发溢出提权。"
+score = 7.2
+severity = "HIGH"
+sources = ["exploitdb"]
+title = "Rational ClearCase DB Loader TERM 环境变量缓冲区溢出漏洞"
+updated = "2026-06-16T21:55:06.470"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2001-0855"]
+ave_id = "AVE-2001-0391"
+
+[meta]
+collected_at = "2026-07-25T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://marc.info/?l=bugtraq&m=100528623328037&w=2",
+    "http://www.iss.net/security_center/static/7488.php",
+    "http://www.securityfocus.com/bid/3523",
+    "https://www.exploit-db.com/exploits/21150",
+    "https://github.com/CVEProject/cvelistV5/blob/e0d4b639863e3178ba8dc8b525356f8aab24b9da/cves/2001/0xxx/CVE-2001-0855.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0855",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/0ff2c208a009935c4314b17ee3a2e5f8fe969a25/2001/0xxx/CVE-2001-0855.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7f7e3d84312983fcf49d3199fbaaf2fad83c05d2/CVE/data/2001/CVE-2001-0855.json",
+    "https://github.com/github/advisory-database/blob/30b2e88d407156e5425e05ff25f0ec9537280e2f/advisories/unreviewed/2022/04/GHSA-wq48-hj2m-499j/GHSA-wq48-hj2m-499j.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7c450063cd3f12f7aa97a070bb18c68d6bc6767e/content/CVE-2001-0855.md",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_151800_151900.json",
+    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2001-0855.json",
+]
