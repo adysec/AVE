@@ -1,11 +1,11 @@
 [basic]
-description = "Intel Shiva Access Manager 5.0 在配置使用 LDAP 目录存储认证信息时，将 LDAP 根 DN 名称及密码以明文形式写入系统文件，且该文件权限设置为全局可读。本地攻击者可通过读取该文件获取 LDAP 管理员凭据，进而控制 LDAP 服务器，导致敏感信息泄露。该漏洞影响 Solaris 平台上的 Shiva Access Manager 5.0.0 版本，CVSS 评分 7.2，危害等级高。"
+description = "Intel 公司 Shiva Access Manager 5.0.0 在配置为将配置信息存入 LDAP 目录时，会将 LDAP 根 DN（可分辨名称）及其密码以明文形式写入全局可读（world-readable）的本地文件。本地攻击者无需特权即可读取该文件获取 LDAP 管理员凭据，进而完全控制 LDAP 服务器，导致机密性、完整性与可用性全面受损。该漏洞影响运行于 Solaris 上的 Shiva Access Manager 5.0 相关部署，攻击条件为本地可访问目标主机且产品启用 LDAP 配置存储；利用方式为直接读取含明文密码的配置文件并使用所得凭据接管 LDAP。CVSS 评分 7.2，危害等级高。"
 published = "2000-06-06T04:00:00.000"
-remediation = "升级 Shiva Access Manager 至 5.0.1 及以上版本。如无法升级，立即执行 chmod 600 限制配置文件的全局可读权限，并将 LDAP 根 DN 密码移至加密存储或使用 Solaris 安全策略守护进程管理凭据。"
+remediation = "1. 立即修改受影响配置文件的权限，将 $SHIVA_HOME_DIR/insnmgmt/shiva_access_manager/radtac.ini 的访问权限收紧为仅 root 用户可读写：以 root 身份执行 chmod 600 $SHIVA_HOME_DIR/insnmgmt/shiva_access_manager/radtac.ini 并确认文件属主为 root:root，防止本地任意用户读取其中以明文存储的 LDAP root DN 名称及密码。2. 将 radtac.ini 中记录的 LDAP 密码修改为复杂度足够的高强度密码，同时同步更新 LDAP 服务器上的对应凭据，确保在文件权限修复前泄露的密码不再有效。3. 审计系统中是否存在其他由 Shiva Access Manager 生成的明文配置文件（如 $SHIVA_HOME_DIR/insnmgmt/shiva_access_manager/ 下的所有 ini 文件），一并收紧权限并清除其中不必要的敏感信息。4. 由于 Intel Shiva Access Manager 已于多年前停止维护且未发布任何补丁，强烈建议将远程访问认证、授权及计费功能迁移至当前仍在维护的替代产品（如 FreeRADIUS、OpenAM 或商用 IAM 解决方案），从根本上消除因产品停更导致的安全风险。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Intel Shiva Access Manager 5.0 LDAP 明文密码信息泄露漏洞"
+sources = ["avd"]
+title = "Intel Shiva Access Manager 5.0 LDAP密码明文存储泄露漏洞"
 updated = "2026-06-16T21:51:54.187"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0516"]
 ave_id = "AVE-2000-0430"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-25T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,13 +26,13 @@ urls = [
     "http://www.securityfocus.com/bid/1329",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4612",
     "https://www.exploit-db.com/exploits/20003",
-    "https://github.com/CVEProject/cvelistV5/blob/4441343672f486c63736487674c197dfd2a4f256/cves/2000/0xxx/CVE-2000-0516.json",
+    "https://github.com/CVEProject/cvelistV5/blob/5b3647aa8630e92d52def237a668e1c7c212a696/cves/2000/0xxx/CVE-2000-0516.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0516",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0516.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/81cdfffcd86317dec05d7dfba407f93d96d91273/CVE/data/2000/CVE-2000-0516.json",
-    "https://github.com/github/advisory-database/blob/9a3495eb833b3f1f2096187c4b14884afc98b67a/advisories/unreviewed/2022/04/GHSA-h455-mfvg-53mp/GHSA-h455-mfvg-53mp.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/035716a784b26bf707cbf0b8f17696c9c2e71cb8/2000/0xxx/CVE-2000-0516.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/fcbf67340ce1edbb3b64d6d36eabe3c12bd2904b/CVE/data/2000/CVE-2000-0516.json",
+    "https://github.com/github/advisory-database/blob/c94c1772ba718b7f105ed32361c896b35042b2b3/advisories/unreviewed/2022/04/GHSA-h455-mfvg-53mp/GHSA-h455-mfvg-53mp.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0516.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0516.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_3.list.dict",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--ff7bb137-ac9c-4559-bab8-cd09fa9e5099.json",
