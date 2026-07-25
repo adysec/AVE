@@ -1,0 +1,55 @@
+[id]
+ave_id = "AVE-2026-0419"
+aliases = ["CVE-2026-53603","GHSA-q4vm-pq3q-8wgq"]
+
+[basic]
+title = "nebula-mesh: Operator session tokens stored in plaintext in the database"
+description = "## Impact
+
+Operator session tokens are stored in plaintext in the `operator_sessions` table (the `token` column is the PRIMARY KEY). The session token is a 32-byte random hex value sent directly in a cookie and valid for 24 hours.
+
+- `internal/models/operator.go:61` — `OperatorSession.Token` holds the plaintext token.
+- `internal/store/sqlite_operators.go:590` — `CreateOperatorSession` inserts `sess.Token` verbatim.
+- `internal/store/sqlite_operators.go:603,642,681,698` — lookups/updates/deletes use `WHERE token = ?` against the plaintext value.
+
+Anyone who can read the database (backup, snapshot, file copy, or SQL-level disclosure) obtains every active session token and can hijack operator sessions directly, with no further authentication.
+
+This is functionally identical to the plaintext enrollment-token issue fixed in GHSA-ghmh-jhmj-wcmf. API keys (`OperatorAPIKey.KeyHash`) and enrollment tokens (`EnrollmentToken.TokenHash`) already store only a SHA256 hash; session tokens were missed.
+
+## Patches
+
+Store only a SHA256 hash of the session token, mirroring API keys and enrollment tokens:
+1. Add a `HashSessionToken` helper (alongside the existing token-hash helpers).
+2. Migration to add a `token_hash` column.
+3. Update `CreateOperatorSession`, `PromoteOperatorSession`, and `GetOperatorBySession` to write/look up by hash.
+4. Drop the plaintext `token` column in a follow-up migration.
+
+Sessions are ephemeral (24h TTL), so all active sessions can be invalidated on deployment — no backward compatibility needed.
+
+## Workarounds
+
+Restrict and encrypt database backups; rotate the operator database. These mitigate exposure but do not fix the underlying storage of plaintext tokens.
+
+## Resources
+
+- `internal/models/operator.go:58-66`
+- `internal/store/sqlite_operators.go:577-698`
+- Migration `005_operators.up.sql:27`
+- Prior related advisory: GHSA-ghmh-jhmj-wcmf"
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-25T03:07:05.859691785+00:00"
