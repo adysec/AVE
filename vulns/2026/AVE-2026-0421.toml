@@ -1,0 +1,42 @@
+[basic]
+description = "GoFiber Fiber 框架的 helmet 中间件存在安全配置错误漏洞，由于 middleware/helmet/helmet.go 第67行错误地使用 c.Protocol() 替代 c.Scheme() 来判断 HTTPS 连接，导致 Strict-Transport-Security (HSTS) 响应头永远不会被设置。该漏洞影响所有使用 helmet 中间件并配置了 HSTSMaxAge > 0 的 GoFiber 应用，攻击者可通过中间人攻击将 HTTPS 连接降级为 HTTP，从而窃取敏感信息或会话 Cookie。"
+published = "2026-07-08T20:16:52.293"
+remediation = '立即将 gofiber/fiber 升级到 v3.4.0 或更高版本，该版本已修复 helmet 中间件中 c.Protocol() 与 c.Scheme() 混淆的问题。若无法立即升级，可临时在反向代理层（如 Nginx/Traefik）强制添加 Strict-Transport-Security 响应头作为缓解措施。修复方法：将 middleware/helmet/helmet.go 第 67 行的 c.Protocol() == "https" 替换为 c.Scheme() == "https"，确保 HSTS 头在 TLS 连接下正确设置。'
+score = 4.8
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "GoFiber Fiber 中间件 HSTS 标头未设置漏洞"
+updated = "2026-07-15T20:49:42.063"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-53624",
+    "GHSA-gv83-gqw6-9j2c",
+]
+ave_id = "AVE-2026-0421"
+
+[meta]
+collected_at = "2026-07-25T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/gofiber/fiber/commit/04dd4e7754f61768fddccacc79057e416f13e6bf",
+    "https://github.com/gofiber/fiber/pull/4389",
+    "https://github.com/gofiber/fiber/releases/tag/v3.4.0",
+    "https://github.com/gofiber/fiber/security/advisories/GHSA-gv83-gqw6-9j2c",
+    "https://github.com/CVEProject/cvelistV5/blob/e0d4b639863e3178ba8dc8b525356f8aab24b9da/cves/2026/53xxx/CVE-2026-53624.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/0873a8ca49043e1039aea3fb7f68d46c50a10ce2/pocs/2026/CVE-2026-53624.md",
+    "https://github.com/neuvector/vul-source/blob/3b63910ae4e1e9b72167345f63d9f5750b50ec5a/ubuntu-cve-tracker/active/CVE-2026-53624",
+    "https://github.com/cisagov/vulnrichment/blob/5c50b42f02438e6d2727eef5fecc301070143fae/2026/53xxx/CVE-2026-53624.json",
+    "https://github.com/Tabll/gemnasium-db/blob/61c26bb0fa513d67ff37c47a0aee18a8017dee2d/go/github.com/gofiber/fiber/CVE-2026-53624.yml",
+    "https://github.com/TMA84/cvealert/blob/b2967c74374787d2c3ce14ea33111cd90ca3f359/content/posts/cve-2026-53624.md",
+    "https://github.com/golang/vulndb/blob/d246ad98d3739cece1ce57358766d7c340b09c91/data/reports/GO-2026-5912.yaml",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7f7e3d84312983fcf49d3199fbaaf2fad83c05d2/SSVC/data/2026/CVE-2026-53624.json",
+    "https://github.com/github/advisory-database/blob/30b2e88d407156e5425e05ff25f0ec9537280e2f/advisories/github-reviewed/2026/07/GHSA-gv83-gqw6-9j2c/GHSA-gv83-gqw6-9j2c.json",
+    "https://github.com/anchore/vulnerability-index-spec-files/blob/124f9dd88ae3210967065ab152ac9debdc2e3709/data/2026/46/ANCHORE-2026-46929.toml",
+]
