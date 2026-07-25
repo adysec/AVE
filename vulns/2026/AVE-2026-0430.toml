@@ -1,0 +1,34 @@
+[id]
+ave_id = "AVE-2026-0430"
+aliases = ["CVE-2026-53715","GHSA-8fv2-88gg-hm7q"]
+
+[basic]
+title = "Envoy Gateway: Wasm cache ServeHTTP reads mappingPath2Cache without lock"
+description = "Vulnerability report without repro case. Repro case may be added later after harness is complete.
+
+**Preconditions (4):**
+- Pod-network reachability to :18002 (no auth)
+- Tenant can create EnvoyExtensionPolicy (baseline)
+- Attacker pod floods GET while churning EnvoyExtensionPolicy with distinct Wasm URLs
+- Read at :153 must overlap a write at :201/:209 (probabilistic, attacker controls both rates)
+
+**Description:**
+
+httpserver.go:153 reads s.mappingPath2Cache with no lock while httpserver.go:201/209 write it under s.Lock(); the struct uses a plain map. Writer is tenant-reachable via EnvoyExtensionPolicy translation, reader is pod-network-reachable on :18002 with per-request goroutines. Go's concurrent map read+write detection calls runtime.throw, which net/http's per-conn recover cannot catch, so the controller process exits — cross-tenant control-plane DoS. Capped at MEDIUM: DoS-only, k8s restarts pod, timing-dependent trigger."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-25T20:59:36.511146850+00:00"
