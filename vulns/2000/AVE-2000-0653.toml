@@ -1,11 +1,11 @@
 [basic]
-description = "Small HTTP Server 2.03 及更早版本存在拒绝服务漏洞，远程攻击者通过反复请求一个不含 index.html 文件的目录 URL，可导致目标服务器内存不断消耗且无法释放，最终耗尽系统资源造成服务中断。攻击无需认证，利用难度低，CVSS 评分 5.0，危害等级中等。"
+description = "Max Feoktistov Small HTTP Server 2.03 及更早版本存在拒绝服务漏洞，远程攻击者可通过反复请求不包含 index.html 文件的目录 URL，导致服务器内存持续消耗且请求完成后不释放，最终耗尽内存资源导致拒绝服务。该漏洞影响 Small HTTP Server 2.03 及更早版本，CVSS 评分 5.0（AV:N/AC:L/Au:N/C:N/I:N/A:P），攻击向量为网络、攻击复杂度低、无需认证、仅影响可用性。攻击者无需身份认证即可远程发起攻击，通过持续发送针对无索引文件目录的请求耗尽服务器内存资源，导致服务拒绝。该漏洞由 Max Feoktistov Small HTTP Server 处理目录索引文件逻辑缺陷导致内存泄漏引发。"
 published = "2001-01-09T05:00:00.000"
-remediation = "立即升级 Small HTTP Server 至 2.03 以上版本（厂商已在 2.03 修复该问题）；如项目已停止维护无法升级，应迁移至其他活跃维护的 Web 服务器（如 Apache/Nginx/lighttpd）。临时缓解措施：在服务器配置中为所有无 index.html 的目录设置默认返回页面（如 DirectoryIndex index.html），并在防火墙层面限制可信 IP 访问。此外，应避免使用该服务器处理 SSI（Server-Side Includes）功能，防止通过 SSI 空标签触发崩溃。"
+remediation = "立即升级到 Small HTTP Server 最新版本（如 2.04 或更高版本），修复原有版本在处理缺失 index.html 文件时的内存释放漏洞。配置文件中添加 `MaxMemoryCache=0` 禁用内存缓存，或设置 `Timeout=30` 限制连接保持时间，防止长时间占用资源攻击。如果无法升级，可在反向代理层面启用 `URI` 路径验证，仅允许访问预定义的有效资源，拒绝特定模式的异常请求以实现临时缓解。"
 score = 5
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "Max Feoktistov Small HTTP Server 目录请求内存泄漏拒绝服务漏洞"
+sources = ["cve"]
+title = "Max Feoktistov Small HTTP Server 目录索引缺失拒绝服务漏洞"
 updated = "2026-06-16T21:52:42.860"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0897"]
 ave_id = "AVE-2000-0653"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-25T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/1941",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5524",
     "https://www.exploit-db.com/exploits/20403",
-    "https://github.com/CVEProject/cvelistV5/blob/4f761f58350f835cb02025d033f6f8c7f536e6b7/cves/2000/0xxx/CVE-2000-0897.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2658816172d77941b1080be8784997934e564ee9/CVE/data/2000/CVE-2000-0897.json",
+    "https://github.com/CVEProject/cvelistV5/blob/3290bfd28d98351fcc1665e3427425a500ba46e2/cves/2000/0xxx/CVE-2000-0897.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0897",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0897.json",
-    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0897.json",
-    "https://github.com/opencve/opencve-kb/blob/700932ec53faf15a8300a8ab8650ecb7463c9e69/2000/CVE-2000-0897.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/35da533508e1fba7c867aa2cd921b3d4db48f5a9/CVE-2000/CVE-2000-08xx/CVE-2000-0897.json",
-    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0897.json",
-    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0897.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0897.md",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/7679da85bd348992f49e2c46d2198526392248ee/2000/0xxx/CVE-2000-0897.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/ad51007022161bcf4c63e713af3138cc91fa14f3/CVE/data/2000/CVE-2000-0897.json",
+    "https://github.com/github/advisory-database/blob/64db5db4a6681c330f93cc62718610a5bc70bd7a/advisories/unreviewed/2022/04/GHSA-gf7m-qm5r-6g63/GHSA-gf7m-qm5r-6g63.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2000-0897.md",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150400_150500.json",
+    "https://github.com/olbat/nvdcve/blob/ebc4d73723464668b97400aaa2d8410c6ff78a81/nvdcve/CVE-2000-0897.json",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--238d141f-b770-474d-bdab-c6356dbedf93.json",
 ]
