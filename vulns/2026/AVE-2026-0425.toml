@@ -1,0 +1,337 @@
+[id]
+ave_id = "AVE-2026-0425"
+aliases = ["CVE-2026-53639","GHSA-mr9r-h354-966r"]
+
+[basic]
+title = "Sylius: IDOR on Shop Payment Request API endpoints"
+description = "### Impact
+The `GET /api/v2/shop/payment-requests/{hash}` and `PUT /api/v2/shop/payment-requests/{hash}` endpoints look up the payment request solely by the hash from the URL. No ownership check is performed against the authenticated customer or the underlying order.
+
+An attacker who obtains a payment request hash can:
+
+- read the payment request and, through the `payment` IRI in the response, recover the underlying order's `tokenValue` (which itself grants access to the full order, items, addresses, customer email, totals);
+- update the payment request payload (e.g. `target_path`, `after_path`). These fields are used by the front-end controller to redirect the user after the payment, so an attacker can flip them to an attacker-controlled URL and intercept the buyer.
+
+The hash is a UUID, so it has to be obtained out-of-band (logs, shared links, referrer headers, a co-located client), but once it is known no other credential is required, neither authentication nor knowledge of the order token.
+
+The creation endpoint `POST /api/v2/shop/orders/{tokenValue}/payment-requests` shares the same flaw: it resolves the target order solely from the `tokenValue` in the URL without verifying that the caller owns the order.
+
+### Patches
+The issue is fixed in versions: 2.0.18, 2.1.15, 2.2.6.
+
+### Workarounds
+Until you can upgrade, apply the following workaround. It enforces ownership on the existing endpoints, so that:
+
+- an authenticated shop user may only access payment requests of their own orders;
+- an anonymous caller may only access payment requests of guest orders (the order's customer has no associated user account);
+- everyone else receives `404 Not Found`.
+
+#### Step 1. Add a query extension that filters the `GET` operation
+
+Create file `src/ApiPlatform/QueryExtension/PaymentRequestOwnershipExtension.php`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\ApiPlatform\QueryExtension;
+
+use ApiPlatform\Doctrine\Orm\Extension\QueryItemExtensionInterface;
+use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use ApiPlatform\Metadata\Operation;
+use Doctrine\ORM\QueryBuilder;
+use Sylius\Bundle\ApiBundle\Context\UserContextInterface;
+use Sylius\Bundle\ApiBundle\SectionResolver\ShopApiSection;
+use Sylius\Bundle\CoreBundle\SectionResolver\SectionProviderInterface;
+use Sylius\Component\Core\Model\ShopUserInterface;
+use Sylius\Component\Payment\Model\PaymentRequestInterface;
+
+final readonly class PaymentRequestOwnershipExtension implements QueryItemExtensionInterface
+{
+    public function __construct(
+        private SectionProviderInterface $sectionProvider,
+        private UserContextInterface $userContext,
+    ) {
+    }
+
+    public function applyToItem(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        array $identifiers,
+        ?Operation $operation = null,
+        array $context = [],
+    ): void {
+        if (!is_a($resourceClass, PaymentRequestInterface::class, true)) {
+            return;
+        }
+
+        if (!$this->sectionProvider->getSection() instanceof ShopApiSection) {
+            return;
+        }
+
+        $rootAlias = $queryBuilder->getRootAliases()[0];
+        $paymentJoin = $queryNameGenerator->generateJoinAlias('payment');
+        $orderJoin = $queryNameGenerator->generateJoinAlias('order');
+        $customerJoin = $queryNameGenerator->generateJoinAlias('customer');
+        $userJoin = $queryNameGenerator->generateJoinAlias('user');
+        $createdByGuestParameterName = $queryNameGenerator->generateParameterName('createdByGuest');
+
+        $queryBuilder
+            ->innerJoin(sprintf('%s.payment', $rootAlias), $paymentJoin)
+            ->innerJoin(sprintf('%s.order', $paymentJoin), $orderJoin)
+            ->leftJoin(sprintf('%s.customer', $orderJoin), $customerJoin)
+            ->leftJoin(sprintf('%s.user', $customerJoin), $userJoin)
+        ;
+
+        $user = $this->userContext->getUser();
+
+        if ($user instanceof ShopUserInterface) {
+            $customerParam = $queryNameGenerator->generateParameterName('customer');
+
+            $queryBuilder
+                ->andWhere($queryBuilder->expr()->eq(sprintf('%s.customer', $orderJoin), sprintf(':%s', $customerParam)))
+                ->setParameter($customerParam, $user->getCustomer())
+            ;
+
+            return;
+        }
+
+        $queryBuilder
+            ->andWhere(
+                $queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->isNull($userJoin),
+                    $queryBuilder->expr()->isNull(sprintf('%s.customer', $orderJoin)),
+                    $queryBuilder->expr()->andX(
+                        $queryBuilder->expr()->isNotNull($userJoin),
+                        $queryBuilder->expr()->eq(sprintf('%s.createdByGuest', $orderJoin), sprintf(':%s', $createdByGuestParameterName)),
+                    ),
+                ),
+            )
+            ->setParameter($createdByGuestParameterName, true)
+        ;
+    }
+}
+```
+
+#### Step 2. Decorate the `PUT` state provider
+
+Create file `src/ApiPlatform/StateProvider/PaymentRequestOwnershipProvider.php`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\ApiPlatform\StateProvider;
+
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProviderInterface;
+use Sylius\Bundle\ApiBundle\Context\UserContextInterface;
+use Sylius\Component\Core\Model\CustomerInterface;
+use Sylius\Component\Core\Model\OrderInterface;
+use Sylius\Component\Core\Model\PaymentInterface;
+use Sylius\Component\Core\Model\ShopUserInterface;
+use Sylius\Component\Payment\Model\PaymentRequestInterface;
+
+/** @implements ProviderInterface<PaymentRequestInterface> */
+final readonly class PaymentRequestOwnershipProvider implements ProviderInterface
+{
+    /** @param ProviderInterface<PaymentRequestInterface> $inner */
+    public function __construct(
+        private ProviderInterface $inner,
+        private UserContextInterface $userContext,
+    ) {
+    }
+
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|object|null
+    {
+        $paymentRequest = $this->inner->provide($operation, $uriVariables, $context);
+        if (!$paymentRequest instanceof PaymentRequestInterface) {
+            return $paymentRequest;
+        }
+
+        if (!$this->isAccessible($paymentRequest)) {
+            return null;
+        }
+
+        return $paymentRequest;
+    }
+
+    private function isAccessible(PaymentRequestInterface $paymentRequest): bool
+    {
+        $payment = $paymentRequest->getPayment();
+        if (!$payment instanceof PaymentInterface) {
+            return false;
+        }
+
+        $order = $payment->getOrder();
+        if (!$order instanceof OrderInterface) {
+            return false;
+        }
+
+        $user = $this->userContext->getUser();
+
+        if ($user instanceof ShopUserInterface) {
+            $customer = $user->getCustomer();
+
+            return $customer instanceof CustomerInterface && $order->getCustomer() === $customer;
+        }
+
+        $customer = $order->getCustomer();
+
+        return null === $customer
+               || null === $customer->getUser()
+               || $order->isCreatedByGuest();
+    }
+}
+```
+
+#### Step 3. Guard the `POST` creation endpoint with a command-bus middleware
+
+The `POST /api/v2/shop/orders/{tokenValue}/payment-requests` operation is a `messenger: input` operation: it dispatches a `Sylius\Bundle\ApiBundle\Command\Payment\AddPaymentRequest` command whose `orderTokenValue` comes straight from the URL, so no query extension or state provider runs. Add a middleware on the Sylius command bus that loads the order, applies the same ownership rule, and aborts with `404` before the handler runs.
+
+Create file `src/Messenger/Middleware/PaymentRequestOwnershipMiddleware.php`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Messenger\Middleware;
+
+use Sylius\Bundle\ApiBundle\Command\Payment\AddPaymentRequest;
+use Sylius\Bundle\ApiBundle\Context\UserContextInterface;
+use Sylius\Component\Core\Model\CustomerInterface;
+use Sylius\Component\Core\Model\OrderInterface;
+use Sylius\Component\Core\Model\ShopUserInterface;
+use Sylius\Component\Core\Repository\OrderRepositoryInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
+use Symfony\Component\Messenger\Middleware\StackInterface;
+
+final readonly class PaymentRequestOwnershipMiddleware implements MiddlewareInterface
+{
+    /** @param OrderRepositoryInterface<OrderInterface> $orderRepository */
+    public function __construct(
+        private OrderRepositoryInterface $orderRepository,
+        private UserContextInterface $userContext,
+    ) {
+    }
+
+    public function handle(Envelope $envelope, StackInterface $stack): Envelope
+    {
+        $command = $envelope->getMessage();
+
+        if ($command instanceof AddPaymentRequest && !$this->isOrderAccessible($command->orderTokenValue)) {
+            throw new NotFoundHttpException('Not Found');
+        }
+
+        return $stack->next()->handle($envelope, $stack);
+    }
+
+    private function isOrderAccessible(string $orderTokenValue): bool
+    {
+        /** @var OrderInterface|null $order */
+        $order = $this->orderRepository->findOneByTokenValue($orderTokenValue);
+        if (null === $order) {
+            // Unknown token — let the handler return its own 404 (PaymentNotFoundException).
+            return true;
+        }
+
+        $user = $this->userContext->getUser();
+
+        if ($user instanceof ShopUserInterface) {
+            $customer = $user->getCustomer();
+
+            return $customer instanceof CustomerInterface && $order->getCustomer() === $customer;
+        }
+
+        $customer = $order->getCustomer();
+
+        return null === $customer
+            || null === $customer->getUser()
+            || $order->isCreatedByGuest();
+    }
+}
+```
+
+#### Step 4. Wire the services
+
+Append to `config/services.yaml`:
+
+```yaml
+services:
+    App\ApiPlatform\QueryExtension\PaymentRequestOwnershipExtension:
+        arguments:
+            - '@sylius.section_resolver.uri_based'
+            - '@sylius_api.context.user.token_based'
+        tags:
+            - { name: api_platform.doctrine.orm.query_extension.item }
+
+    App\ApiPlatform\StateProvider\PaymentRequestOwnershipProvider:
+        decorates: sylius_api.state_provider.shop.payment.payment_request.item
+        arguments:
+            $inner: '@.inner'
+            $userContext: '@sylius_api.context.user.token_based'
+
+    App\Messenger\Middleware\PaymentRequestOwnershipMiddleware:
+        arguments:
+            - '@sylius.repository.order'
+            - '@sylius_api.context.user.token_based'
+```
+
+With the default Sylius-Standard `services.yaml` (`autowire: true`, `autoconfigure: true`) the two classes are already autoloaded, the block above only adds the tag and the decoration, which cannot be derived from the constructor signatures.
+
+#### Step 5. Register the middleware on the Sylius command bus
+
+Add to `config/packages/messenger.yaml`:
+
+```yaml
+framework:
+    messenger:
+        buses:
+            sylius.command_bus:
+                middleware:
+                    - 'App\Messenger\Middleware\PaymentRequestOwnershipMiddleware'
+                    - 'validation'
+                    - 'doctrine_transaction'
+```
+
+#### Step 6. Clear the cache
+
+```bash
+bin/console cache:clear
+```
+
+### Reporters
+
+We would like to extend our gratitude to the following individuals for their detailed reporting and responsible disclosure of this vulnerability:
+- Fase Rais Baradika (@baradika)
+- Anshu Chimala (@achimala)
+
+### For more information
+
+If you have any questions or comments about this advisory:
+
+- Open an issue in [Sylius issues](https://github.com/Sylius/Sylius/issues?q=sort%3Aupdated-desc+is%3Aissue+is%3Aopen)
+- Email us at [security@sylius.com](mailto:security@sylius.com)"
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-25T11:43:30.276480897+00:00"
