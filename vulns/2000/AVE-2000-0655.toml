@@ -1,11 +1,11 @@
 [basic]
-description = "screen 3.9.5 及更早版本的 vbell_msg 初始化变量存在格式化字符串漏洞。当用户通过环境变量设置 vbell_msg 时，程序未对格式化字符（如 %n、%x、%s）进行过滤，直接将其传递给 printf 类函数处理，导致攻击者可利用格式化字符串的写入原语覆盖内存中的函数指针或返回地址。本地用户只需具备普通账号权限，通过设置恶意的 vbell_msg 环境变量并启动 screen 会话即可触发该漏洞，成功利用后可获取 root 权限，实现本地提权。该漏洞影响所有运行受影响版本 screen 的 Linux/Unix 系统。"
+description = "GNU Screen 3.9.5 及更早版本的 vbell_msg 初始化变量中存在格式化字符串漏洞。本地攻击者可通过在该变量中注入格式化字符（如 %n、%s 等），利用格式化字符串漏洞破坏栈内存，进而提升权限获取 root 权限。该漏洞影响 GNU Screen 3.9.5 及更早版本，CVSS 评分 4.6（AV:L/AC:L/Au:N/C:P/I:P/A:P），攻击向量为本地访问，攻击复杂度低，无需身份认证，可导致机密性、完整性、可用性部分受损。攻击者需具备本地系统访问权限，通过设置恶意的 vbell_msg 环境变量或配置参数，诱导 screen 程序处理格式化字符串，实现任意代码执行并提权至 root。Jürgen Weigert 维护的 screen 终端复用器在处理可视铃铃消息时未正确验证格式化字符串，导致该漏洞存在。官方已在后续版本中修复，建议升级至修复版本或限制本地用户对 screen 配置的写入权限。"
 published = "2000-12-19T05:00:00.000"
-remediation = "建议立即升级 screen 至 3.9.6 或更高版本（如 screen 4.0.0 及以上），通过包管理器升级：Debian/Ubuntu 执行 `apt-get update && apt-get install screen`，RHEL/CentOS 执行 `yum update screen`。若无法立即升级，可临时移除 screen 的 setuid 位：`chmod u-s /usr/bin/screen`，或限制普通用户执行权限：`chmod 750 /usr/bin/screen`，并限制仅允许可信用户组使用 screen。"
+remediation = "建议升级到 screen 3.9.6 或更高版本（如 3.10），此版本修复了 vbell_msg 变量的格式字符串漏洞。立即安装最新稳定版 screen 软件包。临时缓解措施：设置 TTY 设备文件权限为 600 并限制用户可访问的设备数量，阻止攻击者通过格式字符串利用 vbell_msg 初始化变量获取 root 权限。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["redhat"]
-title = "Juergen Weigert screen 3.9 格式字符串漏洞"
+sources = ["cve"]
+title = "GNU Screen 终端复用器 格式字符串漏洞"
 updated = "2026-06-16T21:52:43.420"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0901"]
 ave_id = "AVE-2000-0655"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-25T00:00:00Z"
 status = "completed"
 
 [references]
@@ -30,14 +30,14 @@ urls = [
     "http://www.securityfocus.com/bid/1641",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5188",
     "https://www.exploit-db.com/exploits/20191",
-    "https://github.com/CVEProject/cvelistV5/blob/528991f6906b29893dd0e43e65862cd92fd607c8/cves/2000/0xxx/CVE-2000-0901.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e0d4b639863e3178ba8dc8b525356f8aab24b9da/cves/2000/0xxx/CVE-2000-0901.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0901",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0901.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f2c577e1255b2c3fd617b7f1c499a222feb7b668/CVE/data/2000/CVE-2000-0901.json",
-    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2022/05/GHSA-rvv8-fhqp-59jg/GHSA-rvv8-fhqp-59jg.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/7679da85bd348992f49e2c46d2198526392248ee/2000/0xxx/CVE-2000-0901.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eba749de89f8c70fe7dc7fa1f83de98dd5147c06/CVE/data/2000/CVE-2000-0901.json",
+    "https://github.com/github/advisory-database/blob/fb70ff2c257f1ca47c72f5b8b5d913d0de6cca53/advisories/unreviewed/2022/05/GHSA-rvv8-fhqp-59jg/GHSA-rvv8-fhqp-59jg.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2000-0901.md",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0901.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--ee2694b3-778f-47b3-9996-dbd0b430be41.json",
-    "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/2000/20000902a.data",
 ]
