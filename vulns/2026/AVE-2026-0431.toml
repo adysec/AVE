@@ -1,0 +1,34 @@
+[id]
+ave_id = "AVE-2026-0431"
+aliases = ["CVE-2026-53716","GHSA-cxpq-8v7q-cg56"]
+
+[basic]
+title = "Envoy Gateway: Wasm HTTP fetch decompresses gzip without output-size limit"
+description = "Vulnerability report without repro case. Repro case may be added later after harness is complete.
+
+**Preconditions (4):**
+- Tenant can create EnvoyExtensionPolicy (baseline)
+- Attacker hosts a gzip-bomb at a reachable URL
+- sha256 unset (optional field; check is post-decompression anyway)
+- No operator Wasm-URL allowlist (none exists in code)
+
+**Description**
+
+getFileFromGZ calls io.ReadAll on a raw gzip.Reader (httpfetcher.go:216) with no output bound, while the compressed input is capped at 256 MiB (httpfetcher.go:139). The bytes originate from a tenant-controlled EnvoyExtensionPolicy.spec.wasm[].code.http.url (envoyextensionpolicy.go:1077 → cache.go:248 → httpfetcher.go:147 → :233), so an untrusted tenant can point at a ~10 MiB gzip-of-zeros and force ~10 GiB allocation in the shared controller process. All candidate guards execute either before the body is buffered or after decompression. OOM-kills, restarts, re-reconciles same CR, crash-loops — persistent cross-tenant control-plane outage with PR:L/AC:L and scope change → HIGH despite availability-only."
+severity = "MEDIUM"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-25T22:17:01.400508772+00:00"
