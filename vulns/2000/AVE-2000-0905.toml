@@ -1,10 +1,10 @@
 [basic]
-description = "Apache HTTP Server 1.3.12 及更早版本中的 mod_rewrite 模块存在任意文件读取漏洞。当管理员配置了 RewriteRule 指令且重写目标文件名中包含正则表达式特殊字符时，远程攻击者可通过构造特制的 HTTP 请求，利用正则表达式回溯匹配机制绕过路径限制，读取服务器上的任意文件（如 /etc/passwd、配置文件等），导致敏感信息泄露。攻击无需身份认证，仅需目标服务器启用了 mod_rewrite 功能并配置了特定的重写规则即可触发。该漏洞影响范围广泛，危害等级中危，CVSS 评分 5.0。"
+description = "Apache HTTP Server 1.3.12 及更早版本中的 mod_rewrite 模块存在任意文件读取漏洞。当配置中的 RewriteRule 目标路径包含正则表达式反向引用时，规则在展开后可能映射到任意文件名；远程攻击者无需身份认证，可构造特制 HTTP 请求触发该规则，从而读取服务器上任意文件内容，造成敏感信息泄露。影响启用了此类重写规则的 Apache 1.3.x 站点，CVSS 2.0 评分 5.0（中危），已在 Apache HTTP Server 1.3.14 中修复。"
 published = "2000-12-19T05:00:00.000"
-remediation = "升级 Apache HTTP Server 至 1.3.14 或更高版本（1.3.13 已修复此漏洞）。如无法升级，在 httpd.conf 中禁用 mod_rewrite 模块（注释或删除 LoadModule rewrite_module 行），并审查所有 RewriteRule 指令避免将用户输入直接拼接到文件路径中。对于仍运行 Apache 1.3.x 的遗留系统，建议迁移至 Apache 2.4.x 系列以获得持续安全支持。"
+remediation = "将 Apache HTTP Server 升级至 1.3.14 或更高版本（Apache 1.3 已于 2010 年停止支持，建议迁移至当前受支持的 2.4.x 版本）。如无法立即升级，临时缓解措施：移除或修改所有包含正则表达式反向引用（$N 或 %N）的 RewriteRule 指令，禁止在 RewriteRule 目标中使用正则引用，或临时禁用 mod_rewrite 模块，同时限制 Web 服务器进程对敏感目录和文件的访问权限。"
 score = 5
 severity = "MEDIUM"
-sources = ["redhat"]
+sources = ["cve"]
 title = "Apache HTTP Server mod_rewrite 任意文件读取漏洞"
 updated = "2026-06-16T21:52:45.083"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0913"]
 ave_id = "AVE-2000-0905"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-25T00:00:00Z"
 status = "completed"
 
 [references]
@@ -37,14 +37,14 @@ urls = [
     "https://lists.apache.org/thread.html/rb9c9f42dafa25d2f669dac2a536a03f2575bc5ec1be6f480618aee10%40%3Ccvs.httpd.apache.org%3E",
     "https://lists.apache.org/thread.html/rf2f0f3611f937cf6cfb3b4fe4a67f69885855126110e1e3f2fb2728e%40%3Ccvs.httpd.apache.org%3E",
     "https://lists.apache.org/thread.html/rf6449464fd8b7437704c55f88361b66f12d5b5f90bcce66af4be4ba9%40%3Ccvs.httpd.apache.org%3E",
-    "https://github.com/CVEProject/cvelistV5/blob/60bbc98c39201e6f5661b9e41f1492ce39335948/cves/2000/0xxx/CVE-2000-0913.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e2b7e39540f8003a5fc1c3ce83959dcdba6671a4/cves/2000/0xxx/CVE-2000-0913.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0913",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/93ebbe91f1db0ecb2b0cbd102096a8fe577f8004/2000/0xxx/CVE-2000-0913.md",
     "https://github.com/VulnerabilityHistoryProject/httpd-vulnerabilities/blob/b71e143e670cd0a24ad5402f3d46c0ba20429842/cves/CVE-2000-0913.yml",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0913.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f2c577e1255b2c3fd617b7f1c499a222feb7b668/CVE/data/2000/CVE-2000-0913.json",
-    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2022/04/GHSA-92c3-5449-gf35/GHSA-92c3-5449-gf35.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3b0c45471d4a4c3513d56ab2afeeb30c8e072362/CVE/data/2000/CVE-2000-0913.json",
+    "https://github.com/github/advisory-database/blob/c94c1772ba718b7f105ed32361c896b35042b2b3/advisories/unreviewed/2022/04/GHSA-92c3-5449-gf35/GHSA-92c3-5449-gf35.json",
     "https://github.com/zmerry/z-marvel.github.io/blob/581a79f0e7ceb8cdb3e444922154e004cca44bbb/vulbox/webvul/middle/Apache%20Rewrite%E6%A8%A1%E5%9D%97%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E(CVE-2000-0913).html",
-    "https://github.com/marcellodesales/aibbp-reverse-engineer/blob/960f610d597aae9fec1cc5f03c68679be00c222d/reverse_engineer/invicti/vulnerabilities/db/vulnerabilities/vdb/2000/0xxx/cve-2000-0913.yaml",
+    "https://github.com/marcellodesales/aibbp-reverse-engineer/blob/960f610d597aae9fec1cc5f03c68679be00c222d/reverse_engineer/acunetix/vulnerabilities/vdb/2000/0xxx/cve-2000-0913.yaml",
     "https://github.com/bfosterjr/windowsrtdev/blob/4e5531ea1a00f247f9f43bbf55cadbed698418cd/apps/Apache/2.0.65/src/httpd-2.0.65/CHANGES",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/yarencheng/cve-devops-playground/blob/7c450063cd3f12f7aa97a070bb18c68d6bc6767e/content/CVE-2000-0913.md",
 ]
