@@ -1,10 +1,10 @@
 [basic]
-description = "BEA WebLogic 3.1.8 至 4.5.1 默认配置存在大小写敏感处理缺陷（CWE-178），远程未认证攻击者可通过请求大写扩展名（如 .JSP 而非 .jsp）的 JSP 文件 URL，绕过 JSP 编译执行逻辑直接获取源代码。该漏洞影响 WebLogic 3.1.8 至 4.5.1 版本的默认部署环境，CVSS 3.1 评分 7.5（HIGH），攻击向量为网络、攻击复杂度低、无需权限、无需用户交互、机密性影响高。攻击者仅需构造包含大写 .JSP 扩展名的 HTTP 请求即可无损读取 JSP 源码，可能导致业务逻辑泄露、数据库连接信息泄露等敏感信息泄露，进而辅助后续攻击。BEA 已在后续版本中修复此大小写敏感处理缺陷，建议升级至修复版本或配置 Web 服务器统一处理大小写扩展名。"
+description = "BEA WebLogic 3.1.8 至 4.5.1 默认配置存在大小写敏感性处理缺陷（CWE-178），远程未授权攻击者可通过请求大写 .JSP 扩展名的 URL（如 /page.JSP 而非 /page.jsp），绕过 JSP 编译引擎直接获取 JSP 源代码，导致敏感业务逻辑、数据库连接信息等核心代码泄露。该漏洞影响 WebLogic 3.1.8 至 4.5.1 所有版本，CVSS 3.1 评分 7.5（HIGH），攻击向量为网络（AV:N），攻击复杂度低（AC:L），无需权限（PR:N）和用户交互（UI:N），仅影响机密性（C:H）。攻击者只需发送包含大写 .JSP 后缀的 HTTP GET 请求即可无损获取源代码，无需认证交互。BEA 已在后续版本修复该配置缺陷，建议升级至修复版本并配置 Web 服务器强制小写扩展名映射。"
 published = "2000-06-08T04:00:00.000"
-remediation = "升级BEA WebLogic到支持安全JSP映射的7.0或以上版本，或直接应用BEA提供的安全补丁包CVE-2000-0499安全更新。关闭JSP扩展名大小写敏感处理功能，并启用严格的JSP文件访问控制，禁止通过URL直接请求大写扩展名访问源代码。如无法立即应用补丁，可临时禁用所有外部JSP文件访问或通过防火墙规则限制对端口8080的JSP请求。为确保安全，建议同时关闭不必要的管理服务，减少攻击面。"
+remediation = "建议立即升级 BEA WebLogic 至 4.5.2 或更高版本（已修复该漏洞）。无法升级时，在 WebLogic 管理控制台中禁用 JSP 大小写不敏感映射，或在 Web 服务器/防火墙层拦截所有包含大写 .JSP/.Jsp 等扩展名的请求，同时配置 Web 服务器拒绝直接访问 .jsp 源文件。建议同时部署 WAF 规则拦截包含大写 JSP 扩展名的请求作为临时缓解措施。"
 score = 7.5
 severity = "HIGH"
-sources = ["epss"]
+sources = ["avd"]
 title = "BEA WebLogic JSP源代码泄露漏洞"
 updated = "2026-06-16T21:51:51.860"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0499"]
 ave_id = "AVE-2000-0560"
 
 [meta]
-collected_at = "2026-07-23T00:00:00Z"
+collected_at = "2026-07-25T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://developer.bea.com/alerts/security_000612.html",
     "http://www.securityfocus.com/bid/1328",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4694",
-    "https://github.com/CVEProject/cvelistV5/blob/2c72b537371947a8374cf9848353741736f9e49d/cves/2000/0xxx/CVE-2000-0499.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e0d4b639863e3178ba8dc8b525356f8aab24b9da/cves/2000/0xxx/CVE-2000-0499.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0499",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0499.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bae3e1da022eb7a639aee03446096716b0c4798f/CVE/data/2000/CVE-2000-0499.json",
-    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2022/04/GHSA-qc48-8mcw-gxqv/GHSA-qc48-8mcw-gxqv.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/fbf5034ab66635f118016eef30012810a55b9a37/2000/0xxx/CVE-2000-0499.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/68f4381f2016d51eca45695265af085374593db5/CVE/data/2000/CVE-2000-0499.json",
+    "https://github.com/github/advisory-database/blob/fb70ff2c257f1ca47c72f5b8b5d913d0de6cca53/advisories/unreviewed/2022/04/GHSA-qc48-8mcw-gxqv/GHSA-qc48-8mcw-gxqv.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2000-0499.md",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cwe_details/cwe_details_100_200.json",
     "https://github.com/Team-Atlanta/aixcc-asc-atlantis/blob/785c446f980e12155935db586aa30c3b54adcc86/crs/src/crs-patch/smith/smith/lib/cwe/raw/CWE-178.txt",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--dd59df2a-0d14-435e-8cf1-d1fd2e93abdd.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0499.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/8b2b9a8673bea39f5c895cdb2f43d026330c1de0/2000.tsv",
 ]
