@@ -1,0 +1,39 @@
+[basic]
+description = "SiYuan 是一款开源个人知识管理系统，其 Bazaar 插件市场的 README 渲染功能存在存储型跨站脚本（Stored XSS）漏洞。漏洞根因在于 lute 引擎的 HTML 清理器采用事件处理器黑名单机制，仅拦截 w3schools 遗留列表中的旧式事件属性，而 `onpointerover`、`onpointerdown`、`onauxclick`、`onbeforetoggle`、`onfocusin`、`onanimationstart`、`ontransitionend` 等现代事件处理器未被列入黑名单，导致恶意 HTML 属性被原样通过。攻击者可在第三方插件包的 README.md 中嵌入上述事件处理器，当管理员在设置→市场中浏览该插件包并悬停或点击时，恶意 JavaScript 在管理员认证的 SiYuan 源站上下文中执行。前端通过 `innerHTML` 直接赋值渲染结果且未使用 DOMPurify 过滤，内核 HTTP 响应未设置 CSP 等安全头，进一步扩大了攻击面。攻击者可窃取内核 API Token，进而完全控制工作区。该漏洞影响 SiYuan ≤3.6.5 版本，已在 3.7.0 版本中修复。"
+published = "2026-06-24T22:16:48.583"
+remediation = "立即升级 SiYuan 至 3.7.0 或更高版本，该版本已修复 lute 引擎的 sanitizer 事件属性黑名单遗漏问题。如无法立即升级，管理员应避免在 Settings → Marketplace 中接受市场信任许可（bazaar.trust 保持默认 false），同时可在反向代理层添加 Content-Security-Policy: script-src 'self' 头作为临时缓解措施。"
+score = 7.1
+severity = "HIGH"
+sources = ["ghsa"]
+title = "SiYuan Bazaar 市场软件包 README 存储型 XSS 漏洞"
+updated = "2026-06-26T19:16:42.520"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54070",
+    "GHSA-w7cg-whh7-xp28",
+]
+ave_id = "AVE-2026-0467"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/siyuan-note/siyuan/security/advisories/GHSA-w7cg-whh7-xp28",
+    "https://github.com/CVEProject/cvelistV5/blob/15ba52d0829fe2220e9f89276b2743c7eef0ab2a/cves/2026/54xxx/CVE-2026-54070.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-54070.md",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/e6fb55bfbbe31c8b8776d60f6e3b3154ee0fa3bf/reports/2026-06-24/TIER_2_CVE-2026-54070.md",
+    "https://github.com/cisagov/vulnrichment/blob/9553fde5ed5ff45a613d88bc99087dbba2111555/2026/54xxx/CVE-2026-54070.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/github.com/siyuan-note/siyuan/kernel/CVE-2026-54070.yml",
+    "https://github.com/TMA84/cvealert/blob/081b07b9127f2841c08bad5c94aba4d1bf47bb88/content/posts/cve-2026-54070.md",
+    "https://github.com/golang/vulndb/blob/d246ad98d3739cece1ce57358766d7c340b09c91/data/reports/GO-2026-5965.yaml",
+    "https://github.com/stevologic/security-recipes.ai/blob/0262d64737c11a639346262c413e84b552ac0aa6/content/recipes/cve/cve-2026-54070-siyuan-stored-xss-in-bazaar-marketplace-via-package-readme-event-handlers.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6cdd862a65f157a01ff9fd42e651329142c691d2/SSVC/data/2026/CVE-2026-54070.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2026-54070.md",
+]
