@@ -1,0 +1,40 @@
+[info]
+author = "AVE"
+description = "Active Classifieds Free Edition 1.0 的 admin.cgi 脚本未对 table_width 参数进行过滤，直接传入 eval 执行，攻击者可通过构造特制参数实现任意 Perl 代码执行。验证方式：发送包含 Perl 代码的 GET 请求，若返回结果中包含代码执行输出则存在漏洞。"
+id = "POC-AVE-2001-0510"
+name = "Active Classifieds Free Edition 1.0 admin.cgi 任意代码执行 PoC"
+severity = "medium"
+tags = [
+    "cve-2001-1290",
+    "active-classifieds",
+    "rce",
+    "cgi",
+]
+vuln_id = [
+    "CVE-2001-1290",
+    "AVE-2001-0510",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/admin.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "200",
+    "Configuration",
+]
