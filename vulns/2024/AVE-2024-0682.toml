@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核 AMD GPU 驱动（amdgpu）中的 `atomctrl_get_smc_sclk_range_table` 函数存在空指针解引用漏洞（CWE-476）。该函数在调用 `smu_atom_get_data_table()` 获取 SMU_Info 数据表时，未检查其返回值。若该调用失败并返回 NULL，后续代码将直接对空指针进行解引用操作，导致内核崩溃（拒绝服务）。该漏洞仅在 Polaris 系列 GPU 芯片上存在可触发的代码路径，实际利用条件极为苛刻——正常运行时 VBIOS 数据表始终存在，因此在实际环境中极难触发。攻击者需具备本地权限才能构造特定条件触发此漏洞。Linux 内核已通过补丁添加返回值检查修复此问题。"
+published = "2025-03-06T16:15:51.367"
+remediation = "升级 Linux 内核至包含该修复的稳定版本。Ubuntu 22.04 LTS 用户可通过 `sudo apt update && sudo apt install linux-image-generic` 升级至 5.15.0-1083 及以上版本；Ubuntu 20.04 LTS 用户升级至 5.4.0-1146 及以上版本。Debian/其他发行版用户应升级至包含上游补丁的内核版本。若无法立即升级内核，可考虑禁用 amdgpu 驱动作为临时缓解（在 GRUB 引导参数中添加 `modprobe.blacklist=amdgpu`），但这会影响 AMD GPU 图形和计算功能。建议通过各发行版官方仓库获取安全更新，而非手动编译内核。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux内核AMD GPU驱动空指针解引用漏洞"
+updated = "2026-06-17T08:14:31.033"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-58052"]
+ave_id = "AVE-2024-0682"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0b97cd8a61b2b40fd73cf92a4bb2256462d22adb",
+    "https://git.kernel.org/stable/c/2396bc91935c6da0588ce07850d07897974bd350",
+    "https://git.kernel.org/stable/c/357445e28ff004d7f10967aa93ddb4bffa5c3688",
+    "https://git.kernel.org/stable/c/396350adf0e5ad4bf05f01e4d79bfb82f0f6c41a",
+    "https://git.kernel.org/stable/c/6a30634a2e0f1dd3c6b39fd0f114c32893a9907a",
+    "https://git.kernel.org/stable/c/a713ba7167c2d74c477dd7764dbbdbe3199f17f4",
+    "https://git.kernel.org/stable/c/ae522ad211ec4b72eaf742b25f24b0a406afcba1",
+    "https://git.kernel.org/stable/c/c47066ed7c8f3b320ef87fa6217a2b8b24e127cc",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00028.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://github.com/trickest/cve/blob/e69d88e0152845fc4d4b49970ca6e503f56b2f93/2024/CVE-2024-58052.md",
+    "https://github.com/CVEProject/cvelistV5/blob/15ba52d0829fe2220e9f89276b2743c7eef0ab2a/cves/2024/58xxx/CVE-2024-58052.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-58052.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-58052",
+    "https://github.com/cisagov/vulnrichment/blob/9553fde5ed5ff45a613d88bc99087dbba2111555/2024/58xxx/CVE-2024-58052.json",
+    "https://github.com/HerringLiu2333/Analysis-of-CWE/blob/cd8202c32037ed388ecd79e1fc81394f13c4d4a4/CVE-2024-58052/CVE-2024-58052.ql",
+    "https://github.com/bell-sw/osv-database/blob/027c37e8e73e99b2a68cafab2e6594bde5db273e/BELL-CVE/BELL-CVE-2024-58052.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/31d5b78ee7ad856a6aee490403faecefdc8a4878/references/CveServices-CVE-2024-58052-2025-11-03-1335",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2024/CVE-2024-58052.md",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/unreviewed/2025/03/GHSA-f33w-26qx-6hvm/GHSA-f33w-26qx-6hvm.json",
+]
