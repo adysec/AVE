@@ -1,17 +1,21 @@
 [info]
-author = "ave"
-description = "检测目标是否运行Unify eWave ServletExec JSP/Java Servlet引擎。通过发送包含/servlet/ServletExec路径的HTTP GET请求，ServletExec引擎会尝试在80端口绑定服务线程，由于Web服务器已占用该端口，导致java.net.BindException异常，造成ServletExec服务中断，需重启ServletExec方可恢复。"
+author = "AVE"
+description = "检测目标 Unify eWave ServletExec 3.0C 及更早版本是否存在拒绝服务漏洞。通过发送包含 /servlet/ 路径的 HTTP GET 请求，若 ServletExec servlet 已在运行则会触发异常导致服务崩溃。参考 ExploitDB 20336 及 SecurityFocus BID 1868。"
 id = "POC-AVE-2000-0749"
-name = "Unify eWave ServletExec 3.0C DoS PoC"
+name = "Unify eWave ServletExec 拒绝服务漏洞 PoC"
 severity = "medium"
-tags = ["ave-2000-0749"]
+tags = [
+    "cve-2000-1025",
+    "dos",
+    "servletexec",
+]
 vuln_id = [
     "CVE-2000-1025",
     "AVE-2000-0749",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
@@ -21,8 +25,18 @@ protocol = "http"
 [[poc.requests.matchers]]
 expect = true
 status = [
-    200,
     500,
-    302,
+    503,
+    502,
 ]
 type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Exception",
+    "ServletExec",
+    "error",
+]
