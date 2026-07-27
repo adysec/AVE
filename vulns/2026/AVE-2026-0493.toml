@@ -1,0 +1,41 @@
+[basic]
+description = '''secure_headers Ruby 库在构建 Content-Security-Policy 响应头时，将各指令通过 `; ` 拼接，但 `build_sandbox_list_directive`、`build_media_type_list_directive` 和 `build_report_to_directive` 三个构建器未对用户输入中的 `;`、`\r`、`\n` 进行过滤。当应用程序将不可信输入传递给 `override_content_security_policy_directives` 或 `append_content_security_policy_directives` 的 `:sandbox`、`:plugin_types` 或 `:report_to` 参数时，攻击者可注入 `script-src 'unsafe-inline' *` 等恶意 CSP 指令。由于 CSP 解析器遵循首次出现规则，注入的 `script-src` 会覆盖应用配置的严格策略，导致内联脚本可被执行，造成跨站脚本攻击（XSS）。此外，攻击者还可通过注入 `report-uri` 将 CSP 违规报告重定向到攻击者服务器，窃取包含 URL、源码位置等敏感信息的报告。该漏洞影响 secure_headers ≤7.2.0 版本，7.3.0 版本已修复。'''
+published = "2026-07-17T21:17:08.107"
+remediation = '立即将 `secure_headers` gem 升级至 7.3.0 或以上版本（`bundle update secure_headers`）。如无法立即升级，对所有传入 `SecureHeaders.override_content_security_policy_directives`、`append_content_security_policy_directives` 及 `use_content_security_policy_named_append` 中 `:sandbox`、`:plugin_types`、`:report_to` 三个参数的输入值，在传入前过滤掉 `;`、`\r`、`\n` 字符。'
+score = 4.7
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "GitHub secure_headers Content-Security-Policy 指令注入漏洞"
+updated = "2026-07-23T18:04:31.947"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54163",
+    "GHSA-rqq5-2gf9-4w4q",
+]
+ave_id = "AVE-2026-0493"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/github/secure_headers/commit/286a79dea80c6a9be4ca93e0f284c923cf77e539",
+    "https://github.com/github/secure_headers/releases/tag/v7.3.0",
+    "https://github.com/github/secure_headers/security/advisories/GHSA-rqq5-2gf9-4w4q",
+    "https://github.com/rubysec/ruby-advisory-db/blob/6abafa39bbf76fbd32a01a93a3a2ba048c0f7143/gems/secure_headers/CVE-2026-54163.yml",
+    "https://github.com/CVEProject/cvelistV5/blob/d426ca16061eaa1a65a39ea953ac0efe02aa4cae/cves/2026/54xxx/CVE-2026-54163.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-54163.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/b7d9f3f65d1036a114c9bae4a66ed35d83999166/osv/cve/2026/UBUNTU-CVE-2026-54163.json",
+    "https://github.com/neuvector/vul-source/blob/83b6758c208f8fd7e22b7c88e002c3658ef467b8/ubuntu-cve-tracker/active/CVE-2026-54163",
+    "https://github.com/rubysec/rubysec.github.io/blob/7fe93c0d9f67491f32ca61e33aaca423a4c19903/advisories/_posts/2026-06-03-CVE-2026-54163.md",
+    "https://github.com/cisagov/vulnrichment/blob/9553fde5ed5ff45a613d88bc99087dbba2111555/2026/54xxx/CVE-2026-54163.json",
+    "https://github.com/TMA84/cvealert/blob/3919917ccdc95cad53a5d8f952d8d044dc152929/content/posts/cve-2026-54163.md",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/gem/secure_headers/CVE-2026-54163.yml",
+    "https://github.com/github/advisory-database/blob/29919db3f954d9ce9be0e7e3cf177436392d45d3/advisories/github-reviewed/2026/07/GHSA-rqq5-2gf9-4w4q/GHSA-rqq5-2gf9-4w4q.json",
+]
