@@ -1,0 +1,61 @@
+[info]
+author = "AVE"
+description = "检测目标是否暴露 JMX Invoker Servlet 端点，该端点允许远程攻击者通过 POST 请求发送序列化 Java 对象，触发不安全的反序列化导致远程代码执行。通过向 /jmxinvokerServlet 发送带有 application/x-java-serialized-object 内容类型的 POST 请求，根据响应状态码判断端点是否存在。"
+id = "POC-AVE-2016-0308"
+name = "Oracle Java SE JMX Invoker Servlet 远程代码执行漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2016-3427",
+    "jmx",
+    "deserialization",
+    "rce",
+]
+vuln_id = [
+    "CVE-2016-3427",
+    "AVE-2016-0308",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/jmxinvokerServlet"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-java-serialized-object"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/invoker/JMXInvokerServlet"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-java-serialized-object"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+]
+type = "status"
