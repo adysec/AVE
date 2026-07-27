@@ -1,0 +1,65 @@
+[basic]
+description = 'Apache HTTPD 2.4.0 至 2.4.29 版本中的 `<FilesMatch>` 指令存在正则表达式解析绕过漏洞。由于正则表达式中 `$` 锚点不仅匹配字符串结尾，还可匹配换行符 `\n`，攻击者可通过在恶意文件名末尾附加换行符（如 `\x0A`，对应 URL 编码 `%0a`）构造特制文件名（例如 `shell.php%0a`），使 `<FilesMatch \.php$>` 规则将文件名判定为以 `.php` 结尾，从而绕过服务器对上传文件类型的拦截策略，将 PHP 文件上传至服务器并执行，最终导致远程代码执行或未授权访问。该漏洞影响 Apache HTTP Server 2.4.0 至 2.4.29 版本，攻击者可于远程发起攻击，无需身份认证，但需攻击者能上传文件且服务器启用了基于 `<FilesMatch>` 的文件类型过滤，攻击复杂度较高。'
+published = "2018-03-26T15:29:00.287"
+remediation = '升级 Apache httpd 至 2.4.30 及以上版本，该版本修复了 <FilesMatch> 中 $ 锚点匹配换行符的问题。如无法立即升级，可将文件上传目录的 <FilesMatch> 规则改为使用 \z 替代 $ 作为结尾锚点，或在应用层对上传文件名做换行符（%0a、%0d）过滤与校验。'
+score = 8.1
+severity = "HIGH"
+sources = ["nuclei"]
+title = "Apache HTTPD 换行解析漏洞"
+updated = "2026-06-17T01:08:09.157"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2017-15715"]
+ave_id = "AVE-2017-0052"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://www.openwall.com/lists/oss-security/2018/03/24/6",
+    "http://www.securityfocus.com/bid/103525",
+    "http://www.securitytracker.com/id/1040570",
+    "https://access.redhat.com/errata/RHSA-2018:3558",
+    "https://access.redhat.com/errata/RHSA-2019:0366",
+    "https://access.redhat.com/errata/RHSA-2019:0367",
+    "https://httpd.apache.org/security/vulnerabilities_24.html",
+    "https://lists.apache.org/thread.html/56c2e7cc9deb1c12a843d0dc251ea7fd3e7e80293cde02fcd65286ba%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/84a3714f0878781f6ed84473d1a503d2cc382277e100450209231830%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r04e89e873d54116a0635ef2f7061c15acc5ed27ef7500997beb65d6f%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r06f0d87ebb6d59ed8379633f36f72f5b1f79cadfda72ede0830b42cf%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r6521a7f62276340eabdb3339b2aa9a38c5f59d978497a1f794af53be%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r76142b8c5119df2178be7c2dba88fde552eedeec37ea993dfce68d1d%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r9f93cf6dde308d42a9c807784e8102600d0397f5f834890708bf6920%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/rc998b18880df98bafaade071346690c2bc1444adaa1a1ea464b93f0a%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/rd18c3c43602e66f9cdcf09f1de233804975b9572b0456cc582390b6f%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/rd336919f655b7ff309385e34a143e41c503e133da80414485b3abcc9%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/re1e3a24664d35bcd0a0e793e0b5fc6ca6c107f99a1b2c545c5d4b467%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/re3d27b6250aa8548b8845d314bb8a350b3df326cacbbfdfe4d455234%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/rf6449464fd8b7437704c55f88361b66f12d5b5f90bcce66af4be4ba9%40%3Ccvs.httpd.apache.org%3E",
+    "https://security.elarlang.eu/cve-2017-15715-apache-http-server-filesmatch-bypass-with-a-trailing-newline-at-the-end-of-the-file-name.html",
+    "https://security.netapp.com/advisory/ntap-20180601-0004/",
+    "https://support.hpe.com/hpsc/doc/public/display?docLocale=en_US&docId=emr_na-hpesbux03909en_us",
+    "https://usn.ubuntu.com/3627-1/",
+    "https://usn.ubuntu.com/3627-2/",
+    "https://www.debian.org/security/2018/dsa-4164",
+    "https://www.tenable.com/security/tns-2019-09",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2017/CVE-2017-15715.yaml",
+    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2017/CVE-2017-15715.md",
+    "https://github.com/Threekiii/Awesome-POC/blob/0f9e22b660cb1ea12c1c3668f9128d93e08da412/%E4%B8%AD%E9%97%B4%E4%BB%B6%E6%BC%8F%E6%B4%9E/Apache%20HTTPd%20%E6%8D%A2%E8%A1%8C%E8%A7%A3%E6%9E%90%E6%BC%8F%E6%B4%9E%20CVE-2017-15715.md",
+    "https://github.com/cckuailong/reapoc/blob/699762e4c31d0183733f64313d8fc3be6470bd37/2017/CVE-2017-15715/poc/pocsploit/CVE-2017-15715.py",
+    "https://github.com/Ares-X/VulWiki/blob/40e0273754a36f49a6be6a77a7a4c210a07063ed/Web%E5%AE%89%E5%85%A8/Apache/%EF%BC%88CVE-2017-15715%EF%BC%89Apache%E8%A7%A3%E6%9E%90%E6%BC%8F%E6%B4%9E.md",
+    "https://github.com/LyleMi/Learn-Web-Hacking/blob/7a42e3252fdcae87663434b1fd54ec89d671bfbe/source/vuln/middleware/apache.rst",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2017/CVE-2017-15715",
+    "https://github.com/lyxhh/midvulhub/blob/8acf9306fe9769ce1317d72b1c8be2242796a64f/Apache/CVE-2017-15715/README.md",
+    "https://github.com/Apibug/SecPost/blob/2f7df9980cab025c48cce9b14b2d48eeb37328ef/%EF%BC%88CVE-2017-15715%EF%BC%89Apache%20HTTPD%20%E6%8D%A2%E8%A1%8C%E8%A7%A3%E6%9E%90%E6%BC%8F%E6%B4%9E.md",
+    "https://github.com/tr0uble-mAker/POC-bomber/blob/d2433ac41eaa58eb4fb0876ec05e3b645e10ecd7/pocs/middleware/apache/CVE_2017_15715.py",
+    "https://github.com/TheKingOfDuck/fuzzDicts/blob/0652d6581311616576f347f9b7be61c9746462e4/uploadFileExtDicts/upload-fuzz-dic-builder.py",
+    "https://github.com/whisp1830/CVE-2017-15715",
+    "https://github.com/ehsehs5652/CVE-2017-15715-httpd",
+]
