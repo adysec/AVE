@@ -1,0 +1,38 @@
+[basic]
+description = "Nimiq 区块链项目的 core-rs-albatross 组件中 nimiq-primitives 库的 KeyNibbles::Add 方法存在越界 panic 漏洞。当恶意对等节点作为状态同步源向同步节点发送特制的 TrieChunk 证明时，其中 TrieNodeChild 的 suffix 与父 key 拼接后超过固定的 63 字节数组边界，Add 方法在未检查组合长度的情况下直接进行越界切片索引，导致 panic 崩溃。攻击者只需成为受害节点的同步对等端即可触发，无需提供有效证明，崩溃后节点可自动重启重新同步。该漏洞影响 core-rs-albatross <= 1.5.1 版本，已在 1.6.0 版本中修复。"
+published = "2026-01-01"
+remediation = "立即将 core-rs-albatross 升级至 1.6.0 或以上版本（commit eabfc3e2），该版本在 KeyNibbles 拼接时增加了最大长度检查，防止越界 panic。如无法立即升级，仅允许与受信节点建立状态同步连接，避免恶意节点发送特制 TrieChunk 触发崩溃。"
+score = 3.5
+severity = "LOW"
+sources = ["ghsa"]
+title = "Nimiq core-rs-albatross nimiq-primitives 反序列化证明中 KeyNibbles 越界 panic 拒绝服务漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54542",
+    "GHSA-5rg2-xv9j-gv5p",
+]
+ave_id = "AVE-2026-0568"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/cargo/nimiq-primitives/CVE-2026-54542.yml",
+    "https://github.com/opencve/opencve-kb/blob/ace7ea23ab4ecbf97f9d5d9e011d6ca2ce3e334a/2026/CVE-2026-54542.json",
+    "https://github.com/github/advisory-database/blob/1c8e3f4146e1bef501493d1237acb1611ea8f707/advisories/github-reviewed/2026/07/GHSA-5rg2-xv9j-gv5p/GHSA-5rg2-xv9j-gv5p.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/72250fcaba6f67069c40da9c17f08bd990e83148/docs/data/2026/CVE-2026-54542.json",
+    "https://github.com/maxgfr/package-checker.sh/blob/433650e81dc87b0e7eebc5f102c8077f8f1019a0/data/osv-cargo.purl",
+    "https://github.com/JimBLogic/CyberDailyLog/blob/1e793ab452b65d94954c137652eaf3886a43fd70/reports/archive/2026/07/2026-07-17.md",
+    "https://github.com/proshiba/vuln-intel-agent/blob/eb9d5949573bf98755141185e45226827196e91c/vulndb/vulns/github/2026/07/VW-2026-29873.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/dce39ef8dd24743d0eb60b36b80f49d51f219690/data/history/CVE-2026-54542.json",
+    "https://github.com/maxgfr/package-checker.sh/blob/433650e81dc87b0e7eebc5f102c8077f8f1019a0/data/ghsa-cargo.purl",
+    "https://github.com/bitfront-se/vuln-list-temp/blob/f637a1d9c477b365f04814609a546f50c9aa4193/osv/rust/nimiq-primitives/GHSA-5rg2-xv9j-gv5p.json",
+]

