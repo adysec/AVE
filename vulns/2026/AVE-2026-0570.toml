@@ -1,0 +1,38 @@
+[basic]
+description = "meta-ads-mcp 的 AuthInjectionMiddleware 存在认证绕过漏洞，其认证逻辑仅当 auth_token 和 pipeboard_token 同时缺失时才拒绝请求。由于 extract_token_from_headers() 未识别 X-Pipeboard-Token 头，攻击者发送该头及任意值即可使 auth_token 为 None 而 pipeboard_token 非空，绕过认证检查。绕过后 token getter 回退至服务器环境变量 META_ACCESS_TOKEN，导致后续所有 MCP 工具调用均以运营商的 Meta 凭证执行。攻击者可在网络可达的情况下读取和写入运营商的 Meta Ads 广告账户、活动、受众等敏感数据，危害严重。"
+published = "2026-01-01"
+remediation = "立即将 meta-ads-mcp 升级至 1.0.115 及以上版本，该版本已将认证中间件中的守卫条件从 `if not auth_token and not pipeboard_token` 修复为 `if not auth_token`，确保 `X-Pipeboard-Token` 不能单独绕过认证。如无法立即升级，可在反向代理层（如 Nginx/Envoy）配置规则，拒绝所有携带 `X-Pipeboard-Token` 头部的 HTTP 请求，或改用默认 stdio 传输模式部署。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Meta meta-ads-mcp X-Pipeboard-Token 认证绕过漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54547",
+    "GHSA-2v2f-mvfg-ph56",
+]
+ave_id = "AVE-2026-0570"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/pypi/meta-ads-mcp/CVE-2026-54547.yml",
+    "https://github.com/opencve/opencve-kb/blob/ace7ea23ab4ecbf97f9d5d9e011d6ca2ce3e334a/2026/CVE-2026-54547.json",
+    "https://github.com/pypa/advisory-database/blob/9cd2bb0b0eb73e13c8961a77b5af61d5a521984f/vulns/meta-ads-mcp/PYSEC-2026-3484.yaml",
+    "https://github.com/github/advisory-database/blob/1c8e3f4146e1bef501493d1237acb1611ea8f707/advisories/github-reviewed/2026/07/GHSA-2v2f-mvfg-ph56/GHSA-2v2f-mvfg-ph56.json",
+    "https://github.com/cataam-security/cataam/blob/8abe63fcd635a50329bf43e2eee16677b9a1e945/tools/README.md",
+    "https://github.com/RogoLabs/consensus-engine/blob/72250fcaba6f67069c40da9c17f08bd990e83148/docs/data/2026/CVE-2026-54547.json",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/c47d1f5d848e164abef61b16f1d28d5df1852f8c/proposals/ghsa/GHSA-2v2f-mvfg-ph56.proposal.yaml",
+    "https://github.com/anajuliabit/aeon/blob/03f0d7d82fce86b0c5ad5767938a469e14b0e429/memory/logs/2026-07-19.md",
+    "https://github.com/ericverret35/opsintel/blob/938ddd22650ff50d59f35ab5b3912916140eded4/advisories/2026-07-23-pysec-2026-3484.md",
+    "https://github.com/mindyoumh/my-ailounge/blob/d8c84c82ad390de87727e202006aa179880ba61b/docs/feeds/08-security-alerts.md",
+]
