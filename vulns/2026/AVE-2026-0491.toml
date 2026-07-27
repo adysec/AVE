@@ -1,0 +1,41 @@
+[basic]
+description = "PrestaShop 的 ps_facetedsearch 分层导航筛选模块存在 PHP 对象注入漏洞。该模块从请求 URL 中重建筛选条件时，未对滑块筛选器（价格或重量）参数值进行充分校验，直接将其序列化后存入内部缓存，随后使用原生 `unserialize()` 反序列化读取。未经身份认证的远程攻击者可通过构造特制的恶意序列化 PHP 对象注入缓存，触发 gadget 链在模块目录下写入任意 PHP 文件作为 webshell，进而实现远程代码执行，完全控制服务器。该漏洞影响 ps_facetedsearch 3.0.0 至 4.0.3 版本，CVSS 评分 10.0，危害等级严重。官方已在 4.0.4 版本中修复，建议立即升级或替换 `Block.php` 中 `unserialize()` 为 `Tools::unSerialize()`。"
+published = "2026-07-17T21:17:07.963"
+remediation = '立即将 ps_facetedsearch 模块升级到 4.0.4 或更高版本。如无法立即升级，手动修改 src/Filters/Block.php 中 getFromCache() 方法，将 unserialize() 替换为 \Tools::unSerialize()；同时移除前台筛选模板中的价格和重量滑块筛选器，清除 faceted-search 过滤器缓存，并在 WAF 层面拦截包含 PHP 序列化特征（如 O:、;i:）的搜索请求。'
+score = 10
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "PrestaShop ps_facetedsearch PHP对象注入远程代码执行漏洞"
+updated = "2026-07-23T16:04:11.740"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54159",
+    "GHSA-m5f5-28qr-9g9r",
+]
+ave_id = "AVE-2026-0491"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/PrestaShop/ps_facetedsearch/commit/9ca839fac68a60641d8187a3ff9730ab09af33cb",
+    "https://github.com/PrestaShop/ps_facetedsearch/releases/tag/v4.0.4",
+    "https://github.com/PrestaShop/ps_facetedsearch/security/advisories/GHSA-m5f5-28qr-9g9r",
+    "https://github.com/CVEProject/cvelistV5/blob/d426ca16061eaa1a65a39ea953ac0efe02aa4cae/cves/2026/54xxx/CVE-2026-54159.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/e6fb55bfbbe31c8b8776d60f6e3b3154ee0fa3bf/reports/2026-07-17/TIER_2_CVE-2026-54159.md",
+    "https://github.com/cisagov/vulnrichment/blob/9553fde5ed5ff45a613d88bc99087dbba2111555/2026/54xxx/CVE-2026-54159.json",
+    "https://github.com/fankh/vulnerability-poc/blob/04aa22fbb624898c1d0928bc3b34fb05529275cb/2026/CVE-2026-54159/README.md",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/packagist/prestashop/ps_facetedsearch/CVE-2026-54159.yml",
+    "https://github.com/TMA84/cvealert/blob/081b07b9127f2841c08bad5c94aba4d1bf47bb88/content/posts/cve-2026-54159.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/289454b1705420b325f7615708efca878371bd29/cve/CVE-2026-54159.html",
+    "https://github.com/stevologic/security-recipes.ai/blob/0262d64737c11a639346262c413e84b552ac0aa6/content/recipes/cve/cve-2026-54159-prestashop-ps-facetedsearch-php-object-injection-in-faceted-search-cache-allows-unauthenticated-rce.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/db2f5eda64b048f89c93b57f05c779b62a05c5c9/CVE/data/2026/CVE-2026-54159.json",
+    "https://github.com/Unclecheng-li/cybersecurity-daily/blob/de7a9bfa47d70d2c0b8019d75a894c095cc61df8/daily/2026-07-11.html",
+]
