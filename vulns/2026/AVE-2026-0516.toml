@@ -1,0 +1,38 @@
+[basic]
+description = "NetLicensing-MCP 在 HTTP 传输模式下存在身份认证缺失漏洞（CWE-306）。ApiKeyMiddleware 中间件在未检测到客户端 API 密钥时，未拒绝请求而是无条件放行至下游处理器，导致下游 HTTP 客户端回退使用服务器环境变量中的 NETLICENSING_API_KEY 进行上游 NetLicensing REST API 认证。未经身份认证的远程攻击者可通过向 /mcp 端点发送任意请求，以服务器操作员身份调用所有 MCP 工具，包括产品列表查询、许可证创建/修改及删除等操作，导致机密性（账户数据泄露）、完整性（许可证篡改）和可用性（批量删除）受损。该漏洞影响以 HTTP 模式部署且设置 NETLICENSING_API_KEY 环境变量的 netlicensing-mcp 版本，CVSS 评分 8.1，危害等级高。"
+published = "2026-01-01"
+remediation = "立即升级 netlicensing-mcp 至修复版本（≥0.1.6），该版本在 ApiKeyMiddleware 中增加了对缺失 API Key 请求的 401 拒绝逻辑。如无法升级，在 HTTP 传输模式下部署时，通过反向代理（如 Nginx）添加 `/mcp` 端点的客户端证书认证或 IP 白名单限制，并避免将 `NETLICENSING_API_KEY` 环境变量暴露给不可信网络。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "NetLicensing netlicensing-mcp HTTP 传输模式认证绕过漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54446",
+    "GHSA-x9vc-9ffq-p3gj",
+]
+ave_id = "AVE-2026-0516"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/pypi/netlicensing-mcp/CVE-2026-54446.yml",
+    "https://github.com/opencve/opencve-kb/blob/d983e79279f1f6283391580f592d754045c7d17d/2026/CVE-2026-54446.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/0bde7ad241dd0e070c73be268acb78555be38fd9/cve/CVE-2026-54446.html",
+    "https://github.com/github/advisory-database/blob/29919db3f954d9ce9be0e7e3cf177436392d45d3/advisories/github-reviewed/2026/07/GHSA-x9vc-9ffq-p3gj/GHSA-x9vc-9ffq-p3gj.json",
+    "https://github.com/pypa/advisory-database/blob/3926520bcc5671ddd00549bf2242a2082ef49d3d/vulns/netlicensing-mcp/PYSEC-2026-3490.yaml",
+    "https://github.com/RogoLabs/consensus-engine/blob/dcd526fb689714d5f3e3864d909b86e28c091c65/docs/data/2026/CVE-2026-54446.json",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/886e3cd9cda40e2c4ffda31042908f1a83f89624/proposals/ghsa/GHSA-x9vc-9ffq-p3gj.proposal.yaml",
+    "https://github.com/ericverret35/opsintel/blob/4c05472f9ad1f89d70ba85bdf08a663c3daf261e/advisories/2026-07-23-pysec-2026-3490.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/0bde7ad241dd0e070c73be268acb78555be38fd9/posts/cve-2026-54446-pip-netlicensing-mcp.html",
+    "https://github.com/bitfront-se/vuln-list-temp/blob/f637a1d9c477b365f04814609a546f50c9aa4193/osv/python/netlicensing-mcp/PYSEC-2026-3490.json",
+]
