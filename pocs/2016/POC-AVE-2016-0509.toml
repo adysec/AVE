@@ -1,0 +1,45 @@
+[info]
+author = "AVE"
+description = "通过 HTTP 服务端返回包含 UAF 触发 JavaScript 的 HTML 页面，检测目标 Apple iOS/macOS 设备是否存在 WebKit JavaScriptCore not_number defineProperties UAF 漏洞（CVE-2016-4656）。该漏洞与 CVE-2016-4655/CVE-2016-4657 组成 Trident 利用链，被 Pegasus 间谍软件用于内核提权。影响 iOS 9.3.5 之前及 OS X 10.11.6 之前版本。PoC 参考 Metasploit 模块（EDB-44836）及 jndok/PegasusX 项目。"
+id = "POC-AVE-2016-0509"
+name = "Apple iOS/macOS WebKit JavaScriptCore not_number defineProperties UAF 漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2016-4656",
+    "webkit",
+    "uaf",
+    "ios",
+    "kernel",
+    "lpe",
+    "trident",
+]
+vuln_id = [
+    "CVE-2016-4656",
+    "CVE-2016-4655",
+    "CVE-2016-4657",
+    "AVE-2016-0509",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/loader"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Target is vulnerable"]
