@@ -1,0 +1,44 @@
+[basic]
+description = "Coder 远程开发环境平台的 `POST /api/v2/files` 接口在处理 ZIP 文件上传时，通过 `CreateTarFromZip` 在内存中将 ZIP 转换为 TAR，虽限制单条目大小但缺失解压后总数据量聚合限制，导致解压数据写入无界内存缓冲区。已认证攻击者可上传符合 100 MiB 上传限制但包含大量高压缩比条目的 ZIP 文件，解压后耗尽内存导致 `coderd` 服务在 RBAC 权限检查前崩溃，重复请求可致服务持续不可用。该漏洞属拒绝服务（CWE-409），不涉及数据泄露或代码执行。影响 Coder 2.17.0 至 2.29.7、2.32.7、2.33.8、2.34.2 前版本，CVSS 3.1 评分 6.5（中危，AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H）。官方已在 v2.29.17、v2.32.7、v2.33.8、v2.34.2 修复，新增元数据预检聚合大小限制及流式写入强制限制。缓解措施为限制文件上传权限或部署反向代理限制请求体大小。"
+published = "2026-07-07T23:16:55.510"
+remediation = "建议立即升级 Coder 到修复版本：2.29 线升级至 v2.29.17，2.32 线升级至 v2.32.7，2.33 线升级至 v2.33.8，2.34 线升级至 v2.34.2。升级地址：https://github.com/coder/coder/releases。若暂时无法升级，可在反向代理（如 Nginx）层面限制请求体大小（client_max_body_size 100M），并限制文件上传权限仅对可信用户开放，或在防火墙层面限制 /api/v2/files 接口访问频率作为临时缓解措施。"
+score = 6.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Coder Coder zip上传解压缺失总量限制拒绝服务漏洞"
+updated = "2026-07-08T19:45:05.967"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-55078",
+    "GHSA-2mg2-p7r7-g27f",
+]
+ave_id = "AVE-2026-0592"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/coder/coder/pull/25877",
+    "https://github.com/coder/coder/releases/tag/v2.29.17",
+    "https://github.com/coder/coder/releases/tag/v2.32.7",
+    "https://github.com/coder/coder/releases/tag/v2.33.8",
+    "https://github.com/coder/coder/releases/tag/v2.34.2",
+    "https://github.com/coder/coder/security/advisories/GHSA-2mg2-p7r7-g27f",
+    "https://github.com/CVEProject/cvelistV5/blob/8a32d285d75465c2c539e92c7500793aa7910652/cves/2026/55xxx/CVE-2026-55078.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/github.com/coder/coder/v2/CVE-2026-55078.yml",
+    "https://github.com/cisagov/vulnrichment/blob/7cbd46ac4e2574be115c8b4e081aab80c1276132/2026/55xxx/CVE-2026-55078.json",
+    "https://github.com/TMA84/cvealert/blob/51d0c9e0ce11ffd48a06c5251961beaf423d7c9a/content/posts/cve-2026-55078.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2026-55078.md",
+    "https://github.com/golang/vulndb/blob/49e980b0fa2abb924c0c6216ee3d787ba6a54723/data/osv/GO-2026-5916.json",
+    "https://github.com/github/advisory-database/blob/ba518c3d2e41cb46015251f8c5b067b05ea0ba59/advisories/github-reviewed/2026/07/GHSA-2mg2-p7r7-g27f/GHSA-2mg2-p7r7-g27f.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/86ec648b067e7f3c439a59ccb9e6e448f07cc2d1/SSVC/data/2026/CVE-2026-55078.json",
+    "https://github.com/bmwiedemann/openSUSE/blob/d8a287381c78b37aa3d10fca316ba2301f060da3/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+    "https://github.com/slowslowgogo/SecurityReport/blob/9c2fe25b94c7c3f24908c5b82631ca477488eb4f/output/brief_2026-07-08.html",
+]
