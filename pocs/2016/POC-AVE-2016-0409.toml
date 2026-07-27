@@ -1,0 +1,65 @@
+[info]
+author = "AVE"
+description = "检测目标服务器是否托管了易受攻击的 Adobe Flash Player 21.0.0.242 及更早版本的 SWF 内容。通过探测 Flash 资源引用、版本字符串匹配、SWF 文件魔数及版本字节分析，判断目标是否存在 CVE-2016-4171 漏洞环境。该漏洞为客户端漏洞，PoC 仅做服务端侦察检测，不触发利用。"
+id = "POC-AVE-2016-0409"
+name = "CVE-2016-4171 Adobe Flash Player 任意代码执行漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2016-4171",
+    "adobe",
+    "flash",
+    "rce",
+    "kev",
+]
+vuln_id = [
+    "CVE-2016-4171",
+    "AVE-2016-0409",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "application/x-shockwave-flash",
+    "shockwaveflash",
+    "flashvars",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/player.swf"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "FWS",
+    "CWS",
+    "ZWS",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/expressInstall.swf"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "FWS",
+    "CWS",
+    "ZWS",
+]
