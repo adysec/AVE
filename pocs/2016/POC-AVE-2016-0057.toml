@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "检测 WordPress WP Mobile Detector 插件版本是否 <= 3.5，该版本存在 resize.php 任意文件上传漏洞（CVE-2016-15043），未经身份认证的攻击者可上传任意文件导致远程代码执行。"
+id = "POC-AVE-2016-0057"
+name = "WordPress WP Mobile Detector 插件任意文件上传漏洞 PoC"
+severity = "critical"
+tags = ["ave-2016-0057"]
+vuln_id = [
+    "CVE-2016-15043",
+    "AVE-2016-0057",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wp-content/plugins/wp-mobile-detector/readme.txt"
+protocol = "http"
+
+[[poc.requests.extractors]]
+group = 1
+name = "version"
+part = "body"
+regex = ["(?mi)Stable tag: ([0-9.]+)"]
+type = "regex"
+value = "{{version}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["wp-mobile-detector"]
