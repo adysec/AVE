@@ -1,0 +1,31 @@
+[info]
+author = "AVE"
+description = "通过构造恶意的 pickle checkpoint 文件，验证 MosaicML Composer 在加载 checkpoint 时是否存在反序列化不可信数据漏洞（CWE-502）。PoC 创建一个包含 __reduce__ 方法的恶意 pickle 对象，加载时执行 touch /tmp/ave-poc-marker 命令，检测 marker 文件是否存在以判断漏洞是否可被利用。"
+id = "POC-AVE-2026-0459"
+name = "MosaicML Composer Checkpoint Deserialization RCE PoC"
+severity = "high"
+tags = [
+    "cve-2026-10043",
+    "mosaicml",
+    "composer",
+    "deserialization",
+    "pickle",
+    "rce",
+]
+vuln_id = [
+    "CVE-2026-10043",
+    "AVE-2026-0459",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/tmp/ave-poc-marker"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["ave-poc-marker"]
