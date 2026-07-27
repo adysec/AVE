@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "通过 HTTP 请求检测 Samsung MagicINFO 9 Server 版本号，判断是否处于受影响的版本范围（≤ 21.x）。若版本匹配则说明存在默认权限配置不当漏洞（CWE-276），低权限本地用户可通过替换安装目录中的二进制文件实现权限提升至 SYSTEM。"
+id = "POC-AVE-2026-0529"
+name = "Samsung MagicINFO 9 Server 默认权限配置不当本地提权漏洞 PoC"
+severity = "high"
+tags = ["ave-2026-0529"]
+vuln_id = [
+    "CVE-2026-25203",
+    "AVE-2026-0529",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/MagicInfo/api/v1/system/version"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["MagicInfo"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/MagicInfo/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["MagicInfo"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/MagicInfoPremium/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["MagicInfo"]
