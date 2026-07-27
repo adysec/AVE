@@ -1,0 +1,42 @@
+[basic]
+description = "ViewComponent 是 Ruby on Rails 中用于构建可复用、可测试视图组件的框架。其 `ViewComponent::Base#around_render` 方法存在 HTML 安全绕过漏洞（CWE-79），当 `around_render` 返回包含用户可控数据的字符串时，会绕过正常 `#call` 方法的转义机制，直接输出原始 HTML，导致跨站脚本攻击（XSS）。攻击者可在低权限条件下，通过构造恶意载荷触发 XSS，窃取会话凭证、执行越权操作或进行钓鱼攻击。`ViewComponent::Collection#render_in` 会进一步放大风险，将各条目结果拼接后标记为 `html_safe`，使未转义的恶意内容被浏览器直接执行。该漏洞影响 ViewComponent 4.0.0 至 4.12.0 版本，CVSS 评分 8.7，危害等级高。官方已在 4.12.0 版本中修复。"
+published = "2026-07-17T21:17:09.043"
+remediation = "立即升级 ViewComponent 至 v4.12.0 或更高版本（执行 `bundle update view_component`），该版本已修复 `around_render` 的 HTML 安全绕过问题。如无法立即升级，应避免在 `around_render` 中返回用户可控内容，并对返回值手动调用 `ERB::Util.html_escape` 进行转义处理；同时避免在集合渲染中使用 `.html_safe` 拼接未经过安全边界的组件输出。"
+score = 8.7
+severity = "HIGH"
+sources = ["ghsa"]
+title = "ViewComponent view_component around_render HTML安全绕过跨站脚本漏洞"
+updated = "2026-07-23T18:04:52.510"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54498",
+    "GHSA-97jw-64cj-jc58",
+]
+ave_id = "AVE-2026-0563"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/ViewComponent/view_component/commit/48e5fd2d602344c7d33019fbc5c8b087e315bb78",
+    "https://github.com/ViewComponent/view_component/commit/6796b2e89d0bd7b9d7d763a86275e5334731dd61",
+    "https://github.com/ViewComponent/view_component/releases/tag/v4.12.0",
+    "https://github.com/ViewComponent/view_component/security/advisories/GHSA-97jw-64cj-jc58",
+    "https://github.com/rubysec/ruby-advisory-db/blob/6abafa39bbf76fbd32a01a93a3a2ba048c0f7143/gems/view_component/CVE-2026-54498.yml",
+    "https://github.com/CVEProject/cvelistV5/blob/3ac44cfd6537e05d45dfec0ed67b6d47bebeee2b/cves/2026/54xxx/CVE-2026-54498.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-54498.md",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/575eefe00f82443f5f87947d8e6e0e475795a92e/reports/2026-07-17/TIER_3_CVE-2026-54498.md",
+    "https://github.com/cisagov/vulnrichment/blob/917696d148c885368c24cb2bf38f1552da3d5c31/2026/54xxx/CVE-2026-54498.json",
+    "https://github.com/rubysec/rubysec.github.io/blob/7fe93c0d9f67491f32ca61e33aaca423a4c19903/advisories/_posts/2026-06-04-CVE-2026-54498.md",
+    "https://github.com/fankh/vulnerability-poc/blob/04aa22fbb624898c1d0928bc3b34fb05529275cb/2026/CVE-2026-54498/README.md",
+    "https://github.com/TMA84/cvealert/blob/51922162e2cbb5914a11ad939c724b426142677c/content/posts/cve-2026-54498.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/61b6c11d066bdf8e461d32b8d1b1447a9b607b34/cve/CVE-2026-54498.html",
+    "https://github.com/github/advisory-database/blob/1c8e3f4146e1bef501493d1237acb1611ea8f707/advisories/github-reviewed/2026/07/GHSA-97jw-64cj-jc58/GHSA-97jw-64cj-jc58.json",
+]
