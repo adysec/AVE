@@ -1,0 +1,38 @@
+[basic]
+description = "NukeViet 后台评论编辑功能中存在路径遍历漏洞，允许经过身份验证的管理员通过注入特制的 `attach` 参数删除应用根目录下的任意文件（如 `config.php`）。漏洞位于 `modules/comment/admin/edit.php` 文件中，由于程序在处理 `attach` 参数时仅通过 `substr()` 截取固定前缀长度，未对路径进行合法性校验，攻击者可填充 26 个任意字符后拼接 `../../` 路径遍历序列将目标文件路径存入数据库。当评论被删除时，`del.php` 从数据库中读取该路径并调用 `nv_deletefile()` 执行删除操作，该函数仅检查路径是否在 `NV_ROOTDIR` 范围内，未限制删除目录为上传目录，导致任意文件被删除。攻击者利用此漏洞可删除 `config.php` 导致应用完全不可用并暴露安装向导，造成严重业务中断。CVSS 评分 8.7，危害等级高，影响 NukeViet 多个版本。"
+published = "2026-01-01"
+remediation = "升级 NukeViet 至包含该修复的版本（≥ 4.5.03），修复在 `modules/comment/admin/edit.php` 中增加了 `nv_is_file()` 路径校验，拒绝包含 `../` 的 `attach` 参数。如无法立即升级，可临时移除管理员对评论编辑功能的访问权限，或通过 Web 应用防火墙（WAF）拦截包含 `attach=*../` 模式的 POST 请求。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "NukeViet 评论管理功能路径遍历致任意文件删除漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54065",
+    "GHSA-c9xg-64p9-f2jj",
+]
+ave_id = "AVE-2026-0458"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/packagist/nukeviet/nukeviet/CVE-2026-54065.yml",
+    "https://github.com/opencve/opencve-kb/blob/2d169092e150510565286f993df9f7fc48f36f74/2026/CVE-2026-54065.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/f8742da1084e2ea91d8a187f05ac4aefa8a39934/cve/CVE-2026-54065.html",
+    "https://github.com/nukeviet/nukeviet/blob/aa109b6683cd35d74b1f3028ff53bff426ed1d5d/CHANGELOG.txt",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/github-reviewed/2026/07/GHSA-c9xg-64p9-f2jj/GHSA-c9xg-64p9-f2jj.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/dcd526fb689714d5f3e3864d909b86e28c091c65/docs/data/2026/CVE-2026-54065.json",
+    "https://github.com/mindyoumh/my-ailounge/blob/d8c84c82ad390de87727e202006aa179880ba61b/docs/feeds/08-security-alerts.md",
+    "https://github.com/proshiba/vuln-intel-agent/blob/eb9d5949573bf98755141185e45226827196e91c/vulndb/vulns/github/2026/07/VW-2026-29707.yaml",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/f8742da1084e2ea91d8a187f05ac4aefa8a39934/api/intel/products/cve-2026-54065-composer-nukeviet-nukeviet.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/f8742da1084e2ea91d8a187f05ac4aefa8a39934/posts/cve-2026-54065-composer-nukeviet-nukeviet.html",
+]
