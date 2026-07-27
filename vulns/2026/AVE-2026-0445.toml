@@ -1,0 +1,38 @@
+[basic]
+description = 'laravel-backup-restore 数据库恢复功能存在 OS 命令注入漏洞。该漏洞源于恢复流程在解压 ZIP 备份归档后，将 `db-dumps` 目录下的文件名直接拼接到 shell 命令字符串中（如 `mysql ... < {dumpFile}`、`gunzip -c {dumpFile}`、`psql ... < {dumpFile}`），而未对文件名进行 shell 转义处理。由于 `Illuminate\Support\Facades\Process::run(string)` 底层使用 Symfony `Process::fromShellCommandline()`，文件名中的 shell 元字符会被 `/bin/sh` 或 Windows 平台 shell 解释执行。攻击者可通过构造包含恶意文件名的备份归档，诱导管理员或自动化系统恢复该归档，从而以 PHP/Laravel 应用用户的身份执行任意系统命令，导致应用被控制、数据库凭据泄露、数据篡改及横向移动。该漏洞影响 `wnx/laravel-backup-restore` 包 v1.9.4 之前的所有版本，已在 v1.9.4 中修复。'
+published = "2026-01-01"
+remediation = "立即将 wnx/laravel-backup-restore 升级至 v1.9.4 及以上版本，该版本已修复数据库恢复过程中 ZIP 条目文件名未转义导致的命令注入问题。由于无配置缓解措施，升级是唯一完整的修复方案，请勿对不可信来源的备份归档执行恢复操作。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "wnx laravel-backup-restore 数据库恢复过程操作系统命令注入漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-53932",
+    "GHSA-w9mx-xmg4-gc4r",
+]
+ave_id = "AVE-2026-0445"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/YHalo-wyh/security-research/blob/4834c2bacee5487f27cb419f0122428e4158a71c/cves/CVE-2026-53932.md",
+    "https://github.com/opencve/opencve-kb/blob/9a744405af9963b75806fc17a6bfddc39223f336/2026/CVE-2026-53932.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/packagist/wnx/laravel-backup-restore/CVE-2026-53932.yml",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/2f177ebb4b5452c2c02ca5859b2ea631fa7d5bc4/cve/CVE-2026-53932.html",
+    "https://github.com/stevologic/security-recipes.ai/blob/0262d64737c11a639346262c413e84b552ac0aa6/content/recipes/cve/cve-2026-53932-laravel-backup-restore-has-an-os-command-injection-during-database-restore.md",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/github-reviewed/2026/07/GHSA-w9mx-xmg4-gc4r/GHSA-w9mx-xmg4-gc4r.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/dcd526fb689714d5f3e3864d909b86e28c091c65/docs/data/2026/CVE-2026-53932.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/eb9d5949573bf98755141185e45226827196e91c/vulndb/vulns/github/2026/07/VW-2026-29607.yaml",
+    "https://github.com/JsHuang/sec-advisory-daily/blob/86aea41dd2762b8ae57edf00dafe081b4536e32d/reports/report-2026-07-10.html",
+    "https://github.com/YHalo-wyh/security-research/blob/4834c2bacee5487f27cb419f0122428e4158a71c/README.md",
+]
