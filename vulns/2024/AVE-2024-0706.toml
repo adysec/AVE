@@ -1,0 +1,42 @@
+[basic]
+description = 'Howyar 的 UEFI 应用程序 "Reloader"（32位和64位版本）存在安全功能绕过漏洞，其硬编码路径允许加载并执行未经数字签名的软件。本地攻击者利用管理员权限可将未签名的恶意 UEFI 应用放入该固定路径，从而绕过 Secure Boot 安全启动机制，在系统启动早期阶段执行任意未授权代码，完全破坏平台的可信启动链。该漏洞影响使用 Howyar Reloader 的 Windows 系统，CVSS 评分 8.2，危害等级高。'
+published = "2025-01-14T14:15:34.930"
+remediation = "立即安装 Microsoft 2025 年 1 月安全更新（包含 KB5049981），该更新已将存在漏洞的 reloader.efi（哈希值 cdb7c90d3ab8833d5324f5d8516d41fa990b9ca721fe643fffaef9057d9f9e48 和 e9e4b5a51f6a5575b9f5bfab1852b0cb2795c66ff4b28135097cba671a5491b9）加入 UEFI 吊销列表（dbx）。同时将 Howyar SysReturn 升级至 10.2.023_20240919 及以上版本，Greenware GreenGuard 升级至 10.2.023-20240927 及以上版本，Radix SmartRecovery 升级至 11.2.023-20240927 及以上版本，Sanfong EZ-back System 升级至 10.3.024-20241127 及以上版本，WASAY eRecoveryRX 升级至 8.4.022-20241127 及以上版本，CES NeoImpact 升级至 10.1.024-20241127 及以上版本，SignalComputer HDD King 升级至 10.3.021-20241127 及以上版本。在 Windows 上以管理员权限运行 PowerShell 命令 `[System.Text.Encoding]::ASCII.GetString((Get-SecureBootUEFI db).bytes) -match 'Microsoft Corporation UEFI CA 2011'` 检查是否受影响，以及 `[BitConverter]::ToString((Get-SecureBootUEFI dbx).bytes) -replace '-' -match 'cdb7c90d3ab8833d5324f5d8516d41fa990b9ca721fe643fffaef9057d9f9e48'` 检查保护是否生效。在 Linux 上使用 `dbxtool --list | grep 'cdb7c90d3ab8833d5324f5d8516d41fa990b9ca721fe643fffaef9057d9f9e48'` 确认吊销已应用。作为临时缓解措施，限制对 EFI 系统分区（ESP）的写入权限，仅允许管理员访问，并启用安全产品对 ESP 文件修改的监控告警。"
+score = 8.2
+severity = "HIGH"
+sources = ["msrc"]
+title = "Howyar UEFI Reloader 安全启动绕过漏洞"
+updated = "2026-06-17T08:19:54.407"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-7344"]
+ave_id = "AVE-2024-0706"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://uefi.org/revocationlistfile",
+    "https://uefi.org/specs/UEFI/2.10/03_Boot_Manager.html",
+    "https://uefi.org/specs/UEFI/2.10/32_Secure_Boot_and_Driver_Signing.html",
+    "https://www.eset.com/blog/enterprise/preparing-for-uefi-bootkits-eset-discovery-shows-the-importance-of-cyber-intelligence/",
+    "https://www.kb.cert.org/vuls/id/529659",
+    "https://www.welivesecurity.com/en/eset-research/under-cloak-uefi-secure-boot-introducing-cve-2024-7344/",
+    "https://github.com/trickest/cve/blob/e69d88e0152845fc4d4b49970ca6e503f56b2f93/2024/CVE-2024-7344.md",
+    "https://github.com/CVEProject/cvelistV5/blob/257ebb29696cc311841c79ca4ceb0162bf5df44a/cves/2024/7xxx/CVE-2024-7344.json",
+    "https://github.com/cisagov/vulnrichment/blob/04aa8ca564639267b9d3e24749bc97bd87299d48/2024/7xxx/CVE-2024-7344.json",
+    "https://github.com/notthehiddenwiki/NTHW/blob/1daa55e411647eccacbb3a5b8723b51f1f08f45e/Z3S%20Links/2025/Jan_2025.md",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-7344",
+    "https://github.com/Vu1nT0tal/yarb/blob/bc76bf461beecebb7c648559b93e442ec7025acb/archive/2025/2025-09-13.md",
+    "https://github.com/mthcht/ThreatIntel-Reports/blob/5065dafd85905000b1059d7edda6091ac1b72962/Intel%20Reports/www_welivesecurity_com/en_eset-research_under-cloak-uefi-secure-boot-introducing-cve-2024-7344/link.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/31d5b78ee7ad856a6aee490403faecefdc8a4878/references/CVE-2024-7344-2025-01-14-1405",
+    "https://github.com/hackyboiz/hackyboiz.github.io/blob/0a88fd44ac6815b13d0cfcb9d086433fd2b6265f/2025/05/21/newp1ayer48/CVE-2024-7344/index.html",
+    "https://github.com/splunk/security_content/blob/24d7259ca189e9a7ed547ffa330bbcabf51852fa/detections/endpoint/windows_suspicious_file_in_efi_volume.yml",
+    "https://github.com/mkmk435/DanilaBagroot",
+]
