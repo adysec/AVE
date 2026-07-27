@@ -1,0 +1,40 @@
+[basic]
+description = 'Excelize 是一个 Go 语言编写的 Excel 文档读写库，其 checkSheet() 函数在处理 XLSX 文件中的 `<row r="N">` XML 属性时，未对行号值进行有效性校验，直接将攻击者控制的数值作为 make([]xlsxRow, row) 的切片长度参数。攻击者可通过构造特制的 XLSX 文件触发两种拒绝服务变体：当 r=2147483647 时，强制分配约 16GB 内存导致进程被 OOM 杀死；当 r=-1 时，触发切片越界访问导致运行时 panic 崩溃。该漏洞无需身份认证，任何使用受影响版本解析用户上传 XLSX 文件并调用 GetCellValue 等 API 的服务均受影响。已在 v2.11.0 版本中修复。'
+published = "2026-07-10T17:16:58.440"
+remediation = '立即将 github.com/xuri/excelize/v2 升级至 v2.11.0 或更高版本，该版本在 checkSheet() 中增加了对 `<row r="N">` 属性的边界校验（`r.R < 0` 返回错误，`r.R > TotalRows` 返回 ErrMaxRows）。如无法立即升级，可在解析用户上传的 XLSX 文件前增加文件预处理层，拒绝包含异常行号（r 值超出 1~1048576 范围）的 XML 工作表数据。'
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "xuri excelize 工作表解析器无界行索引分配拒绝服务漏洞"
+updated = "2026-07-16T14:11:27.260"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54063",
+    "GHSA-h69g-9hx6-f3v4",
+]
+ave_id = "AVE-2026-0452"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/qax-os/excelize/releases/tag/v2.11.0",
+    "https://github.com/qax-os/excelize/security/advisories/GHSA-h69g-9hx6-f3v4",
+    "https://github.com/CVEProject/cvelistV5/blob/50b2026c1039c6a81b95d80535c772b9d8685178/cves/2026/54xxx/CVE-2026-54063.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-54063.md",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/e6fb55bfbbe31c8b8776d60f6e3b3154ee0fa3bf/reports/2026-07-10/TIER_2_CVE-2026-54063.md",
+    "https://github.com/cisagov/vulnrichment/blob/9553fde5ed5ff45a613d88bc99087dbba2111555/2026/54xxx/CVE-2026-54063.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/github.com/xuri/excelize/v2/CVE-2026-54063.yml",
+    "https://github.com/TMA84/cvealert/blob/081b07b9127f2841c08bad5c94aba4d1bf47bb88/content/posts/cve-2026-54063.md",
+    "https://github.com/xuri/excelize-doc/blob/35a371004ff1975f1664c77a9da9ee1df82821cc/en/releases/v2.11.0.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/3b5728f00ee558b9c845d4d9a20f2a9004619429/posts/cve-2026-54063-go-github-com-xuri-excelize-v2.html",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/648427aa2db027c1629d5ac1fafa487d8d68e08f/SSVC/data/2026/CVE-2026-54063.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2026-54063.md",
+]
