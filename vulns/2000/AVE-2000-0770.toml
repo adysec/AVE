@@ -1,11 +1,11 @@
 [basic]
-description = "Poll It CGI 2.0 的 pollit.cgi 管理认证模块存在设计缺陷，远程攻击者无需知道真实管理员密码，只需将 HTTP 请求参数 entered_password 和 admin_password 设置为相同值即可绕过身份验证，获取管理后台的完全访问权限，进而可对投票数据进行未授权操作。该漏洞影响 Poll It 2.01 及更早版本，CVSS 评分为 6.4，危害等级中高危。"
+description = "Poll It CGI 2.01 及更早版本的管理后台存在认证绕过漏洞。远程攻击者无需知道真实管理员密码，只需在登录请求中将 entered_password 和 admin_password 参数设置为相同值，即可绕过身份验证机制，直接访问管理功能。攻击者利用该漏洞可获取敏感配置信息或篡改投票数据，对系统机密性和完整性造成部分影响。该漏洞攻击复杂度低，无需任何权限即可远程利用。"
 published = "2000-12-11T05:00:00.000"
-remediation = "将 pollit.cgi 中 ReadForm() 调用移至脚本最前（第 15 行之前），确保所有内部变量声明都在 ReadForm 之后执行，防止攻击者通过 CGI 参数覆盖 $admin_password 等关键变量。同时限制 CGI 目录的 Web 访问权限，在 .htaccess 中添加 Allow/Deny 规则仅允许可信 IP 访问管理功能，并将 pollit_files/ 目录的敏感文件（如 ips.txt）配置为不可被 Web 直接访问。鉴于 cgi-world.com 已停止维护该脚本，强烈建议迁移至其他仍在更新的安全投票系统（如 LimeSurvey 或 PollDaddy）。"
+remediation = "立即升级 Poll It CGI 至 2.02 或更高版本。如厂商已停止维护，应彻底删除 pollit.cgi 脚本或将其从 Web 服务器中移除。临时缓解措施：在 Web 服务器配置（如 Apache 的 .htaccess）中添加访问控制，仅允许受信 IP 访问 pollit.cgi，并移除该脚本的执行权限（chmod -x pollit.cgi）。"
 score = 6.4
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "Poll It CGI 2.0 后台管理权限绕过漏洞"
+sources = ["cve"]
+title = "Poll It CGI 2.0 认证绕过漏洞"
 updated = "2026-06-16T21:53:05.270"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1069"]
 ave_id = "AVE-2000-0770"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-27T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=97236719315352&w=2",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5419",
     "https://www.exploit-db.com/exploits/177",
-    "https://github.com/CVEProject/cvelistV5/blob/4603507d019be3585b2e7bcddcb6c6f57901b490/cves/2000/1xxx/CVE-2000-1069.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4e42829e595f1a9b61ce455f2ab870c6325fb1ad/cves/2000/1xxx/CVE-2000-1069.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1c367c2407e523ae413438625300667710835348/CVE/data/2000/CVE-2000-1069.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1069",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-1069.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/cae595683b6fe65324ec717750e7cdca928c1db7/CVE/data/2000/CVE-2000-1069.json",
-    "https://github.com/github/advisory-database/blob/f5ee58102af366026efb2988554e99ff8cc7a609/advisories/unreviewed/2022/04/GHSA-9g9j-gh9g-48x5/GHSA-9g9j-gh9g-48x5.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88551/info.html",
-    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-1069.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153000_153100.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--a6d876e1-35f3-483c-a832-7e47fd78f5c5.json",
-    "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--a6d876e1-35f3-483c-a832-7e47fd78f5c5.owl",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1069.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1069.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/4aa573a753d6387eff023ebcf6fc6297b912048e/CVE-2000/CVE-2000-10xx/CVE-2000-1069.json",
+    "https://github.com/opencve/opencve-kb/blob/3a9acb85c323f70b3c41e59a73040cf73e226b4d/2000/CVE-2000-1069.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/050a55b80525b99be98f5c84fe46fa8ac25be676/2000/1xxx/CVE-2000-1069.md",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1069.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1069.json",
 ]
