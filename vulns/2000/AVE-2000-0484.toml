@@ -1,11 +1,11 @@
 [basic]
-description = 'Microsoft IIS 4.0/5.0 存在源代码片段泄露漏洞，远程攻击者可通过在 URL 后追加 "+.htr" 后缀，绕过服务器解析逻辑直接读取 .htr 处理程序的源代码片段，属于 ".HTR 文件片段读取" 变种漏洞。该漏洞影响 IIS 4.0 和 5.0 版本，CVSS 评分 5.0（AV:N/AC:L/Au:N/C:P/I:N/A:N），仅导致机密性部分丧失。攻击条件为目标服务器运行易受影响的 IIS 版本且开启 .htr 映射，无需身份认证即可远程利用，攻击者可获取服务端脚本逻辑、数据库连接串等敏感信息，进而辅助后续渗透攻击。微软已发布安全公告修复此漏洞，建议升级至 IIS 6.0 或应用相应补丁。'
+description = 'Microsoft IIS 4.0 和 5.0 存在源代码片段泄露漏洞，远程攻击者通过在 URL 后附加 "+.htr" 即可触发该漏洞，这是 ".HTR 文件片段读取" 漏洞的变种。攻击者无需身份认证即可通过网络远程利用，导致服务器返回 ASP 等脚本文件的源代码片段，从而泄露数据库连接字符串、业务逻辑等敏感信息。该漏洞影响 IIS 4.0 和 5.0 版本，攻击条件简单，危害中等。'
 published = "2000-07-17T04:00:00.000"
-remediation = '立即升级 IIS 5.0 至 Service Pack 2 或更高版本，IIS 4.0 应用微软安全公告 MS00-057 提供的补丁（KB271627）。若暂时无法升级，可在 IIS 管理器中移除 .htr 扩展名映射（ISAPI 筛选器中删除 htr 处理程序），或在 URLScan/防火墙层面拦截包含 "+.htr" 的请求作为临时缓解措施。'
+remediation = "建议立即移除 IIS 中的 .HTR 脚本映射：打开 Internet 服务管理器 → 右键网站属性 → 主属性 → WWW 服务 → 编辑 → 主目录 → 配置，删除 .HTR 条目。如业务必须保留 HTR 功能，则安装 MS00-044 补丁（已被 MS01-004 取代），同时收紧 /scripts/iisadmin 目录权限，仅允许管理员访问。"
 score = 5
 severity = "MEDIUM"
 sources = ["epss"]
-title = "微软 IIS 4.0/5.0 .HTR 文件片段读取漏洞"
+title = "Microsoft IIS 4.0/5.0 源码片段泄露漏洞"
 updated = "2026-06-16T21:52:08.837"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0630"]
 ave_id = "AVE-2000-0484"
 
 [meta]
-collected_at = "2026-07-26T00:00:00Z"
+collected_at = "2026-07-27T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,13 +26,13 @@ urls = [
     "https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-044",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5104",
     "https://www.exploit-db.com/exploits/20089",
-    "https://github.com/CVEProject/cvelistV5/blob/266fe704c781cbc078a9ec7ea9793fb6a6392843/cves/2000/0xxx/CVE-2000-0630.json",
+    "https://github.com/CVEProject/cvelistV5/blob/bb04e7276eb5376f975ca811b9a340d0d55b901d/cves/2000/0xxx/CVE-2000-0630.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0630",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/59ca4f392d6bd0050278f2e0f7a188de9666b267/2000/0xxx/CVE-2000-0630.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/aeb71534c2c1ecbacceb7a19c70a2ef935305a03/CVE/data/2000/CVE-2000-0630.json",
-    "https://github.com/github/advisory-database/blob/6be15d5bc4d11c3f9dbcc76b2b68361cadc22974/advisories/unreviewed/2022/04/GHSA-4pcm-9qq9-65qc/GHSA-4pcm-9qq9-65qc.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/11a92cc3c0d31b9e78fe8f2a857dd04df3195701/2000/0xxx/CVE-2000-0630.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0298403c910e42219c357a4f56dac428565b2e47/CVE/data/2000/CVE-2000-0630.json",
+    "https://github.com/github/advisory-database/blob/724a585dd64bbf0d8e6760dd16b808140e9a0dd8/advisories/unreviewed/2022/04/GHSA-4pcm-9qq9-65qc/GHSA-4pcm-9qq9-65qc.json",
     "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/snort/drop-rules/web-iis.rules",
-    "https://github.com/yarencheng/cve-devops-playground/blob/a1f8b3e954dc569a9faaf2d530236d865bca3340/content/CVE-2000-0630.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0630.md",
     "https://github.com/marcellodesales/aibbp-reverse-engineer/blob/960f610d597aae9fec1cc5f03c68679be00c222d/reverse_engineer/invicti/vulnerabilities/db/vulnerabilities/vdb/2000/0xxx/cve-2000-0630.yaml",
     "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/pre2008/iis_frag_disclosure.nasl",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
