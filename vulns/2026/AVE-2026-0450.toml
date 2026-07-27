@@ -1,0 +1,41 @@
+[basic]
+description = "Pillow 是一款 Python 图像处理库，其 PCF 字体文件加载函数 `PcfFontFile._load_bitmaps()` 在处理 PCF 字体文件的 METRICS 段时，直接从文件中读取字形尺寸（宽度和高度）并传递给 `Image.frombytes()`，但未调用 `Image._decompression_bomb_check()` 进行安全检查。攻击者可通过构造特制的 PCF 字体文件，将字形尺寸声明为最大 65535×131070 像素，导致单次加载即可分配高达 1.07GB 的堆内存，且每个字体文件可包含多个字形，造成拒绝服务。该漏洞影响 Pillow 12.3.0 之前的所有版本，CVSS 评分 7.5，危害等级高。由于 `PcfFontFile` 不通过 `Image.open()` 加载，因此完全绕过了原有的炸弹保护机制。修复版本为 12.3.0，用户应及时升级。"
+published = "2026-07-06T19:17:08.127"
+remediation = "立即升级 Pillow 至 12.3.0 或更高版本（pip install --upgrade Pillow）。如无法升级，在加载不可信 PCF 字体文件前增加 _decompression_bomb_check() 调用，或使用 Image.open() 替代 PcfFontFile 直接加载。同时限制应用进程内存使用（如 systemd 的 MemoryLimit 或 Docker 的 --memory 参数）作为纵深防御。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Pillow PcfFontFile 解压炸弹检测绕过漏洞"
+updated = "2026-07-07T18:58:26.730"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54059",
+    "GHSA-8v84-f9pq-wr9x",
+]
+ave_id = "AVE-2026-0450"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/python-pillow/Pillow/blob/main/docs/releasenotes/12.3.0.rst",
+    "https://github.com/python-pillow/Pillow/commit/0a263e6264aa5399988d9acd3bbfbca2ca3ec77d",
+    "https://github.com/python-pillow/Pillow/security/advisories/GHSA-8v84-f9pq-wr9x",
+    "https://github.com/CVEProject/cvelistV5/blob/50b2026c1039c6a81b95d80535c772b9d8685178/cves/2026/54xxx/CVE-2026-54059.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-54059.md",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/pypi/Pillow/CVE-2026-54059.yml",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/e6fb55bfbbe31c8b8776d60f6e3b3154ee0fa3bf/reports/2026-07-06/TIER_3_CVE-2026-54059.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/1994996b0b1043aeb0b2d4db6d06b7a742460e16/osv/cve/2026/UBUNTU-CVE-2026-54059.json",
+    "https://github.com/neuvector/vul-source/blob/83b6758c208f8fd7e22b7c88e002c3658ef467b8/ubuntu-cve-tracker/active/CVE-2026-54059",
+    "https://github.com/cisagov/vulnrichment/blob/9553fde5ed5ff45a613d88bc99087dbba2111555/2026/54xxx/CVE-2026-54059.json",
+    "https://github.com/TMA84/cvealert/blob/081b07b9127f2841c08bad5c94aba4d1bf47bb88/content/posts/cve-2026-54059.md",
+    "https://github.com/alpinelinux/aports/blob/8ecd0a8b6df901f448daf84fcdff97aa070dbb78/community/py3-pillow/APKBUILD",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/f555c0f654266a1e9da5c7e8fd8e7ef7b8ac0ebc/cve/CVE-2026-54059.html",
+]
