@@ -1,0 +1,46 @@
+[basic]
+description = "Linux 内核高精度定时器（hrtimers）子系统在 CPU 热插拔场景下存在状态处理缺陷。当 CPU 从在线状态经热卸载降至 CPUHP_HRTIMERS_PREPARE 阶段再恢复在线时，hrtimers_prepare_cpu() 回调未执行，导致 cpu_base.hres_active 标志位持续置位，而 tick 和 clockevents 已在卸载过程中关闭。恢复后 CFS 调度器错误认为 hrtick 已激活，clockevent 设备永久失去切换为 oneshot 模式的时机，同时 cpu_base.online 未正确置位触发内核警告，且部分 per-CPU 状态未重置可能遗留悬空指针。本地攻击者需具备低权限即可利用此漏洞触发系统崩溃或潜在权限提升，CVSS 评分 7.8，危害等级高。"
+published = "2025-02-12T14:15:31.403"
+remediation = "立即将 Linux 内核升级至以下修复版本：4.20+、5.4.290+、5.10.234+、5.15.177+、6.1.127+、6.6.74+ 或 6.12.11+。对应发行版请安装相应安全更新：Debian 11 安装 DLA-4075-1 更新，Ubuntu 安装 USN-7459-1 更新。Siemens 设备（SCALANCE/SIMATIC S7-1500 等）升级固件至 V3.2 或更高版本。如无法立即升级，可通过限制本地用户登录和禁用 CPU 热插拔功能作为临时缓解措施。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 hrtimers 热插拔 CPU 状态处理不当释放后使用漏洞"
+updated = "2026-06-17T08:14:18.330"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57951"]
+ave_id = "AVE-2024-0652"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/14984139f1f2768883332965db566ef26db609e7",
+    "https://git.kernel.org/stable/c/15b453db41d36184cf0ccc21e7df624014ab6a1a",
+    "https://git.kernel.org/stable/c/2f8dea1692eef2b7ba6a256246ed82c365fdc686",
+    "https://git.kernel.org/stable/c/38492f6ee883c7b1d33338bf531a62cff69b4b28",
+    "https://git.kernel.org/stable/c/3d41dbf82e10c44e53ea602398ab002baec27e75",
+    "https://git.kernel.org/stable/c/95e4f62df23f4df1ce6ef897d44b8e23c260921a",
+    "https://git.kernel.org/stable/c/a5cbbea145b400e40540c34816d16d36e0374fbc",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-265688.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-355557.html",
+    "https://github.com/trickest/cve/blob/e69d88e0152845fc4d4b49970ca6e503f56b2f93/2024/CVE-2024-57951.md",
+    "https://github.com/CVEProject/cvelistV5/blob/bb04e7276eb5376f975ca811b9a340d0d55b901d/cves/2024/57xxx/CVE-2024-57951.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57951",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57951.yaml",
+    "https://github.com/0xMarcio/cve/blob/acf4fca32ae3e6d7d43276d798ba52a241ef3b49/2024/CVE-2024-57951.md",
+    "https://github.com/cisagov/vulnrichment/blob/d2b9f82473296f370428cbc110ec5b988e3fd692/2024/57xxx/CVE-2024-57951.json",
+    "https://github.com/bell-sw/osv-database/blob/027c37e8e73e99b2a68cafab2e6594bde5db273e/BELL-CVE/BELL-CVE-2024-57951.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/31d5b78ee7ad856a6aee490403faecefdc8a4878/references/CveServices-CVE-2024-57951-2025-11-03-1440",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/unreviewed/2025/02/GHSA-5j5f-9wh9-hfj9/GHSA-5j5f-9wh9-hfj9.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57951",
+]
