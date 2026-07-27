@@ -1,11 +1,11 @@
 [basic]
-description = "libxslt 在处理跨 RVT（运行时值树）存储的 xsl:key 数据时存在释放后使用（Use-After-Free）漏洞。当解析特制的 XSL 节点时，程序在释放内存后未正确清除指针，导致攻击者可通过诱导用户打开恶意构造的 XSLT 样式表文件，触发对已过期指针的解引用，造成应用程序崩溃。该漏洞为本地攻击向量，需要用户交互，影响使用 libxslt 库的应用程序，CVSS 评分 5.5，危害等级中等。"
+description = "libxslt 在解析 XSL 节点时存在释放后使用（Use-After-Free）漏洞。当处理跨 RVT（Runtime Variable Tree）存储的 key 数据时，程序未能正确管理内存生命周期，导致已释放的指针被继续引用，可能触发过期指针的解引用操作，造成应用程序崩溃。该漏洞需要用户交互触发，攻击者需诱使用户打开特制的 XSL 文件，影响范围限于本地攻击场景，CVSS 评分 5.5，危害等级中危。受影响的版本包括 libxslt 1.1.x 系列。"
 published = "2025-09-25T16:15:31.337"
-remediation = "升级 libxslt 至 1.1.44 及以上版本（1.1.44 于 2025-11-25 发布，包含 MR!77 修复）。RHEL 用户安装对应 RHSA 更新：RHEL 8 升级至 libxslt-1.1.32-6.4.el8_10，RHEL 10 升级至 libxslt-1.1.39-8.el10_2.1。如无法立即升级，避免在不受信任的 XSLT 样式表中使用 `<xsl:key>` 元素作为临时缓解措施。"
+remediation = "将 libxslt 升级至 1.1.44 或更高版本（v1.1.44 于 2025-11-25 发布，v1.1.45 于 2025-11-30 发布）。RHEL 8 用户升级至 libxslt-1.1.32-6.4.el8_10，RHEL 10 用户升级至 libxslt-1.1.39-8.el10_2.1，对应 RHSA 公告。如无法立即升级，避免在不可信来源的 XSLT 样式表中使用 xsl:key 和跨 RVT 引用，并限制本地用户上传恶意 XSL 文件。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
-title = "GNOME libxslt 释放后使用漏洞"
+title = "libxslt 解析 XSL 节点释放后使用漏洞"
 updated = "2026-07-23T14:16:56.823"
 
 [exploit]
@@ -40,11 +40,11 @@ urls = [
     "https://gitlab.gnome.org/GNOME/libxslt/-/issues/144",
     "https://gitlab.gnome.org/GNOME/libxslt/-/merge_requests/77",
     "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2025/CVE-2025-10911.md",
-    "https://github.com/CVEProject/cvelistV5/blob/8a32d285d75465c2c539e92c7500793aa7910652/cves/2025/10xxx/CVE-2025-10911.json",
+    "https://github.com/CVEProject/cvelistV5/blob/145038fbd12ba507a810d82f3ca7bed9554ecf9f/cves/2025/10xxx/CVE-2025-10911.json",
     "https://github.com/canonical/ubuntu-security-notices/blob/7fb6b5b3f877cb85d43b44481d8426d9d97694f8/osv/cve/2025/UBUNTU-CVE-2025-10911.json",
     "https://github.com/neuvector/vul-source/blob/eed339cf256327c44d192c0d80436ef03b70d37e/ubuntu-cve-tracker/active/CVE-2025-10911",
     "https://github.com/0xMarcio/cve/blob/75b5e380a041f7d82baaaae75856fe8702a1ff30/2025/CVE-2025-10911.md",
-    "https://github.com/cisagov/vulnrichment/blob/7cbd46ac4e2574be115c8b4e081aab80c1276132/2025/10xxx/CVE-2025-10911.json",
+    "https://github.com/cisagov/vulnrichment/blob/16901ed3086419e92a3d59446e25736507cf6a0b/2025/10xxx/CVE-2025-10911.json",
     "https://github.com/VirtualBox/virtualbox/blob/ed9472c42b0a0f5426665dc5506e93bc203c64a9/src/libs/libxml2-2.15.3/NEWS",
     "https://github.com/flatcar/scripts/blob/9daca039e01aed3ca2e1403b119c6164c0b5037a/changelog/security/2026-03-04-weekly-updates.md",
     "https://github.com/github/advisory-database/blob/effb2f348554323580d029ec0e691334888b7fed/advisories/unreviewed/2025/09/GHSA-g23f-vwrr-7m5p/GHSA-g23f-vwrr-7m5p.json",
