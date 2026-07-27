@@ -1,11 +1,11 @@
 [basic]
-description = "OpenSSH 1.2.x 的 scp 组件存在目录遍历漏洞，恶意的远程 scp 服务器可通过在文件名中包含 ..（点点）路径分隔符，向客户端文件系统任意位置写入文件，覆盖已有文件。攻击者需诱骗客户端连接至恶意 scp 服务器，从而在内网或用户环境中实现任意文件覆盖，可能导致权限提升或服务异常。此漏洞影响 OpenSSH 1.2 系列版本，CVSS 评分 5.0，危害等级中危。"
+description = "OpenSSH 1.2.x 的 scp 客户端存在目录遍历漏洞，远程恶意 scp 服务器可通过在文件名中包含 ..（点点）序列，在客户端执行 scp 下载操作时覆盖客户端任意文件。攻击者只需搭建恶意 SSH 服务器并诱导受害者使用 scp 命令连接下载文件即可触发，无需认证。该漏洞影响 OpenSSH 1.2 系列版本，CVSS 评分 5.0，危害等级中危，可导致任意文件被覆盖，进而可能实现代码执行或系统控制。"
 published = "2000-12-19T05:00:00.000"
-remediation = "升级至 OpenSSH 2.3.0 及以上版本（或最新 OpenSSH 版本），该版本已修复 scp 路径遍历问题。如无法升级，请禁用 scp 命令（sshd_config 中注释掉 subsystem-sftp 并移除 scp 二进制），改用 sftp 进行安全文件传输。此外，在客户端避免使用 `-o StrictHostKeyChecking=no` 连接不可信服务端。"
+remediation = "建议升级至 OpenSSH 3.0 及以上版本，该漏洞已在后续版本中修复。如无法升级，应禁用 scp 命令并改用 sftp 或 rsync 替代文件传输，同时在 sshd 配置中限制 scp 路径访问权限。"
 score = 5
 severity = "MEDIUM"
-sources = ["osv"]
-title = "OpenSSH scp 目录遍历任意文件覆盖漏洞"
+sources = ["cve"]
+title = "OpenSSH scp 目录遍历文件覆盖漏洞"
 updated = "2026-06-16T21:52:55.680"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0992"]
 ave_id = "AVE-2000-0727"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-27T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/1742",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5312",
     "https://www.exploit-db.com/exploits/20253",
-    "https://github.com/CVEProject/cvelistV5/blob/4e452a37e644e8194f1171b7eec1f7dc625b6526/cves/2000/0xxx/CVE-2000-0992.json",
+    "https://github.com/CVEProject/cvelistV5/blob/3ac44cfd6537e05d45dfec0ed67b6d47bebeee2b/cves/2000/0xxx/CVE-2000-0992.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0992",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0992.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/d880529b2028116bddf6c732baf8f599b169f01e/CVE/data/2000/CVE-2000-0992.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/41644568d1e47f962c2cefae75c8b09359290a26/2000/0xxx/CVE-2000-0992.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/98f785d4de3da29b2a31131d1ba99ceeb9ee0484/CVE/data/2000/CVE-2000-0992.json",
     "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/ssh_scp.nasl",
-    "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-vx4v-hfcq-7vw7/GHSA-vx4v-hfcq-7vw7.json",
+    "https://github.com/github/advisory-database/blob/1c8e3f4146e1bef501493d1237acb1611ea8f707/advisories/unreviewed/2022/04/GHSA-vx4v-hfcq-7vw7/GHSA-vx4v-hfcq-7vw7.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0992.md",
     "https://github.com/zercurity/vulnerabilities/blob/8eb5f158d91688a46557263c708774d5f8d3956c/2000/CVE-2000-0992",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153000_153100.json",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--28024590-10a1-4ba5-bcfb-0fd1b9924f67.json",
+    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
+    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_144800_144900.json",
 ]
