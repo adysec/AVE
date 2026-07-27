@@ -1,0 +1,30 @@
+[info]
+author = "ave"
+description = '通过向libsoup库的soup_cookie_parse()函数传入带有无效时区偏移的特制expires日期字符串，触发cookie日期解析逻辑中的越界内存读取。验证方式：编译运行测试程序，调用soup_cookie_parse("NAME=VALUE;expires=Mon, 31 Dec 9999 23:59:59 -1000", NULL)，若返回非空cookie且expires为NULL（表示日期解析失败但未崩溃），则说明漏洞存在。参考：https://gitlab.gnome.org/GNOME/libsoup/-/issues/459'
+id = "POC-AVE-2025-0443"
+name = "GNOME libsoup HTTP库Cookie日期处理越界读取漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2025-11021",
+    "libsoup",
+    "oob-read",
+    "cookie",
+]
+vuln_id = [
+    "CVE-2025-11021",
+    "AVE-2025-0443",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["Set-Cookie"]
