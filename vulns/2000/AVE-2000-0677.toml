@@ -1,11 +1,11 @@
 [basic]
-description = "SGI IRIX 操作系统中的 crontab 命令在编辑计划任务时，会在 /tmp 目录下创建临时文件，但这些临时文件使用了可预测的文件名，并继承了当前用户的 umask 权限设置。本地攻击者可通过预测临时文件名，在目标用户编辑 crontab 文件期间进行符号链接攻击，从而修改其他用户的 crontab 文件内容，进而获取更高权限或执行未授权操作。该漏洞影响 IRIX 6.x 及更早版本，需要本地访问权限且满足竞争窗口条件。"
+description = "IRIX 操作系统的 crontab 命令在编辑计划任务时，会在 /tmp 目录下创建临时文件，且文件名可预测（如使用固定模式命名），同时临时文件权限继承当前用户的 umask 设置而非采用安全默认权限。本地攻击者可通过符号链接攻击或直接读写这些可预测的临时文件，在目标用户编辑 crontab 的过程中篡改其内容，从而植入恶意计划任务实现权限提升或执行任意命令。该漏洞影响 SGI IRIX 系统，攻击者需具备本地访问权限，利用条件较为苛刻（需等待目标用户编辑 crontab），但成功利用后可导致机密性、完整性和可用性部分受损。"
 published = "2000-06-21T04:00:00.000"
-remediation = "升级到 SGI IRIX 6.5.8 及以上版本，或安装 SGI 安全补丁 4310。如无法升级，将 umask 设置为 077 并确保 /tmp 目录使用粘滞位（chmod 1777 /tmp），同时限制 crontab 仅 root 用户可执行。使用非予测文件名（如 mkstemp）的替代 crontab 工具也可作为临时缓解方案。"
+remediation = "该漏洞影响已停止维护的 SGI IRIX 操作系统，官方不再提供安全补丁。建议立即将受影响的 IRIX 系统迁移至受支持的操作平台；若无法迁移，可采取以下缓解措施：(1) 严格限制本地用户登录权限，仅允许受信任的管理员账户访问系统；(2) 将 /tmp 目录挂载为 noexec 并设置粘滞位 (chmod 1777 /tmp)；(3) 在系统全局 umask 设置中强制使用 077，防止临时文件权限过低被其他用户篡改；(4) 使用 auditd 监控 /usr/bin/crontab 的异常调用行为。"
 score = 3.7
 severity = "LOW"
-sources = ["cve"]
-title = "SGI IRIX crontab 可预测临时文件导致本地文件修改漏洞"
+sources = ["avd"]
+title = "SGI IRIX crontab 临时文件权限提升漏洞"
 updated = "2026-06-16T21:52:02.440"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-0579"]
 ave_id = "AVE-2000-0677"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-27T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-06/0204.html",
     "http://www.securityfocus.com/bid/1413",
-    "https://github.com/CVEProject/cvelistV5/blob/c729733510a7fb9b2cb302c6d8fbcecf1fc7ba0f/cves/2000/0xxx/CVE-2000-0579.json",
+    "https://github.com/CVEProject/cvelistV5/blob/257ebb29696cc311841c79ca4ceb0162bf5df44a/cves/2000/0xxx/CVE-2000-0579.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0579",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0579.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2cd9d7030fbc42684ccfa32eb6cd959ffcadf351/CVE/data/2000/CVE-2000-0579.json",
-    "https://github.com/github/advisory-database/blob/23c72f0e29729596bf60b6750cbec12b936da4bf/advisories/unreviewed/2022/04/GHSA-pxpj-c4wv-6w3x/GHSA-pxpj-c4wv-6w3x.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/41644568d1e47f962c2cefae75c8b09359290a26/2000/0xxx/CVE-2000-0579.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4bd823fa5ff72ec859371ff3ef0f5e18be2f2c77/CVE/data/2000/CVE-2000-0579.json",
+    "https://github.com/github/advisory-database/blob/29919db3f954d9ce9be0e7e3cf177436392d45d3/advisories/unreviewed/2022/04/GHSA-pxpj-c4wv-6w3x/GHSA-pxpj-c4wv-6w3x.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-0579.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0579.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--6f1f2c9a-1115-49bf-adbc-0d6c0d8585ff.json",
-    "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--6f1f2c9a-1115-49bf-adbc-0d6c0d8585ff.owl",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0579.md",
 ]
