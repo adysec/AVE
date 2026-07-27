@@ -1,0 +1,36 @@
+[basic]
+description = "Koel 音乐流媒体服务存在服务器端请求伪造（SSRF）漏洞。其出站 URL 防护函数 `isPublicHost()` 使用 PHP 的 `filter_var` 配合 `FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE` 标志检查 IP 地址是否为公网地址，但该标志位组合无法识别 NAT64（64:ff9b::/96）和 6to4（2002::/16）这两种 IPv6 过渡地址封装形式。攻击者可通过托管恶意 RSS 播客源，在 enclosure URL 中设置解析为 NAT64 或 6to4 封装地址的域名（如 `64:ff9b::a9fe:a9fe` 封装云元数据端点 `169.254.169.254`），绕过公网 IP 校验。当已认证用户订阅该播客源并播放时，Koel 会向内部地址发起 HTTP 请求并将响应体返回给攻击者，导致云实例元数据凭证泄露或内部服务数据被读取。该漏洞影响 Koel v9.5.0 及之前版本，攻击者需拥有播客订阅权限，且目标主机需运行在支持 NAT64/6to4 路由的 IPv6 网络环境（如 AWS/GCP 的 IPv6 子网）。"
+published = "2026-01-01"
+remediation = "立即将 Koel 升级至 v9.7.1 及以上版本（`composer update koel/koel`），该版本在 `isPublicHost()` 中增加了 IPv6 过渡地址（NAT64 64:ff9b::/96、6to4 2002::/16）的内嵌 IPv4 提取与私有地址检查逻辑。如无法立即升级，可在服务器防火墙/安全组中阻断出站流量到 64:ff9b::/96 和 2002::/16 网段，或禁用 IPv6 协议栈作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Koel 播客订阅功能服务器端请求伪造漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54494",
+    "GHSA-rjg7-r26h-cfp2",
+]
+ave_id = "AVE-2026-0556"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/packagist/phanan/koel/CVE-2026-54494.yml",
+    "https://github.com/opencve/opencve-kb/blob/a80bd76288fa21ed6722e02a392df422512b32df/2026/CVE-2026-54494.json",
+    "https://github.com/github/advisory-database/blob/1c8e3f4146e1bef501493d1237acb1611ea8f707/advisories/github-reviewed/2026/07/GHSA-rjg7-r26h-cfp2/GHSA-rjg7-r26h-cfp2.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/72250fcaba6f67069c40da9c17f08bd990e83148/docs/data/2026/CVE-2026-54494.json",
+    "https://github.com/JimBLogic/CyberDailyLog/blob/1e793ab452b65d94954c137652eaf3886a43fd70/reports/archive/2026/07/2026-07-16.md",
+    "https://github.com/proshiba/vuln-intel-agent/blob/eb9d5949573bf98755141185e45226827196e91c/vulndb/vulns/github/2026/07/VW-2026-29791.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/dce39ef8dd24743d0eb60b36b80f49d51f219690/data/history/CVE-2026-54494.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/eb9d5949573bf98755141185e45226827196e91c/data/vendors/github/advisories/2026/ghsa-rjg7-r26h-cfp2/advisory.json",
+]
