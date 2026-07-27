@@ -1,0 +1,74 @@
+[info]
+author = "AVE"
+description = "检测赛门铁克 Messaging Gateway 10.6.3-2 及之前版本中未经认证的远程命令执行漏洞。通过 LoginAction.notificationLogin 认证绕过获取会话，结合 RestoreAction.performRestore 中 localBackupFileSelection 参数的命令注入，以 root 权限执行任意命令。使用时间延迟方式安全验证。"
+id = "POC-AVE-2017-0808"
+name = "Symantec Messaging Gateway 10.6.3-2 Root Remote Command Execution PoC"
+severity = "high"
+tags = [
+    "cve-2017-6327",
+    "rce",
+    "command-injection",
+    "symantec",
+    "smg",
+]
+vuln_id = [
+    "CVE-2017-6327",
+    "AVE-2017-0808",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/brightmail/viewLogin.do"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+condition = "or"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "brightmail",
+    "Symantec Messaging Gateway",
+    "Brightmail",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/brightmail/common.jsp"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["symantec.brightmail.key.TOKEN"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/brightmail/admin/restore/action5.do"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+    500,
+]
+type = "status"
