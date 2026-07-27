@@ -1,11 +1,11 @@
 [basic]
-description = "Pillow（Python 图像处理库）12.3.0 之前版本在处理 McIdas AREA 格式图像时存在越界读取漏洞。当通过文件路径加载未压缩的 McIdas AREA 图像时，攻击者可通过构造特制的 32 位文件头字段（w[9]、w[10]、w[11]、w[14]、w[15]、w[34]）将行步长（stride）设置为远小于自然行宽的值。由于 `map.c` 中的 `PyImaging_MapBuffer` 函数仅校验 `offset + ysize*stride ≤ buffer_len`，未检查 `stride ≥ xsize*pixelsize`，导致后续像素读取操作（如 `Image.tobytes()`、`getpixel`、`convert`、`save`）从映射区域外读取相邻进程内存，造成敏感信息泄露或触发 SIGBUS 导致拒绝服务。攻击者只需诱使用户打开恶意构造的 McIdas AREA 文件即可触发，无需任何认证。该漏洞影响所有使用 Pillow 默认插件集且从磁盘路径打开用户上传图片的应用。"
+description = "Pillow（Python 图像处理库）在处理 McIdas AREA 格式图像文件时存在越界读取漏洞。当通过文件路径加载未压缩的 McIdas AREA 图像时，攻击者可通过构造特制的图像文件头字段，将行步长（stride）设置为远小于实际行宽的值。由于 map.c 中仅校验 offset + ysize*stride 不超过缓冲区长度，未检查 stride 是否大于等于自然行宽（xsize * pixelsize），导致后续像素访问操作（如 tobytes、getpixel、convert、save）从映射区域外读取相邻进程内存，造成敏感信息泄露或触发 SIGBUS 导致拒绝服务。攻击者只需诱使用户打开恶意构造的 McIdas AREA 图像文件即可触发，无需任何认证。该漏洞影响 Pillow 12.3.0 之前的所有版本。"
 published = "2026-07-14T17:17:03.433"
-remediation = "立即升级 Pillow 至 12.3.0 及以上版本（pip install --upgrade Pillow）。如无法升级，可在应用层对用户上传的图片文件增加 McIdas AREA 格式检测并拒绝处理，或在 Image.open() 前校验文件头中 stride 字段是否小于 xsize*pixelsize。SUSE 用户请安装 SUSE-SU-2026:3084-1 安全更新。"
+remediation = "立即将 Pillow 升级至 12.3.0 或更高版本（`pip install --upgrade Pillow`），该版本在 `src/map.c` 的 `PyImaging_MapBuffer` 中增加了 `stride >= im->linesize` 校验，并在 `McIdasImagePlugin.py` 中增加了对 `offset` 和 `stride` 的输入验证。如无法立即升级，可临时移除 McIdas 插件支持（删除或重命名 `PIL/McIdasImagePlugin.py`），或避免直接以文件路径方式打开用户上传的 McIdas AREA 图像。"
 score = 8.3
 severity = "HIGH"
 sources = ["ghsa"]
-title = "Pillow 图像处理库 McIdas AREA 文件解析越界读取漏洞"
+title = "Python Pillow McIdas AREA 文件处理越界读取漏洞"
 updated = "2026-07-15T20:08:02.787"
 
 [exploit]
