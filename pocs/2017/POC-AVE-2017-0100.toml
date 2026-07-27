@@ -1,0 +1,81 @@
+[info]
+author = "AVE"
+description = "检测目标 Web 服务是否可能向 Internet Explorer 客户端提供触发内存损坏漏洞（CVE-2017-0222）的内容。通过发送 IE 特定 User-Agent 请求，检查响应中是否包含 X-UA-Compatible、ActiveXObject、VBScript 等 IE 特有标记，判断目标环境是否存在被利用风险。"
+id = "POC-AVE-2017-0100"
+name = "Microsoft Internet Explorer Memory Corruption Detection PoC"
+severity = "high"
+tags = [
+    "cve-2017-0222",
+    "ie-rce",
+    "memory-corruption",
+]
+vuln_id = [
+    "CVE-2017-0222",
+    "AVE-2017-0100",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "X-UA-Compatible",
+    "ActiveXObject",
+    "vbscript:",
+    "MSIE",
+    "Trident",
+    "attachEvent",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "X-UA-Compatible",
+    "ActiveXObject",
+    "vbscript:",
+    "MSIE",
+    "Trident",
+    "attachEvent",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "X-UA-Compatible",
+    "ActiveXObject",
+    "vbscript:",
+    "MSIE",
+    "Trident",
+    "attachEvent",
+]
