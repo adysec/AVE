@@ -1,0 +1,38 @@
+[basic]
+description = "OpenRemote KNX 协议资产导入功能中存在 XML 外部实体注入漏洞。该漏洞源于 CVE-2026-40882 的修复不完整——官方仅修补了 Velbus 协议处理器的 XXE 缺陷，却遗漏了 KNXProtocol.java 中两处未受保护的 XML 解析调用（Saxon XSLT 转换与 XMLInputFactory）。已认证的攻击者可通过上传特制的 ETS 项目 ZIP 文件，利用外部实体读取服务器任意文件（如 /etc/passwd、数据库配置、云元数据等），并可能通过 SSRF 攻击内网服务。该漏洞影响所有暴露 Manager API 给认证用户的 OpenRemote 部署，无需管理员权限即可利用。"
+published = "2026-01-01"
+remediation = "将 io.openremote:openremote-agent 升级到 1.24.2 或更高版本，该版本已在 KNXProtocol.java 中对 Saxon TransformerFactory 和 XMLInputFactory 添加 XXE 防护配置（设置 FEATURE_SECURE_PROCESSING、disallow-doctype-decl、external-general-entities、external-parameter-entities、load-external-dtd 等安全特性）。如暂无法升级，可通过防火墙或反向代理限制对 /api/{realm}/agent/{agentId}/import 端点的访问，仅允许受信任的管理员 IP 调用资产导入功能，以阻止未授权用户的 XML 解析攻击面。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "OpenRemote KNXProtocol XML外部实体注入任意文件读取漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54640",
+    "GHSA-7v6w-c3f4-9wpq",
+]
+ave_id = "AVE-2026-0582"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/opencve/opencve-kb/blob/11bfe231e2f40901202bf5512cf311c598332515/2026/CVE-2026-54640.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/maven/io.openremote/openremote-agent/CVE-2026-54640.yml",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/99741b5a99060e0ef7e57233e958275657bbec08/posts/cve-2026-54640-maven-io-openremote-openremote-agent.html",
+    "https://github.com/github/advisory-database/blob/d91e95989ea5d3a9186ceb621d53a71dff03cab4/advisories/github-reviewed/2026/07/GHSA-7v6w-c3f4-9wpq/GHSA-7v6w-c3f4-9wpq.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/72250fcaba6f67069c40da9c17f08bd990e83148/docs/data/2026/CVE-2026-54640.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/32dd0ecbcf736d79febf6ed22e0a7191a7742222/vulndb/vulns/github/2026/07/VW-2026-29505.yaml",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/99741b5a99060e0ef7e57233e958275657bbec08/api/intel/products/cve-2026-54640-maven-io-openremote-openremote-agent.json",
+    "https://github.com/bitfront-se/vuln-list-temp/blob/f637a1d9c477b365f04814609a546f50c9aa4193/ghsa/maven/io.openremote/openremote-agent/GHSA-7v6w-c3f4-9wpq.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/99741b5a99060e0ef7e57233e958275657bbec08/posts/cve-2026-54641-maven-io-openremote-openremote-manager.html",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/99741b5a99060e0ef7e57233e958275657bbec08/posts/openremote-has-authenticated-sql-injection-via-datapoint-cro.html",
+]
