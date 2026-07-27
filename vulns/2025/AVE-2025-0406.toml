@@ -1,0 +1,38 @@
+[basic]
+description = "GNU GRUB2 的 squash4 文件系统模块存在整数溢出漏洞。在处理 squash4 文件系统时，grub 的 squash4 模块使用文件系统几何结构中用户可控的参数来确定内部缓冲区大小，但未正确检查整数溢出。攻击者可构造恶意的 squash4 文件系统，使缓冲区大小计算发生整数溢出，导致 grub_malloc() 分配的内存小于预期，进而在 direct_read() 函数执行数据读取时发生堆越界写入。该漏洞可被利用来破坏 GRUB 内部关键数据，最终导致任意代码执行，从而绕过 Secure Boot 保护机制。攻击者需要本地访问权限且能够挂载特制的 squash4 文件系统才能触发该漏洞。"
+published = "2025-03-03T17:15:14.053"
+remediation = "立即升级 GRUB2 至 2.12 以上版本（含上游安全补丁 84bc0a9a），或应用各发行版提供的 CVE-2025-0678 补丁（将 squash4.c 中 grub_malloc 替换为 grub_calloc 以防止整数溢出）。对于 RHEL 7/8/9/10 用户，安装 Red Hat 发布的对应 grub2 安全更新。同时更新 shim 引导加载器以应用最新的 SBAT 吊销数据，通过 `mokutil --sb-state` 确认 Secure Boot 状态，并使用 `mokutil --set-sbat-policy` 应用 SBAT 策略更新，防止绕过 Secure Boot 的利用。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "GNU GRUB2 squash4文件系统整数溢出导致堆越界写入漏洞"
+updated = "2026-06-30T00:16:50.207"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-0678"]
+ave_id = "AVE-2025-0406"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://access.redhat.com/security/cve/CVE-2025-0678",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=2346118",
+    "https://lists.gnu.org/archive/html/grub-devel/2025-02/msg00024.html",
+    "https://github.com/trickest/cve/blob/e69d88e0152845fc4d4b49970ca6e503f56b2f93/2025/CVE-2025-0678.md",
+    "https://github.com/CVEProject/cvelistV5/blob/3fc46d7716e9a0dd9635d13e2bff8fffb122a860/cves/2025/0xxx/CVE-2025-0678.json",
+    "https://github.com/open-edge-platform/edge-microvisor-toolkit/blob/f04086554da9724fc9382f780b507b33e9a17dfc/SPECS/grub2/CVE-2025-0678.patch",
+    "https://github.com/NixOS/nixpkgs/blob/aac3a899cc6ce8d928dfc5818dafc093b7936010/pkgs/by-name/gr/grub2/package.nix",
+    "https://github.com/neuvector/vul-source/blob/83b6758c208f8fd7e22b7c88e002c3658ef467b8/ubuntu-cve-tracker/active/CVE-2025-0678",
+    "https://github.com/cisagov/vulnrichment/blob/917696d148c885368c24cb2bf38f1552da3d5c31/2025/0xxx/CVE-2025-0678.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/bb6cd0f1a29580d840cdb570b8b0c57cc39aac6d/osv/cve/2025/UBUNTU-CVE-2025-0678.json",
+    "https://github.com/lgirdk/poky/blob/a7331c399252c8b365e51290c8eba3d2f6aa6fa1/meta/recipes-bsp/grub/files/CVE-2025-0678_CVE-2025-1125.patch",
+    "https://github.com/bell-sw/osv-database/blob/913667a73bdbecec80569e2765753066c820c678/BELL-CVE/BELL-CVE-2025-0678.json",
+    "https://github.com/rhboot/shim-review/blob/189497d59fa34f4dd88ea1bcfa6e54e7581acae8/README.md",
+]
