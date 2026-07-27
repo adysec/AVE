@@ -1,11 +1,11 @@
 [basic]
-description = "McAfee VirusScan 4.5 和 NetShield 4.5 默认安装过程中为标识 AutoUpgrade 目录的注册表项设置了不安全的权限，导致本地低权限用户可将该目录中原有的 SETUP.EXE 替换为特洛伊木马程序。当系统执行自动升级时，木马即以高权限运行，从而实现本地权限提升或任意命令执行。该漏洞攻击前提为攻击者已获得本地访问权限，利用难度较低。"
+description = "McAfee VirusScan 4.5 与 NetShield 4.5 默认安装时，标识 AutoUpgrade 目录的注册表项权限配置不当，本地用户可将该目录下的 SETUP.EXE 替换为木马程序。当系统执行自动升级相关流程时，会以较高权限运行被替换的程序，从而实现任意命令执行。该漏洞仅影响本地攻击场景，攻击者需具备目标主机本地访问权限且无需额外认证，主要破坏完整性。CVSS 评分为 2.1，危害等级较低。"
 published = "2000-07-11T04:00:00.000"
-remediation = '立即将 VirusScan/NetShield 升级至 4.5 以上官方最新版本，该版本已修复 AutoUpgrade 注册表项（`HKLM\Software\Network Associates\TVD\VirusScan\AutoUpgrade`）权限配置问题。如无法升级，手动收紧该注册表项权限：使用 `regedit` 将该项的 ACL 修改为仅允许 Administrators 和 SYSTEM 完全控制，移除 Users/Everyone 组的写入权限。同时建议启用 Windows 组策略限制非管理员对本机注册表的写入操作作为纵深防御。'
+remediation = '升级 McAfee VirusScan/NetShield 至 4.5 之后已修复权限问题的版本，或更换为当前受支持的终端防护产品。若暂无法升级，以管理员身份用 regedt32 打开注册表，找到标识 AutoUpgrade 目录的键（通常在 HKEY_LOCAL_MACHINE\SOFTWARE\Network Associates 或 McAfee 相关路径下），取消 Everyone/Users 的写权限，仅保留 Administrators 与 SYSTEM 的完全控制；同时对 AutoUpgrade 目录本身设置同样 ACL，禁止普通用户写入或替换 SETUP.EXE，并定期校验该目录下安装程序的完整性与数字签名。'
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "McAfee VirusScan 和 NetShield AutoUpgrade 目录权限许可漏洞"
+sources = ["avd"]
+title = "McAfee VirusScan/NetShield 注册表权限不当本地代码执行漏洞"
 updated = "2026-06-16T21:52:11.383"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0650"]
 ave_id = "AVE-2000-0788"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-27T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.osvdb.org/4200",
     "http://www.securityfocus.com/bid/1458",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5177",
-    "https://github.com/CVEProject/cvelistV5/blob/7f33768789fe75b3288b56f0d11b0df1d5f4a5d4/cves/2000/0xxx/CVE-2000-0650.json",
+    "https://github.com/CVEProject/cvelistV5/blob/cc838d0e5ff34a3026c5292897b23b79aee8bacf/cves/2000/0xxx/CVE-2000-0650.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0650",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0650.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/d67487551d3c04e5942b9b8e11c25937ecfba21c/CVE/data/2000/CVE-2000-0650.json",
-    "https://github.com/github/advisory-database/blob/32e7885f9dd6f50edc2a4b9aee21e32f55f76f84/advisories/unreviewed/2022/04/GHSA-25pv-5r6h-55j6/GHSA-25pv-5r6h-55j6.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/47b3b393e16caede3350b5302035c4ef73c36bc7/2000/0xxx/CVE-2000-0650.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0f7d9238ba77f900663100d40113352eb3a480d7/CVE/data/2000/CVE-2000-0650.json",
+    "https://github.com/github/advisory-database/blob/8fd24b26179bcdde52e301aef6d16b0838932c28/advisories/unreviewed/2022/04/GHSA-25pv-5r6h-55j6/GHSA-25pv-5r6h-55j6.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0650.md",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/nomi-sec/NVD-Database/blob/bc3b224aa865bb4a5c31d7720dca83e446e475e2/2000/CVE-2000-0650.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0650.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--e0b785d0-9396-4122-8fa8-a7b2a08d145e.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/5116d66f715b098d7dc74f3fb3559215242e5dbf/2000.tsv",
-    "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--e0b785d0-9396-4122-8fa8-a7b2a08d145e.owl",
+    "https://github.com/nomi-sec/CVE-Easy-List/blob/787307d8f336e6ebb0a4fd6310308cb7416de3d4/2000.tsv",
 ]
