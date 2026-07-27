@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 powerpc/pseries 子系统的 IOMMU 动态 DMA 窗口（DDW）实现中存在内存管理缺陷。Power Hypervisor 可能分配与 DDW 范围重叠的 MMIO 窗口，但内核代码未正确将这些 MMIO 页面标记为保留，导致 IOMMU 在该范围内映射 DMA 缓冲区，引发内存访问冲突。该漏洞源于两个编码问题：一是索引变量使用 int 类型而地址为 unsigned long，导致位图设置时出现负值；二是 DMA 偏移量已按页对齐处理，但 MMIO 地址（64 位）未进行页对齐转换。本地攻击者可通过触发特定硬件探测流程（如 be2net 网卡驱动加载）利用此漏洞，导致系统内核崩溃（OOPS），造成拒绝服务。该漏洞影响 Linux 内核 6.4.0 及之前版本，CVSS 评分 5.5，危害等级中等。"
+published = "2025-02-27T02:15:13.930"
+remediation = "建议立即将 Linux 内核升级至 6.12.13、6.13.2 或 6.14 及以上版本，包含提交 7043d58ecd13 的修复。对于无法立即升级的 PowerVM LPAR 环境，可在引导参数中添加 iommu=nobypass 禁用 IOMMU bypass 作为临时缓解措施，但会降低 DMA 性能。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel PowerPC pSeries IOMMU 内存越界访问导致系统崩溃漏洞"
+updated = "2026-06-17T08:14:24.873"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57999"]
+ave_id = "AVE-2024-0669"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/7043d58ecd1381674f5b2c894deb6986a1a4896b",
+    "https://git.kernel.org/stable/c/8f70caad82e9c088ed93b4fea48d941ab6441886",
+    "https://git.kernel.org/stable/c/d8cc20a8cceb3b5e8ad2e11365e3100ba36a27e9",
+    "https://github.com/CVEProject/cvelistV5/blob/50b2026c1039c6a81b95d80535c772b9d8685178/cves/2024/57xxx/CVE-2024-57999.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57999",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57999.yaml",
+    "https://github.com/bell-sw/osv-database/blob/027c37e8e73e99b2a68cafab2e6594bde5db273e/BELL-CVE/BELL-CVE-2024-57999.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2024-57999.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/648427aa2db027c1629d5ac1fafa487d8d68e08f/CVE/data/2024/CVE-2024-57999.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2024-57999.html",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/unreviewed/2025/02/GHSA-2qw8-jh79-6qc9/GHSA-2qw8-jh79-6qc9.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57999",
+    "https://github.com/canonical/ubuntu-security-notices/blob/1994996b0b1043aeb0b2d4db6d06b7a742460e16/usn/7651-5.json",
+]
