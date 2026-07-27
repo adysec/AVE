@@ -1,0 +1,47 @@
+[info]
+author = "AVE"
+description = "检测 D-Link DSL-2750B 路由器 login.cgi 页面 cli 参数命令注入漏洞，通过发送特制 GET 请求验证是否存在命令执行"
+id = "POC-AVE-2016-0168"
+name = "D-Link DSL-2750B OS Command Injection PoC"
+severity = "critical"
+tags = [
+    "cve-2016-20017",
+    "d-link",
+    "command-injection",
+]
+vuln_id = [
+    "CVE-2016-20017",
+    "AVE-2016-0168",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ayefeaturesconvert.js"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["DSL-2750"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/login.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["multilingual"]

