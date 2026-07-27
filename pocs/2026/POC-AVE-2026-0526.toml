@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "检测目标是否受 elixir-protobuf 解码器无限递归拒绝服务漏洞影响。发送深度嵌套的自引用 protobuf 消息，若服务因递归耗尽内存/CPU 而崩溃或不可用，则判定存在漏洞。"
+id = "POC-AVE-2026-0526"
+name = "CVE-2026-54451 PoC"
+severity = "high"
+tags = ["cve-2026-54451"]
+vuln_id = [
+    "CVE-2026-54451",
+    "AVE-2026-0526",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/path"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-protobuf"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection refused",
+    "timeout",
+    "no route to host",
+]
