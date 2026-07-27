@@ -1,0 +1,34 @@
+[info]
+author = "AVE"
+description = '通过发送特制的 DNNPersonalization Cookie 触发 DotNetNuke 反序列化漏洞，读取目标服务器 C:\Windows\win.ini 文件内容以验证漏洞存在'
+id = "POC-AVE-2017-1308"
+name = "DotNetNuke Cookie 反序列化远程代码执行 PoC"
+severity = "high"
+tags = ["ave-2017-1308"]
+vuln_id = [
+    "CVE-2017-9822",
+    "AVE-2017-1308",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/__"
+protocol = "http"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "[extensions]",
+    "for 16-bit app support",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [404]
+type = "status"
