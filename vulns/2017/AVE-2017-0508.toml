@@ -1,10 +1,10 @@
 [basic]
-description = "Apache Tomcat 在处理 HTTP PUT 请求时存在文件上传绕过漏洞。当 Tomcat 的 Default Servlet 的 readonly 初始化参数被设置为 false（即允许 PUT 方法）时，未经身份认证的远程攻击者可通过发送特制的 HTTP PUT 请求，向服务器上传包含恶意代码的 JSP 文件。由于服务器未对上传文件的扩展名进行充分校验，攻击者可利用路径遍历或特殊字符绕过限制，上传 JSP webshell 并远程访问该文件，导致任意代码在服务器上执行。该漏洞影响 Apache Tomcat 7.0.0 至 7.0.81、8.0.0.RC1 至 8.0.46、8.5.0 至 8.5.22 以及 9.0.0.M1 至 9.0.0 版本，CVSS 评分 8.1，危害等级高。攻击者无需认证即可利用，攻击复杂度较高（需启用 PUT 方法），成功利用后可完全控制目标服务器。"
+description = "Apache Tomcat 在启用了 HTTP PUT 方法（即将 Default Servlet 的 readonly 初始化参数设置为 false）时存在文件上传漏洞。远程攻击者可通过构造特制的 HTTP PUT 请求，向服务器上传包含恶意 JSP 代码的文件，随后通过访问该 JSP 文件触发服务器端执行任意代码。该漏洞影响 Tomcat 7.0.0 至 7.0.81、8.0.0.RC1 至 8.0.46、8.5.0 至 8.5.22 以及 9.0.0.M1 至 9.0.0 等多个版本，CVSS 评分 8.1，危害等级高。攻击者无需身份认证即可利用该漏洞，但需要目标服务器开启 PUT 方法且存在可写目录。目前已公开多个 PoC 利用脚本，实际威胁较高。"
 published = "2017-10-04T01:29:02.120"
-remediation = "升级 Apache Tomcat 至 9.0.1 及以上、8.5.23 及以上、8.0.47 及以上或 7.0.82 及以上版本。如无法立即升级，将 DefaultServlet 的 readonly 初始化参数设为 true（默认值），禁用 HTTP PUT 方法，并在 web.xml 中限制上传文件类型，禁止 .jsp/.jspx 后缀文件上传。"
+remediation = "升级 Apache Tomcat 至 9.0.1、8.5.23、8.0.47 或 7.0.82 及以上版本。如无法立即升级，将 DefaultServlet 的 readonly 初始化参数设为 true（默认即为 true，确认未被显式改为 false），以禁用 HTTP PUT 方法上传文件功能。同时建议在 Web 应用防火墙（WAF）层面拦截对 `.jsp` 后缀的 PUT 请求作为纵深防御。"
 score = 8.1
 severity = "HIGH"
-sources = ["kev"]
+sources = ["nuclei"]
 title = "Apache Tomcat PUT文件上传远程代码执行漏洞"
 updated = "2026-06-17T01:03:38.150"
 
@@ -70,15 +70,15 @@ urls = [
     "https://www.exploit-db.com/exploits/42966",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2017/CVE-2017-12617.yaml",
     "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2017/CVE-2017-12617.md",
-    "https://github.com/coffeehb/Some-PoC-oR-ExP/blob/29c28c6af8cd1da2d9fd8789fec0d41a0079b908/Apache/CVE-2017-12617.md",
-    "https://github.com/0xMarcio/cve/blob/75b5e380a041f7d82baaaae75856fe8702a1ff30/2017/CVE-2017-12617.md",
-    "https://github.com/Threekiii/Awesome-POC/blob/0f9e22b660cb1ea12c1c3668f9128d93e08da412/中间件漏洞/Apache Tomcat RCE via JSP Upload Bypass CVE-2017-12617.md",
-    "https://github.com/wgpsec/AboutSecurity/blob/f3c8574e6fa1f9c1cd5aeaba5a209af796107b34/Vuln/middleware/tomcat/CVE-2017-12617.md",
+    "https://github.com/Threekiii/Awesome-POC/blob/0f9e22b660cb1ea12c1c3668f9128d93e08da412/%E4%B8%AD%E9%97%B4%E4%BB%B6%E6%BC%8F%E6%B4%9E/Apache%20Tomcat%20RCE%20via%20JSP%20Upload%20Bypass%20CVE-2017-12617.md",
     "https://github.com/lal0ne/vulnerability/blob/5b9f397c1970203b1764fb7a66a0ffac39bef4cc/Apache/Tomcat/CVE-2017-12617/tomcat-cve-2017-12617.py",
+    "https://github.com/Ne3o1/PayLoadAllTheThings/blob/6c3d3b8f29d77a445beb4958aba65befa1287460/CVE%20Exploits/Tomcat%20CVE-2017-12617.py",
+    "https://github.com/coffeehb/Some-PoC-oR-ExP/blob/29c28c6af8cd1da2d9fd8789fec0d41a0079b908/Apache/CVE-2017-12617.md",
+    "https://github.com/sari3l/Poc-Monitor/blob/56512a99e34b402634b17f316d7453c65ba4b3f2/2017/CVE-2017-12617.json",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/50f657ad5d1fd5bd0d62718361ee31e898f44d48/data/2017/CVE-2017-12617-DevaDJ_CVE-2017-12617.md",
+    "https://github.com/eyalmazuz/ThreatIntelligenceCorpus/blob/c47f9d2b7ba92e0cbba71c67b938a49e055c5cdc/Corpus/securityaffairs_cve-2017-12617-tomcat-flaw.html.txt",
     "https://github.com/cyberheartmi9/CVE-2017-12617/blob/7fb13ea620064566bc111958a9e5cbb3b61cdc17/tomcat-cve-2017-12617.py",
-    "https://github.com/lal0ne/vulnerability/blob/5b9f397c1970203b1764fb7a66a0ffac39bef4cc/Apache/Tomcat/CVE-2017-12617/README.md",
-    "https://github.com/Ne3o1/PayLoadAllTheThings/blob/6c3d3b8f29d77a445beb4958aba65befa1287460/CVE Exploits/Tomcat CVE-2017-12617.py",
-    "https://github.com/arschlochnop/VulnWatchdog/blob/e08815527662784ab03e5fd602b4609aa8ded510/data/by-cve/CVE-2017-12617.md",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2017/CVE-2017-12617",
     "https://github.com/cyberheartmi9/CVE-2017-12617",
     "https://github.com/zi0Black/POC-CVE-2017-12615-or-CVE-2017-12717",
     "https://github.com/LongWayHomie/CVE-2017-12617",
