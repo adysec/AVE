@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 btrfs 文件系统在 `run_delalloc_nocow()` 函数处理延迟分配写入失败时存在 folio（页缓存）清理缺陷。当预分配区段的 NOCOW 写入成功但后续 COW 写入因空间不足失败时，错误处理路径未正确清除 folio 脏标志并解锁，导致内核触发 VM_BUG_ON_FOLIO 断言崩溃。本地低权限攻击者可通过构造特定 btrfs 文件系统操作（如触发 cow_file_range 返回 -ENOSPC）引发拒绝服务。该漏洞影响 Linux 内核 btrfs 模块，CVSS 评分 5.5，危害等级中等。"
+published = "2025-02-27T02:15:10.687"
+remediation = "立即将 Linux 内核升级至 6.12.13、6.13.2 或 6.14 及以上版本（对应修复 commit：5ae72abbf91eb、2434533f1c963、c2b47df81c8e2）。Ubuntu 22.04 LTS 用户请安装 USN-7653-1 安全更新：sudo apt update && sudo apt install linux-image-generic。如无法立即升级内核，可临时禁用 btrfs 文件系统的预分配（prealloc）功能作为缓解措施，但建议优先安排内核热重启完成升级。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel Btrfs 内存页清理不当导致拒绝服务漏洞"
+updated = "2026-06-17T08:14:21.287"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57975"]
+ave_id = "AVE-2024-0656"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/2434533f1c963e7317c45880c98287e5bed98325",
+    "https://git.kernel.org/stable/c/5ae72abbf91eb172ce3a838a4dc34be3c9707296",
+    "https://git.kernel.org/stable/c/c2b47df81c8e20a8e8cd94f0d7df211137ae94ed",
+    "https://github.com/CVEProject/cvelistV5/blob/50b2026c1039c6a81b95d80535c772b9d8685178/cves/2024/57xxx/CVE-2024-57975.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57975",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57975.yaml",
+    "https://github.com/bell-sw/osv-database/blob/027c37e8e73e99b2a68cafab2e6594bde5db273e/BELL-CVE/BELL-CVE-2024-57975.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2024-57975.md",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/02/18/seguranca/cve-2024-57975-btrfs-do-proper-folio-cleanup-when--1771405538000.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/050b62cac636d83be07e6d4c77e70114e1ca7c93/CVE/data/2024/CVE-2024-57975.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2024-57975.html",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/unreviewed/2025/02/GHSA-wp4j-4pcv-wwf5/GHSA-wp4j-4pcv-wwf5.json",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2024-57975",
+]
