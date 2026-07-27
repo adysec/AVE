@@ -1,0 +1,39 @@
+[basic]
+description = """SiYuan（思源笔记）是一款开源个人知识管理系统，其CSS代码片段功能存在存储型跨站脚本（Stored XSS）漏洞。当renderSnippet()通过insertAdjacentHTML将CSS片段内容插入<style>标签时，未对用户输入的</style>字符串进行转义处理，攻击者可在CSS片段中注入</style><img src=x onerror="...">等恶意载荷，突破<style>标签上下文执行任意JavaScript代码。在Electron桌面版中，由于渲染进程启用了nodeIntegration:true，攻击者可进一步通过require('child_process')链式利用实现远程代码执行（RCE）。该漏洞影响SiYuan 3.7.0之前所有版本，CVSS评分9.9，危害等级严重。攻击者只需拥有工作区写入权限（如通过泄露的同步凭证、共享文件系统或多用户Docker服务器），即可植入恶意CSS片段，该片段会通过工作区同步机制传播至所有同步设备，在应用启动或刷新时自动触发，无需用户交互。官方已在3.7.0版本中修复此漏洞。"""
+published = "2026-06-24T22:16:48.177"
+remediation = "立即升级 SiYuan 至 v3.7.0 或更高版本，该版本已修复 CSS 代码片段通过 insertAdjacentHTML 插值导致的 XSS 到 RCE 问题。如无法立即升级，可在 app/src/config/util/snippets.ts:32 中将 insertAdjacentHTML 替换为 createElement('style') + textContent 赋值，或对内容中的 < 进行 HTML 转义；同时在服务端 /api/snippet/setSnippet 接口拒绝包含 </style> 的 CSS 片段写入，防止旧版本同步拉取恶意载荷。"
+score = 9.9
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "SiYuan 思源笔记 CSS 代码片段存储型XSS到远程代码执行漏洞"
+updated = "2026-06-25T16:16:39.350"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54067",
+    "GHSA-mvjr-vv3c-w4qv",
+]
+ave_id = "AVE-2026-0461"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/siyuan-note/siyuan/security/advisories/GHSA-mvjr-vv3c-w4qv",
+    "https://github.com/CVEProject/cvelistV5/blob/15ba52d0829fe2220e9f89276b2743c7eef0ab2a/cves/2026/54xxx/CVE-2026-54067.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-54067.md",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/e6fb55bfbbe31c8b8776d60f6e3b3154ee0fa3bf/reports/2026-06-24/TIER_2_CVE-2026-54067.md",
+    "https://github.com/cisagov/vulnrichment/blob/9553fde5ed5ff45a613d88bc99087dbba2111555/2026/54xxx/CVE-2026-54067.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/github.com/siyuan-note/siyuan/kernel/CVE-2026-54067.yml",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/869f3abc79bfeaf3a31640839c1759509ebcc74c/nvd/2026/CRITICAL/CVE-2026-54067/README.md",
+    "https://github.com/TMA84/cvealert/blob/081b07b9127f2841c08bad5c94aba4d1bf47bb88/content/posts/cve-2026-54067.md",
+    "https://github.com/golang/vulndb/blob/d246ad98d3739cece1ce57358766d7c340b09c91/data/reports/GO-2026-5963.yaml",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6cdd862a65f157a01ff9fd42e651329142c691d2/CVE/data/2026/CVE-2026-54067.json",
+    "https://github.com/bmwiedemann/openSUSE/blob/d8a287381c78b37aa3d10fca316ba2301f060da3/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+]
