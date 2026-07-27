@@ -1,0 +1,40 @@
+[basic]
+description = "Trivy 安全扫描器在处理 Helm 图表归档文件（.tgz）时，其自定义 tar 解包器使用无大小限制的 io.ReadAll 读取每个条目，存在拒绝服务漏洞。攻击者可将恶意构造的 .tgz 文件放置在 Trivy 扫描路径中，利用 tar 炸弹技术使小体积压缩包解压后膨胀至数 GB，导致 Trivy 进程被操作系统 OOM killer 终止。该漏洞影响 trivy config、trivy filesystem --scanners misconf 及 trivy image --scanners misconf 等扫描模式，在 CI/CD 流水线场景中尤为危险——攻击者可通过提交包含恶意 Helm chart 的 PR 触发扫描失败、流水线阻塞，并可能消耗云 CI 运行器额外资源。已在 Trivy v0.71.0 中修复，使用 helm.sh/helm/v4 SDK 的 archive.LoadArchiveFiles 替代自定义解包器，强制实施条目级和总大小限制。"
+published = "2026-06-25T17:16:41.257"
+remediation = "立即升级 Trivy 至 v0.71.0 或更高版本，该版本使用 helm.sh/helm/v4 SDK 的 archive.LoadArchiveFiles 替代了无大小限制的自定义 tar 解包器。如无法立即升级，可通过 cgroup/容器限制 Trivy 进程内存上限，或使用 --skip-dirs 排除包含不可信 Helm Chart 归档文件的目录。"
+score = 6.9
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Aqua Security Trivy Helm 图表解压拒绝服务漏洞"
+updated = "2026-06-26T19:27:05.663"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54448",
+    "GHSA-q3fv-x8vg-qqm4",
+]
+ave_id = "AVE-2026-0519"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/aquasecurity/trivy/pull/10718",
+    "https://github.com/aquasecurity/trivy/security/advisories/GHSA-q3fv-x8vg-qqm4",
+    "https://github.com/CVEProject/cvelistV5/blob/4a22bba3217932039300edbc77cd188c415d71c8/cves/2026/54xxx/CVE-2026-54448.json",
+    "https://github.com/cisagov/vulnrichment/blob/04aa8ca564639267b9d3e24749bc97bd87299d48/2026/54xxx/CVE-2026-54448.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/github.com/aquasecurity/trivy/CVE-2026-54448.yml",
+    "https://github.com/docker-hardened-images/advisories/blob/9c6fab3ea174ce6e30d3e56324f3569eab03a80d/osv/trivy/CVE-2026-54448.json.sha256",
+    "https://github.com/TMA84/cvealert/blob/3919917ccdc95cad53a5d8f952d8d044dc152929/content/posts/cve-2026-54448.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2026-54448.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/0bde7ad241dd0e070c73be268acb78555be38fd9/posts/cve-2026-54448-go-github-com-aquasecurity-trivy.html",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4bd823fa5ff72ec859371ff3ef0f5e18be2f2c77/SSVC/data/2026/CVE-2026-54448.json",
+    "https://github.com/bmwiedemann/openSUSE/blob/d8a287381c78b37aa3d10fca316ba2301f060da3/packages/t/trivy/.rev",
+    "https://github.com/vergil-project/vergil-containers/blob/a022bcd48b8ceaadea6a387b692cc7d8ebb58ebc/releases/v2.1.11.md",
+]
