@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0429"
-aliases = ["CVE-2026-53714","GHSA-22xc-xg2r-9j7v"]
-
 [basic]
-title = "Envoy Gateway: xDS Control Plane Information Disclosure when operating in GatewayNamespaceMode "
-description = "### Impact
+description = """
+### Impact
 When Envoy Gateway runs in GatewayNamespaceMode (`provider.kubernetes.deploy.type=GatewayNamespace`), the xDS gRPC server is configured with a `StreamInterceptor` for JWT authentication but no UnaryInterceptor. The go-control-plane xDS server exposes both streaming and unary (Fetch) RPC methods for all registered discovery services. Since there is no unary interceptor, these Fetch endpoints are completely unauthenticated. 
 
 Additionally, the JWT authentication interceptor in GatewayNamespaceMode only validates tokens when the received gRPC message is of type `discoveryv3.DeltaDiscoveryRequest` . If the message is a `discoveryv3.DiscoveryRequest` — used by the State-of-the-World (SotW) xDS protocol — the type assertion fails, the validation block is skipped entirely, and RecvMsg returns nil (success) without any authentication.
@@ -18,21 +14,30 @@ Any pod in the cluster that can reach the xDS server (port 18000) can use the So
 
 ### Credits
 
-Envoy Gateway thanks @dashingDragon and @Donjon-Cerberus for reporting this issue."
-severity = "HIGH"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+Envoy Gateway thanks @dashingDragon and @Donjon-Cerberus for reporting this issue.
+"""
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Envoy Gateway: xDS Control Plane Information Disclosure when operating in GatewayNamespaceMode"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-53714",
+    "GHSA-22xc-xg2r-9j7v",
+]
+ave_id = "AVE-2026-0429"
+
+[meta]
+collected_at = "2026-07-25T18:43:07.296837291+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-25T18:43:07.296837291+00:00"

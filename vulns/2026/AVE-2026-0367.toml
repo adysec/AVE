@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0367"
-aliases = ["CVE-2026-52763","GHSA-89v6-j5x6-cmj3"]
-
 [basic]
-title = "YesWiki: SQL injection via the `recentchanges` action `period` argument leads to arbitrary DB read"
-description = "### Summary
+description = '''
+### Summary
 
 The `recentchanges` action (`actions/recentchanges.php`) accepts a `period` argument from two disjoint parameter spaces: the URL query string (`$_GET['period']`) and the action invocation `{{recentchanges period=\"...\"}}`. A whitelist at line 17 validates only the URL form against `['day','week','month']`. The action-argument form takes the `else` branch at line 33 (`$dateMin = $this->GetParameter('period')`) with no validation, and the value flows into `PageManager::getRecentlyChanged()` (`includes/services/PageManager.php:196`), where it is interpolated into a `WHERE time >= '...' ORDER BY time DESC` clause without escaping or parameterization. UNION-based injection succeeds, the leaked rows render into the response page via `actions/recentchanges.php:43,58` (`ComposeLinkToPage($page['tag'])`), so any visitor of the trigger page sees the exfiltrated data.
 
@@ -72,21 +68,30 @@ The injected query executes server-side; the `tag` column is rendered into the p
 
 ### Impact
 
-Arbitrary read of any DB column the application's MySQL user can access."
-severity = "MEDIUM"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+Arbitrary read of any DB column the application's MySQL user can access.
+'''
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "YesWiki: SQL injection via the `recentchanges` action `period` argument leads to arbitrary DB read"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-52763",
+    "GHSA-89v6-j5x6-cmj3",
+]
+ave_id = "AVE-2026-0367"
+
+[meta]
+collected_at = "2026-07-23T13:07:56.165259017+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-23T13:07:56.165259017+00:00"

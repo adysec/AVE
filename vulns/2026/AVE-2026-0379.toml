@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0379"
-aliases = ["CVE-2026-52819","GHSA-4m8q-55qv-9pwp"]
-
 [basic]
-title = "Kimai: Teamlead authorization bypass in GET /api/timesheets allows reading other users' timesheet records without being teamlead of the target"
-description = "## Summary
+description = '''
+## Summary
 
 `GET /api/timesheets?user=<id>` (and `users[]=<id>`) returns the targeted user's timesheet records to any caller that has the `view_other_timesheet` permission, without verifying that the caller is teamlead of any team containing the target user. The per-record endpoint `GET /api/timesheets/{id}` correctly enforces this check via `TimesheetVoter`/`RolePermissionManager::checkTeamAccessTimesheet` → `checkTeamLeadAccess`, but the list endpoint only filters projects/customers by team membership and never validates `t.user`. A `ROLE_TEAMLEAD` user can therefore enumerate any user's records — including the `rate` field — as long as those records are on a project with no team scoping (Kimai's default) or on any project that shares any team (membership, not lead) with the requester.
 
@@ -88,21 +84,30 @@ The list of requested user `TimesheetController::cgetAction()` is now guarded wi
 The `access_user` permission verifies that the requesting user is allowed to see each of the requested user.
 If any of the requested users may not be seen, the entire call will fail.
 
-Find out more at [https://www.kimai.org/en/security/ghsa-4m8q-55qv-9pwp](https://www.kimai.org/en/security/ghsa-4m8q-55qv-9pwp)"
-severity = "MEDIUM"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+Find out more at [https://www.kimai.org/en/security/ghsa-4m8q-55qv-9pwp](https://www.kimai.org/en/security/ghsa-4m8q-55qv-9pwp)
+'''
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Kimai: Teamlead authorization bypass in GET /api/timesheets allows reading other users' timesheet records without being teamlead of the target"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-52819",
+    "GHSA-4m8q-55qv-9pwp",
+]
+ave_id = "AVE-2026-0379"
+
+[meta]
+collected_at = "2026-07-24T00:53:51.632059744+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-24T00:53:51.632059744+00:00"

@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0372"
-aliases = ["CVE-2026-52771","GHSA-8f2v-2qhj-gfwg"]
-
 [basic]
-title = "YesWiki: Second-Order SQL Injection in Page Delete API via Unescaped Page Tag (`ApiController::deletePage`)"
-description = "## Summary
+description = '''
+## Summary
 `ApiController::deletePage()` interpolates a page tag retrieved from the database into a `DELETE FROM …_links WHERE to_tag = '$tag'` query without escaping. The page tag is attacker-controlled — the `POST /api/pages/{tag}` API accepts arbitrary URL-encoded values, including single quotes, and stores them. A low-privilege authenticated user can therefore create a page whose tag is a SQL fragment, make the page non-orphaned via the standard `{{include page=\"…\"}}` link mechanism, and then invoke the delete endpoint to execute arbitrary SQL inside the wiki database - including time-based blind data exfiltration from any table.
 
 This is a **classic second-order SQL injection**: the `INSERT` correctly escapes the value, so the malicious tag is stored intact and the input passes every \"is this value safe to put in the database?\" check; the sink is the *read-back-and-reuse* path, where escaping is omitted.
@@ -228,21 +224,30 @@ exploit elapsed: 2.555s
 *  Blind extraction of any column the wiki database account can read: user password hashes (`_users.password`), email addresses, ACLs (`_acls.list`), private page bodies (`_pages.body`), database session data, etc.
 * The sink is a `DELETE`; an attacker can append `OR 1=1-- ` to wipe the entire `_links` table, breaking inter-page navigation site-wide. The path can also be combined with `UNION`-style techniques to read into an error if the DBMS surfaces them (most YesWiki setups suppress errors, hence time-based blind is the realistic primary primitive).
 * `SLEEP()` per row scales with link-table size; a malicious tag with `SLEEP(60)` on a wiki with N links will hang one connection for ~60 N seconds, easily exhausting the MariaDB worker pool.
-* `_users.password` hashes are bcrypt; offline cracking of weaker passwords yields admin sessions. The bug therefore acts as a **low-priv → admin** primitive, and chains with the bazar deserialization bug (separate advisory) as **low-priv → admin → object injection / future RCE**"
-severity = "HIGH"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+* `_users.password` hashes are bcrypt; offline cracking of weaker passwords yields admin sessions. The bug therefore acts as a **low-priv → admin** primitive, and chains with the bazar deserialization bug (separate advisory) as **low-priv → admin → object injection / future RCE**
+'''
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "YesWiki: Second-Order SQL Injection in Page Delete API via Unescaped Page Tag (`ApiController::deletePage`)"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-52771",
+    "GHSA-8f2v-2qhj-gfwg",
+]
+ave_id = "AVE-2026-0372"
+
+[meta]
+collected_at = "2026-07-23T23:18:08.765095682+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-23T23:18:08.765095682+00:00"

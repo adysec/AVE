@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0370"
-aliases = ["CVE-2026-52769","GHSA-vw42-752g-5mrp"]
-
 [basic]
-title = "YesWiki has Unauthenticated Server-Side Request Forgery via ActivityPub `Signature.keyId`"
-description = "## Summary
+description = '''
+## Summary
 The `POST /api/forms/{formId}/actor/inbox` route - exposed publicly with `acl:\"public\"` - accepts an HTTP `Signature` header whose `keyId` parameter is a URL. `HttpSignatureService::verifySignature()` parses the header and **immediately makes a server-side HTTP GET** to that URL, **before** any cryptographic verification or URL validation. An unauthenticated remote attacker can therefore make YesWiki issue arbitrary outbound HTTP requests to any host the server can reach - internal services, cloud-metadata endpoints (`169.254.169.254`), intranet-only admin panels, etc. - and read enough back via timing and error-message oracles to scan ports, enumerate services, and (on a real cloud instance) reach IAM metadata.
 
 The only deployment-side precondition is that **ActivityPub be enabled on at least one Bazar form** (`bn_activitypub_enable = '1'`).
@@ -126,21 +122,30 @@ You will get an error in response like this:
 The `500` and the `\"Missing public key\"` exception are the **signal** the outbound fetch went all the way to the JSON parse — the listener returned `{}`, which contained no `publicKey` field, so the handler bailed *after* talking to the listener.
 
 Tested with webhook:
-<img width=\"1473\" height=\"678\" alt=\"image\" src=\"https://github.com/user-attachments/assets/6c720c68-3087-4e1a-b990-0a9f12ba8bbc\" />"
-severity = "HIGH"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+<img width=\"1473\" height=\"678\" alt=\"image\" src=\"https://github.com/user-attachments/assets/6c720c68-3087-4e1a-b990-0a9f12ba8bbc\" />
+'''
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "YesWiki has Unauthenticated Server-Side Request Forgery via ActivityPub `Signature.keyId`"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-52769",
+    "GHSA-vw42-752g-5mrp",
+]
+ave_id = "AVE-2026-0370"
+
+[meta]
+collected_at = "2026-07-23T19:24:27.988958407+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-23T19:24:27.988958407+00:00"
