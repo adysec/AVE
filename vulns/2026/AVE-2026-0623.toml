@@ -1,0 +1,41 @@
+[basic]
+description = "vLLM 是一款高吞吐量、内存高效的大语言模型推理引擎，其 structured_outputs.regex API 参数将用户提供的正则表达式字符串直接传递给语法编译器后端，且未设置编译超时。在 xgrammar 后端中，字符串直接进入 compile_regex() 函数而无任何防护；在 outlines 后端中，validate_regex_is_buildable() 仅检查前瞻断言、反向引用等结构性问题，但未进行复杂度分析，因此包含嵌套量词（如 (a+)+b）的恶意正则表达式可通过所有校验，导致 DFA 状态空间呈指数级膨胀。未经身份认证的远程攻击者只需发送一个包含此类对抗性正则表达式的请求，即可使推理工作线程无限期挂起，造成拒绝服务。该漏洞影响 vLLM 0.24.0 之前的所有版本，CVSS 评分 8.7，危害等级高。官方已在 v0.24.0 版本中通过为编译调用添加超时机制修复此漏洞。"
+published = "2026-07-06T21:16:57.347"
+remediation = "立即升级 vLLM 至 0.24.0 或更高版本，该版本在 regex 编译调用（compile_regex 和 oc.Index）中引入了线程超时机制（建议设为 5 秒）。如无法升级，可在反向代理层对 /v1/chat/completions 等接口的 structured_outputs.regex 参数实施长度限制（建议 ≤512 字符）并配置请求超时，同时禁用 outlines 和 xgrammar 后端的 regex 功能作为临时缓解。"
+score = 8.7
+severity = "HIGH"
+sources = ["ghsa"]
+title = "vLLM 正则表达式拒绝服务漏洞"
+updated = "2026-07-07T19:03:35.010"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-55574",
+    "GHSA-rwxx-mrjm-wc2m",
+]
+ave_id = "AVE-2026-0623"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/vllm-project/vllm/commit/2b3006076c5e9bc4cda9e03e3641388de3c5c286",
+    "https://github.com/vllm-project/vllm/pull/45118",
+    "https://github.com/vllm-project/vllm/security/advisories/GHSA-rwxx-mrjm-wc2m",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/51d0584360aea91ec24eaa996cf02372f54dc185/data/vuln/vllm/CVE-2026-55574.yaml",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/51d0584360aea91ec24eaa996cf02372f54dc185/data/vuln_en/vllm/CVE-2026-55574.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/487ea3f21ed49470634e758e1f8f2ac74b64d6b0/cves/2026/55xxx/CVE-2026-55574.json",
+    "https://github.com/cisagov/vulnrichment/blob/0d5eda5cdae3f3a50b92fdfcae2f5983174f2a99/2026/55xxx/CVE-2026-55574.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6052148b71cb79d42fd4a59f87982387b0487834/SSVC/data/2026/CVE-2026-55574.json",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/c47d1f5d848e164abef61b16f1d28d5df1852f8c/proposals/nvd/CVE-2026-55574.proposal.yaml",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-55574.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6052148b71cb79d42fd4a59f87982387b0487834/CVE/data/2026/CVE-2026-55574.json",
+    "https://github.com/NixOS/nixpkgs/blob/f0f2c9542dcdee0dfc1c400f44c7b913768e2195/pkgs/development/python-modules/vllm/default.nix",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/pypi/vllm/CVE-2026-55574.yml",
+]
