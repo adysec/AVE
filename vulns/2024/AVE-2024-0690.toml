@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核 KVM 虚拟化子系统的 kvm_get_vcpu() 函数存在释放后使用（Use-After-Free）漏洞。该函数在通过索引获取 vCPU 时，未先验证目标 vCPU 是否已完全上线，而是先对索引进行 nospec 钳位处理。当传入非法索引时，钳位操作会返回 0，导致函数返回 vCPU0 而非 NULL。由于 KVM 使用 xarray 管理 vCPU 数组，vCPU 在创建完成前即被插入数组，若后续创建失败并释放 vCPU0，其他代码路径仍可能通过该函数访问已释放的 vCPU0，触发释放后使用。本地攻击者需具备低权限访问，可利用此漏洞导致系统崩溃或权限提升。CVSS 评分 7.8，危害等级高。"
+published = "2025-03-06T17:15:21.773"
+remediation = "建议立即将 Linux 内核升级至包含 commit 3c1e4a1c 的版本：RHEL 9 升级至 RHSA-2025:20518 提供的 kernel 包；Ubuntu 18.04 LTS 安装 USN-7540-1 更新；Debian 11 应用 DLA-4178-1 内核更新；SUSE Linux Enterprise 15 SP6 安装 SUSE-SU-2025:1177-1 补丁。如无法立即升级，可通过限制本地用户对 KVM 虚拟化设备的访问权限作为临时缓解措施。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Kernel KVM 释放后使用漏洞"
+updated = "2026-06-17T08:14:35.720"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-58083"]
+ave_id = "AVE-2024-0690"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/09d50ccf0b2d739db4a485b08afe7520a4402a63",
+    "https://git.kernel.org/stable/c/125da53b3c0c9d7f58353aea0076e9efd6498ba7",
+    "https://git.kernel.org/stable/c/1e7381f3617d14b3c11da80ff5f8a93ab14cfc46",
+    "https://git.kernel.org/stable/c/5cce2ed69b00e022b5cdf0c49c82986abd2941a8",
+    "https://git.kernel.org/stable/c/7c4899239d0f70f88ac42665b3da51678d122480",
+    "https://git.kernel.org/stable/c/ca8da90ed1432ff3d000de4f1e2275d4e7d21b96",
+    "https://git.kernel.org/stable/c/d817e510662fd1c9797952408d94806f97a5fffd",
+    "https://git.kernel.org/stable/c/f2f805ada63b536bc192458a7098388286568ad4",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00028.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://github.com/trickest/cve/blob/e69d88e0152845fc4d4b49970ca6e503f56b2f93/2024/CVE-2024-58083.md",
+    "https://github.com/CVEProject/cvelistV5/blob/d426ca16061eaa1a65a39ea953ac0efe02aa4cae/cves/2024/58xxx/CVE-2024-58083.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-58083",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-58083.yaml",
+    "https://github.com/0xMarcio/cve/blob/acf4fca32ae3e6d7d43276d798ba52a241ef3b49/2024/CVE-2024-58083.md",
+    "https://github.com/cisagov/vulnrichment/blob/9553fde5ed5ff45a613d88bc99087dbba2111555/2024/58xxx/CVE-2024-58083.json",
+    "https://github.com/HerringLiu2333/Analysis-of-CWE/blob/cd8202c32037ed388ecd79e1fc81394f13c4d4a4/CVE-2024-58083/CVE-2024-58083.ql",
+    "https://github.com/bell-sw/osv-database/blob/027c37e8e73e99b2a68cafab2e6594bde5db273e/BELL-CVE/BELL-CVE-2024-58083.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/31d5b78ee7ad856a6aee490403faecefdc8a4878/references/CveServices-CVE-2024-58083-2025-11-03-1335",
+    "https://github.com/github/advisory-database/blob/29919db3f954d9ce9be0e7e3cf177436392d45d3/advisories/unreviewed/2025/03/GHSA-gw27-9x3h-33gj/GHSA-gw27-9x3h-33gj.json",
+]
