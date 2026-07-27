@@ -1,0 +1,42 @@
+[basic]
+description = "Pillow（Python 图像处理库）12.3.0 之前版本在处理 McIdas AREA 格式图像时存在越界读取漏洞。当通过文件路径加载未压缩的 McIdas AREA 图像时，攻击者可通过构造特制的 32 位文件头字段（w[9]、w[10]、w[11]、w[14]、w[15]、w[34]）将行步长（stride）设置为远小于自然行宽的值。由于 `map.c` 中的 `PyImaging_MapBuffer` 函数仅校验 `offset + ysize*stride ≤ buffer_len`，未检查 `stride ≥ xsize*pixelsize`，导致后续像素读取操作（如 `Image.tobytes()`、`getpixel`、`convert`、`save`）从映射区域外读取相邻进程内存，造成敏感信息泄露或触发 SIGBUS 导致拒绝服务。攻击者只需诱使用户打开恶意构造的 McIdas AREA 文件即可触发，无需任何认证。该漏洞影响所有使用 Pillow 默认插件集且从磁盘路径打开用户上传图片的应用。"
+published = "2026-07-14T17:17:03.433"
+remediation = "立即升级 Pillow 至 12.3.0 及以上版本（pip install --upgrade Pillow）。如无法升级，可在应用层对用户上传的图片文件增加 McIdas AREA 格式检测并拒绝处理，或在 Image.open() 前校验文件头中 stride 字段是否小于 xsize*pixelsize。SUSE 用户请安装 SUSE-SU-2026:3084-1 安全更新。"
+score = 8.3
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Pillow 图像处理库 McIdas AREA 文件解析越界读取漏洞"
+updated = "2026-07-15T20:08:02.787"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54058",
+    "GHSA-62p4-gmf7-7g93",
+]
+ave_id = "AVE-2026-0449"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/python-pillow/Pillow/commit/6a8de891fb00968e5ea79bfa84368ed90b3cfc1d",
+    "https://github.com/python-pillow/Pillow/pull/9719",
+    "https://github.com/python-pillow/Pillow/releases/tag/12.3.0",
+    "https://github.com/python-pillow/Pillow/security/advisories/GHSA-62p4-gmf7-7g93",
+    "https://github.com/CVEProject/cvelistV5/blob/50b2026c1039c6a81b95d80535c772b9d8685178/cves/2026/54xxx/CVE-2026-54058.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-54058.md",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/pypi/Pillow/CVE-2026-54058.yml",
+    "https://github.com/canonical/ubuntu-security-notices/blob/1994996b0b1043aeb0b2d4db6d06b7a742460e16/osv/cve/2026/UBUNTU-CVE-2026-54058.json",
+    "https://github.com/neuvector/vul-source/blob/83b6758c208f8fd7e22b7c88e002c3658ef467b8/ubuntu-cve-tracker/active/CVE-2026-54058",
+    "https://github.com/cisagov/vulnrichment/blob/d2b9f82473296f370428cbc110ec5b988e3fd692/2026/54xxx/CVE-2026-54058.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/e6fb55bfbbe31c8b8776d60f6e3b3154ee0fa3bf/reports/2026-07-14/TIER_2_CVE-2026-54058.md",
+    "https://github.com/TMA84/cvealert/blob/081b07b9127f2841c08bad5c94aba4d1bf47bb88/content/posts/cve-2026-54058.md",
+    "https://github.com/SolaceLabs/solace-agent-mesh/blob/f76d8972fecac522055e8195b704ec631c698c99/pyproject.toml",
+    "https://github.com/pypa/advisory-database/blob/3926520bcc5671ddd00549bf2242a2082ef49d3d/vulns/pillow/PYSEC-2026-3493.yaml",
+]
