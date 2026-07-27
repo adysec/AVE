@@ -1,0 +1,45 @@
+[basic]
+description = "Zcash Orchard 池的零知识证明电路中，`halo2_gadgets` 库的变基标量乘法 gadget 在实现 double-and-add 算法时，对基点使用了 `assign_advice()` 而非 `copy_advice()`，缺少复制约束将基点值绑定到实际输入，导致恶意证明者可自由选择基点值。攻击者可利用此缺陷绕过多样化地址完整性检查（pk<sub>d</sub> = [ivk] g<sub>d</sub>），使用错误的空化密钥（nk）为同一笔 note 生成不同的 nullifier，实现 Orchard 池内的双花攻击；或伪造花费授权窃取他人资金。该漏洞自 NU5 升级（2022 年 5 月 31 日）起存在，攻击无需认证且链上不可检测，CVSS 评分 9.3，危害严重。修复需升级至 zebrad 5.0.0 / halo2_gadgets 0.5.0 / orchard 0.14.0 / zcash_primitives 0.28.0 / zcashd 6.20.0，并需 NU6.2 硬分叉激活。"
+published = "2026-07-17T17:17:16.620"
+remediation = "立即升级 zebrad 至 5.0.0 及以上版本、zcashd 至 6.20.0 及以上版本、halo2_gadgets 至 0.5.0 及以上版本、orchard 至 0.14.0 及以上版本、zcash_primitives 至 0.28.0 及以上版本。NU6.2 硬分叉已修复该电路漏洞并重新启用 Orchard 交易。在升级前，节点运营者可部署临时软分叉（如 Zebra 4.5.3）拒绝所有含 Orchard 交易的区块作为临时缓解措施。依赖受影响 crate 的下游项目应同步升级并审计其他使用 assign_advice() 但未施加 copy 约束的代码位置。"
+score = 9.3
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Zcash Foundation Zebra Orchard 交易零知识证明验证绕过漏洞"
+updated = "2026-07-17T18:45:20.713"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54496",
+    "GHSA-ww9q-8r59-xv46",
+]
+ave_id = "AVE-2026-0561"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/ZcashFoundation/zebra/releases/tag/v5.0.0",
+    "https://github.com/ZcashFoundation/zebra/security/advisories/GHSA-ww9q-8r59-xv46",
+    "https://github.com/zcash/halo2/releases/tag/halo2_gadgets-0.5.0",
+    "https://github.com/zcash/librustzcash/releases/tag/zcash_primitives-0.28.0",
+    "https://github.com/zcash/orchard/releases/tag/0.14.0",
+    "https://github.com/zcash/zcash/releases/tag/v6.20.0",
+    "https://zfnd.org/zebra-4-5-3-and-5-0-0-emergency-soft-fork-and-nu6-2-activation",
+    "https://github.com/CVEProject/cvelistV5/blob/3ac44cfd6537e05d45dfec0ed67b6d47bebeee2b/cves/2026/54xxx/CVE-2026-54496.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/cargo/zebrad/CVE-2026-54496.yml",
+    "https://github.com/fankh/vulnerability-poc/blob/04aa22fbb624898c1d0928bc3b34fb05529275cb/2026/CVE-2026-54496/README.md",
+    "https://github.com/cisagov/vulnrichment/blob/a4b68cf758bc6730b65b4f54ef98a7f612a68b51/2026/54xxx/CVE-2026-54496.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/575eefe00f82443f5f87947d8e6e0e475795a92e/reports/2026-07-17/TIER_3_CVE-2026-54496.md",
+    "https://github.com/TMA84/cvealert/blob/51922162e2cbb5914a11ad939c724b426142677c/content/posts/cve-2026-54496.md",
+    "https://github.com/Gatos90/security-llm-wiki/blob/a450964b4adf32a972407ab46f3c14bd51a1a393/advisories/cve/CVE-2026-54496.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/61b6c11d066bdf8e461d32b8d1b1447a9b607b34/posts/cve-2026-54496-unknown-vendor-unknown-product.html",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/aced02b678cc4062da6e11482c0850c64f73ef89/CVE-2026/CVE-2026-544xx/CVE-2026-54496.json",
+    "https://github.com/xhls008/nvd_yesterday/blob/08ea89e8807d0d5cf7150243c834721985237c9e/CVEs_log/2026-07-18_zh.md",
+]
