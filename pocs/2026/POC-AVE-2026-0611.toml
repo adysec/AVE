@@ -1,0 +1,77 @@
+[info]
+author = "ave"
+description = "检测 Coder 版本是否在受影响范围内（<2.29.17, >=2.30.0<2.32.7, >=2.33.0<2.33.8, >=2.34.0<2.34.2），通过访问 /api/v2/version 或 /api/v2/buildinfo 接口获取版本号，判断是否存在 AgentLogLine 组件未转义 HTML 的存储型注入漏洞。"
+id = "POC-AVE-2026-0611"
+name = "Coder AgentLogLine 存储型 HTML 注入漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-55437",
+    "xss",
+    "html-injection",
+    "coder",
+]
+vuln_id = [
+    "CVE-2026-55437",
+    "AVE-2026-0611",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v2/version"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "v2.29",
+    "v2.30",
+    "v2.31",
+    "v2.32",
+    "v2.33",
+    "v2.34",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v2/buildinfo"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "v2.29",
+    "v2.30",
+    "v2.31",
+    "v2.32",
+    "v2.33",
+    "v2.34",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/healthz"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["coder"]
