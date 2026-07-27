@@ -1,0 +1,47 @@
+[basic]
+description = "Linux 内核 USB xHCI 驱动程序中存在空指针解引用漏洞。当 USB 命令被排队到环段最后一个可用 TRB 时，入队指针会前进到后续链接 TRB 处；若该命令随后被中止，出队指针会前进到下一段的第一个 TRB。此时若无其他命令排队，xhci_handle_stopped_cmd_ring() 函数因环指针不相等而误判存在待处理命令，进而调用 xhci_mod_cmd_timer() 时传入空指针 cur_cmd 导致内核崩溃。本地攻击者需具备低权限，通过编程 USB MCU 设备持续 NAK SET_ADDRESS 阶段的状态即可稳定触发该漏洞，造成拒绝服务。CVSS 评分 5.5，危害等级中等。"
+published = "2025-02-27T02:15:11.293"
+remediation = "立即更新 Linux 内核至修复版本：5.4.291、5.10.235、5.15.179、6.1.129、6.6.76、6.12.13 或 6.13.2 及以上。对于 Debian 系统，安装 DLA-4178 安全更新。Siemens SIMATIC S7-1500 TM MFP 用户请参考 SSA-503939 和 SSA-265688 安全公告安装补丁。如无法立即更新，可限制本地用户对 USB 子系统的访问权限作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux USB xHCI 空指针解引用漏洞"
+updated = "2026-06-17T08:14:22.183"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57981"]
+ave_id = "AVE-2024-0662"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0ce5c0dac768be14afe2426101b568a0f66bfc4d",
+    "https://git.kernel.org/stable/c/1e0a19912adb68a4b2b74fd77001c96cd83eb073",
+    "https://git.kernel.org/stable/c/4ff18870af793ce2034a6ad746e91d0a3d985b88",
+    "https://git.kernel.org/stable/c/ae069cd2ba09a2bd6a87a68c59ef0b7ea39cd641",
+    "https://git.kernel.org/stable/c/b44253956407046e5907d4d72c8fa5b93ae94485",
+    "https://git.kernel.org/stable/c/b649f0d5bc256f691c7d234c3986685d54053de1",
+    "https://git.kernel.org/stable/c/cf30300a216a4f8dce94e11781a866a09d4b50d4",
+    "https://git.kernel.org/stable/c/fd8bfaeba4a85b14427899adec0efb3954300653",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00028.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-265688.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-503939.html",
+    "https://github.com/trickest/cve/blob/e69d88e0152845fc4d4b49970ca6e503f56b2f93/2024/CVE-2024-57981.md",
+    "https://github.com/CVEProject/cvelistV5/blob/50b2026c1039c6a81b95d80535c772b9d8685178/cves/2024/57xxx/CVE-2024-57981.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57981.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2024-57981",
+    "https://github.com/HerringLiu2333/Analysis-of-CWE/blob/cd8202c32037ed388ecd79e1fc81394f13c4d4a4/CVE-2024-57981/CVE-2024-57981.ql",
+    "https://github.com/0xMarcio/cve/blob/acf4fca32ae3e6d7d43276d798ba52a241ef3b49/2024/CVE-2024-57981.md",
+    "https://github.com/bell-sw/osv-database/blob/027c37e8e73e99b2a68cafab2e6594bde5db273e/BELL-CVE/BELL-CVE-2024-57981.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/31d5b78ee7ad856a6aee490403faecefdc8a4878/references/CveServices-CVE-2024-57981-2025-11-03-1335",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/050b62cac636d83be07e6d4c77e70114e1ca7c93/CVE/data/2024/CVE-2024-57981.json",
+    "https://github.com/krafthack-by-techday/Night-s-watch/blob/30ae1bcc335306fe4c5507b2c629cae4932e515e/cve/siemens/CVE-2024-57981_SSA-503939.json",
+]
