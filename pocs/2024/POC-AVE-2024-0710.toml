@@ -1,0 +1,34 @@
+[info]
+author = "AVE"
+description = "检测 Kubernetes Kubelet 在 Windows 节点上的 /logs 端点是否存在命令注入漏洞。该漏洞源于 Kubelet 对日志路径输入验证不充分（CWE-20），拥有节点 /logs 端点访问权限的攻击者可通过特制请求利用 NTFS 符号链接或路径遍历，在 Windows 工作节点上以 Kubelet 进程权限执行任意命令。"
+id = "POC-AVE-2024-0710"
+name = "Kubernetes Kubelet Windows 日志端点命令注入检测 PoC"
+severity = "medium"
+tags = [
+    "cve-2024-9042",
+    "kubernetes",
+    "kubelet",
+    "windows",
+    "command-injection",
+]
+vuln_id = [
+    "CVE-2024-9042",
+    "AVE-2024-0710",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}:10250/logs/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "kubelet",
+    "log",
+]

