@@ -1,11 +1,11 @@
 [basic]
-description = "BSD mailx 8.1.1-10 邮件命令在 Linux 系统中存在缓冲区溢出漏洞，本地用户可通过向 mailx 命令传递过长的 -c（抄送）参数触发栈缓冲区溢出，导致栈溢出覆盖返回地址，从而实现本地权限提升。该漏洞影响运行 BSD mailx 8.1.1-10 版本的 Linux 系统（如 Slackware 等 BSD 衍生发行版），攻击者需具备本地登录权限，通过构造超长的 -c 参数字符串触发缓冲区溢出，覆盖返回地址执行任意 Shellcode，最终获得提升后的权限（通常为 root 或 mail 组权限）。CVSS 评分 4.6（本地/低复杂度/无需认证/部分机密性/完整性/可用性影响）。"
+description = "Linux 系统上 BSD mailx 8.1.1-10 版本中的 mail 命令存在缓冲区溢出漏洞。本地攻击者可通过向 -c（抄送）参数传递超长字符串触发缓冲区溢出，导致程序崩溃或执行任意代码，从而获取目标系统的 root 权限。该漏洞影响运行 BSD mailx 8.1.1-10 的 Linux 发行版，攻击者需拥有本地用户权限即可利用，无需交互操作。"
 published = "2000-08-08T04:00:00.000"
-remediation = "建议升级 mailx 至 8.1.2 或更高版本（如 mailx 12.4+），或切换至 heirloom-mailx / bsd-mailx 维护分支。若无法升级，可通过编译选项禁用 -c 参数（编译时定义 NO_CC），或在 /etc/mail.rc 中设置 askcc=off 禁用碳复制功能作为临时缓解；同时限制普通用户对 mail 命令的执行权限（chmod 750 /usr/bin/mail），仅允许 mail 组用户执行。"
+remediation = "升级 mailx 至修补后的版本（如 Debian 于 2000-06-05 发布的安全更新），或替换为不受影响的现代版本（如 Heirloom mailx 或 s-nail）。临时缓解措施：限制本地用户对 mailx 的 SUID 执行权限，移除不必要的 SUID 位。该漏洞通过超长 -c 参数触发缓冲区溢出，仅本地用户可利用，建议优先通过包管理器更新系统邮件客户端。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["epss"]
-title = "BSD mailx 8.1.1-10 缓冲区溢出漏洞"
+sources = ["avd"]
+title = "BSD mailx 缓冲区溢出本地权限提升漏洞"
 updated = "2026-06-16T21:51:58.010"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0545"]
 ave_id = "AVE-2000-0444"
 
 [meta]
-collected_at = "2026-07-23T00:00:00Z"
+collected_at = "2026-07-27T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,12 +26,12 @@ urls = [
     "http://www.debian.org/security/2000/20000605",
     "http://www.securityfocus.com/bid/1305",
     "https://www.exploit-db.com/exploits/19992",
-    "https://github.com/CVEProject/cvelistV5/blob/6871b34457c95f7cba228f12a5ad62036a72e749/cves/2000/0xxx/CVE-2000-0545.json",
+    "https://github.com/CVEProject/cvelistV5/blob/15ba52d0829fe2220e9f89276b2743c7eef0ab2a/cves/2000/0xxx/CVE-2000-0545.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0545",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0545.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3e56369e6f703dfde20132e3205d609e016e88bd/CVE/data/2000/CVE-2000-0545.json",
-    "https://github.com/github/advisory-database/blob/d1d7ac405f2460acf0b0e8ed2a5cf8c748023246/advisories/unreviewed/2022/04/GHSA-6j7v-q8xr-8rhx/GHSA-6j7v-q8xr-8rhx.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0545.md",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/291c09f8f1fb3b2fa866c7b93e7660471419cef8/2000/0xxx/CVE-2000-0545.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6cdd862a65f157a01ff9fd42e651329142c691d2/CVE/data/2000/CVE-2000-0545.json",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/unreviewed/2022/04/GHSA-6j7v-q8xr-8rhx/GHSA-6j7v-q8xr-8rhx.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0545.md",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0545.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
