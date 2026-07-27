@@ -1,0 +1,41 @@
+[basic]
+description = "brace-expansion 是 Node.js 生态中广泛使用的花括号展开库，其 expand() 函数通过 max 参数（默认 100,000）限制了结果数量，但未对每个结果字符串的长度进行限制。攻击者可通过构造大量嵌套花括号组（如 '{a,b}'.repeat(1500)），使结果数量保持在 max 阈值以下的同时，每个结果字符串长度随组数线性增长，导致总内存消耗呈乘积式膨胀，最终触发 V8 引擎的致命内存溢出错误，进程崩溃且无法被 try/catch 捕获。仅需约 7.5 KB 的输入即可导致默认配置的 Node.js 进程因内存耗尽而拒绝服务。任何直接或通过 minimatch/glob 间接将用户可控输入传递给 brace-expansion.expand() 的应用程序均受影响。该漏洞 CVSS 评分 7.5，危害等级高，已在 5.0.8 版本中通过新增 maxLength 选项（默认 4,000,000）限制累积输出长度和中间数组大小予以修复。"
+published = "2026-07-23T14:17:00.250"
+remediation = "升级 brace-expansion 至 5.0.8 或更高版本，该版本新增 maxLength 选项（默认 4,000,000）限制单次 expand() 调用累积的字符总数，防止内存耗尽。如无法立即升级，避免将不可信用户输入传递给 expand() 或 glob 花括号模式，或显式设置较小的 max 和 maxLength 参数作为临时缓解措施。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "brace-expansion 内存耗尽拒绝服务漏洞"
+updated = "2026-07-23T15:48:25.133"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-14257",
+    "GHSA-mh99-v99m-4gvg",
+]
+ave_id = "AVE-2026-0437"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/juliangruber/brace-expansion",
+    "https://github.com/juliangruber/brace-expansion/commit/a1bd33999ea75262c4749fff3bbb0d1372bd07b5",
+    "https://www.npmjs.com/package/brace-expansion",
+    "https://github.com/CVEProject/cvelistV5/blob/4657e449ea7feba15f77fd2fcd7d3eb9c12c86f5/cves/2026/14xxx/CVE-2026-14257.json",
+    "https://github.com/rmyndharis/OpenWA/blob/01867fcd6ed4ad2b012e29f4c06e3fa80fdcc4a6/CHANGELOG.md",
+    "https://github.com/maxritter/pilot-shell/blob/7b261d235eed8882a414e1a706de1d06eff76db3/.trivyignore",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/npm/brace-expansion/CVE-2026-14257.yml",
+    "https://github.com/cisagov/vulnrichment/blob/59adead62d41f907bd4d8297210669925a301433/2026/14xxx/CVE-2026-14257.json",
+    "https://github.com/TMA84/cvealert/blob/081b07b9127f2841c08bad5c94aba4d1bf47bb88/content/posts/cve-2026-14257.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/a1f8b3e954dc569a9faaf2d530236d865bca3340/content/CVE-2026-14257.md",
+    "https://github.com/chromebrew/chromebrew/blob/fdec2e5d62f6a2a437a22333d4bb7ed72b02df9e/manifest/armv7l/t/tabby.filelist",
+    "https://github.com/puemos/hls-downloader/blob/2a3afec924ae6bef4012572083b694310641e980/patches/brace-expansion@1.1.16.patch",
+    "https://github.com/juliangruber/brace-expansion/blob/473d3e95e9614c783a6033f9c8577c0ba9cb6881/src/index.ts",
+]
