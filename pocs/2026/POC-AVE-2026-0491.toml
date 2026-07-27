@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 PrestaShop ps_facetedsearch 模块的 PHP 对象注入漏洞。通过构造恶意序列化对象检测目标是否在序列化时使用 unsafe unserialize，导致反序列化后可写入 webshell"
+id = "POC-AVE-2026-0491"
+name = "CVE-2026-54159 PrestaShop ps_facetedsearch PHP Object Injection"
+severity = "critical"
+tags = ["ave-2026-0491"]
+vuln_id = [
+    "CVE-2026-54159",
+    "AVE-2026-0491",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/modules/ps_facetedsearch/controllers/front/FilterProductsController.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "weight_slider=&price_slider={{serialized_payload}}"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["modules/ps_facetedsearch"]
