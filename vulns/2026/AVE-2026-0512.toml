@@ -1,0 +1,41 @@
+[basic]
+description = "PostgreSQL JDBC 驱动（pgjdbc）在 42.7.4 至 42.7.11 版本中存在通道绑定身份验证静默降级漏洞。当连接设置 `channelBinding=require` 时，攻击者通过拦截 TLS 连接并出示签名算法不支持 `tls-server-end-point` 通道绑定哈希的证书（如 Ed25519、Ed448 或后量子算法证书），可触发从 SCRAM-SHA-256-PLUS 到普通 SCRAM-SHA-256 的静默降级，从而绕过中间人攻击保护机制。该漏洞由两个问题共同导致：一是 bundled 的 scram-client 库在无法计算绑定哈希时返回空字节数组而非报错，二是 pgJDBC 的 ScramAuthenticator 仅检查服务器是否通告了 -PLUS 机制，未拒绝空绑定值也未验证协商后的机制实际使用了通道绑定。CVSS 评分 8.2，危害等级高，影响所有使用 `channelBinding=require` 的 PostgreSQL 数据库连接。升级至 42.7.12 或更高版本可修复此漏洞。"
+published = "2026-07-06T19:17:08.407"
+remediation = "升级 pgJDBC 至 42.7.12 或更高版本。如无法立即升级，将 JDBC 连接参数 sslmode 设为 verify-full，并配置信任库仅包含服务端 CA 证书，以在 TLS 层阻止中间人攻击。注意：依赖 channelBinding=require 替代证书验证的连接无等效缓解措施，必须升级。"
+score = 8.2
+severity = "HIGH"
+sources = ["ghsa"]
+title = "PostgreSQL JDBC Driver 通道绑定认证静默降级漏洞"
+updated = "2026-07-09T13:16:25.717"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54291",
+    "GHSA-j92g-9f8w-j867",
+]
+ave_id = "AVE-2026-0512"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/ongres/scram/releases/tag/3.3",
+    "https://github.com/pgjdbc/pgjdbc/commit/77df98e4e66c12936ded3478a0954f6f580bad99",
+    "https://github.com/pgjdbc/pgjdbc/security/advisories/GHSA-j92g-9f8w-j867",
+    "https://github.com/CVEProject/cvelistV5/blob/4a22bba3217932039300edbc77cd188c415d71c8/cves/2026/54xxx/CVE-2026-54291.json",
+    "https://github.com/crate/crate/blob/9a55665e01f5539fac8c67fcc6a09651a528f21c/docs/appendices/release-notes/6.4.2.rst",
+    "https://github.com/canonical/ubuntu-security-notices/blob/b7d9f3f65d1036a114c9bae4a66ed35d83999166/osv/cve/2026/UBUNTU-CVE-2026-54291.json",
+    "https://github.com/pgjdbc/pgjdbc/blob/e9d062089de3ff5fb9e6cf7127a4b24063900d99/docs/content/changelogs/2026-06-29-42.7.12-release.md",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/maven/org.postgresql/postgresql/CVE-2026-54291.yml",
+    "https://github.com/cisagov/vulnrichment/blob/13cb9776e1a75871fdb2907e6c4ccac1909e538b/2026/54xxx/CVE-2026-54291.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/575eefe00f82443f5f87947d8e6e0e475795a92e/reports/2026-07-06/TIER_2_CVE-2026-54291.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2026-54291.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/0bde7ad241dd0e070c73be268acb78555be38fd9/cve/CVE-2026-54291.html",
+    "https://github.com/The-DevOps-Daily/devops-daily/blob/79c8827548077a126182306d29e822bae5ea6ea8/content/news/2026/week-28.md",
+]
