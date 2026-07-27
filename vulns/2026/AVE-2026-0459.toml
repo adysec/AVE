@@ -1,0 +1,37 @@
+[basic]
+description = "MosaicML Composer 在解析检查点（checkpoint）文件时存在反序列化不可信数据漏洞（CWE-502）。由于对用户提供的数据缺乏充分验证，攻击者可构造恶意的检查点文件，诱导用户访问恶意页面或打开恶意文件触发反序列化，从而在当前进程上下文中执行任意代码。该漏洞影响 MosaicML Composer 相关版本，CVSS 评分 7.8，危害等级高。用户交互是成功利用该漏洞的必要条件。"
+published = "2026-06-24T22:16:46.003"
+remediation = '立即升级 MosaicML Composer 至包含 PR #3937 修复的版本（≥v0.32.2 或后续发布版），该版本在 `composer/checkpoint/load.py` 中引入 `_RestrictedUnpickler` 白名单机制，仅允许反序列化已知安全类型（datetime.timedelta、numpy.ndarray、torch.Tensor 等），并强制 `_torch_load_with_validation` 使用 `weights_only=True`。如无法立即升级，切勿加载来源不可信的 checkpoint 文件，并在加载任何第三方 checkpoint 前使用 `load_ignore_keys = ["state/train_metrics/*", "state/eval_metrics/*"]` 跳过可能包含恶意载荷的状态条目。'
+score = 7.8
+severity = "HIGH"
+sources = ["zdi"]
+title = "MosaicML Composer 反序列化远程代码执行漏洞"
+updated = "2026-06-25T19:10:00.050"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-10043"]
+ave_id = "AVE-2026-0459"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/mosaicml/composer/commit/6405188805a0054b4551ec49e4919c54c971d0e8",
+    "https://www.zerodayinitiative.com/advisories/ZDI-26-384/",
+    "https://github.com/CVEProject/cvelistV5/blob/15ba52d0829fe2220e9f89276b2743c7eef0ab2a/cves/2026/10xxx/CVE-2026-10043.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/e6fb55bfbbe31c8b8776d60f6e3b3154ee0fa3bf/reports/2026-06-24/TIER_2_CVE-2026-10043.md",
+    "https://github.com/cisagov/vulnrichment/blob/9553fde5ed5ff45a613d88bc99087dbba2111555/2026/10xxx/CVE-2026-10043.json",
+    "https://github.com/TMA84/cvealert/blob/081b07b9127f2841c08bad5c94aba4d1bf47bb88/content/posts/cve-2026-10043.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2026-10043.md",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/unreviewed/2026/06/GHSA-cv8h-j5cx-fg4f/GHSA-cv8h-j5cx-fg4f.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/648427aa2db027c1629d5ac1fafa487d8d68e08f/SSVC/data/2026/CVE-2026-10043.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-10043.json",
+    "https://github.com/slowslowgogo/SecurityReport/blob/9c2fe25b94c7c3f24908c5b82631ca477488eb4f/output/brief_2026-06-25.html",
+    "https://github.com/proshiba/vuln-intel-agent/blob/eb9d5949573bf98755141185e45226827196e91c/vulndb/vulns/nist/2026/07/VW-2026-18156.yaml",
+]
