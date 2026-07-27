@@ -1,0 +1,38 @@
+[basic]
+description = "Anyquery 的 Server 模式未对内置 SQLite 虚拟表模块（如 `json_reader`、`log_reader`）发起的 HTTP 请求进行限制。未经身份认证的攻击者连接到 MySQL 兼容端口后，可创建指向内网端点或云元数据 IP（如 `http://169.254.169.254/latest/meta-data/`）的虚拟表，通过 SQL 查询实现服务端请求伪造（SSRF），绕过防火墙扫描内网端口并窃取云服务凭证。该漏洞影响 Anyquery 所有启用 Server 模式的版本，CVSS 评分 8.6，危害等级高。"
+published = "2026-01-01"
+remediation = "立即升级 Anyquery 至 v0.4.5 或更高版本，该版本在 Server 模式中引入了沙箱机制，默认阻止虚拟表模块向本地回环地址（127.0.0.0/8）、私有网段（10.0.0.0/8、172.16.0.0/12、192.168.0.0/16）及云元数据 IP（169.254.169.254）发起 HTTP 请求。如无法立即升级，可通过 iptables 限制 `anyquery server` 监听端口（默认 8070）仅允许受信来源访问，并在主机层面添加 eBPF 或 iptables 规则阻断出站到 169.254.169.254 的连接。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Anyquery Anyquery 服务端请求伪造(SSRF)漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54628",
+    "GHSA-hwrq-8wxh-q4xv",
+]
+ave_id = "AVE-2026-0579"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/opencve/opencve-kb/blob/cd9499409b1b665a9bd12d44985f62e94b253ee5/2026/CVE-2026-54628.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/github.com/julien040/anyquery/CVE-2026-54628.yml",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/a37109521f69df6e226756edfaedb6f6ce57bc8b/cve/CVE-2026-54628.html",
+    "https://github.com/golang/vulndb/blob/d246ad98d3739cece1ce57358766d7c340b09c91/data/osv/GO-2026-5988.json",
+    "https://github.com/github/advisory-database/blob/d91e95989ea5d3a9186ceb621d53a71dff03cab4/advisories/github-reviewed/2026/07/GHSA-hwrq-8wxh-q4xv/GHSA-hwrq-8wxh-q4xv.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/72250fcaba6f67069c40da9c17f08bd990e83148/docs/data/2026/CVE-2026-54628.json",
+    "https://github.com/bmwiedemann/openSUSE/blob/d8a287381c78b37aa3d10fca316ba2301f060da3/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/dce39ef8dd24743d0eb60b36b80f49d51f219690/data/history/CVE-2026-54628.json",
+    "https://github.com/golang/vulndb/blob/d246ad98d3739cece1ce57358766d7c340b09c91/data/reports/GO-2026-5988.yaml",
+    "https://github.com/proshiba/vuln-intel-agent/blob/eb9d5949573bf98755141185e45226827196e91c/vulndb/vulns/github/2026/07/VW-2026-29757.yaml",
+]
