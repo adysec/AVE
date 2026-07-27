@@ -1,0 +1,39 @@
+[basic]
+description = 'Langroid SQLChatAgent 存在危险函数黑名单绕过漏洞。该组件通过正则表达式黑名单（`_DANGEROUS_SQL_PATTERNS`）结合 `sqlglot` SELECT 语句白名单实现 SQL 注入防护，但正则要求危险函数名后必须紧跟 `\s*\(`，而 PostgreSQL 支持通过引号标识符（如 `"pg_read_file"(`）、内联注释（如 `pg_read_file/**/(`）或模式限定名（如 `pg_catalog.pg_read_file(`）等等效语法调用同一函数，这些变体可完全绕过正则检测且仍被解析为合法 SELECT 语句。攻击者若能影响 LLM 生成的 SQL 内容，即可诱导 SQLChatAgent 执行 `pg_read_file` 等危险函数，实现服务端任意文件读取。该漏洞影响 Langroid 0.65.1 之前版本，CVSS 评分 9.3，危害等级严重。'
+published = "2026-07-10T00:16:33.477"
+remediation = "立即升级 Langroid 至 0.65.1 或更高版本，该版本已修复 SQLChatAgent 中危险函数黑名单的正则绕过问题。如无法立即升级，请将 SQLChatAgent 使用的数据库角色权限降级，移除 pg_read_server_files 等文件读取权限，并确保数据库连接使用最小权限原则，避免使用 superuser 角色。"
+score = 9.3
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Langroid SQLChatAgent 危险函数黑名单绕过漏洞"
+updated = "2026-07-10T16:16:33.063"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54760",
+    "GHSA-6xc5-4r68-67fc",
+]
+ave_id = "AVE-2026-0586"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/langroid/langroid/security/advisories/GHSA-6xc5-4r68-67fc",
+    "https://github.com/CVEProject/cvelistV5/blob/7102a069678e6b88d270e4c0da51e40aee59b148/cves/2026/54xxx/CVE-2026-54760.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/pypi/langroid/CVE-2026-54760.yml",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/575eefe00f82443f5f87947d8e6e0e475795a92e/reports/2026-07-09/TIER_2_CVE-2026-54760.md",
+    "https://github.com/cisagov/vulnrichment/blob/12ccf92eecf2db493c63630fd06d8245f1d02476/2026/54xxx/CVE-2026-54760.json",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/21fafa9e1c32a6f1efcffce1ec55e75a26f7806a/nvd/2026/CRITICAL/CVE-2026-54760/README.md",
+    "https://github.com/TMA84/cvealert/blob/51d0c9e0ce11ffd48a06c5251961beaf423d7c9a/content/posts/cve-2026-54760.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2026-54760.md",
+    "https://github.com/stevologic/security-recipes.ai/blob/fc6a1124d3138addd694c22c99bb3a008ab167a6/content/recipes/cve/cve-2026-54760-langroid-is-a-framework-for-building-large-language-model-powered-applications.md",
+    "https://github.com/github/advisory-database/blob/d91e95989ea5d3a9186ceb621d53a71dff03cab4/advisories/github-reviewed/2026/07/GHSA-6xc5-4r68-67fc/GHSA-6xc5-4r68-67fc.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/5acf8b684d0e9ea76142eea6cd4851531d4ab2af/CVE/data/2026/CVE-2026-54760.json",
+]

