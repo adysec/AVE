@@ -1,11 +1,11 @@
 [basic]
-description = "util-linux 软件包中的 script 命令在 2.11n 版本之前存在任意文件写入漏洞（CWE-59）。本地攻击者可通过将 typescript 日志文件硬链接到系统中的任意文件，然后诱导 root 用户执行 script 命令，导致攻击者能够覆盖系统任意文件内容。该漏洞利用条件为需要本地访问权限，危害等级中危，CVSS 评分 5.5。"
+description = "util-linux 软件包 2.11n 版本之前的 script 命令存在符号链接跟随漏洞（CWE-59）。本地攻击者可通过将 typescript 会话日志文件硬链接指向系统任意关键文件，诱导 root 用户执行 script 命令记录终端会话，导致脚本以 root 权限覆盖目标文件内容，实现任意文件覆盖写入。该漏洞影响 util-linux 2.11n 之前所有版本，CVSS 3.1 评分 5.5 (MEDIUM)，攻击向量为本地 (AV:L)，攻击复杂度低 (AC:L)，需要低权限 (PR:L)，无需用户交互 (UI:N)，主要影响完整性 (I:H)，机密性和可用性无影响。攻击者需具备本地账户权限并能诱导管理员执行 script 命令，利用方式为创建恶意硬链接指向敏感系统文件（如 /etc/passwd、/etc/shadow 或关键配置文件），待 root 执行 script 记录会话时覆盖目标文件导致权限提升或系统破坏。Red Hat 等发行版已在 util-linux 2.11n 及后续版本中修复该漏洞。"
 published = "2001-12-31T05:00:00.000"
-remediation = "升级 util-linux 至 2.11n 及以上版本，该版本修复了 script 命令在处理 typescript 日志文件时未正确检查硬链接的问题。如无法立即升级，可移除 script 命令的 setuid 权限（chmod u-s /usr/bin/script）作为临时缓解措施，或限制非授信用户对 script 命令的访问。攻击者需本地登录权限，因此做好用户访问控制也可降低风险。"
+remediation = "建议立即升级 util-linux 至 2.11n 或更高版本（如 util-linux 2.11n、2.12 及以上版本），通过包管理器执行升级：Debian/Ubuntu 执行 `apt-get update && apt-get install util-linux`，RHEL/CentOS 执行 `yum update util-linux`。若暂无法升级，可通过限制普通用户执行 script 命令权限（`chmod 750 /usr/bin/script`）或配置 auditd 审计 script 调用作为临时缓解措施。"
 score = 5.5
 severity = "MEDIUM"
-sources = ["osv"]
-title = "util-linux script 命令任意文件写入漏洞"
+sources = ["redhat"]
+title = "util-linux script 命令本地任意文件覆盖漏洞"
 updated = "2026-06-16T21:56:22.617"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-1494"]
 ave_id = "AVE-2001-0119"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-27T00:00:00Z"
 status = "completed"
 
 [references]
@@ -31,14 +31,14 @@ urls = [
     "http://www.securityfocus.com/bid/16280",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/7718",
     "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A10723",
-    "https://github.com/trickest/cve/blob/3ffa2a96db84a89f71e1c7ad889e5f4fcc755a48/2001/CVE-2001-1494.md",
-    "https://github.com/CVEProject/cvelistV5/blob/a54ce91ca4eed5acb1176739213f8ac035b9fa27/cves/2001/1xxx/CVE-2001-1494.json",
+    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2001/CVE-2001-1494.md",
+    "https://github.com/CVEProject/cvelistV5/blob/0db929612f090dc6aa0346061c42364c4634c480/cves/2001/1xxx/CVE-2001-1494.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-1494",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2001/CVE-2001-1494.md",
-    "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-8gpj-8888-5722/GHSA-8gpj-8888-5722.json",
+    "https://github.com/github/advisory-database/blob/d91e95989ea5d3a9186ceb621d53a71dff03cab4/advisories/unreviewed/2022/04/GHSA-8gpj-8888-5722/GHSA-8gpj-8888-5722.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-1494.json",
-    "https://github.com/jdkoftinoff/mb-linux-msli/blob/8adb103e34af9ff1d8d122e9ee2a1808836f0a14/uClinux-dist/user/nessus/nessus-plugins/scripts/redhat-RHSA-2005-782.nasl",
     "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/C/centos_RHSA-2005-782.nasl",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_151900_152000.json",
+    "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/redhat-RHSA-2005-782.nasl",
     "https://github.com/Team-Atlanta/aixcc-asc-atlantis/blob/785c446f980e12155935db586aa30c3b54adcc86/crs/src/crs-patch/smith/smith/lib/cwe/raw/CWE-59.txt",
+    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--e49290a5-7e26-48e1-ac07-a41cc25b842c.json",
 ]
