@@ -1,0 +1,40 @@
+[basic]
+description = "GRUB2 的 UFS 文件系统模块在处理符号链接查找时存在整数溢出漏洞。当解析符号链接时，该模块根据 inode 数据大小分配内部缓冲区，但未检查符号链接数据大小是否发生整数溢出，导致 grub_malloc() 分配的内存小于实际所需。后续从磁盘读取数据到缓冲区时，grub_ufs_lookup_symlink() 函数会越界写入堆内存，破坏堆中存储的数据。本地攻击者可通过挂载特制的恶意文件系统触发此漏洞，实现任意代码执行，从而绕过安全启动（Secure Boot）机制。该漏洞影响所有使用受影响版本 GRUB2 的系统，CVSS 评分 6.4，危害等级中危。"
+published = "2025-02-19T19:15:15.280"
+remediation = "升级 grub2 至修复版本：RHEL 9 升级至 grub2-2.06-104.el9_6 及以上，RHEL 10 升级至 grub2-2.12-15.el10_0 及以上，其他发行版升级至包含 commit c4bc55da 的版本。运行 `grub2-mkconfig -o /boot/grub2/grub.cfg` 重建引导配置并重启系统。如无法立即升级，启用 Secure Boot 的 lockdown 模式可阻止加载存在漏洞的文件系统模块作为临时缓解。"
+score = 6.4
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "GNU GRUB2 UFS 符号链接处理整数溢出致堆越界写入漏洞"
+updated = "2026-06-30T00:16:50.090"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-0677"]
+ave_id = "AVE-2025-0405"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://access.redhat.com/errata/RHSA-2025:16154",
+    "https://access.redhat.com/errata/RHSA-2025:6990",
+    "https://access.redhat.com/security/cve/CVE-2025-0677",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=2346116",
+    "https://lists.gnu.org/archive/html/grub-devel/2025-02/msg00024.html",
+    "https://github.com/trickest/cve/blob/e69d88e0152845fc4d4b49970ca6e503f56b2f93/2025/CVE-2025-0677.md",
+    "https://github.com/CVEProject/cvelistV5/blob/3fc46d7716e9a0dd9635d13e2bff8fffb122a860/cves/2025/0xxx/CVE-2025-0677.json",
+    "https://github.com/NixOS/nixpkgs/blob/9fcbc97b46844d320d26a2d5f21aad2642977429/pkgs/by-name/gr/grub2/package.nix",
+    "https://github.com/neuvector/vul-source/blob/83b6758c208f8fd7e22b7c88e002c3658ef467b8/ubuntu-cve-tracker/active/CVE-2025-0677",
+    "https://github.com/open-edge-platform/edge-microvisor-toolkit/blob/f04086554da9724fc9382f780b507b33e9a17dfc/SPECS/grub2/CVE-2025-0677.patch",
+    "https://github.com/microsoft/azurelinux/blob/db4dceaf9bd186cb20f62c3a43615b9421200bed/specs/g/grub2/grub2.spec",
+    "https://github.com/cisagov/vulnrichment/blob/917696d148c885368c24cb2bf38f1552da3d5c31/2025/0xxx/CVE-2025-0677.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/bb6cd0f1a29580d840cdb570b8b0c57cc39aac6d/osv/cve/2025/UBUNTU-CVE-2025-0677.json",
+    "https://github.com/rhboot/shim-review/blob/189497d59fa34f4dd88ea1bcfa6e54e7581acae8/README.md",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-0677.md",
+]
