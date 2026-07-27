@@ -1,0 +1,43 @@
+[info]
+author = "AVE"
+description = "检测目标 Apache Shiro 是否使用默认密钥。通过发送带有随机 rememberMe Cookie 的请求，若目标使用 Shiro 框架，其解密失败后会返回 rememberMe=deleteMe 标识，确认存在默认密钥反序列化漏洞风险。"
+id = "POC-AVE-2016-0500"
+name = "Apache Shiro 默认密钥致远程代码执行漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2016-4437",
+    "shiro",
+    "rce",
+    "deserialization",
+]
+vuln_id = [
+    "CVE-2016-4437",
+    "AVE-2016-0500",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Cookie = "rememberMe=test"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["rememberMe=deleteMe"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["rememberMe=deleteMe"]

