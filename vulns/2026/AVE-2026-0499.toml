@@ -1,0 +1,41 @@
+[basic]
+description = "vLLM 大语言模型推理引擎的推测性解码（speculative decoding）状态处理存在输入验证缺陷。在合法的多请求推测性解码工作负载中，拒绝采样器可能生成等于模型词汇表大小边界值（vocab_size=151936）的恢复令牌，该越界值在引擎选择下一个有效令牌时被转换为 -1 并写入推测解码器的输入 ID 序列中。模型嵌入层和注意力路径随后消费该无效令牌，触发 GPU 设备端断言失败（CUDA device-side assert），导致引擎工作进程崩溃。远程攻击者可通过公开的 gRPC Generate 和 Abort 端点发送特定的重叠请求序列触发此漏洞，造成服务拒绝服务（DoS），中断所有并发请求，直至工作进程重启。该漏洞影响 vLLM 0.24.0 之前的所有版本，CVSS 评分 7.5，危害等级高。官方已在 0.24.0 版本中通过修复令牌边界检查逻辑完成修复。"
+published = "2026-07-06T21:16:56.477"
+remediation = "立即升级 vLLM 至 0.24.0 或更高版本（对应 commit 8a5cf1ccd65e8ac7635c402c1ec0b08988bc26ca），该版本已修复推测解码中恢复令牌越界导致 GPU 断言的缺陷。如无法立即升级，可在部署层面禁用公共 gRPC Generate/Abort 端点的外部访问，或限制推测解码（speculative decoding）功能的使用作为临时缓解措施。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "vLLM vLLM 远程拒绝服务漏洞"
+updated = "2026-07-07T19:04:17.300"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54234",
+    "GHSA-8wr5-jm2h-8r4f",
+]
+ave_id = "AVE-2026-0499"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/vllm-project/vllm/commit/8a5cf1ccd65e8ac7635c402c1ec0b08988bc26ca",
+    "https://github.com/vllm-project/vllm/pull/44744",
+    "https://github.com/vllm-project/vllm/security/advisories/GHSA-8wr5-jm2h-8r4f",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/45fa3110991b1e32f1dbd5486d359b38b77d645b/data/vuln/vllm/CVE-2026-54234.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/d426ca16061eaa1a65a39ea953ac0efe02aa4cae/cves/2026/54xxx/CVE-2026-54234.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-54234.md",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/886e3cd9cda40e2c4ffda31042908f1a83f89624/proposals/nvd/CVE-2026-54234.proposal.yaml",
+    "https://github.com/NixOS/nixpkgs/blob/988307fd6b2981b969f4b50ca32c9037837d1dce/pkgs/development/python-modules/vllm/default.nix",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/pypi/vllm/CVE-2026-54234.yml",
+    "https://github.com/cisagov/vulnrichment/blob/13cb9776e1a75871fdb2907e6c4ccac1909e538b/2026/54xxx/CVE-2026-54234.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/e6fb55bfbbe31c8b8776d60f6e3b3154ee0fa3bf/reports/2026-07-06/TIER_3_CVE-2026-54234.md",
+    "https://github.com/TMA84/cvealert/blob/3919917ccdc95cad53a5d8f952d8d044dc152929/content/posts/cve-2026-54234.md",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/289454b1705420b325f7615708efca878371bd29/cve/CVE-2026-54234.html",
+]
