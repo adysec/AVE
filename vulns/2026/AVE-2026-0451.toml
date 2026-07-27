@@ -1,0 +1,41 @@
+[basic]
+description = 'Pillow（Python 图像处理库）的 `PIL/FontFile.py` 中 `FontFile.compile()` 方法在将每个字形图像组装为组合位图时，调用 `Image.new("1", (xsize, ysize))` 前未执行 `Image._decompression_bomb_check()` 解压炸弹检查。由于 `BdfFontFile` 和 `PcfFontFile` 未通过 `Image.open()` 注册，标准解压炸弹防护机制在字体加载路径中完全缺失。攻击者可构造包含 256 个超大字形（单个字形像素数低于告警阈值）的恶意 BDF/PCF 字体文件，通过 `to_imagefont()` 或 `save()` 触发 `compile()`，组合后位图像素数可达 134 亿（约 1.6 GB 内存分配），超过解压炸弹错误阈值 75 倍，导致服务端 OOM 崩溃或拒绝服务。该漏洞影响 Pillow 12.3.0 之前所有版本，无需身份认证即可远程触发。'
+published = "2026-07-06T19:17:08.270"
+remediation = "升级 Pillow 至 12.3.0 或更高版本（`pip install --upgrade pillow`）。如无法立即升级，可在加载不可信字体文件前增加输入校验，限制 BDF/PCF 字体中每个字符的宽高不超过合理阈值（如 1024×1024），或在沙箱环境中处理字体文件以防止 OOM 攻击。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Pillow FontFile.compile 解压炸弹检查缺失导致拒绝服务漏洞"
+updated = "2026-07-07T18:58:45.827"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54060",
+    "GHSA-5x94-69rx-g8h2",
+]
+ave_id = "AVE-2026-0451"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/python-pillow/Pillow/blob/main/docs/releasenotes/12.3.0.rst",
+    "https://github.com/python-pillow/Pillow/commit/0a263e6264aa5399988d9acd3bbfbca2ca3ec77d",
+    "https://github.com/python-pillow/Pillow/security/advisories/GHSA-5x94-69rx-g8h2",
+    "https://github.com/CVEProject/cvelistV5/blob/50b2026c1039c6a81b95d80535c772b9d8685178/cves/2026/54xxx/CVE-2026-54060.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-54060.md",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/pypi/Pillow/CVE-2026-54060.yml",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/e6fb55bfbbe31c8b8776d60f6e3b3154ee0fa3bf/reports/2026-07-06/TIER_3_CVE-2026-54060.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/1994996b0b1043aeb0b2d4db6d06b7a742460e16/osv/cve/2026/UBUNTU-CVE-2026-54060.json",
+    "https://github.com/neuvector/vul-source/blob/83b6758c208f8fd7e22b7c88e002c3658ef467b8/ubuntu-cve-tracker/active/CVE-2026-54060",
+    "https://github.com/cisagov/vulnrichment/blob/9553fde5ed5ff45a613d88bc99087dbba2111555/2026/54xxx/CVE-2026-54060.json",
+    "https://github.com/TMA84/cvealert/blob/081b07b9127f2841c08bad5c94aba4d1bf47bb88/content/posts/cve-2026-54060.md",
+    "https://github.com/alpinelinux/aports/blob/8ecd0a8b6df901f448daf84fcdff97aa070dbb78/community/py3-pillow/APKBUILD",
+    "https://github.com/SolaceLabs/solace-agent-mesh/blob/f76d8972fecac522055e8195b704ec631c698c99/pyproject.toml",
+]
