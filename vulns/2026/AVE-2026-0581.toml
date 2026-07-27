@@ -1,0 +1,38 @@
+[basic]
+description = "Dragonfly 调度器（scheduler）的 v1/v2 gRPC 服务存在未认证的服务端请求伪造（SSRF）漏洞。当 peer 报告 TINY 类型任务下载成功时，调度器会调用 `Peer.DownloadTinyFile()` 方法，向攻击者控制的 `PeerHost.Ip` 和 `PeerHost.DownPort` 字段指定的地址发起 HTTP GET 请求。由于 HTTP 客户端使用裸 `http.Transport` 且未对目标地址进行任何校验，远程未认证攻击者可强制调度器连接任意内网地址，包括 127.0.0.1（回环地址）、169.254.0.0/16（链路本地地址，如云元数据服务）及 RFC1918 私有地址。获取的响应内容被存储在 `Task.DirectPiece` 中，并可被其他 peer 获取，形成数据外泄路径。该漏洞影响 Dragonfly v2.4.4-rc.2 及之前版本，CVSS 评分 6.5，危害等级中危。官方修复方案为在 `DownloadTinyFile` 的 HTTP 传输层添加 `nethttp.NewSafeDialer().DialContext` 以拒绝非全局单播地址。"
+published = "2026-01-01"
+remediation = "升级 Dragonfly scheduler 至包含修复的版本（≥v2.4.5），或在 `scheduler/resource/standard/peer.go` 的 `DownloadTinyFile` 函数中将 `http.Transport` 的 `DialContext` 设置为 `nethttp.NewSafeDialer().DialContext` 以拒绝非全局单播地址。同时建议在 `scheduler/config/config.go` 中配置 `Server.TLS` 启用 mTLS 认证，并在 `storeHost` 函数中增加 `peerHost.Ip` 的地址校验，拒绝回环地址（127.0.0.0/8）和链路本地地址（169.254.0.0/16）。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Dragonfly Scheduler gRPC 未授权服务端请求伪造漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54637",
+    "GHSA-chwm-m7g7-685g",
+]
+ave_id = "AVE-2026-0581"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/d7y.io/dragonfly/v2/CVE-2026-54637.yml",
+    "https://github.com/opencve/opencve-kb/blob/cd9499409b1b665a9bd12d44985f62e94b253ee5/2026/CVE-2026-54637.json",
+    "https://github.com/CVEProject/cvelistV5/blob/49bdd0da7f9ed7eb2c6a7d376de641a46364c00a/cves/2026/54xxx/CVE-2026-54709.json",
+    "https://github.com/golang/vulndb/blob/d246ad98d3739cece1ce57358766d7c340b09c91/data/reports/GO-2026-5910.yaml",
+    "https://github.com/github/advisory-database/blob/d91e95989ea5d3a9186ceb621d53a71dff03cab4/advisories/github-reviewed/2026/07/GHSA-chwm-m7g7-685g/GHSA-chwm-m7g7-685g.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/72250fcaba6f67069c40da9c17f08bd990e83148/docs/data/2026/CVE-2026-54637.json",
+    "https://github.com/TMA84/cvealert/blob/51d0c9e0ce11ffd48a06c5251961beaf423d7c9a/content/posts/cve-2026-54709.md",
+    "https://github.com/bmwiedemann/openSUSE/blob/d8a287381c78b37aa3d10fca316ba2301f060da3/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bb772dcb04525a1a88049530e1b1081f8633cb88/CVE/data/2026/CVE-2026-54709.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/eb9d5949573bf98755141185e45226827196e91c/vulndb/vulns/nist/2026/07/VW-2026-20645.yaml",
+]
