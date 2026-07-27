@@ -1,0 +1,38 @@
+[basic]
+description = "ArcadeDB 数据库的 IMPORT DATABASE SQL 语句未正确校验用户权限与输入来源，任何具备 SQL 命令访问权限的认证用户（非仅 root 管理员）均可利用该漏洞实施两类攻击：一是服务端请求伪造（SSRF），通过构造 HTTP/HTTPS 协议的导入源 URL，诱使服务器向任意目标（包括云元数据端点 169.254.169.254 及内网服务）发起请求并将响应内容导入为可查询记录；二是任意本地文件读取，通过 file:// 协议路径读取服务器进程可访问的本地文件（如 /etc/passwd、凭据文件等），将其内容暴露为数据库记录。此外，XML 导入器未禁用 DTD 处理，存在实体扩展攻击（Billion Laughs）风险。攻击者仅需拥有数据库的 SQL 查询权限即可触发，无需管理员角色。该漏洞影响 ArcadeDB 所有版本，官方已在 PR #4422 中修复，修复措施包括：将 IMPORT DATABASE 权限提升至 updateSecurity 级别、对 HTTP(S) 导入源进行网络地址黑名单校验（默认阻止回环/链路本地/私有地址）、增加本地路径白名单配置、禁用 XML DTD 处理。"
+published = "2026-01-01"
+remediation = "立即升级至包含 PR #4422 修复的 ArcadeDB 版本（≥ 提交 4422），该修复要求 IMPORT DATABASE 操作需具备 updateSecurity 权限，并默认阻止对回环/私有地址的 HTTP 请求。如无法升级，严格限制 SQL 命令/查询端点的访问权限，仅授予受信管理用户，并禁止向不可信用户开放查询接口。同时检查 arcadedb.server.security.importBlockLocalNetworks 配置项确保为 true。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "ArcadeData ArcadeDB 数据库导入功能服务器端请求伪造与任意文件读取漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54077",
+    "GHSA-8w86-m9h8-hvqg",
+]
+ave_id = "AVE-2026-0476"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/opencve/opencve-kb/blob/bdad617141bf94fdd6b5d7555334d5b3677fca78/2026/CVE-2026-54077.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/maven/com.arcadedb/arcadedb-engine/CVE-2026-54077.yml",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/1fe4cfd6cf59fa2fa3e612ecc32493de51f1f6f2/cve/CVE-2026-54077.html",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/github-reviewed/2026/07/GHSA-8w86-m9h8-hvqg/GHSA-8w86-m9h8-hvqg.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/dcd526fb689714d5f3e3864d909b86e28c091c65/docs/data/2026/CVE-2026-54077.json",
+    "https://github.com/JimBLogic/CyberDailyLog/blob/98e56ea25f36fdfe6e855955b7a08d4f4ed26469/reports/archive/2026/07/2026-07-17.md",
+    "https://github.com/proshiba/vuln-intel-agent/blob/eb9d5949573bf98755141185e45226827196e91c/vulndb/vulns/github/2026/07/VW-2026-29874.yaml",
+    "https://github.com/JsHuang/sec-advisory-daily/blob/86aea41dd2762b8ae57edf00dafe081b4536e32d/reports/report-2026-07-17.html",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/1fe4cfd6cf59fa2fa3e612ecc32493de51f1f6f2/api/intel/products/cve-2026-54077-maven-com-arcadedb-arcadedb-engine.json",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/dce39ef8dd24743d0eb60b36b80f49d51f219690/data/history/CVE-2026-54077.json",
+]
