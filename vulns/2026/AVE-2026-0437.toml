@@ -1,11 +1,11 @@
 [basic]
-description = "brace-expansion 是 Node.js 生态中广泛使用的花括号展开库，被 minimatch、glob 等核心包间接依赖。其 `expand()` 函数通过 `max` 参数（默认 100,000）限制了展开结果的数量，但未对单个结果的长度做任何限制。攻击者通过构造大量嵌套的花括号组（如 `'{a,b}'.repeat(1500)`，约 7.5 KB 输入），使结果数量被 `max` 截断的同时每个结果字符串长度随组数线性增长，导致总输出大小达到 `max × N` 字符量级。V8 引擎在构建这些长字符串时还会保留中间 rope 引用，内存占用随组数 N 呈线性增长，最终触发不可捕获的 JavaScript 堆内存耗尽（OOM）错误，导致 Node.js 进程直接崩溃。任何将用户可控输入传递给 `brace-expansion.expand()` 或其下游调用（如 glob 模式匹配）的应用均受影响，攻击者无需高权限即可通过小体积请求实现拒绝服务攻击。"
+description = "brace-expansion 库的 expand() 函数在展开大括号表达式时，仅限制了结果数量（默认 max=100,000）而未限制单个结果的长度。攻击者可通过构造大量嵌套的大括号组（如 '{a,b}'.repeat(1500)），使每个结果字符串随组数线性增长，导致内存消耗呈 max×N 量级膨胀，最终触发 V8 引擎不可捕获的致命内存溢出错误，造成 Node.js 进程崩溃。该漏洞影响所有使用 brace-expansion 直接或间接（通过 minimatch/glob 等）处理用户输入大括号模式的应用，CVSS 评分 7.5，危害等级高危。攻击者仅需发送约 7.5 KB 的恶意输入即可触发拒绝服务，且由于是致命错误而非可捕获异常，try/catch 无法防护。"
 published = "2026-01-01"
-remediation = "升级 brace-expansion 至 >=2.0.2 版本（含 maxLength 参数限制），或升级依赖它的 minimatch/glob 至已修复版本。如无法立即升级，在调用 expand() 时传入显式的 max 和 maxLength 选项限制输出长度，且避免将不可信用户输入传入 brace 展开函数。"
+remediation = "升级 brace-expansion 至 5.0.8 或更高版本，该版本新增 `maxLength` 选项（默认 4,000,000），在输出构建循环中限制单次 `expand()` 调用的总字符数，防止内存耗尽。如无法立即升级，调用 `expand()` 时传入显式的 `max` 和 `maxLength` 选项限制结果数量和总长度，并避免将不可信用户输入传递给 `expand()` 或 glob 大括号模式。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
-title = "juliangruber brace-expansion 大括号展开无限长度导致内存耗尽拒绝服务漏洞"
+title = "juliangruber brace-expansion 大括号展开无限制长度导致内存耗尽拒绝服务漏洞"
 updated = "2026-01-01"
 
 [exploit]
