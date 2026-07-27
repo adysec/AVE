@@ -1,7 +1,7 @@
 [basic]
-description = "Citrix NetScaler SD-WAN 设备中的 Session ID Cookie 输入验证存在严重漏洞，该设备支持在 9.1.2.26.561201 及更早版本上运行。攻击者无需任何身份验证即可远程向目标系统发送包含恶意 cookie 的 HTTP 请求，该 cookie 名称为 CGISESSID（CloudBridge 设备上则为 CAKEPHP）。由于系统未能对 cookie 的输入进行适当验证和清理，攻击者可以嵌入恶意命令的会话标识符，服务器在处理这些 cookie 时会直接将其传送到操作系统 shell 中执行解析，导致攻击者在设备上获得 root 权限并执行任意 shell 命令，从而完全控制目标设备。该漏洞的 CVSS 评分高达 9.8，评级为严重（CRITICAL），攻击向量为网络远程攻击，攻击复杂度低，无需用户交互即可利用，且对保密性、完整性和可用性都造成了严重影响。尽管微软和Citrix已发布了安全补丁，但许多部署了旧版本设备的用户仍可能面临风险，攻击者可以利用这些遗留设备发动进一步的网络攻击或将其作为跳板渗透到内部网络。2023年，当局已将该漏洞列入已知被利用的漏洞目录（KEV），表明其已被广泛利用在现实攻击中，安全管理员应立即对受影响设备进行紧急更新，以确保设备运行在最新版本，以消除此危险的 session cookie 处理漏洞带来的安全隐患。"
+description = "Citrix NetScaler SD-WAN 设备（含 CloudBridge 系列）v9.1.2.26.561201 及之前版本存在命令注入漏洞。远程未经身份认证的攻击者可通过向目标设备发送特制的 CGISESSID（CloudBridge 设备为 CAKEPHP）Session ID Cookie，利用输入验证缺陷以 root 权限执行任意系统命令。该漏洞 CVSS 评分 9.8，危害等级严重，影响范围广泛。目前已存在公开的 Metasploit 利用模块，攻击者可直接获取设备完全控制权。"
 published = "2017-07-20T04:29:00.423"
-remediation = "立即升级 NetScaler SD-WAN 至 9.2 及以上版本，或 CloudBridge 至对应修复版本（参考 Citrix 安全公告 CTX225990）。如无法立即升级，在管理界面所在网络边界配置防火墙规则，限制仅可信 IP 访问管理端口（默认 443），并监控针对 /login 路径的异常 CGISESSID/CAKEPHP Cookie 请求。"
+remediation = "立即升级 Citrix NetScaler SD-WAN 至 10.0.0 或更高版本（CloudBridge 设备同步升级），该漏洞已在 CTX220265 公告中修复。如无法立即升级，可在管理接口前端部署 Web 应用防火墙（WAF），配置规则拦截包含异常 CGISESSID 或 CAKEPHP cookie 值的请求，并限制管理接口仅允许可信 IP 访问。"
 score = 9.8
 severity = "CRITICAL"
 sources = ["kev"]
@@ -30,10 +30,10 @@ urls = [
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2017-6316",
     "https://www.exploit-db.com/exploits/42345",
     "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2017/CVE-2017-6316.md",
-    "https://github.com/CVEProject/cvelistV5/blob/8a32d285d75465c2c539e92c7500793aa7910652/cves/2017/6xxx/CVE-2017-6316.json",
+    "https://github.com/CVEProject/cvelistV5/blob/145038fbd12ba507a810d82f3ca7bed9554ecf9f/cves/2017/6xxx/CVE-2017-6316.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2017/CVE-2017-6316",
     "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2017/CVE-2017-6316.rules",
-    "https://github.com/cisagov/vulnrichment/blob/7cbd46ac4e2574be115c8b4e081aab80c1276132/2017/6xxx/CVE-2017-6316.json",
+    "https://github.com/cisagov/vulnrichment/blob/16901ed3086419e92a3d59446e25736507cf6a0b/2017/6xxx/CVE-2017-6316.json",
     "https://github.com/fankh/vulnerability-poc/blob/04aa22fbb624898c1d0928bc3b34fb05529275cb/2017/CVE-2017-6316/README.md",
     "https://github.com/vulncheck-oss/0day.today.archive/blob/3664abdd71985a44aff3260896a8f36e2f4a9682/web-applications/28158.txt",
     "https://github.com/a-dhaou-tekup/VRA/blob/3e4f21c329250c5eca327489d3fd5be9b398ce7b/data/rag_corpus/cisa_kev_notes/CVE-2017-6316.txt",
