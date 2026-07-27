@@ -1,10 +1,10 @@
 [basic]
-description = "Apache Tomcat 的 JmxRemoteLifecycleListener 组件存在反序列化远程代码执行漏洞。该漏洞源于 Tomcat 未同步更新 Oracle 在 CVE-2016-3427 中针对凭据类型的修复，导致攻击者可通过 JMX 端口发送特制反序列化数据触发远程代码执行。影响 Tomcat 6.0.48 之前、7.0.73 之前、8.0.39 之前、8.5.7 之前及 9.0.0.M12 之前版本。攻击者无需认证即可远程利用，CVSS 评分 9.8，危害严重。"
+description = "Apache Tomcat 的 JmxRemoteLifecycleListener 组件存在远程代码执行漏洞，由于该监听器未与 Oracle CVE-2016-3427 补丁保持同步更新，导致对 JMX 认证凭据类型的校验不充分。远程攻击者可在无需认证的情况下访问 Tomcat 的 JMX 端口，通过构造恶意的序列化数据触发反序列化操作，从而在目标服务器上执行任意代码。该漏洞影响 Tomcat 6.0.48 之前、7.0.73 之前、8.0.39 之前、8.5.7 之前及 9.0.0.M12 之前版本，CVSS 评分 9.8，危害等级严重。"
 published = "2017-04-06T21:59:00.243"
-remediation = "立即升级 Apache Tomcat 至 6.0.48+、7.0.73+、8.0.39+、8.5.7+ 或 9.0.0.M13+ 版本。如无法升级，在 server.xml 中移除 JmxRemoteLifecycleListener 配置，并在防火墙层面限制 JMX 端口（通常为 1099/1100）仅允许受信来源访问，避免攻击者直接连接 JMX 端口触发反序列化 RCE。"
+remediation = "升级 Apache Tomcat 至 6.0.48+、7.0.73+、8.0.39+、8.5.7+ 或 9.0.0.M12+ 版本。如无法立即升级，在 `conf/server.xml` 中移除或注释掉 `JmxRemoteLifecycleListener` 配置，并限制 JMX 端口仅对可信网络开放。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
+sources = ["nuclei"]
 title = "Apache Tomcat JmxRemoteLifecycleListener 远程代码执行漏洞"
 updated = "2026-06-17T00:54:54.430"
 
@@ -60,15 +60,15 @@ urls = [
     "https://www.oracle.com/technetwork/security-advisory/cpujul2019-5072835.html",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2016-8735",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/code/cves/2016/CVE-2016-8735.yaml",
-    "https://github.com/trickest/cve/blob/e69d88e0152845fc4d4b49970ca6e503f56b2f93/2016/CVE-2016-8735.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/f015220eb1b2405b0fcce99fab82aef08d37a0ce/2016/CVE-2016-8735.json",
-    "https://github.com/0x727/FingerprintHub/blob/78f2be506bf3d4300d86c5fd7f784092017ba076/plugins/apache/tomcat/CVE-2016-8735.yaml",
+    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2016/CVE-2016-8735.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/d0611a30d788ecc6797a40a15a38427bf0c3c17b/2016/CVE-2016-8735.json",
+    "https://github.com/0x727/FingerprintHub/blob/881db81e73cc7e2f9f510b557401bea4324e5731/plugins/apache/tomcat/CVE-2016-8735.yaml",
     "https://github.com/Ares-X/VulWiki/blob/40e0273754a36f49a6be6a77a7a4c210a07063ed/Web%E5%AE%89%E5%85%A8/Tomcat/%EF%BC%88CVE-2016-8735%EF%BC%89Tomcat%20%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E.md",
-    "https://github.com/gitlabhq/gitlabhq/blob/64bf6b646d72bfa5551557ef53653fdcca9ed641/doc/user/application_security/vulnerabilities/risk_assessment_data.md",
+    "https://github.com/gitlabhq/gitlabhq/blob/13dfbd88f39931ce92a36a83cfccddc30083a66b/doc/user/application_security/vulnerabilities/risk_assessment_data.md",
     "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2016/CVE-2016-8735.rules",
     "https://github.com/joaomatosf/jexboss/blob/338b531a2a2aee9d294f394086d6718b60526350/README.md",
     "https://github.com/adampielak/nuclei-templates/blob/a2f3ff3fa5db5c7705ebd942909ec114df063700/nuclei-v3/C/CVE-2016-8735_3.yaml",
-    "https://github.com/canonical/ubuntu-security-notices/blob/b7d9f3f65d1036a114c9bae4a66ed35d83999166/osv/cve/2016/UBUNTU-CVE-2016-8735.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/bb6cd0f1a29580d840cdb570b8b0c57cc39aac6d/osv/cve/2016/UBUNTU-CVE-2016-8735.json",
     "https://github.com/govbk/WIKI-POC-EXP/blob/7d1194429dab9f9dd8139408e79b70ddb41a468f/%E9%9B%B6%E7%BB%84%E6%BC%8F%E6%B4%9E%E7%9B%B8%E5%85%B3/127-Tomcat/007-CVE-2016-8735%20Tomcat%20%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E.md",
     "https://github.com/ianxtianxt/CVE-2016-8735",
 ]
