@@ -1,0 +1,25 @@
+[info]
+author = "AVE"
+description = "检测 Microsoft IIS 4.0/5.0 是否在 HTTPS 与 HTTP 会话中复用相同的 Session ID Cookie。通过先后请求 HTTPS 和 HTTP 页面，比对返回的 Set-Cookie 中的 ASPSESSIONID 值是否一致，若一致则说明存在会话 Cookie 未标记 Secure 属性的漏洞，攻击者可劫持安全会话。"
+id = "POC-AVE-2000-1809"
+name = "Microsoft IIS Session ID Cookie Marking 安全会话劫持漏洞 PoC"
+severity = "high"
+tags = ["ave-2000-1809"]
+vuln_id = [
+    "CVE-2000-0970",
+    "AVE-2000-1809",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/default.asp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["ASPSESSIONID"]
