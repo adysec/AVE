@@ -1,0 +1,34 @@
+[info]
+author = "AVE"
+description = "检测 nebula-mesh OIDC 登录端点是否未授权访问且无速率限制。发送 GET 请求到 /ui/oidc/login，若返回非 429 状态码则说明端点可被未认证访问，结合大量请求可导致服务端内存状态无限增长造成拒绝服务。"
+id = "POC-AVE-2026-0620"
+name = "CVE-2026-55512 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-55512",
+    "oidc",
+    "dos",
+    "nebula-mesh",
+]
+vuln_id = [
+    "CVE-2026-55512",
+    "AVE-2026-0620",
+    "GHSA-m3cx-mwpg-32jg",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ui/oidc/login"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+    307,
+]
+type = "status"
