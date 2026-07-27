@@ -1,0 +1,41 @@
+[basic]
+description = "Pillow 图像处理库中 `PIL/GdImageFile.py` 的 `GdImageFile._open()` 方法在读取 GD 2.x 文件头的图像尺寸并存储到 `self._size` 时，未调用 `Image._decompression_bomb_check()` 进行解压炸弹防护检查。由于 `GdImageFile` 未向 `Image.register_open()` 注册，其自有入口 `PIL.GdImageFile.open(fp)` 直接实例化类，完全绕过了 Pillow 标准的 `Image.open()` 代码路径及其防护机制。攻击者仅需上传一个 1,037 字节的精心构造 `.gd` 文件（头部宽高均设为 65535），即可在调用 `.load()` 时触发约 4.3 GB 的 C 堆内存分配尝试，导致内存不足的系统进程崩溃，可循环请求造成持续拒绝服务。该漏洞影响 Pillow 12.3.0 之前版本，CVSS 7.5 高危，无需认证和用户交互，任何接受用户上传 .gd 文件并调用 `GdImageFile.open()` 后跟 `.load()` 的服务均受影响。Pillow 12.3.0 已修复，补丁在 `_open()` 中补齐了缺失的 `_decompression_bomb_check()` 调用。"
+published = "2026-07-06T19:17:08.703"
+remediation = "升级 Pillow 至 12.3.0 或更高版本：pip install --upgrade pillow。若使用系统包管理器，Ubuntu/Debian 执行 sudo apt update && sudo apt install python3-pillow，Alpine 执行 apk upgrade py3-pillow。临时缓解措施：在应用层拦截或校验 .gd 文件尺寸，避免直接调用 PIL.GdImageFile.open() 处理不可信来源的 GD 文件。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Pillow 图像处理库 GD 格式解压炸弹防护绕过漏洞"
+updated = "2026-07-07T18:58:54.647"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-55380",
+    "GHSA-phj9-mv4w-65pm",
+]
+ave_id = "AVE-2026-0598"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/python-pillow/Pillow/blob/main/docs/releasenotes/12.3.0.rst",
+    "https://github.com/python-pillow/Pillow/commit/f39b0ae6624eb2d7c5c5d651d9bb5fdbd96a8675",
+    "https://github.com/python-pillow/Pillow/security/advisories/GHSA-phj9-mv4w-65pm",
+    "https://github.com/CVEProject/cvelistV5/blob/933422a5f82611777877a3549b9b8e3c7d70117d/cves/2026/55xxx/CVE-2026-55380.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-55380.md",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/pypi/Pillow/CVE-2026-55380.yml",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/575eefe00f82443f5f87947d8e6e0e475795a92e/reports/2026-07-06/TIER_2_CVE-2026-55380.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/7fb6b5b3f877cb85d43b44481d8426d9d97694f8/osv/cve/2026/UBUNTU-CVE-2026-55380.json",
+    "https://github.com/neuvector/vul-source/blob/e9a4ab6839838576fc98bcb2ecd0e476425665f5/ubuntu-cve-tracker/active/CVE-2026-55380",
+    "https://github.com/cisagov/vulnrichment/blob/16901ed3086419e92a3d59446e25736507cf6a0b/2026/55xxx/CVE-2026-55380.json",
+    "https://github.com/TMA84/cvealert/blob/c3dfdc2468cdb0a89c10a40e310466fb77d5febc/content/posts/cve-2026-55380.md",
+    "https://github.com/alpinelinux/aports/blob/bf66e61ceed5e250997657c9323c46b0c5917025/community/py3-pillow/APKBUILD",
+    "https://github.com/robusta-dev/robusta/blob/30d54eedd8e8de354e977d9b832b05e4879998cd/pyproject.toml",
+]
