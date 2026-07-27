@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 btrfs 文件系统在 cow_file_range() 函数执行失败时存在不正确的 folio（页缓存单元）清理漏洞。当写入时空间不足（-ENOSPC）导致 cow_file_range() 失败后，错误处理流程未能正确清除剩余页面的脏标志和 EXTENT_DELALLOC 标志，导致部分页面仍保持脏状态但缺少延迟分配标记。后续写回操作触发这些页面时，因找不到对应的 ordered extent 而进入 COW 修复路径，最终触发内核 BUG_ON() 导致系统崩溃。本地低权限攻击者可利用此漏洞造成拒绝服务。该漏洞自 btrfs 引入以来一直存在，影响所有使用 btrfs 文件系统的 Linux 内核版本。"
+published = "2025-02-27T02:15:10.790"
+remediation = "建议立即将 Linux 内核升级至 6.12.36、6.13.2 或 6.14 及以上版本，这些版本已包含 btrfs cow_file_range() 失败时 folio 清理的修复补丁。对于无法立即升级的系统，可限制本地用户对 btrfs 文件系统的写入权限以降低触发概率，但最有效的措施仍是安装内核安全更新。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel Btrfs 文件系统 folio 清理不当导致拒绝服务漏洞"
+updated = "2026-06-17T08:14:21.417"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2024-57976"]
+ave_id = "AVE-2024-0657"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/06f364284794f149d2abc167c11d556cf20c954b",
+    "https://git.kernel.org/stable/c/10b3772292bf1be45604ba83fd9650eb94382e78",
+    "https://git.kernel.org/stable/c/692cf71173bb41395c855acbbbe197d3aedfa5d4",
+    "https://github.com/CVEProject/cvelistV5/blob/50b2026c1039c6a81b95d80535c772b9d8685178/cves/2024/57xxx/CVE-2024-57976.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2024-57976",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2024/CVE-2024-57976.yaml",
+    "https://github.com/bell-sw/osv-database/blob/027c37e8e73e99b2a68cafab2e6594bde5db273e/BELL-CVE/BELL-CVE-2024-57976.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2024-57976.md",
+    "https://github.com/joaop9425/manual-do-tecnico/blob/cc6e0f5304777f18e55db554da5372bc31d4cae1/src/content/noticias/2026/01/08/seguranca/cve-2024-57976-btrfs-do-proper-folio-cleanup-when--1767883725000.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/050b62cac636d83be07e6d4c77e70114e1ca7c93/CVE/data/2024/CVE-2024-57976.json",
+    "https://github.com/Hashmire/cpeApplicabilityGeneratorPages/blob/4588dccb1f913705444975eb2a5eb79962bf2513/generated_pages/CVE-2024-57976.html",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/unreviewed/2025/02/GHSA-7g3v-g92m-87wq/GHSA-7g3v-g92m-87wq.json",
+    "https://github.com/neuvector/vul-source/blob/83b6758c208f8fd7e22b7c88e002c3658ef467b8/ubuntu-cve-tracker/active/CVE-2024-57976",
+]
