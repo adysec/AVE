@@ -1,0 +1,64 @@
+[info]
+author = "AVE"
+description = "检测目标 Exchange Autodiscover 服务是否可访问，该服务是 CVE-2017-11774 攻击链中设置恶意 Outlook 文件夹主页的前置条件。攻击者通过 ruler 工具利用 Autodiscover 接口设置文件夹 HomePage 指向恶意 URL，受害者点击文件夹时 Outlook 加载远程 HTML 执行任意代码。"
+id = "POC-AVE-2017-0222"
+name = "Microsoft Outlook Security Feature Bypass CVE-2017-11774 PoC"
+severity = "high"
+tags = [
+    "cve-2017-11774",
+    "outlook",
+    "rce",
+    "security-bypass",
+]
+vuln_id = [
+    "CVE-2017-11774",
+    "AVE-2017-0222",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/autodiscover/autodiscover.xml"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "text/xml"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Autodiscover",
+    "Response",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/autodiscover/autodiscover.xml"
+protocol = "http"
+
+[poc.requests.body]
+content = '<?xml version="1.0" encoding="utf-8"?><Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/requestschema/2006"><Request><EMailAddress>user@domain.com</EMailAddress><AcceptableResponseSchema>http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a</AcceptableResponseSchema></Request></Autodiscover>'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/xml"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Autodiscover",
+    "Response",
+    "Account",
+]
