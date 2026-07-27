@@ -1,11 +1,11 @@
 [basic]
-description = "Etype Eserv 2.9.2 及更早版本的日志记录功能存在缓冲区溢出漏洞，攻击者可通过发送超长的 MKD 命令触发缓冲区溢出，进而执行任意命令。该漏洞影响 Etype Eserv 2.9.2 及更早版本，CVSS 评分 10.0（CVSS:AV:N/AC:L/Au:N/C:C/I:C/A:C），危害等级严重。攻击者无需身份认证，可通过网络远程发送构造的超长 MKD 命令触发漏洞，导致服务器进程崩溃或执行任意代码，完全控制受影响服务器。Etype 已在后续版本中修复该漏洞，建议用户升级至修复版本。"
+description = "EServ 2.9.2 及更早版本的 FTP 服务器在日志记录功能中存在缓冲区溢出漏洞。当攻击者向目标服务器发送超长的 MKD（创建目录）FTP 命令时，由于日志模块未对输入长度进行有效校验，导致写入数据超出预分配缓冲区边界，覆盖相邻内存区域。经认证的远程攻击者可精心构造恶意 MKD 命令载荷，控制溢出数据覆写返回地址，从而在服务器进程上下文中执行任意系统命令，获取完全控制权。该漏洞 CVSS 评分 10.0，属于最高危害等级，影响 EServ 2.9.2 及其之前所有版本，攻击者无需特殊权限即可实现远程代码执行。"
 published = "2000-06-06T04:00:00.000"
-remediation = "建议立即停用 Etype Eserv 2.9.2 及更早版本，迁移至现代维护中的 FTP 服务器（如 vsftpd、ProFTPD、FileZilla Server 等最新版）。若无法立即迁移，请在防火墙层面禁止外部访问 FTP 服务端口（默认 21/TCP），并在服务配置中禁用 MKD 命令及日志记录功能作为临时缓解措施。"
+remediation = "立即将 EServ 升级至 2.9.2 之后的修复版本（如 EServ 3.x），若新版本不再可用则应彻底停用 EServ 并替换为仍在维护的代理服务器软件（如 Squid、Nginx）。升级前可先在防火墙或路由器上限制对 EServ 管理端口（默认 21/80/8080）的访问，仅允许可信 IP 连接，以阻断远程 MKD 命令的攻击路径。同时检查服务器日志中是否存在异常超长 MKD 请求记录，若已被利用须立即排查后门和数据泄露情况。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "Etype Eserv 日志记录缓冲区溢出漏洞"
+sources = ["avd"]
+title = "Etype Eserv FTP服务日志堆缓冲区溢出漏洞"
 updated = "2026-06-16T21:51:55.100"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0523"]
 ave_id = "AVE-2000-0435"
 
 [meta]
-collected_at = "2026-07-23T00:00:00Z"
+collected_at = "2026-07-27T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,13 +26,13 @@ urls = [
     "http://www.securityfocus.com/bid/1315",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4614",
     "https://www.exploit-db.com/exploits/19997",
-    "https://github.com/CVEProject/cvelistV5/blob/9615a84be27b28681e8a92dcc11ff360547df421/cves/2000/0xxx/CVE-2000-0523.json",
+    "https://github.com/CVEProject/cvelistV5/blob/bb04e7276eb5376f975ca811b9a340d0d55b901d/cves/2000/0xxx/CVE-2000-0523.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0523",
-    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0523.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1910cec3a272a9634d53e73996abe765ad48da86/CVE/data/2000/CVE-2000-0523.json",
-    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2022/04/GHSA-pg42-38hv-3f6h/GHSA-pg42-38hv-3f6h.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/11a92cc3c0d31b9e78fe8f2a857dd04df3195701/2000/0xxx/CVE-2000-0523.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0298403c910e42219c357a4f56dac428565b2e47/CVE/data/2000/CVE-2000-0523.json",
+    "https://github.com/github/advisory-database/blob/724a585dd64bbf0d8e6760dd16b808140e9a0dd8/advisories/unreviewed/2022/04/GHSA-pg42-38hv-3f6h/GHSA-pg42-38hv-3f6h.json",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/a036095fb2c093f3863681adc5999690c37b930e/nvdcve/CVE-2000-0523.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0523.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152500_152600.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_3.list.dict",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--ad8e88eb-8f78-44fd-af04-96c18c56afb8.json",
