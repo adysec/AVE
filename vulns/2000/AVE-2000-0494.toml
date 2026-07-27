@@ -1,11 +1,11 @@
 [basic]
-description = "Savant Web Server 2.1 及 3.0 版本存在远程缓冲区溢出漏洞。攻击者无需身份认证，通过向目标服务器发送超长特制 GET 请求即可触发缓冲区溢出，导致服务器进程崩溃或执行任意命令。该漏洞影响 Savant Web Server 2.1 和 3.0 版本，CVSS 评分 7.5，危害等级高。官方已发布修复版本，建议用户升级至最新版本。"
+description = "Savant Web Server 2.1及3.0版本存在远程缓冲区溢出漏洞。攻击者可通过向目标服务器的80端口发送包含大量HTTP头部字段的超长GET请求触发该漏洞，导致栈缓冲区溢出并覆盖关键内存区域（如返回地址和异常处理结构）。成功利用此漏洞可在目标Windows系统上以Web Server进程权限执行任意代码，或导致服务崩溃引发拒绝服务。该漏洞无需身份认证，任何能够与目标服务器建立TCP连接的远程攻击者均可利用，攻击门槛较低。具体利用方式为发送包含约5000个额外HTTP头部字段的GET请求，超出服务器缓冲区的处理边界，造成内存越界写入，进而劫持程序执行流程实现代码执行。"
 published = "2000-07-08T04:00:00.000"
-remediation = "立即停止使用 Savant Web Server（已停止维护，无官方补丁），迁移至受支持的产品如 Apache HTTP Server、Nginx 或 Microsoft IIS。如无法立即迁移，可在前端部署反向代理（如 Nginx、HAProxy）对 HTTP GET 请求 URI 长度做严格限制（建议不超过 4096 字节），并在网络边界防火墙限制 Savant 端口（默认 80/443）仅对可信 IP 开放，同时部署 IDS/IPS 规则检测超长 GET 请求攻击流量。"
+remediation = "该漏洞存在于早已停止维护的 Savant WebServer 2.1/3.0 中，官方不再提供补丁。应立即将 Savant WebServer 从生产环境迁移至 Apache、Nginx 或 IIS 等仍在维护的 Web 服务器。迁移前可在系统防火墙中限制对 Savant 监听端口的访问，仅允许可信来源 IP 连接，或将其部署在反向代理后方以减小暴露面。如短期无法迁移，可在 Savant 配置文件中缩短连接超时时间、限制最大请求 URI 长度，并禁用目录列表功能。迁移完成后应彻底卸载 Savant WebServer 程序。"
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
-title = "Michael Lamont Savant WebServer 远程缓冲区溢出漏洞"
+sources = ["epss"]
+title = "Savant WebServer 远程缓冲区溢出漏洞"
 updated = "2026-06-16T21:52:10.233"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0641"]
 ave_id = "AVE-2000-0494"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-27T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1453",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4901",
     "https://www.exploit-db.com/exploits/20066",
-    "https://github.com/CVEProject/cvelistV5/blob/4382b0b8593e7ef30616ab300314afbbf1571636/cves/2000/0xxx/CVE-2000-0641.json",
+    "https://github.com/CVEProject/cvelistV5/blob/50b2026c1039c6a81b95d80535c772b9d8685178/cves/2000/0xxx/CVE-2000-0641.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0641",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-0641.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/cae595683b6fe65324ec717750e7cdca928c1db7/CVE/data/2000/CVE-2000-0641.json",
-    "https://github.com/github/advisory-database/blob/29756569ae7c866e39492d6faf2dcdff310590f7/advisories/unreviewed/2022/04/GHSA-m69c-hmx8-c8ph/GHSA-m69c-hmx8-c8ph.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/11a92cc3c0d31b9e78fe8f2a857dd04df3195701/2000/0xxx/CVE-2000-0641.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/050b62cac636d83be07e6d4c77e70114e1ca7c93/CVE/data/2000/CVE-2000-0641.json",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/unreviewed/2022/04/GHSA-m69c-hmx8-c8ph/GHSA-m69c-hmx8-c8ph.json",
+    "https://github.com/LubyRuffy/plugins/blob/f873b19f27c95eaf2993ca4acde5cb7965d2ee3f/2009/www_too_long_url.nasl",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0641.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152600_152700.json",
     "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_3.list.dict",
-    "https://github.com/jbeasl7/openvas-feed-sync-local/blob/fb27339bf790f38603dcf52a87a4652cadb30c7e/openvas-feeds/nvt-feed/2009/www_too_long_url.nasl",
 ]
