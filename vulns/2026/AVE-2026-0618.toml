@@ -1,0 +1,41 @@
+[basic]
+description = "9Router 仪表盘登录速率限制器在 `src/lib/auth/loginLimiter.js` 中通过 `X-Forwarded-For` HTTP 请求头识别客户端身份，未验证该头部是否来自可信代理。远程攻击者可在每次登录尝试中伪造不同的 `X-Forwarded-For` 值，使服务端为每个请求分配新的速率限制桶，从而绕过 5 次尝试阈值和渐进式锁定机制，实现无限制的暴力破解攻击。若实例仍使用默认仪表盘密码，攻击者可成功登录获取管理员权限，访问配置的提供商凭证、API 密钥、修改认证设置并创建持久化访问令牌。该漏洞影响 9Router 0.4.80 之前版本，CVSS 评分 7.3，危害等级高。"
+published = "2026-07-10T16:16:33.493"
+remediation = "立即升级 9router 至 v0.4.80 或更高版本，该版本修复了登录限速器信任 X-Forwarded-For 头的问题。如无法立即升级，在反向代理层（如 Nginx）配置 `proxy_set_header X-Forwarded-For $remote_addr;` 覆盖不可信客户端传入的标头，或配置 `proxy_set_header X-Real-IP $remote_addr;` 并修改 9router 的 `getClientIp` 函数优先使用 `X-Real-IP` 而非 `X-Forwarded-For`。"
+score = 7.3
+severity = "HIGH"
+sources = ["ghsa"]
+title = "9router 登录暴力破解防护绕过漏洞"
+updated = "2026-07-10T17:25:46.957"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-55501",
+    "GHSA-7cfm-pqrj-xgq7",
+]
+ave_id = "AVE-2026-0618"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/decolua/9router/commit/7648c3412b403a29f04967c4b4e9725e228791d4",
+    "https://github.com/decolua/9router/releases/tag/v0.4.80",
+    "https://github.com/decolua/9router/security/advisories/GHSA-7cfm-pqrj-xgq7",
+    "https://github.com/CVEProject/cvelistV5/blob/8ab396be03b208767ce22804ad16877ccef3b54c/cves/2026/55xxx/CVE-2026-55501.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-55501.md",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/npm/9router/CVE-2026-55501.yml",
+    "https://github.com/cisagov/vulnrichment/blob/0d5eda5cdae3f3a50b92fdfcae2f5983174f2a99/2026/55xxx/CVE-2026-55501.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/575eefe00f82443f5f87947d8e6e0e475795a92e/reports/2026-07-10/TIER_2_CVE-2026-55501.md",
+    "https://github.com/TMA84/cvealert/blob/0c336e1b86972b4210fc8388a318964ce8d85a8e/content/posts/cve-2026-55501.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1c367c2407e523ae413438625300667710835348/CVE/data/2026/CVE-2026-55501.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2026-55501.md",
+    "https://github.com/github/advisory-database/blob/7b437709e7540c8c9af0a3ecc5a6f3df80f4ff33/advisories/github-reviewed/2026/07/GHSA-7cfm-pqrj-xgq7/GHSA-7cfm-pqrj-xgq7.json",
+    "https://github.com/xhls008/nvd_yesterday/blob/08ea89e8807d0d5cf7150243c834721985237c9e/CVEs_log/2026-07-11_zh.md",
+]
