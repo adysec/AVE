@@ -1,0 +1,38 @@
+[basic]
+description = "Pheditor 2.0.4 终端功能存在命令白名单绕过漏洞。该功能仅通过前缀匹配检查用户提交的命令是否以允许的命令开头，随后将完整命令字符串传递给 `shell_exec()` 执行，但未过滤 `$()` 等 shell 命令替换语法。已认证且拥有终端权限的攻击者可利用此缺陷，在允许命令后附加命令替换载荷（如 `ls$(whoami)`）绕过白名单限制，以 Web 服务器用户身份执行任意系统命令。该漏洞影响 Pheditor 2.0.4 版本，CVSS 评分 7.2，危害等级高。建议避免将用户输入直接传入 `shell_exec()`，改用精确命令匹配或参数数组方式执行进程。"
+published = "2026-01-01"
+remediation = "立即升级 Pheditor 至 2.0.5 或更高版本（若已发布）。如无补丁版本，手动修改 `pheditor.php` 中终端命令处理逻辑：将前缀匹配改为精确命令名匹配（`$command === $value`），并在 `shell_exec()` 前使用 `escapeshellcmd()` 对整个命令字符串转义，同时增加对 `$()`、`` ` ``、`|` 等 shell 元字符的全面拦截。若业务不需要终端功能，建议在配置中将 `TERMINAL_COMMANDS` 留空或直接禁用该功能。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Pheditor Pheditor 终端命令白名单绕过漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54540",
+    "GHSA-9643-6xjp-vx57",
+]
+ave_id = "AVE-2026-0566"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/packagist/pheditor/pheditor/CVE-2026-54540.yml",
+    "https://github.com/opencve/opencve-kb/blob/a33f85da11d3afe3eb764a41b87c9f7ba913cb0c/2026/CVE-2026-54540.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/aba6335363a6c475f766c068401f2f37a43e6612/cve/CVE-2026-54540.html",
+    "https://github.com/github/advisory-database/blob/1c8e3f4146e1bef501493d1237acb1611ea8f707/advisories/github-reviewed/2026/07/GHSA-9643-6xjp-vx57/GHSA-9643-6xjp-vx57.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/72250fcaba6f67069c40da9c17f08bd990e83148/docs/data/2026/CVE-2026-54540.json",
+    "https://github.com/JimBLogic/CyberDailyLog/blob/1e793ab452b65d94954c137652eaf3886a43fd70/reports/archive/2026/07/2026-07-17.md",
+    "https://github.com/proshiba/vuln-intel-agent/blob/eb9d5949573bf98755141185e45226827196e91c/vulndb/vulns/github/2026/07/VW-2026-29871.yaml",
+    "https://github.com/JsHuang/sec-advisory-daily/blob/86aea41dd2762b8ae57edf00dafe081b4536e32d/reports/report-2026-07-17.html",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/aba6335363a6c475f766c068401f2f37a43e6612/api/intel/products/cve-2026-54540-composer-pheditor-pheditor.json",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/dce39ef8dd24743d0eb60b36b80f49d51f219690/data/history/CVE-2026-54540.json",
+]
