@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "检测 Coder 子域名工作区应用代理的 CORS 源校验绕过漏洞（CVE-2026-55438）。当工作区名称子域名段为 UUID 时，CORS 中间件信任未经验证的用户名，攻击者可构造恶意 URL 绕过同源检查窃取敏感数据。"
+id = "POC-AVE-2026-0612"
+name = "Coder workspace app CORS origin check bypass PoC"
+severity = "medium"
+tags = ["ave-2026-0612"]
+vuln_id = [
+    "CVE-2026-55438",
+    "AVE-2026-0612",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.headers]
+Origin = "https://attacker.example.com"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["Access-Control-Allow-Origin: https://attacker.example.com"]
