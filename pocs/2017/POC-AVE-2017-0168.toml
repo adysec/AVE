@@ -1,0 +1,50 @@
+[info]
+author = "AVE"
+description = "检测 Jenkins CLI 反序列化远程代码执行漏洞 CVE-2017-1000353，通过访问 /cli 端点确认 Jenkins CLI 服务是否开启，结合响应头中 X-Jenkins 版本信息判断是否存在漏洞"
+id = "POC-AVE-2017-0168"
+name = "Jenkins CLI Java Deserialization RCE PoC"
+severity = "critical"
+tags = [
+    "cve-2017-1000353",
+    "jenkins",
+    "rce",
+    "deserialization",
+]
+vuln_id = [
+    "CVE-2017-1000353",
+    "AVE-2017-0168",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cli"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Remoting",
+    "remoting",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Jenkins"]
