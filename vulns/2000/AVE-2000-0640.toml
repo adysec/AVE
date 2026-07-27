@@ -1,11 +1,11 @@
 [basic]
-description = 'IPFilter 防火墙 3.4.3 及更早版本在配置重叠的 "return-rst" 和 "keep state" 规则时存在竞争条件漏洞，远程攻击者可通过精心构造的网络数据包利用该竞争条件绕过防火墙的访问限制规则，导致防火墙访问控制策略失效。该漏洞影响 IPFilter 3.4.3 及更早版本，攻击者需具备网络访问权限且攻击复杂度较高，利用成功可导致防火墙完整性保护部分失效，CVSS 2.6 分（低危）。'
+description = 'IPFilter 防火墙（3.4.3 及更早版本）存在竞争条件漏洞，当管理员配置了重叠的 "return-rst"（返回RST复位包）与 "keep state"（保持连接状态）规则时，两种规则在状态维护逻辑上产生冲突。远程攻击者可利用该竞争条件，在防火墙规则处理的竞态窗口期间绕过访问控制限制，实现对受保护资源的未授权访问。攻击者无需认证，仅需从网络侧向目标系统发起特定连接请求即可触发该漏洞，CVSS 评分 2.6（低危），主要影响系统完整性。该漏洞已于 2000 年公开披露，建议用户升级至修复后的 IPFilter 版本或调整防火墙规则以避免重叠配置。'
 published = "2000-05-26T04:00:00.000"
-remediation = '建议升级 IPFilter 防火墙至 3.4.4 或更高版本修复该竞争条件漏洞。若暂无法升级，请检查防火墙规则配置，避免同时使用重叠的 "return-rst" 和 "keep state" 规则，或将两类规则拆分至不同规则组避免竞争条件触发。同时建议在边界防火墙层面增加访问控制列表 (ACL) 作为纵深防御缓解措施。'
+remediation = '立即升级 IPFilter 至 3.4.4 或更高版本（最终版 5.1.2），从 https://www.phil.uu/~ipfilter/ 下载源码编译安装。若无法立即升级，应在防火墙规则中避免同时使用 "return-rst" 与 "keep state" 重叠规则——将两者拆分为独立规则链或重新排列规则顺序使其不产生状态竞争。对于仍在运行旧版 IPFilter 的系统，建议迁移到 pf（OpenBSD Packet Filter）作为替代方案，pf 在主流 BSD 系统中已默认集成且不存在此竞争条件。'
 score = 2.6
 severity = "LOW"
-sources = ["epss"]
-title = "IPFilter 防火墙安全绕过漏洞"
+sources = ["avd"]
+title = "IPFilter 防火墙 竞态条件安全绕过漏洞"
 updated = "2026-06-16T21:51:59.123"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0553"]
 ave_id = "AVE-2000-0640"
 
 [meta]
-collected_at = "2026-07-24T00:00:00Z"
+collected_at = "2026-07-27T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,12 +26,12 @@ urls = [
     "http://www.osvdb.org/1377",
     "http://www.securityfocus.com/bid/1308",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4994",
-    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0553.json",
+    "https://github.com/CVEProject/cvelistV5/blob/15ba52d0829fe2220e9f89276b2743c7eef0ab2a/cves/2000/0xxx/CVE-2000-0553.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0553",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0553.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/dc46d37c28bb275abd05bf31414b33cf4107e07c/CVE/data/2000/CVE-2000-0553.json",
-    "https://github.com/github/advisory-database/blob/2b8a7bdd977d852aa4b7aade01f4fcd4d623cfde/advisories/unreviewed/2022/04/GHSA-wmhx-3hr4-6h39/GHSA-wmhx-3hr4-6h39.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0553.md",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/291c09f8f1fb3b2fa866c7b93e7660471419cef8/2000/0xxx/CVE-2000-0553.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6cdd862a65f157a01ff9fd42e651329142c691d2/CVE/data/2000/CVE-2000-0553.json",
+    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/unreviewed/2022/04/GHSA-wmhx-3hr4-6h39/GHSA-wmhx-3hr4-6h39.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0553.md",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0553.json",
     "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152400_152500.json",
     "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--718f94a7-117e-46f2-bb67-5bb05cc3b125.json",
