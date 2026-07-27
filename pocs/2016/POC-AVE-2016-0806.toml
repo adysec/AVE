@@ -1,0 +1,65 @@
+[info]
+author = "AVE"
+description = "检测目标是否托管 Flash 内容并判断 Flash Player 版本是否低于修复版本（Windows/OS X 23.0.0.205，Linux 11.2.202.643），低于则存在释放后使用漏洞风险"
+id = "POC-AVE-2016-0806"
+name = "CVE-2016-7855 Adobe Flash Player Use-After-Free PoC"
+severity = "high"
+tags = [
+    "cve-2016-7855",
+    "adobe",
+    "flash-player",
+    "use-after-free",
+    "uaf",
+]
+vuln_id = [
+    "CVE-2016-7855",
+    "AVE-2016-0806",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "application/x-shockwave-flash",
+    "shockwave-flash",
+    ".swf",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/player.swf"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "FWS",
+    "CWS",
+    "ZWS",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/expressInstall.swf"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "FWS",
+    "CWS",
+    "ZWS",
+]
