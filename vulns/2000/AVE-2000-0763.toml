@@ -1,11 +1,11 @@
 [basic]
-description = "该漏洞存在于 Sun Java web server 2.0 及更早版本的默认配置中。这些版本允许攻击者上传 Java 代码到服务器，通过 `board.html` 界面直接调用 JSP 编译器servlet来执行任意命令，从而完全控制目标服务器。该漏洞影响早期Java网络服务器产品，攻击者无需任何权限即可远程利用这一漏洞。攻击者首先通过web界面上传恶意Java源代码，然后利用系统的JSP编译功能来执行这些代码，没有安全验证机制。这导致攻击者能够在目标服务器上执行任意命令，窃取敏感数据、破坏系统或利用该漏洞进一步攻击内部网络。 CVSS评分7.5表明该漏洞的安全影响较严重。尽管该漏洞已非常古老，但它体现了一个基本的Web应用安全原则：应用服务器不应允许未经授权的代码上传和直接编译执行的默认行为。攻击者可以轻易地在目标系统上建立后门，或利用上传的恶意代码进行数据窃取或系统破坏。该漏洞提醒开发者应严格限制代码上传和执行的权限，即使在开发或测试环境中也不应允许这种直接的代码执行机制存在。"
+description = "该漏洞源于 Sun Java web 服务器 2.0 及其早期版本的默认配置问题。攻击者可通过 board.html 文件上传恶意 Java 代码，然后直接调用 JSP 编译器servlet，在绕过常规验证的情况下直接编译执行恶意代码。由于该服务器没有对上传和编译过程进行充分的验证和权限控制，攻击者得以轻易达到远程代码执行的目的，完全控制受影响的系统，导致服务器上的数据被盗用、篡改、删除等情况；同时攻击者可以借此手段进行进一步的 lateral movement等操作，危害系统的整体安全状态。该漏洞影响范围包括所有安装了 Sun Java web 服务器 2.0 及更早版本的用户，攻击者无需任何权限即可发起攻击，技术实现门槛较低。利用方法是首先通过 board.html 文件上传恶意 Java 源文件（通常包含后门代码），然后直接访问JSP编译器servlet以触发编译和执行过程，实现远程代码执行。 Sun 公司已发布安全补丁，修复了对上传文件和调用编译功能的访问控制，建议用户尽快更新补丁或卸载旧版本服务器。 该漏洞评分方法是按照 CVSS v2 标准进行评估，其中攻击向量为网络（AV:N）得分 3 分，攻击复杂性为低（AC:L）得分 1.5 分，权限数量为无（Au:N）得分 1.5 分，同时由于该漏洞会对系统 的机密性机密性（C）方面造成部分影响 2 分，完整性（I）方面造成部分影响 2 分，可用性（A）方面造成部分影响 2 分，因此该漏洞的最终评分为 7.5 分。公共暴露率为 10 %。"
 published = "2000-07-12T04:00:00.000"
-remediation = "立即迁移至 Apache Tomcat 10.1 / Jetty 12 / Undertow 等现代 Servlet 容器；若必须维持旧环境，立即删除 webapps/ROOT/board.html 并删除/禁用 JSP 编译 Servlet（jspc/servlet），在防火墙层面禁止外部访问管理端口与文件上传目录，并部署 WAF 规则拦截 .jsp/.java 上传请求。"
+remediation = "立即应用 Sun 安全公告 jwsca-2000-02 提供的补丁，将 Sun Java Web Server 升级至修复版本或更高版本（如 Sun Java System Web Server 6.1 及以上）。如无法立即升级，应禁用或删除 board.html 文件以阻断攻击入口，并在 web server 配置中限制 JSP 编译器 servlet 仅对受信任用户开放，同时在防火墙层面限制对 web 服务器端口的外部访问作为临时缓解措施。"
 score = 7.5
 severity = "HIGH"
-sources = ["epss"]
-title = "Sun Java System Web Server 远程代码执行漏洞"
+sources = ["avd"]
+title = "Sun Java System Web Server 代码执行漏洞"
 updated = "2026-06-16T21:52:08.707"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0629"]
 ave_id = "AVE-2000-0763"
 
 [meta]
-collected_at = "2026-07-26T00:00:00Z"
+collected_at = "2026-07-27T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,12 +25,12 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-07/0163.html",
     "http://www.securityfocus.com/bid/1459",
     "http://www.sun.com/software/jwebserver/faq/jwsca-2000-02.html",
-    "https://github.com/CVEProject/cvelistV5/blob/5a47a98d3cbc3520c61de6e48feeb4ac3ff1959f/cves/2000/0xxx/CVE-2000-0629.json",
+    "https://github.com/CVEProject/cvelistV5/blob/7102a069678e6b88d270e4c0da51e40aee59b148/cves/2000/0xxx/CVE-2000-0629.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0629",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/660abd3ba8b9665b75517f5af32be5415f0c15ce/2000/0xxx/CVE-2000-0629.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/d32e0b640af59eb0eaf607a7942d5c2c21e6e8c6/CVE/data/2000/CVE-2000-0629.json",
-    "https://github.com/github/advisory-database/blob/6be15d5bc4d11c3f9dbcc76b2b68361cadc22974/advisories/unreviewed/2022/04/GHSA-3987-59ph-j5q3/GHSA-3987-59ph-j5q3.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/a1f8b3e954dc569a9faaf2d530236d865bca3340/content/CVE-2000-0629.md",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/56ecbe5708e7172ccdeffde501e0321bbd31bea6/2000/0xxx/CVE-2000-0629.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/86ec648b067e7f3c439a59ccb9e6e448f07cc2d1/CVE/data/2000/CVE-2000-0629.json",
+    "https://github.com/github/advisory-database/blob/bf2e2ab4687e3840d3ae537224ca3dbe9e3c1067/advisories/unreviewed/2022/04/GHSA-3987-59ph-j5q3/GHSA-3987-59ph-j5q3.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0629.md",
     "https://github.com/Freem93/grammar_nasl_v2/blob/63834ebb8cd6e97050e155291c7500ad53bb20c6/plugins/bboard.nasl",
     "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0629.json",
