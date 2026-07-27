@@ -1,24 +1,24 @@
 [info]
 author = "AVE"
-description = "检测 HP-UX 11.00 系统中 net.init RC 脚本是否存在符号链接攻击漏洞。通过检查 /sbin/rc2.d/S008net.init 脚本的存在性及其内容中是否包含对 /tmp/stcp.conf 的盲写入操作，验证系统是否运行存在漏洞的 net.init 初始化脚本，本地攻击者可预先创建指向任意文件的符号链接实现权限提升。"
+description = "检测 HP-UX 11.00 系统上 net.init RC 脚本的不安全临时文件创建漏洞。通过检查 /tmp/stcp.conf 是否可被符号链接攻击利用，验证本地攻击者能否覆写任意系统文件。"
 id = "POC-AVE-2000-0551"
-name = "HP-UX 11.0 net.init RC Script Symlink Attack PoC"
+name = "HP-UX net.init RC Script 本地文件覆盖漏洞 PoC"
 severity = "high"
-tags = ["cve-2000-0702"]
+tags = ["ave-2000-0551"]
 vuln_id = [
     "CVE-2000-0702",
     "AVE-2000-0551",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
-path = "/sbin/rc2.d/S008net.init"
+path = "/tmp/stcp.conf"
 protocol = "file"
 
 [[poc.requests.matchers]]
 expect = false
 part = "body"
 type = "word"
-words = ["__MOCK_MARKER_X7K9P__"]
+words = ["root:"]
