@@ -1,0 +1,42 @@
+[basic]
+description = "Ruby CSS 解析库 css_parser 在 2.2.0 至 3.0.0 版本中存在服务端请求伪造（SSRF）与本地文件读取漏洞。`CssParser::Parser#read_remote_file` 方法在处理远程 CSS 文件时未对目标主机、IP 地址及 URI 协议进行任何校验，允许攻击者通过 `@import url(...)` 注入任意 HTTP/HTTPS 请求，可访问内网服务、云元数据接口等受限资源。更严重的是，该方法会递归跟随 HTTP 重定向且不检查目标协议，攻击者可构造 `Location: file:///etc/passwd` 将 SSRF 升级为任意本地文件读取。任何将攻击者可控 CSS 与 `base_uri:` 选项传入 css_parser 的应用（如 Premailer 邮件处理管道）均受影响。官方已在 3.0.0 版本中通过引入 ssrf_filter 库、移除 file:// 远程读取路径等方式修复。"
+published = "2026-07-17T21:17:07.837"
+remediation = "立即将 css_parser 升级至 3.0.0 或更高版本，该版本默认通过 ssrf_filter 拒绝内网地址和 file:// 协议。如无法升级，在调用 Parser.new 时不要传入用户可控的 base_uri 参数，并对所有 @import url() 中的 URL 进行白名单校验，仅允许 http/https 协议且过滤内网 IP 段。"
+score = 8.9
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Ruby css_parser 服务器端请求伪造与本地文件读取漏洞"
+updated = "2026-07-23T16:15:11.587"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-53727",
+    "GHSA-9pmc-p236-855h",
+]
+ave_id = "AVE-2026-0442"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/premailer/css_parser/commit/7d2ddf0189cd54b54f378f59daefa10cb036e476",
+    "https://github.com/premailer/css_parser/commit/e0a151458b2a801ae265ba420862ef8b1127b3ae",
+    "https://github.com/premailer/css_parser/releases/tag/v3.0.0",
+    "https://github.com/premailer/css_parser/security/advisories/GHSA-9pmc-p236-855h",
+    "https://github.com/rubysec/ruby-advisory-db/blob/6abafa39bbf76fbd32a01a93a3a2ba048c0f7143/gems/css_parser/CVE-2026-53727.yml",
+    "https://github.com/CVEProject/cvelistV5/blob/bb04e7276eb5376f975ca811b9a340d0d55b901d/cves/2026/53xxx/CVE-2026-53727.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-53727.md",
+    "https://github.com/errbit/errbit/blob/d172d02be24bd5462c8fcbd90baeb6e4ae5ed155/docs/relnotes/v0.10.12.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/1994996b0b1043aeb0b2d4db6d06b7a742460e16/osv/cve/2026/UBUNTU-CVE-2026-53727.json",
+    "https://github.com/neuvector/vul-source/blob/83b6758c208f8fd7e22b7c88e002c3658ef467b8/ubuntu-cve-tracker/active/CVE-2026-53727",
+    "https://github.com/rubysec/rubysec.github.io/blob/7fe93c0d9f67491f32ca61e33aaca423a4c19903/advisories/_posts/2026-06-01-CVE-2026-53727.md",
+    "https://github.com/cisagov/vulnrichment/blob/d2b9f82473296f370428cbc110ec5b988e3fd692/2026/53xxx/CVE-2026-53727.json",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/869f3abc79bfeaf3a31640839c1759509ebcc74c/nvd/2026/HIGH/CVE-2026-53727/README.md",
+    "https://github.com/TMA84/cvealert/blob/081b07b9127f2841c08bad5c94aba4d1bf47bb88/content/posts/cve-2026-53727.md",
+]
