@@ -1,0 +1,78 @@
+[info]
+author = "AVE"
+description = "检测目标是否为运行受影响版本（IOS 12.2~15.6或IOS XE）的Cisco设备。通过HTTP探测管理接口识别Cisco IOS/IOS XE产品指纹，提取版本号匹配漏洞版本范围，并通过IOS HTTP Shell响应及错误横幅进行多维度验证。该漏洞允许未认证远程攻击者通过特制DHCPv4数据包触发缓冲区溢出实现任意代码执行。"
+id = "POC-AVE-2017-0409"
+name = "CVE-2017-12240 Cisco IOS/IOS XE DHCP Relay Buffer Overflow PoC"
+severity = "critical"
+tags = [
+    "cve-2017-12240",
+    "cisco",
+    "dhcp",
+    "buffer-overflow",
+    "rce",
+]
+vuln_id = [
+    "CVE-2017-12240",
+    "AVE-2017-0409",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/exec/show/version/CR"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "IOS",
+    "Internetwork Operating System",
+    "IOS Software",
+    "IOS-XE",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/level/15/exec/-"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = [
+    "level_",
+    "cisco",
+    "IOS",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/level/15/exec/show/version"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Version 12.2",
+    "Version 12.",
+    "Version 13.",
+    "Version 14.",
+    "Version 15.",
+    "IOS-XE",
+]
