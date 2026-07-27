@@ -1,0 +1,46 @@
+[info]
+author = "ave"
+description = "检测 Microsoft .NET Framework SoapFormatter WSDL 解析远程代码执行漏洞（CVE-2017-8759）。通过发送特制 SOAP 请求触发 WSDL 解析器中的代码注入，验证目标是否存在漏洞。"
+id = "POC-AVE-2017-1208"
+name = "Microsoft .NET Framework SOAP WSDL RCE PoC"
+severity = "high"
+tags = ["ave-2017-1208"]
+vuln_id = [
+    "CVE-2017-8759",
+    "AVE-2017-1208",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Body>
+<TestSoapRequest xmlns="http://tempuri.org/">
+<TestParam>test</TestParam>
+</TestSoapRequest>
+</soap:Body>
+</soap:Envelope>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/soap+xml; charset=utf-8"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "System.Runtime.Remoting",
+    "SoapFormatter",
+    "System.Web.Services",
+    "Microsoft .NET Framework",
+]
