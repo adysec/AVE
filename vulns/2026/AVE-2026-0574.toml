@@ -1,0 +1,41 @@
+[basic]
+description = "Cloudreve 自托管文件管理系统存在 OAuth 访问令牌绕过范围强制执行漏洞。漏洞原理是 OAuth 访问令牌在签发时缺失 `client_id` 声明，导致 JWT 验证器未将令牌作用域加载至请求上下文，使得 `RequiredScopes(...)` 中间件误判为无作用域的第一方会话认证而跳过作用域检查。影响范围为 Cloudreve 4.12.0 至 4.16.1 版本，已在 4.16.1 修复。攻击条件为攻击者需持有合法用户的低权限 OAuth 访问令牌（如仅授权 `openid` 作用域），利用方式为攻击者使用该令牌作为 Bearer Token 调用需高权限作用域的 API（如文件读写、分享管理、工作流、用户设置、WebDAV 账户、管理员接口），因作用域检查被绕过而成功访问或篡改敏感资源，管理员账号甚至可触及管理员级 API。CVSS 评分 7.6（HIGH），攻击向量为网络，攻击复杂度低，需低权限和用户交互，机密性与完整性影响高，可用性影响低。CVE-2026-54560 对应 CWE-863（错误的授权）。"
+published = "2026-07-15T15:16:44.840"
+remediation = "建议立即升级 Cloudreve 到 4.16.1 或更高版本（下载地址：https://github.com/cloudreve/cloudreve/releases/tag/4.16.1）。升级前请备份数据库和配置文件，按官方文档执行升级步骤。若暂时无法升级，可在管理后台禁用 OAuth 功能或删除所有 OAuth 客户端配置作为临时缓解措施，并限制管理员账号进行 OAuth 授权。"
+score = 7.6
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Cloudreve Cloudreve OAuth 权限绕过漏洞"
+updated = "2026-07-15T18:15:13.373"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54560",
+    "GHSA-vgj4-345g-jcf8",
+]
+ave_id = "AVE-2026-0574"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/cloudreve/cloudreve/commit/ed20843dc3df20a25fcaf6b538647e11c4d68d87",
+    "https://github.com/cloudreve/cloudreve/releases/tag/4.16.1",
+    "https://github.com/cloudreve/cloudreve/security/advisories/GHSA-vgj4-345g-jcf8",
+    "https://github.com/CVEProject/cvelistV5/blob/49bdd0da7f9ed7eb2c6a7d376de641a46364c00a/cves/2026/54xxx/CVE-2026-54560.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/575eefe00f82443f5f87947d8e6e0e475795a92e/reports/2026-07-15/TIER_2_CVE-2026-54560.md",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/869f3abc79bfeaf3a31640839c1759509ebcc74c/nvd/2026/HIGH/CVE-2026-54560/README.md",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/github.com/cloudreve/Cloudreve/v4/CVE-2026-54560.yml",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/06bd4bafa29f2b5ddfa107ad565d92d39b9a40e1/CVE/data/2026/CVE-2026-54560.json",
+    "https://github.com/golang/vulndb/blob/d246ad98d3739cece1ce57358766d7c340b09c91/data/reports/GO-2026-6022.yaml",
+    "https://github.com/github/advisory-database/blob/d91e95989ea5d3a9186ceb621d53a71dff03cab4/advisories/github-reviewed/2026/07/GHSA-vgj4-345g-jcf8/GHSA-vgj4-345g-jcf8.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/347fea450bbb600a02904f9eaa5ce5c35747c461/data/2026/CVE-2026-54560.json",
+    "https://github.com/xhls008/nvd_yesterday/blob/08ea89e8807d0d5cf7150243c834721985237c9e/CVEs_log/2026-07-16_zh.md",
+    "https://github.com/bmwiedemann/openSUSE/blob/d8a287381c78b37aa3d10fca316ba2301f060da3/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+]
