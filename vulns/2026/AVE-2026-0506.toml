@@ -1,0 +1,38 @@
+[basic]
+description = "Skipper 的 Kubernetes 准入 Webhook 处理程序在读取请求体时使用 `io.ReadAll(r.Body)` 且未设置任何大小限制。集群内具有网络访问权限的攻击者可通过向 Webhook 端点发送数 GB 大小的恶意请求体，导致 Skipper 进程内存耗尽并被 OOM 杀死，从而中断 Ingress 和 RouteGroup 资源的准入控制。与 OPA 过滤器（已设置 1MB 默认请求体大小限制）不同，准入处理程序缺乏类似保护机制。Kubernetes kubelet 会自动重启被 OOM 杀死的进程，但重启期间准入控制功能不可用。"
+published = "2026-01-01"
+remediation = "升级 Skipper 至包含修复的版本，在 admission webhook 处理函数中调用 `http.MaxBytesReader(r.Body, 1<<20)` 限制请求体最大为 1MB，参考 OPA filter 的 `DefaultMaxRequestBodySize` 实现。如无法升级，可在网络层面限制对 webhook 端口（默认 :9443）的访问来源，仅允许受信任的 kube-apiserver IP 访问。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Zalando Skipper 准入 Webhook 无限制请求体读取致内存耗尽拒绝服务漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54247",
+    "GHSA-cwxq-rc9x-2jvv",
+]
+ave_id = "AVE-2026-0506"
+
+[meta]
+collected_at = "2026-07-27T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/github.com/zalando/skipper/CVE-2026-54247.yml",
+    "https://github.com/opencve/opencve-kb/blob/08dd01d2afe07e26f91adabe6c565e0dd61b27ab/2026/CVE-2026-54247.json",
+    "https://github.com/golang/vulndb/blob/d246ad98d3739cece1ce57358766d7c340b09c91/data/osv/GO-2026-6015.json",
+    "https://github.com/github/advisory-database/blob/29919db3f954d9ce9be0e7e3cf177436392d45d3/advisories/github-reviewed/2026/07/GHSA-cwxq-rc9x-2jvv/GHSA-cwxq-rc9x-2jvv.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/dcd526fb689714d5f3e3864d909b86e28c091c65/docs/data/2026/CVE-2026-54247.json",
+    "https://github.com/bmwiedemann/openSUSE/blob/d8a287381c78b37aa3d10fca316ba2301f060da3/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+    "https://github.com/JimBLogic/CyberDailyLog/blob/98e56ea25f36fdfe6e855955b7a08d4f4ed26469/reports/archive/2026/07/2026-07-18.md",
+    "https://github.com/proshiba/vuln-intel-agent/blob/eb9d5949573bf98755141185e45226827196e91c/vulndb/vulns/github/2026/07/VW-2026-29886.yaml",
+    "https://github.com/golang/vulndb/blob/d246ad98d3739cece1ce57358766d7c340b09c91/data/reports/GO-2026-6015.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/dce39ef8dd24743d0eb60b36b80f49d51f219690/data/history/CVE-2026-54247.json",
+]
