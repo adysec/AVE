@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "验证Bugzilla在处理URL编码字段名时的访问控制绕过漏洞。攻击者通过向buglist.cgi发送包含URL编码字段名的HTTP请求，使某些字段被错误识别为未设置，从而绕过组权限限制，获取未授权的缺陷信息。"
+id = "POC-AVE-2002-0249"
+name = "CVE-2002-0809 PoC"
+severity = "high"
+tags = ["ave-2002-0249"]
+vuln_id = [
+    "CVE-2002-0809",
+    "AVE-2002-0249",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/buglist.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["buglist.cgi"]
