@@ -1,0 +1,38 @@
+[basic]
+description = "Gitea 存在权限撤销后元数据泄露漏洞。当用户曾拥有私有仓库协作者权限并收藏该仓库后，即使管理员撤销其协作者权限，该用户仍可通过调用 `/api/v1/user/starred` 或 `/api/v1/user/subscriptions` 接口持续获取该私有仓库的元数据（包括仓库名称、描述、可见性状态），且元数据更新后仍会实时反映。攻击条件为：攻击者曾合法获得私有仓库协作者权限并执行过收藏操作，随后权限被撤销。利用方式为直接调用上述 API 接口获取已撤销权限仓库的元数据。该漏洞不泄露仓库代码、议题、PR、密钥等核心资产，仅限元数据泄露，CVSS 评级为低危。"
+published = "2026-01-01"
+remediation = "建议立即升级 Gitea 至 1.24.0 或更高版本（该版本已修复 CVE-2026-58434）。若暂无法升级，可临时通过反向代理（如 Nginx）屏蔽 `/api/v1/user/starred` 和 `/api/v1/user/subscriptions` 接口的私有仓库元数据返回，或在应用层通过认证中间件过滤已撤销协作者的星标仓库查询结果；同时建议定期审计协作者星标记录，及时清理已撤销权限用户的星标关联。"
+score = 3.5
+severity = "LOW"
+sources = ["ghsa"]
+title = "Gitea Gitea 授权撤销后私有仓库元数据仍可访问漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-58434",
+    "GHSA-j2w3-9c3r-g83q",
+]
+ave_id = "AVE-2026-0670"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/code.gitea.io/gitea/CVE-2026-58434.yml",
+    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2026/CVE-2026-58434.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/osv/GO-2026-6062.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/1492d9d80c64faf5568e48afb45bc3538bc6f9e0/docs/data/2026/CVE-2026-58434.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/reports/GO-2026-6062.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/70b062de2c67a3e0300bfdb9c31637b5a97fcfee/data/history/CVE-2026-58434.json",
+    "https://github.com/github/advisory-database/blob/9c793ece78771dc0df0bf8d1808fa9590007ac2b/advisories/github-reviewed/2026/07/GHSA-j2w3-9c3r-g83q/GHSA-j2w3-9c3r-g83q.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/1f0b4d834689f794b1d2ed00137cff546bba1cbe/reports/daily/2026/07/2026-07-17.md",
+    "https://github.com/bitfront-se/vuln-list-temp/blob/e20b4f20e4d3f1b9471c564d85e48ff4d55d757b/osv/go/gitea.dev/GO-2026-6062.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/1f0b4d834689f794b1d2ed00137cff546bba1cbe/vulndb/vulns/gitea/2026/07/VW-2026-0835.yaml",
+]
