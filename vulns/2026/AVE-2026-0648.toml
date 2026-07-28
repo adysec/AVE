@@ -1,0 +1,38 @@
+[basic]
+description = "webtransport-go 在处理 WebTransport 会话中未知类型的胶囊（capsule）时存在内存耗尽漏洞。该库在跳过未知胶囊时使用 `io.ReadAll` 将整个胶囊体读入内存，而非直接丢弃数据。攻击者可通过发送声明了超大负载长度的未知胶囊，导致接收端分配大量内存，从而引发拒绝服务（DoS）。QUIC 流控机制无法限制此类分配，因为读取流会推进流控窗口但数据仍保留在内存中。该漏洞影响使用 webtransport-go 库的所有应用，攻击者只需建立 WebTransport 会话即可触发，无需任何身份认证。"
+published = "2026-01-01"
+remediation = "立即将 github.com/quic-go/webtransport-go 升级到 v0.11.1 或更高版本。该版本将跳过未知 capsule 时的处理方式从 `io.ReadAll`（全量读入内存）改为 `io.Discard`（直接丢弃），从而消除内存耗尽风险。如无法立即升级，可在网络边界限制 QUIC 连接中未知 capsule 类型的最大长度作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "quic-go webtransport-go 内存耗尽拒绝服务漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-57497",
+    "GHSA-g35j-m5xg-vh3q",
+]
+ave_id = "AVE-2026-0648"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/opencve/opencve-kb/blob/6627fbe158e9fca31f355d5243a197fbe6b8a60c/2026/CVE-2026-57497.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/github.com/quic-go/webtransport-go/CVE-2026-57497.yml",
+    "https://github.com/RogoLabs/consensus-engine/blob/1492d9d80c64faf5568e48afb45bc3538bc6f9e0/docs/data/2026/CVE-2026-57497.json",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/9f4c8add5cfa40b9d0aceff1e12c078575600f8b/data/history/CVE-2026-57497.json",
+    "https://github.com/github/advisory-database/blob/236c7f1b4d135ead6953d68767892f06687ce11d/advisories/github-reviewed/2026/07/GHSA-g35j-m5xg-vh3q/GHSA-g35j-m5xg-vh3q.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/1f0b4d834689f794b1d2ed00137cff546bba1cbe/vulndb/vulns/github/2026/07/VW-2026-35897.yaml",
+    "https://github.com/cshintov/osv-rss/blob/cdf0c2ed215251a18b258e73216215df1a13efce/feeds/go.xml",
+    "https://github.com/bitfront-se/vuln-list-temp/blob/e20b4f20e4d3f1b9471c564d85e48ff4d55d757b/osv/go/github.com/quic-go/webtransport-go/GHSA-g35j-m5xg-vh3q.json",
+    "https://github.com/bitfront-se/vuln-list-temp/blob/e20b4f20e4d3f1b9471c564d85e48ff4d55d757b/ghsa/go/github.com/quic-go/webtransport-go/GHSA-g35j-m5xg-vh3q.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/1f0b4d834689f794b1d2ed00137cff546bba1cbe/data/vendors/github/advisories/2026/ghsa-g35j-m5xg-vh3q/advisory.json",
+]
