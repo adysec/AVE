@@ -1,11 +1,11 @@
 [basic]
-description = 'suidperl（又称 sperl）是 Perl 5.00503 中用于设置用户 ID 执行的辅助程序，其在调用 /bin/mail 发送错误报告时未正确过滤转义序列 "~!"，导致恶意用户可通过设置 "interactive" 环境变量并传入包含该转义序列的文件名触发 mail 的 shell 转义功能，从而以提升的权限执行任意命令。该漏洞允许本地攻击者在目标系统上获取 root 权限，完全控制受影响的系统。攻击者需要拥有本地访问权限，但无需额外认证即可利用，危害严重。'
+description = 'suidperl（又称 sperl）是 Perl 5.00503 中用于执行 setuid 脚本的辅助程序，其在调用 /bin/mail 发送错误报告时未能正确过滤文件名中的 "~!" 转义序列。本地攻击者可通过设置 "interactive" 环境变量并构造包含该转义序列的特制文件名调用 suidperl，从而触发 mail 命令的 shell 转义，以提升至 root 权限。该漏洞影响 Perl 5.00503 及之前版本，攻击者需拥有本地系统访问权限，无需身份认证即可利用。'
 published = "2000-10-20T04:00:00.000"
-remediation = "立即移除 suidperl 的 setuid 权限位（chmod u-s /usr/bin/suidperl），或升级 Perl 至 5.6.0 及以上版本。Red Hat Linux 用户应安装 RHSA-2000-048 提供的更新包；Caldera OpenLinux 用户应安装 CSSA-2000-026 补丁。如无法升级，可删除 suidperl 的 setuid 位并改用普通 perl 替代，以消除本地提权风险。"
+remediation = "升级 Perl 至 5.6.0 或更高版本，该版本已修复 suidperl 对转义序列的过滤缺陷。如无法升级，可移除 suidperl 的 setuid 权限（chmod u-s /usr/bin/suidperl）或直接删除该二进制文件。各发行版用户请安装对应安全补丁：RedHat RHSA-2000-048、Caldera CSSA-2000-026、SUSE 安全公告第 59 号。"
 score = 7.2
 severity = "HIGH"
-sources = ["epss"]
-title = "Perl suidperl Mail Shell 转义本地权限提升漏洞"
+sources = ["avd"]
+title = "Perl suidperl 邮件 shell 转义序列本地权限提升漏洞"
 updated = "2026-06-16T21:52:18.217"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0703"]
 ave_id = "AVE-2000-0552"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -32,14 +32,14 @@ urls = [
     "http://www.securityfocus.com/bid/1547",
     "http://www.turbolinux.com/pipermail/tl-security-announce/2000-August/000017.html",
     "https://www.exploit-db.com/exploits/20142",
-    "https://github.com/trickest/cve/blob/e69d88e0152845fc4d4b49970ca6e503f56b2f93/2000/CVE-2000-0703.md",
-    "https://github.com/CVEProject/cvelistV5/blob/3fc46d7716e9a0dd9635d13e2bff8fffb122a860/cves/2000/0xxx/CVE-2000-0703.json",
+    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2000/CVE-2000-0703.md",
+    "https://github.com/CVEProject/cvelistV5/blob/676b40fa5dad82f5f5be4cb920867579d5869c49/cves/2000/0xxx/CVE-2000-0703.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0703",
-    "https://github.com/CPAN-Security/cpan-advisory-database/blob/bc9ed2336eeed09f48acb0a64fd37970dc5a31d6/triage/CVE-2000-0703.yml",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/73cd39be077fdbedc5ca2ea7e2723723d25285cc/CVE/data/2000/CVE-2000-0703.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0c8771e89b9e76278d77bdb22e6a7f5061b52570/CVE/data/2000/CVE-2000-0703.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-0703.md",
-    "https://github.com/github/advisory-database/blob/1c8e3f4146e1bef501493d1237acb1611ea8f707/advisories/unreviewed/2022/04/GHSA-fwmf-9cw3-w3x3/GHSA-fwmf-9cw3-w3x3.json",
-    "https://github.com/briandfoy/cpan-security-advisory/blob/1df5657bcf9bbd7f7eb8b57fb483ac0dc8aa652a/TO_DO",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152700_152800.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--f72991dd-369f-4d8c-b212-f3a56fc44fcc.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0703.json",
+    "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2000/CVE-2000-0703.md",
+    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2000/CVE-2000-0703.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/7f8cb0f5372a51b89f819e1c3a9d694706e18788/2000/0xxx/CVE-2000-0703.md",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0703.json",
 ]
