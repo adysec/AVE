@@ -1,10 +1,10 @@
 [basic]
-description = "Apache 1.3.x 至 1.3.24 及 Apache 2.0.x 至 2.0.36 版本中存在分块编码（Chunked Encoding）整数处理漏洞，远程攻击者无需认证即可向目标服务器发送特制的分块编码 HTTP 请求，触发 Apache 在处理请求体大小时发生整数溢出，进而导致拒绝服务或潜在远程代码执行。该漏洞在 Windows x86 平台影响严重，CVSS 评分 7.5，高危级别。官方尚未提供自动修复补丁，建议升级至不受影响版本。"
+description = "Apache HTTP Server 1.3.x 至 1.3.24 及 2.0.x 至 2.0.36 版本在处理分块编码（chunked encoding）HTTP 请求时存在整数溢出漏洞。由于服务器对分块数据块大小字段的计算存在错误，远程攻击者无需身份认证即可通过向目标服务器发送特制的分块编码 HTTP 请求触发该漏洞，导致服务器使用错误的内存大小进行数据读写，进而造成拒绝服务（如进程崩溃）或任意代码执行。该漏洞影响范围广泛，且已有 Metasploit 框架集成利用模块，攻击者可远程利用，危害严重。"
 published = "2002-07-03T04:00:00.000"
-remediation = "升级 Apache 至 1.3.26+ 或 2.0.37+ 版本，该漏洞已在后续版本中修复。对于无法升级的旧系统，可在 httpd.conf 中禁用 mod_chunked 或使用 mod_security 规则过滤分块编码请求中的恶意载荷作为临时缓解措施。"
+remediation = "建议立即将 Apache HTTP Server 升级至修复版本：1.3.x 系列升级至 1.3.26 或更高版本，2.0.x 系列升级至 2.0.37 或更高版本。由于 1.3.x 和 2.0.x 均已停止维护，强烈建议迁移至当前受支持的 Apache 2.4.x 最新稳定版（如 2.4.62+）。若无法立即升级，可在反向代理或 WAF 层面配置规则，过滤 Transfer-Encoding: chunked 请求头中畸形的分块大小值，作为临时缓解措施。"
 score = 7.5
 severity = "HIGH"
-sources = ["osv"]
+sources = ["redhat"]
 title = "Apache HTTP Server Chunked 编码远程代码执行漏洞"
 updated = "2026-06-16T21:57:21.037"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-0392"]
 ave_id = "AVE-2002-0005"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -63,14 +63,14 @@ urls = [
     "https://lists.apache.org/thread.html/rf2f0f3611f937cf6cfb3b4fe4a67f69885855126110e1e3f2fb2728e%40%3Ccvs.httpd.apache.org%3E",
     "https://lists.apache.org/thread.html/rf6449464fd8b7437704c55f88361b66f12d5b5f90bcce66af4be4ba9%40%3Ccvs.httpd.apache.org%3E",
     "https://www.exploit-db.com/exploits/16782",
-    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2002/CVE-2002-0392.md",
-    "https://github.com/CVEProject/cvelistV5/blob/bf570d3b8e47bf0003b46684217cf02c76e2c7f4/cves/2002/0xxx/CVE-2002-0392.json",
+    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2002/CVE-2002-0392.md",
+    "https://github.com/0xMarcio/cve/blob/d08f837f771e6cd83ec9c845b0c4f72f125cbe84/2002/CVE-2002-0392.md",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2002/CVE-2002-0392.md",
+    "https://github.com/CVEProject/cvelistV5/blob/95e02b73a69df169404c6b2708e1f8d0346744bc/cves/2002/0xxx/CVE-2002-0392.json",
+    "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2002/CVE-2002-0392.md",
+    "https://github.com/sullo/nikto/blob/999670cb6a939b6c93840ce666941756e4c5dcf5/program/databases/db_server_msgs",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2002/CVE-2002-0392.md",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-0392",
-    "https://github.com/e-m-b-a/emba/blob/4d0f24b3edae0bdb5391177851bad3be54ecea0f/config/msf_cve-db.txt",
-    "https://github.com/bell-sw/osv-database/blob/ee84993ad655ae5f90f9948f27d13851ad8b9fd3/BELL-CVE/BELL-CVE-2002-0392.json",
-    "https://github.com/haskell/security-advisories/blob/dceeb2f98c77ce6fecba7bd180c52167cd863269/code/cvss/docs/ValidationReport.md",
-    "https://github.com/edoardottt/missing-cve-nuclei-templates/blob/115c94bd1da3cc18977d652d6e78c9f4a5dfc13b/data/year/2002.txt",
-    "https://github.com/gottburgm/Exploits/blob/fd340a05cbec416e89bfae898e27bf5fcb429101/MSFExploits/APACHE/MSF/Chunked_infos.txt",
-    "https://github.com/0xMarcio/cve/blob/5462df1242ecdfa07cb8ddac80e6ca8fcb2b6836/2002/CVE-2002-0392.md",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/debian_DSA-133.nasl",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a5deeab9684d7cc5d59192453c93e2b5d43622a9/CVE/data/2002/CVE-2002-0392.json",
+    "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2002/CVE-2002-0392.md",
 ]
