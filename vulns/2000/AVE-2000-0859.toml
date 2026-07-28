@@ -1,11 +1,11 @@
 [basic]
-description = "Raptor GFX 配置工具中的 pgxconfig 组件存在符号链接攻击漏洞，本地用户可通过创建恶意符号链接诱使该工具以提升的权限操作目标文件，从而获取系统最高权限。该漏洞源于程序在处理临时文件时未对符号链接做安全检查，攻击者只需拥有本地访问权限即可利用，严重影响系统安全性。目前官方已发布修复版本，建议用户升级。"
+description = "Raptor GFX 配置工具中的 pgxconfig 组件存在符号链接攻击漏洞。本地攻击者可通过创建恶意符号链接，诱使 pgxconfig 以高权限访问并覆写任意系统文件，从而获取 root 权限。该漏洞利用条件为攻击者拥有本地访问权限，无需交互即可触发，CVSS 评分 7.2，危害等级高。受影响系统包括运行 Raptor GFX 配置工具的 Linux 发行版。"
 published = "2000-10-20T04:00:00.000"
-remediation = "立即移除 pgxconfig 的 setuid/setgid 权限位（chmod u-s /path/to/pgxconfig），防止普通用户以更高权限执行该程序。如业务不需要该工具，直接卸载 Raptor GFX 软件包。若需保留功能，建议使用 mkstemp 等安全临时文件创建方式重写 pgxconfig 中涉及 /tmp 临时文件写入的代码，避免使用不可预测的固定路径。"
+remediation = "删除 pgxconfig 的 setuid 位：`chmod u-s /usr/bin/pgxconfig`，或限制仅授权用户可执行：`chmod 750 /usr/bin/pgxconfig`。如厂商已发布补丁，升级 Raptor GFX 到最新版本。作为临时缓解，移除该工具的 SUID 权限可阻断提权路径。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Raptor GFX pgxconfig 配置工具本地权限提升漏洞"
+sources = ["avd"]
+title = "Raptor GFX pgxconfig 本地权限提升漏洞"
 updated = "2026-06-16T21:52:17.067"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-0694"]
 ave_id = "AVE-2000-0859"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-07/0463.html",
     "http://www.osvdb.org/5740",
-    "https://github.com/CVEProject/cvelistV5/blob/a54ce91ca4eed5acb1176739213f8ac035b9fa27/cves/2000/0xxx/CVE-2000-0694.json",
+    "https://github.com/CVEProject/cvelistV5/blob/95e02b73a69df169404c6b2708e1f8d0346744bc/cves/2000/0xxx/CVE-2000-0694.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e2322a1c7ec352a09ed3f56a28a4b08df0e6844e/CVE/data/2000/CVE-2000-0694.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0694",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0694.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/c30cb75c630bd0892c286bac41dd51c65d6a6546/CVE/data/2000/CVE-2000-0694.json",
-    "https://github.com/github/advisory-database/blob/1721417c5dc7c1cbf858e5ea5a5245ea62e70cce/advisories/unreviewed/2022/04/GHSA-9wmx-j898-fr8m/GHSA-9wmx-j898-fr8m.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0694.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152700_152800.json",
-    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/ee86c26ee0202761283d7d612909ed4cc8981bf7/2000.tsv",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0694.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0694.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/eeef281f8f1a9ba894118076ad84b1dde324bda9/CVE-2000/CVE-2000-06xx/CVE-2000-0694.json",
+    "https://github.com/opencve/opencve-kb/blob/9b61e147dd97f8b10bc28655d49bf9e6a89e79e2/2000/CVE-2000-0694.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c3bcb8a007062e69fb258211c3f1efeb5a341535/2000/0xxx/CVE-2000-0694.md",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0694.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0694.json",
 ]
