@@ -1,0 +1,183 @@
+[basic]
+description = "Gitea 的 Debian 包注册表解析器存在两处独立可组合利用的拒绝服务漏洞。第一处为无限制解压漏洞：解析器在处理上传的 `.deb` 文件时，解压 `control.tar.gz` 后通过 `TeeReader` 将整个未压缩流复制到 `strings.Builder` 中，未对读取数据量设任何限制。由于 DEFLATE 压缩算法在重复输入下压缩比可超过 100:1，攻击者可构造仅 83 MB 的恶意 `.deb` 载荷，解压后膨胀至 16 GB 以上，在内容校验前即耗尽服务器内存。第二处为 O(N²) 字符串拼接漏洞：Description 字段的续行在循环中使用 `+=` 拼接，Go 字符串不可变性导致每次拼接都重新分配并复制整个累积内容，500000 行续行即可产生约 250 GB 的累计复制开销，使 CPU 饱和、GC 陷入密集回收循环。任何拥有包注册表写入权限的认证用户，通过单次上传请求即可触发完全拒绝服务。"
+published = "2026-01-01"
+remediation = '''
+tags.
+
+Let me structure the output:
+
+1. First, the vulnerability TOML
+2. Then, the PoC TOML (if applicable)
+3. Then, NO_EXP (if applicable)
+
+The skill says: "输出后 Rust 层自动校验" - so I just need to output the TOML.
+
+Let me write the vulnerability TOML first, then the PoC TOML.
+
+For the PoC, I'll create a proper Nuclei-compatible template. The attack is HTTP-based.
+
+Let me think about what the PoC TOML should look like for this specific vulnerability:
+
+The attack:
+1. Create a malicious .deb file with a decompression bomb in control.tar.gz
+2. Upload it to Gitea via HTTP POST
+3. Gitea's ParsePackage function processes it
+4. The TeeReader copies the entire decompressed stream into strings.Builder
+5. Memory exhaustion → OOM kill
+
+For the Nuclei template:
+- Protocol: HTTP
+- Method: POST
+- Path: /api/packages/{owner}/debian/upload
+- Body: raw binary .deb file
+- Matcher: connection reset or timeout
+
+The .deb file is an ar archive containing:
+- debian-binary (text: "2.0\n")
+- control.tar.gz (gzip-compressed tar with a large control file)
+- data.tar.gz (empty)
+
+For the PoC TOML, I'll create a template that sends a raw HTTP request with the malicious payload. Since the payload is binary, I'll use hex encoding.
+
+Actually, for a Nuclei template, the body can be raw bytes. Let me create a practical template.
+
+Hmm, but the .deb file is 83MB. That's way too large for a Nuclei template. Let me think of a different approach.
+
+For the O(N²) string concatenation PoC, a much smaller payload could work - just a few thousand continuation lines in the Description field could cause noticeable CPU saturation.
+
+Let me create a PoC that focuses on the O(N²) aspect with a smaller payload, and reference the original PoC for the decompression bomb.
+
+Actually, let me just create a PoC TOML that describes the attack vector and references the original PoC code. The PoC URLs can point to the GitHub references.
+
+Let me finalize the output now. I'll create:
+
+1. Vulnerability TOML
+2. PoC TOML (with HTTP protocol, referencing the original PoC)
+3. NO_EXP
+
+Let me write it all out.
+
+For the PoC TOML, I'll use a raw HTTP request approach. The body will be described as a crafted .deb file. Since we can't include the full 83MB payload, I'll create a template that describes the attack and uses the original PoC code as reference.
+
+Actually, I think the best approach for the PoC TOML is to create a template that:
+1. Sends a POST request to the Gitea Debian package upload endpoint
+2. Uses a raw body with a minimal malicious .deb (just enough to trigger the vulnerability)
+3. Checks for connection reset or timeout
+
+For the body, I can use a small .deb that triggers the O(N²) string concatenation (which doesn't require a large file, just many continuation lines in the Description field).
+
+Let me create a practical PoC TOML now.
+
+OK, I'll create the PoC TOML with a raw HTTP request. The body will be a crafted .deb file with many Description continuation lines to trigger the O(N²) issue. This can be relatively small (a few KB) but still cause significant CPU saturation.
+
+Let me write the final output now.
+
+Actually, I realize I should just output the TOML files. Let me write them.
+
+For the vulnerability TOML:
+
+```toml
+[id]
+ave_id = "AVE-2026-56755"
+aliases = ["CVE-2026-56755", "GHSA-6hm7-3pwj-22rm"]
+
+[basic]
+title = "Gitea Debian 包解析器未限制解压与二次复杂度字符串拼接导致拒绝服务"
+description = "Gitea 的 Debian 包注册表解析器在处理上传的 .deb 文件时存在两个独立漏洞：1) ParseControlFile 使用 TeeReader 将解压后的整个 control.tar.gz 流无限制复制到 strings.Builder 中，未使用 io.LimitReader 限制读取量，攻击者可通过构造 83MB 的 .deb 文件解压出超过 16GB 数据耗尽服务器内存；2) Description 字段的续行使用 += 拼接字符串，Go 字符串不可变性导致每次拼接产生 O(N²) 的分配和复制开销，50 万行续行可产生约 250GB 累计复制工作使 CPU 饱和。任何具有包注册表写入权限的认证用户可通过单次上传请求触发完全拒绝服务。"
+severity = "HIGH"
+score = 7.5
+sources = ["cve", "ghsa"]
+published = "2026-07-28"
+updated = "2026-07-28"
+remediation = "升级到 Gitea 修复版本，在解压流处理链中添加 io.LimitReader 限制最大解压大小（参考其他包格式解析器如 pub/conan/cargo 的实现），并将 Description 续行拼接改为使用 strings.Builder 以避免二次复杂度问题。同时建议限制上传文件大小和设置容器内存上限。参考 GitHub Advisory GHSA-6hm7-3pwj-22rm。"
+
+[references]
+urls = ["https://github.com/go-gitea/gitea/blob/689ace1ce28fd74244b8aa335d9928cdbf6b22f9/modules/packages/debian/metadata.go#L140", "https://github.com/go-gitea/gitea/blob/9155a81b9daf1d46b2380aa91271e623ac947c1e/modules/packages/debian/metadata.go#L88-L110", "https://github.com/go-gitea/gitea/blob/9155a81b9daf1d46b2380aa91271e623ac947c1e/modules/packages/debian/metadata.go#L147-L150", "https://github.com/go-gitea/gitea/blob/9155a81b9daf1d46b2380aa91271e623ac947c1e/modules/packages/debian/metadata.go#L158-L164", "https://github.com/go-gitea/gitea/blob/689ace1ce28fd74244b8aa335d9928cdbf6b22f9/routers/api/packages/debian/debian.go#L146", "https://github.com/advisory-database/advisories/github-reviewed/2026/07/GHSA-6hm7-3pwj-22rm/GHSA-6hm7-3pwj-22rm.json", "https://nvd.nist.gov/vuln/detail/CVE-2026-56755"]
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-07-28T00:00:00Z"
+```
+
+For the PoC TOML, I'll create a Nuclei-compatible template:
+
+```toml
+[info]
+id = "POC-AVE-2026-56755"
+name = "CVE-2026-56755 PoC"
+author = "AVE"
+severity = "high"
+tags = ["cve-2026-56755", "gitea", "denial-of-service", "debian-package"]
+description = "通过上传特制 .deb 文件触发 Gitea Debian 包解析器的未限制解压漏洞和 O(N²) 字符串拼接问题，导致服务器内存耗尽和 CPU 饱和。PoC 代码参考原始报告中的 Go 程序：构建包含解压炸弹的 control.tar.gz 的 .deb 文件，上传后触发 ParsePackage 处理。"
+vuln_id = ["CVE-2026-56755", "AVE-2026-56755"]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+protocol = "http"
+method = "POST"
+path = "/{{BaseURL}}/api/packages/{{owner}}/debian/upload"
+headers = { "User-Agent" = "AVE/1.0", "Content-Type" = "application/vnd.debian.binary-package" }
+
+[poc.requests.body]
+type = "raw"
+content = "{{deb_payload}}"
+
+[[poc.requests.matchers]]
+type = "word"
+words = ["timeout", "connection reset", "503", "502", "Service Unavailable"]
+expect = true
+```
+
+Hmm, but this requires the user to have a `{{deb_payload}}` variable which is impractical. Let me think of a better approach.
+
+Actually, for Nuclei templates, you can use `raw` requests with hex-encoded binary data. But 83MB is too large.
+
+A better approach: create a PoC that uses the O(N²) string concatenation with a small payload. A .deb file with 10,000 Description continuation lines would be only ~100KB but would cause significant CPU usage.
+
+Let me create a more practical PoC TOML. I'll use a raw request with a small but effective payload.
+
+Actually, let me just create the PoC TOML as a reference/documentation template rather than a fully runnable one. The key information is that a real PoC exists and is documented in the original report.
+
+Let me finalize the output now. I'll put everything in <value> tags.
+
+Wait, I need to think about what format the output should be in. The skill says "最终答案必须放在一对 <value>...'''
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Gitea Debian 软件包上传拒绝服务漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-56755",
+    "GHSA-6hm7-3pwj-22rm",
+]
+ave_id = "AVE-2026-0646"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/code.gitea.io/gitea/CVE-2026-56755.yml",
+    "https://github.com/opencve/opencve-kb/blob/8fb1620294bff0cde2c82bba8543a916d4f0215c/2026/CVE-2026-56755.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/001562488cd526440dc8838a7372b7c9809bb050/cve/CVE-2026-56755.html",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/osv/GO-2026-6037.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/1492d9d80c64faf5568e48afb45bc3538bc6f9e0/docs/data/2026/CVE-2026-56755.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/reports/GO-2026-6037.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/9f4c8add5cfa40b9d0aceff1e12c078575600f8b/data/history/CVE-2026-56755.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/001562488cd526440dc8838a7372b7c9809bb050/api/intel/cve/CVE-2026-56755.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/001562488cd526440dc8838a7372b7c9809bb050/posts/cve-2026-56755-go-code-gitea-io-gitea.html",
+    "https://github.com/github/advisory-database/blob/236c7f1b4d135ead6953d68767892f06687ce11d/advisories/github-reviewed/2026/07/GHSA-6hm7-3pwj-22rm/GHSA-6hm7-3pwj-22rm.json",
+]
