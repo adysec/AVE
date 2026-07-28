@@ -1,0 +1,38 @@
+[basic]
+description = "Gitea 团队 API 路由未正确强制执行 `public-only` 访问令牌限制。`/api/v1/teams/{id}` 路由组使用 `orgAssignment(false, true)` 加载团队但未加载组织对象，导致 `checkTokenPublicOnly` 中间件在组织对象为空时静默通过可见性检查。团队仓库处理器未调用 `ctx.TokenCanAccessRepo(repo)` 进行仓库级公开过滤，团队活动流处理器设置 `IncludePrivate: true` 却未应用 `opts.ApplyPublicOnly`。攻击者创建 `public-only` 组织级令牌并作为私有组织中私有仓库团队成员，即可通过团队 API 获取私有仓库元数据及活动流信息，导致私有团队资源泄露。影响 Gitea 1.26.2 及夜间构建版本，CVSS 中危。官方已在后续版本修复。修复建议：升级至修复版本，撤销泄露的 public-only 令牌。"
+published = "2026-01-01"
+remediation = "建议立即将 Gitea 升级至 v1.27.1 或更高版本，该版本已通过 PR #38399 修复了 public-only API token 在团队路由上的权限绕过问题。升级前可通过以下方式临时缓解：1) 在反向代理层限制对 `/api/v1/teams/` 路径的访问，仅允许可信 IP 调用；2) 为 public-only token 所在用户移除其对私有团队和私有仓库的成员身份；3) 在 Gitea 配置中禁用不必要的团队 API 路由。修复后建议重新签发所有 public-only 类型的 API token。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Gitea Gitea API 权限绕过漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-58431",
+    "GHSA-h56g-4qw7-2mxg",
+]
+ave_id = "AVE-2026-0668"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/gitea.dev/CVE-2026-58431.yml",
+    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2026/CVE-2026-58431.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/osv/GO-2026-6059.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/1492d9d80c64faf5568e48afb45bc3538bc6f9e0/docs/data/2026/CVE-2026-58431.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/reports/GO-2026-6059.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/70b062de2c67a3e0300bfdb9c31637b5a97fcfee/data/history/CVE-2026-58431.json",
+    "https://github.com/github/advisory-database/blob/9c793ece78771dc0df0bf8d1808fa9590007ac2b/advisories/github-reviewed/2026/07/GHSA-h56g-4qw7-2mxg/GHSA-h56g-4qw7-2mxg.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/1f0b4d834689f794b1d2ed00137cff546bba1cbe/reports/daily/2026/07/2026-07-17.md",
+    "https://github.com/bitfront-se/vuln-list-temp/blob/e20b4f20e4d3f1b9471c564d85e48ff4d55d757b/osv/go/gitea.dev/GO-2026-6059.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/1f0b4d834689f794b1d2ed00137cff546bba1cbe/vulndb/vulns/gitea/2026/07/VW-2026-0845.yaml",
+]
