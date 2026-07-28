@@ -1,11 +1,11 @@
 [basic]
-description = "XMail POP3 服务器 0.59 版本前存在缓冲区溢出漏洞，攻击者可通过发送超长 APOP 命令触发栈溢出，实现远程任意代码执行。该漏洞影响 XMail POP3 服务器 0.59 之前版本，CVSS 评分 10.0（CVSS:AV:N/AC:L/Au:N/C:C/I:C/A:C），属严重级远程代码执行漏洞。攻击者无需身份认证，仅需向目标 POP3 服务发送精心构造的超长 APOP 命令即可触发缓冲区溢出，劫持程序控制流执行任意 shellcode，完全控制目标服务器。建议升级至 XMail 0.59 或更高版本修复该漏洞。"
+description = "XMail POP3 服务器（版本 0.59 之前）存在缓冲区溢出漏洞。该漏洞源于 POP3 服务在处理 APOP 命令时未对输入长度进行充分校验，当攻击者发送超长 APOP 命令时，可导致缓冲区溢出，从而在目标服务器上以服务进程权限执行任意恶意代码。由于 APOP 命令仅需身份验证前即可触发，远程攻击者无需有效凭证即可利用此漏洞，CVSS 评分 10.0，属于最高危漏洞。利用方式为通过网络向目标 POP3 端口（默认 110）发送特制的超长 APOP 请求。该漏洞影响所有使用 XMail 0.59 之前版本的邮件服务器，可能导致邮件系统完全被接管。"
 published = "2000-11-14T05:00:00.000"
-remediation = "建议立即升级 XMail POP3 服务器到 0.59 或更高版本，官方已在 0.59 版本修复该 APOP 缓冲区溢出漏洞。若无法立即升级，可在防火墙层面限制 POP3 服务（端口 110）仅允许受信任 IP 访问，或在 XMail 配置中禁用 APOP 认证功能作为临时缓解措施。建议同时监控 POP3 服务异常连接日志，及时发现异常 APOP 命令尝试。"
+remediation = "立即将 XMail POP3 服务器升级至 0.59 或更高版本，可从 XMail 官方站点（xmail.org）下载最新源码重新编译部署。如暂时无法升级，应在防火墙上禁用外部对 POP3 端口（110）的访问，仅允许内网连接，或直接关闭 POP3 服务改用 IMAP 替代，同时禁用 APOP 认证功能以消除触发溢出的入口。"
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "XMail XMail POP3 Server 缓冲区溢出代码执行漏洞"
+sources = ["epss"]
+title = "XMail POP3 服务器缓冲区溢出远程代码执行漏洞"
 updated = "2026-06-16T21:52:34.717"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0841"]
 ave_id = "AVE-2000-1685"
 
 [meta]
-collected_at = "2026-07-23T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-09/0001.html",
     "http://www.securityfocus.com/bid/1652",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5191",
-    "https://github.com/CVEProject/cvelistV5/blob/f02fdda2bd389f5492ddcbf2ad808b3b60f20645/cves/2000/0xxx/CVE-2000-0841.json",
+    "https://github.com/CVEProject/cvelistV5/blob/95e02b73a69df169404c6b2708e1f8d0346744bc/cves/2000/0xxx/CVE-2000-0841.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e2322a1c7ec352a09ed3f56a28a4b08df0e6844e/CVE/data/2000/CVE-2000-0841.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0841",
-    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0841.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1910cec3a272a9634d53e73996abe765ad48da86/CVE/data/2000/CVE-2000-0841.json",
-    "https://github.com/github/advisory-database/blob/24f07005949aaf2eb169012a6779e6dffdc5a952/advisories/unreviewed/2022/04/GHSA-g9jh-g4m5-mh59/GHSA-g9jh-g4m5-mh59.json",
-    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/X/xmail_overflow.nasl",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x2000/1652/info.html",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152800_152900.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/a385c4020f7ae284766597334fa1736540c56316/CVE-2000/CVE-2000-08xx/CVE-2000-0841.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0841.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0841.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/eeef281f8f1a9ba894118076ad84b1dde324bda9/CVE-2000/CVE-2000-08xx/CVE-2000-0841.json",
+    "https://github.com/opencve/opencve-kb/blob/81f67ee2f2329d45fd70316a977698f2177074cc/2000/CVE-2000-0841.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c3bcb8a007062e69fb258211c3f1efeb5a341535/2000/0xxx/CVE-2000-0841.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0841.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0841.json",
 ]
