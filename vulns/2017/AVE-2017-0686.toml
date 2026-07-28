@@ -1,11 +1,11 @@
 [basic]
-description = "Cisco IOS 和 IOS XE 软件的集群管理协议（CMP）处理代码存在远程代码执行漏洞。该漏洞源于两个因素：一是设备未能限制 CMP 专用 Telnet 选项仅用于集群成员间的内部通信，而是接受并处理任何 Telnet 连接中的此类选项；二是对畸形 CMP 专用 Telnet 选项的处理存在缺陷。未经身份认证的远程攻击者可通过与受影响设备建立 Telnet 会话时发送特制的 CMP 专用 Telnet 选项来利用此漏洞，成功利用可导致任意代码执行并获得设备的完全控制权，或造成设备重载。该漏洞影响 Catalyst 交换机、IE 工业以太网交换机、ME 4924-10GE 交换机等多种 Cisco 设备，CVSS 评分 9.8，危害等级严重。"
+description = "Cisco IOS 和 IOS XE 软件的集群管理协议（CMP）处理代码存在远程代码执行漏洞。CMP 在集群成员间使用 Telnet 作为信令和命令协议，但由于未能限制 CMP 特定 Telnet 选项仅用于内部通信，且对畸形 CMP 选项处理不当，未经身份认证的远程攻击者可在与受影响设备建立 Telnet 会话时发送特制的 CMP Telnet 选项触发该漏洞，导致设备重载或远程执行任意代码并获得完全控制权。该漏洞影响 Catalyst 交换机、IE 工业以太网交换机等多种 Cisco 设备，CVSS 评分 9.8，危害等级严重。Cisco 已发布安全更新修复此漏洞。"
 published = "2017-03-17T22:59:00.640"
-remediation = '建议立即升级至 Cisco 发布的修复版本（IOS 15.2(4)E10 / 15.5(3)S4 / 15.6(2)S1 / 15.7(1)S1 / 16.3.6 / 16.5.3 / 16.6.1 及更高版本，具体视设备型号而定），参考 Cisco Security Advisory cisco-sa-20170317-cmp。若暂时无法升级，请在所有受影响设备上执行：1) 使用 "no ip telnet server" 禁用 Telnet 服务；2) 配置 ACL 限制仅允许受信管理 IP 访问 TCP 23 端口；3) 启用 SSH 替代 Telnet 进行远程管理。'
+remediation = "立即登录受影响的 Cisco IOS/IOS XE 设备，通过 Cisco IOS Software Checker（https://tools.cisco.com/security/center/selectIOSVersion.x）查询当前运行版本对应的修复版本并升级。如无法立即升级，在全局配置模式下执行 `line vty 0 15` 和 `transport input ssh` 禁用 Telnet 协议，仅允许 SSH 连接以消除攻击向量；同时配置 VTY 访问控制列表（access-class）限制管理 IP 范围，并在网络边界部署 iACL 过滤非信任源对设备 Telnet 端口的访问。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
-title = "Cisco IOS和IOS XE Software集群管理协议远程代码执行漏洞"
+sources = ["nuclei"]
+title = "Cisco IOS和IOS XE Software 集群管理协议远程代码执行漏洞"
 updated = "2026-06-17T01:19:06.913"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2017-3881"]
 ave_id = "AVE-2017-0686"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -32,15 +32,15 @@ urls = [
     "https://www.exploit-db.com/exploits/41872",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/network/cves/2017/CVE-2017-3881.yaml",
     "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2017/CVE-2017-3881.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/d0611a30d788ecc6797a40a15a38427bf0c3c17b/2017/CVE-2017-3881.json",
+    "https://github.com/0xMarcio/cve/blob/d08f837f771e6cd83ec9c845b0c4f72f125cbe84/2017/CVE-2017-3881.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/bed70a0a2e2dec8bd34bd440f68f32280391094f/2017/CVE-2017-3881.json",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/cve-2017-3881-3014.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/cve-2017-3881-3015.yaml",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/cve-2017-3881-3016.yaml",
-    "https://github.com/GhostTroops/scan4all/blob/fff03b51bf79c8993a46c1da766ec993e1102c47/config/51pwn/yaml/Cisco%20IOS/CVE-2017-3881.yaml",
-    "https://github.com/rix4uni/cvemapping/blob/8cdce133e25011854707bbda081d1789042b34cd/2017/CVE-2017-3881/ios_telnet_rocem.rb",
-    "https://github.com/adampielak/nuclei-templates/blob/a2f3ff3fa5db5c7705ebd942909ec114df063700/nuclei-v3/C/CVE-2017-3881_9.yaml",
-    "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2017/CVE-2017-3881.rules",
-    "https://github.com/itsmenaga/Nuclei-Templates-All/blob/7e93c24e44969db15f4072e1c6a322a026452d6b/Vulnerability-Templates/cve-2017-3881-3017.yaml",
-    "https://github.com/fankh/vulnerability-poc/blob/04aa22fbb624898c1d0928bc3b34fb05529275cb/2017/CVE-2017-3881/README_KO.md",
-    "https://github.com/dodger487/scrape_hn/blob/e32869e04292c70b37a11511272c441cabc478b8/stories/13914900.txt",
+    "https://github.com/GhostTroops/scan4all/blob/fff03b51bf79c8993a46c1da766ec993e1102c47/config/51pwn/yaml/Cisco IOS/CVE-2017-3881.yaml",
+    "https://github.com/veo/vscan/blob/1beb10c08e377e15b7dd417be1843bb75aa8c4f0/pocs_yml/nucleiFiles/cves/2017/CVE-2017-3881.yaml",
+    "https://github.com/Ostorlab/KEV/blob/8feadeb8b7ff54359eab87941769781629146b23/nuclei/CVE-2017-3881.yaml",
+    "https://github.com/cckuailong/reapoc/blob/699762e4c31d0183733f64313d8fc3be6470bd37/2017/CVE-2017-3881/poc/nuclei/CVE-2017-3881.yaml",
     "https://github.com/artkond/cisco-rce",
     "https://github.com/homjxi0e/CVE-2017-3881-exploit-cisco-",
     "https://github.com/1337g/CVE-2017-3881",
