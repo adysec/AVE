@@ -1,11 +1,11 @@
 [basic]
-description = "Apache Struts2 Jakarta Multipart 解析器在处理文件上传时存在异常处理不当和错误消息生成缺陷，导致 OGNL 表达式注入漏洞（S2-045/S2-046）。远程未授权攻击者可通过构造恶意的 Content-Type、Content-Disposition 或 Content-Length HTTP 头（如包含 #cmd= 字符串），在服务器上执行任意系统命令。该漏洞影响 Apache Struts 2.3.5 至 2.3.31 及 2.5 至 2.5.10 版本，CVSS 3.1 评分 9.8（CRITICAL），攻击向量为网络、攻击复杂度低、无需权限和用户交互，机密性/完整性/可用性均为高影响。2017 年 3 月已在野利用，攻击者可直接获取服务器控制权。受影响系统需升级至 Struts 2.3.32 或 2.5.10.1 及以上版本修复。"
+description = "Apache Struts2 的 Jakarta Multipart 解析器在处理文件上传请求时存在异常处理缺陷，远程攻击者可通过向服务器发送特制的 Content-Type、Content-Disposition 或 Content-Length HTTP 头，触发 OGNL 表达式注入，从而在目标服务器上执行任意系统命令。该漏洞影响 Struts2 2.3.5 至 2.3.31 及 2.5 至 2.5.10 版本，CVSS 评分 9.8，危害等级严重。攻击无需任何认证，攻击复杂度低，已在 2017 年 3 月被大规模野外利用。"
 published = "2017-03-11T02:59:00.150"
-remediation = "立即升级 Apache Struts 2 至 2.3.32 或 2.5.10.1 及以上版本（官方修复版本）。若暂时无法升级，可在 struts.xml 中将 multipart.parser 设置为 org.apache.struts2.dispatcher.multipart.JakartaStreamMultiPartRequest 切换至 Jakarta Stream 解析器规避漏洞；或在 WAF/防火墙层面拦截包含 OGNL 表达式（如 #cmd=、@java.lang.Runtime@）的 Content-Type、Content-Disposition、Content-Length 请求头；若业务不涉及文件上传，可在 struts.xml 中设置 struts.multipart.parser=jakarta-stream 并禁用文件上传功能作为临时缓解措施。建议同时部署 WAF 规则拦截恶意 OGNL 表达式载荷，并尽快完成版本升级彻底修复。"
+remediation = "立即升级 Apache Struts 2 至 2.3.32（2.3.x 分支）或 2.5.10.1（2.5.x 分支）及以上版本。如无法立即升级，可部署 WAF 规则拦截包含恶意 Content-Type 头部的请求，或禁用 Jakarta Multipart 解析器并切换至其他文件上传实现方式。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
-title = "Apache Struts2 Jakarta Multipart 解析器远程命令执行漏洞（CVE-2017-5638）影响 2.3.5-2.3.31 和 2.5-2.5.10 版本"
+sources = ["nuclei"]
+title = "Apache Struts2 Jakarta Multipart 解析器远程命令执行漏洞"
 updated = "2026-06-17T01:20:54.013"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2017-5638"]
 ave_id = "AVE-2017-0709"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -60,14 +60,14 @@ urls = [
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2017/CVE-2017-5638.yaml",
     "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2017/CVE-2017-5638.md",
     "https://github.com/qazbnm456/awesome-cve-poc/blob/fc862e38e03ea68cdc62618d14891a426daff1a4/CVE-2017-5638.md",
+    "https://github.com/fofapro/vulfocus/blob/4b7a2eaacce4ed770f289e6e72f7240da1e16c74/writeup/CVE-2017-5638/CVE-2017-5638.md",
+    "https://github.com/0xMarcio/cve/blob/d08f837f771e6cd83ec9c845b0c4f72f125cbe84/2017/CVE-2017-5638.md",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/6e3267700a6a68d4b849c870d5c00c67dc46e86a/data/by-cve/CVE-2017-5638.md",
+    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2017/CVE-2017-1635.md",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2017/CVE-2017-5638.md",
+    "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2017/CVE-2017-5638.md",
     "https://github.com/knownsec/pocsuite3/blob/9bed2883b86a8996f8805fc44da4a1911f52a11e/README.md",
     "https://github.com/zhzyker/exphub/blob/946405b3447dbaf2a5eb49e2f56ec33fe1165e49/struts2/readme.md",
-    "https://github.com/f0r34chb3t4/main/blob/752947f4029d2bcd47c45cfe8ee4784264ba726c/CVE-2017-5638-PUT.sh",
-    "https://github.com/fofapro/vulfocus/blob/4b7a2eaacce4ed770f289e6e72f7240da1e16c74/_sidebar.md",
-    "https://github.com/coreruleset/coreruleset/blob/76204946a679c0d5c634bd65e1d606f191ad756e/rules/java-classes.data",
-    "https://github.com/sUbc0ol/Apache-Struts2-RCE-Exploit-v2-CVE-2017-5638/blob/28190d3f7f609c95a30ed2b8a5dc7ab8d5cc1442/CVE-2017-5638.py",
-    "https://github.com/xsscx/cve-2017-5638/blob/6eeeb0d54af68460c494c3bd838ed009f89872bb/cve-2017-5638.py",
-    "https://github.com/Xyntax/POC-T/blob/9d6bd182fe200253c315e0686100e19f3fb194c2/script/struts2-s2045.py",
     "https://github.com/Flyteas/Struts2-045-Exp",
     "https://github.com/Z-0ne/ScanS2-045-Nmap",
     "https://github.com/immunio/apache-struts2-CVE-2017-5638",
