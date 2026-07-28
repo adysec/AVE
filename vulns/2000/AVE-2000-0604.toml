@@ -1,11 +1,11 @@
 [basic]
-description = "glibc 2.1.1 的 unsetenv 函数存在缺陷，当程序接收到重复的环境变量（如 LD_PRELOAD 或 LD_LIBRARY_PATH）时，未能正确清除该变量，导致本地攻击者可在 setuid 程序（如 ProFTPd 1.2 pre6 等以 root 权限运行的服务）中注入恶意共享库，进而实现本地提权至 root。该漏洞影响使用 glibc 2.1.1 的 Linux 系统，攻击者需具备本地账户权限，通过设置重复环境变量启动 setuid 程序即可触发，利用方式为构造恶意 LD_PRELOAD/LD_LIBRARY_PATH 环境变量劫持动态链接器加载恶意 so 文件实现代码执行。CVSS 7.2（本地/低复杂度/无需认证/完全影响）。"
+description = "glibc 2.1.1 中的 unsetenv 函数在处理重复传入的环境变量时存在缺陷，未能正确取消设置环境变量。本地攻击者可通过在 setuid 程序中指定重复的危险环境变量（如 LD_PRELOAD 或 LD_LIBRARY_PATH），利用此漏洞执行任意命令，获取提升的权限。该漏洞影响使用 glibc 2.1.1 的 Linux 系统，攻击者需要本地访问权限，无需认证即可利用。"
 published = "2000-11-14T05:00:00.000"
-remediation = '立即升级 ProFTPd 至 1.2.0 正式版或更高版本（如 1.2.10），或升级 glibc 至 2.1.2 以上版本修复 unsetenv 漏洞。若无法立即升级，可临时在 /etc/ftpaccess 中添加 "DenyAll" 限制匿名访问，或在防火墙层面限制 FTP 端口 (21/tcp) 仅允许受信 IP 访问作为临时缓解措施。建议优先从 ProFTPd 官网 (http://www.proftpd.org/) 下载最新稳定版源码编译安装，或使用发行版包管理器 (如 apt upgrade proftpd / yum update proftpd) 更新至修复版本。若使用 Mandrake Linux，请安装官方安全补丁 MDKSA-2000:040。'
+remediation = "升级 glibc 至 2.2 及以上版本（该漏洞在 glibc 2.2 中修复），或安装对应 Linux 发行版的安全补丁。对于 ProFTPd 用户，升级至 1.2.0 及以上版本。临时缓解措施：在系统层面禁用 setuid 程序的环境变量继承，或通过 pam_env 限制 LD_PRELOAD/LD_LIBRARY_PATH 等危险环境变量。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "ProFTPD ProFTPd 1.2 pre6 snprintf 格式化字符串漏洞"
+sources = ["epss"]
+title = "ProFTPd 1.2 pre6 snprintf 远程代码执行漏洞"
 updated = "2026-06-16T21:52:32.550"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0824"]
 ave_id = "AVE-2000-0604"
 
 [meta]
-collected_at = "2026-07-23T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -38,14 +38,14 @@ urls = [
     "http://www.turbolinux.com/pipermail/tl-security-announce/2000-September/000020.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5173",
     "https://www.exploit-db.com/exploits/19503",
-    "https://github.com/CVEProject/cvelistV5/blob/2c72b537371947a8374cf9848353741736f9e49d/cves/2000/0xxx/CVE-2000-0824.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0118bdf83d51e7ec6262ccd7acc694cb751b5bf8/cves/2000/0xxx/CVE-2000-0824.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0824",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0824.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bae3e1da022eb7a639aee03446096716b0c4798f/CVE/data/2000/CVE-2000-0824.json",
-    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2022/04/GHSA-7573-6fcp-5wh3/GHSA-7573-6fcp-5wh3.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152800_152900.json",
-    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/M/mandrake_MDKSA-2000-040.nasl",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6550296d9cb5b12971003dddc7912cdc0707af50/CVE/data/2000/CVE-2000-0824.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0824.json",
+    "https://github.com/opencve/opencve-kb/blob/878a3042444029b151459a1565a690101509a27a/2000/CVE-2000-0824.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/57b318ad84d91f19df2f11e62567e45db1dd90ad/2000/0xxx/CVE-2000-0824.md",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0824.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0824.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3e38e95f2e1dd1607b843a3c921eb524d7c4f47f/CVE-2000/CVE-2000-08xx/CVE-2000-0824.json",
+    "https://github.com/opencve/opencve-redhat/blob/11f7040c1ab8cb698a7a4a3c32a4afb6398c9ff1/2000/CVE-2000-0824.json",
 ]
