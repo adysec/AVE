@@ -1,11 +1,11 @@
 [basic]
-description = "tags.<value>LPPlus 3.2.2 和 3.3 版本的 dccscan setuid 程序存在权限检查缺陷，未正确验证调用用户是否拥有打印指定文件的权限。本地攻击者无需身份认证即可通过指定任意文件路径给 dccscan，利用其 setuid 特权读取并打印系统敏感文件，造成信息泄露。该漏洞影响 LPPlus 3.2.2 及 3.3 版本，攻击条件为本地访问、低复杂度、无需认证。"
+description = "LPPlus 的 dccscan setuid 程序未正确验证用户是否具有打印指定文件的权限，导致本地用户可以读取任意文件内容。该漏洞允许低权限的本地攻击者通过调用 dccscan 并指定目标文件路径来读取系统上任意文件，可能导致敏感信息泄露。攻击条件为攻击者需具备本地用户身份并能执行 dccscan 程序，利用方式简单直接，无需特殊权限或复杂配置。"
 published = "2000-11-14T05:00:00.000"
-remediation = "移除 LPPlus 打印系统中 dccscan 程序的 setuid 权限位，执行命令 chmod u-s $LPHOME/bin/dccscan 使该程序以普通用户权限运行，阻止root级别文件访问。立即升级至现代打印服务系统如 CUPS，彻底取代已停止维护的 LPPlus 版本。如短期内无法迁移系统，应在 /etc/passwd 和 /etc/group 中限制 dccscan 可被执行用户的范围，仅允许授权的打印操作组使用该程序。"
+remediation = "移除dccscan的setuid-root权限（执行chmod u-s $LPHOME/bin/dccscan），或升级到LPPlus 3.3.1及以上版本以修复权限检查缺陷。同时在LPPlus安全配置中限制dccscan仅允许授权用户调用，并对敏感文件设置严格的访问控制列表（ACL），禁止非授权用户通过dccscan读取任意文件。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "LPPlus LPPlus 3.2.2/3.3 dccscan 未授权文件读取漏洞"
+sources = ["epss"]
+title = "LPPlus dccscan 本地任意文件读取漏洞"
 updated = "2026-06-16T21:52:39.873"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0881"]
 ave_id = "AVE-2000-0647"
 
 [meta]
-collected_at = "2026-07-24T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1644",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5201",
     "https://www.exploit-db.com/exploits/20193",
-    "https://github.com/CVEProject/cvelistV5/blob/2191d577d2d643f301487a89dd6359b1113a07b9/cves/2000/0xxx/CVE-2000-0881.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4b8a931e66205de38efd28d6bcd5a334776dbc3a/cves/2000/0xxx/CVE-2000-0881.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c6571763508e950910be0b6238faf54b18800390/CVE/data/2000/CVE-2000-0881.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0881",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/1bcfc51649d76497fa60b30641a1d994609c3c9a/2000/0xxx/CVE-2000-0881.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/80dda50d8d5f7811125252929942fe793daf4c0a/CVE/data/2000/CVE-2000-0881.json",
-    "https://github.com/github/advisory-database/blob/292f77a8e015ead047ef178a4e7ea4de6f3945c3/advisories/unreviewed/2022/04/GHSA-mhr6-m9pw-wprq/GHSA-mhr6-m9pw-wprq.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2000-0881.md",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152800_152900.json",
-    "https://github.com/olbat/nvdcve/blob/ebc4d73723464668b97400aaa2d8410c6ff78a81/nvdcve/CVE-2000-0881.json",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0881.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0881.json",
+    "https://github.com/opencve/opencve-kb/blob/374ee5fd4c3d4b67a06356f81fc4dfb1acd1d842/2000/CVE-2000-0881.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/8c9745b793e5195b4aa293353850dc72f712bc1e/CVE-2000/CVE-2000-08xx/CVE-2000-0881.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/23a4e2ec8900d6591c7bdac0f907052986d09675/2000/0xxx/CVE-2000-0881.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0881.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0881.json",
 ]
