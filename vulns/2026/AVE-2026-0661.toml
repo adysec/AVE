@@ -1,0 +1,42 @@
+[basic]
+description = "Gitea 的 SSH LFS 子动词处理存在身份验证绕过漏洞。在 `cmd/serv.go` 的 `getAccessMode` 函数中，当 LFS 子动词既非 `upload` 也非 `download` 时，生产模式下 `PanicInDevOrTesting` 仅记录错误而不触发 panic，返回 `AccessModeNone`（值为 0）。后续权限检查 `userMode < mode` 恒为 false（因 `userMode` 非负），导致私有仓库的权限校验被完全绕过。同时 HTTP LFS 端对下载操作的 `Op` 字段不做校验，攻击者可利用此令牌读取任意私有仓库的所有 LFS 对象。任何拥有 SSH 访问权限的 Gitea 注册用户均可利用此漏洞，通过发送格式错误的 LFS 子动词（如 `badverb`）获取有效 LFS JWT 令牌，从而越权下载实例中所有私有仓库的 LFS 文件，造成严重敏感数据泄露。该漏洞影响 Gitea 默认配置（启用 SSH 和 LFS）的生产环境部署。"
+published = "2026-07-03T21:17:05.550"
+remediation = "立即升级 Gitea 至 v1.26.4 或更高版本（该版本已通过 PR #38008 修复 LFS 子动词验证缺陷）。如无法立即升级，可临时禁用 SSH LFS 功能（在 app.ini 中设置 `[server] DISABLE_SSH = true`）或限制用户注册以防止未授权用户获得 SSH 访问权限。"
+score = 7.7
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Gitea LFS SSH 子动词认证绕过导致私有仓库未授权读取漏洞"
+updated = "2026-07-06T18:18:46.870"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-58423",
+    "GHSA-7wvc-rvp7-w99x",
+]
+ave_id = "AVE-2026-0661"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://blog.gitea.com/release-of-1.26.3-and-1.26.4/",
+    "https://github.com/go-gitea/gitea/pull/38008",
+    "https://github.com/go-gitea/gitea/releases/tag/v1.26.4",
+    "https://github.com/go-gitea/gitea/security/advisories/GHSA-7wvc-rvp7-w99x",
+    "https://github.com/CVEProject/cvelistV5/blob/676b40fa5dad82f5f5be4cb920867579d5869c49/cves/2026/58xxx/CVE-2026-58423.json",
+    "https://github.com/cisagov/vulnrichment/blob/617f5713eaf60aa312a8e3fe5c9942eeb7cf98ee/2026/58xxx/CVE-2026-58423.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0c8771e89b9e76278d77bdb22e6a7f5061b52570/CVE/data/2026/CVE-2026-58423.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0c8771e89b9e76278d77bdb22e6a7f5061b52570/SSVC/data/2026/CVE-2026-58423.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-58423.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-58423.md",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2026-58423.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/59bd6fda35498288097a4f1fd0cdf8c04a1d74bd/CVE-2026/CVE-2026-584xx/CVE-2026-58423.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/code.gitea.io/gitea/CVE-2026-58423.yml",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/575eefe00f82443f5f87947d8e6e0e475795a92e/reports/2026-07-03/TIER_2_CVE-2026-58423.md",
+]
