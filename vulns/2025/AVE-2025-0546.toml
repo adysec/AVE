@@ -1,0 +1,57 @@
+[basic]
+description = """
+` tag was empty or not properly filled). I need to create a Chinese description that is ≥50 characters, covers the vulnerability principle, impact, and attack conditions.
+
+Let me analyze the NVD description and local data:
+
+NVD Description: When using `CURLOPT_PINNEDPUBLICKEY` option with libcurl or `--pinnedpubkey` with the curl tool, curl should check the public key of the server certificate to verify the peer. This check was skipped in a certain condition that would then make curl allow the connection without performing the proper check, thus not noticing a possible impostor. To skip this check, the connection had to be done with QUIC with ngtcp2 built to use GnuTLS and the user had to explicitly disable the standard certificate verification.
+
+Local data additional info:
+- Introduced with curl-8_8_0
+- Fixed by curl-8_18_0-1 / curl-8_18_0
+- Also affects "broken TLS options for threaded"
+- MSRC title: "No QUIC certificate pinning with GnuTLS"
+
+The description needs to cover:
+1. 漏洞原理 - certificate pinning bypass via QUIC/ngtcp2/GnuTLS condition
+2. 影响范围 - affected versions/products (curl/libcurl)
+3. 攻击条件 - remote, no auth needed, QUIC with ngtcp2+GnuTLS, user disables cert verification
+
+CVSS 5.9 MEDIUM - AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:N
+
+Let me craft a proper description and put it in <value> tags.<value>curl 在使用 CURLOPT_PINNEDPUBLICKEY 选项进行证书公钥锁定验证时，存在条件性绕过漏洞。当通过 QUIC 协议（ngtcp2 以 GnuTLS 为后端 TLS 库）建立连接，且用户同时显式禁用标准证书验证的情况下，libcurl 会错误跳过服务器证书公钥的校验步骤，允许连接在没有执行正确密钥验证的情况下建立，使攻击者能够冒充目标服务器实施中间人攻击，从而窃取或篡改传输中的敏感数据。该漏洞影响 curl 8.8.0 及以上版本，已在 curl 8.18.0 中修复。"""
+published = "2026-01-08T10:15:45.407"
+remediation = "立即将 curl 升级至 8.18.0 及以上版本，该版本已修复 QUIC 证书锁定绕过缺陷。升级后若仍使用 ngtcp2 + GnuTLS 组合，建议通过 libcurl 的 CURLOPT_PINNEDPUBLICKEY 选项重新启用证书公钥锁定检查。临时缓解措施包括：避免使用 HTTP/3 协议进行敏感连接，或改用非 GnuTLS 的 TLS 后端重新编译 curl。"
+score = 5.9
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "curl libcurl QUIC证书固定验证绕过漏洞"
+updated = "2026-06-17T08:33:24.327"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-13034"]
+ave_id = "AVE-2025-0546"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://curl.se/docs/CVE-2025-13034.html",
+    "https://curl.se/docs/CVE-2025-13034.json",
+    "https://github.com/curl/curl-www/blob/c80c84267594936d7c7da9f03e1452dc3f138083/docs/CVE-2025-13034.md",
+    "https://github.com/CVEProject/cvelistV5/blob/89175b2ce75a8c340e9d987615810a87444e6d01/cves/2025/13xxx/CVE-2025-13034.json",
+    "https://github.com/cisagov/vulnrichment/blob/7e51f0c254efb90e7533fdb6f9956a2f72a5ba44/2025/13xxx/CVE-2025-13034.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a14b63e8afc2a58338f509c08078b69c0cfe7fee/CVE/data/2025/CVE-2025-13034.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a14b63e8afc2a58338f509c08078b69c0cfe7fee/SSVC/data/2025/CVE-2025-13034.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/6e6edbcd90277ae9f3e29829063f4146db81bb8a/data/2025/CVE-2025-13034.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-13034.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/744e69176b872764170008fbfa754c8ea821b387/osv/cve/2025/UBUNTU-CVE-2025-13034.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/744e69176b872764170008fbfa754c8ea821b387/vex/cve/2025/CVE-2025-13034.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2025-13034.json",
+]
