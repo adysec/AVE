@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "通过向 Boozt! Standard 0.9.8 的 /cgi-bin/boozt/admin/index.cgi 发送超长 name 字段的 POST 请求，触发缓冲区溢出。若服务返回异常或连接被重置，表明存在漏洞。参考 ExploitDB 21205 公开利用代码。"
+id = "POC-AVE-2002-0160"
+name = "Boozt Standard 0.9.8 index.cgi 管理接口缓冲区溢出漏洞 PoC"
+severity = "high"
+tags = ["ave-2002-0160"]
+vuln_id = [
+    "CVE-2002-0098",
+    "AVE-2002-0160",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/boozt/admin/index.cgi"
+protocol = "http"
+
+[poc.requests.body]
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "Service Unavailable",
+    "Connection reset",
+]
