@@ -1,0 +1,65 @@
+[info]
+author = "ave"
+description = "CVE-2018-20753：Kaseya VSA RMM 存在未认证远程攻击者可执行 PowerShell 载荷的漏洞。攻击者向 VSA 服务器发送特制请求，无需任何认证即可向所有受管设备推送恶意 PowerShell 命令，实现远程代码执行。"
+id = "POC-AVE-2018-0686"
+name = "Kaseya VSA RMM 远程代码执行 PoC"
+severity = "critical"
+tags = ["ave-2018-0686"]
+vuln_id = [
+    "CVE-2018-20753",
+    "AVE-2018-0686",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/v1/agent/command"
+protocol = "http"
+
+[poc.requests.body]
+type = "json"
+
+[[poc.requests.extractors]]
+group = 1
+name = "command_status"
+part = "body"
+regex = ['"status":"?([^",]+)"?']
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [
+    200,
+    401,
+    403,
+    500,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "command",
+    "agent",
+    "execute",
+    "powerShell",
+    "payload",
+]
+
+[references]
+urls = [
+    "https://blog.huntresslabs.com/deep-dive-kaseya-vsa-mining-payload-c0ac839a0e88",
+    "https://helpdesk.kaseya.com/hc/en-gb/articles/360000333152",
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2018-20753",
+    "https://github.com/fankh/vulnerability-poc/blob/main/2018/CVE-2018-20753/README.md",
+    "https://github.com/Ostorlab/KEV",
+]
