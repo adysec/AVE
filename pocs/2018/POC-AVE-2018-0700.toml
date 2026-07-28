@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "检测 SAP NetWeaver AS JAVA CRM 是否存在路径遍历漏洞（CVE-2018-2380）。该漏洞源于日志记录功能对用户提供的路径信息缺乏充分验证，攻击者可通过 log injection 将 JSP 木马写入服务器文件系统。PoC 通过访问 /b2b/admin/logging.jsp 端点检测是否存在该管理页面。"
+id = "POC-AVE-2018-0700"
+name = "SAP CRM Log Injection Path Traversal PoC"
+severity = "medium"
+tags = ["ave-2018-0700"]
+vuln_id = [
+    "CVE-2018-2380",
+    "AVE-2018-0700",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/b2b/admin/logging.jsp"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "com.sap.isa",
+    "logging",
+    "selConfigName",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/irj/portal"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "j_salt",
+    "SAP",
+    "NetWeaver",
+]
