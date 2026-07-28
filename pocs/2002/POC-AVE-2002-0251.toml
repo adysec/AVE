@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "检测目标 Bugzilla 2.14 低于 2.14.2 或 2.16 低于 2.16rc2 版本是否存在 syncshadowdb 命令错误消息泄露敏感信息漏洞。当 syncshadowdb 同步影子数据库失败时，错误消息中的 SQL 命令和明文密码会被输出到 HTML 页面，攻击者可通过访问页面触发该错误并获取敏感凭证信息"
+id = "POC-AVE-2002-0251"
+name = "Mozilla Bugzilla syncshadowdb 敏感信息泄露漏洞 PoC"
+severity = "medium"
+tags = ["ave-2002-0251"]
+vuln_id = [
+    "CVE-2002-0810",
+    "AVE-2002-0251",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/index.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "syncshadowdb",
+    "SQL",
+    "password",
+    "INSERT",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/query.cgi"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "shadowdb",
+    "syncshadowdb",
+]
