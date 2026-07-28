@@ -1,0 +1,42 @@
+[basic]
+description = "Gitea Actions Artifacts V4 版本的签名 URL 存在 HMAC 签名模糊性漏洞，根因是签名计算时将 endpoint、expires、artifactName、taskID、artifactID 等字段直接拼接而未使用分隔符或长度前缀，导致不同参数元组可产生相同的 HMAC 输入。攻击者只需拥有运行 Gitea Actions 任务的权限，即可获取自身任务的合法签名 URL，通过重写 artifactName、taskID、artifactID 参数（利用数字边界模糊性构造相同的 HMAC 输入串），在保持原 HMAC 签名不变的情况下，将请求上下文重定向到另一个正在运行的任务（甚至跨私有仓库）。漏洞包含两条利用路径：DownloadArtifact 实现跨任务/跨仓库工件读取（机密性高影响），UploadArtifact 实现跨任务工件暂存区写入攻击者控制数据并篡改目标工件元数据（完整性高影响）。影响范围覆盖启用 Actions 且使用 V4 工件签名 URL 的 Gitea 实例，经测试 main 分支及 v1.22.6 至 v1.26.1 版本均受影响（v1.21.11 无 V4 路由不受影响）。攻击条件为：攻击者可运行 Actions 任务、目标任务处于 running 状态、目标任务 ID 与工件名可知或可预测、伪造的 artifactID 需能解析为 int64。CVSS 3.1 评分 9.6 (CRITICAL)，向量 CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N，CWE-347。Gitea 官方已在 v1.26.2 等版本修复，建议升级并采用结构化签名载荷（如 JSON/长度前缀）修复根因。"
+published = "2026-07-03T21:17:05.770"
+remediation = "建议立即升级 Gitea 至 1.26.2 或更高版本（修复版本见 https://github.com/go-gitea/gitea/releases/tag/v1.26.2），或通过 Gitea 官方安全公告 GHSA-hg5r-vq93-9fv6 获取补丁。如无法立即升级，可在管理后台禁用 Actions 功能（设置 → Actions → 禁用），或在应用层限制 Actions 任务权限、限制私有仓库 Actions 运行权限，作为临时缓解措施。"
+score = 9.6
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Gitea Actions 制品库 V4 签名 URL HMAC 模糊性安全漏洞"
+updated = "2026-07-06T18:17:26.860"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-58426",
+    "GHSA-hg5r-vq93-9fv6",
+]
+ave_id = "AVE-2026-0664"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://blog.gitea.com/release-of-1.26.2/",
+    "https://github.com/go-gitea/gitea/pull/37707",
+    "https://github.com/go-gitea/gitea/releases/tag/v1.26.2",
+    "https://github.com/go-gitea/gitea/security/advisories/GHSA-hg5r-vq93-9fv6",
+    "https://github.com/CVEProject/cvelistV5/blob/fc5c3e6f60accc24b7eac4fd31472f0e5fd97f24/cves/2026/58xxx/CVE-2026-58426.json",
+    "https://github.com/cisagov/vulnrichment/blob/617f5713eaf60aa312a8e3fe5c9942eeb7cf98ee/2026/58xxx/CVE-2026-58426.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0c8771e89b9e76278d77bdb22e6a7f5061b52570/CVE/data/2026/CVE-2026-58426.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0c8771e89b9e76278d77bdb22e6a7f5061b52570/SSVC/data/2026/CVE-2026-58426.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-58426.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/e2fbb25cf36dd17c3ff796c21d6f98188851fe27/pocs/2026/CVE-2026-58426.md",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2026-58426.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/575eefe00f82443f5f87947d8e6e0e475795a92e/reports/2026-07-03/TIER_2_CVE-2026-58426.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/59bd6fda35498288097a4f1fd0cdf8c04a1d74bd/CVE-2026/CVE-2026-584xx/CVE-2026-58426.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/code.gitea.io/gitea/CVE-2026-58426.yml",
+]
