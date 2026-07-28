@@ -1,11 +1,11 @@
 [basic]
-description = "NETGEAR多款路由器（R8500、R8300、R7000、R6400、R7300、R7100LG、R6300v2、WNDR3400v3、WNR3500Lv2、R6250、R6700、R6900、R8000）Web管理界面存在管理员密码信息泄露漏洞。漏洞原理是Web管理服务器在用户取消认证且未启用密码恢复功能时，会重定向到暴露密码恢复令牌的页面。攻击者可通过构造请求访问/passwordrecovered.cgi?id=TOKEN页面，在未启用密码恢复功能时直接获取管理员密码。攻击条件为：远程管理选项开启，或攻击者可访问路由器LAN/WLAN网络。若已启用密码恢复功能则利用失败，且该限制持久化（即使后续禁用恢复功能仍需回答安全问题）。CVSS 3.1评分8.1（HIGH），影响机密性、完整性、可用性均为高影响。ExploitDB已公开PoC（CVE-2017-5521），Nuclei等扫描器已收录检测模板。"
+description = "NETGEAR 多款路由器（包括 R8500、R8300、R7000、R6400、R7300、R7100LG、R6300v2、WNDR3400v3、WNR3500Lv2、R6250、R6700、R6900、R8000 等型号）的 Web 管理界面存在密码信息泄露漏洞。攻击者通过向 Web 管理服务器发送特制请求，可在未授权情况下获取路由器管理员密码。若远程管理选项开启，攻击者可远程利用该漏洞；否则需接入同一局域网或无线网络。具体利用方式为：访问管理面板时取消认证，若密码恢复功能未启用，页面会泄露密码恢复令牌，攻击者使用该令牌访问 /passwordrecovered.cgi?id=TOKEN 即可直接获取管理员密码。该漏洞 CVSS 评分 8.1，危害等级高，已被 CISA 列入已知被利用漏洞目录。"
 published = "2017-01-17T09:59:00.333"
-remediation = '立即升级 NETGEAR 路由器固件至官方发布的修复版本（R8500/R8300/R7000/R6400/R7300/R7100LG/R6300v2/WNDR3400v3/WNR3500Lv2/R6250/R6700/R6900/R8000 均需升级至官方 2017 年 1 月后发布的固件版本）。若暂时无法升级，请立即在路由器管理界面启用"密码恢复"功能并设置安全问题，同时在"远程管理"设置中禁用"启用远程管理"选项，并在防火墙层面限制仅允许可信 LAN/WLAN IP 访问管理端口（默认 80/443/8080）。'
+remediation = "立即升级受影响设备固件至修复版本：R8500升级至1.0.2.86、R8300升级至1.0.2.86、R7000升级至1.0.7.10、R6400升级至1.0.1.20、R7300DST升级至1.0.0.46、R7100LG升级至1.0.0.28、R6300v2升级至最新版、WNDR3400v3升级至1.0.1.8、WNR3500Lv2升级至1.2.0.38、R6250升级至1.0.4.8、R6700升级至1.0.1.16、R6900升级至1.0.1.16、R8000升级至1.0.3.36、R7900升级至1.0.1.12、D6220升级至1.0.0.22、D6400升级至1.0.0.56。如设备已停止支持或无固件更新，请手动启用密码恢复功能（登录路由器管理界面→管理→密码恢复→启用），并确保远程管理功能处于关闭状态（默认关闭，可在高级设置中确认）。C6300线缆调制解调器路由器需等待ISP推送固件2.01.18。"
 score = 8.1
 severity = "HIGH"
-sources = ["kev"]
-title = "NETGEAR 多款路由器 管理员密码泄露漏洞"
+sources = ["nuclei"]
+title = "NETGEAR 多款路由器管理员密码信息泄露漏洞"
 updated = "2026-06-17T01:20:39.923"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2017-5521"]
 ave_id = "AVE-2017-0708"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -29,14 +29,14 @@ urls = [
     "https://www.exploit-db.com/exploits/41205",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2017/CVE-2017-5521.yaml",
     "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2017/CVE-2017-5521.md",
+    "https://github.com/0xMarcio/cve/blob/d08f837f771e6cd83ec9c845b0c4f72f125cbe84/2017/CVE-2017-5521.md",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/high/CVE-2017-5521.yaml",
-    "https://github.com/shadow1ng/fscan/blob/bf036fd9b272a56d493796badcf0a269f0a83ec0/webscan/pocs/netgear-cve-2017-5521.yml",
-    "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/2017/gb_netgear_cve-2017-5521.nasl",
-    "https://github.com/linuxadi/40k-nuclei-templates/blob/542be6820c801c02a33aee60f1c05ca7b0b5005f/aditya/folder1/cve-2017-5521-3025.yaml",
-    "https://github.com/adampielak/nuclei-templates/blob/a2f3ff3fa5db5c7705ebd942909ec114df063700/nuclei-v3/C/CVE-2017-5521_5.yaml",
-    "https://github.com/lianqingsec/NucleiPocGather/blob/dcce204f62196117b9c95c52d8101ccf7a5d27bc/poc/cve/CVE-2017-5521_1_1.yaml",
-    "https://github.com/awake1t/linglong/blob/bedbe49597412abab1c1635e133957d782e65325/pkg/pocs/netgear-cve-2017-5521.yml",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/high/cve-2017-5521-3027.yaml",
-    "https://github.com/lucacapacci/pocs/blob/a5fb00dc83432f7190e341573b4b8cd45963ea4f/data_single/2017/CVE-2017-5521.json",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/high/cve-2017-5521-3025.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/high/cve-2017-5521-3028.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/medium/cve-2017-5521-3029.yaml",
+    "https://github.com/shadow1ng/fscan/blob/bf036fd9b272a56d493796badcf0a269f0a83ec0/webscan/pocs/netgear-cve-2017-5521.yml",
+    "https://github.com/CVEProject/cvelistV5/blob/676b40fa5dad82f5f5be4cb920867579d5869c49/cves/2017/5xxx/CVE-2017-5521.json",
+    "https://github.com/SleepingBag945/dddd/blob/4c428a7c171275bfbb5fa72c2fb4bd7b48f4ff4a/common/config/pocs/CVE-2017-5521.yaml",
     "https://github.com/lilloX/routerPWN",
 ]
