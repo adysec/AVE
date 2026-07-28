@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "检测 Laravel 5.5.40/5.6.x<5.6.30 是否存在 X-XSRF-TOKEN 反序列化 RCE 漏洞。通过发送包含恶意载荷的 POST 请求，若响应包含 Encrypter.php 相关错误信息则表明存在漏洞。实际利用需获取 APP_KEY。"
+id = "POC-AVE-2018-0400"
+name = "Laravel Framework token Unserialize RCE PoC"
+severity = "high"
+tags = [
+    "cve-2018-15133",
+    "laravel",
+    "rce",
+    "unserialize",
+]
+vuln_id = [
+    "CVE-2018-15133",
+    "AVE-2018-0400",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+X-XSRF-TOKEN = "dGVzdA=="
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Encrypter.php",
+    "decrypt",
+    "laravel",
+]
