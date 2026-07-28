@@ -1,14 +1,14 @@
 [info]
 author = "AVE"
-description = "检测 Jakarta Tomcat 3.1 的 /admin 上下文是否未做访问限制。远程攻击者无需认证即可访问管理 Servlet，通过添加根目录上下文实现读取服务器上任意文件。"
+description = "检测目标 Apache Tomcat 服务器是否未对 /admin 管理控制台进行访问限制。通过直接访问 /admin 上下文并尝试添加根目录上下文，可验证是否存在任意文件读取漏洞。"
 id = "POC-AVE-2000-0825"
-name = "Apache Jakarta Tomcat 默认配置权限不当导致任意文件读取漏洞 PoC"
+name = "Apache Tomcat 管理控制台任意文件读取漏洞 PoC"
 severity = "medium"
 tags = [
     "cve-2000-0672",
     "tomcat",
-    "admin",
-    "unauthorized-access",
+    "admin-bypass",
+    "arbitrary-file-read",
 ]
 vuln_id = [
     "CVE-2000-0672",
@@ -20,7 +20,7 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/admin"
+path = "/{{BaseURL}}/admin/"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -33,7 +33,27 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "Administration",
+    "Apache Tomcat",
     "Tomcat Administration",
-    "admin",
+    "Admin",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/admin/index.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Apache Tomcat",
+    "Tomcat Administration",
+    "Admin",
 ]
