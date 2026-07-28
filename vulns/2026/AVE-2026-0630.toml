@@ -1,0 +1,41 @@
+[basic]
+description = "vLLM 是一款用于大语言模型的推理和服务引擎，其语音转文本 API（/v1/audio/transcriptions 和 /v1/audio/translations）在处理上传的音频文件时存在安全缺陷。vLLM 文档中声明了 VLLM_MAX_AUDIO_CLIP_FILESIZE_MB 参数（默认 25MB）用于限制音频文件大小，但实际实现中，路由处理函数在检查该压缩文件大小限制之前，先通过 request.file.read() 将整个上传文件完整读入内存。攻击者只需能够访问该 API 端点（包括需要 API 密钥的场景），即可通过提交超大的 multipart 上传文件，使 vLLM 在拒绝请求之前就已分配与上传文件大小成比例的内存，导致内存压力增大，甚至在高并发场景下触发进程被 OOM 终止，造成拒绝服务。该漏洞影响 vLLM 0.22.0 至 0.23.0 版本，CVSS 评分 6.5，危害等级中等，属于 CWE-400 未受控的资源消耗问题。修复版本为 0.24.0，建议用户及时升级。"
+published = "2026-07-06T20:16:37.663"
+remediation = "升级 vLLM 至 0.24.0 或更高版本，该版本在读取上传文件前强制执行 VLLM_MAX_AUDIO_CLIP_FILESIZE_MB 压缩音频大小限制。如无法立即升级，可在反向代理或 ASGI 层（如 Nginx 的 client_max_body_size）设置请求体大小上限，限制音频上传端点 `/v1/audio/transcriptions` 和 `/v1/audio/translations` 的请求体不超过 25MB，作为临时缓解措施。"
+score = 6.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "vLLM 语音转文本API 资源消耗漏洞"
+updated = "2026-07-07T19:04:45.057"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-55646",
+    "GHSA-v82g-2437-67m2",
+]
+ave_id = "AVE-2026-0630"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/vllm-project/vllm/commit/b997071ec493765abbed990c65843ed05e4708a8",
+    "https://github.com/vllm-project/vllm/pull/45510",
+    "https://github.com/vllm-project/vllm/security/advisories/GHSA-v82g-2437-67m2",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/51d0584360aea91ec24eaa996cf02372f54dc185/data/vuln/vllm/CVE-2026-55646.yaml",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/51d0584360aea91ec24eaa996cf02372f54dc185/data/vuln_en/vllm/CVE-2026-55646.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/93bf7691fc17bf58197ad166ee362b4808566d7c/cves/2026/55xxx/CVE-2026-55646.json",
+    "https://github.com/cisagov/vulnrichment/blob/0d5eda5cdae3f3a50b92fdfcae2f5983174f2a99/2026/55xxx/CVE-2026-55646.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d2f32d8750bd50219425137a8fc56ab841cc707b/SSVC/data/2026/CVE-2026-55646.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/1c2e0105dfc8043b137c91cc2d5ac23317d19c53/pocs/2026/CVE-2026-55646.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d2f32d8750bd50219425137a8fc56ab841cc707b/CVE/data/2026/CVE-2026-55646.json",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/c47d1f5d848e164abef61b16f1d28d5df1852f8c/proposals/nvd/CVE-2026-55646.proposal.yaml",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-55646.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2026-55646.json",
+]
