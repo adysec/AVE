@@ -1,11 +1,11 @@
 [basic]
-description = "HP-UX 11.0 的 net.init RC 脚本（S008net.init）存在不安全临时文件创建漏洞。本地攻击者可通过在 /tmp/stcp.conf 与目标文件之间建立符号链接，诱导系统在启动网络服务时以 root 权限覆写任意系统文件，导致权限提升或系统崩溃。攻击条件为拥有本地 shell 访问权限，无需额外认证，CVSS 评分 7.2，危害等级高。"
+description = "HP-UX 11.0 系统中的 net.init RC 脚本（S008net.init）存在符号链接攻击漏洞。该脚本以 root 权限运行时会在 /tmp 目录下创建 stcp.conf 临时文件，且未对文件路径进行安全校验。本地攻击者可通过预先创建指向任意系统文件的符号链接 /tmp/stcp.conf，诱导脚本写入操作覆盖目标文件内容，从而实现权限提升或破坏系统关键配置。攻击者需要拥有本地系统访问权限，无需身份认证即可利用此漏洞，CVSS 评分 7.2，危害等级高。"
 published = "2000-10-20T04:00:00.000"
-remediation = "立即将 /etc/rc.config.d 中的 CLEAR_TMP 参数设置为 0 以禁用启动时自动清理临时文件功能，防止 net.init 脚本在重启时跟随符号链接覆盖任意文件。同时安装 HP 官方安全补丁（参考 HP 安全公告 HPSBUX0008-120），升级到修复后的 HP-UX 版本。如无法立即打补丁，可在 /sbin/rc2.d/S008net.init 脚本中增加对 /tmp/stcp.conf 的符号链接检查，在写入前使用 rm -f /tmp/stcp.conf 删除已有链接后再创建临时文件。"
+remediation = "建议立即升级 HP-UX 系统至 11.11（11i）或更高版本，该版本已修复 net.init 脚本中不安全的临时文件创建问题。如无法升级，可手动修改 /sbin/init.d/net.init 脚本，将创建 /tmp/stcp.conf 的方式改为使用 mktemp 命令生成随机临时文件名，避免使用固定路径。同时限制本地非授权用户对 /tmp 目录的写入权限，或移除 S008net.init 脚本的 setuid 位以降低提权风险。"
 score = 7.2
 severity = "HIGH"
-sources = ["epss"]
-title = "HP HP-UX net.init RC 脚本本地文件覆盖漏洞"
+sources = ["avd"]
+title = "HP HP-UX 11.00 net.init RC 脚本符号链接攻击漏洞"
 updated = "2026-06-16T21:52:18.083"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0702"]
 ave_id = "AVE-2000-0551"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1602",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5131",
     "https://www.exploit-db.com/exploits/20162",
-    "https://github.com/CVEProject/cvelistV5/blob/3ac44cfd6537e05d45dfec0ed67b6d47bebeee2b/cves/2000/0xxx/CVE-2000-0702.json",
+    "https://github.com/CVEProject/cvelistV5/blob/676b40fa5dad82f5f5be4cb920867579d5869c49/cves/2000/0xxx/CVE-2000-0702.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/485b16e111d5be129c27a026bd0160d48eb6b893/CVE/data/2000/CVE-2000-0702.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0702",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/41644568d1e47f962c2cefae75c8b09359290a26/2000/0xxx/CVE-2000-0702.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/73cd39be077fdbedc5ca2ea7e2723723d25285cc/CVE/data/2000/CVE-2000-0702.json",
-    "https://github.com/github/advisory-database/blob/1c8e3f4146e1bef501493d1237acb1611ea8f707/advisories/unreviewed/2022/04/GHSA-225c-mv8x-h9xj/GHSA-225c-mv8x-h9xj.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0702.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152700_152800.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--17fbce87-0aac-449f-a641-c16ddecd78f7.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0702.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/59bd6fda35498288097a4f1fd0cdf8c04a1d74bd/CVE-2000/CVE-2000-07xx/CVE-2000-0702.json",
+    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2000/CVE-2000-0702.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/7f8cb0f5372a51b89f819e1c3a9d694706e18788/2000/0xxx/CVE-2000-0702.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0702.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0702.json",
 ]
