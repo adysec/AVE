@@ -1,0 +1,38 @@
+[basic]
+description = "Gitea 自托管 Git 服务中组织级别的 Actions API 存在跨仓库信息泄露漏洞。`GET /api/v1/orgs/{org}/actions/runs` 和 `GET /api/v1/orgs/{org}/actions/jobs` 接口仅通过 `reqOrgMembership()` 进行权限校验，未对组织内各仓库进行独立的访问控制检查。任何组织成员（即使未被授予任何仓库权限）均可枚举该组织下所有仓库（包括私有仓库）的 workflow 运行记录和任务信息，泄露仓库名称、分支名、commit SHA、工作流文件名、参与者身份等敏感元数据。攻击者可利用查询参数（如 `?branch=`、`?head_sha=`、`?actor=`）构建搜索预言机，对私有仓库的 CI 活动进行全量探测。该漏洞影响 Gitea 开发版 main 分支（commit b7e95cc48c），对应 OWASP API3:2023 类别。"
+published = "2026-01-01"
+remediation = "立即升级 Gitea 至 v1.27.0 或更高版本。如无法立即升级，可在反向代理层对 `/api/v1/orgs/{org}/actions/runs` 和 `/api/v1/orgs/{org}/actions/jobs` 路径添加访问控制，仅允许组织管理员访问。同时审查组织内所有成员的权限分配，确保低权限成员无法通过组织级 API 枚举私有仓库的 CI 运行信息。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Gitea 组织级 Actions API 跨仓库信息泄露漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-57897",
+    "GHSA-frpw-3h2q-4jj6",
+]
+ave_id = "AVE-2026-0651"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/code.gitea.io/gitea/CVE-2026-57897.yml",
+    "https://github.com/opencve/opencve-kb/blob/9b61e147dd97f8b10bc28655d49bf9e6a89e79e2/2026/CVE-2026-57897.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/osv/GO-2026-6054.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/1492d9d80c64faf5568e48afb45bc3538bc6f9e0/docs/data/2026/CVE-2026-57897.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/reports/GO-2026-6054.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/9f4c8add5cfa40b9d0aceff1e12c078575600f8b/data/history/CVE-2026-57897.json",
+    "https://github.com/github/advisory-database/blob/596d62c210162c03375df8ee5952c2ea911b2aaf/advisories/github-reviewed/2026/07/GHSA-frpw-3h2q-4jj6/GHSA-frpw-3h2q-4jj6.json",
+    "https://github.com/bmwiedemann/openSUSE/blob/2de2525ff4f22f16243444d8222f304029402f46/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+    "https://github.com/proshiba/vuln-intel-agent/blob/1f0b4d834689f794b1d2ed00137cff546bba1cbe/reports/daily/2026/07/2026-07-17.md",
+    "https://github.com/midnightconman/go_vulndb/blob/d993e2e5e84dd30ceb1958dc17e25f002fffd6f7/ID/GO-2026-6054.json",
+]
