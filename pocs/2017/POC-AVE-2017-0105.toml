@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "检测 WordPress Formidable Form Builder 插件版本是否低于 2.05.03，该版本存在未授权敏感数据泄露漏洞（CVE-2017-20194），未认证攻击者可通过 frm_forms_preview AJAX 接口导出表单数据。"
+id = "POC-AVE-2017-0105"
+name = "WordPress Formidable Form Builder 插件敏感数据泄露漏洞 PoC"
+severity = "medium"
+tags = ["ave-2017-0105"]
+vuln_id = [
+    "CVE-2017-20194",
+    "AVE-2017-0105",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wp-content/plugins/formidable/readme.txt"
+protocol = "http"
+
+[[poc.requests.extractors]]
+group = 1
+name = "version"
+part = "body"
+regex = ["(?mi)Stable tag: ([0-9.]+)"]
+type = "regex"
+value = "version"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Formidable Forms"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
