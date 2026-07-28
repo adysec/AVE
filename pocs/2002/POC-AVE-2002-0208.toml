@@ -1,0 +1,35 @@
+[info]
+author = "AVE"
+description = "通过构造包含畸形Content-Disposition和Content-Type头的HTTP响应，检测目标是否可被用于触发IE 5.01/6.0的文件执行漏洞。当浏览器收到此类响应时，会将文件传递给操作系统处理而非弹出安全警告，导致任意代码执行。"
+id = "POC-AVE-2002-0208"
+name = "Microsoft Internet Explorer Content-Disposition Handling File Execution PoC"
+severity = "high"
+tags = ["ave-2002-0208"]
+vuln_id = [
+    "CVE-2002-0193",
+    "AVE-2002-0208",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/exploit.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Content-Disposition",
+    "Content-Type",
+]
