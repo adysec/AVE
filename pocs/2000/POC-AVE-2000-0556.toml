@@ -1,15 +1,10 @@
 [info]
-author = "AVE"
-description = "ntop 1.2 a7-9/1.3.1 Web模式(-w)存在缓冲区溢出漏洞，通过向ntop HTTP服务发送特制的GET请求（路径中包含NOP滑板+shellcode+返回地址），可触发栈溢出实现远程代码执行。该PoC发送包含shellcode的恶意GET请求验证漏洞存在。"
+author = "ave"
+description = "检测 ntop Web 模式缓冲区溢出漏洞 (CVE-2000-0706)，向 Web 界面发送超长缓冲区触发崩溃验证漏洞存在"
 id = "POC-AVE-2000-0556"
-name = "ntop Web模式远程缓冲区溢出 PoC"
+name = "CVE-2000-0706 PoC"
 severity = "critical"
-tags = [
-    "cve-2000-0706",
-    "ntop",
-    "buffer-overflow",
-    "rce",
-]
+tags = ["ave-2000-0556"]
 vuln_id = [
     "CVE-2000-0706",
     "AVE-2000-0556",
@@ -20,15 +15,59 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/{{payload}}"
+path = "/{{BaseURL}}/{{randstr_2000}}"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["ntop"]
+words = [
+    "Segmentation fault",
+    "core dumped",
+    "buffer overflow",
+    "ntop",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/ntop"
+protocol = "http"
+
+[poc.requests.body]
+content = "data={{randstr_5000}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Segmentation fault",
+    "core dumped",
+    "buffer overflow",
+    "ntop",
+]
