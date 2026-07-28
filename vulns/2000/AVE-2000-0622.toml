@@ -1,11 +1,65 @@
 [basic]
-description = "CamShot WebCam 2.6 Trial 版本存在远程缓冲区溢出漏洞，远程攻击者可通过向目标 WebCam 服务发送超长 Authorization 头部触发缓冲区溢出，导致任意代码执行。该漏洞影响 CamShot WebCam 2.6 Trial 版本，攻击者无需身份认证即可远程利用，CVSS 评分 7.5，危害等级高。Exploit-DB 上已有公开利用代码（EDB-ID: 20224），攻击者可借此完全控制目标系统。"
+description = "CamShot WebCam Trial 2.6 是一款运行在 Windows 平台上的网络摄像头 Web 服务器软件，其处理 HTTP Basic 认证请求时对 Authorization 头字段长度缺乏边界检查，存在栈缓冲区溢出漏洞。未经身份认证的远程攻击者可通过向目标 80 端口发送包含超长 Authorization 头的特制 HTTP 请求触发该漏洞，导致以 Web 服务器进程权限执行任意命令。CVSS 评分 7.5，危害等级高。"
 published = "2000-11-14T05:00:00.000"
-remediation = "立即卸载 CamShot WebCam Trial 2.6 试用版，该版本已不再受支持且存在远程代码执行漏洞。建议迁移至现代 WebCam 服务器软件（如 Yawcam、iSpy 等），并在防火墙层面限制仅允许受信任 IP 访问 WebCam 服务端口（默认 80），同时禁用 Basic 认证或改用更安全的认证方式。"
+remediation = """
+GET / HTTP/1.1
+Authorization: Basic ['a'x325]
+```
+
+This is an HTTP-based buffer overflow. I'll create an HTTP PoC.
+
+Let me also check - the exploit is remote, Windows platform, and the vulnerable app is a web server. So HTTP protocol is appropriate.
+
+For the PoC, I'll use HTTP protocol with a long Authorization header.
+
+Let me construct the TOML output now.
+
+For the AVE number, I'll use AVE-2000-00001 since this is likely the first CVE-2000 entry being processed.
+
+Actually, I should think more carefully. The skill says "靓号策略：高危/影响面大/危害较大的漏洞自动分配靓号" - this is HIGH severity with a public exploit, so it qualifies. Let me use AVE-2000-00001.
+
+Wait, I need to be careful about the AVE number format. The skill says `AVE-YYYY-NNNNN`. Since the CVE is from 2000, the AVE year should also be 2000.
+
+Let me now write the complete output.
+
+For the PoC - the exploit sends a GET request with an overly long Authorization header. The original exploit uses 325 'a' characters. I'll create an HTTP PoC that sends this request.
+
+For the EXP - since there's a clear public exploit on ExploitDB, I can generate an EXP as well.
+
+Let me construct the TOML:
+
+```toml
+[id]
+ave_id = "AVE-2000-00001"
+aliases = ["CVE-2000-0836"]
+
+[basic]
+title = "CamShot WebCam 2.6 Trial HTTP授权头远程缓冲区溢出漏洞"
+description = "CamShot WebCam Trial 2.6是一款运行在Windows平台上的网络摄像头Web服务器软件。该软件在处理HTTP Basic认证请求时，对Authorization头字段长度缺乏正确边界检查，攻击者可通过发送超长Authorization头（约325字节）触发栈缓冲区溢出，从而在目标系统上以Web服务器进程权限执行任意代码。攻击无需身份认证，仅需向目标80端口发送特制HTTP请求即可触发。"
+severity = "HIGH"
+score = 7.5
+sources = ["cve", "exploitdb"]
+published = "2000-11-14"
+updated = "2024-06-16"
+remediation = "升级到CamShot WebCam商业版或更高版本。由于该产品已停止维护，建议迁移到其他受支持的Web摄像头服务器软件，并确保Web服务不暴露在公网。"
+
+[references]
+urls = ["https://nvd.nist.gov/vuln/detail/CVE-2000-0836", "https://www.exploit-db.com/exploits/20224", "http://archives.neohapsis.com/archives/bugtraq/2000-09/0176.html", "https://exchange.xforce.ibmcloud.com/vulnerabilities/5246"]
+
+[exploit]
+poc_urls = ["https://www.exploit-db.com/exploits/20224"]
+exp_urls = ["https://www.exploit-db.com/exploits/20224"]
+
+[meta]
+status = "completed"
+collected_at = "2026-07-28T00:00:00Z"
+```
+
+Now for the PoC TOML:"""
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
-title = "CamShot WebCam Trial 2.6 远程缓冲区溢出漏洞"
+sources = ["epss"]
+title = "CamShot WebCam 2.6 Trial 远程缓冲区溢出漏洞"
 updated = "2026-06-16T21:52:34.097"
 
 [exploit]
@@ -17,7 +71,7 @@ aliases = ["CVE-2000-0836"]
 ave_id = "AVE-2000-0622"
 
 [meta]
-collected_at = "2026-07-23T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +80,14 @@ urls = [
     "http://www.securityfocus.com/bid/1685",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5246",
     "https://www.exploit-db.com/exploits/20224",
-    "https://github.com/CVEProject/cvelistV5/blob/2ee9e77ceac534c670c42073c99286dbb69e9733/cves/2000/0xxx/CVE-2000-0836.json",
+    "https://github.com/CVEProject/cvelistV5/blob/95e02b73a69df169404c6b2708e1f8d0346744bc/cves/2000/0xxx/CVE-2000-0836.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a5deeab9684d7cc5d59192453c93e2b5d43622a9/CVE/data/2000/CVE-2000-0836.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0836",
-    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0836.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/45906bb48c7a525a11d1008ce22e1e5c2f2f58c2/CVE/data/2000/CVE-2000-0836.json",
-    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2022/04/GHSA-m45p-gjgq-5g92/GHSA-m45p-gjgq-5g92.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152800_152900.json",
-    "https://github.com/olbat/nvdcve/blob/a036095fb2c093f3863681adc5999690c37b930e/nvdcve/CVE-2000-0836.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_0.list.dict",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--edf2618a-76d1-4b34-915d-cd1cec66e0e5.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0836.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0836.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/eeef281f8f1a9ba894118076ad84b1dde324bda9/CVE-2000/CVE-2000-08xx/CVE-2000-0836.json",
+    "https://github.com/opencve/opencve-kb/blob/c376806cb2dc05fbeb559b5b1364bc1c095ae81e/2000/CVE-2000-0836.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c3bcb8a007062e69fb258211c3f1efeb5a341535/2000/0xxx/CVE-2000-0836.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0836.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0836.json",
 ]
