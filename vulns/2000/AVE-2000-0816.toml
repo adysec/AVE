@@ -1,15 +1,12 @@
 [basic]
-description = "Red Hat Linux 6.2 中 bundled 的 restore 工具（0.4b15 及更早版本）存在环境变量信任漏洞。该程序信任 RSH 环境变量指定的路径名，本地攻击者可预先修改 RSH 变量指向特洛伊木马程序，当 root 用户或特权进程调用 restore 时，木马将以 root 权限执行，导致本地权限提升。攻击者需具备本地账户访问权限以设置恶意环境变量。"
-published = "2001-01-09"
-remediation = "升级 dump/restore 软件包至 0.4b16 及以上版本。临时缓解措施：以 root 运行 restore 前执行 unset RSH 清除环境变量，或移除 restore 和 dump 的 SUID 权限以防止普通用户利用。"
+description = "Red Hat Linux 6.2 中的 restore 0.4b15 及早期版本存在本地权限提升漏洞，该漏洞源于 restore 程序信任 RSH 环境变量指定的路径名。本地攻击者可通过修改 RSH 环境变量指向恶意程序（木马程序），诱导 restore 以 root 权限执行任意代码，从而获取完整的 root 权限。该漏洞影响 Red Hat Linux 6.2 及使用受影响 restore 版本的系统，CVSS 评分 7.2（高危），攻击向量为本地、攻击复杂度低、无需认证、机密性/完整性/可用性均完全受影响。攻击者需拥有本地账户权限，通过设置恶意 RSH 环境变量并诱导 restore 执行即可实现提权。Red Hat 已发布补丁修复该漏洞，建议升级至修复版本。"
+published = "2001-01-09T05:00:00.000"
+remediation = "建议立即升级 Red Hat Linux 至 6.2 及以上版本并安装官方发布的 restore 软件包更新（如 restore-0.4b15-5 或更高版本）。临时缓解措施：1) 移除 restore 程序的 setuid 位（chmod u-s /sbin/restore）；2) 在 /etc/profile 和 /etc/csh.cshrc 中添加 unset RSH 防止环境变量注入；3) 限制普通用户对 restore 程序的执行权限（chmod 700 /sbin/restore）。建议尽快升级至 Red Hat Linux 7.0 或更高版本以彻底修复此本地提权漏洞。"
 score = 7.2
 severity = "HIGH"
-sources = [
-    "cve",
-    "exploitdb",
-]
-title = "Red Hat Linux restore 本地权限提升漏洞"
-updated = "2026-06-16"
+sources = ["cve"]
+title = "Red Hat Linux 6.2 restore/dump 本地权限提升漏洞"
+updated = "2026-06-16T21:53:12.120"
 
 [exploit]
 exp_urls = []
@@ -20,7 +17,7 @@ aliases = ["CVE-2000-1125"]
 ave_id = "AVE-2000-0816"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,4 +25,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=97336034309944&w=2",
     "http://www.securityfocus.com/bid/1914",
     "https://www.exploit-db.com/exploits/184",
+    "https://github.com/CVEProject/cvelistV5/blob/f38c5fdc2d5ae016cb5ff615cdaf3941dc98e9f4/cves/2000/1xxx/CVE-2000-1125.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/205083faf6b3f186002bb501f7178bdd84048b96/CVE/data/2000/CVE-2000-1125.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1125",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1125.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1125.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b4e8e071ec72e458e6fba462e799cbd376c49627/CVE-2000/CVE-2000-11xx/CVE-2000-1125.json",
+    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2000/CVE-2000-1125.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/094d6382e9f2b76e665247588266e58be890fb67/2000/1xxx/CVE-2000-1125.md",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1125.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1125.json",
 ]
