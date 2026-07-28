@@ -1,11 +1,11 @@
 [basic]
-description = "ISC BIND 的 DNS 解析器代码在移植到 libc、glibc 及 libbind 库时存在缓冲区溢出漏洞。远程恶意 DNS 服务器可通过向使用这些库的 stub 解析器发送特制的 DNS 应答数据包触发溢出，导致目标系统拒绝服务，甚至可能执行任意代码。该漏洞影响大量 Unix/Linux 系统，CVSS 评分 7.5，危害等级高。"
+description = "ISC BIND 派生的 DNS 解析器代码（libc、glibc、libbind）中存在缓冲区溢出漏洞。远程恶意 DNS 服务器可通过向使用 stub 解析器的客户端发送特制的 DNS 响应数据触发该溢出，导致目标系统拒绝服务，在特定条件下可实现任意代码执行。攻击者无需身份认证即可远程利用，影响范围广泛，涉及大量使用上述库的 Linux/Unix 系统及网络设备。"
 published = "2002-07-03T04:00:00.000"
-remediation = "升级 glibc 至 2.2.5 及以上版本（或安装对应发行版安全补丁，如 Red Hat 的 RHSA-2002:132），或升级 BIND 至 8.3.3 及以上版本。如无法立即升级，可在边界防火墙上限制对 DNS 服务器的递归查询来源，仅允许可信 IP 段发起 DNS 请求作为临时缓解。"
+remediation = "升级 glibc 至 2.2.5 及以上版本（Linux 发行版请使用包管理器更新：`apt-get install libc6` 或 `yum update glibc`），或升级 ISC BIND 至 8.3.3/9.2.1 及以上版本。如无法立即升级，可在 DNS 解析器层面配置可信上游 DNS 服务器（如 `/etc/resolv.conf` 中仅指定内部受控 DNS），并在边界防火墙上限制对外部 DNS 服务器的出站查询，降低被恶意 DNS 服务器攻击的风险。"
 score = 7.5
 severity = "HIGH"
-sources = ["osv"]
-title = "ISC BIND DNS 解析器缓冲区溢出漏洞"
+sources = ["redhat"]
+title = "ISC BIND 派生 DNS 解析器代码（libc/glibc/libbind）缓冲区溢出漏洞"
 updated = "2026-06-16T21:57:51.960"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-0651"]
 ave_id = "AVE-2002-0008"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -42,14 +42,14 @@ urls = [
     "http://www.redhat.com/support/errata/RHSA-2003-154.html",
     "http://www.securityfocus.com/bid/5100",
     "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A4190",
-    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2002/CVE-2002-0651.md",
-    "https://github.com/nmap/nmap/blob/817dc4df9ef999a9f1bfe076750ebae15be898d0/scripts/vulners.nse",
+    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2002/CVE-2002-0651.md",
+    "https://github.com/0xMarcio/cve/blob/d08f837f771e6cd83ec9c845b0c4f72f125cbe84/2002/CVE-2002-0651.md",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2002/CVE-2002-0651.md",
+    "https://github.com/nmap/nmap/blob/486c990d1562f3a9f79527b0aa854bf4fa7784c7/scripts/vulners.nse",
+    "https://github.com/CVEProject/cvelistV5/blob/95e02b73a69df169404c6b2708e1f8d0346744bc/cves/2002/0xxx/CVE-2002-0651.json",
+    "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2002/CVE-2002-0651.md",
+    "https://github.com/vulnersCom/nmap-vulners/blob/0f21b75ca3148ba00910352a5622cfc250611477/vulners.nse",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-0651",
-    "https://github.com/opencve/opencve-kb/blob/eec8260c2bd062f13f39559c10bba480b01b3d7a/2002/CVE-2002-0651.json",
-    "https://github.com/vulnerability-lookup/vulnerability-lookup/blob/3c2faa271b71bbd4c6186ca81527c218c45c2100/tools/vulnerability-lookup.nse",
-    "https://github.com/edoardottt/missing-cve-nuclei-templates/blob/115c94bd1da3cc18977d652d6e78c9f4a5dfc13b/data/year/2002.txt",
-    "https://github.com/vulnersCom/nmap-vulners/blob/0555294abe71857c581afc2ef62ea3ca5c7b7145/vulners.nse",
-    "https://github.com/0xMarcio/cve/blob/5462df1242ecdfa07cb8ddac80e6ca8fcb2b6836/2002/CVE-2002-0651.md",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/redhat-RHSA-2002-119.nasl",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-0651.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/485b16e111d5be129c27a026bd0160d48eb6b893/CVE/data/2002/CVE-2002-0651.json",
+    "https://github.com/evyatarmeged/Raccoon/blob/44024abaa6ca420b6b2c6f06285df306f360eb22/raccoon_src/utils/misc/vulners.nse",
 ]
