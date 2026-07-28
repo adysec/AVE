@@ -1,0 +1,38 @@
+[basic]
+description = 'Gitea 的 API 中创建个人访问令牌的端点（POST /users/{username}/tokens）存在权限提升漏洞。当攻击者将受限的访问令牌以 Authorization: Basic <token>:x-oauth-basic 格式提交时，Basic 认证处理器会验证该令牌并设置 AuthedMethod="basic"，导致 IsBasicAuth 被错误置为 true，从而绕过 reqBasicOrRevProxyAuth 中间件的密码认证检查。随后令牌创建处理器未对请求的作用域进行上限校验，未检查请求的作用域是否为调用者令牌作用域的子集。攻击者只需获取到任意受限作用域的令牌（如从泄露的 CI 密钥中获得的 write:user 令牌），即可在不知晓账户密码的情况下创建具有 all 完全权限的新令牌，实现权限提升。该漏洞影响所有使用 Gitea 且暴露 API 的部署实例。'
+published = "2026-01-01"
+remediation = "立即升级 Gitea 至 v1.27.0 或更高版本，该版本已修复 Basic 认证中间件绕过和令牌作用域未校验的问题。如无法立即升级，可在反向代理层限制对 POST /users/{username}/tokens 端点的访问，仅允许受信任 IP 调用。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Gitea Gitea 访问令牌权限提升漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-56654",
+    "GHSA-683j-3ff6-hh2x",
+]
+ave_id = "AVE-2026-0643"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/code.gitea.io/gitea/CVE-2026-56654.yml",
+    "https://github.com/opencve/opencve-kb/blob/6db804ac9380f31f71f86be4f4f8d98e65f04ec3/2026/CVE-2026-56654.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/osv/GO-2026-6034.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/1492d9d80c64faf5568e48afb45bc3538bc6f9e0/docs/data/2026/CVE-2026-56654.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/reports/GO-2026-6034.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/9f4c8add5cfa40b9d0aceff1e12c078575600f8b/data/history/CVE-2026-56654.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/4c78cd5d24b69fef6dc523cc3a507b4dbf47a389/posts/cve-2026-56654-go-code-gitea-io-gitea.html",
+    "https://github.com/github/advisory-database/blob/236c7f1b4d135ead6953d68767892f06687ce11d/advisories/github-reviewed/2026/07/GHSA-683j-3ff6-hh2x/GHSA-683j-3ff6-hh2x.json",
+    "https://github.com/cyberdudebivash/cyberdudebivash-blog/blob/4c78cd5d24b69fef6dc523cc3a507b4dbf47a389/api/intel/products/cve-2026-56654-go-code-gitea-io-gitea.json",
+    "https://github.com/bmwiedemann/openSUSE/blob/2de2525ff4f22f16243444d8222f304029402f46/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+]
