@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "Gitea 迁移恢复功能中 release.yml 的 DownloadURL 字段未校验 scheme，导致本地文件包含漏洞（CVE-2026-58420）。通过检查 Gitea 版本是否低于 1.27.0 来判断是否存在漏洞。"
+id = "POC-AVE-2026-0658"
+name = "Gitea Migration Restore Local File Inclusion PoC"
+severity = "high"
+tags = [
+    "cve-2026-58420",
+    "gitea",
+    "lfi",
+]
+vuln_id = [
+    "CVE-2026-58420",
+    "AVE-2026-0658",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/version"
+protocol = "http"
+
+[[poc.requests.extractors]]
+group = 1
+name = "version"
+part = "body"
+regex = ['"version":"(\d+\.\d+\.\d+)"']
+type = "regex"
+value = "{{version}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["gitea"]
