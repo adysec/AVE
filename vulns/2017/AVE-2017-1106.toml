@@ -1,11 +1,11 @@
 [basic]
-description = 'Microsoft Windows Server 2003 R2 的 IIS 6.0 WebDAV 服务中 ScStoragePathFromUrl 函数存在缓冲区溢出漏洞。远程攻击者无需身份认证即可向目标服务器发送特制的 PROPFIND 请求，在 If 头中构造以 "If: <http://" 开头超长字符串触发栈缓冲区溢出，导致远程代码执行。该漏洞影响 Windows Server 2003 R2 系统，CVSS 评分 9.8，危害等级严重。该漏洞曾在 2016 年 7 至 8 月被野外利用，已有公开的 Metasploit 利用模块和多种 PoC 代码。'
+description = 'Microsoft IIS 6.0 WebDAV 服务的 ScStoragePathFromUrl 函数存在缓冲区溢出漏洞。未经身份认证的远程攻击者可向目标服务器发送包含超长 "If: <http://" 头部的特制 PROPFIND 请求，触发缓冲区溢出实现远程代码执行。该漏洞影响运行 IIS 6.0 的 Windows Server 2003 R2 系统，CVSS 3.1 评分 9.8（CRITICAL），攻击向量为网络、攻击复杂度低、无需权限和用户交互。该漏洞已在 2016 年 7-8 月被在野利用（ExplodingCan 攻击活动），微软已发布安全更新修复。攻击者可通过发送恶意 PROPFIND 请求直接获取服务器 SYSTEM 权限。Microsoft 已在 2017 年 3 月安全更新中修复此漏洞（MS17-012）。'
 published = "2017-03-27T02:59:00.453"
-remediation = "Windows Server 2003 R2 已于 2015 年 7 月停止支持，微软未发布官方补丁。建议立即迁移至受支持的 Windows Server 版本（如 2012/2016/2019/2022）。若无法迁移，可采取以下缓解措施：1) 在 IIS 6.0 管理器中禁用 WebDAV 扩展；2) 在防火墙或 WAF 上拦截包含 `If: <http://` 开头的 PROPFIND 请求；3) 使用 URLScan 工具过滤长 `If:` 头部请求。"
+remediation = '立即升级至受支持的 Windows Server 版本（如 2016/2019/2022），Microsoft 已停止为 Server 2003 提供补丁。若暂时无法升级，必须立即执行：1) 在 IIS 管理器中禁用 WebDAV 扩展（Web 服务扩展 → WebDAV → 禁止）；2) 在 IIS 网站属性中移除 WebDAV 所有 Verb（PROPFIND、PROPPATCH、MKCOL、DELETE、PUT、COPY、MOVE）；3) 在边界防火墙/WAF 层面拦截包含 "If: <http://" 长 Header 的 PROPFIND 请求；4) 应用微软 2017 年 6 月安全更新（MS17-016 KB4022168 / MS17-017 KB4025398）作为临时缓解。建议尽快完成操作系统升级彻底消除风险。'
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
-title = "Microsoft IIS 6.0 WebDAV 远程代码执行漏洞"
+sources = ["nuclei"]
+title = "Microsoft Windows Server 2003 R2 IIS 6.0 WebDAV 缓冲区溢出远程代码执行漏洞"
 updated = "2026-06-17T01:23:58.520"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2017-7269"]
 ave_id = "AVE-2017-1106"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -36,15 +36,15 @@ urls = [
     "https://www.exploit-db.com/exploits/41738",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2017/CVE-2017-7269.yaml",
     "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2017/CVE-2017-7269.md",
+    "https://github.com/0xMarcio/cve/blob/d08f837f771e6cd83ec9c845b0c4f72f125cbe84/2017/CVE-2017-7269.md",
     "https://github.com/w-digital-scanner/w9scan/blob/aa725571897f095635c4b7660db5ce90c655946c/plugins/www/cve-2017-7269.py",
+    "https://github.com/r1cksec/cheatsheets/blob/d5cc6d24474592639d45560098a2ad4d1aacf089/exploit/CVE-2017-7269.md",
     "https://github.com/vulscanteam/vulscan/blob/787397e267c4e6469522ee0abe55b3e98f968d4a/vul/45-iis6_RCE_CVE-2017-7269.py",
     "https://github.com/nanshihui/PocCollect/blob/e13e137901bc91ae44465a1c9d88a9961dbab6bf/middileware/iis/iis6.0_cve-2017-7269.py",
     "https://github.com/amcai/myscan/blob/c0ed549669ec76cc9fea660554943244cbdd703b/myscan/pocs/perfolder/iis/poc_iis_6.0_cve-2017-7269.py",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/6e3267700a6a68d4b849c870d5c00c67dc46e86a/data/by-cve/CVE-2017-7269.md",
     "https://github.com/zcgonvh/cve-2017-7269/blob/16e8c38efb9b950209e138dc1161cb7cf971c8ab/cve-2017-7269.rb",
-    "https://github.com/sari3l/Poc-Monitor/blob/4f155e420b8d8803d4e5b415e665e846f1914787/2017/CVE-2017-7269.json",
-    "https://github.com/arschlochnop/VulnWatchdog/blob/d9ea0d68999da7e2b3bfae779b24e1be083e8518/data/2017/CVE-2017-7269-Al1ex_CVE-2017-7269.md",
-    "https://github.com/Coldwave96/PocLibrary/blob/4bdc069c257f441379e9fd428ac8df7d4f5e9ca9/Library/IIS/cve-2017-7269-exp_rce.txt",
-    "https://github.com/r1cksec/cheatsheets/blob/d5cc6d24474592639d45560098a2ad4d1aacf089/exploit/CVE-2017-7269.md",
+    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2020/CVE-2020-35489.md",
     "https://github.com/zcgonvh/cve-2017-7269",
     "https://github.com/g0rx/iis6-exploit-2017-CVE-2017-7269",
     "https://github.com/lcatro/CVE-2017-7269-Echo-PoC",
