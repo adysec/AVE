@@ -1,0 +1,38 @@
+[basic]
+description = "该漏洞是一个不完整修复导致的Gitea安全缺陷。原始PR#38145修复了ListPublicMembers和IsPublicMember端点的安全问题，但忽略了ListMembers端点，导致任何已认证用户都能枚举私有组织中的所有成员，而非仅限于公开成员。漏洞根源在于routers/api/v1/org/member.go文件的ListMembers()函数中缺少HasOrgOrUserVisible权限验证。通过访问/privateorg/members等API端点，攻击者可以突破访问控制，获取私有组织的完整成员信息，包括用户名、邮箱等隐私数据。本漏洞影响所有≤v1.26.4版本（含最新版）和主分支，攻击者仅需拥有普通用户账户即可利用此漏洞，CVSS评分严重（9.8），需立即修复。"
+published = "2026-01-01"
+remediation = "升级 Gitea 至 v1.27.0 或更高版本，该版本通过 PR #38213 修复了 ListMembers() 接口中缺失的组织可见性检查。如无法立即升级，可通过反向代理（如 Nginx）临时限制对 `/api/v1/orgs/*/members` 端点的未授权访问，或审查并收紧私有组织的成员列表 API 访问权限。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Gitea 私有组织成员信息泄露漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-58427",
+    "GHSA-prr9-9mp4-5gp2",
+]
+ave_id = "AVE-2026-0665"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/gitea.dev/CVE-2026-58427.yml",
+    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2026/CVE-2026-58427.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/osv/GO-2026-6068.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/1492d9d80c64faf5568e48afb45bc3538bc6f9e0/docs/data/2026/CVE-2026-58427.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/reports/GO-2026-6068.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/70b062de2c67a3e0300bfdb9c31637b5a97fcfee/data/history/CVE-2026-58427.json",
+    "https://github.com/github/advisory-database/blob/eb84af8a8fe0458dae7f7de0f0f405af3b86665e/advisories/github-reviewed/2026/07/GHSA-prr9-9mp4-5gp2/GHSA-prr9-9mp4-5gp2.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/1f0b4d834689f794b1d2ed00137cff546bba1cbe/reports/daily/2026/07/2026-07-17.md",
+    "https://github.com/bitfront-se/vuln-list-temp/blob/e20b4f20e4d3f1b9471c564d85e48ff4d55d757b/osv/go/gitea.dev/GO-2026-6068.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/1f0b4d834689f794b1d2ed00137cff546bba1cbe/vulndb/vulns/gitea/2026/07/VW-2026-0828.yaml",
+]
