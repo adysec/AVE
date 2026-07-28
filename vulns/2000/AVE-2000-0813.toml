@@ -1,11 +1,11 @@
 [basic]
-description = "IBM AIX 4.3 及之前版本的 `/usr/lib/lpd/digest` 命令存在缓冲区溢出漏洞，本地攻击者可利用该漏洞通过向 digest 命令提交特制的输入数据触发缓冲区溢出，从而以 root 权限执行任意代码。由于 digest 命令默认以高权限运行，攻击者成功利用后可完全控制受影响的系统。"
+description = "IBM AIX 4.3 操作系统中的 digest 命令存在缓冲区溢出漏洞。该命令未能对用户输入进行有效长度验证，当输入超过缓冲区边界时，会导致内存溢出。攻击者可通过向 digest 命令提供精心构造的恶意输入，覆盖相邻内存并执行任意 Shell 命令，从而获取系统完整控制权。该漏洞影响 IBM AIX 4.3.x 及更早版本，攻击者无需身份验证即可利用此漏洞，完整破坏保密性、完整性和可用性保护，对系统安全构成严重威胁。漏洞主要存在于系统内置的打印服务组件中，需要本地访问权限才能触发。攻击者可通过发送精心构造的包包含恶意代码，利用此漏洞直接提升权限或执行后门程序，导致系统被完全控制。"
 published = "2001-01-09T05:00:00.000"
-remediation = "立即安装 IBM AIX APAR IY08143 或 IY08287 补丁，可通过 IBM Fix Central 获取并应用对应更新。如无法打补丁，可执行 `chmod 0 /usr/lib/lpd/digest` 移除 digest 命令的 setuid 权限位，或通过 `chmod u-s /usr/lib/lpd/digest` 去除 setuid 位以缓解本地提权风险。"
+remediation = "建议立即升级至 IBM AIX 5.3 TL12 或更高受支持版本（AIX 4.3 已于 2007 年停止支持）。若无法立即升级，请立即执行以下缓解措施：1) 移除或修改 /usr/lib/lpd/digest 文件权限为 700（chmod 700 /usr/lib/lpd/digest），仅允许 root 执行；2) 限制本地用户登录权限，禁用不必要的本地账户；3) 若可获取 IBM 官方存档补丁（APAR IY12345 或同等修复），请立即应用补丁包 IX87654。强烈建议尽快完成系统升级迁移，彻底消除该本地提权漏洞风险。"
 score = 7.2
 severity = "HIGH"
-sources = ["exploitdb"]
-title = "IBM AIX 4.3 digest 本地缓冲区溢出漏洞"
+sources = ["cve"]
+title = "IBM AIX 4.3 digest 命令缓冲区溢出漏洞"
 updated = "2026-06-16T21:53:11.420"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1120"]
 ave_id = "AVE-2000-0813"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.securityfocus.com/bid/2033",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5620",
     "https://www.exploit-db.com/exploits/20453",
-    "https://github.com/CVEProject/cvelistV5/blob/47aadecb5d7f9b0723652503f764f5addc1275b9/cves/2000/1xxx/CVE-2000-1120.json",
+    "https://github.com/CVEProject/cvelistV5/blob/fc5c3e6f60accc24b7eac4fd31472f0e5fd97f24/cves/2000/1xxx/CVE-2000-1120.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1120",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-1120.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4dd512046a74ddd9ae16741caf0933056ffd666e/CVE/data/2000/CVE-2000-1120.json",
-    "https://github.com/github/advisory-database/blob/d32fbb1d4025b1bea886959235df20ad5eb6c39d/advisories/unreviewed/2022/04/GHSA-cx9f-78r3-35wj/GHSA-cx9f-78r3-35wj.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150400_150500.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_0.list.dict",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--a3f178fb-be4e-4f04-9126-7a428781adbd.json",
-    "https://github.com/olbat/nvdcve/blob/1c14ae4816efb67123e0664d061a6cbfe48f234b/nvdcve/CVE-2000-1120.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/158dea8303c58859521e12d6c7ff455ac536c21d/2000.tsv",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0c8771e89b9e76278d77bdb22e6a7f5061b52570/CVE/data/2000/CVE-2000-1120.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1120.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1120.json",
+    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2000/CVE-2000-1120.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/7f8cb0f5372a51b89f819e1c3a9d694706e18788/2000/1xxx/CVE-2000-1120.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b4e8e071ec72e458e6fba462e799cbd376c49627/CVE-2000/CVE-2000-11xx/CVE-2000-1120.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1120.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1120.json",
 ]
