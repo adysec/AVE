@@ -1,0 +1,38 @@
+[basic]
+description = "Gitea SSH 密钥解析器存在拒绝服务漏洞。Gitea 的 SSH 密钥导入接口接受 RFC 4716（SSH2）格式的密钥，在规范化处理时，parseKeyString 函数使用 Go 字符串的 += 操作逐行拼接密钥内容。由于 Go 字符串不可变，每次拼接都会分配新内存并复制整个累积字符串，导致时间复杂度为 O(N²)。任何已认证用户均可通过 POST /api/v1/user/keys 接口提交一个包含大量短行（如 40 万行、每行 100 字符）的恶意 SSH2 公钥，使服务器消耗大量 CPU 和内存资源，导致实例离线。该漏洞影响 Gitea ≤ 1.26.4 版本，已在 1.27.0 版本中修复。"
+published = "2026-01-01"
+remediation = "立即将 Gitea 升级至 v1.27.0 或更高版本（该版本在 `models/asymkey/ssh_key_parse.go` 中增加了 SSH 公钥输入长度限制，并将 O(n²) 字符串拼接改为 strings.Builder）。如无法立即升级，可在反向代理层限制 `POST /api/v1/user/keys` 接口的请求体大小（建议 ≤1MB），并监控 CPU/内存异常飙升。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Gitea SSH密钥解析拒绝服务漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-56657",
+    "GHSA-4xjf-493q-98p3",
+]
+ave_id = "AVE-2026-0644"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/code.gitea.io/gitea/CVE-2026-56657.yml",
+    "https://github.com/opencve/opencve-kb/blob/c376806cb2dc05fbeb559b5b1364bc1c095ae81e/2026/CVE-2026-56657.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/osv/GO-2026-6042.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/1492d9d80c64faf5568e48afb45bc3538bc6f9e0/docs/data/2026/CVE-2026-56657.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/reports/GO-2026-6042.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/9f4c8add5cfa40b9d0aceff1e12c078575600f8b/data/history/CVE-2026-56657.json",
+    "https://github.com/github/advisory-database/blob/236c7f1b4d135ead6953d68767892f06687ce11d/advisories/github-reviewed/2026/07/GHSA-4xjf-493q-98p3/GHSA-4xjf-493q-98p3.json",
+    "https://github.com/bmwiedemann/openSUSE/blob/2de2525ff4f22f16243444d8222f304029402f46/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+    "https://github.com/proshiba/vuln-intel-agent/blob/1f0b4d834689f794b1d2ed00137cff546bba1cbe/reports/daily/2026/07/2026-07-17.md",
+    "https://github.com/midnightconman/go_vulndb/blob/d993e2e5e84dd30ceb1958dc17e25f002fffd6f7/ID/GO-2026-6042.json",
+]
