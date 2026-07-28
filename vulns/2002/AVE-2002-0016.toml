@@ -1,11 +1,11 @@
 [basic]
-description = "glibc 2.2.5 及更早版本的 DNS 解析器函数存在缓冲区溢出漏洞，该漏洞源自 BIND 4.9.8 中移植的用于网络名称和地址查询的子程序。远程攻击者可通过向目标系统发送特制的 DNS 响应数据包，在调用 getnetbyname 或 getnetbyaddr 等函数时触发缓冲区溢出，导致任意代码执行。该漏洞影响使用受影响 glibc 版本的 Linux 系统，CVSS 评分 7.5，危害等级高。"
+description = "glibc 2.2.5 及早期版本中移植的 BIND 4.9.8 DNS 解析器函数（如 getnetbyname、getnetbyaddr）存在缓冲区溢出漏洞。远程恶意 DNS 服务器可通过构造恶意 DNS 响应，触发这些函数中的子例程缓冲区溢出，实现远程任意代码执行。该漏洞影响使用受影响 glibc 版本的 Linux 系统及 BIND 4.9.8，攻击者需控制或欺骗受害者查询的 DNS 服务器，通过恶意网络名称/地址查询响应触发溢出，CVSS 7.5 分（高危），影响机密性、完整性和可用性。"
 published = "2002-08-12T04:00:00.000"
-remediation = "将 glibc 升级至 2.3.0 及以上版本，该漏洞在 2.2.5 及更早版本中存在。对于使用 BIND 4.9.8 的系统，应升级至 BIND 8.x/9.x 系列。如暂时无法升级，可在 DNS 解析器层面限制仅向可信 DNS 服务器发起查询，或禁用不需要的 getnetbyname/getnetbyaddr 等函数调用。"
+remediation = "升级 glibc 到 2.2.6 或以上版本，并升级 BIND 到 8.x 或 9.x 系列。具体修复措施包括：应用 glibc 的安全补丁以修复 DNS 解析器缓冲区溢出漏洞，更新 BIND 配置文件以正确验证 DNS 响应，禁用对不可信 DNS 服务器的递归查询，对于遗留系统请考虑使用 hardening 技术如文本化缓冲区处理和地址随机化作为临时缓解措施。"
 score = 7.5
 severity = "HIGH"
-sources = ["osv"]
-title = "GNU glibc DNS解析器缓冲区溢出远程代码执行漏洞"
+sources = ["redhat"]
+title = "GNU glibc DNS解析器缓冲区溢出代码执行漏洞"
 updated = "2026-06-16T21:57:56.450"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-0684"]
 ave_id = "AVE-2002-0016"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://rhn.redhat.com/errata/RHSA-2002-139.html",
     "http://www.kb.cert.org/vuls/id/542971",
     "http://www.linux-mandrake.com/en/security/2002/MDKSA-2002-050.php",
-    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2002/CVE-2002-0029.md",
-    "https://github.com/CVEProject/cvelistV5/blob/34b929f9979d6d9d9584dfab31f29f50dcf08e3f/cves/2002/0xxx/CVE-2002-0684.json",
+    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2002/CVE-2002-0029.md",
+    "https://github.com/CVEProject/cvelistV5/blob/fc5c3e6f60accc24b7eac4fd31472f0e5fd97f24/cves/2002/0xxx/CVE-2002-0684.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-0684",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2002-0684.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/475f53ac063af305fc146a443cce993188109d56/CVE/data/2002/CVE-2002-0684.json",
-    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/unreviewed/2022/05/GHSA-wc7g-r6mj-mjf6/GHSA-wc7g-r6mj-mjf6.json",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/mandrake_MDKSA-2002-050.nasl",
-    "https://github.com/NetBSD/pkgsrc-wip/blob/97a17708b9a16c731a8a37abc74c9e94d43d7b3f/sara/PLIST",
-    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/B/bind9_overflow.nasl",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x83000/82881/info.html",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0c8771e89b9e76278d77bdb22e6a7f5061b52570/CVE/data/2002/CVE-2002-0684.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-0684.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2002-0684.json",
+    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2002/CVE-2002-0684.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/7f8cb0f5372a51b89f819e1c3a9d694706e18788/2002/0xxx/CVE-2002-0684.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/59bd6fda35498288097a4f1fd0cdf8c04a1d74bd/CVE-2002/CVE-2002-06xx/CVE-2002-0684.json",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/e7393e4662b98c582439177871aa2228c548d9c4/tracker/CVE/2002/CVE-2002-0684.json",
 ]
