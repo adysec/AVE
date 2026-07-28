@@ -1,0 +1,38 @@
+[basic]
+description = "Gitea 的 post-receive git hook 处理器在处理 git push 选项时存在权限控制缺陷。攻击者若拥有目标仓库的 owner 或 admin collaborator 权限，可在执行 git push 时通过 `-o repo.private=false` 和 `-o repo.template=true/false` 两个未公开的 push 选项，未经正常设置流程便直接修改仓库的私有/公开状态及模板标记。该操作绕过了所有正常权限变更应触发的审计日志记录、webhook 事件通知、组织级别告警、团队权限重新计算及邮件提醒，且由于使用 `UpdateRepositoryColsNoAutoTime` 更新数据库，导致 `updated_at` 时间戳不发生变化，使变更难以被检测。攻击者可利用此漏洞在短时间内将私有仓库临时公开以克隆或导出敏感源代码，或在供应链攻击中篡改模板仓库内容后重新标记为模板，影响所有下游项目。CVSS 评分 9.8，危害等级严重。"
+published = "2026-01-01"
+remediation = "立即升级 Gitea 至 1.27.0 或更高版本，该版本已修复 routers/private/hook_post_receive.go 中未限制 repo.private 与 repo.template 推送选项的问题。如暂时无法升级，可通过在反向代理或防火墙层阻断包含 repo.private 和 repo.template 参数的 git push 请求作为临时缓解措施，并审查仓库管理员权限，限制不必要的 owner/admin 协作者访问。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Gitea 通过 Git 推送选项操纵仓库可见性漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-58437",
+    "GHSA-8p9h-49rc-qgxj",
+]
+ave_id = "AVE-2026-0673"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/8fd2ccd9bd5df072c2b7289fae39225709d0f7f9/go/code.gitea.io/gitea/CVE-2026-58437.yml",
+    "https://github.com/opencve/opencve-kb/blob/6e362f6959b500f9e0530cd95885d05afaa93bae/2026/CVE-2026-58437.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/osv/GO-2026-6047.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/6e7b542bc79ef0f9a3bcf571369df0ad5ea5c13a/docs/data/2026/CVE-2026-58437.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/reports/GO-2026-6047.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/70b062de2c67a3e0300bfdb9c31637b5a97fcfee/data/history/CVE-2026-58437.json",
+    "https://github.com/github/advisory-database/blob/910c00732ce1dabf388a726ffffd3fc08d08e9af/advisories/github-reviewed/2026/07/GHSA-8p9h-49rc-qgxj/GHSA-8p9h-49rc-qgxj.json",
+    "https://github.com/bmwiedemann/openSUSE/blob/2de2525ff4f22f16243444d8222f304029402f46/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+    "https://github.com/proshiba/vuln-intel-agent/blob/1f0b4d834689f794b1d2ed00137cff546bba1cbe/reports/daily/2026/07/2026-07-17.md",
+    "https://github.com/midnightconman/go_vulndb/blob/d993e2e5e84dd30ceb1958dc17e25f002fffd6f7/ID/GO-2026-6047.json",
+]
