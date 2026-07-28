@@ -1,11 +1,11 @@
 [basic]
-description = "LPPlus 3.2.2/3.3 版本存在权限配置缺陷，其创建的 lpdprocess 文件具有全局可写权限。本地攻击者可利用该缺陷向文件写入任意进程 ID，随后调用具有 setuid 权限的 dcclpdshut 程序终止指定进程，导致任意进程被终止的拒绝服务攻击。该漏洞影响 LPPlus 3.2.2 和 3.3 版本，攻击者需具备本地系统访问权限且能写入 lpdprocess 文件，利用方式为写入目标进程 PID 后触发 setuid 程序终止该进程，CVSS 评分 3.6（AV:L/AC:L/Au:N/C:N/I:P/A:P），属本地权限提升类拒绝服务漏洞。"
+description = "CVE-2000-0880是一个安全漏洞，影响相关产品的安全性。攻击者可能利用此漏洞执行任意代码或获取未授权访问。建议用户及时更新到最新版本以修复此问题。"
 published = "2000-11-14T05:00:00.000"
-remediation = "建议升级至 LPPlus 3.3.1 或更高版本（厂商已修复该权限问题）。若无法升级，请立即执行以下缓解措施：1) 修改 lpdprocess 文件权限为 644（chmod 644 /var/spool/lpd/lpdprocess），移除全局写权限；2) 移除 dcclpdshut 程序的 setuid 位（chmod u-s /usr/bin/dcclpdshut）；3) 限制本地用户对打印队列目录的访问权限。建议联系厂商获取官方补丁包 LPPlus-3.3.1-patch.tar.gz 进行正式修复。"
+remediation = "立即以 root 执行 chmod 600 $LPHOME/system/lpdprocess 并 chown 为 LPPlus 运行用户，禁止普通用户改写 PID 文件；同时对 $LPHOME/bin/dcclpdshut、dccshut、dccbkstshut 及对应启动程序去掉 setuid（chmod u-s）并限制仅管理员可执行（chmod 750）。若仍使用 LPPlus 3.2.2/3.3，升级到厂商后续修复版本或迁移至现代打印管理方案；临时可卸载/禁用 dcclpdser 相关服务并限制本地普通用户登录。"
 score = 3.6
 severity = "LOW"
-sources = ["cve"]
-title = "LPPlus 权限拒绝服务漏洞"
+sources = ["epss"]
+title = "LPPlus lpdprocess 文件全局可写权限导致拒绝服务漏洞"
 updated = "2026-06-16T21:52:39.750"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0880"]
 ave_id = "AVE-2000-0646"
 
 [meta]
-collected_at = "2026-07-24T00:00:00Z"
+collected_at = "2026-07-28T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1643",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5200",
     "https://www.exploit-db.com/exploits/20192",
-    "https://github.com/CVEProject/cvelistV5/blob/2191d577d2d643f301487a89dd6359b1113a07b9/cves/2000/0xxx/CVE-2000-0880.json",
+    "https://github.com/CVEProject/cvelistV5/blob/89175b2ce75a8c340e9d987615810a87444e6d01/cves/2000/0xxx/CVE-2000-0880.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a14b63e8afc2a58338f509c08078b69c0cfe7fee/CVE/data/2000/CVE-2000-0880.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0880",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/1bcfc51649d76497fa60b30641a1d994609c3c9a/2000/0xxx/CVE-2000-0880.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/80dda50d8d5f7811125252929942fe793daf4c0a/CVE/data/2000/CVE-2000-0880.json",
-    "https://github.com/github/advisory-database/blob/2b8a7bdd977d852aa4b7aade01f4fcd4d623cfde/advisories/unreviewed/2022/04/GHSA-3932-xh88-q34x/GHSA-3932-xh88-q34x.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2000-0880.md",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152800_152900.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x2000/1643/info.html",
-    "https://github.com/olbat/nvdcve/blob/ebc4d73723464668b97400aaa2d8410c6ff78a81/nvdcve/CVE-2000-0880.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0880.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0880.json",
+    "https://github.com/opencve/opencve-kb/blob/2aa9b58842ca08c5e3748f9ca02617dbedbd50d2/2000/CVE-2000-0880.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/89eeaa8d7ef6ae24cbc356832e183d8519afcdb0/CVE-2000/CVE-2000-08xx/CVE-2000-0880.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/beba1b176cd5b7fd45b0085792055fbb0538d4d6/2000/0xxx/CVE-2000-0880.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0880.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0880.json",
 ]
