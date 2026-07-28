@@ -1,0 +1,44 @@
+[info]
+author = "AVE"
+description = "检测 WordPress Social Login by BestWebSoft 插件（social-login-bws）0.2 版本之前的跨站脚本漏洞。通过向登录相关参数注入 XSS 载荷，验证是否存在过滤不严问题。"
+id = "POC-AVE-2017-0075"
+name = "CVE-2017-18501 PoC"
+severity = "medium"
+tags = [
+    "cve-2017-18501",
+    "xss",
+    "wordpress",
+    "social-login-bws",
+]
+vuln_id = [
+    "CVE-2017-18501",
+    "AVE-2017-0075",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wp-content/plugins/social-login-bws/readme.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Social Login",
+    "social-login-bws",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wp-login.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["wordpress-logo"]
