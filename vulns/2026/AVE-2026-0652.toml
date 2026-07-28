@@ -1,0 +1,38 @@
+[basic]
+description = "ToolHive 的远程 MCP 服务器认证发现机制存在服务端请求伪造（SSRF）漏洞。该漏洞源于 `FetchResourceMetadata` 及认证发现客户端在发起 HTTP 请求时未对目标 URL 进行私有 IP/回环地址过滤，也未限制重定向跳转。攻击者控制的远程 MCP 服务器可在 401 认证响应中通过 `WWW-Authenticate` 头的 `resource_metadata` 字段返回恶意 URL，该 URL 通过 HTTPS 检查后，ToolHive 客户端会跟随 302 重定向至内部地址（如 `http://169.254.169.254/latest/meta-data/`），导致主机进程直接获取云实例元数据及 IAM 凭证。该攻击在用户正常连接远程 MCP 服务器时自动触发，无需用户主动访问恶意地址，完全绕过 ToolHive 的容器沙箱隔离机制。影响 ToolHive v0.29.3 及之前所有版本。"
+published = "2026-01-01"
+remediation = "立即升级 ToolHive 至 v0.29.4 或更高版本（补丁已合入 main 分支）。如无法升级，手动修改 `pkg/auth/discovery/discovery.go`：为 `FetchResourceMetadata`、`DetectAuthenticationFromServer` 及 issuer-discovery 客户端设置 `CheckRedirect` 拒绝跨主机或降级协议的重定向，并在 `DialContext` 中调用 `IsPrivateIP` 守卫（`pkg/networking/utilities.go:105`）过滤内网地址。同时移除三处 `// #nosec G704` 注解以恢复 SSRF 污点分析告警。"
+score = 3.5
+severity = "LOW"
+sources = ["ghsa"]
+title = "ToolHive 远程MCP服务器认证发现服务端请求伪造漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-58196",
+    "GHSA-pr64-jmmf-jp54",
+]
+ave_id = "AVE-2026-0652"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/opencve/opencve-kb/blob/9b61e147dd97f8b10bc28655d49bf9e6a89e79e2/2026/CVE-2026-58196.json",
+    "https://github.com/Tabll/gemnasium-db/blob/7dd233fee5478e00f4ef27fbd6512a0d682c777d/go/github.com/stacklok/toolhive/CVE-2026-58196.yml",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/osv/GO-2026-6002.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/1492d9d80c64faf5568e48afb45bc3538bc6f9e0/docs/data/2026/CVE-2026-58196.json",
+    "https://github.com/golang/vulndb/blob/7f04fb463deb2e42d892e6f9165c6eaca2feb1b6/data/reports/GO-2026-6002.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/9f4c8add5cfa40b9d0aceff1e12c078575600f8b/data/history/CVE-2026-58196.json",
+    "https://github.com/github/advisory-database/blob/596d62c210162c03375df8ee5952c2ea911b2aaf/advisories/github-reviewed/2026/07/GHSA-pr64-jmmf-jp54/GHSA-pr64-jmmf-jp54.json",
+    "https://github.com/cataam-security/cataam/blob/8abe63fcd635a50329bf43e2eee16677b9a1e945/tools/README.md",
+    "https://github.com/bIackr0se/bIackr0se/blob/fb001409cadc234152768c36a8221e3d5163a6a9/README.md",
+    "https://github.com/cataam-security/cataam/blob/8abe63fcd635a50329bf43e2eee16677b9a1e945/tools/mcp-exposure-scanner.py",
+]
