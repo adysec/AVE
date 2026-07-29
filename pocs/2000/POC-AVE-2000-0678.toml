@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测 SmartWin CyberOffice Shopping Cart 2 默认安装中 _private 目录是否可公开访问。该目录权限设置为全局可读，攻击者无需认证即可通过 HTTP 直接访问 shopping_cart.mdb 数据库文件，导致客户订单和未加密信用卡信息泄露。"
+description = "验证目标站点的 _private 目录是否存在世界可读权限，通过尝试访问该目录下的 shopping_cart.mdb 文件检测敏感客户数据泄露漏洞"
 id = "POC-AVE-2000-0678"
-name = "SmartWin CyberOffice Shopping Cart 2 _private 目录信息泄露 PoC"
+name = "SmartWin CyberOffice Shopping Cart 2.0 客户端敏感信息泄露 PoC"
 severity = "medium"
 tags = ["ave-2000-0678"]
 vuln_id = [
@@ -11,27 +11,14 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
 path = "/{{BaseURL}}/_private/shopping_cart.mdb"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
-
 [[poc.requests.matchers]]
 expect = true
 status = [200]
 type = "status"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "Standard Jet DB",
-    "Microsoft Access",
-]
