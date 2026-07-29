@@ -1,0 +1,38 @@
+[basic]
+description = 'Gitea 实现了针对 Go 工具链（`go get`、`go install`）的特殊处理：当 HTTP 请求包含 `?go-get=1` 查询参数时，`routers/web/repo/githttp.go:63-66` 的 `httpBase()` 函数会在任何身份认证和权限检查之前无条件调用 `EarlyResponseForGoGetMeta()` 并直接返回 HTTP 200 及 `<meta name="go-import">`、`<meta name="go-source">` 元数据标签。该函数（`services/context/repo.go:374-396`）即使在仓库私有、用户未认证、用户无任何权限时也会无差别返回元数据，导致未认证攻击者可通过任意仓库路径加 `?go-get=1` 参数，直接确认任意私有仓库是否存在、获取完整克隆 URL、所有者/组织名、默认分支名等敏感信息。攻击条件为完全无认证、仅需猜测或枚举仓库名；攻击者可大规模枚举私有仓库名称，获取克隆 URL 后进一步实施凭证填充攻击。影响范围覆盖 Gitea 实例中所有私有仓库，CVSS 评分中等（Medium）。官方建议修复为：仅对公开仓库或已认证且具读权限的用户返回 go-get 元数据，私有仓库未认证请求返回 404 以触发 Go 工具链凭证提示流程。'
+published = "2026-01-01"
+remediation = '建议立即升级 Gitea 至 1.23.0 或更高版本（该版本已修复 go-get 元数据端点的私有仓库存在性泄露）。若暂时无法升级，可通过反向代理（Nginx/Apache/Caddy）在 `/.*\?go-get=1` 路径上拦截未认证请求并返回 404，或在应用层禁用 `go-get` 元数据端点（配置 `server.DISABLE_GO_GET = true`）。临时缓解措施：在网络层限制 `/.*\?go-get=1` 仅允许可信 IP 访问，或部署 WAF 规则拦截包含 `go-get=1` 查询参数的未认证请求。'
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Gitea go-get 元数据端点私有仓库存在性泄露漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-58507",
+    "GHSA-p4mj-98mv-xq26",
+]
+ave_id = "AVE-2026-0682"
+
+[meta]
+collected_at = "2026-07-29T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/8fd2ccd9bd5df072c2b7289fae39225709d0f7f9/go/code.gitea.io/gitea/CVE-2026-58507.yml",
+    "https://github.com/opencve/opencve-kb/blob/ef5f7d15f762d5df7a3a2d2246dcee2b17ebeef4/2026/CVE-2026-58507.json",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/osv/GO-2026-6066.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/bd1fb44b1ff136a80bfd75f09f04294c4e87b7d7/docs/data/2026/CVE-2026-58507.json",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/reports/GO-2026-6066.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/193c4908c1a975d960186f7a2d117b22b0133ab2/data/history/CVE-2026-58507.json",
+    "https://github.com/github/advisory-database/blob/c9bca557f76d4ed2aba59304839342d9e879ca6a/advisories/github-reviewed/2026/07/GHSA-p4mj-98mv-xq26/GHSA-p4mj-98mv-xq26.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/4bdd2f202c4e1d9fc7b7dd0b3496f831b0a908de/reports/daily/2026/07/2026-07-17.md",
+    "https://github.com/bitfront-se/vuln-list-temp/blob/a945aad795721e2d101a947788c0c1994177c6ae/osv/go/gitea.dev/GO-2026-6066.json",
+    "https://github.com/proshiba/vuln-intel-agent/blob/4bdd2f202c4e1d9fc7b7dd0b3496f831b0a908de/vulndb/vulns/gitea/2026/07/VW-2026-0857.yaml",
+]
