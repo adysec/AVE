@@ -1,0 +1,44 @@
+[basic]
+description = "pam_xauth 是 Linux PAM（可插拔认证模块）中用于在用户切换（su/sudo）时保持 X 窗口会话认证信息的模块。该模块默认配置会将 MIT-Magic-Cookie 转发至新的 X 会话，当 root 用户使用 su 命令切换用户时，pam_xauth 会使用原始用户的凭据创建一个临时 .xauth 文件。本地低权限攻击者可通过竞态条件或目录权限不当读取该临时 .xauth 文件，窃取其中存储的 MIT-Magic-Cookie，进而冒充原用户连接 X 显示服务器，最终实现向 root 权限的提权。该漏洞影响使用 PAM pam_xauth 模块且采用默认行为的 Linux/Unix 系统。"
+published = "2003-02-19T05:00:00.000"
+remediation = "立即升级 pam 软件包至 RHSA-2003:028  advisory 修复版本（Red Hat Enterprise Linux AS/WS 平台），该版本为 pam_xauth 模块添加了 ACL 访问控制功能并默认禁止 root 转发 cookie。具体操作：运行 `rpm -Uvh pam-*.rpm` 安装更新包，随后编辑 `/etc/pam.d/su` 或 `/etc/pam.d/sudo` 文件，在 pam_xauth 调用行添加 `noxauth` 参数或注释掉该行以禁用 cookie 转发。作为临时缓解措施，执行 `chmod 600 ~/.xauth` 限制 .xauth 文件权限，确保仅文件所有者可读写，防止本地用户窃取 MIT-Magic-Cookie 提升为 root。"
+score = 7.2
+severity = "HIGH"
+sources = ["redhat"]
+title = "Linux PAM pam_xauth 模块本地权限提升漏洞"
+updated = "2026-06-16T21:58:51.600"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2002-1160"]
+ave_id = "AVE-2002-0308"
+
+[meta]
+collected_at = "2026-07-29T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://distro.conectiva.com.br/atualizacoes/?id=a&anuncio=000693",
+    "http://marc.info/?l=bugtraq&m=104431622818954&w=2",
+    "http://sunsolve.sun.com/pub-cgi/retrieve.pl?doc=fsalert/55760",
+    "http://www.iss.net/security_center/static/11254.php",
+    "http://www.kb.cert.org/vuls/id/911505",
+    "http://www.mandrakesoft.com/security/advisories?name=MDKSA-2003:017",
+    "http://www.redhat.com/support/errata/RHSA-2003-028.html",
+    "http://www.redhat.com/support/errata/RHSA-2003-035.html",
+    "http://www.securityfocus.com/bid/6753",
+    "https://github.com/trickest/cve/blob/b349e2ac98435c78e6eec698cf95df82dacb0ca1/2002/CVE-2002-1160.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b55a0e6faed5f81ed4c75a7b8a6ed2ea8e5965a3/cves/2002/1xxx/CVE-2002-1160.json",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2002/CVE-2002-1160.md",
+    "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2002/CVE-2002-1160.md",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-1160",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/041916a4bbe5f9cbf864643dca3b8c710245f3cd/CVE/data/2002/CVE-2002-1160.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2002/CVE-2002-1160.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-1160.json",
+    "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2002/CVE-2002-1160.md",
+    "https://github.com/opencve/opencve-kb/blob/98f78a3416723dbfe56c27c011c6c9fcb654559d/2002/CVE-2002-1160.json",
+]
