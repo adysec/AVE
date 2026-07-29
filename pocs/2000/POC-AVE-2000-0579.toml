@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "Apache Tomcat 3.1 在处理不存在的 URL 请求时，返回的错误页中包含服务器文件系统物理路径信息。通过请求一个不存在的资源路径，可以触发路径泄露，获取服务器目录结构信息。"
+author = "ave"
+description = '验证 Apache Tomcat 3.1 路径信息泄露漏洞。向服务器请求一个不存在的 JSP 文件，若响应中包含服务器物理路径信息（如 JSP file "/path/to/file.jsp" not found），则说明存在路径信息泄露漏洞。'
 id = "POC-AVE-2000-0579"
-name = "Apache Tomcat 3.1 路径信息泄露漏洞 PoC"
+name = "Apache Tomcat 3.1 Path Revealing PoC"
 severity = "medium"
 tags = ["ave-2000-0579"]
 vuln_id = [
@@ -11,20 +11,20 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/nonexistent12345.jsp"
+path = "/{{BaseURL}}/nonexistent_ave_poc_579.jsp"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "/usr/local",
-    "/opt/",
-    "/var/",
-    "/home/",
-]
+words = ["JSP file"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [404]
+type = "status"
