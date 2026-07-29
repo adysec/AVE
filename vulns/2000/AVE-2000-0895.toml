@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD 系统中的 brouted（路由守护进程）存在缓冲区溢出漏洞，本地攻击者可通过向该程序传递超长命令行参数触发缓冲区溢出，覆盖内存中的关键数据，从而获取 root 权限。该漏洞影响 FreeBSD 及其他可能使用该组件的操作系统，攻击者需具备本地访问权限，无需身份认证即可利用，危害等级高。"
+description = "FreeBSD 及其部分其他操作系统的 brouted 路由守护进程存在缓冲区溢出漏洞。该漏洞源于程序在处理命令行参数时缺乏严格的长度校验，当本地用户通过命令行传递超长参数时，会触发内存缓冲区溢出。攻击者可利用此缺陷覆盖栈帧中的返回地址，从而在特权上下文中执行任意代码，最终获取 root 权限。该漏洞影响部署了 brouted 服务的 FreeBSD 及相关兼容系统。"
 published = "2000-10-20T04:00:00.000"
-remediation = "立即升级 FreeBSD 系统至 3.5-RELEASE 或更高版本，该版本已修复 brouted 缓冲区溢出漏洞。如无法升级，可下载 FreeBSD 安全公告中的补丁文件手动修补 brouted 源码并重新编译安装。作为临时缓解措施，可移除 brouted 的 setuid 位（chmod u-s /usr/sbin/brouted）以限制本地普通用户触发提权，但此操作会影响路由守护进程的正常功能。"
+remediation = "建议立即更新 FreeBSD 系统至已修复该漏洞的最新补丁版本，或在不需要桥接路由功能时禁用并卸载 routed/brouted 服务。对于无法立即更新的旧系统，应通过严格限制对该二进制文件的执行权限（如 chmod 700）来防止普通本地用户调用该程序，从而缓解漏洞被利用的风险。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "FreeBSD brouted 本地缓冲区溢出漏洞"
+sources = ["avd"]
+title = "FreeBSD brouted 本地缓冲区溢出权限提升漏洞"
 updated = "2026-06-16T21:52:24.447"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-0752"]
 ave_id = "AVE-2000-0895"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://archives.neohapsis.com/archives/freebsd/2000-08/0339.html",
     "http://www.securityfocus.com/bid/1629",
-    "https://github.com/CVEProject/cvelistV5/blob/377bb49f7479dd297ab5004f75a37c291a136578/cves/2000/0xxx/CVE-2000-0752.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e7eb023b782298741349c34d7e1f5ea1ecb3d73d/cves/2000/0xxx/CVE-2000-0752.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/13b4b6847c146245cb34369c97e37afd6dfad908/CVE/data/2000/CVE-2000-0752.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0752",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0752.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f2c577e1255b2c3fd617b7f1c499a222feb7b668/CVE/data/2000/CVE-2000-0752.json",
-    "https://github.com/github/advisory-database/blob/db909d46c3d9b98ec1f95daa3c88d7a8990ea8f5/advisories/unreviewed/2022/04/GHSA-rrcq-rghp-hjgx/GHSA-rrcq-rghp-hjgx.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x2000/1629/info.html",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152700_152800.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0752.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--a3ed07c0-7e45-48da-b88b-d6aa16a59fb3.json",
-    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0752.json",
+    "https://github.com/opencve/opencve-kb/blob/7330b0580e3b5cfcde14ca2a28aa1774cbe1d7d1/2000/CVE-2000-0752.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/f4cffac67804f46d22292c2f69fa529dc186f5dd/2000/0xxx/CVE-2000-0752.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/42f7ce3fe01d1b8b4a37ed409361811a74eb1f5b/CVE-2000/CVE-2000-07xx/CVE-2000-0752.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0752.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0752.json",
 ]
