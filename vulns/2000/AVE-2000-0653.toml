@@ -1,11 +1,11 @@
 [basic]
-description = "Max Feoktistov Small HTTP Server 2.03 及更早版本存在拒绝服务漏洞，远程攻击者可通过反复请求不包含 index.html 文件的目录 URL，导致服务器内存持续消耗且请求完成后不释放，最终耗尽内存资源导致拒绝服务。该漏洞影响 Small HTTP Server 2.03 及更早版本，CVSS 评分 5.0（AV:N/AC:L/Au:N/C:N/I:N/A:P），攻击向量为网络、攻击复杂度低、无需认证、仅影响可用性。攻击者无需身份认证即可远程发起攻击，通过持续发送针对无索引文件目录的请求耗尽服务器内存资源，导致服务拒绝。该漏洞由 Max Feoktistov Small HTTP Server 处理目录索引文件逻辑缺陷导致内存泄漏引发。"
+description = "这是一个影响 Max Feoktistov Small HTTP Server 2.03 及更早版本的拒绝服务漏洞。当远程攻击者向服务器发送指向不包含 index.html 文件的目录的 URL 时，服务器会在处理过程中持续分配内存，但无法在请求完成后释放这些内存。这种持续的内存消耗会导致系统资源逐渐耗尽，最终使服务器崩溃或无法响应。攻击者无需任何权限即可通过简单的 HTTP 请求触发这一漏洞，使 Web 服务不可用，严重影响了依赖该服务器软件的在线服务。该漏洞通过发起持续的目录遍历请求，以低成本实现高危害的 DoS 攻击，特别危险。"
 published = "2001-01-09T05:00:00.000"
-remediation = "立即升级到 Small HTTP Server 最新版本（如 2.04 或更高版本），修复原有版本在处理缺失 index.html 文件时的内存释放漏洞。配置文件中添加 `MaxMemoryCache=0` 禁用内存缓存，或设置 `Timeout=30` 限制连接保持时间，防止长时间占用资源攻击。如果无法升级，可在反向代理层面启用 `URI` 路径验证，仅允许访问预定义的有效资源，拒绝特定模式的异常请求以实现临时缓解。"
+remediation = "建议升级到 Small HTTP Server 2.04 或更高版本，该版本修复了内存泄漏问题。配置修改：限制同时处理的请求数量，启用请求队列控制，将最大并发连接数设置为 10 以内。如需立即缓解，可在服务器配置中启用 `DirectoryIndex check` 功能，强制所有请求必须存在索引文件，通过拒绝非索引文件请求来防止攻击。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Max Feoktistov Small HTTP Server 目录索引缺失拒绝服务漏洞"
+sources = ["epss"]
+title = "Max Feoktistov Small HTTP Server HTTP 请求拒绝服务漏洞"
 updated = "2026-06-16T21:52:42.860"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0897"]
 ave_id = "AVE-2000-0653"
 
 [meta]
-collected_at = "2026-07-25T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/1941",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5524",
     "https://www.exploit-db.com/exploits/20403",
-    "https://github.com/CVEProject/cvelistV5/blob/3290bfd28d98351fcc1665e3427425a500ba46e2/cves/2000/0xxx/CVE-2000-0897.json",
+    "https://github.com/CVEProject/cvelistV5/blob/b3c35d89abde60a88f7cb8e626161de34dd6ab36/cves/2000/0xxx/CVE-2000-0897.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bcbdb8ae7a9ef1c1e1ea2320e0a3f339a967446e/CVE/data/2000/CVE-2000-0897.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0897",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/7679da85bd348992f49e2c46d2198526392248ee/2000/0xxx/CVE-2000-0897.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/ad51007022161bcf4c63e713af3138cc91fa14f3/CVE/data/2000/CVE-2000-0897.json",
-    "https://github.com/github/advisory-database/blob/64db5db4a6681c330f93cc62718610a5bc70bd7a/advisories/unreviewed/2022/04/GHSA-gf7m-qm5r-6g63/GHSA-gf7m-qm5r-6g63.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/8e78308f58d71d108c659e6e5fc1013cd249713d/content/CVE-2000-0897.md",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150400_150500.json",
-    "https://github.com/olbat/nvdcve/blob/ebc4d73723464668b97400aaa2d8410c6ff78a81/nvdcve/CVE-2000-0897.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--238d141f-b770-474d-bdab-c6356dbedf93.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0897.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0897.json",
+    "https://github.com/opencve/opencve-kb/blob/0e284be0197bae1df3d577d9f9f2155925bb6629/2000/CVE-2000-0897.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/8a3e2d14c2e04b1bff1df5344192e8356dcd6b1d/CVE-2000/CVE-2000-08xx/CVE-2000-0897.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1b97942de7f8736fb9dac77c314951b8b2cd2867/2000/0xxx/CVE-2000-0897.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0897.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0897.json",
 ]
