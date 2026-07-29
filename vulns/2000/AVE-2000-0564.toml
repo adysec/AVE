@@ -1,11 +1,11 @@
 [basic]
-description = "IRIX 5.2 至 6.1 版本中的 TelnetD 服务存在格式字符串漏洞，远程攻击者无需身份认证即可通过向目标系统的 telnet 服务发送特制的 IAC-SB-TELOPT_ENVIRON 请求，在 RLD 变量中注入超长格式字符串，触发格式化函数对用户可控数据的不当解析，最终实现任意命令执行。该漏洞 CVSS 评分 10.0，可导致攻击者完全控制受影响系统，危害极为严重。"
+description = "SGI IRIX 操作系统的 Telnet 守护进程 (telnetd) 存在格式字符串漏洞，影响 IRIX 5.2 至 6.1 版本。漏洞原理是 telnetd 在处理 IAC-SB-TELOPT_ENVIRON 请求时，未对用户注入的 RLD 环境变量进行格式字符串清理，导致攻击者可构造恶意格式字符串实现任意代码执行。攻击条件为远程未授权，攻击者仅需向目标发送包含超长 RLD 变量的特制 Telnet 协议数据包即可触发。CVSS 评分 10.0 (AV:N/AC:L/Au:N/C:C/I:C/A:C)，危害等级为严重，可导致系统完全沦陷。ExploitDB 已公开利用代码 (EDB-ID: 20149)。"
 published = "2000-10-20T04:00:00.000"
-remediation = "立即安装 SGI 官方安全补丁 20000801-02-P（可从 ftp://sgigate.sgi.com/security/20000801-02-P 获取），该补丁修复了 telnetd 对用户注入格式字符串处理不当的问题。如无法立即打补丁，可在 inetd 配置中禁用 telnet 服务（注释掉 telnet 行后重启 inetd），并在网络边界防火墙封禁 TCP 23 端口作为临时缓解措施。"
+remediation = "立即升级到最新的IRIX 6.x补丁包（建议>=6.5），关闭不必要的telnet服务，或通过修改telnet服务器源代码修复格式字符串处理漏洞，避免在IAC-SB-TELOPT_ENVIRON请求中使用用户控制的RLD变量。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "SGI IRIX TelnetD 环境变量格式字符串远程代码执行漏洞"
+sources = ["avd"]
+title = "Silicon Graphics IRIX TelnetD 格式字符串漏洞"
 updated = "2026-06-16T21:52:22.137"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0733"]
 ave_id = "AVE-2000-0564"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-08/0154.html",
     "http://www.securityfocus.com/bid/1572",
     "https://www.exploit-db.com/exploits/20149",
-    "https://github.com/CVEProject/cvelistV5/blob/0db929612f090dc6aa0346061c42364c4634c480/cves/2000/0xxx/CVE-2000-0733.json",
+    "https://github.com/CVEProject/cvelistV5/blob/3ea93936438a97f1459a1dd6e83719dbfc798be2/cves/2000/0xxx/CVE-2000-0733.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0733",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/5ea14f17ec38fb7850c23056beec64877fabc5b1/2000/0xxx/CVE-2000-0733.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bb772dcb04525a1a88049530e1b1081f8633cb88/CVE/data/2000/CVE-2000-0733.json",
-    "https://github.com/github/advisory-database/blob/d91e95989ea5d3a9186ceb621d53a71dff03cab4/advisories/unreviewed/2022/05/GHSA-79jr-hhg4-h2jm/GHSA-79jr-hhg4-h2jm.json",
-    "https://github.com/NetBSD/pkgsrc-wip/blob/9c64290b74a702cc2cb0f57d040036009e789093/sara/PLIST",
-    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0733.md",
-    "https://github.com/Vulnetix/cli/blob/636e92e8f8dd1dcb7ee96bf6244ec38d1058968f/website/content/docs/sast-rules/vnx-c-002.md",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152700_152800.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4a364075e0f1d18be5590f7700d143d985f1789f/CVE/data/2000/CVE-2000-0733.json",
+    "https://github.com/opencve/opencve-kb/blob/3846f10533f33b6add488388e63fdc90a48d6484/2000/CVE-2000-0733.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0733.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1b97942de7f8736fb9dac77c314951b8b2cd2867/2000/0xxx/CVE-2000-0733.md",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0733.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0733.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0733.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/5ff0b9e6ad0b51b419967392a23ca6a8c4176810/CVE-2000/CVE-2000-07xx/CVE-2000-0733.json",
 ]
