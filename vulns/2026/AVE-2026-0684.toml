@@ -1,0 +1,38 @@
+[basic]
+description = "Gitea Webhook 授权头通过 API 以明文形式返回的信息泄露漏洞。漏洞原理在于 `services/webhook/general.go` 中的 `ToHook()` 函数在序列化 API 响应前，会解密数据库中加密存储的 `HeaderAuthorizationEncrypted` 字段，将本应仅写入的加密凭证（Bearer Token、Basic Auth 凭据、API Key 等）以明文形式返回给 API 调用者。影响范围覆盖所有调用 `ToHook()` 的 API 端点，包括仓库级、组织级、站点级和用户级的 Webhook 列表与详情接口，影响范围覆盖所有启用 Webhook 加密存储功能的 Gitea 实例。攻击条件要求攻击者拥有仓库管理员或更高权限，能够调用 Webhook 列表或详情 API。利用方式为：管理员 A 创建包含敏感授权头的 Webhook，管理员 B（同仓库的另一管理员）通过调用 `GET /api/v1/repos/{owner}/{repo}/hooks` 接口即可在响应中获取管理员 A 设置的完整明文授权头，从而窃取凭证进而攻击外部关联服务。该漏洞破坏了静态加密保护机制，CVSS 评分为低危（Low），但会导致跨管理员凭证泄露和外部服务凭证收割风险。Gitea 官方建议将授权头设为仅写入模式，API 响应中返回掩码或布尔标识而非明文。"
+published = "2026-01-01"
+remediation = "建议立即升级 Gitea 至 1.22.5 或 1.23.1 及以上版本（含修复提交 19f0169）。升级前可临时通过反向代理层拦截 `/api/v1/*/hooks*` 接口响应中的 `AuthorizationHeader` 字段作为临时缓解措施。升级后需重新生成所有 Webhook 的授权凭据，因旧凭据可能已泄露。"
+score = 3.5
+severity = "LOW"
+sources = ["ghsa"]
+title = "Gitea Gitea Webhook 授权头明文泄露漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-58511",
+    "GHSA-3r5c-2xxx-h872",
+]
+ave_id = "AVE-2026-0684"
+
+[meta]
+collected_at = "2026-07-29T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/8fd2ccd9bd5df072c2b7289fae39225709d0f7f9/go/code.gitea.io/gitea/CVE-2026-58511.yml",
+    "https://github.com/opencve/opencve-kb/blob/3846f10533f33b6add488388e63fdc90a48d6484/2026/CVE-2026-58511.json",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/osv/GO-2026-6040.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/bd1fb44b1ff136a80bfd75f09f04294c4e87b7d7/docs/data/2026/CVE-2026-58511.json",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/reports/GO-2026-6040.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/193c4908c1a975d960186f7a2d117b22b0133ab2/data/history/CVE-2026-58511.json",
+    "https://github.com/github/advisory-database/blob/c9bca557f76d4ed2aba59304839342d9e879ca6a/advisories/github-reviewed/2026/07/GHSA-3r5c-2xxx-h872/GHSA-3r5c-2xxx-h872.json",
+    "https://github.com/bmwiedemann/openSUSE/blob/fb6827a4d9c4de957776d078c699fecc521c130b/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+    "https://github.com/proshiba/vuln-intel-agent/blob/4bdd2f202c4e1d9fc7b7dd0b3496f831b0a908de/reports/daily/2026/07/2026-07-17.md",
+    "https://github.com/midnightconman/go_vulndb/blob/d993e2e5e84dd30ceb1958dc17e25f002fffd6f7/ID/GO-2026-6040.json",
+]
