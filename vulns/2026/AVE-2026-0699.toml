@@ -1,0 +1,41 @@
+[basic]
+description = "Cosmos-Server 0.22.18 中 `/cosmos/api/constellation/public-devices` 接口存在授权绕过漏洞。该接口虽位于需要认证的管理 API 路由下，但仅在收到请求时检查 `Authorization` 头部是否存在，剥离 `Bearer ` 前缀后从未对剩余 token 进行有效性验证，也未将其代入数据库查询。未经身份认证的远程攻击者只需在请求中携带任意非空 `Authorization: Bearer <任意字符串>` 头部即可绕过身份校验，成功获取 Constellation 设备元数据，包括设备名称、用户昵称、内网/VPN IP 地址、节点角色标识、公网主机名及端口号。该漏洞影响已启用 Constellation/VPN 功能并存在可见设备的部署，可导致内网拓扑与资产信息泄露，进而为针对 VPN 或暴露节点的后续攻击提供情报支持。官方已在 0.22.19 版本中修复此问题。"
+published = "2026-07-28T21:17:28.427"
+remediation = "立即升级 cosmos-server 至 0.22.19 版本，该版本已修复 public-devices 接口的任意 bearer token 绕过问题。升级后需验证：发送不含 Authorization 头部的请求应返回 401，发送任意无效 token（如 Bearer not-a-real-token）也应返回 401。若无法立即升级，可在反向代理或防火墙层面限制对 /cosmos/api/constellation/public-devices 路径的访问，仅允许可信 IP 访问，并禁用 Constellation 功能以降低暴露面。"
+score = 5.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Cosmos-Server 任意Bearer令牌绕过认证导致设备元信息泄露漏洞"
+updated = "2026-07-28T21:17:28.427"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-49447",
+    "GHSA-5fqm-cc34-fcf5",
+]
+ave_id = "AVE-2026-0699"
+
+[meta]
+collected_at = "2026-07-29T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/azukaar/Cosmos-Server/commit/59c561d686c8f9843b3e092b50f6346c481d8bbf",
+    "https://github.com/azukaar/Cosmos-Server/releases/tag/v0.22.19",
+    "https://github.com/azukaar/Cosmos-Server/security/advisories/GHSA-5fqm-cc34-fcf5",
+    "https://github.com/CVEProject/cvelistV5/blob/cd696685415f2042291d9e0384b081621f3c1f4b/cves/2026/49xxx/CVE-2026-49447.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/ef75ce172dfcb1356ff39d845afc3279616b6768/CVE/data/2026/CVE-2026-49447.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/6d9e48809bb56eb829c7d184fbf6c6fd45cd04df/pocs/2026/CVE-2026-49447.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/c874c570db2fe89bdd760e343e06f2482ade4fe8/CVE-2026/CVE-2026-494xx/CVE-2026-49447.json",
+    "https://github.com/Tabll/gemnasium-db/blob/ede50d3653e824fabe4210e54459047bef709b31/go/github.com/azukaar/cosmos-server/CVE-2026-49447.yml",
+    "https://github.com/TMA84/cvealert/blob/b0c572399b766411df2a8457ca2064a58437e11a/content/posts/cve-2026-49447.md",
+    "https://github.com/opencve/opencve-kb/blob/818ba71a374b29e8bdd9f5ae8e52b4d2ea3ed89b/2026/CVE-2026-49447.json",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/a61093fe8784b8ca7275942dc1f03ea5da66b812/api/2026/CVE-2026-49447.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/1811750a5b6a37290aff484954f5ab77b0ca64a7/content/CVE-2026-49447.md",
+    "https://github.com/RogoLabs/consensus-engine/blob/3ac190453e0bcb92b4648f93645a278eabf8061d/docs/data/2026/CVE-2026-49447.json",
+]
