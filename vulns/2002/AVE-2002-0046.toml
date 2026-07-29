@@ -1,11 +1,11 @@
 [basic]
-description = 'Sendmail 8.12.6、8.11.6-15 及 1998 年 5 月 19 日之后的部分 8.11 版本中，Sendmail Consortium 的受限 Shell（SMRSH）存在访问验证漏洞。攻击者可通过在命令中插入 "||" 双管道序列或 "/" 字符绕过 smrsh 的指令限制，执行未授权的额外命令。该漏洞需要本地访问权限，利用难度较低，成功利用后可导致机密性、完整性和可用性部分受损，CVSS 评分 4.6，危害等级中危。'
+description = 'Sendmail 受限 Shell（SMRSH）存在访问控制绕过漏洞，由于对输入中 "||" 序列和 "/" 字符的过滤机制不完善，攻击者可在符合 smrsh 限制的命令后插入额外命令或路径，绕过其沙箱约束执行未授权程序。该漏洞影响 Sendmail 8.12.6、8.11.6-15 及 1998 年 5 月 19 日之后的多个版本，CVSS 评分 4.6，危害等级低。具备本地访问权限或已通过 Sendmail 服务获得受限 shell 会话的攻击者可利用此漏洞进一步提升权限或执行任意代码。'
 published = "2002-10-11T04:00:00.000"
-remediation = "升级 Sendmail 至 8.12.7 或更高版本，该漏洞已在后续版本中修复。如无法立即升级，可禁用 smrsh（Sendmail Restricted Shell）功能，改用其他邮件过滤机制（如 milter）替代；或在 smrsh 配置中移除对危险命令（如 sh、perl 等）的授权，限制可执行命令列表。对于 Debian/Red Hat 等发行版，安装对应安全更新（如 Debian DSA-183、Red Hat RHSA-2002:217）。"
+remediation = '立即升级 Sendmail 至 8.12.7 或更高版本（NetBSD 用户升级至 sendmail-8.12.6nb1 或之后版本），该版本已修复 SMRSH 对 "||" 和 "/" 字符的过滤缺陷。升级后重启 sendmail 服务，并检查 /etc/mail/sendmail.cf 中 smrsh 配置是否仍指向受限 shell 路径。若无法立即升级，可临时在 sendmail.cf 中移除 smrsh 的 Path 限制或禁用 SMRSH 功能作为缓解措施。'
 score = 4.6
 severity = "MEDIUM"
-sources = ["osv"]
-title = "Sendmail SMRSH 双管道符绕过访问验证漏洞"
+sources = ["redhat"]
+title = "Sendmail Sendmail SMRSH 双管道命令注入访问验证绕过漏洞"
 updated = "2026-06-16T21:58:51.747"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-1165"]
 ave_id = "AVE-2002-0046"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
@@ -31,14 +31,14 @@ urls = [
     "http://www.securityfocus.com/bid/5845",
     "http://www.sendmail.org/smrsh.adv.txt",
     "https://www.exploit-db.com/exploits/21884",
-    "https://github.com/CVEProject/cvelistV5/blob/377bb49f7479dd297ab5004f75a37c291a136578/cves/2002/1xxx/CVE-2002-1165.json",
+    "https://github.com/CVEProject/cvelistV5/blob/002f445c117788eccca176fc25679a0054ff81a3/cves/2002/1xxx/CVE-2002-1165.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-1165",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2002-1165.md",
     "https://github.com/nottrobin/ubuntu-cve-tracker/blob/36e411296b5707284049ec2e0db8d2622feca498/retired/CVE-2002-1165",
-    "https://github.com/github/advisory-database/blob/db909d46c3d9b98ec1f95daa3c88d7a8990ea8f5/advisories/unreviewed/2022/05/GHSA-48jx-mwjr-89wq/GHSA-48jx-mwjr-89wq.json",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/mandrake_MDKSA-2002-083.nasl",
-    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2002-1165.json",
-    "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/pre2008/SHN_Sendmail_DoublePipe.nasl",
-    "https://github.com/chihsuan/search-engine/blob/9dcdd3e644469883f53565740f0ba8ff617c5120/Data/E99D88C1-C798-40D7-BB8C-47E6405B9469.txt",
-    "https://github.com/neuvector/vul-source/blob/9ba62febaf6254d72eb4667cd7923d92d2c3f9b6/ubuntu-cve-tracker/retired/CVE-2002-1165",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/de1ee663b3df0d1f1b578bbafc4a2ebfacf8048e/CVE/data/2002/CVE-2002-1165.json",
+    "https://github.com/kees/ubuntu-cve-tracker/blob/66a43c37da527bc16621fb5548dca8aa1f46e537/retired/CVE-2002-1165",
+    "https://github.com/neuvector/vul-source/blob/e03c5655bebd4c9a948dcb1b37e1e76b72295ca6/ubuntu-cve-tracker/retired/CVE-2002-1165",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-1165.json",
+    "https://github.com/opencve/opencve-kb/blob/088136a21535c2c60b2e5117705f170797a4d0f4/2002/CVE-2002-1165.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/045d91bab22c89704c15e2e4c2a2733e1e9a5329/2002/1xxx/CVE-2002-1165.md",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2002-1165.json",
 ]
