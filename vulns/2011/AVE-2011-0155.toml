@@ -1,0 +1,93 @@
+[basic]
+description = """
+tags.
+
+Let me write a proper Chinese description that covers:
+1. Vulnerability principle (memory corruption/buffer overflow, CWE-119)
+2. Impact scope (iOS < 5.1, iTunes < 10.6, WebKit)
+3. Attack conditions (remote, no authentication, crafted website)
+4. Impact (RCE, DoS)
+
+I need to make sure it's ≥50 characters in Chinese, fluent, and doesn't invent URLs.
+
+The candidate description provided seems good. Let me verify it meets all requirements:
+
+"Apple iOS 系统及 iTunes 中所使用的 WebKit 组件存在基于堆的缓冲区溢出漏洞（CWE-119）。远程攻击者可通过诱导用户访问特制恶意网页的方式触发该漏洞，成功利用后可导致应用程序崩溃造成拒绝服务，或在某些条件下实现远程代码执行。该漏洞影响运行 iOS 5.1 以下版本的 iPhone、iPad 和 iPod touch 设备，以及 iTunes 10.6 以下版本的桌面客户端，攻击者无需身份认证即可通过网络远程发起攻击。Apple 已在 iOS 5.1 和 iTunes 10.6 安全更新中修复此问题。"
+
+Let me count characters (Chinese characters): 
+Apple iOS 系统及 iTunes 中所使用的 WebKit 组件存在基于堆的缓冲区溢出漏洞（CWE-119）。远程攻击者可通过诱导用户访问特制恶意网页的方式触发该漏洞，成功利用后可导致应用程序崩溃造成拒绝服务，或在某些条件下实现远程代码执行。该漏洞影响运行 iOS 5.1 以下版本的 iPhone、iPad 和 iPod touch 设备，以及 iTunes 10.6 以下版本的桌面客户端，攻击者无需身份认证即可通过网络远程发起攻击。Apple 已在 iOS 5.1 和 iTunes 10.6 安全更新中修复此问题。
+
+This looks well over 50 Chinese characters. It covers:
+- 原理: 基于堆的缓冲区溢出漏洞（CWE-119）
+- 影响范围: iOS 5.1以下, iTunes 10.6以下
+- 攻击条件: 远程攻击者, 诱导用户访问恶意网页, 无需认证
+- 利用方式/影响: 应用崩溃/拒绝服务, 远程代码执行
+
+However, I should note that the user's candidate mentions "Apple 已在 iOS 5.1 和 iTunes 10.6 安全更新中修复此问题" which is accurate based on NVD data ("iOS before 5.1" and "iTunes before 10.6").
+
+But wait - looking at the TOML, the [basic] section has sources = ["tenable"] but tenable data seems to be about Safari < 5.1.4. The NVD says iOS before 5.1 and iTunes before 10.6. The tholian-network data confirms iPhone OS < 5.1 and iTunes < 10.6.
+
+Actually, looking more carefully at the NVD description, it says "WebKit, as used in Apple iOS before 5.1 and iTunes before 10.6". It doesn't mention Safari directly in the NVD description for this CVE. The tenable data seems to be generic Safari data that got mapped incorrectly. The actual products affected per NVD are iOS and iTunes.
+
+The description provided by the user seems accurate based on NVD. Let me refine it slightly to make sure it's strictly based on the provided data and doesn't invent anything.
+
+Wait, I need to be careful. The user's candidate description mentions "Apple 已在 iOS 5.1 和 iTunes 10.6 安全更新中修复此问题" - this is a reasonable inference from "iOS before 5.1 and iTunes before 10.6" but the description field typically focuses on the vulnerability itself, not the fix. The remediation field handles the fix. But including it isn't wrong per se.
+
+Actually, looking at the reference example: "Windows TCP/IP 协议栈存在整数溢出漏洞...该漏洞影响 Windows 10/11 及 Windows Server 2019/2022 等版本，CVSS 评分 9.8，危害等级严重。" - it doesn't include the fix.
+
+But the requirement says: "涵盖：漏洞原理（如缓冲区溢出、SQL注入等）、影响范围（受影响的版本/产品）、攻击条件（远程/本地、是否需要认证）" - so I should focus on those three aspects.
+
+Let me provide a clean description:
+
+WebKit 组件在 Apple iOS 5.1 以下版本及 iTunes 10.6 以下版本中存在基于堆的缓冲区溢出漏洞（CWE-119）。远程攻击者无需身份认证，可通过向用户推送特制恶意网页的方式触发内存破坏，成功利用后可导致应用程序崩溃引发拒绝服务，或在特定条件下实现远程代码执行。该漏洞影响 iPhone、iPad、iPod touch 等搭载 iOS 的设备以及桌面端 iTunes 客户端，攻击者可完全控制受影响系统并执行任意代码。
+
+Let me count Chinese characters roughly:
+WebKit 组件在 Apple iOS 5.1 以下版本及 iTunes 10.6 以下版本中存在基于堆的缓冲区溢出漏洞（CWE-119）。远程攻击者无需身份认证，可通过向用户推送特制恶意网页的方式触发内存破坏，成功利用后可导致应用程序崩溃引发拒绝服务，或在特定条件下实现远程代码执行。该漏洞影响 iPhone、iPad、iPod touch 等搭载 iOS 的设备以及桌面端 iTunes 客户端，攻击者可完全控制受影响系统并执行任意代码。
+
+This is definitely over 50 characters. Let me make sure it matches the provided data exactly. The NVD says "via a crafted web site" which I translated to "通过向用户推送特制恶意网页的方式" - that's accurate. "memory corruption and application crash" -> "内存破坏...应用程序崩溃". "execute arbitrary code or cause a denial of service" -> "远程代码执行...拒绝服务".
+
+Actually, I realize I should just output the value. The user asked to "只输出 <value>..."""
+published = "2012-03-08T22:55:01.590"
+remediation = "升级 Safari 至 5.1.4 或更高版本，iOS 升级至 5.1 或更高版本，iTunes 升级至 10.6 或更高版本。临时缓解措施包括：仅访问可信网站，避免点击可疑链接，并在浏览器中禁用 JavaScript 执行。"
+score = 9.3
+severity = "CRITICAL"
+sources = ["tenable"]
+title = "Apple iOS/iTunes WebKit 内存破坏远程代码执行漏洞"
+updated = "2026-06-16T23:32:09.060"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2011-2869"]
+ave_id = "AVE-2011-0155"
+
+[meta]
+collected_at = "2026-07-29T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://lists.apple.com/archives/security-announce/2012/Mar/msg00000.html",
+    "http://lists.apple.com/archives/security-announce/2012/Mar/msg00001.html",
+    "http://lists.apple.com/archives/security-announce/2012/Mar/msg00003.html",
+    "http://osvdb.org/79908",
+    "http://secunia.com/advisories/48274",
+    "http://secunia.com/advisories/48288",
+    "http://secunia.com/advisories/48377",
+    "http://www.securityfocus.com/bid/52365",
+    "http://www.securitytracker.com/id?1026774",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/73798",
+    "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A16795",
+    "https://github.com/CVEProject/cvelistV5/blob/7385b01d60e95b8b46a82603445449e7e74907b4/cves/2011/2xxx/CVE-2011-2869.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2011/CVE-2011-2869",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8ea97a2f0801990574114178f603d7ac60f28c37/CVE/data/2011/CVE-2011-2869.json",
+    "https://github.com/opencve/opencve-kb/blob/07dff134ab5f63e393d2cc934786ec411e186123/2011/CVE-2011-2869.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2011/CVE-2011-2869.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2011-2869.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2011/2xxx/CVE-2011-2869.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/bc2cc78ad3579ffac9021cace6d52d6b922abd18/CVE-2011/CVE-2011-28xx/CVE-2011-2869.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2011/2xxx/CVE-2011-2869.json",
+    "https://github.com/tholian-network/vulnerabilities/blob/cd8798a37e6d58633681c9596bee14e4189ad0e9/database/vulnerability/CVE-2011-2869.json",
+]
