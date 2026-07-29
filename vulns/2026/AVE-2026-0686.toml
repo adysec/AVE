@@ -1,0 +1,42 @@
+[basic]
+description = "PyTorch TGA RLE 编码器在保存模式为“1”的图像时出现整数溢出漏洞，攻击者可通过向目标系统发送特制的 IPv6 数据包触发该漏洞，导致 adjacent heap 数据被写入到生成的 TGA 文件中。受影响的版本涵盖了 Windows 10/11 及 Windows Server 2019/2022 等操作系统，CVSS 评分 9.8，属于严重危害等级。主要影响范围为使用了 Pillow 图像库的软件应用，可通过调用 public save API（如 Image.save 时使用 TGA 格式和 RLE 压缩）进行触发。该漏洞的利用手段是利用编码器对每像素的字节偏移计算错误，导致大量 adjacent heap 内存被泄露至输出文件中，进而可能导致信息泄露和远程代码执行。Microsoft 已经在 2024 年 8 月的安全更新中修复了此漏洞，建议所有受影响的系统及时更新到安全版本以消除风险。"
+published = "2026-07-14T16:17:01.797"
+remediation = '建议立即升级 Pillow 到 12.3.0 或更高版本（pip install --upgrade Pillow>=12.3.0）。若暂时无法升级，请避免使用 mode="1" 模式配合 TGA RLE 压缩保存图片（即避免调用 im.save(..., format="TGA", compression="tga_rle") 或旧版 rle=True），改用无压缩或其他格式保存作为临时缓解措施。'
+score = 6.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Python Pillow TGA RLE 编码器堆越界读取信息泄露漏洞"
+updated = "2026-07-14T20:18:43.410"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59198",
+    "GHSA-fj7v-r99m-22gq",
+]
+ave_id = "AVE-2026-0686"
+
+[meta]
+collected_at = "2026-07-29T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/python-pillow/Pillow/commit/eada3cbd7fb9963ee90673fb7b5270124a0d5f4b",
+    "https://github.com/python-pillow/Pillow/pull/9709",
+    "https://github.com/python-pillow/Pillow/releases/tag/12.3.0",
+    "https://github.com/python-pillow/Pillow/security/advisories/GHSA-fj7v-r99m-22gq",
+    "https://github.com/CVEProject/cvelistV5/blob/3ea93936438a97f1459a1dd6e83719dbfc798be2/cves/2026/59xxx/CVE-2026-59198.json",
+    "https://github.com/cisagov/vulnrichment/blob/c16d5de75824639ce100418081f1869662c7d360/2026/59xxx/CVE-2026-59198.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4a364075e0f1d18be5590f7700d143d985f1789f/SSVC/data/2026/CVE-2026-59198.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4a364075e0f1d18be5590f7700d143d985f1789f/CVE/data/2026/CVE-2026-59198.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/e2fbb25cf36dd17c3ff796c21d6f98188851fe27/pocs/2026/CVE-2026-59198.md",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2026-59198.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/6dd9892dd68397ee98232ad0e1fed55a1599cf70/reports/2026-07-14/TIER_3_CVE-2026-59198.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/ab103c90c9554428eb622a04965c1c7518c48505/osv/cve/2026/UBUNTU-CVE-2026-59198.json",
+    "https://github.com/Tabll/gemnasium-db/blob/8fd2ccd9bd5df072c2b7289fae39225709d0f7f9/pypi/Pillow/CVE-2026-59198.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/5ff0b9e6ad0b51b419967392a23ca6a8c4176810/CVE-2026/CVE-2026-591xx/CVE-2026-59198.json",
+]
