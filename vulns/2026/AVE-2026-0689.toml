@@ -1,0 +1,42 @@
+[basic]
+description = "Pillow 的 EPS 文件解析器（PIL/EpsImagePlugin.py）在处理 %%BeginBinary 指令时，直接将解析出的字节计数值用于文件指针相对偏移操作，未对负值进行校验。攻击者可在构造的 EPS 文件中插入负的字节计数（如 %%BeginBinary:-18），导致文件指针向后回退并反复重新解析同一指令，触发无限循环。Image.open() 因此陷入死循环并持续消耗 CPU 资源，造成拒绝服务。该漏洞影响 Pillow 12.0.0 至 12.2.0 版本，攻击者仅需向使用 Pillow 进行图像解析、验证或缩略图生成的应用程序提供恶意 EPS 文件即可触发，无需调用 Image.load() 也无需启用 Ghostscript，影响范围涵盖图像上传服务、后台图像处理任务及 Web 服务等场景。Pillow 12.3.0 已通过增加字节计数非负校验修复此问题。"
+published = "2026-07-14T16:17:02.063"
+remediation = '将 Pillow 升级至 12.3.0 或更高版本：执行 pip install --upgrade "Pillow>=12.3.0" 并验证 Image.open() 对异常 %%BeginBinary 字节计数能正常抛出异常而非挂起。如暂无法升级，可在图像处理流程中为 Image.open() 调用添加进程级超时限制或 CPU 时间配额，避免单个恶意 EPS 文件耗尽 CPU；同时限制可上传 EPS 文件的来源，对用户提供的 EPS 文件增加文件类型校验，降低攻击面。'
+score = 5.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Python Pillow EPSImagePlugin 无限循环拒绝服务漏洞"
+updated = "2026-07-15T14:18:32.727"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59203",
+    "GHSA-pg7v-jwj7-p798",
+]
+ave_id = "AVE-2026-0689"
+
+[meta]
+collected_at = "2026-07-29T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/python-pillow/Pillow/commit/03992618118b4a76b6163cd72ab5ecd684133b83",
+    "https://github.com/python-pillow/Pillow/pull/9708",
+    "https://github.com/python-pillow/Pillow/releases/tag/12.3.0",
+    "https://github.com/python-pillow/Pillow/security/advisories/GHSA-pg7v-jwj7-p798",
+    "https://github.com/trickest/cve/blob/b3a270a001a31742516eaea5c494f365de9d3c80/2026/CVE-2026-59203.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b3c35d89abde60a88f7cb8e626161de34dd6ab36/cves/2026/59xxx/CVE-2026-59203.json",
+    "https://github.com/cisagov/vulnrichment/blob/c16d5de75824639ce100418081f1869662c7d360/2026/59xxx/CVE-2026-59203.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bcbdb8ae7a9ef1c1e1ea2320e0a3f339a967446e/SSVC/data/2026/CVE-2026-59203.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bcbdb8ae7a9ef1c1e1ea2320e0a3f339a967446e/CVE/data/2026/CVE-2026-59203.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/e2fbb25cf36dd17c3ff796c21d6f98188851fe27/pocs/2026/CVE-2026-59203.md",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2026-59203.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/ab103c90c9554428eb622a04965c1c7518c48505/osv/cve/2026/UBUNTU-CVE-2026-59203.json",
+    "https://github.com/Tabll/gemnasium-db/blob/8fd2ccd9bd5df072c2b7289fae39225709d0f7f9/pypi/Pillow/CVE-2026-59203.yml",
+    "https://github.com/canonical/ubuntu-security-notices/blob/ab103c90c9554428eb622a04965c1c7518c48505/vex/cve/2026/CVE-2026-59203.json",
+]
