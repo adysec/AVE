@@ -1,11 +1,11 @@
 [basic]
-description = "Apache Struts2 的 Struts1 插件存在远程命令执行漏洞（S2-048），当 ActionMessage 类接收用户传入的原始消息时，未对恶意字段值进行安全过滤，导致攻击者可通过构造特制的恶意请求触发 OGNL 表达式注入，从而在服务器端执行任意系统命令。该漏洞影响 Apache Struts 2.1.x 及 2.3.x 系列版本，攻击者无需身份认证即可远程利用，危害严重。官方已发布修复版本，建议升级至 2.3.32 或 2.5.10.1 及以上版本。"
+description = "Apache Struts 2.1.x 和 2.3.x 的 Struts 1 插件存在远程代码执行漏洞（S2-048），由于对传递给 ActionMessage 的原始消息中的恶意字段值处理不当，导致 OGNL 表达式注入。未经身份认证的远程攻击者可通过发送包含恶意 OGNL 表达式的特制字段值，在无需用户交互的情况下远程执行任意代码，完全控制目标服务器。该漏洞影响使用 Struts 1 插件的 Apache Struts 2.1.x 和 2.3.x 版本，CVSS 3.1 评分 9.8（严重），攻击向量为网络、攻击复杂度低、无需权限和用户交互，机密性、完整性、可用性影响均为高。攻击者可通过发送精心构造的 HTTP 请求触发 OGNL 表达式注入，执行任意系统命令。Apache Struts 官方已发布安全公告修复该漏洞，建议升级至 2.3.32 或 2.5.10.1 及以上版本。"
 published = "2017-07-10T16:29:00.277"
-remediation = "升级 Apache Struts 至 2.3.32 及以上版本，禁用 Struts 1 插件（struts-plugin-1.x.jar），或从 WEB-INF/lib 目录移除 struts-plugin-1.jar 文件。如无法升级，在 ActionMessage 中避免使用用户输入作为原始消息参数。"
+remediation = "立即升级 Apache Struts 到 2.3.34 或更高版本（或 2.5.x 系列），移除已废弃的 Struts 1 插件；如无法立即更新，可临时禁用非必要的 Struts 处理类并配置白名单 URL 模式以阻止恶意字段；同时监控关键服务日志以发现异常行为。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
-title = "Apache Struts2 远程命令执行漏洞"
+sources = ["nuclei"]
+title = "Apache Struts 2 Struts 1 插件 远程代码执行漏洞"
 updated = "2026-06-17T01:28:55.190"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2017-9791"]
 ave_id = "AVE-2017-1300"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
@@ -32,16 +32,16 @@ urls = [
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2017-9791",
     "https://www.exploit-db.com/exploits/42324",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2017/CVE-2017-9791.yaml",
-    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2017/CVE-2017-9791.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/7fe82fb470b3291b506f74c6717a29e3837f8a29/2017/CVE-2017-9791.json",
+    "https://github.com/trickest/cve/blob/b3a270a001a31742516eaea5c494f365de9d3c80/2017/CVE-2017-9791.md",
     "https://github.com/qazbnm456/awesome-cve-poc/blob/fc862e38e03ea68cdc62618d14891a426daff1a4/CVE-2017-9791.md",
+    "https://github.com/fofapro/vulfocus/blob/4b7a2eaacce4ed770f289e6e72f7240da1e16c74/writeup/CVE-2017-9791/CVE-2017-9791.md",
+    "https://github.com/0xMarcio/cve/blob/467e8414b7cae9064886839b1c4a1f4c155804ed/2017/CVE-2017-9791.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/b859fc75b332184195f1952ddeea761c6913ce9b/2017/CVE-2017-9791.json",
     "https://github.com/SecWiki/CMS-Hunter/blob/5ad0da9524b385045e7a4a627d2bb52906badfc5/Struts/S2-048(CVE-2017-9791)/README.md",
-    "https://github.com/Ares-X/VulWiki/blob/40e0273754a36f49a6be6a77a7a4c210a07063ed/Web%E5%AE%89%E5%85%A8/Apache%20Struts/%EF%BC%88CVE-2017-9791%EF%BC%89s2-048.md",
-    "https://github.com/nixawk/labs/blob/ce800ddc00a8bbf716afe754a1e81e58570b8c50/CVE-2017-9791/exploit_S2-048.py",
-    "https://github.com/zan8in/afrog-pocs/blob/253291be2d307a6c836d5997bbb838f1e846f9ba/CVE/2017/CVE-2017-9791.yaml",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2017/CVE-2017-9791",
-    "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2017/CVE-2017-9791.rules",
-    "https://github.com/govbk/WIKI-POC-EXP/blob/7d1194429dab9f9dd8139408e79b70ddb41a468f/%E9%9B%B6%E7%BB%84%E6%BC%8F%E6%B4%9E%E7%9B%B8%E5%85%B3/160-Apache%20Struts/023-%EF%BC%88CVE-2017-9791%EF%BC%89s2-048.md",
+    "https://github.com/cisagov/vulnrichment/blob/c16d5de75824639ce100418081f1869662c7d360/2017/9xxx/CVE-2017-9791.json",
+    "https://github.com/Ares-X/VulWiki/blob/40e0273754a36f49a6be6a77a7a4c210a07063ed/Web安全/Apache Struts/（CVE-2017-9791）s2-048.md",
+    "https://github.com/BaizeSec/bylibrary/blob/dee1fbaa831df860c6905f80de8700211ba63098/docs/漏洞库/06-中间件框架漏洞/Struts2/S2-048(CVE-2017-9791)/README.md",
+    "https://github.com/nosafer/nosafer.github.io/blob/1b07659147a7781a61e0b950684ad8d7739fadbd/docs/Web安全/Apache Struts/（CVE-2017-9791）s2-048.md",
     "https://github.com/dragoneeg/Struts2-048",
     "https://github.com/gh0st27/Struts2Scanner",
     "https://github.com/IanSmith123/s2-048",
