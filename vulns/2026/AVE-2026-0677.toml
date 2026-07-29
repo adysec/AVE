@@ -1,0 +1,38 @@
+[basic]
+description = 'Gitea 的 `restore-repo` CLI 命令在从转储目录/归档文件恢复仓库时，会解析其中的 `pull_request.yml` 文件。该命令在调用安全检查函数 `CheckAndEnsureSafePR` 时传入了空的 `commonCloneBaseURL`，导致 `strings.HasPrefix(anything, "")` 始终返回 true，从而使 `Head.CloneURL` 字段绕过验证 survives unchanged。随后 `gitea_uploader.go` 直接使用未经验证的 `Head.CloneURL` 执行 `git remote add` 并发起 `git fetch`，使 Gitea 服务器向攻击者控制的 URL 发起请求，造成 SSRF（服务器端请求伪造）。攻击者只需让管理员对一个包含恶意 `pull_request.yml` 的 dump 目录执行 `gitea restore-repo` 命令即可触发漏洞。该漏洞影响 Gitea v1.26.4 及之前所有版本（包括 release/v1.27 和 main 分支），CVSS 评分 9.8，属于严重级别。此外，攻击者还可利用 `file://` 协议读取 Gitea 进程可访问的本地 Git 仓库内容。此变种与近期修复的路径遍历漏洞（#38215）属于不同的根因——后者修补了 `DownloadURL`/`PatchURL`，但未处理 `Head.CloneURL`。'
+published = "2026-01-01"
+remediation = "建议立即升级至 Gitea v1.26.5 或 v1.27.1 及以上版本（官方已修复该 SSRF 漏洞）。若暂无法升级，请严禁对不可信的仓库转储文件执行 `gitea restore-repo` 命令；若必须恢复，请先人工检查转储目录下的 `pull_request.yml` 中 `Head.CloneURL` 字段，确保其不包含内网地址、`file://` 协议或非预期外部 URL。此外，建议在网络层面限制 Gitea 服务器仅能访问必要的外部 Git 远程地址，并在防火墙层面阻断对云元数据端点（如 169.254.169.254）及内网敏感端口的出站访问作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Gitea 修复仓库服务端请求伪造漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-58441",
+    "GHSA-xmj7-xj85-hfc3",
+]
+ave_id = "AVE-2026-0677"
+
+[meta]
+collected_at = "2026-07-28T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/8fd2ccd9bd5df072c2b7289fae39225709d0f7f9/go/code.gitea.io/gitea/CVE-2026-58441.yml",
+    "https://github.com/opencve/opencve-kb/blob/8c237620969900f492f382de74e814c5d89dd194/2026/CVE-2026-58441.json",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/osv/GO-2026-6084.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/bd1fb44b1ff136a80bfd75f09f04294c4e87b7d7/docs/data/2026/CVE-2026-58441.json",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/reports/GO-2026-6084.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/5bc89f39d76eb502e7ceb1a873a9038e3eb5c995/data/history/CVE-2026-58441.json",
+    "https://github.com/github/advisory-database/blob/b125082d844e92778570e5216e5439118b263774/advisories/github-reviewed/2026/07/GHSA-xmj7-xj85-hfc3/GHSA-xmj7-xj85-hfc3.json",
+    "https://github.com/Hex0rc1st/CVE_POC_monitor/blob/7526d53fc98978e80846e6db529fe01fe7f843ca/utils/advisory_ids.txt",
+    "https://github.com/proshiba/vuln-intel-agent/blob/4bdd2f202c4e1d9fc7b7dd0b3496f831b0a908de/reports/daily/2026/07/2026-07-17.md",
+    "https://github.com/bitfront-se/vuln-list-temp/blob/a945aad795721e2d101a947788c0c1994177c6ae/osv/go/gitea.dev/GO-2026-6084.json",
+]
