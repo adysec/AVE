@@ -1,0 +1,41 @@
+[basic]
+description = "Poweradmin 是一款基于 Web 的 PowerDNS 管理工具。其 OIDC、SAML 及注销认证流程在构建回调 URL 时，直接使用攻击者可控的 HTTP_HOST 请求头作为主机名来源，且未进行任何验证或过滤。攻击者无需认证即可通过伪造 Host 头或利用反向代理配置不当（如 nginx 默认的 proxy_set_header Host $http_host），将 redirect_uri 劫持为攻击者控制的域名，使身份提供商在用户授权后将授权码发送至攻击者服务器，从而实现无需凭证的完整账户接管。该漏洞影响 Poweradmin 4.3.2 及之前版本（4.2.x 系列），同时波及 SAML ACS/SLO URL 和注销重定向构造三个独立代码路径。攻击成功后，攻击者可进一步接管 PowerDNS 管理权限，导致域名劫持、邮件拦截、SSL 证书伪造等严重连锁危害。厂商已在 v4.2.4 和 v4.3.3 版本中修复此问题，建议用户立即升级并配置 interface.base_url 以激活安全分支。"
+published = "2026-06-23T23:16:49.863"
+remediation = "立即升级到 Poweradmin v4.2.4 或 v4.3.3，该版本已修复 HTTP_HOST 头在 OIDC/SAML/登出重定向中的未验证使用问题。若无法立即升级，可在 config/settings.php 中设置 interface.base_url 为可信域名（如 https://admin.example.com），使 SamlConfigurationService 走安全分支代码路径，避免使用 HTTP_HOST 构造回调 URL。临时缓解措施：在反向代理层严格校验 Host 头，拒绝非信任域名的请求，nginx 配置中使用 proxy_set_header Host $server_name 替代 $http_host。"
+score = 9.6
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Poweradmin Poweradmin OIDC/SAML回调URL主机头注入漏洞"
+updated = "2026-06-25T20:18:11.603"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54588",
+    "GHSA-3735-5339-xfwx",
+]
+ave_id = "AVE-2026-0708"
+
+[meta]
+collected_at = "2026-07-29T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/poweradmin/poweradmin/releases/tag/v4.2.4",
+    "https://github.com/poweradmin/poweradmin/releases/tag/v4.3.3",
+    "https://github.com/poweradmin/poweradmin/security/advisories/GHSA-3735-5339-xfwx",
+    "https://github.com/CVEProject/cvelistV5/blob/b55a0e6faed5f81ed4c75a7b8a6ed2ea8e5965a3/cves/2026/54xxx/CVE-2026-54588.json",
+    "https://github.com/cisagov/vulnrichment/blob/6e7571de2d083c2588093ee3ef73d1501282312b/2026/54xxx/CVE-2026-54588.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/093c5941fc87f5111705731d4067bd31fc64fcb1/CVE/data/2026/CVE-2026-54588.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/093c5941fc87f5111705731d4067bd31fc64fcb1/SSVC/data/2026/CVE-2026-54588.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/6d9e48809bb56eb829c7d184fbf6c6fd45cd04df/pocs/2026/CVE-2026-54588.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-54588.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2026-54588.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/587bea69d167e460a23a9be6f3ca8e8e579b31db/CVE-2026/CVE-2026-545xx/CVE-2026-54588.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/6dd9892dd68397ee98232ad0e1fed55a1599cf70/reports/2026-06-23/TIER_2_CVE-2026-54588.md",
+    "https://github.com/Tabll/gemnasium-db/blob/ede50d3653e824fabe4210e54459047bef709b31/packagist/poweradmin/poweradmin/CVE-2026-54588.yml",
+]
