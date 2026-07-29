@@ -1,11 +1,11 @@
 [basic]
-description = "CVSD 的 rcs.c 文件中 PreservePermissions 功能存在差一（Off-by-one）溢出漏洞，版本低于 1.11.2 的 CVSD 受影响。本地攻击者可利用该漏洞触发缓冲区溢出，从而执行任意代码。该漏洞源于对权限处理时边界检查不严格，导致写入操作超出预期缓冲区范围，CWE-193 分类，CVSS 评分 7.8，危害等级高。"
+description = "CVSD 1.11.2 之前版本的 CVS PreservePermissions 功能在 rcs.c 中存在越界写入漏洞（CWE-193），本地低权限攻击者可通过构造特制的 CVS 请求触发 rcs.c 中 PreservePermissions 函数的越界写入，导致栈缓冲区溢出，进而在本地提权执行任意代码。该漏洞影响 CVSD 1.11.2 之前所有版本，CVSS 3.1 评分 7.8（HIGH），攻击向量为本地、低攻击复杂度、低权限、无需用户交互，机密性/完整性/可用性影响均为高。攻击者需具备本地系统访问权限并能调用 CVS 相关功能，通过精心构造的参数触发 rcs.c 中 PreservePermissions 函数的 off-by-one 溢出，覆盖关键栈数据实现任意代码执行。CVSD 1.11.2 已修复此漏洞，建议升级至 1.11.2 或更高版本。"
 published = "2002-08-12T04:00:00.000"
-remediation = "升级 CVSD 至 1.11.2 或更高版本以修复 PreservePermissions 越界溢出漏洞。如无法升级，可禁用 PreservePermissions 功能（配置文件中设置 PreservePermissions=no）作为临时缓解措施。"
+remediation = "建议立即升级 CVSD 到 1.11.2 或更高版本，该版本已修复 rcs.c 中 PreservePermissions 的越界写入漏洞。若无法立即升级，可暂时禁用 CVSD 的 PreservePermissions 功能或限制本地用户对 CVS 仓库的写入权限作为临时缓解措施。"
 score = 7.8
 severity = "HIGH"
-sources = ["osv"]
-title = "CVS CVSD 越界溢出代码执行漏洞"
+sources = ["redhat"]
+title = "CVSD CVSD 1.11.2之前版本 CVS PreservePermissions off-by-one溢出代码执行漏洞"
 updated = "2026-06-16T21:58:15.073"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-0844"]
 ave_id = "AVE-2002-0028"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.redhat.com/support/errata/RHSA-2004-004.html",
     "http://www.securityfocus.com/bid/4829",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/9175",
-    "https://github.com/CVEProject/cvelistV5/blob/362345baaa3b0376b2369a7901885756e250334b/cves/2002/0xxx/CVE-2002-0844.json",
+    "https://github.com/CVEProject/cvelistV5/blob/3ea93936438a97f1459a1dd6e83719dbfc798be2/cves/2002/0xxx/CVE-2002-0844.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-0844",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2002-0844.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4591185d8ea1fe47b6e30df3286bd52753a931ce/CVE/data/2002/CVE-2002-0844.json",
-    "https://github.com/github/advisory-database/blob/1684cfa32e43376c48beb06819bce86de6ba421b/advisories/unreviewed/2022/05/GHSA-g4rc-px2p-4hv3/GHSA-g4rc-px2p-4hv3.json",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/redhat-RHSA-2004-004.nasl",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cwe_details/cwe_details_600_700.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/Team-Atlanta/aixcc-asc-atlantis/blob/785c446f980e12155935db586aa30c3b54adcc86/crs/src/crs-patch/smith/smith/lib/cwe/raw/CWE-193.txt",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2002.tsv",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4a364075e0f1d18be5590f7700d143d985f1789f/CVE/data/2002/CVE-2002-0844.json",
+    "https://github.com/opencve/opencve-kb/blob/cf9f26fab3bbc76af663e922f8ccf4da465b1866/2002/CVE-2002-0844.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-0844.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1b97942de7f8736fb9dac77c314951b8b2cd2867/2002/0xxx/CVE-2002-0844.md",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2002-0844.json",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/464c797de515f2d88fce07a24f8ad97207296c93/tracker/CVE/2002/CVE-2002-0844.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/5ff0b9e6ad0b51b419967392a23ca6a8c4176810/CVE-2002/CVE-2002-08xx/CVE-2002-0844.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2002/0xxx/CVE-2002-0844.json",
 ]
