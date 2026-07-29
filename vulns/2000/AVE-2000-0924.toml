@@ -1,11 +1,11 @@
 [basic]
-description = "GNU ed 在 0.2-18.1 之前版本中存在符号链接攻击漏洞。本地攻击者可通过在目标系统上创建恶意的符号链接，诱使 GNU ed 在处理文件时跟随该符号链接，从而覆盖其他用户的文件。该漏洞利用条件为攻击者拥有本地系统访问权限，无需特殊权限即可实施攻击。成功利用后可能导致敏感文件被篡改、数据完整性受损，甚至引发权限提升。该漏洞 CVSS 评分 4.6，危害等级中危，影响使用 GNU ed 的各类 Linux/Unix 系统。"
+description = "该漏洞源于GNU ed编辑器在处理文件时存在设计缺陷。GNU ed工具在写入文件时未妥善验证文件路径，导致攻击者可通过创建精心设计的符号链接诱骗程序覆盖其他用户的重要文件。具体攻击过程为：攻击者首先创建指向目标文件（如/etc/passwd、/etc/shadow等）的符号链接，随后在执行GNU ed操作时，程序会意外地将编辑内容写入到被符号链接指向的文件中，从而破坏文件完整性、窃取敏感数据，甚至获取系统控制权。该漏洞影响所有使用GNU ed的Linux系统用户，具有较高的系统危害性。攻击者无需网络连接，仅需本地权限即可实施攻击，对系统安全构成严重威胁。同时，由于该漏洞破坏系统文件完整性，可能导致系统崩溃或权限提升，进而影响整个系统的可用性和机密性。目前安全维护人员建议及时更新GNU ed至安全版本，并限制普通用户对敏感文件的访问权限。相关安全补丁已在GNU最新版本中修复，使用GNU ed的系统管理员应立即进行版本升级。最终，本次漏洞虽然不属于极高危，但由于其影响面广且可导致严重后果，因此仍需高度重视并采取相应防护措施。"
 published = "2001-01-09T05:00:00.000"
-remediation = '升级 GNU ed 至 0.2-r4 或更高版本，该版本修复了临时文件创建的不安全行为。对于 Gentoo 系统，执行 emerge --sync && emerge -pv ">=sys-apps/ed-0.2-r4" && emerge ">=sys-apps/ed-0.2-r4" 完成更新。如无法升级，避免在受信任目录中以 root 身份使用 ed 编辑文件，并监控 /tmp 目录的符号链接攻击行为。'
+remediation = "建议立即升级 GNU ed 至 0.2-18.1 或更高版本（当前主流发行版已提供 1.22+），Debian 执行 `apt update && apt install --only-upgrade ed`，RHEL/CentOS 执行 `yum update ed`，Fedora 执行 `dnf update ed`。若暂时无法升级，避免在 /tmp 等世界可写目录使用 ed 编辑他人文件，禁止以 root 权限运行 ed 编辑非受信文件，为共享目录配置 sticky bit（`chmod +t /tmp`）防止符号链接攻击。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["redhat"]
-title = "GNU ed 符号链接攻击本地文件覆盖漏洞"
+sources = ["cve"]
+title = "GNU ed 符号链接攻击文件覆盖漏洞"
 updated = "2026-06-16T21:53:13.900"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1137"]
 ave_id = "AVE-2000-0924"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.osvdb.org/6491",
     "http://www.redhat.com/support/errata/RHSA-2000-123.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5723",
-    "https://github.com/CVEProject/cvelistV5/blob/97700d7e657426c8e1ee6cf44a0a2b88c60738c3/cves/2000/1xxx/CVE-2000-1137.json",
+    "https://github.com/CVEProject/cvelistV5/blob/3ea93936438a97f1459a1dd6e83719dbfc798be2/cves/2000/1xxx/CVE-2000-1137.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1137",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-1137.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/800f04b3cfadd1b9ab0343f5b9acd785dbc1e953/CVE/data/2000/CVE-2000-1137.json",
-    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2022/04/GHSA-qpw8-2v6f-pwj8/GHSA-qpw8-2v6f-pwj8.json",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/gentoo_GLSA-200410-07.nasl",
-    "https://github.com/gentoo-mirror/gentoo/blob/2791ee2694415282d98c8beb1ca7658a5e871297/metadata/glsa/glsa-200410-07.xml",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150400_150500.json",
-    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/M/mandrake_MDKSA-2000-076.nasl",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a237fbd576a7286b31323c79c10e5d8ddb9ad316/CVE/data/2000/CVE-2000-1137.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1137.json",
+    "https://github.com/opencve/opencve-kb/blob/f187e7be682488cc782059fd6bb7b453289ef42b/2000/CVE-2000-1137.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1137.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/ef1766e2b390160881db9b8bb9c1bb8bfb197a80/2000/1xxx/CVE-2000-1137.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/5ff0b9e6ad0b51b419967392a23ca6a8c4176810/CVE-2000/CVE-2000-11xx/CVE-2000-1137.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1137.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/6ccaaffc515caa9809eafc85eced3a0696abe41f/content/CVE-2000-1137.md",
 ]
