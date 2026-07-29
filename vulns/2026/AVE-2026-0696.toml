@@ -1,0 +1,42 @@
+[basic]
+description = "Rust 邮件库 lettre 的 `boring-tls` 后端存在布尔值反转的逻辑错误，导致在调用方使用默认严格配置（未显式启用 `accept_invalid_hostnames`）时，TLS 主机名验证被 silently 关闭。由于 `TlsParametersBuilder` 将 `accept_invalid_hostnames` 标志原样传递给 booring 的 `set_verify_hostname`，导致语义反转：严格模式下本应进行主机名校验，实际却被跳过。影响范围为启用 `boring-tls` 特性的所有 lettre 用户（v0.10.1 至 v0.11.21），`native-tls` 与 `rustls` 后端不受影响。攻击条件要求攻击者位于 lettre 客户端与目标 SMTP 服务器之间的网络路径上（on-path attacker）。利用方式：攻击者持有任意通过信任链的 TLS 证书（如自主域名的 Let's Encrypt 证书），在 SMTP STARTTLS 或隐式 TLS 握手时向客户端提交该证书，lettre 会错误通过主机名校验并继续 SMTP 通信，导致 SMTP 认证凭据（PLAIN/LOGIN/CRAM-MD5）、邮件正文及附件被中间人完整窃取或篡改。 CVSS 评分 9.1，危害等级严重，建议升级至 v0.11.22 修复。"
+published = "2026-07-20T16:17:01.347"
+remediation = "立即升级 lettre 库至 v0.11.22 或更高版本，该版本已修复 boring-tls 集成中导致 TLS 主机名验证被禁用的布尔值反转漏洞。若暂时无法升级，建议在编译时移除 boring-tls 特性，改用不受影响的 native-tls 或 rustls 后端。"
+score = 9.1
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "lettre SMTP 库 TLS 主机名验证被禁用漏洞"
+updated = "2026-07-23T17:58:34.990"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-46428",
+    "GHSA-4pj9-g833-qx53",
+]
+ave_id = "AVE-2026-0696"
+
+[meta]
+collected_at = "2026-07-29T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/lettre/lettre/commit/f5efffc88360dbdbfcef80f465e42d5bce68ca35",
+    "https://github.com/lettre/lettre/releases/tag/v0.11.22",
+    "https://github.com/lettre/lettre/security/advisories/GHSA-4pj9-g833-qx53",
+    "https://rustsec.org/advisories/RUSTSEC-2026-0141.html",
+    "https://github.com/trickest/cve/blob/b3a270a001a31742516eaea5c494f365de9d3c80/2026/CVE-2026-46428.md",
+    "https://github.com/CVEProject/cvelistV5/blob/231116aa5795023b4be954f9aed84939e97cf046/cves/2026/46xxx/CVE-2026-46428.json",
+    "https://github.com/cisagov/vulnrichment/blob/077172bcea3338bafb871871e211bbb7c87f3c3c/2026/46xxx/CVE-2026-46428.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/15f9f7a0b2cc2a296dac75e46487bfa653db3e1b/SSVC/data/2026/CVE-2026-46428.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/6d9e48809bb56eb829c7d184fbf6c6fd45cd04df/pocs/2026/CVE-2026-46428.md",
+    "https://github.com/anchore/nvd-data-overrides/blob/be745c1ea7b9b91e65f3d64ef3f756698bb41557/data/2026/CVE-2026-46428.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/15f9f7a0b2cc2a296dac75e46487bfa653db3e1b/CVE/data/2026/CVE-2026-46428.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2026-46428.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/6dd9892dd68397ee98232ad0e1fed55a1599cf70/reports/2026-07-20/TIER_3_CVE-2026-46428.md",
+    "https://github.com/anchore/cve-data-enrichment/blob/b78a15b07d7cb16546143e956ec58c7d8490f0c9/data/anchore/2026/CVE-2026-46428.json",
+]
