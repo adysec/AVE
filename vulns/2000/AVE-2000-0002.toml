@@ -1,10 +1,10 @@
 [basic]
-description = "Apache Tomcat 3.0 和 3.1 版本中 Snoop Servlet 存在信息泄露漏洞。远程攻击者无需身份认证即可通过向目标服务器发送带有 .snp 扩展名的不存在 URL 请求，触发 Snoop Servlet 返回系统环境变量、系统属性、请求参数等敏感信息。攻击者可利用泄露的信息进一步探测内网结构或实施更深入的攻击。该漏洞影响 Jakarta Tomcat 3.0 和 3.1 版本，CVSS 评分 6.4，危害等级中危。建议升级至 Tomcat 3.2 及以上版本或禁用 Snoop Servlet。"
+description = "Apache Tomcat 3.0 和 3.1 版本中的 Snoop Servlet 存在信息泄露漏洞。远程攻击者无需身份认证，只需向目标服务器发送一个带有 .snp 扩展名的不存在 URL 的请求，即可触发 Snoop Servlet 输出包含系统环境变量、JVM 参数、请求头等敏感信息的调试数据。该漏洞影响运行受影响版本 Tomcat 的所有 Web 应用服务器，攻击条件极为简单——仅需目标服务器开放 HTTP 端口且部署了存在漏洞的 Tomcat 版本。成功利用后，攻击者可获取系统配置信息，为后续进一步渗透攻击提供有力参考。Apache 官方已在后续版本中移除了 Snoop Servlet 或对其访问权限进行了限制以修复此问题。"
 published = "2000-10-20T04:00:00.000"
-remediation = "升级至 Apache Tomcat 3.2 及以上版本，该版本已移除存在信息泄露风险的 Snoop servlet。如无法升级，在 web.xml 中删除 snoop servlet 及其 .snp 扩展名映射，或通过 Apache 配置限制对 /examples/jsp/snp/ 路径的访问。"
+remediation = "强烈建议立即将 Tomcat 升级至 Apache 官方支持的 9.0.x 或更高版本以获得完整安全修复。若短期内无法升级，须采取以下缓解措施：第一，直接从 webapps 目录中删除整个 examples 示例应用目录；第二，若需保留 examples 应用，编辑 webapps/examples/WEB-INF/web.xml，移除 SnoopServlet 的 &lt;servlet&gt; 和 &lt;servlet-mapping&gt; 配置条目后重启 Tomcat；第三，通过 Apache HTTP Server 的 mod_jk 或 front Controller 配置，禁止外部客户端对 /examples/ 路径的访问；第四，服务器上需关闭 8007 端口的 AJP12 协议监听（该协议在 Tomcat 3.x 中默认开启且同样存在严重安全问题）。请注意，Tomcat 3.x 已于多年前停止维护，Apache 官方表示不再为该版本发布安全更新，升级至受支持的稳定版本是最彻底的解决方案。"
 score = 6.4
 severity = "MEDIUM"
-sources = ["epss"]
+sources = ["avd"]
 title = "Apache Tomcat Snoop Servlet 信息泄露漏洞"
 updated = "2026-06-16T21:52:25.440"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0760"]
 ave_id = "AVE-2000-0002"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/frames/?content=/templates/archive.pike%3Flist%3D1%26date%3D2000-07-15%26msg%3DPine.SUN.3.96.1000719235404.24004A-100000%40grex.cyberspace.org",
     "https://www.exploit-db.com/exploits/20132",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2000/CVE-2000-0760.yaml",
-    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2000/CVE-2000-0760.md",
-    "https://github.com/projectdiscovery/nuclei-templates/blob/4924c84cac6ce9772babf48587bed8df9d0040d0/http/cves/2000/CVE-2000-0760.yaml",
-    "https://github.com/CVEProject/cvelistV5/blob/933422a5f82611777877a3549b9b8e3c7d70117d/cves/2000/0xxx/CVE-2000-0760.json",
+    "https://github.com/trickest/cve/blob/b349e2ac98435c78e6eec698cf95df82dacb0ca1/2000/CVE-2000-0760.md",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/9979ce144c257f1c427a75604f8c0ffbc8293390/http/cves/2000/CVE-2000-0760.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/c97d5ffdc5a2cf56b1acb2dd5f27977ef5ef9b47/cves/2000/0xxx/CVE-2000-0760.json",
+    "https://github.com/0x727/FingerprintHub/blob/1ca878524ec242a39629a3704532139917779e9c/plugins/apache/tomcat/CVE-2000-0760.yaml",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/966d6acc4d3db576e6440ff8f64cc85a59a26a1a/CVE/data/2000/CVE-2000-0760.json",
+    "https://github.com/p0dalirius/ApacheTomcatScanner/blob/af5077ce3aeae4c7df3be909998bb54e3812c742/apachetomcatscanner/data/vulnerabilities/2000/CVE-2000-0760.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0760",
     "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2000/CVE-2000-0760.rules",
-    "https://github.com/hack007x/veil_poc/blob/5cfe1da6e975ba816d728597885a5c5e79bda8bd/cves/2000/CVE-2000-0760.poc",
-    "https://github.com/rix4uni/nucleihub-templates/blob/579a0234551b9e0e322460a62dc77bd6109e4aff/nucleihub-templates/CVE-2000-0760_1.yaml",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/68711f4b9de04c730603adbbe0fe7b126b6784b4/CVE/data/2000/CVE-2000-0760.json",
-    "https://github.com/InfoSecWarrior/Vulnerable-Box-Resources/blob/c784bcf63e1ec5c3a0116043d8653d00f0a21a0b/Infosecwarrior/My-Tomcat-Host/MyTomcatHost-1-nuclei-8080-output.txt",
-    "https://github.com/daffainfo/cvelist/blob/3a7b44fba7c4bb8ad2146d05e0336ee829c5c2cf/cves/2000/0xxx/CVE-2000-0760.json",
+    "https://github.com/youki992/VscanPlus/blob/714a0e276a538a22c1a6215c71458a8b59a920ef/pocs_yml/nucleiFiles/http/cves/2000/CVE-2000-0760.yaml",
+    "https://github.com/adampielak/nuclei-templates/blob/a2f3ff3fa5db5c7705ebd942909ec114df063700/nuclei-v3/C/CVE-2000-0760.yaml",
 ]
