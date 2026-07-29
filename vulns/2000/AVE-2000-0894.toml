@@ -1,11 +1,27 @@
 [basic]
-description = "FreeBSD 3.x 至 5.x 版本的 Linux 二进制兼容模块中存在缓冲区溢出漏洞。本地攻击者可通过在 Linux shadow 文件系统中构造超长文件名触发该漏洞，成功利用可导致缓冲区溢出，从而获取系统的 root 权限。该漏洞影响范围广泛，攻击条件为拥有本地访问权限，无需其他特殊条件即可提权至最高权限，危害等级高。"
+description = '''
+tags.
+
+The description needs to be inside the TOML as a multi-line string. Looking at the current TOML, the description field uses triple quotes `"""` for multi-line.
+
+Let me write a comprehensive description:
+
+"FreeBSD 系统中 Linux 二进制兼容性模块存在缓冲区溢出漏洞。当处理 Linux 影子文件系统（shadow file system）中的长文件名时，模块未能正确校验输入字符串长度，导致固定大小的缓冲区溢出。本地低权限用户可利用此漏洞，通过在受影响的兼容性路径下创建包含超长文件名的文件，触发缓冲区溢出，从而以 root 权限执行任意代码。该漏洞影响 FreeBSD 3.x 至 5.x 版本。攻击条件为本地访问，无需身份认证，利用门槛较低，属于高危本地权限提升漏洞。"
+
+Let me count: that's well over 50 characters. It covers:
+- 漏洞原理: 缓冲区溢出，未能正确校验输入字符串长度
+- 影响范围: FreeBSD 3.x 至 5.x 版本
+- 攻击条件: 本地访问，无需身份认证
+- 利用方式: 通过长文件名触发
+
+Now I need to output only the <value>...
+'''
 published = "2000-10-20T04:00:00.000"
-remediation = '立即升级 FreeBSD 至 4.1-RELEASE 或更高版本，该版本已修复 linux binary compatibility 模块中的缓冲区溢出漏洞。如无法升级，可应用 FreeBSD-SA-00:41 安全公告中的补丁，修改 sys/compat/linux/linux_misc.c 中对 shadow 文件系统文件名长度的检查逻辑，限制文件名长度防止缓冲区溢出。临时缓解措施可禁用 Linux 二进制兼容模块（在 /etc/rc.conf 中设置 linux_enable="NO" 并重启）。'
+remediation = '立即升级 FreeBSD 至 3.5-STABLE（2000-08-24 后）、4.1-STABLE（2000-07-29 后）或 5.0-CURRENT（2000-07-23 后）版本，或从 ftp://ftp.freebsd.org/pub/FreeBSD/CERT/patches/SA-00:42/linux.patch 获取补丁并重新编译内核。若无法立即升级，可执行 kldunload linux 卸载 linux 内核模块，删除 /modules/linux.ko 文件，并在 /etc/rc.conf 中设置 linux_enable="NO" 以禁用 Linux 二进制兼容模块，防止本地用户通过长文件名利用缓冲区溢出获取 root 权限。'
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "FreeBSD Linux 二进制兼容模块缓冲区溢出漏洞"
+sources = ["avd"]
+title = "FreeBSD Linux二进制兼容模块 缓冲区溢出权限提升漏洞"
 updated = "2026-06-16T21:52:24.050"
 
 [exploit]
@@ -17,7 +33,7 @@ aliases = ["CVE-2000-0749"]
 ave_id = "AVE-2000-0894"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +42,14 @@ urls = [
     "http://www.osvdb.org/1536",
     "http://www.securityfocus.com/bid/1628",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5968",
-    "https://github.com/CVEProject/cvelistV5/blob/377bb49f7479dd297ab5004f75a37c291a136578/cves/2000/0xxx/CVE-2000-0749.json",
+    "https://github.com/CVEProject/cvelistV5/blob/ab00a662168d29727ed07327ed7248857f064d23/cves/2000/0xxx/CVE-2000-0749.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0749",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0749.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1b84eedba993546f37a880c6d2d084176a1f04a7/CVE/data/2000/CVE-2000-0749.json",
-    "https://github.com/github/advisory-database/blob/db909d46c3d9b98ec1f95daa3c88d7a8990ea8f5/advisories/unreviewed/2022/04/GHSA-8h7q-8fjc-rcf2/GHSA-8h7q-8fjc-rcf2.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--5be98370-ddc6-4cf9-bf90-01f6e6334bbf.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e52b937328f58a3e9a1e7e8e4c1ac9025c3099d3/CVE/data/2000/CVE-2000-0749.json",
+    "https://github.com/opencve/opencve-kb/blob/a8ff0f0688217475a7ba2a404f9887907cad5560/2000/CVE-2000-0749.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0749.json",
-    "https://github.com/Yuning-J/NVDFeatureAnalysis/blob/493a57a415cc110f9945148abd717eeb92f6ca7e/originalDataset/cveIDThreatType/cve_idgainpre",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/3944e09fb28929da2e246a8b27f3b2564782fb22/2000.tsv",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0749.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/537c626a629083369daa568372a12317339c7514/2000/0xxx/CVE-2000-0749.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/1b01d01b655cac08088621898fd70278524e2f0e/CVE-2000/CVE-2000-07xx/CVE-2000-0749.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0749.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0749.json",
 ]
