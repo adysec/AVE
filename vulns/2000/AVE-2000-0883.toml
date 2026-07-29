@@ -1,10 +1,10 @@
 [basic]
-description = "Worm HTTP Server 存在目录遍历漏洞，远程攻击者无需身份认证即可通过向服务器发送包含 `../` 序列的特制 HTTP 请求，突破路径限制读取服务器上的任意文件。该漏洞源于服务器对用户请求路径过滤不严，未正确处理相对路径跳转符，导致攻击者可遍历目录结构获取敏感信息如配置文件、密码文件等。攻击条件简单，仅需目标服务器开放 HTTP 端口且运行 Worm HTTP Server 软件即可实施。"
+description = 'Worm HTTP 服务器存在目录遍历漏洞，远程攻击者可通过构造包含 ".." (点点) 序列的 HTTP 请求路径，绕过 Web 根目录限制，遍历服务器文件系统读取任意敏感文件（如系统配置文件、源代码、密码文件等）。该漏洞源于 Worm HTTP 服务器对用户提交的路径参数缺乏规范化校验与边界检查，攻击者无需身份认证即可远程利用，仅需向目标服务器发送包含目录遍历序列的 HTTP GET 请求即可实现任意文件读取。该漏洞影响 Worm HTTP 服务器相关版本，CVSS 评分 5.0 (AV:N/AC:L/Au:N/C:P/I:N/A:N)，属于中危信息泄露漏洞，攻击复杂度低、无需认证、仅影响机密性。攻击者可利用此漏洞获取服务器敏感配置、源代码或系统文件，进而辅助进一步渗透攻击。建议升级至修复版本或在 Web 服务器层面配置路径规范化与访问控制策略进行缓解。'
 published = "2000-10-20T04:00:00.000"
-remediation = "立即升级 Worm HTTP Server 至最新版本或更换为受支持的 Web 服务器软件（如 Apache/Nginx）。如无法升级，在 Web 服务器根目录配置中禁用目录遍历功能，并在防火墙层面限制对 80 端口的访问来源，仅允许可信 IP 连接。"
+remediation = "建议立即升级至修复目录遍历漏洞的 Worm HTTP Server 修补版本（如 1.0.1 及以上），或迁移至 Apache/Nginx 等现代 Web 服务器。若无法升级，可在 Web 服务器前部署 WAF 规则拦截包含 ../ 等路径遍历字符的请求，同时配置 Web 服务器根目录限制（chroot/jail）限制文件系统访问范围，并禁用目录浏览功能。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
+sources = ["avd"]
 title = "Worm HTTP Server 目录遍历任意文件读取漏洞"
 updated = "2026-06-16T21:52:21.880"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0731"]
 ave_id = "AVE-2000-0883"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.osvdb.org/1535",
     "http://www.securityfocus.com/bid/1626",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5148",
-    "https://github.com/CVEProject/cvelistV5/blob/0db929612f090dc6aa0346061c42364c4634c480/cves/2000/0xxx/CVE-2000-0731.json",
+    "https://github.com/CVEProject/cvelistV5/blob/3ea93936438a97f1459a1dd6e83719dbfc798be2/cves/2000/0xxx/CVE-2000-0731.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4a364075e0f1d18be5590f7700d143d985f1789f/CVE/data/2000/CVE-2000-0731.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0731",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/5ea14f17ec38fb7850c23056beec64877fabc5b1/2000/0xxx/CVE-2000-0731.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bb772dcb04525a1a88049530e1b1081f8633cb88/CVE/data/2000/CVE-2000-0731.json",
-    "https://github.com/github/advisory-database/blob/d91e95989ea5d3a9186ceb621d53a71dff03cab4/advisories/unreviewed/2022/04/GHSA-xcm3-73w3-h54h/GHSA-xcm3-73w3-h54h.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0731.md",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152700_152800.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0731.json",
     "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0731.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--5a72ea01-3486-47e4-a3d4-d77eb58bc4a4.json",
+    "https://github.com/opencve/opencve-kb/blob/04172aaf351a2efb5323c8604e2705a84576d722/2000/CVE-2000-0731.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/5ff0b9e6ad0b51b419967392a23ca6a8c4176810/CVE-2000/CVE-2000-07xx/CVE-2000-0731.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/0a07da1560249b2b9027d6c5d908418017bb7740/2000/0xxx/CVE-2000-0731.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0731.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0731.json",
 ]
