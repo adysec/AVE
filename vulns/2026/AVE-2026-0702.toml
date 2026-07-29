@@ -1,0 +1,41 @@
+[basic]
+description = "Fission 在 HTTPTrigger 的验证机制中存在路径验证绕过漏洞。由于 `HTTPTriggerSpec.Validate()` 函数及 API-server 的 CEL 规则均未对 `RelativeURL` 和 `Prefix` 字段进行有效校验，仅在 CLI 层实现了初步检查，导致攻击者可以通过 `kubectl apply` 或直接调用 Kubernetes REST API 绕过所有 URL 级别的安全检查。具备创建 HTTPTrigger 权限的攻击者可配置恶意的路径，例如使用 `..` 进行路径遍历、抢占路由根目录 `/` 或碰撞路由器内部保留路径（如 `/router-healthz`、`/auth/login` 等），从而实现路由劫持或非法访问内部资源。该漏洞影响 v1.25.0 之前的所有版本。"
+published = "2026-06-10T18:17:13.483"
+remediation = "建议立即将 Fission 升级到 v1.25.0 或更高版本。该版本通过在 API 服务器端引入 CEL 校验规则，强制要求 RelativeURL 和 Prefix 字段必须非空、以 / 开头且不包含 .. 遍历片段，从而修复了 kubectl apply 绕过校验的问题。"
+score = 4.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Fission HTTPTrigger 路径验证绕过漏洞"
+updated = "2026-06-17T10:57:43.347"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-50569",
+    "GHSA-vchh-r53j-8mpw",
+]
+ave_id = "AVE-2026-0702"
+
+[meta]
+collected_at = "2026-07-29T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/fission/fission/pull/3464",
+    "https://github.com/fission/fission/releases/tag/v1.25.0",
+    "https://github.com/fission/fission/security/advisories/GHSA-vchh-r53j-8mpw",
+    "https://github.com/trickest/cve/blob/b349e2ac98435c78e6eec698cf95df82dacb0ca1/2026/CVE-2026-50569.md",
+    "https://github.com/CVEProject/cvelistV5/blob/e75ae6c145bf0fa550455c4b2b7c9e0f03c663af/cves/2026/50xxx/CVE-2026-50569.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/13b4b6847c146245cb34369c97e37afd6dfad908/CVE/data/2026/CVE-2026-50569.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-50569.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/6d9e48809bb56eb829c7d184fbf6c6fd45cd04df/pocs/2026/CVE-2026-50569.md",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2026-50569.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/42f7ce3fe01d1b8b4a37ed409361811a74eb1f5b/CVE-2026/CVE-2026-505xx/CVE-2026-50569.json",
+    "https://github.com/Tabll/gemnasium-db/blob/ede50d3653e824fabe4210e54459047bef709b31/go/github.com/fission/fission/CVE-2026-50569.yml",
+    "https://github.com/TMA84/cvealert/blob/be6cb1a6a44a9623de644275c61d54798195b4f5/content/posts/cve-2026-50569.md",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/9c07393070c4774028819e409c1391a0e8a069cc/api/2026/CVE-2026-50569.json",
+]
