@@ -1,11 +1,11 @@
 [basic]
-description = "多种 Unix 系统下的 shell 程序（包括 tcsh、csh、sh 和 bash）在处理 here-document 重定向（<< 操作符）时存在符号链接（symlink）竞争条件漏洞。本地攻击者可通过在目标用户执行脚本或命令时创建恶意的符号链接，诱使 shell 程序将输出重定向到攻击者指定的任意文件，从而覆盖其他用户的敏感文件。该漏洞利用条件要求攻击者拥有本地系统访问权限，且能够预测或观察到目标用户使用 here-document 的时机。成功利用可导致任意文件覆写，进而可能实现权限提升或系统破坏。"
+description = "多种 Unix 系统 Shell 程序（包括 tcsh、csh、sh、bash）在处理 << 重定向（即 here-document）时会跟随符号链接，导致本地用户可通过符号链接攻击覆盖其他用户的文件。该漏洞影响 Apple Mac OS X 10、HP-UX 9/10/11、Mandriva 6/7、Red Hat 5/6、SCO 5、IRIX 6 等多种 Unix/Linux 发行版的默认 Shell 环境。攻击者需具备本地账户权限，通过构造指向目标文件的符号链接并诱导 Shell 处理 here-document 重定向，即可覆盖任意用户可写文件，导致权限提升或数据破坏，CVSS 评分 7.2（本地攻击、低复杂度、无需认证、完全影响机密性/完整性/可用性）。"
 published = "2001-01-09T05:00:00.000"
-remediation = "升级各 shell 程序至修复版本：tcsh 升级至 6.10 或更高版本，bash 升级至 2.04 或更高版本，csh/tcsh 升级至包含 FreeBSD-SA-00:76 补丁的版本。各 Linux 发行版用户应安装对应安全更新：Red Hat 安装 RHSA-2000:117/RHSA-2000:121，Debian 安装 20001111a 更新，Mandrake 安装 MDKSA-2000:069/MDKSA-2000:075。如无法立即升级，可通过 umask 限制和文件系统审计缓解本地 symlink 攻击风险。"
+remediation = "建议立即安装厂商发布的安全补丁：Apple Mac OS X 升级至 10.1 版本；Tru64 UNIX 4.0D/4.0F/4.0G/5.0/5.0A/5.1/5.1A 应用对应的 ERP 早期发布补丁包（如 DUV40DB17-C0061401-12858-E-20020115.tar 等）；Solaris 升级至 8 Update 5 或更高版本并应用官方补丁；SCO OpenLinux 2.3/eServer 2.3.1/eDesktop 2.4 更新 bash 至 1.045 版、tcsh 至 1.046 版（通过 ftp.caldera.com 下载）；FreeBSD 应用 SA-00:76.tcsh-csh 补丁；SGI IRIX 应用 20011103-01-I 安全公告补丁；Conectiva Linux 升级至 MDKSA-2000-069/075 修复版。临时缓解措施：在 cron 任务和管理脚本中避免使用 << 重定向操作符；确保 /tmp 目录设置了粘滞位；限制本地用户写入敏感目录的权限；若无法立即打补丁，考虑用非易受攻击的 shell（如 ksh/pdksh）替代易受影响的 csh/bash/sh 作为默认登录 shell。"
 score = 7.2
 severity = "HIGH"
-sources = ["redhat"]
-title = "多款 Unix Shell 程序 Here-Document 符号链接竞争条件漏洞"
+sources = ["cve"]
+title = "多厂商 Unix Shell Here-document 符号链接攻击漏洞"
 updated = "2026-06-16T21:53:13.380"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1134"]
 ave_id = "AVE-2000-0821"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
@@ -40,14 +40,14 @@ urls = [
     "http://www.securityfocus.com/bid/2006",
     "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A4047",
     "https://www.exploit-db.com/exploits/20436",
-    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2000/CVE-2000-1134.md",
-    "https://github.com/CVEProject/cvelistV5/blob/97700d7e657426c8e1ee6cf44a0a2b88c60738c3/cves/2000/1xxx/CVE-2000-1134.json",
+    "https://github.com/trickest/cve/blob/b3a270a001a31742516eaea5c494f365de9d3c80/2000/CVE-2000-1134.md",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2000/CVE-2000-1134.md",
+    "https://github.com/CVEProject/cvelistV5/blob/3ea93936438a97f1459a1dd6e83719dbfc798be2/cves/2000/1xxx/CVE-2000-1134.json",
+    "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2000/CVE-2000-1134.md",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1134",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-1134.md",
-    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2022/05/GHSA-j272-pr5g-4cv9/GHSA-j272-pr5g-4cv9.json",
-    "https://github.com/opencve/opencve-kb/blob/b5efb5641cd6797d997be61005a4379e90a26bc5/2000/CVE-2000-1134.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150400_150500.json",
-    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/M/mandrake_MDKSA-2000-075.nasl",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--5c157336-f00e-4259-9242-4cda5babb5de.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/5c5b23a2286aa84c456bf6f6d110b03c6adf1961/CVE/data/2000/CVE-2000-1134.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/891288105232bf5472c62a89fd51ac6f1e7d82a2/CVEs/2000/CVE-2000-1134.md",
+    "https://github.com/opencve/opencve-kb/blob/10137f1f09105a4ed85d5f8d438eb1a3ac38b0e8/2000/CVE-2000-1134.json",
+    "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2000/CVE-2000-1134.md",
 ]
