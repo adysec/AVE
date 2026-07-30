@@ -1,11 +1,11 @@
 [basic]
-description = "Samba 2.0.7 中的 Web 管理工具 SWAT（Samba Web Administration Tool）存在安全日志记录缺陷，当远程攻击者使用正确的用户名但错误的密码进行登录尝试时，SWAT 不会记录此类失败登录事件。这导致攻击者可以在不被系统管理员察觉的情况下，对 Samba 服务实施暴力密码猜解攻击，从而可能获取系统访问权限。该漏洞影响 Samba 2.0.7 版本，攻击者只需通过网络访问 SWAT 管理界面即可利用，无需任何身份认证。"
+description = "Samba 2.0.7 中的 SWAT（Samba Web 管理工具）在处理用户登录时存在日志记录缺陷，当攻击者使用正确的用户名但错误的密码进行登录尝试时，SWAT 不会记录此类失败登录事件。远程攻击者可利用此缺陷对系统进行无痕的暴力密码猜测攻击，通过绕过日志监控持续尝试破解用户密码，从而获取未授权访问权限。该漏洞影响 Samba 2.0.7 版本，攻击者无需身份认证即可通过网络远程利用，显著增加了系统被入侵的风险。"
 published = "2000-12-19T05:00:00.000"
-remediation = "升级 Samba 至 2.2.0 或更高版本，该版本改进了认证日志机制。如无法升级，在 SWAT 配置文件（通常位于 /etc/xinetd.d/swat 或 /etc/inetd.conf）中将 SWAT 服务绑定至本地回环地址（127.0.0.1），并通过 iptables 限制对 TCP 901 端口的访问来源 IP，同时在 smb.conf 中启用 valid users 限制 SWAT 管理界面仅允许特定用户访问。"
+remediation = "升级 Samba 至 2.0.8 或更高版本。若无法立即升级，在 smb.conf 中设置 `syslog = 3` 和 `syslog only = no` 启用详细日志，并通过 iptables 限制 SWAT（TCP 901 端口）仅允许受信 IP 访问。同时部署 Fail2ban 监控 SWAT 日志以阻断暴力破解。"
 score = 7.5
 severity = "HIGH"
-sources = ["cve"]
-title = "Samba SWAT 登录失败日志缺失导致暴力密码猜测漏洞"
+sources = ["epss"]
+title = "Samba SWAT 登录失败日志缺失致密码暴力破解漏洞"
 updated = "2026-06-16T21:52:48.497"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0937"]
 ave_id = "AVE-2000-0685"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-30T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1873",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5442",
     "https://www.exploit-db.com/exploits/20340",
-    "https://github.com/CVEProject/cvelistV5/blob/50b2026c1039c6a81b95d80535c772b9d8685178/cves/2000/0xxx/CVE-2000-0937.json",
+    "https://github.com/CVEProject/cvelistV5/blob/debf0490813d6b24b6eb78e22c421b3f9bcb8d50/cves/2000/0xxx/CVE-2000-0937.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f6f07feba024060bc836e38e9ad4be74bb9614ec/CVE/data/2000/CVE-2000-0937.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0937",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/11a92cc3c0d31b9e78fe8f2a857dd04df3195701/2000/0xxx/CVE-2000-0937.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/050b62cac636d83be07e6d4c77e70114e1ca7c93/CVE/data/2000/CVE-2000-0937.json",
-    "https://github.com/github/advisory-database/blob/fa1c2f93b0d15da115c038738e571c1a1553b4cc/advisories/unreviewed/2022/04/GHSA-436h-wrjr-5hj3/GHSA-436h-wrjr-5hj3.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0937.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152900_153000.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--8342d966-58f5-4768-a827-5118f3cdf20f.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0937.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f852dcbb0286f5d88b04c17e99702d974cf97496/CVE-2000/CVE-2000-09xx/CVE-2000-0937.json",
+    "https://github.com/opencve/opencve-kb/blob/0aa53285166fed6b300b29cf483b59e9c54d85d6/2000/CVE-2000-0937.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/3e6ed1a1d75816367e38c59309d8bdc19a3733f1/2000/0xxx/CVE-2000-0937.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0937.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0937.json",
 ]
