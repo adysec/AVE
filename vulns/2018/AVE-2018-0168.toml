@@ -1,11 +1,11 @@
 [basic]
-description = "Apache Struts2 框架在处理命名空间（namespace）时存在远程代码执行漏洞（S2-057）。当 alwaysSelectFullNamespace 属性设置为 true（由用户或 Convention 等插件启用）时，攻击者可通过构造特制的 URL 请求，利用无命名空间的结果配置与上层包的通配符命名空间组合，触发 OGNL 表达式注入，从而在目标服务器上执行任意系统命令。该漏洞影响 Apache Struts2 2.0.4 至 2.3.34 以及 2.5.0 至 2.5.16 版本，攻击复杂度较高但无需身份认证，成功利用可导致服务器完全受控、数据泄露或服务中断。CVSS 评分 8.1，危害等级高。"
+description = "Apache Struts2 框架在 2.3 至 2.3.34 及 2.5 至 2.5.16 版本中存在远程命令执行漏洞（S2-057）。当 alwaysSelectFullNamespace 配置为 true 时（可由用户或 Convention 插件触发），攻击者可通过构造无命名空间的请求结果或使用未设置 value 和 action 的 url 标签，结合上层包的无命名空间或通配符命名空间配置，注入并执行任意 OGNL 表达式。该漏洞影响使用受影响版本的所有 Apache Struts2 Web 应用，攻击者无需身份认证即可远程利用，CVSS 评分 8.1，危害等级高。Apache 官方已在 2.18.3 和 2.5.17 版本中修复此漏洞，建议用户立即升级。"
 published = "2018-08-22T13:29:00.753"
-remediation = "升级 Apache Struts 至 2.3.35 或 2.5.17 及以上版本。如无法立即升级，在 struts.xml 中确保所有 result 和 url 标签显式指定 namespace 属性，避免使用通配符 namespace，并检查禁用 Convention 插件中的 alwaysSelectFullNamespace 配置项。"
+remediation = "立即升级 Apache Struts 至 2.3.35（2.3.x 分支）或 2.5.17（2.5.x 分支），两个版本均包含完整的漏洞修复且预计不存在向后兼容性问题。如因业务原因无法立即升级，可采取临时缓解措施：在 struts.xml 中确保所有 package 元素显式配置 namespace 属性，为所有 result 定义设置 namespace，并在 JSP 的 url 标签中强制填写 value 或 action 属性；同时将 alwaysSelectFullNamespace 设为 false（除非必须为 true）。升级后若日志出现 ArrayList 被排除的 WARN，需在 struts.xml 中定义 struts.excludedPackageNames 常量，排除 ognl.、javax.、freemarker.core. 等相关包。"
 score = 8.1
 severity = "HIGH"
-sources = ["kev"]
-title = "Apache Struts2 远程代码执行漏洞（S2-057）"
+sources = ["nuclei"]
+title = "Apache Struts2 远程代码执行漏洞"
 updated = "2026-06-17T01:36:34.350"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2018-11776"]
 ave_id = "AVE-2018-0168"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-07-30T00:00:00Z"
 status = "completed"
 
 [references]
@@ -44,16 +44,16 @@ urls = [
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2018-11776",
     "https://www.exploit-db.com/exploits/45262",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2018/CVE-2018-11776.yaml",
-    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2018/CVE-2018-11776.md",
+    "https://github.com/trickest/cve/blob/b349e2ac98435c78e6eec698cf95df82dacb0ca1/2018/CVE-2018-11776.md",
     "https://github.com/qazbnm456/awesome-cve-poc/blob/fc862e38e03ea68cdc62618d14891a426daff1a4/CVE-2018-11776.md",
     "https://github.com/fofapro/vulfocus/blob/4b7a2eaacce4ed770f289e6e72f7240da1e16c74/writeup/CVE-2018-11776/CVE-2018-11776.md",
     "https://github.com/Threekiii/Awesome-POC/blob/0f9e22b660cb1ea12c1c3668f9128d93e08da412/中间件漏洞/Apache Struts2 S2-057 远程代码执行漏洞 CVE-2018-11776.md",
     "https://github.com/ym2011/POC-EXP/blob/206b22d3a6b2a172359678df33bbc5b2ad04b6c3/Struts2/S2-057/CVE-2018-11776/README.md",
-    "https://github.com/arschlochnop/VulnWatchdog/blob/78f6b1731532530a1ff639ea0b08b84d975b4e39/data/by-cve/CVE-2018-11776.md",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/589d7992aa3758a5c4c771032cd64233f6f0054f/data/by-cve/CVE-2018-11776.md",
     "https://github.com/sepehrdaddev/zap-scripts/blob/2b63b02ca79cc7f0023cdbab72c5c6c774354b07/active/CVE-2018-11776.js",
     "https://github.com/ym2011/POC-EXP/blob/206b22d3a6b2a172359678df33bbc5b2ad04b6c3/Struts2/S2-057/CVE-2018-11776/s2-057.py",
-    "https://github.com/arschlochnop/VulnWatchdog/blob/78f6b1731532530a1ff639ea0b08b84d975b4e39/data/2018/CVE-2018-11776-Ekultek_Strutter.md",
-    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2018/CVE-2018-11776.md",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/589d7992aa3758a5c4c771032cd64233f6f0054f/data/2018/CVE-2018-11776-Ekultek_Strutter.md",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/589d7992aa3758a5c4c771032cd64233f6f0054f/data/2018/CVE-2018-11776-m4sk0ff_CVE-2018-11776.md",
     "https://github.com/mazen160/struts-pwn_CVE-2018-11776",
     "https://github.com/649/Apache-Struts-Shodan-Exploit",
     "https://github.com/Ekultek/Strutter",
