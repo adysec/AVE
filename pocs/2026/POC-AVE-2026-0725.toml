@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "验证 @hypequery/clickhouse 在 2.0.2 之前版本中 escapeValue() 函数未正确转义反斜杠导致 SQL 注入的漏洞。攻击者通过构造以反斜杠结尾的参数值，可转义单引号闭合边界，注入任意 SQL 语句。"
+id = "POC-AVE-2026-0725"
+name = "CVE-2026-54658 PoC"
+severity = "critical"
+tags = ["ave-2026-0725"]
+vuln_id = [
+    "CVE-2026-54658",
+    "AVE-2026-0725",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/query"
+protocol = "http"
+
+[poc.requests.body]
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "SQL syntax",
+    "syntax error",
+    "unexpected token",
+]
