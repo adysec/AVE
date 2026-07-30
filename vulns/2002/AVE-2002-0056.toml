@@ -1,11 +1,11 @@
 [basic]
-description = "NIS 软件包中的 ypserv 服务（版本 2.5 之前）的 yp_db.c 文件中的 ypdb_open 函数存在内存泄漏漏洞。远程攻击者可通过向目标系统发送大量针对不存在映射表的请求，触发该函数的内存泄漏，导致系统内存资源被持续消耗，最终造成拒绝服务。该漏洞影响 NIS Package 3.9 及更早版本，攻击无需身份认证，网络可达即可触发。"
+description = "NIS服务套件中 ypserv 2.5 之前版本的 yp_db.c 中 ypdb_open 函数存在内存泄漏漏洞，远程未认证攻击者可通过发送大量针对不存在映射的请求触发内存泄漏，导致服务进程内存持续增长耗尽系统内存，造成拒绝服务。该漏洞影响 NIS 包 3.9 及更早版本中的 ypserv 服务，CVSS 评分 5.0（AV:N/AC:L/Au:N/C:N/I:N/A:P），属中等危害级别拒绝服务漏洞。攻击者无需认证即可远程发起攻击，仅需向目标 NIS 服务器发送大量不存在的映射查询请求即可触发内存泄漏导致服务不可用。Red Hat 将其评级为重要级别，建议升级 ypserv 至 2.5 或更高版本修复该漏洞。"
 published = "2002-11-04T05:00:00.000"
-remediation = "将 ypserv（NIS 服务器）升级至 2.5 或更高版本。Red Hat Advanced Server 2.1 用户安装 RHSA-2002:224 提供的更新包（rpm -Fvh *.rpm），Debian 用户安装 DSA-180 提供的更新包。如无法升级，在防火墙层面限制对 ypserv 端口（TCP/UDP 111 及 834-847）的访问，仅允许受信任的 NIS 客户端连接。"
+remediation = "升级 ypserv 至 2.5 或更高版本（对应 NIS 软件包 3.10+），或应用厂商发布的安全补丁：Red Hat 用户执行 rpm -Uvh 更新 RHSA-2002-223/RHSA-2002-224 软件包，Debian 用户执行 apt-get upgrade 安装 DSA-180 补丁，Mandrake 用户应用 MDKSA-2002-078。若无法立即升级，配置防火墙限制仅受信网段访问 ypserv 端口（通常为 TCP/UDP 111 及动态 RPC 端口），并在 rpcbind 配置中启用访问控制限制 NIS 查询频率，防止大量不存在的 Map 请求耗尽内存导致拒绝服务。"
 score = 5
 severity = "MEDIUM"
-sources = ["osv"]
-title = "Linux NIS ypserv 内存泄漏拒绝服务漏洞"
+sources = ["redhat"]
+title = "ypserv up to 2.5 拒绝服务漏洞"
 updated = "2026-06-16T21:58:58.737"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-1232"]
 ave_id = "AVE-2002-0056"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-30T00:00:00Z"
 status = "completed"
 
 [references]
@@ -32,14 +32,14 @@ urls = [
     "http://www.redhat.com/support/errata/RHSA-2002-224.html",
     "http://www.redhat.com/support/errata/RHSA-2003-229.html",
     "http://www.securityfocus.com/bid/6016",
-    "https://github.com/CVEProject/cvelistV5/blob/60bbc98c39201e6f5661b9e41f1492ce39335948/cves/2002/1xxx/CVE-2002-1232.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4d40bbb471811a29843f023fbf1a8beb3373a987/cves/2002/1xxx/CVE-2002-1232.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-1232",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2002-1232.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f0111a41156462d46f484c055bdeafa69cf38c8e/CVE/data/2002/CVE-2002-1232.json",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/debian_DSA-180.nasl",
-    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2022/05/GHSA-xj67-5prp-p33j/GHSA-xj67-5prp-p33j.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f6f07feba024060bc836e38e9ad4be74bb9614ec/CVE/data/2002/CVE-2002-1232.json",
+    "https://github.com/opencve/opencve-kb/blob/d88eae8568d326953e6a84a5e0ac0ad4cbb40816/2002/CVE-2002-1232.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-1232.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/3e6ed1a1d75816367e38c59309d8bdc19a3733f1/2002/1xxx/CVE-2002-1232.md",
     "https://github.com/zercurity/vulnerabilities/blob/8eb5f158d91688a46557263c708774d5f8d3956c/2002/CVE-2002-1232",
-    "https://github.com/chihsuan/search-engine/blob/9dcdd3e644469883f53565740f0ba8ff617c5120/Data/0A37464A-9757-4508-9CCB-01C10267C3C5.txt",
-    "https://github.com/jdkoftinoff/mb-linux-msli/blob/8adb103e34af9ff1d8d122e9ee2a1808836f0a14/uClinux-dist/user/nessus/nessus-plugins/scripts/redhat-RHSA-2002-224.nasl",
-    "https://github.com/magicsword-io/Magic-SigExplorer/blob/2c28b91b003429a144a687199ee99ebd26f1a343/Magic-SigExplorer/docs/cve_report.md",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/ff131139bd19bf58727d5c9cd0ead10532e0bef5/tracker/CVE/2002/CVE-2002-1232.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2002-1232.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2002/1xxx/CVE-2002-1232.json",
 ]
