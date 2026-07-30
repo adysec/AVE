@@ -1,11 +1,11 @@
 [basic]
-description = "ARCServeIT Client Agent 6.62 中的 uagentsetup 组件在将临时文件移动至 agent.cfg 配置文件时，未正确检查该临时文件的存在性及所有权归属，导致本地攻击者可通过在临时文件被移动前对其进行篡改，注入恶意命令，从而实现以目标进程权限执行任意命令。该漏洞影响 ARCServeIT Client Agent 6.62 版本，攻击者需具备本地系统访问权限，利用难度较低，可导致系统完全受控。"
+description = "CA ARCServeIT Client Agent 6.62 的 uagentsetup 组件存在临时文件权限检查缺陷，该组件在将临时文件移动至 agent.cfg 配置文件前未验证文件存在性与所有权，导致本地攻击者可通过在移动操作前篡改临时文件内容，实现任意命令执行并完全控制受影响系统。该漏洞影响 ARCServeIT Client Agent 6.62 版本，攻击向量为本地，攻击复杂度低，无需身份认证，可造成机密性、完整性、可用性完全丧失，CVSS 评分 7.2（高危）。"
 published = "2000-10-20T04:00:00.000"
-remediation = "立即升级 ARCServeIT Client Agent 至 6.63 或更高版本，该版本已修复临时文件竞争条件问题。如无法升级，确保 agent.cfg 所在目录权限为 755 且仅允许受信管理员账户登录系统，同时在系统层监控 /tmp 目录下 uagentsetup 创建的临时文件操作日志，防止本地低权限用户通过符号链接攻击篡改配置文件。"
+remediation = "立即升级到 ARCServeIT Client Agent 6.62 的最新版本（或更高版本），以获取官方修复。临时文件应使用安全建立方式，如使用 `tmpfile()` 函数或在建立后立即验证其权限。强制要求临时文件必须由 root 所有者并具有严格的权限限制（如 0700）。部署时使用文件完整性监控工具，验证 agent.cfg 文件的哈希值。生产环境中应禁用对临时目录的写访问权限，并应用 AppArmor/SELinux 安全策略以限制命令执行。定期备份配置，并在更新后验证备份的完整性。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "CA ARCServeIT Client Agent 本地任意命令执行漏洞"
+sources = ["avd"]
+title = "Computer Associates ARCServeIT Client Agent 本地代码执行漏洞"
 updated = "2026-06-16T21:52:28.070"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0781"]
 ave_id = "AVE-2000-0938"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-30T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-07/0431.html",
     "http://www.securityfocus.com/bid/1519",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5023",
-    "https://github.com/CVEProject/cvelistV5/blob/6e1fee15e021f95477107e3e5d652470f76f7bac/cves/2000/0xxx/CVE-2000-0781.json",
+    "https://github.com/CVEProject/cvelistV5/blob/9733cd108933bea779970cc29981361e50691314/cves/2000/0xxx/CVE-2000-0781.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/54f83abc415bbb86c58c9eb7678aadf276fc79d6/CVE/data/2000/CVE-2000-0781.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0781",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2000-0781.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/d449633638bc4d33beb359a70dee0dbe66d39a20/CVE/data/2000/CVE-2000-0781.json",
-    "https://github.com/github/advisory-database/blob/74884340187670a91b9d5bdb799b52e73426ad63/advisories/unreviewed/2022/04/GHSA-fq8g-x6c4-fpm3/GHSA-fq8g-x6c4-fpm3.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x2000/1519/info.html",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2000-0781.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152700_152800.json",
-    "https://github.com/nomi-sec/CVE-Easy-List/blob/864adb9ddf294417a5a4e84f90f9adf54e9dca89/2000.tsv",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0781.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0781.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f261edfe26ad788a761a538ae1acc9207c3f30e6/CVE-2000/CVE-2000-07xx/CVE-2000-0781.json",
+    "https://github.com/opencve/opencve-kb/blob/a27c62772ea5fd76d872ecc75532da5c81d4b7c3/2000/CVE-2000-0781.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/ad5644ee4d6d235ae1cfa1878af1fb901c8393c9/2000/0xxx/CVE-2000-0781.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0781.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0781.json",
 ]
