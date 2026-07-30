@@ -1,11 +1,31 @@
 [basic]
-description = "Net-SNMP（原 ucd-snmp）软件包 5.0.1 至 5.0.5 版本的 SNMP 守护进程中，snmp_agent.c 文件的 handle_var_requests 函数存在空指针解引用漏洞。未经认证的远程攻击者可通过向目标系统发送特制的 SNMP 请求触发该漏洞，导致 SNMP 守护进程崩溃，造成拒绝服务。该漏洞影响范围广泛，攻击复杂度低，无需任何身份验证即可远程利用。"
+description = """
+tags.
+
+Let me analyze the requirements:
+1. Chinese description, ≥50 characters
+2. Must cover: vulnerability principle (null pointer dereference), impact range (Net-SNMP 5.0.1-5.0.5), attack conditions (remote, no auth needed, but requires knowledge of SNMP community string)
+3. Translate NVD English description to fluent Chinese, supplement with local data technical details
+4. Don't fabricate URLs
+
+From the NVD data:
+- The handle_var_requests function in snmp_agent.c for the SNMP daemon in the Net-SNMP (formerly ucd-snmp) package 5.0.1 through 5.0.5 allows remote attackers to cause a denial of service (crash) via a NULL dereference.
+
+From the local data and PoC references, I can see:
+- The vulnerability is in handle_var_requests() at line 1876 of agent/snmp_agent.c
+- Exploitation requires foreknowledge of a known SNMP community string (read or read/write)
+- Affects installations where "public" read-only community string hasn't been changed
+- The issue is a NULL dereference - asp->treecache_num is NULL but the code tries to access it with <= comparison
+
+Let me compose a proper description that covers all required aspects and is ≥50 characters.
+
+The description should be placed inside <value> tags only.<value>Net-SNMP SNMP 守护进程的 agent/snmp_agent.c 中 handle_var_requests 函数存在空指针解引用漏洞。攻击者需预先知晓目标系统的 SNMP 共同体字符串（如默认的 "public" 只读社区名），随后发送精心构造的 SNMP 数据包即可触发该漏洞，导致 SNMP 服务崩溃并造成拒绝服务。该漏洞影响 Net-SNMP 5.0.1 至 5.0.5 所有版本，CVSS 评分为 5.0，危害等级为中等。"""
 published = "2002-10-11T04:00:00.000"
-remediation = "升级 Net-SNMP 至 5.0.6 或更高版本（当前最新为 5.9.4）。Red Hat 用户应安装 RHSA-2002:228 提供的更新包。临时缓解措施：在防火墙上限制 SNMP 服务（UDP 161 端口）仅允许可信来源访问，或在 snmpd.conf 中配置访问控制列表（com2sec/group/view 指令）限制可查询的 MIB 范围。"
+remediation = "升级 Net-SNMP 至 5.0.6 或更高版本，该版本修复了 snmp_agent.c 中 handle_var_requests 函数的 NULL 指针解引用问题。升级后重启 SNMP 服务（service snmpd restart），并确认服务正常运行。若无法立即升级，可在网络边界防火墙层面限制对 SNMP 端口（UDP 161/162）的外部访问，仅允许受信任的管理站 IP 访问，临时降低被远程利用导致拒绝服务的风险。"
 score = 5
 severity = "MEDIUM"
-sources = ["osv"]
-title = "Net-SNMP SNMP守护进程拒绝服务漏洞"
+sources = ["redhat"]
+title = "Net-SNMP SNMP 守护进程空指针解引用拒绝服务漏洞"
 updated = "2026-06-16T21:58:52.313"
 
 [exploit]
@@ -17,7 +37,7 @@ aliases = ["CVE-2002-1170"]
 ave_id = "AVE-2002-0047"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-29T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +48,14 @@ urls = [
     "http://www.redhat.com/support/errata/RHSA-2002-228.html",
     "http://www.securityfocus.com/bid/5862",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/10250",
-    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2002/CVE-2002-1170.md",
-    "https://github.com/CVEProject/cvelistV5/blob/528991f6906b29893dd0e43e65862cd92fd607c8/cves/2002/1xxx/CVE-2002-1170.json",
+    "https://github.com/trickest/cve/blob/b349e2ac98435c78e6eec698cf95df82dacb0ca1/2002/CVE-2002-1170.md",
+    "https://github.com/CVEProject/cvelistV5/blob/c61100b82badca16ad107892eaf1ce53a00c3776/cves/2002/1xxx/CVE-2002-1170.json",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2002/CVE-2002-1170.md",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-1170",
-    "https://github.com/edoardottt/missing-cve-nuclei-templates/blob/115c94bd1da3cc18977d652d6e78c9f4a5dfc13b/data/year/2002.txt",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f2c577e1255b2c3fd617b7f1c499a222feb7b668/CVE/data/2002/CVE-2002-1170.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7ebe16a87d7482b578f5baf29517e74408f62ab5/CVE/data/2002/CVE-2002-1170.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2002/CVE-2002-1170.md",
-    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2022/04/GHSA-5j37-qvcv-4rf2/GHSA-5j37-qvcv-4rf2.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x6000/5862/info.html",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_149400_149500.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-1170.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2002-1170.json",
+    "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2002/CVE-2002-1170.md",
+    "https://github.com/opencve/opencve-kb/blob/e360b144e9e9de9c01917f4eb9026f28ed6b0719/2002/CVE-2002-1170.json",
 ]
