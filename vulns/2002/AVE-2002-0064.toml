@@ -1,11 +1,11 @@
 [basic]
-description = "Samba 2.2.2 至 2.2.6 版本存在缓冲区溢出漏洞，远程攻击者可通过发送特制的加密密码触发该漏洞。在服务端解密过程中，将 DOS 代码页字符串转换为小端 UCS2 Unicode 字符串时发生缓冲区溢出，导致拒绝服务或任意代码执行。攻击者无需身份认证即可远程利用，CVSS 评分 10.0，危害等级严重。受影响系统需升级至 Samba 2.2.7 或更高版本。"
+description = "Samba 2.2.2 至 2.2.6 版本在解密加密密码时，将 DOS 代码页字符串转换为小端序 UCS-2 Unicode 字符串的过程中存在缓冲区溢出漏洞。未经身份认证的远程攻击者可通过发送特制的加密密码触发溢出，导致拒绝服务甚至远程任意代码执行。该漏洞影响 Samba 2.2.2 至 2.2.6 版本，CVSS 评分 10.0（CVSS:AV:N/AC:L/Au:N/C:C/I:C/A:C），属严重级别，攻击者无需认证即可远程利用。攻击者可通过发送精心构造的加密密码数据包触发解密过程中的缓冲区溢出，进而导致服务崩溃或在目标系统上执行任意代码。建议升级至 Samba 2.2.7 或更高版本修复该漏洞。"
 published = "2002-12-11T05:00:00.000"
-remediation = "立即升级 Samba 至 2.2.7 或更高版本。对于 Debian Woody (3.0) 用户，安装 DSA-200 提供的 samba 2.2.3a-12 更新包。如无法升级，可应用官方补丁：修改 source/libsmb/smbencrypt.c 中 dos_struni2 调用的长度参数，将第 66 行的 256 改为变量 len。临时缓解措施：在 smb.conf 中禁用加密密码变更请求（设置 encrypt passwords = no），但此操作会降低安全性，仅作为临时方案。"
+remediation = "立即升级 Samba 至 2.2.7 或更高版本（建议升级至 3.0.0 以上稳定版）。若暂时无法升级，可在防火墙层面限制 139/445 端口仅允许可信 IP 访问，或在 smb.conf 中设置 `encrypt passwords = no` 禁用加密密码认证作为临时缓解措施，但这会降低认证安全性，务必尽快完成版本升级。"
 score = 10
 severity = "CRITICAL"
-sources = ["osv"]
-title = "Samba 缓冲区溢出远程代码执行漏洞"
+sources = ["redhat"]
+title = "沙巴缓冲区溢出漏洞导致拒绝服务和任意代码执行"
 updated = "2026-06-16T21:59:06.367"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-1318"]
 ave_id = "AVE-2002-0064"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-30T00:00:00Z"
 status = "completed"
 
 [references]
@@ -37,14 +37,14 @@ urls = [
     "http://www.securityfocus.com/bid/6210",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/10683",
     "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A1467",
-    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2002/CVE-2002-1318.md",
-    "https://github.com/CVEProject/cvelistV5/blob/97700d7e657426c8e1ee6cf44a0a2b88c60738c3/cves/2002/1xxx/CVE-2002-1318.json",
+    "https://github.com/trickest/cve/blob/b349e2ac98435c78e6eec698cf95df82dacb0ca1/2002/CVE-2002-1318.md",
+    "https://github.com/CVEProject/cvelistV5/blob/9733cd108933bea779970cc29981361e50691314/cves/2002/1xxx/CVE-2002-1318.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-1318",
-    "https://github.com/e-m-b-a/emba/blob/4d0f24b3edae0bdb5391177851bad3be54ecea0f/config/msf_cve-db.txt",
-    "https://github.com/vulncheck-oss/0day.today.archive/blob/3664abdd71985a44aff3260896a8f36e2f4a9682/remote-exploits/27398.txt",
-    "https://github.com/edoardottt/missing-cve-nuclei-templates/blob/115c94bd1da3cc18977d652d6e78c9f4a5dfc13b/data/year/2002.txt",
-    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2022/05/GHSA-746r-2wrh-hhjx/GHSA-746r-2wrh-hhjx.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/800f04b3cfadd1b9ab0343f5b9acd785dbc1e953/CVE/data/2002/CVE-2002-1318.json",
-    "https://github.com/Chudry/Xerror/blob/07ec57cabcd27cdb47c89af452bdf4ed07207347/xerror/parsing/msf_module_result/msf_module_cve.txt",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/debian_DSA-200.nasl",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/54f83abc415bbb86c58c9eb7678aadf276fc79d6/CVE/data/2002/CVE-2002-1318.json",
+    "https://github.com/opencve/opencve-kb/blob/32432109ff9e86b2bb98b1a1db62e571ca6165c8/2002/CVE-2002-1318.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/ad5644ee4d6d235ae1cfa1878af1fb901c8393c9/2002/1xxx/CVE-2002-1318.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-1318.json",
+    "https://github.com/e-m-b-a/emba/blob/cc31a434e24cc02a2538d6715dca3a7fe963ede8/config/msf_cve-db.txt",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/ff131139bd19bf58727d5c9cd0ead10532e0bef5/tracker/CVE/2002/CVE-2002-1318.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2002/1xxx/CVE-2002-1318.json",
 ]

