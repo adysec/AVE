@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "检测目标 SharePoint 服务器是否存在 CVE-2019-0604 反序列化 RCE 漏洞。通过访问 Picker.aspx 页面并检查 SharePoint 版本信息，判断是否存在漏洞风险。"
+id = "POC-AVE-2019-0007"
+name = "Microsoft SharePoint 反序列化远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["cve-2019-0604"]
+vuln_id = [
+    "CVE-2019-0604",
+    "AVE-2019-0007",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/_layouts/15/Picker.aspx"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "PickerDialog",
+    "SharePoint",
+    "ms-pickerresult",
+]
