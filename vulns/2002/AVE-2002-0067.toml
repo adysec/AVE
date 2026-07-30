@@ -1,11 +1,11 @@
 [basic]
-description = "TightVNC 1.2.6 之前版本存在安全绕过漏洞。该漏洞源于服务端在多个连接中生成相同的 challenge 字符串，远程攻击者可通过嗅探其他用户的 challenge 与 response 数据，利用该固定 challenge 绕过 VNC 认证机制，从而在无需合法凭据的情况下获取对目标系统的远程访问权限。该漏洞影响所有使用 TightVNC 1.2.6 之前版本的系统，攻击者只需具备网络访问能力即可实施攻击，无需身份认证，危害较大。"
+description = "TightVNC 1.2.6 之前版本存在安全绕过漏洞。该漏洞的根源在于 TightVNC 在处理多个客户端连接时，为所有连接生成相同的挑战字符串（challenge string）。未经身份认证的远程攻击者可以通过嗅探网络流量获取其他用户与服务器之间的挑战和响应数据，利用这些窃取的信息绕过 VNC 身份验证机制，无需知道目标用户的密码即可建立 VNC 连接并控制远程桌面。该漏洞影响所有运行 TightVNC 1.2.6 之前版本的 Windows、Linux 等操作系统上的 TightVNC 服务端，攻击者只要能够监听服务器与客户端之间的网络通信即可实施攻击，利用条件简单且无需特殊权限。"
 published = "2002-12-11T05:00:00.000"
-remediation = "升级 TightVNC 至 1.2.6 或更高版本，该版本修复了每次连接生成相同 challenge 字符串的问题。如无法立即升级，应通过 SSH 隧道或 VPN 封装 VNC 流量，防止攻击者嗅探网络中的 challenge/response 数据；同时在防火墙层面限制 VNC 端口（默认 5900/TCP）仅允许受信任 IP 访问。"
+remediation = "立即升级到 TightVNC 1.2.6 或更高版本，该版本修复了重复使用相同质询字符串导致的认证绕过漏洞。如无法立即升级，可在防火墙中限制 VNC 端口（默认 5900/TCP）仅允许可信 IP 访问，或强制通过 SSH 隧道加密传输 VNC 流量，以防止攻击者嗅探网络中的认证质询与响应数据。"
 score = 7.5
 severity = "HIGH"
-sources = ["osv"]
-title = "TightVNC 认证绕过漏洞"
+sources = ["redhat"]
+title = "TightVNC 远程桌面 VNC 认证绕过漏洞"
 updated = "2026-06-16T21:59:07.640"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-1336"]
 ave_id = "AVE-2002-0067"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-07-30T00:00:00Z"
 status = "completed"
 
 [references]
@@ -31,14 +31,14 @@ urls = [
     "http://www.securityfocus.com/bid/5296",
     "http://www.tightvnc.com/WhatsNew.txt",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5992",
-    "https://github.com/CVEProject/cvelistV5/blob/27eee309d10a00ce5571c5ab1765599e23f1725f/cves/2002/1xxx/CVE-2002-1336.json",
+    "https://github.com/CVEProject/cvelistV5/blob/1c8487d39144bddd392ea8e64c19d3184e53aad1/cves/2002/1xxx/CVE-2002-1336.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-1336",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2002-1336.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/800f04b3cfadd1b9ab0343f5b9acd785dbc1e953/CVE/data/2002/CVE-2002-1336.json",
-    "https://github.com/github/advisory-database/blob/d8c03b84658bbca948e09e4af723cb11141fb41e/advisories/unreviewed/2022/04/GHSA-fcjm-23wr-m9g6/GHSA-fcjm-23wr-m9g6.json",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/redhat-RHSA-2002-287.nasl",
-    "https://github.com/jdkoftinoff/mb-linux-msli/blob/8adb103e34af9ff1d8d122e9ee2a1808836f0a14/uClinux-dist/user/nessus/nessus-plugins/scripts/mandrake_MDKSA-2003-022.nasl",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_149500_149600.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/b858c1de67d8192aba338799e4dc25fc6df3edc6/CVE/data/2002/CVE-2002-1336.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-1336.json",
-    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idbypass",
+    "https://github.com/opencve/opencve-kb/blob/c1096ae2c739fb24857b16bf09f0fefbd8cfadc2/2002/CVE-2002-1336.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2002-1336.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/b50573b11cc979cd742f854e751c69c1ee415eb0/2002/1xxx/CVE-2002-1336.md",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/9c3e0172b371d5efbbab50ce0cd0aa5c9ed664c4/tracker/CVE/2002/CVE-2002-1336.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/dcf23aed58c5cab14c2c44b30593196b46bb051f/CVE-2002/CVE-2002-13xx/CVE-2002-1336.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2002/1xxx/CVE-2002-1336.json",
 ]
