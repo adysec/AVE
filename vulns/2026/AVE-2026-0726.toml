@@ -1,0 +1,42 @@
+[basic]
+description = "Pagy 宝石的 I18n 模块在设置 locale 参数时未对输入进行合法性校验，直接将用户提供的值作为文件路径组件拼接并读取对应的 YAML 字典文件。攻击者可通过构造包含 `../` 路径遍历序列或绝对路径的 locale 参数，使应用加载并解析任意服务器端 YAML 文件（如配置文件 database.yml），从而建立文件存在性与可读性的探测信道，并实现服务器端文件内容读取。该漏洞影响所有将不受信任的终端用户输入直接赋值给 `Pagy::I18n.locale=` 的 Ruby 应用，而使用可信来源设置 locale 的应用不受影响。CVSS 评分为 6.9（中等），已于 pagy 43.5.6 版本中通过限制 locale 必须符合 BCP 47 格式的方式修复。"
+published = "2026-07-28T23:17:09.067"
+remediation = '立即升级 pagy gem 至 43.5.6 或更高版本，该版本在 `Pagy::I18n.locale=` setter 中增加了 BCP 47 正则校验，阻止 `../` 和绝对路径等非法值。若暂时无法升级，请在赋值前对用户输入进行正则过滤：`Pagy::I18n.locale = params[:locale].to_s[/\A[a-zA-Z]{2,8}(-[a-zA-Z0-9]{1,8})*\z/]`，或仅允许赋值给预设的受信任 locale 列表（如 `I18n.available_locales`），拒绝任何不在列表中的值。'
+score = 6.9
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Pagy I18n locale 路径遍历信息泄露漏洞"
+updated = "2026-07-29T13:19:00.220"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54659",
+    "GHSA-2xmw-f8j8-wfxc",
+]
+ave_id = "AVE-2026-0726"
+
+[meta]
+collected_at = "2026-07-30T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/ddnexus/pagy/commit/efcf09690e9fa7d7abdfb987b785a55f87e287df",
+    "https://github.com/ddnexus/pagy/pull/908",
+    "https://github.com/ddnexus/pagy/releases/tag/43.5.6",
+    "https://github.com/ddnexus/pagy/security/advisories/GHSA-2xmw-f8j8-wfxc",
+    "https://github.com/CVEProject/cvelistV5/blob/8c5cb8015669b7fea66cc41d203b97a12e61abfc/cves/2026/54xxx/CVE-2026-54659.json",
+    "https://github.com/cisagov/vulnrichment/blob/72d8d6ef3c1d9166f26866551cee9f1f8d960919/2026/54xxx/CVE-2026-54659.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/be04a74d8eb7583856274b2516ee1145cf8d4218/SSVC/data/2026/CVE-2026-54659.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/6d9e48809bb56eb829c7d184fbf6c6fd45cd04df/pocs/2026/CVE-2026-54659.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/be04a74d8eb7583856274b2516ee1145cf8d4218/CVE/data/2026/CVE-2026-54659.json",
+    "https://github.com/Tabll/gemnasium-db/blob/ede50d3653e824fabe4210e54459047bef709b31/gem/pagy/CVE-2026-54659.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/dcf23aed58c5cab14c2c44b30593196b46bb051f/CVE-2026/CVE-2026-546xx/CVE-2026-54659.json",
+    "https://github.com/TMA84/cvealert/blob/9ffc2f6c5c73933ab0668bbefe19806a431955a8/content/posts/cve-2026-54659.md",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/9c3e0172b371d5efbbab50ce0cd0aa5c9ed664c4/tracker/CVE/2026/CVE-2026-54659.json",
+    "https://github.com/opencve/opencve-kb/blob/d7fec49e4355e166a4b0625e0b5eb4d2c8efa124/2026/CVE-2026-54659.json",
+]
