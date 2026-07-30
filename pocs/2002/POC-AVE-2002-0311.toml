@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "检测PHP move_uploaded_file函数是否绕过了open_basedir限制，通过上传文件到任意路径验证能否写入基于目录白名单之外的任意位置，绕过安全配置限制"
+id = "POC-AVE-2002-0311"
+name = "CVE-2002-0484 PoC"
+severity = "medium"
+tags = ["ave-2002-0311"]
+vuln_id = [
+    "CVE-2002-0484",
+    "AVE-2002-0311",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/upload.php"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "was sucessfully uploaded",
+    "success",
+]
