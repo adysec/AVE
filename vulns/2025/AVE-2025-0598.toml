@@ -1,0 +1,36 @@
+[basic]
+description = "Qt Network 的 OpenSSL TLS 后端存在不受控制的搜索路径元素漏洞（CWE-427）。在 Unix 系统上，使用 Qt 框架的应用程序在加载 TLS 证书时，会将应用程序的工作目录纳入 CA 证书搜索路径。攻击者可在目标系统上放置一个伪造的 CA 证书文件到应用工作目录中，该文件会被 Qt Network 模块误认为受信任的系统证书颁发机构，从而加载并信任恶意 CA。这使得攻击者能够实施中间人攻击，拦截和解密应用程序的 TLS 加密通信。该漏洞影响 Qt Framework (Unix) 下使用 OpenSSL TLS 后端的应用程序，CVSS 评分为 1.8（低危），需要本地访问权限才能利用。"
+published = "2026-05-19T14:16:27.120"
+remediation = "建议将 Qt (qtbase) 升级至已修复的版本：Qt 6.5.9、6.8.4 或 6.10.0 及更高版本。受影响的代码路径为 QtNetwork 中 QSslCertificate::fromPath() 方法，当传入空路径时会遍历当前工作目录加载证书文件，修复后该方法将在路径为空时直接返回空列表。对于 Unix/Linux 系统，可通过包管理器更新系统自带的 qt6-base 或 qtbase-opensource-src 包。如暂无法升级，应将应用程序的工作目录权限收紧，避免非特权用户可在其中放置恶意 .pem/.crt 证书文件，或显式指定受信任的 CA 证书目录路径以替代默认的系统搜索路径。"
+score = 1.8
+severity = "LOW"
+sources = ["msrc"]
+title = "Qt Qt Network OpenSSL TLS 后端不受控制的搜索路径元素允许恶意 CA 证书加载"
+updated = "2026-07-29T10:16:35.220"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-14575"]
+ave_id = "AVE-2025-0598"
+
+[meta]
+collected_at = "2026-07-30T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://codereview.qt-project.org/c/qt/qtbase/+/642967",
+    "https://github.com/CVEProject/cvelistV5/blob/e8e5677efdddb9343c4d7ff6efe8ac6dc3b41098/cves/2025/14xxx/CVE-2025-14575.json",
+    "https://github.com/cisagov/vulnrichment/blob/8f58f2aca6f1139bd32d3740409b3ec8a97c5059/2025/14xxx/CVE-2025-14575.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/b858c1de67d8192aba338799e4dc25fc6df3edc6/SSVC/data/2025/CVE-2025-14575.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/b858c1de67d8192aba338799e4dc25fc6df3edc6/CVE/data/2025/CVE-2025-14575.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-14575.json",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2025-14575.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/dcf23aed58c5cab14c2c44b30593196b46bb051f/CVE-2025/CVE-2025-145xx/CVE-2025-14575.json",
+    "https://github.com/neuvector/vul-source/blob/e03c5655bebd4c9a948dcb1b37e1e76b72295ca6/ubuntu-cve-tracker/active/CVE-2025-14575",
+    "https://github.com/TMA84/cvealert/blob/9ffc2f6c5c73933ab0668bbefe19806a431955a8/content/posts/cve-2025-14575.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/b00ea0816ce55b8dcb9be2ee9fcf8a52e1e37b3f/vex/cve/2025/CVE-2025-14575.json",
+]
