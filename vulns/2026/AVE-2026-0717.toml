@@ -1,0 +1,41 @@
+[basic]
+description = "pytonapi 2.2.0 中的 TonapiWebhookDispatcher 存在严重认证缺陷。当用户使用官方文档中记录的 `path=` 参数注册Webhook处理器时，系统只存储默认后缀路径（如`/hook/account-tx`）的认证令牌，而忽视了自定义路径（如`/hook/custom`）。由于认证令牌存储映射 `_tokens` 中不包含自定义路径，在进行认证检查时，`expected_token = self._tokens.get(path)` 会返回None，导致认证检查直接跳过，请求通过。攻击者无需任何认证即可向受害者系统发送恶意的POST请求，触发受害者定义的Webhook处理器，完全控制事件数据的完整性。该漏洞影响所有使用 pytonapi 2.2.0 并注册自定义路径处理程序的系统，攻击者只需知道或猜测受害者的自定义Webhook路径即可发起攻击。利用过程包括：1）了解受害者使用pytonapi 2.2.0实现Webhook；2）确认受害者使用了自定义路径（如`/hook/custom`）注册处理器；3）向受害者Webhook端点发送无认证的POST请求，其中包含仿冒的事件数据（如`account_tx`事件）。当受害者处理器接收到这些伪造事件时，将按照攻击者控制的数据执行业务逻辑，可能导致支付处理、账户状态更新等严重后果，直接威胁系统的完整性和可用性。"
+published = "2026-07-28T18:17:22.427"
+remediation = "立即升级 pytonapi 到 2.2.1 或更高版本（`pip install --upgrade pytonapi==2.2.1`）。若暂时无法升级，请勿在 `@dispatcher.account_tx()` 等装饰器中使用 `path=` 参数注册自定义路径，改用默认路径 `/hook/account-tx` 等，并确保所有 webhook 端点均受 Authorization 头保护；同时在反向代理层对自定义路径强制要求 Authorization 头作为临时缓解措施。升级后请验证 `dispatcher._tokens` 映射包含所有自定义路径的 token。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "pytonapi Webhook 自定义路径认证绕过漏洞"
+updated = "2026-07-28T18:17:22.427"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54635",
+    "GHSA-3fcr-jvgp-7f58",
+]
+ave_id = "AVE-2026-0717"
+
+[meta]
+collected_at = "2026-07-30T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/nessshon/tonapi/commit/854222b7ee68d3fb7b4d6d899d200f388483bd86",
+    "https://github.com/nessshon/tonapi/releases/tag/v2.2.1",
+    "https://github.com/nessshon/tonapi/security/advisories/GHSA-3fcr-jvgp-7f58",
+    "https://github.com/CVEProject/cvelistV5/blob/4d40bbb471811a29843f023fbf1a8beb3373a987/cves/2026/54xxx/CVE-2026-54635.json",
+    "https://github.com/cisagov/vulnrichment/blob/5586dd7f238e688df5e045b93ec7484d63fd140a/2026/54xxx/CVE-2026-54635.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8badb38e9fdd060ee46b7da7005f556b6f7db6bb/SSVC/data/2026/CVE-2026-54635.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8badb38e9fdd060ee46b7da7005f556b6f7db6bb/CVE/data/2026/CVE-2026-54635.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/6d9e48809bb56eb829c7d184fbf6c6fd45cd04df/pocs/2026/CVE-2026-54635.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f852dcbb0286f5d88b04c17e99702d974cf97496/CVE-2026/CVE-2026-546xx/CVE-2026-54635.json",
+    "https://github.com/Tabll/gemnasium-db/blob/ede50d3653e824fabe4210e54459047bef709b31/pypi/pytonapi/CVE-2026-54635.yml",
+    "https://github.com/TMA84/cvealert/blob/da2872f085e0dec009c55ece506a2240174e7581/content/posts/cve-2026-54635.md",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/72cbdcf5b0040806853b9597e1a625651c5a1bf9/api/2026/CVE-2026-54635.json",
+    "https://github.com/opencve/opencve-kb/blob/a91b5761c0d412dd56f3e255388077228a3d8a70/2026/CVE-2026-54635.json",
+]
