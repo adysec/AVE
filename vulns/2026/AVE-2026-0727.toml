@@ -1,0 +1,41 @@
+[basic]
+description = "datamodel-code-generator 在解析 JSON-Schema 时，对 `$ref` 字段指向的 HTTP 或 HTTPS URL 会静默发起请求并获取远程内容，且未对目标 IP/主机名进行校验、未限制协议方案、无条件跟随重定向。`--allow-remote-refs` 参数默认值为 `None`，仅输出弃用警告后仍会继续请求远程地址，仅显式设置为 `false` 时才会阻止请求。攻击者可在 JSON-Schema 或 OpenAPI 文档中嵌入指向内网服务（如云元数据服务、内部 API）的恶意 `$ref`，当开发者使用安装了 `[http]` 扩展的 datamodel-codegen 处理该文档时，工具会自动发起服务器端请求伪造（SSRF）攻击，并将获取到的响应内容（如 IAM 凭证、用户数据）直接写入生成的 Python 代码文件中。该漏洞影响 0.9.1 至 0.61.0 之前的所有版本，攻击者无需开发者额外配合，仅需受害者运行工具处理不可信来源的 Schema 文档即可触发。官方已在 0.61.0 版本中通过限制非公网目标访问、强制校验重定向地址并新增 `--allow-private-network` 参数修复此问题。"
+published = "2026-07-28T22:17:40.650"
+remediation = "立即将 datamodel-code-generator 升级至 0.61.0 或更高版本，官方在该版本中修复了此问题。如无法立即升级，请显式设置 `--allow-remote-refs=false` 参数与 `--allow-private-network` 参数以阻止远程 $ref 请求，并严格审查所有待处理的 JSON Schema、OpenAPI 文档来源，仅处理可信数据，禁止将工具用于解析来自不可信第三方的 Schema 文件。如使用了 `[http]` 扩展，可在临时缓解期间将其移除。"
+score = 8.2
+severity = "HIGH"
+sources = ["ghsa"]
+title = "datamodel-code-generator JSON Schema $ref 服务器端请求伪造漏洞"
+updated = "2026-07-29T16:17:54.210"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54690",
+    "GHSA-954p-556p-r752",
+]
+ave_id = "AVE-2026-0727"
+
+[meta]
+collected_at = "2026-07-30T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/koxudaxi/datamodel-code-generator/commit/5fdba4a09f2d7a9996a504975b7ef7d63e3715bb",
+    "https://github.com/koxudaxi/datamodel-code-generator/releases/tag/0.61.0",
+    "https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-954p-556p-r752",
+    "https://github.com/CVEProject/cvelistV5/blob/67c9200e969a6d3d408c757f270927299404e0d3/cves/2026/54xxx/CVE-2026-54690.json",
+    "https://github.com/cisagov/vulnrichment/blob/4d28b9eb119ed8cb9cd810eb3eaa710058f66a19/2026/54xxx/CVE-2026-54690.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8c20cffcbf7c376fa6433e6fcbfd5a910a99bc5e/CVE/data/2026/CVE-2026-54690.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8c20cffcbf7c376fa6433e6fcbfd5a910a99bc5e/SSVC/data/2026/CVE-2026-54690.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/6d9e48809bb56eb829c7d184fbf6c6fd45cd04df/pocs/2026/CVE-2026-54690.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/931028af390b5904ba4e24b7aec655099c64a842/CVE-2026/CVE-2026-546xx/CVE-2026-54690.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/26642fc092283534201cf8a6d23402c6ed02ca48/reports/2026-07-28/TIER_3_CVE-2026-54690.md",
+    "https://github.com/Tabll/gemnasium-db/blob/ede50d3653e824fabe4210e54459047bef709b31/pypi/datamodel-code-generator/CVE-2026-54690.yml",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/68fa90e33d87769163a3160a6378e3c2fcd85037/nvd/2026/HIGH/CVE-2026-54690/README.md",
+    "https://github.com/TMA84/cvealert/blob/d40be87d21fc94beaff3cf1566e916bd4446da0d/content/posts/cve-2026-54690.md",
+]
