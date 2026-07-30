@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "验证Google Chrome WebGPU模块释放后使用漏洞，构造恶意HTML页面触发堆内存损坏，导致浏览器崩溃或潜在远程代码执行"
+id = "POC-AVE-2025-0599"
+name = "CVE-2025-14765 PoC"
+severity = "high"
+tags = ["ave-2025-0599"]
+vuln_id = [
+    "CVE-2025-14765",
+    "AVE-2025-0599",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/CVE-2025-14765-and-CVE-2025-14766.html"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "WebGPU",
+    "use after free",
+    "heap corruption",
+]
