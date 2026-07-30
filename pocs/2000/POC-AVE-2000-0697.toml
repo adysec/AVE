@@ -1,14 +1,10 @@
 [info]
-author = "AVE"
-description = "检测目标 Sun HotJava Browser 3.0 是否存在任意 DOM 访问漏洞。通过构造包含 javascript: URL 的恶意页面，在命名窗口中打开目标网页，绕过同源策略跨域读取 DOM 内容。"
+author = "ave"
+description = "验证 Sun HotJava Browser 3.0 是否存在任意 DOM 访问漏洞。通过构造包含 javascript: URL 的具名窗口页面，检测浏览器是否允许跨域访问目标页面的 DOM（document.cookie 和 document.links）。若页面返回包含漏洞利用代码的 HTML，则表明目标可能存在该漏洞。"
 id = "POC-AVE-2000-0697"
-name = "Sun HotJava Browser 3 Arbitrary DOM Access PoC"
+name = "Sun HotJava Browser 3.0 DOM Access CVE-2000-0958"
 severity = "medium"
-tags = [
-    "cve-2000-0958",
-    "dom-access",
-    "hotjava",
-]
+tags = ["ave-2000-0697"]
 vuln_id = [
     "CVE-2000-0958",
     "AVE-2000-0697",
@@ -19,18 +15,26 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/poc.html"
+path = "/{{BaseURL}}"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "HotJava",
-    "DOM accessed successfully",
-]
+words = ["window.open"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["document.cookie"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["document.links"]
