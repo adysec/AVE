@@ -1,11 +1,11 @@
 [basic]
-description = 'Bajie HTTP 服务器 0.30a 版本存在目录遍历漏洞，未经身份认证的远程攻击者可通过在 URL 中插入 "...." 字符序列，绕过服务器的路径检查机制，从而任意读取服务器上的敏感文件。该漏洞影响运行 Bajie HTTP web server 0.30a 的系统，攻击者仅需构造包含特制路径的 HTTP 请求即可发起攻击，无需提供有效凭据或进行复杂交互。成功利用该漏洞可导致服务器敏感文件泄露，CVSS 评分 5.0，危害等级为中危。建议管理员升级至更高版本或应用相关安全补丁以消除此风险。'
+description = 'Bajie HTTP Web Server 0.30a 存在目录遍历漏洞，远程未授权攻击者可通过构造包含 "...."（四个点）的特制 URL 绕过路径限制，实现任意文件读取。该漏洞利用 "...." 作为 ".." 目录遍历的变体，突破服务器的路径规范化检查，可读取服务器文件系统中的敏感文件（如配置文件、源代码、密码文件等）。攻击条件为：目标运行 Bajie HTTP Web Server 0.30a，攻击者可通过网络直接访问 Web 服务，无需身份认证即可发起攻击。CVSS 评分 5.0（AV:N/AC:L/Au:N/C:P/I:N/A:N），属于中危漏洞，主要影响机密性。'
 published = "2000-10-20T04:00:00.000"
-remediation = '升级 Bajie HTTP server 至存在官方修复的版本以消除目录遍历漏洞；若该服务器已停止维护且无补丁，建议替换为 Apache、Nginx 等持续更新的 Web 服务器。临时缓解措施：在反向代理或防火墙层配置 URL 过滤规则，拒绝包含连续点号序列（如 "...."）的 HTTP 请求，并对 Web 根目录设置严格的访问权限，禁止向外部暴露系统敏感文件。'
+remediation = '建议立即停止使用 Bajie HTTP web server 0.30a 并迁移至现代维护的 Web 服务器（如 Apache Tomcat、Jetty、Nginx 等）。若必须继续使用，请在 Web 服务器前部署 WAF 或反向代理（如 Nginx），配置规则拦截包含 "...."、"..%2f"、"..%5c" 等目录遍历序列的请求路径；同时在应用层实施路径规范化校验，规范化路径后校验是否在 Web 根目录下，禁止访问 Web 根目录外文件。建议尽快完成迁移，因该软件已于 2000 年停止维护，无官方补丁可用。'
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "Bajie HTTP web server 目录遍历任意文件读取漏洞"
+sources = ["avd"]
+title = "Bajie HTTP Web Server 目录遍历任意文件读取漏洞"
 updated = "2026-06-16T21:52:27.073"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0773"]
 ave_id = "AVE-2000-0925"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-07-30T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-07/0426.html",
     "http://www.securityfocus.com/bid/1522",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5021",
-    "https://github.com/CVEProject/cvelistV5/blob/7040aa3cef70d03b2345cd387b32b51374b6a04e/cves/2000/0xxx/CVE-2000-0773.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4d40bbb471811a29843f023fbf1a8beb3373a987/cves/2000/0xxx/CVE-2000-0773.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8badb38e9fdd060ee46b7da7005f556b6f7db6bb/CVE/data/2000/CVE-2000-0773.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0773",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/e8275372875b1dc20936f33ba49f4cf0c2ecfbc9/2000/0xxx/CVE-2000-0773.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1bccb4ad1e172f2a4cdf28bf583eef1fe51cb09a/CVE/data/2000/CVE-2000-0773.json",
-    "https://github.com/github/advisory-database/blob/8fd24b26179bcdde52e301aef6d16b0838932c28/advisories/unreviewed/2022/04/GHSA-p39c-3779-23qg/GHSA-p39c-3779-23qg.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0773.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152700_152800.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--bb764cb5-c2ae-4d92-86b3-14883fbffb7d.json",
-    "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_dirtra.txt",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0773.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f852dcbb0286f5d88b04c17e99702d974cf97496/CVE-2000/CVE-2000-07xx/CVE-2000-0773.json",
+    "https://github.com/opencve/opencve-kb/blob/28fa1bc56eb946581b4954ed0068b7aeb55be6e9/2000/CVE-2000-0773.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/ddaa78c50e489d89917c344923ee56bc36e3235e/2000/0xxx/CVE-2000-0773.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0773.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0773.json",
 ]
