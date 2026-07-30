@@ -1,10 +1,10 @@
 [basic]
-description = 'CGIForum 1.0 的 cgiforum.pl 脚本中存在目录遍历漏洞，远程攻击者可通过向 "thesection" 参数提交包含 `..`（点点）序列的特制请求，突破路径限制读取服务器上的任意文件。该漏洞影响 CGIForum 1.0 版本，无需身份认证即可利用，可能导致敏感信息泄露。攻击者只需构造简单的 HTTP 请求即可触发该漏洞，利用难度较低。'
+description = 'Markus Triska CGIForum 1.0 的 cgiforum.pl 脚本中存在目录遍历漏洞，远程攻击者可通过 "thesection" 参数提交 ".."（点点）序列实现目录遍历攻击，从而读取服务器上的任意文件。该漏洞影响 CGIForum 1.0 版本，攻击者无需身份认证即可远程利用，攻击复杂度低，仅需构造包含目录遍历序列的恶意请求即可读取服务器敏感文件（如配置文件、源代码、系统文件等），导致机密性泄露，CVSS 评分 5.0（中危），影响机密性但不影响完整性和可用性。'
 published = "2001-01-09T05:00:00.000"
-remediation = "升级 CGIForum 至已修复目录遍历漏洞的最新版本；如无官方更新，手动修改 cgiforum.pl，在解析 thesection 参数前过滤 `..` 和 `/` 等路径穿越字符，改用 `File::Basename` 模块规范化路径。同时可在 Web 服务器（Apache/Nginx）层面配置重写规则，拦截包含 `../` 或 `%2e%2e` 的 thesection 请求参数作为临时缓解。"
+remediation = '建议立即升级 CGIForum 至 1.0 之后的修复版本（如有官方修复版本），或从官方站点下载最新版本替换 cgiforum.pl。若无官方补丁，请立即停用 cgiforum.pl 脚本或在 Web 服务器层面配置规则拦截 thesection 参数中包含 ".." 或 "/" 的请求；同时配置 Web 服务器限制 CGI 脚本的文件系统访问权限（如 chroot/jail 到特定目录），并在 WAF 层面添加目录遍历特征规则拦截 ../ 等遍历载荷。若无法升级，建议暂时下线该 CGI 论坛功能并改用维护中的现代论坛软件。'
 score = 5
 severity = "MEDIUM"
-sources = ["exploitdb"]
+sources = ["cve"]
 title = "Markus Triska CGIForum 1.0 目录遍历漏洞"
 updated = "2026-06-16T21:53:18.540"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1171"]
 ave_id = "AVE-2000-0827"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-07-30T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1963",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5553",
     "https://www.exploit-db.com/exploits/20408",
-    "https://github.com/CVEProject/cvelistV5/blob/fbe4faa82ea56a60f688d9bd92ecf2ac8f256a8a/cves/2000/1xxx/CVE-2000-1171.json",
+    "https://github.com/CVEProject/cvelistV5/blob/debf0490813d6b24b6eb78e22c421b3f9bcb8d50/cves/2000/1xxx/CVE-2000-1171.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f6f07feba024060bc836e38e9ad4be74bb9614ec/CVE/data/2000/CVE-2000-1171.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1171",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-1171.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/5c6904371163d9b81521151d4181001adee1b956/CVE/data/2000/CVE-2000-1171.json",
-    "https://github.com/github/advisory-database/blob/e38df7a80f8aa0122f9b0f7f660a5a952c979cc6/advisories/unreviewed/2022/04/GHSA-f89j-92rw-6x6x/GHSA-f89j-92rw-6x6x.json",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/snort/drop-rules/web-cgi.rules",
-    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/C/cgiforum.nasl",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1171.json",
-    "https://github.com/Yuning-J/NVDFeatureAnalysis/blob/493a57a415cc110f9945148abd717eeb92f6ca7e/originalDataset/cveIDThreatType/cve_iddirtra",
-    "https://github.com/hungryfoolou/Vulnerability_Mining/blob/3df1d8ed0489ae1228f975ae1f58a690aae53886/craw/cveid_craw/cveid_craw/data/cveid_by_kind/cveid_dirtra.txt",
+    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1171.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f852dcbb0286f5d88b04c17e99702d974cf97496/CVE-2000/CVE-2000-11xx/CVE-2000-1171.json",
+    "https://github.com/opencve/opencve-kb/blob/6ba74bc52475414675b84b57eb9d6c639a40271d/2000/CVE-2000-1171.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/3e6ed1a1d75816367e38c59309d8bdc19a3733f1/2000/1xxx/CVE-2000-1171.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1171.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1171.json",
 ]
