@@ -1,0 +1,48 @@
+[basic]
+description = '''
+tags.
+
+Let me write a good description:
+
+libssh 在 Windows 平台存在不安全默认配置漏洞（CWE-427，不受控制的搜索路径元素）。该库默认自动从 C:\etc 目录加载配置文件，而该目录可由非特权本地用户创建和修改。本地攻击者利用该缺陷可劫持 SSH 连接的配置，实施中间人攻击，导致 SSH 安全降级、受信任主机信息被篡改，进而窃取凭据或篡改通信内容，严重威胁 SSH 通信的机密性、完整性与可用性。攻击前提是攻击者能在目标系统上以本地低权限用户身份操作。该漏洞 CVSS 评分 7.8，危害等级为高。
+
+That covers principles, impact, attack conditions, exploitation. Good.分析：该漏洞为 libssh 在 Windows 平台的不安全默认配置问题（CWE-427 不受控制的搜索路径元素），本地攻击者可通过创建/篡改 C:\etc 目录下的配置文件实施中间人攻击。
+
+<value>libssh 在 Windows 平台存在不安全默认配置漏洞（CWE-427，不受控制的搜索路径元素）。由于库默认自动从 C:\etc 目录加载配置文件，而该目录可由非特权本地用户创建和修改，本地攻击者可借此植入恶意配置，对 SSH 连接实施中间人攻击，导致连接安全降级、受信任主机信息被篡改，进而窃取凭据或篡改通信数据，严重威胁 SSH 通信的机密性、完整性与可用性。攻击条件为攻击者需在目标系统上拥有本地低权限用户账户，无需用户交互即可触发。该漏洞 CVSS 评分为 7.8，危害等级为高。'''
+published = "2026-04-07T17:16:25.433"
+remediation = '建议立即升级 libssh 至修复版本 0.11.4 或 0.12.0（可通过 GitHub Releases 或系统包管理更新）。如无法立即升级，在 Windows 上重新编译 libssh 时改用以下安全配置：CMake 传入 -DGLOBAL_BIND_CONFIG=C:/ProgramData/ssh/libssh_server_config 与 -DGLOBAL_CLIENT_CONFIG=C:/ProgramData/ssh/ssh_config，将配置文件重定向至受管目录；并在应用中通过 ssh_options_set(session, SSH_OPTIONS_GLOBAL_KNOWNHOSTS, "C:/ProgramData/ssh/ssh_known_hosts") 设置全局 known hosts 路径，避免加载可被普通用户创建的 C:\etc 目录。同时建议以管理员权限回收 C:\etc 目录归属或将其权限收紧至仅 SYSTEM/Administrators 可写，并排查该目录下是否已存在被篡改的 ssh_known_hosts 与配置文件。'
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "libssh libssh Windows 不安全默认配置导致本地中间人攻击漏洞"
+updated = "2026-06-30T07:16:31.023"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-14821"]
+ave_id = "AVE-2025-0603"
+
+[meta]
+collected_at = "2026-08-02T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://access.redhat.com/errata/RHSA-2026:7067",
+    "https://access.redhat.com/security/cve/CVE-2025-14821",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=2423148",
+    "https://www.libssh.org/2026/02/10/libssh-0-12-0-and-0-11-4-security-releases/",
+    "https://github.com/CVEProject/cvelistV5/blob/e409cc3aa72de0994d4d1b2baf38bcac39a42cdc/cves/2025/14xxx/CVE-2025-14821.json",
+    "https://github.com/cisagov/vulnrichment/blob/67e4f2259ee77a0081a521c1e645484964f36ab6/2025/14xxx/CVE-2025-14821.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/CVE/data/2025/CVE-2025-14821.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/SSVC/data/2025/CVE-2025-14821.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/7fe13fea74df1c2902f4d8d9f41de46ac6e968bd/vex/cve/2025/CVE-2025-14821.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-14821.json",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2025-14821.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/93d966ccbf562a1a0fe2dcab2089012ce2b11591/CVE-2025/CVE-2025-148xx/CVE-2025-14821.json",
+    "https://github.com/neuvector/vul-source/blob/e8af837966f4fe349aac88609ed5288e4a877c95/ubuntu-cve-tracker/retired/CVE-2025-14821",
+    "https://github.com/microsoft/azurelinux/blob/4a660bd363c597c90b4e9cb0546a9652c249cb65/specs/l/libssh/libssh.spec",
+]
