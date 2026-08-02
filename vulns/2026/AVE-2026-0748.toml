@@ -1,0 +1,38 @@
+[basic]
+description = "该漏洞存在于 Natural Language Toolkit (NLTK) 的 FramenetCorpusReader 类中。当调用 `frame(name)` 方法时，用户控制的帧名称被直接拼接到 XML 文件路径中，但缺乏足够的路径验证防护。攻击者可以通过在帧名称中加入 `../` 路径遍历序列，绕过 NLTK 内置的 `CorpusReader.open()` 机制和 `nltk.pathsec` 沙盒机制（即使在 `ENFORCE=True` 严格模式下也能绕过）。这样，攻击者可以读取 corpus 根目录之外的任意 XML 文件，并获取其解析后的内容。该漏洞影响所有使用 FramenetCorpusReader 读取帧数据的应用，尤其是在安全沙盒环境中部署的用户。由于 `frame_by_name` 方法直接构建字符串路径并创建 `XMLCorpusView` 对象，系统的路径验证函数 `nltk.pathsec.validate_path()` 根本不会被调用，导致安全边界完全失效。攻击者只需提供包含路径遍历字符的帧名称就能触发该漏洞，利用过程无需身份验证，攻击者可以读取目标系统中存储的任意 XML 格式的敏感文件，包括配置信息、数据导出的 XML 文件，甚至可能包含的凭证信息。MITRE 将此漏洞记录为 CVE-2026-12074，CVSS 评分较高，危害等级为严重。该漏洞在 NLTK 的一些后续版本中已经修复，但在未更新到这些版本的应用中仍然存在风险。"
+published = "2026-01-01"
+remediation = "升级 NLTK 到 3.10.0 或更高版本，安装 NLTK 3.10.0 及以上版本以修复 FramenetCorpusReader 路径遍历漏洞。同时更新所有框架资源文件至安全版本，并确保 `nltk.pathsec.set_enforce(True)` 配置生效强制路径验证，防止框架核心组件直接调用系统 open() 函数读取任意 XML 文件。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "自然语言工具包 NLTK FramenetCorpusReader 路径遍历漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-12074",
+    "GHSA-xh95-f55m-82fw",
+]
+ave_id = "AVE-2026-0748"
+
+[meta]
+collected_at = "2026-08-02T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/2226f395f690bd125e18792c9fd587b54eb15804/pypi/nltk/CVE-2026-12074.yml",
+    "https://github.com/opencve/opencve-kb/blob/94607cd5f476edf9a266e633e1be7e43ab890e1c/2026/CVE-2026-12074.json",
+    "https://github.com/CVEProject/cvelistV5/blob/285830d3bc68381daeff2169c3b0a4500df03b19/cves/2026/54xxx/CVE-2026-54292.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/d7d4f90157e0aaed81af9be3a4969ce9dd4c986f/docs/data/2026/CVE-2026-12074.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d6db6ddfb07ef853c79bb625eb614ba3cefe7aaf/CVE/data/2026/CVE-2026-54292.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-54292.json",
+    "https://github.com/github/advisory-database/blob/3d63e93228e0044c8bf5b8592d80b472c5f5e627/advisories/github-reviewed/2026/07/GHSA-xh95-f55m-82fw/GHSA-xh95-f55m-82fw.json",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2026-54292.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b2f373c503e602e6a03f4a3557938637ea6e50dc/CVE-2026/CVE-2026-542xx/CVE-2026-54292.json",
+    "https://github.com/Aries-Serpent/_codex_/blob/8c2928f49f752b89c204219db1b4bbbc699f3172/ALERT_DISMISSAL_CHECKLIST.md",
+]
