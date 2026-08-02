@@ -1,11 +1,23 @@
 [basic]
-description = "X.Org X 服务器在处理 XKB 兼容映射时存在整数下溢漏洞，具体位于 XKB 兼容映射表（compatibility map）的处理逻辑中。由于未对输入数据进行正确的边界检查，攻击者可通过本地或远程 X11 服务器访问，向受影响系统发送特制的 XKB 数据触发缓冲区越界读取，导致内存安全违规，进而造成拒绝服务（DoS）或潜在的其他严重影响。该漏洞影响 X.Org X Server 及 XWayland 组件，攻击复杂度低，需低权限即可利用，CVSS 评分 7.8，危害等级高。"
+description = "tags.<value>X.Org X server 的 XKB 兼容映射（compatibility map）处理逻辑中存在整数下溢漏洞（CWE-191）。当攻击者构造特制的键盘兼容映射数据时，相关代码在下溢后进行内存读取操作，从而触发缓冲区读取越界（buffer read overrun），破坏内存安全约束。该漏洞影响 X.Org X server 及基于其架构的 Xwayland 等实现，广泛波及使用 X11 的 Linux/Unix 桌面环境。攻击者需具备对 X11 服务器的本地或远程访问能力，且需拥有本地低权限账户（CVSS 向量 AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H），攻击复杂度较低且无需用户交互。利用该漏洞可导致内存越界读取，轻则造成拒绝服务（DoS），重则可能进一步升级为内存破坏、信息泄露甚至任意代码执行。该漏洞由 ZDI（ZDI-26-333 / ZDI-CAN-28593）报告，CVSS 评分为 7.8，危害等级为高危，各 Linux 发行版厂商（如 Red Hat）已将其标记为重要安全更新，建议及时升级 X.Org 及 Xwayland 相关软件包。"
 published = "2026-04-23T16:16:24.623"
-remediation = "建议立即升级 xorg-x11-server 至修复版本：RHEL 7 ELS 升级至 xorg-x11-server 1.20.4-34.el7_9，RHEL 8/9/10 升级至 xorg-x11-server-Xwayland 24.1.5-6.el10_1 及以上版本，对应 RHSA-2026:10739 等安全公告。TigerVNC 用户升级至 1.1.0-25.el6_10.16（RHEL 6 ELS）或 1.8.0-36.el7_9.4（RHEL 7 ELS）。Debian/Ubuntu 用户通过包管理器安装对应安全更新。临时缓解措施：限制不可信用户对 X11 服务器的本地访问权限，或在无需 X11 转发的场景下禁用 X11Forwarding。"
+remediation = """
+The user wants me to fix the [remediation] field for CVE-2026-33999. The presearch data has concrete fix version info from Debian tracker:
+- xorg-server 2:21.1.22-1 (fixed)
+- trixie: xorg-server 2:21.1.16-1.3+deb13u2
+- bookworm: xorg-server 2:21.1.7-3+deb12u12
+
+Also X.Org announcement link: https://lists.x.org/archives/xorg-announce/2026-April/003677.html
+
+Red Hat erratas RHSA-2026:10739 etc.
+
+I should write a concrete, actionable Chinese remediation ≥20 chars, citing the Debian fixed versions and Red Hat errata.
+
+Let me craft the remediation field value.<value>建议立即升级 X.Org X server 及 Xwayland 至官方修复版本：根据 Debian 安全通告，Debian unstable 修复版本为 xorg-server 2:21.1.22-1，trixie 为 2:21.1.16-1.3+deb13u2，bookworm 为 2:21.1.7-3+deb12u12；Red Hat 各产品线已发布 RHSA-2026:10739、RHSA-2026:11352 等安全更新（详见 https://access.redhat.com/security/cve/CVE-2026-33999），请使用发行版包管理工具安装对应补丁包（如 `apt upgrade xorg-server xwayland`、`yum"""
 score = 7.8
 severity = "HIGH"
 sources = ["zdi"]
-title = "X.Org X Server XKB兼容映射表整数下溢漏洞"
+title = "X.Org X server XKB整数下溢漏洞"
 updated = "2026-07-15T02:20:27.840"
 
 [exploit]
@@ -17,7 +29,7 @@ aliases = ["CVE-2026-33999"]
 ave_id = "AVE-2026-0559"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-08-02T00:00:00Z"
 status = "completed"
 
 [references]
@@ -60,14 +72,14 @@ urls = [
     "https://access.redhat.com/security/cve/CVE-2026-33999",
     "https://bugzilla.redhat.com/show_bug.cgi?id=2451106",
     "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-33999.json",
-    "https://github.com/CVEProject/cvelistV5/blob/3ac44cfd6537e05d45dfec0ed67b6d47bebeee2b/cves/2026/33xxx/CVE-2026-33999.json",
-    "https://github.com/neuvector/vul-source/blob/83b6758c208f8fd7e22b7c88e002c3658ef467b8/ubuntu-cve-tracker/active/CVE-2026-33999",
-    "https://github.com/TMA84/cvealert/blob/51922162e2cbb5914a11ad939c724b426142677c/content/posts/cve-2026-33999.md",
-    "https://github.com/canonical/ubuntu-security-notices/blob/bb6cd0f1a29580d840cdb570b8b0c57cc39aac6d/osv/cve/2026/UBUNTU-CVE-2026-33999.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2026-33999.md",
-    "https://github.com/alpinelinux/aports/blob/66e79518fc53e6d522b44f4d0a6e70602a3fd328/community/xwayland/APKBUILD",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/98f785d4de3da29b2a31131d1ba99ceeb9ee0484/SSVC/data/2026/CVE-2026-33999.json",
-    "https://github.com/bell-sw/osv-database/blob/913667a73bdbecec80569e2765753066c820c678/BELL-CVE/BELL-CVE-2026-33999.json",
-    "https://github.com/flydiscohuebr/nvidia-304/blob/a678292cde4d170918d5993658fc678bc304d972/Debian/xorg-server/debian/patches/0077_CVE-2026-33999-xkb-b024ae1749ee58c6fbf863b9a1f5dc440fee2e1b.patch",
-    "https://github.com/github/advisory-database/blob/1c8e3f4146e1bef501493d1237acb1611ea8f707/advisories/unreviewed/2026/04/GHSA-g562-3mh5-27v6/GHSA-g562-3mh5-27v6.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e409cc3aa72de0994d4d1b2baf38bcac39a42cdc/cves/2026/33xxx/CVE-2026-33999.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/SSVC/data/2026/CVE-2026-33999.json",
+    "https://github.com/cisagov/vulnrichment/blob/67e4f2259ee77a0081a521c1e645484964f36ab6/2026/33xxx/CVE-2026-33999.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/CVE/data/2026/CVE-2026-33999.json",
+    "https://github.com/neuvector/vul-source/blob/e8af837966f4fe349aac88609ed5288e4a877c95/ubuntu-cve-tracker/active/CVE-2026-33999",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-33999.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/7fe13fea74df1c2902f4d8d9f41de46ac6e968bd/vex/cve/2026/CVE-2026-33999.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/7fe13fea74df1c2902f4d8d9f41de46ac6e968bd/osv/cve/2026/UBUNTU-CVE-2026-33999.json",
+    "https://github.com/TMA84/cvealert/blob/21c462a94ea67aa3df9bc7055065922b0908d166/content/posts/cve-2026-33999.md",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/c3ce9ce6c4e880427d4f61012130da140c93b7d7/tracker/CVE/2026/CVE-2026-33999.json",
 ]
