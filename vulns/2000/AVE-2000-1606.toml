@@ -1,11 +1,26 @@
 [basic]
-description = "Microsoft Word 的邮件合并功能存在安全漏洞，当用户打开包含恶意 Visual Basic for Applications（VBA）脚本的 Access 数据库作为邮件合并数据源时，Word 不会在执行前向用户弹出安全警告或提示，导致 VBA 脚本在用户无感知的情况下自动执行。远程攻击者可以构造特制的 Access 数据库文件，通过邮件合并功能诱导用户打开，从而在目标系统上以当前用户权限执行任意命令。该漏洞影响 Microsoft Word 多个版本，CVSS v2 评分为 10.0，危害等级严重。Microsoft 已在安全公告 MS00-071 中发布相关修复措施。"
+description = "Microsoft Word 的邮件合并（Mail Merge）功能在处理 Access 数据库时存在安全机制缺失漏洞。该功能在读取数据库中嵌入的 Visual Basic（VBA）脚本时，不会事先向用户弹出安全提示或请求确认，便直接执行脚本内容。攻击者可构造包含恶意 VBA 脚本的 Access 数据库文件，并诱导用户通过 Word 邮件合并功能打开，从而在用户环境中以当前用户权限执行任意命令，实现恶意代码植入、数据窃取或系统控制。该漏洞无需特殊认证条件即可触发，且攻击影响面较大，CVSS 评分为 10.0，危害等级为严重。受影响组件为旧版 Microsoft Word 的邮件合并工具，建议用户避免打开来源不明的数据库文件，并升级至已修复该问题的安全版本。"
 published = "2000-10-20T04:00:00.000"
-remediation = "立即安装 Microsoft 安全公告 MS00-071 提供的补丁：Word 2000 用户下载并安装 KB274226 补丁，Word 97 用户下载并安装 KB272749 补丁。该补丁会强制对 Word 文件中 Access 邮件合并数据源进行区域检查，当检测到文件来自 Internet 或受限站点区域时将弹出对话框提示用户。如无法立即打补丁，可在防火墙层面阻止出站 TCP 端口 135-139 和 445，阻断远程 Access 数据库的 UNC 访问路径；同时教育用户不要打开来自不可信来源的 Word 邮件合并附件或链接。"
+remediation = """
+tags.
+
+The vulnerability: Mail Merge tool in Microsoft Word executes VBA scripts in Access database without prompting. Corresponding to Microsoft advisory MS00-071 (the current TOML incorrectly says MS00-058, but the NVD references show ms00-071).
+
+Let me check the references: NVD references include https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-071 — so it's MS00-071, not MS00-058. The CVE-2002-0619 is a variant of MS00-071.
+
+So the remediation should reference MS00-071. For Word 2000, the patch was for Word 2000. Let me write a proper remediation.
+
+Note: the requirement says output only the field value between <value> tags. The output must be Chinese, ≥20 chars, with actionable steps.
+
+Let me craft:
+
+建议立即安装微软安全公告 MS00-071 提供的补丁（Microsoft Word 2000），修复邮件合并功能打开 Access 数据库时自动执行 VBA 脚本的问题。如无法及时安装补丁，可采取以下缓解措施：一、在 Word 中将宏安全级别设置为"高"，并取消勾选"信任对 VBA 工程对象模型的访问"选项，使宏执行前强制提示或直接禁用；二、仅从可信来源获取邮件合并所需的 .mdb 数据库文件，不要打开来源不明的 Access 数据库，避免加载恶意 VBA 脚本；三、通过组策略或注册表禁用邮件合并自动运行宏，并保持 Office 安全更新为最新状态。同时开启附件和宏安全防护，限制从邮件或网页中打开此类文档。
+
+That's good. Let me output it.<value>建议立即安装微软安全公告 MS00-071 提供的补丁（适用于 Microsoft Word 2000），修复邮件合并功能在打开 Access 数据库时未提示即自动执行 VBA 脚本的缺陷。如无法及时安装补丁，可采取以下缓解措施：一、在 Word 中将宏安全级别设置为"高"，并取消勾选"信任对 VBA 工程对象模型的访问"选项，使宏执行前强制弹出确认提示或直接禁用；二、设置邮件合并数据源时，仅从可信来源选择 .mdb 数据库文件，严禁打开来源不明的 Access 数据库，避免加载恶意 VBA 脚本；三、通过组策略或注册表策略限制邮件合并自动运行宏，同时警惕通过 Outlook、IE 或邮件附件诱导打开此类文档的投递方式，并保持安装最新版 Office 安全更新以彻底封堵该攻击路径。"""
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "Microsoft Word 邮件合并工具代码执行漏洞"
+sources = ["avd"]
+title = "Microsoft Word 邮件合并功能代码执行漏洞"
 updated = "2026-06-16T21:52:28.940"
 
 [exploit]
@@ -17,7 +32,7 @@ aliases = ["CVE-2000-0788"]
 ave_id = "AVE-2000-1606"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-08-02T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +41,14 @@ urls = [
     "http://www.securityfocus.com/templates/archive.pike?list=1&msg=398EB9CA.27E03A9C%40nat.bg",
     "https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-071",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5322",
-    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2002/CVE-2002-0619.md",
-    "https://github.com/CVEProject/cvelistV5/blob/8ab396be03b208767ce22804ad16877ccef3b54c/cves/2000/0xxx/CVE-2000-0788.json",
+    "https://github.com/trickest/cve/blob/34a9e13075452733bcb91f2f69cce2906587662c/2002/CVE-2002-0619.md",
+    "https://github.com/CVEProject/cvelistV5/blob/e409cc3aa72de0994d4d1b2baf38bcac39a42cdc/cves/2000/0xxx/CVE-2000-0788.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/CVE/data/2000/CVE-2000-0788.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0788",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/050a55b80525b99be98f5c84fe46fa8ac25be676/2000/0xxx/CVE-2000-0788.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1c367c2407e523ae413438625300667710835348/CVE/data/2000/CVE-2000-0788.json",
-    "https://github.com/github/advisory-database/blob/7b437709e7540c8c9af0a3ecc5a6f3df80f4ff33/advisories/unreviewed/2022/04/GHSA-jq7r-5rhw-2vvw/GHSA-jq7r-5rhw-2vvw.json",
-    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-0619.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_148900_149000.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--3c9ec9de-05b6-4390-b1ef-39ea36a0f76e.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0788.json",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-0788.json",
+    "https://github.com/opencve/opencve-kb/blob/c0d14064d79c9a0ab84002492c5a6bf474f81cd3/2000/CVE-2000-0788.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/93d966ccbf562a1a0fe2dcab2089012ce2b11591/CVE-2000/CVE-2000-07xx/CVE-2000-0788.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/0xxx/CVE-2000-0788.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0788.json",
 ]
