@@ -1,0 +1,38 @@
+[basic]
+description = "tags only.<value>libcurl 在复用 easy 或 multi 句柄进行 TLS 相关传输，并修改 CURLSSLOPT_NO_PARTIALCHAIN 选项时，可能意外复用内存中已缓存的 CA 证书库，而该证书库中的部分链选项状态已被反向改变，与用户预期相悖。这会导致 libcurl 接受原本不应接受的信任链，攻击者可借此向存在缓存复用场景的客户端（如使用 libcurl 的各类应用程序）发起中间人攻击，绕过证书链验证并窃取受保护数据传输的机密信息（CVSS 3.1 评分 5.3，CWE-295 证书验证不当）。攻击条件较为苛刻：需要用户交互配合且要求较高的攻击复杂度，仅影响重用句柄且动态切换 partial chain 选项的特定 TLS 使用场景。受影响的用户应升级至修复该漏洞的 curl 版本，避免启用易引发缓存混淆的配置组合。"
+published = "2026-01-08T10:15:46.730"
+remediation = "建议立即将 libcurl/curl 升级至 8.18.0 或更高版本（该漏洞在 8.18.0 中修复，受影响范围为 7.87.0 至 8.17.0），可通过发行版软件源更新 curl 包完成。若无法立即升级，作为缓解措施：1) 避免在应用代码中设置 CURLSSLOPT_NO_PARTIALCHAIN 选项，以关闭部分信任链校验的逆向风险；2) 将 CURLOPT_CA_CACHE_TIMEOUT 设置为 0，禁用 libcurl 的 CA 存储内存缓存，防止跨传输复用被逆转的信任链配置。注意该漏洞仅影响使用 OpenSSL（或其衍生库）后端的 libcurl，且不影响 curl 命令行工具，升级后建议重新编译依赖 libcurl 的应用程序。"
+score = 5.3
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "curl libcurl 证书链部分信任策略绕过漏洞"
+updated = "2026-06-17T08:36:36.147"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-14819"]
+ave_id = "AVE-2025-0602"
+
+[meta]
+collected_at = "2026-08-02T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://curl.se/docs/CVE-2025-14819.html",
+    "https://curl.se/docs/CVE-2025-14819.json",
+    "http://www.openwall.com/lists/oss-security/2026/01/07/5",
+    "https://github.com/curl/curl-www/blob/87c7d8544e9119b01e84366bbb294f2a2864329a/docs/CVE-2025-14819.md",
+    "https://github.com/CVEProject/cvelistV5/blob/e409cc3aa72de0994d4d1b2baf38bcac39a42cdc/cves/2025/14xxx/CVE-2025-14819.json",
+    "https://github.com/cisagov/vulnrichment/blob/67e4f2259ee77a0081a521c1e645484964f36ab6/2025/14xxx/CVE-2025-14819.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/CVE/data/2025/CVE-2025-14819.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/SSVC/data/2025/CVE-2025-14819.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/0c8dd71e3ecd7211889d43b088995c7a1a3f2c10/data/2025/CVE-2025-14819.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/7fe13fea74df1c2902f4d8d9f41de46ac6e968bd/osv/cve/2025/UBUNTU-CVE-2025-14819.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/7fe13fea74df1c2902f4d8d9f41de46ac6e968bd/vex/cve/2025/CVE-2025-14819.json",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2025-14819.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-14819.json",
+]
