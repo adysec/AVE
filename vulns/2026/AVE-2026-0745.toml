@@ -1,0 +1,43 @@
+[basic]
+description = "AWS AgentCore CLI 存在代码注入漏洞，源于 `agentcore add agent --type import` 命令在生成 Python 代码时对 Bedrock Agent 协作指令的三引号转义处理不当。攻击者可构造包含三重双引号的 collaborationInstruction 值，打破字符串边界并注入任意 Python 代码。该漏洞影响 @aws/agentcore 0.4.0-0.14.1 及预览版 0.3.0-preview.7.0-1.0.0-preview.8。需具备 bedrock:AssociateAgentCollaborator 权限的认证 AWS 用户可关联恶意协作 Agent，开发者导入并运行 `agentcore dev` 或 `agentcore deploy`/`invoke` 时将触发代码执行，分别在本地凭证和 Agent IAM 角色下运行。CVSS 8.8 高危，建议升级至 0.14.2 或 1.0.0-preview.9 并重新生成部署代码。"
+published = "2026-06-08T19:16:41.270"
+remediation = "建议立即升级 AgentCore CLI 至 v0.14.2 或 preview 版 1.0.0-preview.9（命令：npm install -g @aws/agentcore@latest）。升级后必须删除已导入的受影响 agent，重新运行 `agentcore add agent --type import` 重新生成干净的 main.py，并执行 `agentcore deploy` 重新部署至 AWS。如无法立即升级，可作为临时缓解手动检查生成的 main.py 中的 collaborationInstruction 字段，将所有三重双引号序列替换为转义等价字符后再运行 dev 或 deploy。"
+score = 8.8
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Amazon AgentCore CLI 代码注入漏洞"
+updated = "2026-07-23T08:10:00.137"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-11393",
+    "GHSA-m4x6-gwgp-4pm7",
+]
+ave_id = "AVE-2026-0745"
+
+[meta]
+collected_at = "2026-08-02T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://aws.amazon.com/security/security-bulletins/2026-040-aws/",
+    "https://github.com/aws/agentcore-cli/releases/tag/v0.14.2",
+    "https://github.com/aws/agentcore-cli/security/advisories/GHSA-m4x6-gwgp-4pm7",
+    "https://www.npmjs.com/package/@aws/agentcore/v/0.14.2",
+    "https://www.npmjs.com/package/@aws/agentcore/v/1.0.0-preview.9",
+    "https://github.com/CVEProject/cvelistV5/blob/285830d3bc68381daeff2169c3b0a4500df03b19/cves/2026/11xxx/CVE-2026-11393.json",
+    "https://github.com/cisagov/vulnrichment/blob/ccb82e19d454ec66425149e039b563fe786feea5/2026/11xxx/CVE-2026-11393.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8d0003712fd6ee4e2d0881313cc643a9a3a69d63/SSVC/data/2026/CVE-2026-11393.json",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/4e910e4fa4fa60cd85b2b05bafb6fc9b27009a2d/proposals/euvd/CVE-2026-11393.proposal.yaml",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8d0003712fd6ee4e2d0881313cc643a9a3a69d63/CVE/data/2026/CVE-2026-11393.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-11393.json",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2026-11393.json",
+    "https://github.com/Tabll/gemnasium-db/blob/2226f395f690bd125e18792c9fd587b54eb15804/npm/@aws/agentcore/CVE-2026-11393.yml",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/144e072a72718cf976367989b4ef7fcf3f72bd13/nvd/2026/HIGH/CVE-2026-11393/README.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e60bb3a306b43cc668d535cff411b9566d5ecc1b/CVE-2026/CVE-2026-113xx/CVE-2026-11393.json",
+]
