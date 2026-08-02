@@ -1,11 +1,11 @@
 [basic]
-description = "Seagate NAS OS 4.3.15.1 版本的 echo-server.html 页面存在输入验证不严漏洞，攻击者可通过 URL 参数 'state' 构造恶意重定向链接。当用户点击攻击者提供的特制链接后，系统会将用户重定向至攻击者指定的外部站点，导致用户浏览器 Referer 头中携带的敏感信息（如 NAS 设备地址、会话令牌等）被攻击者窃取。该漏洞无需身份认证即可利用，攻击复杂度低，但需要用户交互才能触发，可造成信息泄露风险。"
+description = "希捷 Seagate NAS OS 4.3.15.1 版本的 echo-server.html 页面存在开放重定向漏洞（CWE-601），未对 'state' URL 参数进行充分验证。未经身份认证的远程攻击者可构造包含恶意目标 URL 的 'state' 参数，诱骗用户点击特制链接，导致浏览器将用户重定向至攻击者控制的任意网站。攻击成功时，HTTP Referer 请求头中的敏感信息（如会话令牌、内部 URL 等）可能泄露给攻击者，进而被用于网络钓鱼、凭据窃取或恶意软件分发等后续攻击。该漏洞影响 Seagate NAS OS 4.3.15.1 版本，攻击向量为网络，攻击复杂度低，无需权限，但需要用户交互（点击恶意链接）才能触发，CVSS v3.0 基础评分 6.1，危害等级中等。"
 published = "2019-05-13T13:29:00.620"
-remediation = "立即升级 Seagate NAS OS 固件至官方发布的最新版本（修复 echo-server.html 中 state 参数未验证导致的任意重定向漏洞）；如无法立即升级，可在反向代理或 WAF 中过滤 echo-server.html 页面请求中的 state 参数，禁止其指向外部域名，同时限制 NAS Web 管理界面仅允许内网访问。"
+remediation = "建议升级 Seagate NAS OS 至 4.3.16.0 或更高版本（含修复补丁），通过 NAS 管理界面“系统更新”手动安装或开启自动更新。若暂无法升级，可在防火墙层面限制 NAS 管理端口（默认 80/443）仅允许可信 IP 访问，并禁用不必要的 Web 服务功能作为临时缓解措施。"
 score = 6.1
 severity = "MEDIUM"
 sources = ["nuclei"]
-title = "希捷 NAS OS 任意重定向漏洞"
+title = "希捷 NAS OS 开放重定向漏洞"
 updated = "2026-06-17T01:37:30.870"
 
 [exploit]
@@ -24,7 +24,7 @@ status = "completed"
 urls = [
     "https://blog.securityevaluators.com/invading-your-personal-cloud-ise-labs-exploits-the-seagate-stcr3000101-ecf89de2170",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2018/CVE-2018-12300.yaml",
-    "https://github.com/trickest/cve/blob/34a9e13075452733bcb91f2f69cce2906587662c/2018/CVE-2018-12300.md",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2018/CVE-2018-12300.md",
     "https://github.com/projectdiscovery/nuclei-templates/blob/f5a1370a5c99053077d951ed65ac8cc8cef6e9f7/http/cves/2018/CVE-2018-12300.yaml",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/medium/CVE-2018-12300.yaml",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/medium/cve-2018-12300-3237.yaml",
@@ -33,5 +33,5 @@ urls = [
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/medium/cve-2018-12300-3240.yaml",
     "https://github.com/GhostTroops/scan4all/blob/fff03b51bf79c8993a46c1da766ec993e1102c47/config/51pwn/yaml/Seagate NAS OS/CVE-2018-12300.yaml",
     "https://github.com/GhostTroops/scan4all/blob/fff03b51bf79c8993a46c1da766ec993e1102c47/config/51pwn/TPALL/Open Redirect/CVE-2018-12300.yaml",
-    "https://github.com/CVEProject/cvelistV5/blob/fd4c668e0b43bf25cada98d9b000adcf7f4c176f/cves/2018/12xxx/CVE-2018-12300.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e3ffc8aa96e889e4591b3a2ccc4e1f7e6b2ab4fc/cves/2018/12xxx/CVE-2018-12300.json",
 ]
