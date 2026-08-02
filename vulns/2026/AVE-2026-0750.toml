@@ -1,0 +1,39 @@
+[basic]
+description = "Spring Data Commons 的 MappingContext 属性路径解析存在无边界资源耗尽漏洞。PersistentPropertyPathFactory.propertyPaths 是一个 ConcurrentHashMap，键由外部用户输入的点分路径字符串（如 HTTP sort 投影参数）派生，每个不同的 path 字符串—包括无法解析的无效字符串—都会通过 computeIfAbsent 永久缓存，缓存中不存在驱逐机制，也不会对未解析结果（PathResolution.unresolved）进行限制。远程攻击者通过反复向 Spring Data REST 端点发送形如 ?sort=<随机字符串> 的请求，每次请求虽快速失败抛出 InvalidPersistentPropertyPath，但每次独特的随机字符串都会在堆中留下一个 TypeAndPath 键及其 PathResolution 对象，包含路径分段列表和原始字符串。无速率限制或路径字符串校验的前提下，攻击者仅需约 1000 万次请求即可耗尽 JVM 堆内存，导致服务 OutOfMemoryError 拒绝服务。该漏洞影响 Spring Data Commons 4.0.0 至 4.0.5、3.5.0 至 3.5.11、3.4.0 至 3.4.14 版本，CVSS 评分 7.5 属于高危等级。"
+published = "2026-06-10T00:16:50.683"
+remediation = "建议立即升级至 Spring Data Commons 4.0.x ≥ 4.0.6 或 3.5.x ≥ 3.5.12 或 3.4.x ≥ 3.4.15（随 Spring Boot 3.5.x / 3.4.x 与 3.3.x 补丁一同发布）。若暂无法升级，可在网关/WAF 层对 ?sort= 参数长度与字符集实施硬限（单参数 ≤ 128 字符，仅允许 [a-zA-Z0-9._- ]），并配置速率限制（单 IP 每秒 ≤ 100 个 sort 参数请求），同时在防火墙层面封禁重复大基随机字符串访问以缓解 OOM 风险。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "VMware Spring Data Commons 属性路径缓存拒绝服务漏洞"
+updated = "2026-07-23T09:10:00.113"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-41695",
+    "GHSA-88fw-v6x4-3f58",
+]
+ave_id = "AVE-2026-0750"
+
+[meta]
+collected_at = "2026-08-02T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://spring.io/security/cve-2026-41695",
+    "https://github.com/CVEProject/cvelistV5/blob/a8a162b0898524b5cf79dbbcc4c17a9c8ca1960a/cves/2026/41xxx/CVE-2026-41695.json",
+    "https://github.com/cisagov/vulnrichment/blob/09b6c4ca09610df5602aea129f04ccdd03d08c21/2026/41xxx/CVE-2026-41695.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/43b3566a7a8a36e5b72f371cb23799b1115f7f78/CVE/data/2026/CVE-2026-41695.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/43b3566a7a8a36e5b72f371cb23799b1115f7f78/SSVC/data/2026/CVE-2026-41695.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-41695.json",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2026-41695.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/99a2d0f359c44d8b27ea5e35eaa72ec2eb0f3016/CVE-2026/CVE-2026-416xx/CVE-2026-41695.json",
+    "https://github.com/opencve/opencve-kb/blob/c22f4d895bb96cc596a627af8280a63e96ae16cd/2026/CVE-2026-41695.json",
+    "https://github.com/TMA84/cvealert/blob/28898b08fefc5076d45a396e18d08a247e21376a/content/posts/cve-2026-41695.md",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/fd9cadff39b120393c2c764effdf6aaef24df325/api/2026/CVE-2026-41695.json",
+]
