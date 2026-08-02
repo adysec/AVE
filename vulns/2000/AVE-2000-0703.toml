@@ -1,11 +1,11 @@
 [basic]
-description = "HP-UX 11.00/10.20 系统中的 crontab 工具存在符号链接跟随漏洞（CWE-59）。本地低权限攻击者可通过 crontab 的 -e 选项编辑定时任务时，在 /tmp 目录下创建指向目标文件（如 /etc/shadow）的符号链接，随后退出编辑会话，crontab 在读取链接文件时产生的错误信息会泄露文件内容，导致任意文件读取。该漏洞影响 HP-UX 10.20 及 11.00 版本，CVSS 评分 5.5，危害等级中危。攻击者需具备本地登录权限，无需用户交互即可利用。"
+description = "HP-UX 11.00 及 10.20 版本的 crontab 命令存在符号链接跟踪漏洞。由于 crontab 的 -e 编辑选项未对临时文件进行安全验证，本地低权限用户可在编辑会话期间创建指向任意系统文件的符号链接，待退出会话后通过读取 crontab 生成错误消息时回显的内容，从而获取敏感文件信息。该漏洞利用条件简单，仅需本地登录权限即可完成，无需用户交互，攻击者可借此读取密码文件等高权限数据，造成严重信息泄露。"
 published = "2000-12-19T05:00:00.000"
-remediation = "立即升级到 HP-UX 11.11（11i）或更高版本，该版本已修复 crontab 符号链接竞争条件问题。如无法升级，可移除 crontab 的 setuid 位（chmod u-s /usr/bin/crontab）以消除本地提权读取任意文件的攻击面，同时通过 crontab.allow 严格控制可执行 crontab 的用户白名单，并监控 /tmp 目录下异常符号链接创建行为。"
+remediation = "升级至 HP-UX 11.00 PHNE_21465 或 PHNE_22185 补丁版本，或升级至 HP-UX 11i v1/v2 后续版本。临时缓解：限制 crontab 命令权限（chmod 750 /usr/bin/crontab），仅允许 root 和 cron 组用户执行，并审计 /var/spool/cron/crontabs 目录权限防止符号链接攻击。"
 score = 5.5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "HP HP-UX crontab 任意文件读取漏洞"
+sources = ["epss"]
+title = "HP-UX crontab 符号链接文件覆盖漏洞"
 updated = "2026-06-16T21:52:53.140"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0972"]
 ave_id = "AVE-2000-0703"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-08-02T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-10/0317.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5410",
     "https://www.exploit-db.com/exploits/20329",
-    "https://github.com/CVEProject/cvelistV5/blob/4a22bba3217932039300edbc77cd188c415d71c8/cves/2000/0xxx/CVE-2000-0972.json",
+    "https://github.com/CVEProject/cvelistV5/blob/b112f29b7d00670687018ca2417048fdd178fa65/cves/2000/0xxx/CVE-2000-0972.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f8c97ef87c2a73b3fdac6df1880bc99a5e18549c/CVE/data/2000/CVE-2000-0972.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0972",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/41644568d1e47f962c2cefae75c8b09359290a26/2000/0xxx/CVE-2000-0972.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4bd823fa5ff72ec859371ff3ef0f5e18be2f2c77/CVE/data/2000/CVE-2000-0972.json",
-    "https://github.com/github/advisory-database/blob/29919db3f954d9ce9be0e7e3cf177436392d45d3/advisories/unreviewed/2022/04/GHSA-x2cg-9rfp-53mf/GHSA-x2cg-9rfp-53mf.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0972.md",
-    "https://github.com/mitre/cti/blob/ea1adfe1a68ca3dcfe2dd883180b8cf10a988824/capec/2.0/attack-pattern/attack-pattern--fdeff5dd-62e2-43b2-8eea-5e97307cf973.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0972.json",
-    "https://github.com/Team-Atlanta/aixcc-asc-atlantis/blob/785c446f980e12155935db586aa30c3b54adcc86/crs/src/crs-patch/smith/smith/lib/cwe/raw/CWE-59.txt",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-0972.json",
+    "https://github.com/opencve/opencve-kb/blob/7d699460026f63b8ffdc008432d38ca5be5e0016/2000/CVE-2000-0972.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/0xxx/CVE-2000-0972.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/1609db390d1357d7321fcc6ec1e839ae33505ab5/CVE-2000/CVE-2000-09xx/CVE-2000-0972.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0972.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0972.json",
 ]
