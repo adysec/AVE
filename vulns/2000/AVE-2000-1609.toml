@@ -1,11 +1,11 @@
 [basic]
-description = "GNU Groff（GNU 文本格式化工具）存在本地权限提升漏洞。当用户运行 groff 命令时，程序会从当前工作目录查找设备描述文件（device description file）。本地攻击者可在当前目录中构造恶意的描述文件，在其中包含 postpro 指令，当其他用户（如 root）在相同目录下执行 groff 时，该指令会被自动执行，从而导致攻击者获得额外权限。此漏洞利用条件为攻击者需能控制目标用户的工作目录，危害等级严重，CVSS 评分 10.0。"
+description = "GNU Groff 排版系统存在提权漏洞。Groff 在查找设备描述文件时使用当前工作目录，攻击者可在本地放置伪造的 postpro 指令描述文件。当其他用户在该目录运行 groff 时，恶意指令会被执行，导致权限提升。CVSS 评分为 10 分（AV:N/AC:L/Au:N/C:C/I:C/A:C），危害严重。攻击者无需网络访问，仅需本地路径可写权限，诱导目标用户在恶意文件所在目录执行 groff 即可触发。"
 published = "2000-12-19T05:00:00.000"
-remediation = "立即将 GNU Groff 升级至 1.17 或更高版本，该版本已修复设备描述文件路径遍历缺陷。在 Debian/Ubuntu 系统上执行 `apt-get update && apt-get install groff` 升级软件包；在 RHEL/CentOS 系统上执行 `yum update groff`。升级前作为临时缓解措施，可限制设备描述文件所在目录的写入权限（如 `chmod o-w /usr/share/groff`），禁止非特权用户在该目录下放置恶意 postpro 指令文件，从而阻断本地权限提升攻击路径。"
+remediation = "<value>升级 GNU Groff 至 1.17 或更高版本。在 Debian/Ubuntu 系统中执行 `apt-get update && apt-get install groff`；在 RHEL/CentOS 系统中执行 `yum update groff` 或 `dnf update groff`。如无法立即升级，可采取以下缓解措施：（1）从受信任的目录运行 groff，避免在可写目录下执行；（2）检查是否存在恶意设备描述文件（如 postpro 等）并删除；（3）通过 `chmod 700` 限制用户工作目录权限，防止本地用户放置恶意描述文件；（4）定期审查 groff 运行目录下的异常文件。</arg_value></tool_call>"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "GNU Groff 本地权限提升漏洞"
+sources = ["avd"]
+title = "GNU Groff 本地特权提升漏洞"
 updated = "2026-06-16T21:52:30.807"
 
 [exploit]
@@ -17,20 +17,20 @@ aliases = ["CVE-2000-0803"]
 ave_id = "AVE-2000-1609"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-02T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5280",
-    "https://github.com/CVEProject/cvelistV5/blob/487ea3f21ed49470634e758e1f8f2ac74b64d6b0/cves/2000/0xxx/CVE-2000-0803.json",
-    "https://github.com/open-edge-platform/edge-microvisor-toolkit/blob/f04086554da9724fc9382f780b507b33e9a17dfc/SPECS/groff/CVE-2000-0803.nopatch",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/6052148b71cb79d42fd4a59f87982387b0487834/CVE/data/2000/CVE-2000-0803.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e6aabfe8f44c300141dcaef9d34124defc87c0a5/cves/2000/0xxx/CVE-2000-0803.json",
+    "https://github.com/open-edge-platform/edge-microvisor-toolkit/blob/6b93a174634cc0755a555ba6e9fd5dd4026076e8/SPECS/groff/CVE-2000-0803.nopatch",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/b89c1361e80164e63267f0c56728f3ef6b54b865/CVE/data/2000/CVE-2000-0803.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0803",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0803.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0803.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/4aa573a753d6387eff023ebcf6fc6297b912048e/CVE-2000/CVE-2000-08xx/CVE-2000-0803.json",
-    "https://github.com/opencve/opencve-kb/blob/9382985b1487c13b41847f6783f502ebface6ca6/2000/CVE-2000-0803.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c8205feda508d733c873e4904e8ec7780820d9e3/2000/0xxx/CVE-2000-0803.md",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-0803.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/99a2d0f359c44d8b27ea5e35eaa72ec2eb0f3016/CVE-2000/CVE-2000-08xx/CVE-2000-0803.json",
+    "https://github.com/opencve/opencve-kb/blob/399bcc30c25c09ed012c9f952b7942b4002015c0/2000/CVE-2000-0803.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/0xxx/CVE-2000-0803.md",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0803.json",
 ]
