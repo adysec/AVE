@@ -1,11 +1,11 @@
 [basic]
-description = "OpenBSD 2.7 的 IPsec 实现中存在空数据包处理缺陷，远程攻击者可通过向目标系统发送特制的空 AH（认证头）或 ESP（封装安全载荷）数据包触发该漏洞，导致 IPsec 协议栈崩溃，造成拒绝服务。攻击无需认证，攻击复杂度低，CVSS 评分 5.0，危害等级中等。受影响的系统包括 OpenBSD 2.7 版本，建议升级至更新版本以修复此问题。"
+description = "OpenBSD 2.7 操作系统的 IPsec 实现（AH/ESP 协议处理模块）未能正确处理空的 AH/ESP 数据包，存在逻辑处理缺陷。远程攻击者无需任何身份认证，只需向目标主机构造并发送特制的空认证头（AH）或封装安全载荷（ESP）数据包，即可触发该漏洞，导致目标系统 IPsec 处理流程异常，进而造成系统崩溃或网络服务中断的拒绝服务（DoS）后果。该漏洞影响运行 OpenBSD 2.7 且启用了 IPsec 功能的系统，攻击条件仅为目标可达且网络访问开放，攻击门槛较低，可能被用于破坏关键网络基础设施的可用性。OpenBSD 官方已发布相应补丁修复该问题。"
 published = "2000-12-19T05:00:00.000"
-remediation = "立即升级至 OpenBSD 2.8 或更高版本。如无法升级，可下载 OpenBSD 2.7 errata 024 补丁（https://ftp.openbsd.org/pub/OpenBSD/patches/2.7/common/024_esp.patch），以 root 执行 `patch -p0 < 024_esp.patch && cd /sys && make config && make && make install && reboot` 重新编译内核。临时缓解措施可在 IPsec 策略中过滤空 AH/ESP 数据包。"
+remediation = "建议立即升级 OpenBSD 至 2.8 或更高版本（该版本已修复 IPsec 实现处理空 AH/ESP 数据包时崩溃的问题）；若暂时无法升级，请安装官方 2.7 errata 补丁或禁用不必要的 IPsec/ISAKMP 服务。作为临时缓解措施，可在防火墙（pf/ipf）上仅允许来自可信 IP 的 AH(协议号 50)、ESP(协议号 51) 及 UDP 500/4500 端口的流量，阻断来自不可信网络的 IPsec 报文，避免攻击者发送空 AH/ESP 数据包触发内核拒绝服务。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "OpenBSD IPsec 空 AH/ESP 数据包拒绝服务漏洞"
+sources = ["epss"]
+title = "OpenBSD 2.7 IPsec AH/ESP 空数据包拒绝服务漏洞"
 updated = "2026-06-16T21:52:51.863"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0962"]
 ave_id = "AVE-2000-1029"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-08-02T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.osvdb.org/1574",
     "http://www.securityfocus.com/bid/1723",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5634",
-    "https://github.com/CVEProject/cvelistV5/blob/d426ca16061eaa1a65a39ea953ac0efe02aa4cae/cves/2000/0xxx/CVE-2000-0962.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e409cc3aa72de0994d4d1b2baf38bcac39a42cdc/cves/2000/0xxx/CVE-2000-0962.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/CVE/data/2000/CVE-2000-0962.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0962",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/291c09f8f1fb3b2fa866c7b93e7660471419cef8/2000/0xxx/CVE-2000-0962.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/db2f5eda64b048f89c93b57f05c779b62a05c5c9/CVE/data/2000/CVE-2000-0962.json",
-    "https://github.com/github/advisory-database/blob/29919db3f954d9ce9be0e7e3cf177436392d45d3/advisories/unreviewed/2022/04/GHSA-j67p-p4jf-hwvp/GHSA-j67p-p4jf-hwvp.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0962.md",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_152900_153000.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0962.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--3be181fd-3792-4b09-9adf-bdf7bb5e5564.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0962.json",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-0962.json",
+    "https://github.com/opencve/opencve-kb/blob/47bb69b00d30a4ddac9a224d4b4672d3efbf78ef/2000/CVE-2000-0962.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/93d966ccbf562a1a0fe2dcab2089012ce2b11591/CVE-2000/CVE-2000-09xx/CVE-2000-0962.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/0xxx/CVE-2000-0962.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0962.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0962.json",
 ]
