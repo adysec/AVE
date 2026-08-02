@@ -1,11 +1,11 @@
 [basic]
-description = "Spring Data Commons 存在属性绑定器远程代码执行漏洞（CVE-2018-1273），漏洞源于对特殊元素的中和不当（CWE-94），影响 1.13 至 1.13.10、2.0 至 2.0.5 及更早不受支持版本。未经身份认证的远程攻击者可向 Spring Data REST 的 HTTP 资源接口或基于投影的请求负载绑定机制发送特制的请求参数，触发属性绑定器中的代码注入，导致远程代码执行。该漏洞 CVSS 评分 9.8，危害等级严重，无需用户交互即可利用，影响大量使用 Spring Data Commons 的 Java Web 应用。"
+description = "Spring Data Commons 是 Spring Data 的基础模块，提供了统一的 Repository 和数据操作抽象。该漏洞源于 Spring Data Commons 在处理属性绑定时对特殊字符的过滤不当（CWE-94 代码注入）。攻击者无需身份认证，只需向 Spring Data REST 构建的 HTTP 资源接口，或通过 Spring Data 的投影机制发送投影式请求参数，即可注入恶意表达式或代码，最终在服务器端执行任意命令，导致远程代码执行（RCE）。受影响版本包括 1.13 系列（<1.13.10）、2.0 系列（<2.0.5）及旧的不受支持版本。攻击条件极低：仅需网络访问，无需用户交互。该漏洞可被用于完全控制目标服务器，危及业务系统的机密性、完整性和可用性。"
 published = "2018-04-11T13:29:00.290"
-remediation = "立即升级 Spring Data Commons 至修复版本：2.x 分支升级至 2.0.6 及以上版本，1.x 分支升级至 1.13.11 及以上版本。如使用 Spring Boot，对应升级 Spring Boot 版本至 2.0.1+ 或 1.5.11+ 即可自动引入修复后的依赖。若暂时无法升级，可通过 Spring Security 为 Spring Data REST 端点启用认证和授权，限制未授权用户访问，作为临时缓解措施。"
+remediation = "立即升级 Spring Data Commons 到 1.13.10（1.13.x 版本线）或 2.0.5（2.0.x 版本线）及更高版本；若通过 Spring Boot 管理依赖，请升级 Spring Boot 至 1.5.13（对应 1.13.x）或 2.0.5（对应 2.0.x）。同时升级 Spring Data REST 到 2.5.11、2.6.11 或 3.0.6 及以上版本。若 Spring Data REST 面向公网暴露且非业务必需，应尽快下线或通过网关/WAF 进行访问控制与参数过滤。对于使用 projection 绑定的自定义接口，务必移除或加强服务端输入校验，限制请求参数中的 SpEL 表达式注入。如暂无法升级，可在应用层拦截器中对所有请求参数进行白名单过滤，拒绝包含特殊字符（如括号、大括号、$、#、反引号等）的输入，并监控日志中是否存在异常的类型转换错误。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
-title = "Spring Data Commons 远程代码执行漏洞"
+sources = ["nuclei"]
+title = "Spring Data Commons 远程代码执行漏洞 漏洞"
 updated = "2026-06-26T18:44:14.703"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2018-1273"]
 ave_id = "AVE-2018-0198"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-02T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,11 +28,11 @@ urls = [
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2018-1273",
     "https://www.exploit-db.com/exploits/44952",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2018/CVE-2018-1273.yaml",
-    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2018/CVE-2018-1273.md",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2018/CVE-2018-1273.md",
     "https://github.com/zhzyker/exphub/blob/946405b3447dbaf2a5eb49e2f56ec33fe1165e49/spring/cve-2018-1273_cmd.py",
     "https://github.com/fofapro/vulfocus/blob/4b7a2eaacce4ed770f289e6e72f7240da1e16c74/writeup/CVE-2018-1273/CVE-2018-1273.md",
-    "https://github.com/0xMarcio/cve/blob/d08f837f771e6cd83ec9c845b0c4f72f125cbe84/2018/CVE-2018-1273.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/bed70a0a2e2dec8bd34bd440f68f32280391094f/2018/CVE-2018-1273.json",
+    "https://github.com/0xMarcio/cve/blob/5ffa820afafb07e3d2a3856e2c3d1b6e11ccbbaa/2018/CVE-2018-1273.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/1d6e950db7856d287e41f25ab3160793b53fc99d/2018/CVE-2018-1273.json",
     "https://github.com/wgpsec/AboutSecurity/blob/f3c8574e6fa1f9c1cd5aeaba5a209af796107b34/Vuln/middleware/spring/CVE-2018-1273.md",
     "https://github.com/BaizeSec/bylibrary/blob/dee1fbaa831df860c6905f80de8700211ba63098/docs/漏洞库/06-中间件框架漏洞/Spring/cve-2018-1273_cmd.md",
     "https://github.com/amcai/myscan/blob/c0ed549669ec76cc9fea660554943244cbdd703b/myscan/pocs/perscheme/poc_srping_cve-2018-1273_2018.py",
