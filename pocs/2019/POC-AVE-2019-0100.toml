@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "验证 Kentico CMS 是否存在 CVE-2019-10068 反序列化远程代码执行漏洞。该漏洞位于 Staging 服务的 SyncServer.asmx 端点，因未验证安全头而允许未认证攻击者绕过认证并反序列化用户控制的 .NET 对象输入，导致远程代码执行。验证方法向该端点发送畸形 SOAP 请求，检查服务是否响应以确认端点存在。"
+id = "POC-AVE-2019-0100"
+name = "Kentico CMS Staging Service Deserialization PoC"
+severity = "critical"
+tags = [
+    "cve-2019-10068",
+    "ave-2019-0100",
+]
+vuln_id = [
+    "CVE-2019-10068",
+    "AVE-2019-0100",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/CMSPages/Staging/SyncServer.asmx"
+protocol = "http"
+
+[poc.requests.body]
+content = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ProcessSynchronizationTaskData xmlns="http://localhost/SyncWebService/SyncServer"><stagingTaskData>invalid</stagingTaskData></ProcessSynchronizationTaskData></soap:Body></soap:Envelope>'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/xml; charset=utf-8"
+SOAPAction = '"http://localhost/SyncWebService/SyncServer/ProcessSynchronizationTaskData"'
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+]
+type = "status"

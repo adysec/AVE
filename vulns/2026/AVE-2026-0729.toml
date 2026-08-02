@@ -1,12 +1,12 @@
 [basic]
-description = "goshs 文件服务器的 ?bulk zip-download 路由存在授权绕过漏洞。httpserver/updown.go 中的 bulkDownload 处理函数在处理 ?bulk&file= 参数时，未调用 findEffectiveACL 和 applyCustomAuth 进行 ACL 校验，导致攻击者可通过构造 ?bulk 请求绕过 .goshs 文件夹级别的访问控制列表和文件黑名单保护。未认证的远程攻击者无需任何身份验证即可读取受 .goshs ACL 保护的文件，获取敏感信息。该漏洞影响 goshs 2.1.1 之前的所有版本，其根本原因与 GHSA-wvhv-qcqf-f3cx 相同——修复仅覆盖了 PUT/POST 上传和 ?mkdir/?delete 等状态变更路由，但未覆盖 ?bulk 读路由。攻击者利用方式简单，仅需发送 GET /?bulk&file=/受保护路径/文件名 即可将受保护文件内容以 ZIP 压缩包形式返回。此漏洞为信息泄露（机密性影响），不涉及完整性或可用性破坏。"
-published = "2026-07-28T23:17:09.213"
-remediation = "将 goshs 升级至 v2.1.1 或更高版本，该版本已在 bulkDownload 处理函数中强制调用 findEffectiveACL 和 applyCustomAuth，确保 ?bulk 路由与正常读路径执行相同的 ACL 鉴权逻辑。升级后验证 GET /?bulk&file= 受保护文件应返回 401 而非 200。"
+description = "goshs 文件服务器存在基于 .goshs 文件 ACL 的授权绕过漏洞，系 GHSA-wvhv-qcqf-f3cx 修复后遗留的同类问题。bulkDownload（httpserver/updown.go）在处理 ?bulk zip 批量下载路由时，仅对每个 ?file= 参数调用 sanitizePath 进行路径清理，随即以 ZIP 流形式返回文件内容，全程未调用 findEffectiveACL/applyCustomAuth 执行 ACL 校验，且该路由在正常 doDir/doFile/sendFile 授权检查之前即被分发处理。因此，未认证攻击者可绕过按目录配置的 .goshs 访问控制，直接读取 webroot 下受 ACL 保护的任意文件，同时也能绕过逐文件的访问黑名单（block list），造成机密信息泄露。受影响的部署包括依赖 .goshs 作为访问边界的 goshs 服务器实例；仅配置服务器级 -b 基本认证时该路由仍受中间件保护。官方已在 v2.1.1 版本通过提交 7cf911a 修复，建议升级并审计 ?cbDown 等其他替代读取路由。"
+published = "2026-01-01"
+remediation = "建议立即升级到 goshs v2.1.1 或更高版本（该版本包含修复 commit 7cf911a，在 bulkDownload 中对每个请求文件强制执行 .goshs ACL 校验，即调用 findEffectiveACL 与 applyCustomAuth 并遵循 acl.Block，与 sendFile/processDir 的正常读取路径一致）。若暂时无法升级，可将 ?bulk 路由同样纳入全局 -b 基本认证中间件覆盖范围，并通过对 ?bulk 及 ?cbDown 等备选读取路由执行严格 ACL 校验作为临时缓解；同时审查所有备选下载路由是否存在同类绕过，并禁止把 .goshs 作为唯一访问边界。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
-title = "goshs ?bulk zip-download 路径鉴权绕过漏洞"
-updated = "2026-07-29T13:19:00.653"
+title = "goshs 文件共享服务器 .goshs ACL 授权绕过漏洞"
+updated = "2026-01-01"
 
 [exploit]
 exp_urls = []
@@ -20,7 +20,7 @@ aliases = [
 ave_id = "AVE-2026-0729"
 
 [meta]
-collected_at = "2026-07-30T00:00:00Z"
+collected_at = "2026-08-02T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "https://github.com/goshs-labs/goshs/commit/7cf911a26ace737e1a55b7dc073e307a25f7fd1d",
     "https://github.com/goshs-labs/goshs/releases/tag/v2.1.1",
     "https://github.com/goshs-labs/goshs/security/advisories/GHSA-rmxw-pq4x-3fvh",
-    "https://github.com/CVEProject/cvelistV5/blob/c0a8c706ec5a05253746252765c56389608b6ecc/cves/2026/54xxx/CVE-2026-54719.json",
-    "https://github.com/cisagov/vulnrichment/blob/40bc58e16fde77e5bd262808021d7c9fdb0e8cc0/2026/54xxx/CVE-2026-54719.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/17c421c38eeaa3e994671e3fa1e3663893d84776/CVE/data/2026/CVE-2026-54719.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/17c421c38eeaa3e994671e3fa1e3663893d84776/SSVC/data/2026/CVE-2026-54719.json",
-    "https://github.com/sec-dojo-com/cve-poc/blob/6d9e48809bb56eb829c7d184fbf6c6fd45cd04df/pocs/2026/CVE-2026-54719.md",
-    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/26642fc092283534201cf8a6d23402c6ed02ca48/reports/2026-07-28/TIER_3_CVE-2026-54719.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/5eb0524bc57238c9fa5c15e85bc9f210cdcdad36/CVE-2026/CVE-2026-547xx/CVE-2026-54719.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e409cc3aa72de0994d4d1b2baf38bcac39a42cdc/cves/2026/54xxx/CVE-2026-54719.json",
+    "https://github.com/cisagov/vulnrichment/blob/67e4f2259ee77a0081a521c1e645484964f36ab6/2026/54xxx/CVE-2026-54719.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/CVE/data/2026/CVE-2026-54719.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/SSVC/data/2026/CVE-2026-54719.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/32ea152709267741509ecbf76022327761e70b91/pocs/2026/CVE-2026-54719.md",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2026-54719.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/874e41a1c528e723f9fa8f58ba0c6da7734010ef/reports/2026-07-28/TIER_3_CVE-2026-54719.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/93d966ccbf562a1a0fe2dcab2089012ce2b11591/CVE-2026/CVE-2026-547xx/CVE-2026-54719.json",
     "https://github.com/Tabll/gemnasium-db/blob/ede50d3653e824fabe4210e54459047bef709b31/go/goshs.de/goshs/CVE-2026-54719.yml",
     "https://github.com/Tabll/gemnasium-db/blob/ede50d3653e824fabe4210e54459047bef709b31/go/goshs.de/goshs/v2/CVE-2026-54719.yml",
-    "https://github.com/zzzteph/low-hanging-vulns/blob/29a6f69c05c2e5d9416757a544f7b86b067341de/nvd/2026/HIGH/CVE-2026-54719/README.md",
 ]
