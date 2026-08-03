@@ -1,0 +1,39 @@
+[basic]
+description = "Jodit 编辑器内置 clean-html 过滤器存在突变型 XSS 漏洞，攻击者利用 MathML 与 `<style>` 标签的嵌套特性（`math > mtext > table > mglyph > style`），使 `<img onload=...>` 等非 onerror 事件处理器在首次解析时被作为原始文本隐藏在 `<style>` 内，从而绕过仅遍历元素节点的同步清理逻辑；当编辑器将值重新解析写入可编辑区时，`<img>` 被提升为 HTML 命名空间下的活体元素，其事件处理器完整保留。受影响版本为 4.12.27 及更早（4.11.2 起需四层载体，更早版本裸载体即可绕过），默认配置下即可触发。攻击前提：攻击者能向编辑器写入 HTML（如内容提交角色），且应用后续将 editor.value 作为可信 HTML 渲染（如 innerHTML、服务端渲染）。利用方式：构造特定载体负载赋值给 editor.value，随后消费端渲染即自动触发 onload/onfocus 等无交互事件，导致存储型 XSS。CVSS 7.2（HIGH），已在 4.12.28 修复。"
+published = "2026-07-01T21:17:04.340"
+remediation = "立即升级Jodit编辑器到4.12.28或更高版本，该版本修复了MathML载体绕过clean-html sanitization的漏洞。如需立即缓解，请在初始化编辑器时禁用clean-html插件或配置更严格的自定义sanitizer，以阻止MathML内嵌的rawtext载体类型。"
+score = 7.2
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Jodit Editor clean-html 突变 XSS 漏洞"
+updated = "2026-07-31T20:16:52.600"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-58263",
+    "GHSA-rxcw-mc6f-6hr3",
+]
+ave_id = "AVE-2026-0810"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/xdan/jodit/security/advisories/GHSA-rxcw-mc6f-6hr3",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2026/CVE-2026-58263.md",
+    "https://github.com/CVEProject/cvelistV5/blob/73e213348ddf142cab7e77d05861fa314ba8e1d0/cves/2026/58xxx/CVE-2026-58263.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cec9fb1846e25b24020f297f65ec2360af0f4267/CVE/data/2026/CVE-2026-58263.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/35f8822ad3b850cb8a922d9066b0d79c83dab6d5/pocs/2026/CVE-2026-58263.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-58263.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/0c8dd71e3ecd7211889d43b088995c7a1a3f2c10/data/2026/CVE-2026-58263.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-58263.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/77c1c4e2b164ba912ebd6005200ea105caf493c9/reports/2026-07-01/TIER_3_CVE-2026-58263.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/d6e5bf87d27954c5a3cd48e565b212fb97932a81/CVE-2026/CVE-2026-582xx/CVE-2026-58263.json",
+    "https://github.com/Tabll/gemnasium-db/blob/2226f395f690bd125e18792c9fd587b54eb15804/npm/jodit/CVE-2026-58263.yml",
+]
