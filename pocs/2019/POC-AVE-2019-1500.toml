@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "通过访问 QNAP NAS 设备未授权接口 /cgi-bin/sysinfoReq.cgi 获取固件版本信息，检测 QTS 版本是否处于受影响范围（QTS 4.3.6 build < 20190919 或 QTS 4.4.1 build < 20190918），从而验证漏洞是否存在。该漏洞允许远程未认证攻击者注入任意代码，CVSS 9.8，已被 CISA KEV 收录。"
+id = "POC-AVE-2019-1500"
+name = "QNAP QTS 输入验证错误漏洞 PoC"
+severity = "critical"
+tags = ["ave-2019-1500"]
+vuln_id = [
+    "CVE-2019-7193",
+    "AVE-2019-1500",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/sysinfoReq.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    '<QDocRoot version="1.0">',
+    "<modelName><![CDATA[",
+    "<displayModelName><![CDATA[",
+    "<firmware><version><![CDATA[",
+    "<build><![CDATA[",
+]
