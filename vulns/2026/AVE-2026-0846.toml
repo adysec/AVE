@@ -1,0 +1,44 @@
+[basic]
+description = "protobufjs 在解析 .proto 文件中的选项名称时存在无限循环漏洞。该库在解析过程中通过逐个读取 schema token 直到遇到 `=` 号来提取选项名，但未对输入结束进行边界检查。攻击者可以构造一个声明了选项但提前结束的恶意 .proto 文件，通过 `parse`、`Root.load` 或 `Root.loadSync` 等 API 触发解析，导致解析器陷入无限循环。由于 Node.js 采用单线程事件循环模型，该漏洞会造成事件循环阻塞，使进程无法响应任何其他请求，直至被外部终止，从而导致拒绝服务。攻击者无需身份认证即可远程利用，影响使用 protobufjs 7.6.5 之前版本及 8.6.6 之前版本的应用。建议升级至 7.6.5 或 8.6.6 及以上版本修复。"
+published = "2026-07-08T16:16:34.363"
+remediation = "将 protobufjs 升级至 7.6.5 或 8.6.6 及以上版本。如无法立即升级，避免解析来自不可信来源的 .proto 文件；若必须解析，将解析操作隔离到独立子进程或 Worker 线程中并设置超时机制，防止解析卡死阻塞主事件循环。"
+score = 5.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "protobufjs .proto 选项解析无限循环拒绝服务漏洞"
+updated = "2026-07-10T18:53:14.377"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59877",
+    "GHSA-j3f2-48v5-ccww",
+]
+ave_id = "AVE-2026-0846"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/protobufjs/protobuf.js/commit/10fba6d54815ceecca8a06b9a6db490c8f5d2217",
+    "https://github.com/protobufjs/protobuf.js/commit/fa5c73add738ceb471e74da8cc2f3727c3d0a69f",
+    "https://github.com/protobufjs/protobuf.js/pull/2352",
+    "https://github.com/protobufjs/protobuf.js/releases/tag/protobufjs-v7.6.5",
+    "https://github.com/protobufjs/protobuf.js/releases/tag/protobufjs-v8.6.6",
+    "https://github.com/protobufjs/protobuf.js/security/advisories/GHSA-j3f2-48v5-ccww",
+    "https://github.com/CVEProject/cvelistV5/blob/b37ddadc32d456372cb07846a95b411ce7a32d9f/cves/2026/59xxx/CVE-2026-59877.json",
+    "https://github.com/cisagov/vulnrichment/blob/380f533205c12eeaa5a8c27e3ae790586a72a402/2026/59xxx/CVE-2026-59877.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37be0559d0574b93d433d6c01d9f77ea4c420519/SSVC/data/2026/CVE-2026-59877.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37be0559d0574b93d433d6c01d9f77ea4c420519/CVE/data/2026/CVE-2026-59877.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-59877.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/npm/protobufjs/CVE-2026-59877.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e9b51a58e4ac0e6b00dc38147f459707e98ae056/CVE-2026/CVE-2026-598xx/CVE-2026-59877.json",
+    "https://github.com/opencve/opencve-kb/blob/5d2b90135469e518b8bd9c7142a1d639da966b67/2026/CVE-2026-59877.json",
+    "https://github.com/TMA84/cvealert/blob/7b01787ec7e75af915759c46f6ffd5276c9f9f37/content/posts/cve-2026-59877.md",
+    "https://github.com/podman-desktop/podman-desktop/blob/bb90676eb8a4291fa2e0211417202246ba65ddf4/website/blog/2026-07-30-release-1.29.md",
+]
