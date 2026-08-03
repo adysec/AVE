@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测目标 Jira 实例是否存在服务端模板注入漏洞（CVE-2019-11581）。通过访问 ContactAdministrators 页面并检查响应中是否存在易受攻击版本的版本号特征，判断漏洞是否存在。该漏洞允许未经身份认证的攻击者通过 Velocity 模板注入执行任意代码。"
+id = "POC-AVE-2019-0300"
+name = "Atlassian Jira 服务端模板注入漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2019-11581",
+    "ssti",
+    "rce",
+    "jira",
+    "atlassian",
+]
+vuln_id = [
+    "CVE-2019-11581",
+    "AVE-2019-0300",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/secure/ContactAdministrators!default.jspa"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Contact Site Administrators"]
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["has not yet configured this contact form"]
