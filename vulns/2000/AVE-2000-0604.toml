@@ -1,11 +1,11 @@
 [basic]
-description = "glibc 2.1.1 中的 unsetenv 函数在处理重复传入的环境变量时存在缺陷，未能正确取消设置环境变量。本地攻击者可通过在 setuid 程序中指定重复的危险环境变量（如 LD_PRELOAD 或 LD_LIBRARY_PATH），利用此漏洞执行任意命令，获取提升的权限。该漏洞影响使用 glibc 2.1.1 的 Linux 系统，攻击者需要本地访问权限，无需认证即可利用。"
+description = "glibc 2.1.1 中的 unsetenv 函数存在环境变量处理缺陷，当同一环境变量被重复设置两次时，unsetenv 仅移除第一次出现的变量而保留第二次，导致 setuid 程序无法正确清除危险环境变量。本地攻击者可通过传入重复的 LD_PRELOAD 或 LD_LIBRARY_PATH 环境变量，在 setuid 程序中加载恶意共享库，从而以提升的权限执行任意代码。该漏洞影响使用 glibc 2.1.1 的 Linux 系统，攻击者需具备本地账户权限即可利用。"
 published = "2000-11-14T05:00:00.000"
-remediation = "升级 glibc 至 2.2 及以上版本（该漏洞在 glibc 2.2 中修复），或安装对应 Linux 发行版的安全补丁。对于 ProFTPd 用户，升级至 1.2.0 及以上版本。临时缓解措施：在系统层面禁用 setuid 程序的环境变量继承，或通过 pam_env 限制 LD_PRELOAD/LD_LIBRARY_PATH 等危险环境变量。"
+remediation = "升级 glibc 至 2.1.2 及以上版本，该版本修复了 unsetenv 对重复环境变量处理不当的问题。如无法升级，可在系统层移除 setuid 程序中对 LD_PRELOAD/LD_LIBRARY_PATH 等危险环境变量的继承，或通过 pam_env 模块限制用户自定义环境变量传递。对于关键服务，建议使用 glibc 补丁包（如 RedHat 的 RHSA-2000:065）进行修复。"
 score = 7.2
 severity = "HIGH"
-sources = ["epss"]
-title = "ProFTPd 1.2 pre6 snprintf 远程代码执行漏洞"
+sources = ["avd"]
+title = "GNU glibc unsetenv 环境变量处理本地权限提升漏洞"
 updated = "2026-06-16T21:52:32.550"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0824"]
 ave_id = "AVE-2000-0604"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -38,14 +38,14 @@ urls = [
     "http://www.turbolinux.com/pipermail/tl-security-announce/2000-September/000020.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5173",
     "https://www.exploit-db.com/exploits/19503",
-    "https://github.com/CVEProject/cvelistV5/blob/0118bdf83d51e7ec6262ccd7acc694cb751b5bf8/cves/2000/0xxx/CVE-2000-0824.json",
+    "https://github.com/CVEProject/cvelistV5/blob/b160e6f2915ac726b29ee0689fc920f5016abef5/cves/2000/0xxx/CVE-2000-0824.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0824",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/6550296d9cb5b12971003dddc7912cdc0707af50/CVE/data/2000/CVE-2000-0824.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/84cdd54c70c68603acd478a90957e5c6d8e65c65/CVE/data/2000/CVE-2000-0824.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0824.json",
-    "https://github.com/opencve/opencve-kb/blob/878a3042444029b151459a1565a690101509a27a/2000/CVE-2000-0824.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/57b318ad84d91f19df2f11e62567e45db1dd90ad/2000/0xxx/CVE-2000-0824.md",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0824.json",
+    "https://github.com/opencve/opencve-kb/blob/71d64a6d3b3901a67b0e17d4598d8a385b75e78d/2000/CVE-2000-0824.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/0xxx/CVE-2000-0824.md",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-0824.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0824.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3e38e95f2e1dd1607b843a3c921eb524d7c4f47f/CVE-2000/CVE-2000-08xx/CVE-2000-0824.json",
-    "https://github.com/opencve/opencve-redhat/blob/11f7040c1ab8cb698a7a4a3c32a4afb6398c9ff1/2000/CVE-2000-0824.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b9f52bb052695dac5cabbd58e049eaac73697161/CVE-2000/CVE-2000-08xx/CVE-2000-0824.json",
+    "https://github.com/opencve/opencve-redhat/blob/83f4a2ccebd09d57422c724140391aef39e9fafa/2000/CVE-2000-0824.json",
 ]
