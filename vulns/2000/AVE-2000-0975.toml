@@ -1,11 +1,11 @@
 [basic]
-description = "MuH IRC 服务器的日志记录功能存在安全漏洞，攻击者可以通过向服务器发送包含恶意格式字符串的昵称来触发漏洞。该漏洞的核心原因是服务器日志记录功能未能有效对用户输入的格式字符串进行转义处理，导致格式字符串解析时出现异常。远程攻击者可利用这一漏洞导致服务器崩溃（拒绝服务）或在目标系统上执行任意代码，影响用户数据安全和服务器稳定。通过精心构造的昵称，攻击者可以绕过服务器的验证机制，将恶意代码注入到日志处理流程中，实现对目标IRC服务器的远程代码执行控制。该漏洞影响 MuH 2.05d IRC 服务器版本，攻击者无需任何权限即可实施攻击，安全风险极高。漏洞的 CVSS 评分达到 7.5，表明其严重性介于中高与高之间，需要及时修复以确保网络服务安全。"
+description = "muh 2.05d IRC 服务器的日志记录功能未正确过滤用户注入的格式化字符串，远程攻击者可通过向服务器发送特制的恶意昵称触发格式化字符串漏洞，导致拒绝服务或执行任意命令。该漏洞影响 muh 2.05d 及之前版本，CVSS 评分 7.5，危害等级高，攻击者无需认证即可远程利用，实现信息泄露、权限提升或服务崩溃。"
 published = "2000-11-14T05:00:00.000"
-remediation = "立即升级到现代IRC服务器替代品（如UnrealIRCd、Ngircd或Divebaudinet），并确保升级到最新安全补丁版本。如果无法立即更换，请编辑muh服务器的源代码.patch文件，应用安全清理格式字符串的补丁解决方案。同时，将服务绑定到局域网内部，禁用外部访问，并严格限制客户端发送格式化nicknames，实现防火墙级防护作为临时缓解措施。"
+remediation = '升级 muh 至 2.2a 或更高版本（SourceForge 已发布），或手动修改 muh.c 源码中第 1024 行附近，将 `irc_notice(&c_client, status.nickname, s)` 改为 `irc_notice(&c_client, status.nickname, "%s", s)` 后重新编译。临时缓解措施可关闭 muh 的日志记录功能（注释或删除配置中的 log 相关行）。'
 score = 7.5
 severity = "HIGH"
-sources = ["epss"]
-title = "muh IRC服务器 格式化字符串漏洞导致拒绝服务和任意代码执行"
+sources = ["avd"]
+title = "muh IRC 服务器格式化字符串注入漏洞"
 updated = "2026-06-16T21:52:36.770"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0857"]
 ave_id = "AVE-2000-0975"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-09/0068.html",
     "http://www.securityfocus.com/bid/1665",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5215",
-    "https://github.com/CVEProject/cvelistV5/blob/fc5c3e6f60accc24b7eac4fd31472f0e5fd97f24/cves/2000/0xxx/CVE-2000-0857.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/0c8771e89b9e76278d77bdb22e6a7f5061b52570/CVE/data/2000/CVE-2000-0857.json",
+    "https://github.com/CVEProject/cvelistV5/blob/2e429c9a0087eb0ee678d77c344076eb39564d19/cves/2000/0xxx/CVE-2000-0857.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/604ddf5b05f9e8ce70a7b6f9716ba166db0bd437/CVE/data/2000/CVE-2000-0857.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0857",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0857.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0857.json",
-    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2000/CVE-2000-0857.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/59bd6fda35498288097a4f1fd0cdf8c04a1d74bd/CVE-2000/CVE-2000-08xx/CVE-2000-0857.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/7f8cb0f5372a51b89f819e1c3a9d694706e18788/2000/0xxx/CVE-2000-0857.md",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-0857.json",
+    "https://github.com/opencve/opencve-kb/blob/cbf0905811e3a7a53efa9a65584bb426cc9bcca8/2000/CVE-2000-0857.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3a7c0c4aa01967d2633d808f80f3fcd65491b947/CVE-2000/CVE-2000-08xx/CVE-2000-0857.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c80cd921505a9f88e4aae41f1414ac3763e708ba/2000/0xxx/CVE-2000-0857.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0857.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0857.json",
 ]
