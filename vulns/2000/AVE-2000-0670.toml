@@ -1,11 +1,11 @@
 [basic]
-description = "BOA Web Server 0.94.8.2 及更早版本存在目录遍历漏洞。漏洞原理在于服务器对 HTTP GET 请求中的路径过滤不严，攻击者可以通过将点号（.）替换为 URL 编码形式的 `%2E`，绕过简单的路径检查机制。在无需身份验证的情况下，远程攻击者可构造特殊的请求路径访问服务器根目录以外的任意文件，导致敏感信息泄露。该漏洞影响所有部署了受影响版本 BOA Web Server 的系统。"
+description = 'BOA Web Server 0.94.8.2 及更早版本存在目录遍历漏洞，远程攻击者可通过向服务器发送特制的 GET 请求，使用 "%2E" 替代 "." 绕过路径过滤，实现任意文件读取。该漏洞影响 BOA Web Server 0.94.8.2 及之前版本，攻击者无需身份认证即可利用，可读取服务器上的敏感文件如 /etc/passwd 等。Exploit-DB 已公开该漏洞的利用方法。'
 published = "2000-12-19T05:00:00.000"
-remediation = '建议立即停止使用 BOA Web Server 0.94.8.2 及更早版本，迁移至 Apache 或 Nginx 等现代且受支持的 Web 服务器。若必须维持运行，可通过在 Web 应用防火墙（WAF）中配置过滤规则，拦截包含 "%2E" 或 "..%2f" 等目录遍历特征的 HTTP 请求以缓解风险。'
+remediation = "将 BOA Web Server 升级至 0.94.14.1 或更高版本，该版本修复了 %2E 编码绕过导致的目录遍历问题。具体操作：从 https://www.boa.org/ 下载最新源码，执行 ./configure && make && make install 完成升级。如无法升级，可在 Web 服务器前部署反向代理（如 Nginx），配置规则拦截包含 %2E 或连续点号的 GET 请求路径；或在 iptables 层面限制对 80 端口的非必要来源访问作为临时缓解。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "BOA Web Server 任意文件访问漏洞"
+sources = ["avd"]
+title = "BOA Web Server 目录遍历漏洞"
 updated = "2026-06-16T21:52:46.130"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0920"]
 ave_id = "AVE-2000-0670"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/1770",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5330",
     "https://www.exploit-db.com/exploits/36689",
-    "https://github.com/trickest/cve/blob/b349e2ac98435c78e6eec698cf95df82dacb0ca1/2000/CVE-2000-0920.md",
-    "https://github.com/CVEProject/cvelistV5/blob/e75ae6c145bf0fa550455c4b2b7c9e0f03c663af/cves/2000/0xxx/CVE-2000-0920.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/e701323a68aa022329783fc6fbcb51c8037899bc/CVE/data/2000/CVE-2000-0920.json",
+    "https://github.com/trickest/cve/blob/7ade3449b58b8e2c679712dc3af64bbd8e638364/2000/CVE-2000-0920.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b37ddadc32d456372cb07846a95b411ce7a32d9f/cves/2000/0xxx/CVE-2000-0920.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37be0559d0574b93d433d6c01d9f77ea4c420519/CVE/data/2000/CVE-2000-0920.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0920",
     "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2000/CVE-2000-0920.rules",
-    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/94a1ad649f88b31076fc17ad6fb064050b6da4c2/CVEs/2000/CVE-2000-0920.md",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/db09292fb11e6e85f066b9d4f61163327f785736/CVEs/2000/CVE-2000-0920.md",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0920.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-0920.md",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0920.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-0920.json",
     "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2000/CVE-2000-0920.md",
 ]
