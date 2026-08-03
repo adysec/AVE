@@ -1,17 +1,22 @@
 [info]
 author = "AVE"
-description = '验证 Microsoft Windows Media Player 7.0 处理自定义 .wms 皮肤文件时的任意脚本执行漏洞。攻击者将含恶意 JS 的 .wms 和 .js 打包为 .wmz (ZIP)，再嵌入 .wmd 下载包中，通过 HTML iframe 或 window.open 触发 WMP 自动下载并执行嵌入脚本。PoC 结构：test.js(创建 C:\gfiseclab.txt) + test.wms(调用 test.js) → test.wmz(ZIP) → test.wmd(ZIP含 test.asx/test.mpg/test.wmz) → exploit.html(iframe 触发下载)。'
+description = "验证目标是否可通过 HTML 页面触发 Windows Media Player 7.0 加载恶意 .wmd/.wmz 皮肤文件，导致任意脚本执行。攻击者构造包含恶意 JavaScript 的 .wmz 皮肤文件，通过 iframe 或 window.open 嵌入 HTML 页面，用户访问后自动下载并执行 ActiveX 脚本。"
 id = "POC-AVE-2000-0802"
-name = "Microsoft Windows Media Player 7.0 .wms Arbitrary Script PoC"
+name = "Microsoft Windows Media Player 7.0 .wms Arbitrary Script Execution PoC"
 severity = "medium"
-tags = ["ave-2000-0802"]
+tags = [
+    "cve-2000-1112",
+    "windows-media-player",
+    "arbitrary-script",
+    "ms00-090",
+]
 vuln_id = [
     "CVE-2000-1112",
     "AVE-2000-0802",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
@@ -20,22 +25,9 @@ protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    200,
-    206,
-]
-type = "status"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/exploit.html"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
+part = "header"
 type = "word"
 words = [
-    "test.wmd",
-    "iframe",
+    "application/x-zip-compressed",
+    "application/zip",
 ]
