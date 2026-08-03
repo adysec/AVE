@@ -1,0 +1,49 @@
+[info]
+author = "AVE"
+description = "检测目标 SSRS 服务器是否存在 ReportViewer.aspx 页面，该页面存在 NavigationCorrector$ViewState 参数反序列化漏洞（CVE-2020-0618）。攻击者可利用 LosFormatter 反序列化在服务账户权限下执行任意代码。"
+id = "POC-AVE-2020-0006"
+name = "Microsoft SQL Server Reporting Services ViewState Deserialization RCE PoC"
+severity = "high"
+tags = [
+    "cve-2020-0618",
+    "ssrs",
+    "deserialization",
+    "rce",
+]
+vuln_id = [
+    "CVE-2020-0618",
+    "AVE-2020-0006",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ReportServer/pages/ReportViewer.aspx"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ReportViewer",
+    "__VIEWSTATE",
+    "NavigationCorrector",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Reports/pages/ReportViewer.aspx"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ReportViewer",
+    "__VIEWSTATE",
+    "NavigationCorrector",
+]
