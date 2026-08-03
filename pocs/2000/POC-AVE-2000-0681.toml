@@ -1,10 +1,10 @@
 [info]
-author = "ave"
-description = "验证 Pegasus Mail 3.12 是否可通过 mailto 协议的 -F 参数读取任意本地文件，触发文件转发功能导致敏感信息泄露"
+author = "AVE"
+description = "通过构造包含恶意 mailto: 协议 URL 的 HTML 页面，诱使 Pegasus Mail 3.12 用户访问后自动将本地文件发送至攻击者邮箱。利用 mailto: 协议的 -F 开关参数实现任意文件读取。"
 id = "POC-AVE-2000-0681"
-name = "CVE-2000-0930 PoC"
+name = "Pegasus Mail 3.12 文件读取漏洞 PoC"
 severity = "medium"
-tags = ["ave-2000-0681"]
+tags = ["cve-2000-0930"]
 vuln_id = [
     "CVE-2000-0930",
     "AVE-2000-0681",
@@ -14,11 +14,22 @@ vuln_id = [
 logic = "all"
 
 [[poc.requests]]
-path = "/etc/passwd"
-protocol = "file"
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["root:"]
+words = [
+    "mailto:",
+    "-F",
+]
