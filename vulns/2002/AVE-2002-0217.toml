@@ -1,12 +1,12 @@
 [basic]
-description = "Apache mod_ssl 模块 2.8.9 及更早版本中存在 off-by-one（差一错误）缓冲区溢出漏洞。该漏洞位于 ssl_compat_directive 函数中，当 Apache 通过 rewrite_command 钩子处理 .htaccess 文件中的超长条目时触发。攻击者可在启用 AllowOverride 指令的站点上，构造包含超过 12288 字节 DATE_LOCALE 环境变量值的 .htaccess 文件，触发缓冲区溢出，导致以 Apache 服务器用户权限执行任意代码。该漏洞影响 Apache + mod_ssl 的多种 Linux 发行版配置，Red Hat、Debian、Mandrake、Caldera 等厂商均已发布安全更新。"
-published = "2002-07-11"
-remediation = "升级 Apache httpd 至 1.3.26 及以上版本（含 mod_ssl 2.8.10+），或单独升级 mod_ssl 至 2.8.10。如无法升级，在 httpd.conf 中禁用 AllowOverride 指令（设置 AllowOverride None）以阻止 .htaccess 文件解析，可缓解该缓冲区溢出风险。"
-score = 5
-severity = "MEDIUM"
-sources = ["redhat"]
-title = "Apache mod_ssl 2.8.x HTAccess 越界缓冲区溢出漏洞"
-updated = "2002-07-11"
+description = "Apache mod_ssl 模块 2.8.9 及更早版本中存在 off-by-one 缓冲区溢出漏洞，位于 ssl_compat_directive 函数中，该函数由 rewrite_command 钩子调用。本地攻击者可通过向 .htaccess 文件写入超长条目触发该漏洞，导致缓冲区溢出，从而以 Apache 服务器用户身份执行任意代码。该漏洞影响 Apache mod_ssl 2.8.x 系列版本，CVSS 评分 7.8，危害等级高。建议升级至 mod_ssl 2.8.10 或更高版本以修复此漏洞。"
+published = "2002-07-11T04:00:00.000"
+remediation = "将 mod_ssl 升级至 2.8.10 或更高版本（Apache httpd 2.0 用户应升级至 2.0.37 及以上版本）。各发行版用户请安装对应安全更新：Red Hat 安装 RHSA-2002:134/135/136 更新，Debian 安装 DSA-135 更新，Mandrake 安装 MDKSA-2002:048 更新。如无法立即升级，可在 httpd.conf 中禁用 AllowOverride 指令（设置为 None），阻止普通用户在 .htaccess 中触发该漏洞，并确保 .htaccess 文件仅由可信管理员管理。"
+score = 7.8
+severity = "HIGH"
+sources = ["exploitdb"]
+title = "Apache mod_ssl Off-by-One 缓冲区溢出漏洞"
+updated = "2026-06-16T21:57:52.273"
 
 [exploit]
 exp_urls = []
@@ -17,20 +17,37 @@ aliases = ["CVE-2002-0653"]
 ave_id = "AVE-2002-0217"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
+    "http://archives.neohapsis.com/archives/bugtraq/2002-06/0350.html",
+    "http://archives.neohapsis.com/archives/hp/2002-q3/0018.html",
+    "http://distro.conectiva.com.br/atualizacoes/?id=a&anuncio=000504",
+    "http://marc.info/?l=bugtraq&m=102513970919836&w=2",
+    "http://marc.info/?l=bugtraq&m=102563469326072&w=2",
+    "http://marc.info/?l=vuln-dev&m=102477330617604&w=2",
+    "http://rhn.redhat.com/errata/RHSA-2002-164.html",
+    "http://www.debian.org/security/2002/dsa-135",
+    "http://www.iss.net/security_center/static/9415.php",
+    "http://www.linux-mandrake.com/en/security/2002/MDKSA-2002-048.php",
+    "http://www.novell.com/linux/security/advisories/2002_028_mod_ssl.html",
+    "http://www.redhat.com/support/errata/RHSA-2002-134.html",
+    "http://www.redhat.com/support/errata/RHSA-2002-135.html",
+    "http://www.redhat.com/support/errata/RHSA-2002-136.html",
+    "http://www.redhat.com/support/errata/RHSA-2002-146.html",
+    "http://www.redhat.com/support/errata/RHSA-2003-106.html",
+    "http://www.securityfocus.com/bid/5084",
     "https://www.exploit-db.com/exploits/21575",
-    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2002/CVE-2002-0653.md",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2002/CVE-2002-0653.md",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2002/CVE-2002-0653.md",
-    "https://github.com/CVEProject/cvelistV5/blob/95e02b73a69df169404c6b2708e1f8d0346744bc/cves/2002/0xxx/CVE-2002-0653.json",
+    "https://github.com/CVEProject/cvelistV5/blob/81757a559270348b5ed9f7df6d4fbf1e7a4fae68/cves/2002/0xxx/CVE-2002-0653.json",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2002/CVE-2002-0653.md",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-0653",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2002/CVE-2002-0653.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/485b16e111d5be129c27a026bd0160d48eb6b893/CVE/data/2002/CVE-2002-0653.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/03a7e425813b5ae0ce33712378801e4e929dbdb7/CVE/data/2002/CVE-2002-0653.json",
     "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2002/CVE-2002-0653.md",
-    "https://github.com/opencve/opencve-kb/blob/6803c56f209ac0b3251a2751d06e0a641b57c323/2002/CVE-2002-0653.json",
+    "https://github.com/opencve/opencve-kb/blob/bb000df9f27fa146ab353b5455f4a8607b3ce719/2002/CVE-2002-0653.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-0653.json",
 ]
