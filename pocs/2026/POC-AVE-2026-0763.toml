@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "通过 GET /api/myInAppChannels:list 接口的 filter[latestMsgReceiveTimestamp][$lt] 参数注入 SQL 载荷，检测 NocoBase @nocobase/plugin-notification-in-app-message 插件中的 SQL 注入漏洞（CVE-2026-52887）。利用 PostgreSQL 错误回显确认注入点存在。需先注册并获取认证会话。"
+id = "POC-AVE-2026-0763"
+name = "NocoBase 通知应用内消息插件 SQL 注入 PoC"
+severity = "critical"
+tags = ["ave-2026-0763"]
+vuln_id = [
+    "CVE-2026-52887",
+    "AVE-2026-0763",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/myInAppChannels:list"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "errors",
+    "data",
+]
