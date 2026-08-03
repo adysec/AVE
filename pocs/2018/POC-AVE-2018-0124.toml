@@ -1,0 +1,47 @@
+[info]
+author = "AVE"
+description = "检测 Snap Creek Duplicator WordPress 插件是否残留 installer-backup.php 安装文件，并验证版本是否低于 1.2.42。攻击者可通过访问残留安装文件注入 PHP 代码到 wp-config.php 实现任意代码执行。"
+id = "POC-AVE-2018-0124"
+name = "WordPress Duplicator Plugin < 1.2.42 - 任意代码执行 PoC"
+severity = "critical"
+tags = [
+    "cve-2018-17207",
+    "wordpress",
+    "duplicator",
+    "rce",
+]
+vuln_id = [
+    "CVE-2018-17207",
+    "AVE-2018-0124",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/installer-backup.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action_step=1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<title>Duplicator</title>",
+    "dupx-header-version",
+    "Deployment Path:",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
