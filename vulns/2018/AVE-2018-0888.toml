@@ -1,11 +1,11 @@
 [basic]
-description = "D-Link多款路由器产品（DIR-880L、DIR-868L、DIR-865L、DIR-860L特定固件版本及之前版本）的soap.cgi组件中存在操作系统命令注入漏洞（CWE-78）。攻击者可通过向SOAP接口的service参数发送恶意构造的命令注入载荷，在无需身份认证、无需用户交互的情况下远程执行任意操作系统命令，完全控制设备。该漏洞CVSS 3.1评分9.8（严重），攻击向量为网络、攻击复杂度低、无需权限、无需用户交互，对机密性、完整性、可用性均造成高危害。攻击者只需向目标路由器的SOAP接口发送包含shell命令注入载荷的SOAP请求即可实现远程代码执行，已被CISA列入已知被利用漏洞目录。D-Link官方已发布固件更新修复该漏洞，建议用户尽快升级至修复版本固件。"
+description = "D-Link 多款路由器（DIR-880L、DIR-868L、DIR-865L、DIR-860L）的 soap.cgi 接口存在操作系统命令注入漏洞，该漏洞位于 cgibin 二进制文件的 soapcgi_main 函数中。远程攻击者无需任何身份认证即可通过网络向目标设备的 service 参数注入恶意操作系统命令，成功利用后可完全控制受影响设备，实现信息窃取、恶意软件植入或发起后续攻击。攻击者只需向目标路由器的 Web 管理接口发送特制 HTTP 请求即可触发该漏洞，攻击复杂度低。受影响的固件版本包括 DIR-880L REVA FIRMWARE PATCH 1.08B04 及之前版本、DIR-868L FW112b04 及之前版本、DIR-865L REVA FIRMWARE PATCH 1.08.B01 及之前版本、DIR-860L FW110b04 及之前版本。"
 published = "2018-03-06T20:29:00.987"
-remediation = "建议立即升级受影响 D-Link 路由器至最新固件版本：DIR-880L 升级至 1.08B04 及以上版本，DIR-868L 升级至 FW112b04 及以上版本，DIR-65L 升级至 1.08.B01 及以上版本，DIR-860L 升级至 FW110b04 及以上版本。登录路由器管理界面（默认 http://192.168.0.1 或 http://dlinkrouter.local），在「工具」→「固件升级」中上传官网下载的对应固件版本进行升级。如暂时无法升级，建议在防火墙层面封禁 WAN 侧对 SOAP 服务端口（通常为 80/443）的访问，或在路由器管理界面关闭「远程管理」功能并禁用 SOAP 服务作为临时缓解措施。请访问 D-Link 官方支持页面（https://support.dlink.com/）下载对应型号最新固件。"
+remediation = "立即将 DIR-880L 升级至 1.08B04 之后版本，DIR-868L 升级至 FW112b04 之后版本，DIR-865L 升级至 1.08.B01 之后版本，DIR-860L 升级至 FW110b04 之后版本。如无法升级，在路由器管理界面禁用远程管理功能，并在防火墙上限制对 TCP 端口 80/443 的访问来源 IP。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
-title = "D-Link 多款路由器 操作系统命令注入漏洞"
+sources = ["nuclei"]
+title = "D-Link 多款路由器操作系统命令注入漏洞"
 updated = "2026-06-17T02:01:58.547"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2018-6530"]
 ave_id = "AVE-2018-0888"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,13 +25,13 @@ urls = [
     "https://github.com/TheBeeMan/Pwning-multiple-dlink-router-via-SOAP-proto",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2018-6530",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2018/CVE-2018-6530.yaml",
-    "https://github.com/trickest/cve/blob/b3a270a001a31742516eaea5c494f365de9d3c80/2018/CVE-2018-6530.md",
-    "https://github.com/projectdiscovery/nuclei-templates/blob/3887f9deba3194900fbfb1022d8155887325c384/http/cves/2018/CVE-2018-6530.yaml",
+    "https://github.com/trickest/cve/blob/7ade3449b58b8e2c679712dc3af64bbd8e638364/2018/CVE-2018-6530.md",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/e9f0fe7fa4f5c548bbd1a4d3b65d0f181021e664/http/cves/2018/CVE-2018-6530.yaml",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/CVE-2018-6530.yaml",
-    "https://github.com/CVEProject/cvelistV5/blob/3ea93936438a97f1459a1dd6e83719dbfc798be2/cves/2018/6xxx/CVE-2018-6530.json",
-    "https://github.com/cisagov/vulnrichment/blob/c16d5de75824639ce100418081f1869662c7d360/2018/6xxx/CVE-2018-6530.json",
-    "https://github.com/trickest/cve/blob/b3a270a001a31742516eaea5c494f365de9d3c80/2018/CVE-2018-20114.md",
-    "https://github.com/0x727/FingerprintHub/blob/be9cbbdcace5bb1f0274d67feb2141e8b491875d/plugins/dlink/dir-860l_firmware/CVE-2018-6530.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/a14f4e66db68a75a9270d6c9081e9ffb7f931cd8/cves/2018/6xxx/CVE-2018-6530.json",
+    "https://github.com/cisagov/vulnrichment/blob/b8f3faf694c27edd208769ff59c4ed562dd91eaa/2018/6xxx/CVE-2018-6530.json",
+    "https://github.com/trickest/cve/blob/7ade3449b58b8e2c679712dc3af64bbd8e638364/2018/CVE-2018-20114.md",
+    "https://github.com/0x727/FingerprintHub/blob/5784554659c9500df8525e8db4f986630a56d8a1/plugins/dlink/dir-860l_firmware/CVE-2018-6530.yaml",
     "https://github.com/Ostorlab/KEV/blob/8feadeb8b7ff54359eab87941769781629146b23/nuclei/CVE-2018-6530.yaml",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2018/CVE-2018-6530.md",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2018/CVE-2018-6530.md",
