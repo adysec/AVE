@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "通过构造特制的 Shift_JIS 编码 HTML 页面，利用解码器对无效第二字节（如 0x20 空格或 0x22 双引号）处理不当，使后续字节被错误消费，导致 HTML 属性逃逸，实现跨站脚本注入。PoC 使用 0x81 作为前导字节，其后紧跟双引号 0x22，解码器将 0x81 0x22 视为一个双字节字符，从而消费掉属性闭合引号，使攻击者注入的 onfocus/autofocus 属性生效。"
+id = "POC-AVE-2011-0227"
+name = "Mozilla Firefox/Thunderbird Shift_JIS XSS PoC"
+severity = "medium"
+tags = [
+    "cve-2011-3648",
+    "xss",
+    "shift-jis",
+    "firefox",
+    "thunderbird",
+]
+vuln_id = [
+    "CVE-2011-3648",
+    "AVE-2011-0227",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/shift_jis_xss.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["onfocus=alert(1)"]
