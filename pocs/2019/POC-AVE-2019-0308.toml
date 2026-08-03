@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "通过构造特制 JavaScript 对象，利用 IonMonkey JIT 编译器中 Array.pop 方法内联优化时的类型推断缺陷，使引擎将原型链上的 Uint8Array 错误当作 Uint32Array 处理，触发类型混淆，进而实现越界读写和任意代码执行。访问恶意网页即可触发。"
+id = "POC-AVE-2019-0308"
+name = "Mozilla Firefox Array.pop JIT Type Confusion PoC"
+severity = "high"
+tags = ["ave-2019-0308"]
+vuln_id = [
+    "CVE-2019-11707",
+    "AVE-2019-0308",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "__proto__",
+    "arr.pop",
+    "Uint8Array",
+]
