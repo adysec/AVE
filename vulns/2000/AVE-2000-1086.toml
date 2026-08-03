@@ -1,11 +1,11 @@
 [basic]
-description = 'PTlink IRCD 3.5.3 及 PTlink Services 1.8.1 存在拒绝服务漏洞。远程攻击者无需身份认证即可通过网络向目标服务器发送特制的 "mode +owgscfxeb" 和 "oper" 命令，触发服务器内部处理异常，导致 IRC 服务进程崩溃，造成拒绝服务。该漏洞影响运行 PTlink IRCD 3.5.3 及 PTlink Services 1.8.1 的服务器，攻击条件低，仅需网络可达即可实施。'
+description = 'PTlink IRCD 3.5.3 及配套的 PTlink Services 1.8.1 存在拒绝服务漏洞。该漏洞源于 IRC 守护进程在处理用户发送的特制命令时缺乏充分的输入验证与边界检查。未经身份认证的远程攻击者可通过向目标服务器发送包含恶意参数的命令（如"mode +owgscfxeb"及"oper"命令），触发 IRCD 进程内部的异常处理逻辑，导致服务器进程崩溃并停止服务。该漏洞影响运行 PTlink IRCD 3.5.3 或 PTlink Services 1.8.1 的 IRC 服务器实例，攻击者无需预先获得账户权限或完成身份认证即可发起攻击。攻击成功后将造成 IRC 服务中断，所有在线用户被迫断开连接，影响服务的可用性与正常运行。CVSS v2 评分 5.0，危害等级为中等。建议受影响用户升级至修复版本或应用相关安全补丁以消除该拒绝服务风险。'
 published = "2001-01-09T05:00:00.000"
-remediation = "升级 PTlink IRCD 至 3.5.4 或更高版本（若厂商已停止维护，建议迁移至 UnrealIRCd 或 InspIRCd 等活跃维护的 IRC 守护进程）。如无法立即升级，可在 IRC 服务器配置中限制 `/oper` 命令的访问来源（仅允许受信 IP 段），并禁用 `mode +owgscfxeb` 组合模式的解析，或通过防火墙规则限制对 IRC 端口的非必要访问作为临时缓解措施。"
+remediation = "立即将 PTlink IRCD 升级至更新版本，或迁移至受维护的 IRC 服务端（如 ircd-hybrid、InspIRCd 等）；若暂无法升级，应在防火墙层面限制对 IRCD 端口的访问，仅允许可信 IP 连接，并禁用不必要的 oper 命令授权。同时升级 PTlink Services 至安全版本，防止攻击者通过 mode +owgscfxeb 及 oper 命令触发服务端崩溃。建议定期审查 oper 权限配置，移除不必要的全局操作员账户。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "PTlink IRCD 及 Services 拒绝服务漏洞"
+sources = ["epss"]
+title = "PTlink IRCD 远程拒绝服务漏洞"
 updated = "2026-06-16T21:53:09.077"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-1102"]
 ave_id = "AVE-2000-1086"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/archive/1/147115",
     "http://www.securityfocus.com/bid/2008",
-    "https://github.com/CVEProject/cvelistV5/blob/95e02b73a69df169404c6b2708e1f8d0346744bc/cves/2000/1xxx/CVE-2000-1102.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/e2322a1c7ec352a09ed3f56a28a4b08df0e6844e/CVE/data/2000/CVE-2000-1102.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a14f4e66db68a75a9270d6c9081e9ffb7f931cd8/cves/2000/1xxx/CVE-2000-1102.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3eab0e512529a79daadefaadf0f05372813e7876/CVE/data/2000/CVE-2000-1102.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1102",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1102.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1102.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/eeef281f8f1a9ba894118076ad84b1dde324bda9/CVE-2000/CVE-2000-11xx/CVE-2000-1102.json",
-    "https://github.com/opencve/opencve-kb/blob/81f67ee2f2329d45fd70316a977698f2177074cc/2000/CVE-2000-1102.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c3bcb8a007062e69fb258211c3f1efeb5a341535/2000/1xxx/CVE-2000-1102.md",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1102.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e9b51a58e4ac0e6b00dc38147f459707e98ae056/CVE-2000/CVE-2000-11xx/CVE-2000-1102.json",
+    "https://github.com/opencve/opencve-kb/blob/20ec019115a0b1de7bc97fc35bb5f73fa34a0aae/2000/CVE-2000-1102.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/a939a0e06ea28df0537defbf2bf781fcb02ed201/2000/1xxx/CVE-2000-1102.md",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1102.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1102.json",
 ]
