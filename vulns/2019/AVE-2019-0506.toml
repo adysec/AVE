@@ -1,0 +1,71 @@
+[basic]
+description = "Linux 内核 5.1.17 之前版本中的 ptrace_link 函数（kernel/ptrace.c）存在权限管理缺陷，在处理进程间 ptrace 关系建立时未正确记录凭证信息。本地低权限用户可利用父子进程关系中的特定场景，通过父进程降权后调用 execve 的时机，结合 Polkit 的 pkexec 辅助程序与 PTRACE_TRACEME 机制，绕过内核权限检查实现提权至 root。该漏洞影响所有使用受影响内核版本的 Linux 发行版，CVSS 评分 7.8，危害等级高。此外，对象生命周期问题也可能导致内核崩溃。SELinux deny_ptrace 策略可在部分环境中作为临时缓解措施。"
+published = "2019-07-17T13:15:10.687"
+remediation = "立即升级 Linux 内核至 5.1.17 或更高版本（如 5.2.x 系列），各发行版对应：Ubuntu 安装 5.1.17+ 内核包，CentOS/RHEL 7 升级至 kernel-3.10.0-1062.el7，Debian 升级至 4.19.67-1。如无法立即升级，可启用 SELinux 并设置 deny_ptrace=1 作为临时缓解，或通过 grub 内核参数添加 `ptrace=off` 禁用 ptrace 系统调用。"
+score = 7.8
+severity = "HIGH"
+sources = ["kev"]
+title = "Linux Linux内核 ptrace本地提权漏洞"
+updated = "2026-06-17T02:16:26.033"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2019-13272"]
+ave_id = "AVE-2019-0506"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://packetstormsecurity.com/files/153663/Linux-PTRACE_TRACEME-Broken-Permission-Object-Lifetime-Handling.html",
+    "http://packetstormsecurity.com/files/153702/Slackware-Security-Advisory-Slackware-14.2-kernel-Updates.html",
+    "http://packetstormsecurity.com/files/154245/Kernel-Live-Patch-Security-Notice-LSN-0054-1.html",
+    "http://packetstormsecurity.com/files/154957/Linux-Polkit-pkexec-Helper-PTRACE_TRACEME-Local-Root.html",
+    "http://packetstormsecurity.com/files/156929/Linux-PTRACE_TRACEME-Local-Root.html",
+    "http://packetstormsecurity.com/files/165051/Linux-Kernel-5.1.x-PTRACE_TRACEME-pkexec-Local-Privilege-Escalation.html",
+    "https://access.redhat.com/errata/RHSA-2019:2405",
+    "https://access.redhat.com/errata/RHSA-2019:2411",
+    "https://access.redhat.com/errata/RHSA-2019:2809",
+    "https://bugs.chromium.org/p/project-zero/issues/detail?id=1903",
+    "https://bugzilla.redhat.com/show_bug.cgi?id=1730895",
+    "https://bugzilla.suse.com/show_bug.cgi?id=1140671",
+    "https://cdn.kernel.org/pub/linux/kernel/v5.x/ChangeLog-5.1.17",
+    "https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=6994eefb0053799d2e07cd140df6c2ea106c41ee",
+    "https://github.com/torvalds/linux/commit/6994eefb0053799d2e07cd140df6c2ea106c41ee",
+    "https://lists.debian.org/debian-lts-announce/2019/07/msg00022.html",
+    "https://lists.debian.org/debian-lts-announce/2019/07/msg00023.html",
+    "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/OGRK5LYWBJ4E4SRI4DKX367NHYSI3VOH/",
+    "https://seclists.org/bugtraq/2019/Jul/30",
+    "https://seclists.org/bugtraq/2019/Jul/33",
+    "https://security.netapp.com/advisory/ntap-20190806-0001/",
+    "https://support.f5.com/csp/article/K91025336",
+    "https://support.f5.com/csp/article/K91025336?utm_source=f5support&amp%3Butm_medium=RSS",
+    "https://usn.ubuntu.com/4093-1/",
+    "https://usn.ubuntu.com/4094-1/",
+    "https://usn.ubuntu.com/4095-1/",
+    "https://usn.ubuntu.com/4117-1/",
+    "https://usn.ubuntu.com/4118-1/",
+    "https://www.debian.org/security/2019/dsa-4484",
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2019-13272",
+    "https://www.exploit-db.com/exploits/47543",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2019/CVE-2019-13272.md",
+    "https://github.com/k8gege/K8tools/blob/5aca0cef8bba0f00a001eb1f4f71b380205c4b8d/CVE-2019-13272.c",
+    "https://github.com/Al1ex/LinuxEelvation/blob/69cee23442f742c50809f75803b4ebca959f9927/CVE-2019-13272/CVE-2019-13272.c",
+    "https://github.com/jiayy/android_vuln_poc-exp/blob/99d398a381cdbe12c0019075b8fa47b200e8a49f/android/EXP-CVE-2019-13272/readme.md",
+    "https://github.com/jiayy/android_vuln_poc-exp/blob/99d398a381cdbe12c0019075b8fa47b200e8a49f/android/EXP-CVE-2019-13272/exp.c",
+    "https://github.com/evdenis/cvehound/blob/511f9c5ecf31bb64e38ca09449dda75c5c8c24e2/cvehound/cve/CVE-2019-13272.cocci",
+    "https://github.com/jas502n/CVE-2019-13272/blob/2590cfbe05b4f8120f59abb3876815e0463be034/CVE-2019-13272.c",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/b8843912aad5f3df7a6246b49ce2c90d39da4b12/data/by-cve/CVE-2019-13272.md",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2019/CVE-2019-5763.md",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/b8843912aad5f3df7a6246b49ce2c90d39da4b12/data/2019/CVE-2019-13272-oneoy_CVE-2019-13272.md",
+    "https://github.com/Al1ex/LinuxEelvation",
+    "https://github.com/jas502n/CVE-2019-13272",
+    "https://github.com/Cyc1eC/CVE-2019-13272",
+    "https://github.com/oneoy/CVE-2019-13272",
+    "https://github.com/josemlwdf/CVE-2019-13272",
+]
