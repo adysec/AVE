@@ -1,0 +1,58 @@
+[info]
+author = "AVE"
+description = "检测 Nagios XI 5.6.6 及之前版本是否存在认证后 OS 命令注入漏洞。通过验证登录页面、插件管理页面和 profile 组件是否存在，判断目标是否可能受 CVE-2019-15949 影响。"
+id = "POC-AVE-2019-0706"
+name = "Nagios XI 远程代码执行漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2019-15949",
+    "nagios-xi",
+    "rce",
+]
+vuln_id = [
+    "CVE-2019-15949",
+    "AVE-2019-0706",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/nagiosxi/login.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Nagios XI",
+    "nagiosxi",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/nagiosxi/admin/monitoringplugins.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/nagiosxi/includes/components/profile/profile.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+]
+type = "status"
