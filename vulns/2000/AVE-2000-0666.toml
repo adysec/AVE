@@ -1,11 +1,11 @@
 [basic]
-description = "OpenBSD 2.6 及更早版本中的 ARP 协议实现存在拒绝服务漏洞，未经身份认证的远程攻击者可通过向目标系统发送大量伪造的 ARP 请求报文，耗尽系统 ARP 表资源或触发内核异常，导致目标服务不可用。该漏洞影响 OpenBSD 2.x 系列版本，攻击者仅需在目标网络可达的情况下发起 ARP 泛洪攻击即可触发，无需任何认证凭据或特殊交互条件。该漏洞为纯可用性破坏型攻击，不会造成信息泄露或权限提升，但可导致受影响的 OpenBSD 服务器脱机，中断网络服务。"
+description = "OpenBSD 2.6 及更早版本中存在 ARP 请求洪泛拒绝服务漏洞。远程攻击者可通过向目标服务器发送大量伪造的 ARP 请求数据包，导致系统 ARP 缓存表被耗尽，无法处理合法的网络通信，从而造成拒绝服务。该漏洞攻击条件简单，无需认证即可远程触发，影响 OpenBSD 2.6 及之前版本。"
 published = "2000-12-19T05:00:00.000"
-remediation = "升级到 OpenBSD 2.7 或更高版本，2.7 版本已修复 ARP 泛洪导致的拒绝服务问题。确认当前版本：`uname -r`，若为 2.6 或更早，从 OpenBSD 官方 FTP 站点下载对应架构的安装镜像执行升级安装。升级完成后验证内核版本：`uname -a` 确认已切换至 2.7.x。若暂时无法升级，可在网络边界防火墙上限制 ARP 请求速率，或在交换机层面启用 ARP 防护策略（如 DHCP Snooping + Dynamic ARP Inspection），阻断异常 ARP 泛洪流量到达目标主机。"
+remediation = "升级到 OpenBSD 2.7 或更高版本，该版本已修复 ARP 请求洪泛导致的拒绝服务问题。如无法升级，可在网络边界配置防火墙规则限制入站 ARP 请求速率，例如使用 pf 的 `max-packets` 限制或 ipf 的 `keep-state` 规则对 ARP 流量进行限速，同时将受影响的系统隔离在可信网络段内以减少攻击面。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "OpenBSD ARP Flooding 拒绝服务漏洞"
+sources = ["avd"]
+title = "OpenBSD 2.6 ARP请求洪泛拒绝服务漏洞"
 updated = "2026-06-16T21:52:45.303"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0914"]
 ave_id = "AVE-2000-0666"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/1759",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5340",
     "https://www.exploit-db.com/exploits/20271",
-    "https://github.com/CVEProject/cvelistV5/blob/1ac98a91d8e5706025fef27b7d1430b2ff35075a/cves/2000/0xxx/CVE-2000-0914.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a14f4e66db68a75a9270d6c9081e9ffb7f931cd8/cves/2000/0xxx/CVE-2000-0914.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0914",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/12510680d47d531059ad635931375e3cc99ef556/CVE/data/2000/CVE-2000-0914.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3eab0e512529a79daadefaadf0f05372813e7876/CVE/data/2000/CVE-2000-0914.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0914.json",
-    "https://github.com/opencve/opencve-kb/blob/3be1c56170df50beaf9d15e263c83ea6a77d554b/2000/CVE-2000-0914.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0914.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/785e77b4ad6bd2b2f4df37d5c69bed8d2eb6ddec/2000/0xxx/CVE-2000-0914.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/42f7ce3fe01d1b8b4a37ed409361811a74eb1f5b/CVE-2000/CVE-2000-09xx/CVE-2000-0914.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-0914.json",
+    "https://github.com/opencve/opencve-kb/blob/2adf3d659b2229087465cbedc27cc02d5736df99/2000/CVE-2000-0914.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/a939a0e06ea28df0537defbf2bf781fcb02ed201/2000/0xxx/CVE-2000-0914.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e9b51a58e4ac0e6b00dc38147f459707e98ae056/CVE-2000/CVE-2000-09xx/CVE-2000-0914.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0914.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0914.json",
 ]
