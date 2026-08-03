@@ -1,0 +1,64 @@
+[info]
+author = "AVE"
+description = "通过向 Kibana Timelion 的 /api/timelion/run 接口发送特制 JSON 请求，利用 .props() 函数进行原型链污染注入恶意表达式，触发服务端任意命令执行。检测响应中是否包含命令执行结果特征。"
+id = "POC-AVE-2019-1609"
+name = "Elastic Kibana Timelion 原型链污染任意代码执行 PoC"
+severity = "critical"
+tags = [
+    "cve-2019-7609",
+    "kibana",
+    "rce",
+    "prototype-pollution",
+]
+vuln_id = [
+    "CVE-2019-7609",
+    "AVE-2019-1609",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/timelion/run"
+protocol = "http"
+
+[poc.requests.body]
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "root:",
+    "seriesList",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/timelion/run"
+protocol = "http"
+
+[poc.requests.body]
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+kbn-version = "6.5.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "root:",
+    "seriesList",
+]
