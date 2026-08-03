@@ -1,11 +1,11 @@
 [basic]
-description = "Recourse ManTrap 1.6.1 在构建 chroot 环境时试图隐藏其运行状态，但该环境中根目录的 inode 编号高于正常值，攻击者可通过计算该 inode 值来识别出当前是否处于 chroot 环境中。该漏洞主要影响使用 ManTrap 1.6.1 的系统，攻击者无需身份验证即可对目标主机进行局部信息搜集，泄露 chroot 环境的存在，从而为进一步攻击提供情报支持。尽管该漏洞不会直接导致权限提升或服务中断，但它为攻击者提供了重要的系统架构信息，可能被用于规避安全措施或定位更多高级漏洞。CVSS 评分 2.1，危害等级低，涉及的CWE类型为其他（NVD-CWE-Other），发布时间为 2001 年 1 月 9 日，该漏洞至今仍存在，部分软件产品仍在使用 ManTrap 1.6.1 版本，需及时进行版本升级或配置加固以避免相关安全风险。"
+description = 'Recourse ManTrap 1.6.1 蜜罐系统中存在 chroot 环境检测漏洞。该软件通过 chroot 机制创建隔离文件系统以隐藏自身运行状态，但 chroot 后根目录 "/" 的 inode 编号异常高于正常文件系统。本地攻击者可通过执行 `ls -id /` 等命令检查根目录 inode 值，若发现 inode 编号异常偏高即可判断自身处于 chroot 环境中，从而识别出蜜罐系统的存在。该漏洞影响 ManTrap 1.6.1 版本，攻击者需具有本地 shell 访问权限，利用难度低，可导致蜜罐隐身机制失效。'
 published = "2001-01-09T05:00:00.000"
-remediation = "建议升级至 Recourse ManTrap 2.0 或更高版本，该版本修复了 chroot 环境 Inode 泄露问题。若无法升级，建议停止使用 ManTrap 1.6.1 并迁移至现代蜜罐解决方案（如 Cowrie、Dionaea 或现代欺骗防御平台），并在网络层面限制对蜜罐系统的非必要访问权限。若必须继续使用，建议在网络层面限制对蜜罐系统的本地访问权限，并监控异常 Inode 查询行为作为缓解措施。"
+remediation = "建议立即升级至 ManTrap 2.0 版本，该版本已修复 chroot 环境 inode 泄露问题。同时，管理员应在部署后额外采取以下缓解措施：在宿主机防火墙层面限制 cage 环境的网络出站流量，将 cage 日志通过安全通道发送至远程日志服务器，并定期监控 cage 内进程列表以检测异常。由于 2.0 版本仍存在 crash 工具可查看 cage 外进程的问题，建议在宿主机上禁用或移除不必要的调试工具，并严格限制 cage 内用户的命令执行权限。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "Recourse ManTrap 1.6.1 根目录 Inode 泄露漏洞"
+sources = ["epss"]
+title = "Recourse ManTrap 根目录Inode信息泄露漏洞"
 updated = "2026-06-16T21:53:14.993"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1144"]
 ave_id = "AVE-2000-0823"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.securityfocus.com/bid/1909",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5472",
     "https://www.exploit-db.com/exploits/20381",
-    "https://github.com/CVEProject/cvelistV5/blob/b3c35d89abde60a88f7cb8e626161de34dd6ab36/cves/2000/1xxx/CVE-2000-1144.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bcbdb8ae7a9ef1c1e1ea2320e0a3f339a967446e/CVE/data/2000/CVE-2000-1144.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a31aa101497b2d23391e84ef31f75e6600381dae/cves/2000/1xxx/CVE-2000-1144.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/be7c9eef0523e112dce5fde0006bf85d14a40618/CVE/data/2000/CVE-2000-1144.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1144",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1144.json",
-    "https://github.com/opencve/opencve-kb/blob/0e284be0197bae1df3d577d9f9f2155925bb6629/2000/CVE-2000-1144.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1144.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/1b97942de7f8736fb9dac77c314951b8b2cd2867/2000/1xxx/CVE-2000-1144.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/8a3e2d14c2e04b1bff1df5344192e8356dcd6b1d/CVE-2000/CVE-2000-11xx/CVE-2000-1144.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1144.json",
+    "https://github.com/opencve/opencve-kb/blob/3355d48a7d0ca0d3b4124274995f7205f0bb89f2/2000/CVE-2000-1144.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/ca31171c444e5a175f3ac1833b0261c6587a34e9/2000/1xxx/CVE-2000-1144.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b6c80ad7b47e52f64ae2ee2b20e56d7eaaaa57fe/CVE-2000/CVE-2000-11xx/CVE-2000-1144.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1144.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1811750a5b6a37290aff484954f5ab77b0ca64a7/content/CVE-2000-1144.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/2ea9851780633b2caab16fe048a14b38ca9a0b56/content/CVE-2000-1144.md",
 ]
