@@ -1,0 +1,40 @@
+[basic]
+description = "Easy!Appointments 是一款自托管的预约调度系统，其 `appointments/store` 和 `appointments/update` 接口存在授权绕过漏洞。系统在 `appointments/search` 中正确实现了服务商隔离过滤，但 `store` 和 `update` 端点仅检查通用预约权限，未验证提交的 `id_users_provider` 字段是否属于当前会话。已认证的服务商可通过构造包含他人服务商 ID 的 POST 请求，向其他服务商的日程中注入预约或将已有预约重新分配至他人名下。此外，`store` 端点存在写入后崩溃的 bug：未授权数据先写入数据库，随后控制器因类型错误返回 500，导致攻击者收到错误响应但数据已持久化。该漏洞影响 1.6.0 之前的所有版本，CVSS 评分 3.3，危害等级低。"
+published = "2026-07-14T16:17:00.540"
+remediation = "立即升级至 Easy!Appointments 1.6.0 或更高版本，该版本在 `appointments/store` 和 `appointments/update` 端点中强制校验 `id_users_provider` 与当前会话提供者 ID 一致。如无法立即升级，可在应用层对非管理员角色拦截 `id_users_provider` 参数提交，或通过 Web 应用防火墙（WAF）规则阻断包含外部 `id_users_provider` 的 POST 请求。"
+score = 3.3
+severity = "LOW"
+sources = ["ghsa"]
+title = "Easy!Appointments 跨提供商预约注入漏洞"
+updated = "2026-07-29T17:16:52.630"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-52839",
+    "GHSA-w8xc-8g92-v77h",
+]
+ave_id = "AVE-2026-0757"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/alextselegidis/easyappointments/commit/725eafa647308846ce887657db12771a829e42ef",
+    "https://github.com/alextselegidis/easyappointments/security/advisories/GHSA-w8xc-8g92-v77h",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2026/CVE-2026-52839.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b160e6f2915ac726b29ee0689fc920f5016abef5/cves/2026/52xxx/CVE-2026-52839.json",
+    "https://github.com/cisagov/vulnrichment/blob/1fe56a0dafbbcb548bdcdd4fc990cca72ac81c28/2026/52xxx/CVE-2026-52839.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/84cdd54c70c68603acd478a90957e5c6d8e65c65/SSVC/data/2026/CVE-2026-52839.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/84cdd54c70c68603acd478a90957e5c6d8e65c65/CVE/data/2026/CVE-2026-52839.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/32ea152709267741509ecbf76022327761e70b91/pocs/2026/CVE-2026-52839.md",
+    "https://github.com/anchore/nvd-data-overrides/blob/0c8dd71e3ecd7211889d43b088995c7a1a3f2c10/data/2026/CVE-2026-52839.json",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2026-52839.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b9f52bb052695dac5cabbd58e049eaac73697161/CVE-2026/CVE-2026-528xx/CVE-2026-52839.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/27a74eedb9de5512b284a88a513f48696206fede/data/anchore/2026/CVE-2026-52839.json",
+]
