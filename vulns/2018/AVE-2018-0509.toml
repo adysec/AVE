@@ -1,11 +1,11 @@
 [basic]
-description = "TIBCO JasperReports 系列产品的默认服务器实现存在目录遍历漏洞（CWE-22）。由于对用户提供的文件路径参数缺乏充分验证，已认证的远程攻击者可通过构造包含 `../` 等特殊序列的 HTTP 请求，突破路径限制访问服务器文件系统中的任意文件，导致敏感信息泄露。攻击者需拥有有效用户凭证，无需用户交互即可利用。该漏洞影响 TIBCO JasperReports Library、Server 及 Community Edition 等多个版本。"
+description = "TIBCO JasperReports 系列产品（包括 Library、Server 及 AWS 版本）的默认服务器实现存在目录遍历漏洞（CWE-22）。由于对用户提供的文件路径缺乏充分验证，已认证的 Web 服务器用户可通过在请求中构造包含 `../` 等路径遍历序列的特制 URL，突破目录限制访问主机系统上的任意文件，导致敏感信息泄露。该漏洞影响 TIBCO JasperReports Library ≤6.3.4/6.4.1/6.4.2/6.4.21/7.1.0/7.2.0、JasperReports Server ≤6.3.4/6.4.0-6.4.3/7.1.0 等多个版本，CVSS 评分 6.5，危害等级中危。攻击者需拥有 Web 服务器有效账户方可利用，无需用户交互。"
 published = "2019-03-07T22:29:00.323"
-remediation = "根据 TIBCO 官方安全公告（2019年3月6日发布），建议将 TIBCO JasperReports Library 升级至 6.4.3 或 7.2.1 及以上版本，JasperReports Server 升级至 7.2.1 及以上版本，Community Edition 升级至 6.7.1 及以上版本。对于无法立即升级的环境，可在 Web 服务器或反向代理层面限制对 /jasperserver-pro/reportresource/reportresource/ 路径的外部访问，并配置 WAF 规则拦截包含 ../ 的 resource 参数请求，同时限制对 js.jdbc.properties 等敏感配置文件的直接访问。"
+remediation = "升级 TIBCO JasperReports Library 至 7.2.1 及以上版本，JasperReports Server 至 7.1.1 及以上版本，JasperReports Library Community Edition 至 6.7.1 及以上版本。如无法立即升级，在反向代理或 WAF 层添加规则，对 `/reportresource/reportresource/` 路径的 `resource` 参数进行路径遍历过滤，拦截包含 `../` 的请求。同时限制 Web 服务器运行账户对敏感文件（如 `js.jdbc.properties`）的读取权限。"
 score = 6.5
 severity = "MEDIUM"
-sources = ["kev"]
-title = "TIBCO JasperReports 系列产品路径遍历漏洞"
+sources = ["nuclei"]
+title = "TIBCO JasperReports Library 目录遍历漏洞"
 updated = "2026-06-17T01:47:56.560"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2018-18809"]
 ave_id = "AVE-2018-0509"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -31,14 +31,14 @@ urls = [
     "https://www.tibco.com/support/advisories/2019/03/tibco-security-advisory-march-6-2019-tibco-jasperreports-library-2018-18809",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2018-18809",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2018/CVE-2018-18809.yaml",
-    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2018/CVE-2018-18809.md",
-    "https://github.com/0xMarcio/cve/blob/d08f837f771e6cd83ec9c845b0c4f72f125cbe84/2018/CVE-2018-18809.md",
-    "https://github.com/projectdiscovery/nuclei-templates/blob/d45959218d975ac3d65b6dea81478745e4a6e03d/http/cves/2018/CVE-2018-18809.yaml",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2018/CVE-2018-18809.md",
+    "https://github.com/0xMarcio/cve/blob/986b45a0ac2dd215b3a5515fba0cebac769043dd/2018/CVE-2018-18809.md",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/2c6b2e1482debf55f607b200837f63426669df52/http/cves/2018/CVE-2018-18809.yaml",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/medium/CVE-2018-18809.yaml",
     "https://github.com/SleepingBag945/dddd/blob/4c428a7c171275bfbb5fa72c2fb4bd7b48f4ff4a/common/config/pocs/CVE-2018-18809.yaml",
-    "https://github.com/CVEProject/cvelistV5/blob/676b40fa5dad82f5f5be4cb920867579d5869c49/cves/2018/18xxx/CVE-2018-18809.json",
-    "https://github.com/cisagov/vulnrichment/blob/f167926487b7da90867c80cac87302a7f8196ec5/2018/18xxx/CVE-2018-18809.json",
-    "https://github.com/0x727/FingerprintHub/blob/881db81e73cc7e2f9f510b557401bea4324e5731/plugins/tibco/jasperreports_library/CVE-2018-18809.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/0661b1b09ba7a2e855981f4a1781f3b8de7cf562/cves/2018/18xxx/CVE-2018-18809.json",
+    "https://github.com/cisagov/vulnrichment/blob/de8cd4cf30bb0d13db0dd8e177333d27a938a598/2018/18xxx/CVE-2018-18809.json",
+    "https://github.com/0x727/FingerprintHub/blob/dce139c84c439e9fc87d0eb2079ddda89aaeb75c/plugins/tibco/jasperreports_library/CVE-2018-18809.yaml",
     "https://github.com/Ostorlab/KEV/blob/8feadeb8b7ff54359eab87941769781629146b23/nuclei/CVE-2018-18809.yaml",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2018/CVE-2018-18809.md",
 ]
