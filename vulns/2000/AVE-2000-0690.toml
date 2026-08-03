@@ -1,11 +1,11 @@
 [basic]
-description = "CGI Script Center News Update 1.1 存在管理员密码修改验证绕过漏洞，该漏洞源于程序在密码修改操作时未正确验证原始管理员密码。远程未认证攻击者无需知道原管理员密码，即可直接通过发送特制的密码修改请求任意修改管理员密码，导致管理员账户被接管。该漏洞影响 News Update 1.1 版本，CVSS 3.1 评分 9.8（CRITICAL），攻击向量为网络、攻击复杂度低、无需权限、无需用户交互，机密性/完整性/可用性均受严重影响。攻击者可直接提交修改密码请求绕过原密码验证，实现管理员账户劫持。CVE 编号 CVE-2000-0944，CVE 编号分配机构于 2000-12-19 发布，ExploitDB 存在公开 PoC (EDB-179)。"
+description = "CGI Script Center News Update 1.1 在管理员密码修改功能中存在身份验证绕过漏洞。该软件未对原始管理员密码进行有效验证，导致远程攻击者无需知道当前密码即可直接修改管理员密码。攻击者只需向目标系统发送特制的密码修改请求，即可完全接管系统管理权限。该漏洞影响范围广泛，利用门槛极低，无需任何身份认证即可远程触发，危害严重。ExploitDB 已公开该漏洞的利用代码（ID: 179）。"
 published = "2000-12-19T05:00:00.000"
-remediation = "建议立即升级 News Update 至 1.2 或更高版本（如有官方修复版本），或迁移至现代化、维护中的新闻管理系统（如 WordPress 等）。若无法升级，请立即实施以下缓解措施：1) 在 Web 服务器层面（如 Apache/.htaccess 或 Nginx location）限制 admin 管理目录仅允许可信 IP 访问；2) 在密码修改逻辑中强制要求验证原密码，并在 CGI 脚本中添加服务端原密码校验逻辑；3) 为管理界面启用 HTTPS 并强制基于 IP 的访问控制列表（ACL）；4) 定期审核管理员账户，启用强密码策略并定期轮换。"
+remediation = "立即停止使用 CGI Script Center News Update 1.1，替换为受支持的内容管理系统（如 WordPress、Drupal 等）。如无法立即替换，在 Web 服务器（Apache）中通过 .htaccess 或 httpd.conf 对 /cgi-bin/newsup.pl 路径添加 IP 白名单和 HTTP 基本认证，限制仅授权管理员可访问密码修改功能；同时移除 newsup.pl 的 setuid/setgid 权限，确保 CGI 目录权限为 755 且属主为非 root 用户。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["epss"]
-title = "CGI Script Center News Update 1.1 密码变更验证漏洞"
+sources = ["avd"]
+title = "CGI Script Center News Update 管理员密码修改漏洞"
 updated = "2026-06-16T21:52:49.477"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0944"]
 ave_id = "AVE-2000-0690"
 
 [meta]
-collected_at = "2026-07-30T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1881",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5433",
     "https://www.exploit-db.com/exploits/179",
-    "https://github.com/CVEProject/cvelistV5/blob/4d40bbb471811a29843f023fbf1a8beb3373a987/cves/2000/0xxx/CVE-2000-0944.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/8badb38e9fdd060ee46b7da7005f556b6f7db6bb/CVE/data/2000/CVE-2000-0944.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a31aa101497b2d23391e84ef31f75e6600381dae/cves/2000/0xxx/CVE-2000-0944.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/be7c9eef0523e112dce5fde0006bf85d14a40618/CVE/data/2000/CVE-2000-0944.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0944",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0944.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0944.json",
-    "https://github.com/opencve/opencve-kb/blob/28fa1bc56eb946581b4954ed0068b7aeb55be6e9/2000/CVE-2000-0944.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/ddaa78c50e489d89917c344923ee56bc36e3235e/2000/0xxx/CVE-2000-0944.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f852dcbb0286f5d88b04c17e99702d974cf97496/CVE-2000/CVE-2000-09xx/CVE-2000-0944.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-0944.json",
+    "https://github.com/opencve/opencve-kb/blob/3355d48a7d0ca0d3b4124274995f7205f0bb89f2/2000/CVE-2000-0944.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/ca31171c444e5a175f3ac1833b0261c6587a34e9/2000/0xxx/CVE-2000-0944.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/9af727c40ac027294e4558abbc02d8967ee2a1d7/CVE-2000/CVE-2000-09xx/CVE-2000-0944.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0944.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0944.json",
 ]
