@@ -1,0 +1,41 @@
+[basic]
+description = "node-tar 是 Node.js 生态中用于 tar 归档文件操作的库。其 PAX 头部解析器在 pax.ts 的 parseKV 函数中，将全数字的 path 或 linkpath 字段值通过 +v 强制转换为 JavaScript 数值类型。当后续代码对 entry.path 调用 .split('/') 方法时，由于数值类型不存在该方法，抛出未捕获的 TypeError，导致 Node.js 进程崩溃。攻击者只需构造一个约 2.5KB 的恶意 tar 归档文件（包含全数字路径的 PAX 扩展头部），任何调用 node-tar 解压该文件的进程（如 npm 包安装、CI/CD 流水线、文件上传处理等）均会崩溃。该漏洞无法通过 strict: false 或 error 事件处理器捕获，属于拒绝服务漏洞，影响 node-tar 7.5.18 之前的所有版本。"
+published = "2026-07-08T16:16:33.723"
+remediation = "将 node-tar（npm 包 tar）升级至 7.5.18 或更高版本：执行 `npm install tar@^7.5.18`。如无法升级，在提取不可信 tar 文件前对 PAX 头部的纯数字 path/linkpath 字段做类型校验（如 `String(entry.path)`），或使用其他 tar 解析库（如 `node-archive`）替代。"
+score = 5.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "node-tar PAX数字路径类型混淆拒绝服务漏洞"
+updated = "2026-07-10T19:02:55.140"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59871",
+    "GHSA-w8wr-v893-vjvp",
+]
+ave_id = "AVE-2026-0841"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/isaacs/node-tar/commit/e02a4e9e013c4be95302e2eb2047a942b883c27b",
+    "https://github.com/isaacs/node-tar/releases/tag/v7.5.18",
+    "https://github.com/isaacs/node-tar/security/advisories/GHSA-w8wr-v893-vjvp",
+    "https://github.com/trickest/cve/blob/7ade3449b58b8e2c679712dc3af64bbd8e638364/2026/CVE-2026-59871.md",
+    "https://github.com/CVEProject/cvelistV5/blob/a14f4e66db68a75a9270d6c9081e9ffb7f931cd8/cves/2026/59xxx/CVE-2026-59871.json",
+    "https://github.com/cisagov/vulnrichment/blob/b8f3faf694c27edd208769ff59c4ed562dd91eaa/2026/59xxx/CVE-2026-59871.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3eab0e512529a79daadefaadf0f05372813e7876/SSVC/data/2026/CVE-2026-59871.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3eab0e512529a79daadefaadf0f05372813e7876/CVE/data/2026/CVE-2026-59871.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/35f8822ad3b850cb8a922d9066b0d79c83dab6d5/pocs/2026/CVE-2026-59871.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/ae03a9d5bcdec0092d3f179316a97b5f3dabc853/vex/cve/2026/CVE-2026-59871.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/ae03a9d5bcdec0092d3f179316a97b5f3dabc853/osv/cve/2026/UBUNTU-CVE-2026-59871.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-59871.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/npm/tar/CVE-2026-59871.yml",
+]
