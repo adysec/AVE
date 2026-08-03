@@ -1,11 +1,11 @@
 [basic]
-description = 'Kootenay Web KW Whois 1.0 CGI 程序存在远程命令执行漏洞，由于 "whois" 参数未对 Shell 元字符进行有效过滤，未经身份认证的远程攻击者可通过向该参数提交包含 Shell 元字符的恶意载荷，在服务器上以 CGI 进程权限执行任意系统命令。该漏洞影响 Kootenay Web KW Whois 1.0 版本，攻击向量为网络远程、无需认证、攻击复杂度低，CVSS 评分 10.0（严重），可导致服务器完全失陷（机密性、完整性、可用性均完全丧失）。攻击者仅需构造包含 Shell 元字符（如分号、反引号、管道符等）的 whois 参数提交至 CGI 程序即可触发命令注入，实现远程代码执行。ExploitDB 已公开 PoC（EDB-ID: 20370），攻击者可直接利用。厂商已停止维护，建议立即停用该组件或升级至安全版本。'
+description = 'Kootenay Web KW Whois 1.0 CGI 程序存在远程命令执行漏洞，由于程序未对用户输入的 "whois" 参数进行有效过滤，远程攻击者可通过在参数中注入 shell 元字符（如分号、管道符等）执行任意系统命令。该漏洞影响 Kootenay Web KW Whois 1.0 版本，CVSS 评分 10.0，危害等级严重。攻击者无需身份认证即可远程利用，获取服务器完全控制权。目前已存在公开的 Exploit-DB 利用代码。'
 published = "2000-12-19T05:00:00.000"
-remediation = '建议立即移除或替换 Kootenay Web KW Whois 1.0 CGI 程序，改用现代维护的 WHOIS 查询工具（如 whois 命令行工具或成熟的 Web WHOIS 接口）。若必须保留该 CGI，请在 Web 服务器层面（如 Apache mod_security 或 Nginx WAF）配置规则拦截包含 shell 元字符（; | & $ ` \n 等）的 whois 参数，并在 Web 服务器配置中限制该 CGI 脚本的执行权限（如禁用 Shell 执行权限、限制执行用户权限）。建议升级至现代维护的 WHOIS 服务或使用成熟的 WHOIS 库替代该老旧 CGI 程序。由于厂商 Kootenay Web Inc. 已停止维护且无官方补丁，建议彻底替换为成熟维护的 WHOIS 解决方案。'
+remediation = "立即删除或禁用 KW Whois 1.0 CGI 脚本（通常位于 cgi-bin/whois 目录下），该产品已停止维护且无官方补丁。如业务必须使用，需在 CGI 脚本入口处对 whois 参数进行严格过滤，禁止传入 `;` `|` `&` `$` `` ` `` 等 shell 元字符，仅允许字母、数字、点号和连字符，并考虑以非特权用户运行 Web 服务以限制命令执行影响范围。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "Kootenay Web Inc whois 1.0 远程命令执行漏洞"
+sources = ["avd"]
+title = "Kootenay Web Inc KW Whois 1.0 远程命令执行漏洞"
 updated = "2026-06-16T21:52:49.050"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0941"]
 ave_id = "AVE-2000-0687"
 
 [meta]
-collected_at = "2026-07-30T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.securityfocus.com/bid/1883",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5438",
     "https://www.exploit-db.com/exploits/20370",
-    "https://github.com/CVEProject/cvelistV5/blob/4d40bbb471811a29843f023fbf1a8beb3373a987/cves/2000/0xxx/CVE-2000-0941.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f6f07feba024060bc836e38e9ad4be74bb9614ec/CVE/data/2000/CVE-2000-0941.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a31aa101497b2d23391e84ef31f75e6600381dae/cves/2000/0xxx/CVE-2000-0941.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/be7c9eef0523e112dce5fde0006bf85d14a40618/CVE/data/2000/CVE-2000-0941.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0941",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0941.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0941.json",
-    "https://github.com/opencve/opencve-kb/blob/7d8bf94237358a026e3c7caf39c1fffcde5864d7/2000/CVE-2000-0941.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/3e6ed1a1d75816367e38c59309d8bdc19a3733f1/2000/0xxx/CVE-2000-0941.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f852dcbb0286f5d88b04c17e99702d974cf97496/CVE-2000/CVE-2000-09xx/CVE-2000-0941.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-0941.json",
+    "https://github.com/opencve/opencve-kb/blob/abb3d9c240bc75ee9d5885882897d780d10d15cb/2000/CVE-2000-0941.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1d7706ed603ab73481cbc20e5bea092e02e7c9be/2000/0xxx/CVE-2000-0941.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b6c80ad7b47e52f64ae2ee2b20e56d7eaaaa57fe/CVE-2000/CVE-2000-09xx/CVE-2000-0941.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0941.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1811750a5b6a37290aff484954f5ab77b0ca64a7/content/CVE-2000-0941.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/2ea9851780633b2caab16fe048a14b38ca9a0b56/content/CVE-2000-0941.md",
 ]
