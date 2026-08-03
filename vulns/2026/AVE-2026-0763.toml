@@ -1,0 +1,41 @@
+[basic]
+description = "NocoBase 是一款 AI 驱动的无代码/低代码平台，其 @nocobase/plugin-notification-in-app-message 插件中的 GET /api/myInAppChannels:list 接口存在 SQL 注入漏洞。攻击者通过 filter[latestMsgReceiveTimestamp][$lt] 参数将恶意表达式直接拼接到 Sequelize.literal() 模板字符串中，未经任何转义或参数绑定，导致已注册认证的任意用户可执行堆叠 PostgreSQL 语句。默认部署中 auth-basic 认证器开启 allowSignUp: true，攻击者可匿名注册账号后利用该漏洞。由于默认 docker-compose.yml 使用 postgres:16 镜像且数据库角色 nocobase 被赋予超级用户权限，攻击者可进一步通过 COPY ... TO PROGRAM 在数据库容器内以 postgres 用户身份执行系统命令，实现任意数据窃取（包括管理员密码哈希）和远程代码执行。该漏洞影响 NocoBase 2.0.57 及之前版本，CVSS 评分 10.0，危害等级严重。官方已在 2.0.61 版本中修复。"
+published = "2026-07-15T21:16:54.543"
+remediation = "立即升级 NocoBase 至 v2.0.61 或更高版本（`docker pull nocobase/nocobase:2.0.61` 并重启容器），该版本已修复 `@nocobase/plugin-notification-in-app-message` 中 `Sequelize.literal()` 的 SQL 注入问题。如无法立即升级，在 `docker-compose.yml` 中将 `POSTGRES_USER` 改为非超级用户角色（如 `nocobase_limited`）并撤销 `rolsuper` 属性，同时在反向代理层限制 `/api/myInAppChannels:list` 的访问权限或禁用匿名注册（设置 `allowSignUp: false`）。"
+score = 10
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "NocoBase 通知应用内消息插件 SQL 注入漏洞"
+updated = "2026-07-20T16:17:05.020"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-52887",
+    "GHSA-p849-8hwh-84j9",
+]
+ave_id = "AVE-2026-0763"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/nocobase/nocobase/commit/68d64e3fcfb8be2ae4f3bfc9e1ee3f85b87c89ce",
+    "https://github.com/nocobase/nocobase/releases/tag/v2.0.61",
+    "https://github.com/nocobase/nocobase/security/advisories/GHSA-p849-8hwh-84j9",
+    "https://github.com/CVEProject/cvelistV5/blob/81757a559270348b5ed9f7df6d4fbf1e7a4fae68/cves/2026/52xxx/CVE-2026-52887.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/03a7e425813b5ae0ce33712378801e4e929dbdb7/CVE/data/2026/CVE-2026-52887.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/0c8dd71e3ecd7211889d43b088995c7a1a3f2c10/data/2026/CVE-2026-52887.json",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2026-52887.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b9f52bb052695dac5cabbd58e049eaac73697161/CVE-2026/CVE-2026-528xx/CVE-2026-52887.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/27a74eedb9de5512b284a88a513f48696206fede/data/anchore/2026/CVE-2026-52887.json",
+    "https://github.com/fankh/vulnerability-poc/blob/cb0b6a42cd6b56fad8905ad055f6fd839697b5f2/2026/CVE-2026-52887/README.md",
+    "https://github.com/fankh/vulnerability-poc/blob/cb0b6a42cd6b56fad8905ad055f6fd839697b5f2/2026/CVE-2026-52887/README_KO.md",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/874e41a1c528e723f9fa8f58ba0c6da7734010ef/reports/2026-07-15/TIER_2_CVE-2026-52887.md",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/144e072a72718cf976367989b4ef7fcf3f72bd13/nvd/2026/CRITICAL/CVE-2026-52887/README.md",
+]
