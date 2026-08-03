@@ -1,0 +1,42 @@
+[basic]
+description = "Astro 6.4.7 版本存在授权绕过漏洞，源于迭代 URL 解码器最大解码深度限制（10 次）与路由重写路径规范化不一致。当攻击者构造编码深度超过 11 层的特制 URL（如 /%252525252525252525252561dmin）时，中间件授权检查仅获得部分解码路径（/%61dmin），而后续路由匹配执行额外的 decodeURI() 操作后解析为受保护路径（/admin），导致绕过中间件权限校验。未经身份认证的远程攻击者可利用此漏洞访问受保护的 /admin、/api/admin、/internal 等路由，造成敏感信息泄露和未授权操作。该漏洞影响 Astro 6.4.7 版本，CVSS 评分 8.2，危害等级高。官方已在 6.4.8 版本中修复。"
+published = "2026-07-08T17:17:25.937"
+remediation = "立即将 Astro 升级至 6.4.8 或更高版本（该版本在解码迭代达到上限时抛出错误而非返回部分解码路径）。如无法立即升级，可在反向代理或 WAF 层面添加规则，拒绝包含超过 10 层 URL 编码的请求路径（如匹配 `%25` 重复出现 10 次以上的路径），作为临时缓解措施。"
+score = 8.2
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Astro URL路径规范化不匹配授权绕过漏洞"
+updated = "2026-07-09T16:29:14.203"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59731",
+    "GHSA-vj59-8hwv-xxmv",
+]
+ave_id = "AVE-2026-0834"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/withastro/astro/commit/27c80ea92248993e5fce94b2c26d87d611ab6785",
+    "https://github.com/withastro/astro/pull/17109",
+    "https://github.com/withastro/astro/releases/tag/astro@6.4.8",
+    "https://github.com/withastro/astro/security/advisories/GHSA-vj59-8hwv-xxmv",
+    "https://github.com/CVEProject/cvelistV5/blob/8491df4167cab37455be87043bbd4187ade74c40/cves/2026/59xxx/CVE-2026-59731.json",
+    "https://github.com/cisagov/vulnrichment/blob/6ff73fb4bb99974a2b535c179f337dd820550366/2026/59xxx/CVE-2026-59731.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/16f8cf2a3c129bb57f3727599f3730e6001c1186/CVE/data/2026/CVE-2026-59731.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/16f8cf2a3c129bb57f3727599f3730e6001c1186/SSVC/data/2026/CVE-2026-59731.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/35f8822ad3b850cb8a922d9066b0d79c83dab6d5/pocs/2026/CVE-2026-59731.md",
+    "https://github.com/anchore/nvd-data-overrides/blob/753d2e0d725b348a212e8863d776d632b54550eb/data/2026/CVE-2026-59731.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-59731.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/7c13974e8672408967145db42c357210cb59d951/CVE-2026/CVE-2026-597xx/CVE-2026-59731.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/npm/astro/CVE-2026-59731.yml",
+    "https://github.com/anchore/cve-data-enrichment/blob/27a74eedb9de5512b284a88a513f48696206fede/data/anchore/2026/CVE-2026-59731.json",
+]
