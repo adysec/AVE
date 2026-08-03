@@ -1,0 +1,41 @@
+[basic]
+description = "Thumbor 是一款开源图片缩略图服务，其 file_loader 组件存在路径遍历漏洞。漏洞原理是 file_loader 在完成 `abspath()` 和 `startswith()` 根目录边界安全检查之后，才对文件路径执行 `unquote()` 解码操作。攻击者可通过 watermark 或 frame 滤镜传入经过双重 URL 编码的路径遍历序列（如 `%252e%252e` 表示 `..`），该序列在安全检查时被视为普通目录名而绕过验证，随后被 `unquote()` 解码为真实的 `..` 遍历序列，导致读取 FILE_LOADER_ROOT_PATH 之外的任意文件。攻击条件要求启用 `ALLOW_UNSAFE_URL = True`（默认开启）并使用 file_loader。成功利用可读取服务器上的配置文件、密钥、私有证书等敏感信息，CVSS 评分 8.7，危害等级高。该漏洞在 Thumbor 7.8.0 版本中修复。"
+published = "2026-07-31T19:17:09.577"
+remediation = "立即升级 Thumbor 至 7.8.0 或更高版本（`pip install --upgrade thumbor`）。如无法升级，在配置中将 `ALLOW_UNSAFE_URL` 设为 `false`，或移除 `thumbor.loaders.file_loader` 改用其他 loader，或在反向代理层过滤包含 `%2e` 的请求路径。"
+score = 8.7
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Thumbor file_loader 路径遍历漏洞"
+updated = "2026-07-31T20:16:51.397"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-53502",
+    "GHSA-cj54-hpcc-gj6h",
+]
+ave_id = "AVE-2026-0767"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/thumbor/thumbor/commit/3b986d13677b30fe6651c8c72ebb25957ac0a40d",
+    "https://github.com/thumbor/thumbor/releases/tag/7.8.0",
+    "https://github.com/thumbor/thumbor/security/advisories/GHSA-cj54-hpcc-gj6h",
+    "https://github.com/CVEProject/cvelistV5/blob/03dbfc069b6c638678ff904c80e89aaf72b93764/cves/2026/53xxx/CVE-2026-53502.json",
+    "https://github.com/cisagov/vulnrichment/blob/1fe56a0dafbbcb548bdcdd4fc990cca72ac81c28/2026/53xxx/CVE-2026-53502.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/03a7e425813b5ae0ce33712378801e4e929dbdb7/SSVC/data/2026/CVE-2026-53502.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/03a7e425813b5ae0ce33712378801e4e929dbdb7/CVE/data/2026/CVE-2026-53502.json",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2026-53502.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/0d2adc4a9428696b559622523817d9cdfdad97f0/CVE-2026/CVE-2026-535xx/CVE-2026-53502.json",
+    "https://github.com/Tabll/gemnasium-db/blob/2226f395f690bd125e18792c9fd587b54eb15804/pypi/thumbor/CVE-2026-53502.yml",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/874e41a1c528e723f9fa8f58ba0c6da7734010ef/reports/2026-07-31/TIER_2_CVE-2026-53502.md",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/144e072a72718cf976367989b4ef7fcf3f72bd13/nvd/2026/HIGH/CVE-2026-53502/README.md",
+    "https://github.com/TMA84/cvealert/blob/d736f3597b7d4aff3836025a02aa5e53fcadb427/content/posts/cve-2026-53502.md",
+]
