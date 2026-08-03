@@ -1,11 +1,14 @@
 [basic]
-description = "Linux modutils 2.3.9 中的 modprobe 工具存在任意命令执行漏洞。modprobe 在加载内核模块时使用 popen() 执行 echo 命令，由于 popen() 依赖 /bin/sh 解析命令字符串，未对用户输入中的 shell 元字符进行转义过滤。虽然 modprobe 本身未设置 setuid 位，但内核的 kmod 设施在通过 request_module() 请求模块时会以 root 权限自动执行 modprobe。攻击者可通过 setuid ping 程序向内核传递包含 shell 元字符的设备名参数，触发 modprobe 执行任意命令，从而获取系统 root 权限。该漏洞影响 RedHat Linux 7.0 等使用 modutils 2.3.x 的 Linux 系统，CVSS 评分 7.2，危害等级高。"
+description = "Linux modutils 2.3.x 中的 modprobe 程序在处理模块名时未正确过滤 shell 元字符，本地攻击者可通过构造特制的模块名参数注入任意 shell 命令，以 root 权限执行恶意代码。该漏洞影响 Linux 系统上使用 modutils 2.3.x 包的所有发行版，攻击者需拥有本地用户权限即可触发，无需交互，危害等级高。"
 published = "2001-01-09T05:00:00.000"
-remediation = "升级 modutils 至 2.4.0 以上版本，或迁移至 module-init-tools/kmod 替代 modutils。Red Hat 系统参照 RHSA-2000-108 安装补丁，Debian 系统参照 DSA 20001120 更新。如无法升级，限制不可信用户本地登录权限。"
+remediation = """
+` tags embedded. I need to write a clean, actionable Chinese remediation.
+
+The vulnerability is in modutils 2.3.x, specifically modprobe. The fix would be to upgrade modutils to a patched version.<value>建议升级 modutils 至 2.3.11 或更高版本。Red Hat Linux 用户可安装 RHSA-2000-108 提供的更新包；Debian 用户可安装 20001120 安全公告中的更新；SuSE 用户可参考 SuSE-SA:2000:44 安装补丁。如无法立即升级，可通过移除 /sbin/modprobe 的 setuid 位（chmod u-s /sbin/modprobe）或限制本地用户对 modprobe 的调用权限作为临时缓解措施。"""
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Linux modutils 2.3.x modprobe 任意命令执行漏洞"
+sources = ["epss"]
+title = "Linux modutils modprobe 任意命令执行漏洞"
 updated = "2026-06-16T21:53:08.130"
 
 [exploit]
@@ -17,7 +20,7 @@ aliases = ["CVE-2000-1095"]
 ave_id = "AVE-2000-0792"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -31,14 +34,14 @@ urls = [
     "http://www.securityfocus.com/bid/1936",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5516",
     "https://www.exploit-db.com/exploits/20402",
-    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2000/CVE-2000-1095.md",
-    "https://github.com/CVEProject/cvelistV5/blob/95e02b73a69df169404c6b2708e1f8d0346744bc/cves/2000/1xxx/CVE-2000-1095.json",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2000/CVE-2000-1095.md",
+    "https://github.com/CVEProject/cvelistV5/blob/8491df4167cab37455be87043bbd4187ade74c40/cves/2000/1xxx/CVE-2000-1095.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1095",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/a5deeab9684d7cc5d59192453c93e2b5d43622a9/CVE/data/2000/CVE-2000-1095.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/16f8cf2a3c129bb57f3727599f3730e6001c1186/CVE/data/2000/CVE-2000-1095.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-1095.md",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1095.json",
     "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2000/CVE-2000-1095.md",
-    "https://github.com/opencve/opencve-kb/blob/6db804ac9380f31f71f86be4f4f8d98e65f04ec3/2000/CVE-2000-1095.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c3bcb8a007062e69fb258211c3f1efeb5a341535/2000/1xxx/CVE-2000-1095.md",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1095.json",
+    "https://github.com/opencve/opencve-kb/blob/38684c3fd0857f0d63926dad0cf55972b80db69f/2000/CVE-2000-1095.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/a939a0e06ea28df0537defbf2bf781fcb02ed201/2000/1xxx/CVE-2000-1095.md",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1095.json",
 ]
