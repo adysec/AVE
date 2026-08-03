@@ -1,0 +1,41 @@
+[basic]
+description = 'node-tar 是一个 Node.js 的 tar 归档操作库。在 7.5.17 版本之前，其 PAX 扩展头部解析函数 `parseKVLine` 未对路径（path）和链接路径（linkpath）字段中的 NUL 字节进行过滤，而 GNU L/K 长头部处理函数已正确实现了该过滤。攻击者可通过构造包含 NUL 字节的 PAX 记录（如 `path=visible.txt\x00hidden.txt`）的恶意 tar 文件，使 `entry.path` 携带 NUL 字节传入 `fs.lstat()` 或 `fs.open()`，触发 Node.js 核心的 `ERR_INVALID_ARG_VALUE` 异常。该异常在异步回调链中抛出，绕过用户代码的 `try/catch` 捕获，作为未捕获异常（uncaughtException）直接终止进程，造成拒绝服务。远程攻击者无需认证即可利用此漏洞，影响所有通过 `tar.x`/`tar.extract` 解压用户提供 tar 文件的 Node.js 应用，包括 npm 注册表、CI 流水线、容器构建等场景。'
+published = "2026-07-08T16:16:34.107"
+remediation = "立即将 node-tar 升级至 7.5.17 或更高版本（npm install tar@^7.5.17）。如无法升级，可在提取 tarball 前使用外部工具（如 GNU tar）预处理过滤含 NUL 字节的路径，或添加全局 uncaughtException 处理器并重启进程作为临时缓解措施。"
+score = 5.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "node-tar PAX路径记录NUL字节未捕获异常拒绝服务漏洞"
+updated = "2026-07-10T19:10:59.333"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59875",
+    "GHSA-gvwx-54wh-qm9j",
+]
+ave_id = "AVE-2026-0844"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/isaacs/node-tar/commit/7a635c29f5edbf083557374d43984273ecfed5b3",
+    "https://github.com/isaacs/node-tar/releases/tag/v7.5.17",
+    "https://github.com/isaacs/node-tar/security/advisories/GHSA-gvwx-54wh-qm9j",
+    "https://github.com/trickest/cve/blob/7ade3449b58b8e2c679712dc3af64bbd8e638364/2026/CVE-2026-59875.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b37ddadc32d456372cb07846a95b411ce7a32d9f/cves/2026/59xxx/CVE-2026-59875.json",
+    "https://github.com/cisagov/vulnrichment/blob/380f533205c12eeaa5a8c27e3ae790586a72a402/2026/59xxx/CVE-2026-59875.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37be0559d0574b93d433d6c01d9f77ea4c420519/CVE/data/2026/CVE-2026-59875.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37be0559d0574b93d433d6c01d9f77ea4c420519/SSVC/data/2026/CVE-2026-59875.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/35f8822ad3b850cb8a922d9066b0d79c83dab6d5/pocs/2026/CVE-2026-59875.md",
+    "https://github.com/anchore/nvd-data-overrides/blob/753d2e0d725b348a212e8863d776d632b54550eb/data/2026/CVE-2026-59875.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/ae03a9d5bcdec0092d3f179316a97b5f3dabc853/vex/cve/2026/CVE-2026-59875.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/ae03a9d5bcdec0092d3f179316a97b5f3dabc853/osv/cve/2026/UBUNTU-CVE-2026-59875.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-59875.json",
+]
