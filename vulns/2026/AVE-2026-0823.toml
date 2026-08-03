@@ -1,0 +1,42 @@
+[basic]
+description = "Open WebUI 终端代理存在身份认证绕过漏洞。在 `backend/open_webui/routers/terminals.py` 中，HTTP 路径将用户 ID 以未签名的 `X-User-Id` 标头转发至上游，攻击者可直接伪造该标头冒充任意用户；WebSocket 路径未对 `session_id` 参数进行校验与 URL 编码，攻击者可通过注入特殊字符篡改上游 URL 中的 `user_id` 查询参数，使后端协调器解析为其他用户的终端作用域。已认证的普通用户可利用此漏洞越权访问其他用户的终端会话，结合共享聊天中泄露的会话 ID 可附加到目标用户的实时 PTY。该漏洞影响 Open WebUI 0.10.0 之前版本，CVSS 评分 8.0，危害等级高。"
+published = "2026-07-09T17:17:03.770"
+remediation = "立即升级 Open WebUI 至 v0.10.0 或更高版本（该版本已对 session_id 进行 URL 编码校验并废弃无签名的 X-User-Id 转发机制）。如无法立即升级，可在反向代理层（如 Nginx）添加规则过滤请求路径中携带的 `?`、`#`、`&` 等特殊字符，并限制终端代理上游仅接受来自可信来源的请求。"
+score = 8
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Open WebUI 终端代理用户身份认证绕过漏洞"
+updated = "2026-07-10T15:22:04.010"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59224",
+    "GHSA-j657-m4c4-24jq",
+]
+ave_id = "AVE-2026-0823"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/open-webui/open-webui/commit/5f3a628a8d291bb5d33e1a0b0c89fb62a2927934",
+    "https://github.com/open-webui/open-webui/pull/26042",
+    "https://github.com/open-webui/open-webui/releases/tag/v0.10.0",
+    "https://github.com/open-webui/open-webui/security/advisories/GHSA-j657-m4c4-24jq",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/5860f042b5c19b8faa0bc408fc348118590651b6/data/vuln/openwebui/CVE-2026-59224.yaml",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/5860f042b5c19b8faa0bc408fc348118590651b6/data/vuln_en/openwebui/CVE-2026-59224.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/1cc9b895b10fb3dcc8a308563cbbcfad083cd221/cves/2026/59xxx/CVE-2026-59224.json",
+    "https://github.com/cisagov/vulnrichment/blob/256acfffdec561159f01d27b17d0320e6463101a/2026/59xxx/CVE-2026-59224.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/df225994fea2bf22c3b73491021c40bfd2f964e1/SSVC/data/2026/CVE-2026-59224.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/df225994fea2bf22c3b73491021c40bfd2f964e1/CVE/data/2026/CVE-2026-59224.json",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/8536e9d1bbb33a321f6d4a80a182400d5e74bd28/proposals/jvn/CVE-2026-59224.proposal.yaml",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-59224.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/7c13974e8672408967145db42c357210cb59d951/CVE-2026/CVE-2026-592xx/CVE-2026-59224.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/pypi/open-webui/CVE-2026-59224.yml",
+]
