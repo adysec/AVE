@@ -1,11 +1,11 @@
 [basic]
-description = "Cedar-Java 是 CNCF 开源项目 Cedar 策略语言的 Java 实现，用于应用程序的细粒度授权决策。在 4.9.0 之前版本中，EntityIdentifier.equals() 方法对 null 引用和自引用的检查逻辑被颠倒，导致对 null 对象比较时返回 true、对自身对象比较时返回 false，造成不正确的相等性判断。该漏洞影响所有使用 Cedar-Java 库进行自定义实体标识符比较的集成应用程序，攻击者可通过构造特定输入触发异常相等比较行为，绕过授权检查或导致业务逻辑错误。此问题不会影响由 Rust 核心从 JSON 计算的 Cedar 授权决策，但会影响在 Java 层自行调用 equals() 进行安全敏感比较的代码路径。建议用户升级至 Cedar-Java 4.9.0 或更高版本以修复此问题。"
+description = "Cedar-Java 是开源 Java 实现的 Cedar 策略语言，用于细粒度授权决策。其 EntityIdentifier.equals() 方法存在空引用与自身引用判断逻辑反转的漏洞，导致比较 null 时意外返回 true，比较自身时反而返回 false。该漏洞虽然不影响 Cedar 本身通过 Rust 实现的授权决策计算，但会影响直接调用该方法进行实体标识符相等性比较的集成方，可能导致策略执行出现错误判断。该漏洞影响所有 4.9.0 之前的 Cedar-Java 版本，攻击者需具备一定权限访问使用该库的应用程序方可触发。已在版本 4.9.0 中修复此问题，建议立即升级至最新版本，同时 fork 或衍生的代码也应同步合并修复补丁，对安全敏感的相等性比较可临时采用其他校验方式作为缓解措施。"
 published = "2026-07-13T20:16:48.453"
-remediation = "升级到 CedarJava 4.9.0 或更高版本。在升级前，将代码中所有依赖 EntityIdentifier.equals() 进行安全敏感判断的逻辑替换为显式的空值检查与身份比较，避免使用被篡改的 equals 方法。"
+remediation = "立即将 CedarJava 升级到 4.9.0 或更高版本，并检查所有 fork 或衍生代码，确保包含新的修复补丁。在升级完成前，避免在安全敏感场景中使用 EntityIdentifier.equals() 方法进行相等性比较，改用其他可靠的比较逻辑作为临时缓解措施。"
 score = 8.8
 severity = "HIGH"
 sources = ["ghsa"]
-title = "Cedar-Java 实体标识符相等性比较逻辑反转漏洞"
+title = "Cedar-Java 实体标识符相等性比较错误漏洞"
 updated = "2026-07-14T15:17:04.773"
 
 [exploit]
@@ -20,20 +20,20 @@ aliases = [
 ave_id = "AVE-2026-0742"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "https://github.com/cedar-policy/cedar-java/security/advisories/GHSA-4r9r-4425-74p7",
-    "https://github.com/CVEProject/cvelistV5/blob/fd4c668e0b43bf25cada98d9b000adcf7f4c176f/cves/2026/55xxx/CVE-2026-55771.json",
-    "https://github.com/cisagov/vulnrichment/blob/c3b619fb02eed1c084cf7dca0b26d6106b797434/2026/55xxx/CVE-2026-55771.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/ce969f677dfe522c3ff889eb16df65adf8a52833/CVE/data/2026/CVE-2026-55771.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/ce969f677dfe522c3ff889eb16df65adf8a52833/SSVC/data/2026/CVE-2026-55771.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2026-55771.json",
-    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/874e41a1c528e723f9fa8f58ba0c6da7734010ef/reports/2026-07-13/TIER_3_CVE-2026-55771.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/93d966ccbf562a1a0fe2dcab2089012ce2b11591/CVE-2026/CVE-2026-557xx/CVE-2026-55771.json",
-    "https://github.com/zzzteph/low-hanging-vulns/blob/c597d0ed79d68ff34fe402bc5c73840962e3382a/nvd/2026/HIGH/CVE-2026-55771/README.md",
+    "https://github.com/CVEProject/cvelistV5/blob/0235c22e9b6c7ddb8ada469b545320bce3ffcbfa/cves/2026/55xxx/CVE-2026-55771.json",
+    "https://github.com/cisagov/vulnrichment/blob/bc943eb819a406135c2391ed30d595e2ea60281b/2026/55xxx/CVE-2026-55771.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cec9fb1846e25b24020f297f65ec2360af0f4267/CVE/data/2026/CVE-2026-55771.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cec9fb1846e25b24020f297f65ec2360af0f4267/SSVC/data/2026/CVE-2026-55771.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-55771.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/77c1c4e2b164ba912ebd6005200ea105caf493c9/reports/2026-07-13/TIER_3_CVE-2026-55771.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b5070d3c2d6dc2fda079c163276abcda1c82b124/CVE-2026/CVE-2026-557xx/CVE-2026-55771.json",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/c40d15bc736663c338800597e967d5eaca965fc9/nvd/2026/HIGH/CVE-2026-55771/README.md",
     "https://github.com/Tabll/gemnasium-db/blob/2226f395f690bd125e18792c9fd587b54eb15804/maven/com.cedarpolicy/cedar-java/CVE-2026-55771.yml",
-    "https://github.com/TMA84/cvealert/blob/9817bd0b2a0b37e152bc78d1e5d04dcda46be3df/content/posts/cve-2026-55771.md",
+    "https://github.com/TMA84/cvealert/blob/61334472876cf5ad32f3637a7727b548d9acebb5/content/posts/cve-2026-55771.md",
 ]
