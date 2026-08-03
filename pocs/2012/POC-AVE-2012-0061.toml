@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "通过 JavaScript 操作 history.pushState、location.href 和 history.go/back 混淆 docshell，导致地址栏显示错误 URL 而页面内容来自攻击者站点，实现通用跨站脚本（UXSS）攻击。PoC 页面打开新窗口后依次执行 pushState、导航到目标站点、history.go(-1/+1) 和 history.back()，使浏览器地址栏与页面内容不同步。"
+id = "POC-AVE-2012-0061"
+name = "CVE-2012-0474 PoC"
+severity = "medium"
+tags = ["ave-2012-0061"]
+vuln_id = [
+    "CVE-2012-0474",
+    "AVE-2012-0061",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2012-0474-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "CVE-2012-0474",
+    "UXSS",
+    "short-circuited",
+]
