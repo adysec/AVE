@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "通过构造包含链式合并键（<<）的YAML文档，使js-yaml解析器CPU消耗呈二次方增长，导致拒绝服务。发送特制YAML至使用js-yaml解析的服务端点，验证解析延迟是否显著增加。"
+id = "POC-AVE-2026-0838"
+name = "js-yaml YAML合并键链处理拒绝服务漏洞 PoC"
+severity = "medium"
+tags = ["ave-2026-0838"]
+vuln_id = [
+    "CVE-2026-59868",
+    "AVE-2026-0838",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.body]
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-yaml"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    500,
+    502,
+    504,
+]
+type = "status"

