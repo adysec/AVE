@@ -1,0 +1,42 @@
+[basic]
+description = "@sigstore/oci 中的 getRegistryCredentials() 函数在读取 Docker 配置文件 (~/.docker/config.json) 时，使用子字符串匹配而非精确主机名匹配来选择认证凭据。当目标镜像仓库地址与已配置的认证密钥存在子串包含关系时（如攻击者控制的 cr.io 匹配已配置的 ghcr.io），攻击者可通过控制目标镜像仓库地址，诱使系统将高权限的注册表凭据（如 GHCR、Docker Hub 或云注册表令牌）发送至其控制的恶意注册表，导致凭据泄露。该漏洞影响 @sigstore/oci <= 0.7.0 版本，CVSS 评分 9.6，危害等级严重。利用条件包括：主机 Docker 配置中存在注册表凭据、目标注册表地址可被不可信来源影响、攻击者控制的注册表主机名与已配置密钥存在子串关系。已在 @sigstore/oci@0.7.1 中修复，修复方案为采用精确主机名匹配并规范化 URL 格式。"
+published = "2026-07-14T17:17:15.270"
+remediation = "将 `@sigstore/oci` 升级至 0.7.1 或以上版本，该版本已将凭据匹配方式从子串匹配改为精确主机名匹配。如无法升级，确保传入 `@sigstore/oci` 的镜像仓库地址来自可信源，避免由不可信方控制目标 registry；同时限制 Docker 配置中仅保留必要凭据，避免注册表主机名存在子串包含关系，并使用短时效令牌缩小影响面。"
+score = 9.6
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Sigstore @sigstore/oci 注册表凭据混淆漏洞"
+updated = "2026-07-21T19:17:12.150"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59891",
+    "GHSA-pf56-329r-95rw",
+]
+ave_id = "AVE-2026-0858"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/sigstore/sigstore-js/commit/85c58380758b97ce1b74ef470e55cc21f9d3aa89",
+    "https://github.com/sigstore/sigstore-js/releases/tag/%40sigstore%2Foci%400.7.1",
+    "https://github.com/sigstore/sigstore-js/security/advisories/GHSA-pf56-329r-95rw",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/ab6f9d01ebd789d88d6c9c80d2c4801a89e1f38f/2026/CVE-2026-59891.json",
+    "https://github.com/CVEProject/cvelistV5/blob/27584df20575115093a915d82c76b5107dd9d51e/cves/2026/59xxx/CVE-2026-59891.json",
+    "https://github.com/cisagov/vulnrichment/blob/bbff37eeafd64310b94d439a5f7493406fcdc115/2026/59xxx/CVE-2026-59891.json",
+    "https://github.com/sari3l/Poc-Monitor/blob/5f7b2444b1b2b1b019b434748bbb88035c2136a4/2026/CVE-2026-59891.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/be7c9eef0523e112dce5fde0006bf85d14a40618/CVE/data/2026/CVE-2026-59891.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/be7c9eef0523e112dce5fde0006bf85d14a40618/SSVC/data/2026/CVE-2026-59891.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-59891.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b6c80ad7b47e52f64ae2ee2b20e56d7eaaaa57fe/CVE-2026/CVE-2026-598xx/CVE-2026-59891.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/77c1c4e2b164ba912ebd6005200ea105caf493c9/reports/2026-07-14/TIER_2_CVE-2026-59891.md",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/npm/@sigstore/oci/CVE-2026-59891.yml",
+    "https://github.com/gyubin02/cve-2026-59891-control-lab",
+]
