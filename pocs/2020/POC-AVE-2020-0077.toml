@@ -1,0 +1,44 @@
+[info]
+author = "AVE"
+description = "通过检查 Windows 系统版本和补丁号判断是否受 CVE-2020-0986 影响。该漏洞为 Windows splwow64.exe 中的不可信指针解引用漏洞，低完整性进程可通过 LPC 消息向 splwow64 发送特制请求，触发 memcpy 越界写入，实现权限提升至 SYSTEM。影响 Windows 10 1903/1909/2004 及 Windows Server 多个版本。已修补版本：Windows 10 1903/1909 需 KB4560960，2004 需 KB4557957。"
+id = "POC-AVE-2020-0077"
+name = "Microsoft Windows splWOW64 Untrusted Pointer Dereference PoC"
+severity = "high"
+tags = ["ave-2020-0077"]
+vuln_id = [
+    "CVE-2020-0986",
+    "AVE-2020-0077",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+path = 'C:\Windows\System32\license.rtf'
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ['\v10.0.19041']
+
+[[poc.requests]]
+path = 'C:\Windows\System32\license.rtf'
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ['\v10.0.18362']
+
+[[poc.requests]]
+path = 'C:\Windows\System32\license.rtf'
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ['\v10.0.18363']
