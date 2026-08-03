@@ -1,11 +1,11 @@
 [basic]
-description = 'MultiHTML 1.5 是一款用于网页化的多文件浏览 CGI 脚本，存在文件读取漏洞。未经身份认证的远程攻击者可通过向目标服务器发送带有特制 "multi" 参数的 HTTP 请求，在参数中指定任意文件路径（如 /etc/passwd），即可读取服务器上的敏感文件内容。此外，该漏洞还可能允许攻击者执行任意系统命令，具体取决于服务器的配置与权限设置。该漏洞影响部署了 MultiHTML 1.5 CGI 脚本的 Web 服务器，只要攻击者能够通过网络访问该 CGI 脚本即可发起利用，无需任何认证凭据。攻击者可利用此漏洞获取服务器配置信息、用户凭据或其他敏感数据，严重时可能导致服务器完全被控制。'
+description = 'MultiHTML 1.5 CGI 脚本存在文件泄露漏洞，远程攻击者可通过向 "multi" 参数传递特制的文件名，读取服务器上的任意文件，甚至可能执行任意命令。该漏洞源于 CGI 脚本未对用户输入的 "multi" 参数进行充分的路径过滤和权限检查，导致目录遍历攻击。攻击者无需身份认证即可利用，影响范围包括部署了 MultiHTML 1.5 CGI 脚本的 Web 服务器。公开的 PoC 表明攻击者可通过构造恶意请求读取 /etc/passwd 等敏感文件，危害较大。'
 published = "2000-12-19T05:00:00.000"
-remediation = "立即将 MultiHTML CGI 脚本升级至 1.6 或更高版本，该版本已修复 multi 参数的文件路径验证缺陷。若无法升级，请从 Web 服务器 CGI 目录中移除 multihtml.pl 脚本以消除攻击面。同时，在 Web 服务器配置中限制 CGI 目录的执行权限，仅允许可信 IP 地址访问 /cgi-bin/ 路径，并对所有用户输入进行严格的路径遍历过滤，拒绝包含 ../ 或空字节 %00 的请求。"
+remediation = "立即停用或删除 MultiHTML 1.5 CGI 脚本，该软件已停止维护且无安全更新。如业务必须使用，在 Web 服务器层面（如 Apache 的 mod_rewrite 或 Nginx 的 location 规则）限制对 multihtml.pl 的访问，仅允许白名单 IP 调用；同时修改脚本代码，对 multi 参数做严格过滤，拒绝包含 ../ 或 %00 空字节的输入，并将脚本运行用户权限降至最低（如 nobody），禁止读取 /etc/passwd 等敏感文件。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "MultiHTML CGI 脚本 文件泄露漏洞"
+sources = ["avd"]
+title = "MultiHTML CGI 脚本任意文件读取漏洞"
 updated = "2026-06-16T21:52:44.943"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0912"]
 ave_id = "AVE-2000-0665"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-09/0146.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5285",
     "https://www.exploit-db.com/exploits/22204",
-    "https://github.com/CVEProject/cvelistV5/blob/ab00a662168d29727ed07327ed7248857f064d23/cves/2000/0xxx/CVE-2000-0912.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/e52b937328f58a3e9a1e7e8e4c1ac9025c3099d3/CVE/data/2000/CVE-2000-0912.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a14f4e66db68a75a9270d6c9081e9ffb7f931cd8/cves/2000/0xxx/CVE-2000-0912.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3eab0e512529a79daadefaadf0f05372813e7876/CVE/data/2000/CVE-2000-0912.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0912",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0912.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0912.json",
-    "https://github.com/opencve/opencve-kb/blob/a8ff0f0688217475a7ba2a404f9887907cad5560/2000/CVE-2000-0912.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/1b01d01b655cac08088621898fd70278524e2f0e/CVE-2000/CVE-2000-09xx/CVE-2000-0912.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/537c626a629083369daa568372a12317339c7514/2000/0xxx/CVE-2000-0912.md",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-0912.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e9b51a58e4ac0e6b00dc38147f459707e98ae056/CVE-2000/CVE-2000-09xx/CVE-2000-0912.json",
+    "https://github.com/opencve/opencve-kb/blob/4b74475b4552ac50c2b0e9c897e19d52aaa35c66/2000/CVE-2000-0912.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/a939a0e06ea28df0537defbf2bf781fcb02ed201/2000/0xxx/CVE-2000-0912.md",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0912.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0912.json",
 ]
