@@ -1,0 +1,32 @@
+[info]
+author = "AVE"
+description = "OnionShare 2.6.3 及之前版本在 Receive 模式启用 disable_files（仅文本模式）时，远程攻击者可通过构造包含 file[] 字段的 multipart POST 请求绕过限制写入文件。漏洞根源在于 ReceiveModeRequest._get_file_stream() 在底层流处理阶段未检查 disable_files 设置，文件在路由层跳过处理前已被写入磁盘。"
+id = "POC-AVE-2026-0791"
+name = "OnionShare Receive Mode 文件上传限制绕过 PoC"
+severity = "medium"
+tags = ["ave-2026-0791"]
+vuln_id = [
+    "CVE-2026-54707",
+    "AVE-2026-0791",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/upload-ajax"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["info_flashes"]
