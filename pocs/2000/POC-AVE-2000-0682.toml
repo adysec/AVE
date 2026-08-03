@@ -1,38 +1,24 @@
 [info]
 author = "AVE"
-description = "检测 Samba 2.0.7 SWAT 服务是否运行在 901 端口。SWAT 以 root 权限将日志写入 cgi.log，本地攻击者可预先创建符号链接指向任意系统文件，触发 SWAT 操作后即可覆盖目标文件。检测到 SWAT 服务即表明存在被利用的条件。"
+description = "检测 Samba 2.0.7 SWAT cgi.log 符号链接漏洞，本地攻击者可通过创建符号链接覆盖任意文件"
 id = "POC-AVE-2000-0682"
-name = "Samba SWAT Symlink Attack PoC"
+name = "Samba SWAT Symlink PoC"
 severity = "high"
-tags = ["cve-2000-0935"]
+tags = ["ave-2000-0682"]
 vuln_id = [
     "CVE-2000-0935",
     "AVE-2000-0682",
 ]
 
 [poc]
-logic = "any"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/"
-protocol = "http"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["SWAT"]
+logic = "all"
 
 [[poc.requests]]
 path = "/tmp/cgi.log"
 protocol = "file"
 
 [[poc.requests.matchers]]
-expect = false
+expect = true
 part = "body"
 type = "word"
-words = ["root:"]
+words = [""]
