@@ -1,8 +1,8 @@
 [info]
-author = "ave"
-description = "验证 Microsoft Windows 2000 索引服务中 ixsso.query ActiveX 控件被错误标记为可安全执行脚本，远程攻击者可通过构造恶意网页，利用该控件探测目标系统上指定文件是否存在"
+author = "AVE"
+description = "通过恶意网页利用 ixsso.query ActiveX 对象探测 Windows 2000 系统文件存在性，该对象被错误标记为对脚本安全"
 id = "POC-AVE-2000-0798"
-name = "Microsoft Windows 2000 Indexing Service ixsso.query ActiveX File Existence Verification PoC"
+name = "Microsoft Windows 2000 Indexing Service ixsso.query ActiveX File Enumeration PoC"
 severity = "medium"
 tags = ["ave-2000-0798"]
 vuln_id = [
@@ -11,7 +11,7 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
@@ -19,11 +19,11 @@ path = "/{{BaseURL}}/poc.html"
 protocol = "http"
 
 [poc.requests.body]
-content = ""
+content = "<html><body><script>try{var q=new ActiveXObject('ixsso.query');document.write('VULNERABLE: ixsso.query ActiveX instantiated');}catch(e){document.write('NOT VULNERABLE');}</script></body></html>"
 type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["ixsso"]
+words = ["VULNERABLE"]
