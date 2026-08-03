@@ -1,42 +1,29 @@
 [info]
-author = "AVE"
-description = "检测目标 Unify eWave ServletExec 3.0C 及更早版本是否存在拒绝服务漏洞。通过发送包含 /servlet/ 路径的 HTTP GET 请求，若 ServletExec servlet 已在运行则会触发异常导致服务崩溃。参考 ExploitDB 20336 及 SecurityFocus BID 1868。"
+author = "ave"
+description = "向目标 ServletExec 服务器发送包含 /servlet/ 路径的 HTTP 请求，若服务器返回正常响应表明 ServletExec 正在运行，可触发异常导致拒绝服务"
 id = "POC-AVE-2000-0749"
-name = "Unify eWave ServletExec 拒绝服务漏洞 PoC"
+name = "Unify eWave ServletExec 3.0c 拒绝服务漏洞 PoC"
 severity = "medium"
-tags = [
-    "cve-2000-1025",
-    "dos",
-    "servletexec",
-]
+tags = ["ave-2000-0749"]
 vuln_id = [
     "CVE-2000-1025",
     "AVE-2000-0749",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/servlet/ServletExec"
+path = "/{{BaseURL}}/servlet/"
 protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-status = [
-    500,
-    503,
-    502,
-]
-type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "Exception",
     "ServletExec",
-    "error",
+    "servlet",
+    "200 OK",
 ]
