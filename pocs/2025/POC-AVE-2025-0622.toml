@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "检测 PHP HTTP 流包装器在处理超长重定向 Location 头时的截断漏洞。通过搭建测试服务器返回 302 响应并附加超过 1024 字节的 Location 头，验证 PHP 的 stream wrapper 是否截断跳转地址导致非预期重定向"
+id = "POC-AVE-2025-0622"
+name = "CVE-2025-1861 PoC"
+severity = "medium"
+tags = [
+    "cve-2025-1861",
+    "php",
+    "http-stream-wrapper",
+    "redirect-truncation",
+]
+vuln_id = [
+    "CVE-2025-1861",
+    "AVE-2025-0622",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/redirect-test"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "truncated",
+    "302",
+    "redirect",
+]
