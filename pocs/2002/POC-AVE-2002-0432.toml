@@ -1,0 +1,50 @@
+[info]
+author = "AVE"
+description = "检测 OpenOffice 1.0.1 安装过程中是否存在不安全的临时文件处理。该版本在安装时会在临时目录创建 USERNAME_autoresponse.conf 文件，本地攻击者可预创建符号链接指向目标文件，诱导安装进程写入从而覆盖任意文件并提升权限。"
+id = "POC-AVE-2002-0432"
+name = "OpenOffice 1.0.1 安装临时文件符号链接本地权限提升 PoC"
+severity = "medium"
+tags = [
+    "cve-2002-2210",
+    "openoffice",
+    "symlink",
+    "local",
+    "privilege-escalation",
+]
+vuln_id = [
+    "CVE-2002-2210",
+    "AVE-2002-0432",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+path = "/tmp/USERNAME_autoresponse.conf"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["USERNAME_autoresponse.conf"]
+
+[[poc.requests]]
+path = "/usr/lib/openoffice/program/soffice"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+regex = "."
+type = "regex"
+
+[[poc.requests]]
+path = "/opt/openoffice1.0.1/program/soffice"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+regex = "."
+type = "regex"
