@@ -1,165 +1,11 @@
 [basic]
-description = '''
-tags.
-
-Let me provide the analysis first, then the TOML output in <value> tags.
-
-For PoC - since this is a simple DoS via long GET request, I could write a simple PoC. Let me think about whether there's enough information to write a real PoC.
-
-The vulnerability is: sending a long GET request causes denial of service. This is trivially reproducible - just send a GET request with a very long path. I could write a simple PoC for this.
-
-Actually, the skill says "PoC = 安全无损验证" - a safe verification. Sending a long GET request to test if the server crashes is a valid PoC. Let me write one.
-
-For the PoC TOML:
-
-```toml
-[info]
-id = "POC-AVE-2000-00001"
-name = "CVE-2000-0838 PoC"
-author = "AVE"
-severity = "medium"
-tags = ["cve-2000-0838"]
-description = "通过发送超长GET请求检测Fastream FUR HTTP Server 1.0b拒绝服务漏洞"
-vuln_id = ["CVE-2000-0838", "AVE-2000-00001"]
-
-[poc]
-logic = "any"
-
-[[poc.requests]]
-protocol = "http"
-method = "GET"
-path = "/{{BaseURL}}/" + "A" * 10000
-headers = { "User-Agent" = "AVE/1.0" }
-
-[[poc.requests.matchers]]
-type = "status"
-status = [200, 500, 503]
-expect = true
-```
-
-Hmm, but this is a DoS vulnerability - the server crashes, so we can't really check for a specific response. The matcher would need to check if the server becomes unresponsive. Let me think about this differently.
-
-Actually, for a DoS PoC, we could:
-1. Send a normal request first to confirm server is up
-2. Send the long GET request
-3. Try another normal request to see if server is down
-
-But that's complex for a simple PoC. Let me just write a basic PoC that sends the long GET request and checks if the server responds with anything unusual or becomes unresponsive.
-
-Actually, for a simple DoS PoC, I think the best approach is to just send the malicious request and check if the connection is reset or times out. Let me use a TCP-based approach since we're sending a raw HTTP request.
-
-Let me write a TCP-based PoC:
-
-```toml
-[info]
-id = "POC-AVE-2000-00001"
-name = "CVE-2000-0838 PoC"
-author = "AVE"
-severity = "medium"
-tags = ["cve-2000-0838"]
-description = "通过发送超长GET请求检测Fastream FUR HTTP Server 1.0b拒绝服务漏洞"
-vuln_id = ["CVE-2000-0838", "AVE-2000-00001"]
-
-[poc]
-logic = "any"
-
-[[poc.requests]]
-protocol = "tcp"
-path = "{{Hostname}}:80"
-
-[[poc.requests.raws]]
-type = "send"
-content = "GET /" + string.Repeat("A", 10000) + " HTTP/1.1\r\nHost: {{Hostname}}\r\n\r\n"
-
-[[poc.requests.raws]]
-type = "receive"
-
-[[poc.requests.matchers]]
-type = "word"
-words = ["HTTP/1.1"]
-expect = false
-```
-
-Hmm, but the TOML format for TCP with raws is a bit tricky. Let me look at the schema again.
-
-Actually, looking at the schema more carefully, the TCP protocol uses `[[poc.requests.raws]]` with `type = "send"` and `type = "receive"`. But the content for the long GET request would be very long. Let me simplify.
-
-Actually, I think for this simple DoS, I'll just output NO_POC since there's no real exploit code available and the vulnerability is trivially simple. The skill says "搜索不到真实信息→输出 NO_POC/NO_EXP，不编造". But this is a well-known vulnerability type - long GET request DoS. It's not really "making up" to write a PoC for this.
-
-Let me just write a simple PoC using HTTP protocol with a very long path. Actually, the path would be extremely long in the TOML. Let me use TCP instead.
-
-Let me just go with NO_POC and NO_EXP since there are no actual exploit code in the search results, only metadata files. The vulnerability is from 2000 and is very simple.
-
-Wait, let me reconsider. The skill says:
-- "PoC = 安全无损验证" - this is a safe verification
-- "搜索不到真实信息→输出 NO_POC/NO_EXP，不编造"
-
-The search results only show metadata JSON files, not actual exploit code. So I should output NO_POC/NO_EXP.
-
-Let me finalize the TOML output.
-
-Actually, I realize I should think about the AVE ID more carefully. The format is AVE-YYYY-NNNNN. Since this is CVE-2000-0838, the year is 2000. I'll use AVE-2000-00001 as a starting number.
-
-Let me also check - the description needs to be ≥50 Chinese characters. Let me write a good one.
-
-"Fastream FUR HTTP Server 1.0b 存在拒绝服务漏洞。远程攻击者无需认证即可通过向服务器发送超长GET请求，导致服务器进程耗尽资源或崩溃，停止响应正常请求，造成拒绝服务。攻击复杂度低，影响服务可用性。"
-
-That's well over 50 characters.
-
-Remediation: "升级到最新版本的Fastream FUR HTTP Server以修复此漏洞。如厂商已停止维护，建议迁移至其他受支持的HTTP服务器软件，或部署WAF限制请求URI长度。"
-
-That's over 20 characters.
-
-Now let me write the final output.## 分析
-
-CVE-2000-0838：Fastream FUR HTTP Server 1.0b 超长 GET 请求拒绝服务漏洞。CVSS v2 5.0（MEDIUM），2000 年发布。预搜索仅发现元数据 JSON，无实际利用代码，输出 NO_POC/NO_EXP。
-
-<value>[id]
-ave_id = "AVE-2000-00001"
-aliases = ["CVE-2000-0838"]
-
-[basic]
-title = "Fastream FUR HTTP Server 1.0b GET请求拒绝服务漏洞"
-description = "Fastream FUR HTTP Server 1.0b 存在拒绝服务漏洞。远程攻击者无需认证即可通过向服务器发送超长GET请求，导致服务器进程耗尽资源或崩溃，停止响应正常请求，造成拒绝服务。攻击复杂度低，影响服务可用性。"
-severity = "MEDIUM"
-score = 5.0
-sources = ["cve"]
-published = "2000-11-14"
-updated = "2000-11-14"
-remediation = "升级到最新版本的Fastream FUR HTTP Server以修复此漏洞。如厂商已停止维护，建议迁移至其他受支持的HTTP服务器软件，或部署WAF限制请求URI长度。"
-
-[references]
-urls = ["https://nvd.nist.gov/vuln/detail/CVE-2000-0838"]
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-28T00:00:00Z"
-'''
+description = "Fastream FUR HTTP Server 1.0b 存在拒绝服务漏洞。远程攻击者可通过向服务器发送超长 GET 请求，导致服务器进程崩溃或无法响应正常请求，造成服务中断。该漏洞无需身份认证即可远程触发，攻击条件简单，仅需构造特制 HTTP 请求即可利用。受影响版本为 Fastream FUR HTTP Server 1.0b，CVSS 评分 5.0，危害等级中危。"
 published = "2000-11-14T05:00:00.000"
-remediation = """
-tags.
-
-For the PoC, I'll use TCP protocol with raw content to send a GET request with a very long URI (8000+ 'A' characters). This is the simplest way to reproduce the vulnerability.
-
-Let me write the complete outputnow.This is a very old vulnerability (CVE-2000-0838) affecting Fastream FUR HTTP Server 1.0b, a denial of service via long GET request. Since this is from the year 2000, the product is likely long discontinued and no patches exist. The remediation should reflect this reality - since there's no official patch available, the recommendation should be to upgrade to a newer version if available, or migrate to a different, actively maintained HTTP server.
-
-Let me search for any information about Fastream and whether there were any later versions.The vulnerability is CVE-2000-0838 - Fastream FUR HTTP Server 1.0b denial of service via long GET request. This is a very old vulnerability from 2000. The product "Fastream FUR HTTP Server" appears to be discontinued. Let me think about what remediation advice would be appropriate.
-
-Since this is an old, discontinued product from 2000, there's no patch available. The remediation should focus on:
-1. Upgrading to a newer version if one exists (but this product seems discontinued)
-2. Using a different, modern HTTP server as replacement
-3. Network-level mitigations like using a reverse proxy or WAF to filter long requests
-4. If the server must be used, restricting access via firewall
-
-Let me craft a practical remediation.<value>该产品已停止维护，官方未发布补丁。建议立即迁移至现代 HTTP 服务器（如 Apache/Nginx/IIS）替代 Fastream FUR HTTP Server 1.0b。如无法立即替换，可在反向代理或防火墙层面配置规则，拦截长度超过 4096 字节的 GET 请求 URI，或限制源 IP 访问速率以缓解 DoS 攻击。"""
+remediation = "该产品已停止维护，官方未发布补丁。建议立即替换为受支持的 HTTP 服务器（如 Apache httpd、Nginx 等），并在迁移前在网络层（防火墙/WAF）配置规则，限制 HTTP GET 请求 URI 长度不超过 1024 字节，以临时缓解拒绝服务攻击风险。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "Fastream FUR HTTP Server 1.0b 拒绝服务漏洞"
+sources = ["avd"]
+title = "Fastream FUR HTTP Server 1.0b GET请求拒绝服务漏洞"
 updated = "2026-06-16T21:52:34.343"
 
 [exploit]
@@ -171,21 +17,21 @@ aliases = ["CVE-2000-0838"]
 ave_id = "AVE-2000-0965"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://archives.neohapsis.com/archives/win2ksecadvice/2000-q3/0111.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5237",
-    "https://github.com/CVEProject/cvelistV5/blob/95e02b73a69df169404c6b2708e1f8d0346744bc/cves/2000/0xxx/CVE-2000-0838.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/a5deeab9684d7cc5d59192453c93e2b5d43622a9/CVE/data/2000/CVE-2000-0838.json",
+    "https://github.com/CVEProject/cvelistV5/blob/57d47b7d3f36bb14623bb27ddb073baead1c6714/cves/2000/0xxx/CVE-2000-0838.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2d66b7c0b89f8bfe02ef8d342b4bf0a1bab5ffd1/CVE/data/2000/CVE-2000-0838.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0838",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0838.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0838.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/eeef281f8f1a9ba894118076ad84b1dde324bda9/CVE-2000/CVE-2000-08xx/CVE-2000-0838.json",
-    "https://github.com/opencve/opencve-kb/blob/8fb1620294bff0cde2c82bba8543a916d4f0215c/2000/CVE-2000-0838.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c3bcb8a007062e69fb258211c3f1efeb5a341535/2000/0xxx/CVE-2000-0838.md",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-0838.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/0d2adc4a9428696b559622523817d9cdfdad97f0/CVE-2000/CVE-2000-08xx/CVE-2000-0838.json",
+    "https://github.com/opencve/opencve-kb/blob/0913c49bc4f4fd607e8625f162967246063e1d20/2000/CVE-2000-0838.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/67c5e994e49225faeedb88198d627dbdd922374c/2000/0xxx/CVE-2000-0838.md",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0838.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0838.json",
 ]
