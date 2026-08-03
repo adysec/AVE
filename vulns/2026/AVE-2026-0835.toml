@@ -1,0 +1,38 @@
+[basic]
+description = "Gitea 的 Arch 包注册表在处理上传的 Arch 包时，未对包内文件条目数量和文件名总长度设置限制。已认证的攻击者可上传包含大量空文件的压缩包，导致服务器在解析、序列化、存储元数据及生成仓库索引时消耗大量 CPU、内存和数据库存储资源，造成资源放大攻击。该漏洞影响 Gitea 所有启用包发布功能的版本，攻击者需具有包发布权限。"
+published = "2026-01-01"
+remediation = "建议在 Gitea 的 `modules/packages/arch/metadata.go` 中为 `FileMetadata.Files` 添加硬性上限（如最多 10000 个文件条目，累计文件名总长度不超过 1MB），超出时返回 4xx 错误拒绝上传。同时建议在 Gitea 管理界面增加 `MAX_ARCH_METADATA_FILES` 和 `MAX_ARCH_METADATA_NAME_BYTES` 配置项供实例管理员调整。如无法立即升级，可在反向代理层限制 `/api/packages/*/arch/*` 上传请求的 body 大小（如 1MB）作为临时缓解。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Gitea Gitea Arch 包文件元数据未限制导致资源放大漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59763",
+    "GHSA-9mq6-mqjj-c2c5",
+]
+ave_id = "AVE-2026-0835"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/go/code.gitea.io/gitea/CVE-2026-59763.yml",
+    "https://github.com/opencve/opencve-kb/blob/08fba6d93d7b2eb4e2149df128118cb379076728/2026/CVE-2026-59763.json",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/osv/GO-2026-6049.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/a68e9f9094ffdce5aa0917a16cd23c01958e510f/docs/data/2026/CVE-2026-59763.json",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/reports/GO-2026-6049.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/5e3ef941373b136db70cea89f00140bc5867c3d5/data/history/CVE-2026-59763.json",
+    "https://github.com/github/advisory-database/blob/ae9a2f0a16755310209b23d08e56c5b1dcdc2244/advisories/github-reviewed/2026/07/GHSA-9mq6-mqjj-c2c5/GHSA-9mq6-mqjj-c2c5.json",
+    "https://github.com/bmwiedemann/openSUSE/blob/642ccc07b56e5e53758fdbffb989274c2d5bb6ed/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+    "https://github.com/proshiba/vuln-intel-agent/blob/17f44edad00c813686c1801e193b07fb764d37c9/reports/daily/2026/07/2026-07-17.md",
+    "https://github.com/midnightconman/go_vulndb/blob/dcad72116132cbfc62d3984ad49132e8b86e8626/ID/GO-2026-6049.json",
+]
