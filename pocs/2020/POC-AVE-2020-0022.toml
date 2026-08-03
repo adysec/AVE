@@ -1,0 +1,47 @@
+[info]
+author = "AVE"
+description = "检测 Microsoft Exchange Server 是否使用静态默认验证密钥（CVE-2020-0688）。通过访问 ECP 页面获取 __VIEWSTATEGENERATOR 值，若为 B97B4E27 则表明服务器使用了已知的固定密钥，存在 ViewState 反序列化远程代码执行风险。"
+id = "POC-AVE-2020-0022"
+name = "Microsoft Exchange 验证密钥远程代码执行漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2020-0688",
+    "exchange",
+    "rce",
+    "viewstate",
+]
+vuln_id = [
+    "CVE-2020-0688",
+    "AVE-2020-0022",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ecp/default.aspx"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "__VIEWSTATEGENERATOR",
+    "B97B4E27",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ecp/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "__VIEWSTATEGENERATOR",
+    "B97B4E27",
+]
