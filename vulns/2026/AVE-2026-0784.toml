@@ -1,0 +1,40 @@
+[basic]
+description = "MessagePack for Ruby 的 MessagePack::Buffer#clear 方法存在释放后使用（Use-After-Free）漏洞。该函数在清空缓冲区时将 4KB rmem 页面归还到共享内存池后，未重置 rmem_last、rmem_end、rmem_owner 等游标指针，导致后续的 Buffer#write 操作误将已释放页面的内存地址返回给调用者。当第二个 MessagePack::Buffer 从共享池获取同一物理页面时，两个缓冲区会指向同一块内存，造成跨缓冲区信息泄露（可读取其他缓冲区的序列化数据）或数据损坏。攻击者需在本地环境中直接使用 MessagePack::Buffer API 并遵循 clear/复用生命周期模式才能触发，无法通过普通 unpack 字节流利用。该漏洞影响 msgpack gem 1.8.2 之前的所有版本，已在 1.8.2 版本中修复。"
+published = "2026-07-30T17:16:33.030"
+remediation = "立即将 msgpack gem 升级至 1.8.2 或更高版本（`gem update msgpack`），该版本已修复 Buffer#clear 中 rmem 游标未重置导致的释放后使用问题。如无法升级，避免在跨缓冲区场景中调用 clear 后立即复用同一 Buffer 写入数据，或改用重新创建 Buffer 实例替代 clear 操作作为临时缓解措施。"
+score = 2.1
+severity = "LOW"
+sources = ["ghsa"]
+title = "MessagePack Ruby 缓冲区释放后重用导致跨缓冲区信息泄露漏洞"
+updated = "2026-07-30T19:27:23.630"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54522",
+    "GHSA-4mrv-5p47-p938",
+]
+ave_id = "AVE-2026-0784"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/msgpack/msgpack-ruby/commit/5627d71606b565641d2dd501b82aae862f4abe90",
+    "https://github.com/msgpack/msgpack-ruby/security/advisories/GHSA-4mrv-5p47-p938",
+    "https://github.com/rubysec/ruby-advisory-db/blob/e814c846b489961c36bd71e6c207d6f0b896cb6d/gems/msgpack/CVE-2026-54522.yml",
+    "https://github.com/CVEProject/cvelistV5/blob/57d47b7d3f36bb14623bb27ddb073baead1c6714/cves/2026/54xxx/CVE-2026-54522.json",
+    "https://github.com/cisagov/vulnrichment/blob/1fe56a0dafbbcb548bdcdd4fc990cca72ac81c28/2026/54xxx/CVE-2026-54522.json",
+    "https://github.com/rubysec/rubysec.github.io/blob/0a5bc60878096d39ce1382513d3aa01b5d5c73a3/advisories/_posts/2026-06-09-CVE-2026-54522.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37abbcb2a8225ed14d2b9dfffb1ad41b15cc2cc8/SSVC/data/2026/CVE-2026-54522.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/32ea152709267741509ecbf76022327761e70b91/pocs/2026/CVE-2026-54522.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/e9e7730d92360d278d7b57d736f4a4606c1ac1a4/vex/cve/2026/CVE-2026-54522.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37abbcb2a8225ed14d2b9dfffb1ad41b15cc2cc8/CVE/data/2026/CVE-2026-54522.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/e9e7730d92360d278d7b57d736f4a4606c1ac1a4/osv/cve/2026/UBUNTU-CVE-2026-54522.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-54522.json",
+]
