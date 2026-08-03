@@ -1,11 +1,11 @@
 [basic]
-description = "Paessler PRTG Network Monitor 18.2.40.1683 之前版本存在严重安全漏洞，攻击者可通过构造恶意 HTTP 请求，覆盖 /public/login.htm 中 include 指令的属性，引入 /api/addusers 接口并执行本地文件包含攻击。未经身份认证的远程攻击者仅需提供 id 和 users 参数，即可创建拥有读写权限（含管理员权限）的用户账户，实现远程代码执行与权限提升。该漏洞影响 PRTG Network Monitor 18.2.40.1683 之前所有版本，CVSS 3.1 评分 9.8（CRITICAL），攻击向量为网络、攻击复杂度低、无需权限、无需用户交互、对机密性/完整性/可用性均造成高影响。Paessler 已在 18.2.40.1683 版本中修复该漏洞，建议用户尽快升级至最新版本并限制管理接口网络访问。"
+description = "Paessler PRTG Network Monitor 18.2.40.1683 之前版本存在本地文件包含漏洞，未经身份认证的远程攻击者可通过构造恶意 HTTP 请求，覆盖 /public/login.htm 中 'include' 指令的属性，包含并执行 /api/addusers 接口。攻击者仅需提供 'id' 和 'users' 参数，即可在无需认证的情况下创建具有读写权限（含管理员）的用户账户，进而完全控制监控系统。该漏洞影响所有未升级至 18.2.40.1683 版本的 PRTG Network Monitor 实例，CVSS 3.1 评分 9.8（严重），攻击向量为网络、攻击复杂度低、无需权限、无需用户交互，机密性/完整性/可用性均受高度影响。"
 published = "2018-11-21T16:29:00.347"
-remediation = "建议立即升级 PRTG Network Monitor 至 18.2.40.1683 或更高版本（官网下载最新版本）。若暂时无法升级，请在防火墙层面限制 PRTG Web 界面（默认 80/443/8080 端口）仅允许受信任管理 IP 访问，并在 Web 服务器层面禁用 /public/login.htm 中的 LFI 相关 include 指令。同时排查是否存在未授权创建的管理员账号并立即删除，启用双因子认证作为额外防护。"
+remediation = "立即升级 PRTG Network Monitor 至 18.2.40.1683 或更高版本（Paessler 官网下载最新安装包覆盖安装）。若暂时无法升级，请在防火墙层面限制 PRTG Web 界面（默认端口 80/443）仅允许受信任管理 IP 访问，并定期审计用户列表排查非授权创建的管理员账号。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
-title = "Paessler PRTG Network Monitor 远程未授权用户创建漏洞"
+sources = ["nuclei"]
+title = "Paessler PRTG Network Monitor 本地文件包含漏洞"
 updated = "2026-06-17T01:49:15.640"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2018-19410"]
 ave_id = "AVE-2018-0555"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,15 +25,15 @@ urls = [
     "https://www.ptsecurity.com/ww-en/analytics/threatscape/pt-2018-24/",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2018-19410",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2018/CVE-2018-19410.yaml",
-    "https://github.com/trickest/cve/blob/be44b05b9428dc18bc0705cf60dd8d8640cd49b1/2018/CVE-2018-19410.md",
-    "https://github.com/0xMarcio/cve/blob/d08f837f771e6cd83ec9c845b0c4f72f125cbe84/2018/CVE-2018-19410.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/bed70a0a2e2dec8bd34bd440f68f32280391094f/2018/CVE-2018-19410.json",
-    "https://github.com/projectdiscovery/nuclei-templates/blob/c9097bc88f77c877a08830c8bb997e760d5172eb/http/cves/2018/CVE-2018-19410.yaml",
-    "https://github.com/CVEProject/cvelistV5/blob/fc5c3e6f60accc24b7eac4fd31472f0e5fd97f24/cves/2018/19xxx/CVE-2018-19410.json",
-    "https://github.com/cisagov/vulnrichment/blob/617f5713eaf60aa312a8e3fe5c9942eeb7cf98ee/2018/19xxx/CVE-2018-19410.json",
-    "https://github.com/sari3l/Poc-Monitor/blob/6a32bab1b63e302ab8a4aae06190853195172067/2018/CVE-2018-19410.json",
-    "https://github.com/0x727/FingerprintHub/blob/881db81e73cc7e2f9f510b557401bea4324e5731/plugins/paessler/prtg_network_monitor/CVE-2018-19410.yaml",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2018/CVE-2018-19410.md",
+    "https://github.com/0xMarcio/cve/blob/986b45a0ac2dd215b3a5515fba0cebac769043dd/2018/CVE-2018-19410.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/c908bbff86d2944f8f8a39e75f549a966c642420/2018/CVE-2018-19410.json",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/e9f0fe7fa4f5c548bbd1a4d3b65d0f181021e664/http/cves/2018/CVE-2018-19410.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/73e213348ddf142cab7e77d05861fa314ba8e1d0/cves/2018/19xxx/CVE-2018-19410.json",
+    "https://github.com/cisagov/vulnrichment/blob/bc943eb819a406135c2391ed30d595e2ea60281b/2018/19xxx/CVE-2018-19410.json",
+    "https://github.com/sari3l/Poc-Monitor/blob/ed3533775a9ade21f1577e57c130e65e8f80898c/2018/CVE-2018-19410.json",
+    "https://github.com/0x727/FingerprintHub/blob/dce139c84c439e9fc87d0eb2079ddda89aaeb75c/plugins/paessler/prtg_network_monitor/CVE-2018-19410.yaml",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2018/CVE-2018-19410.md",
-    "https://github.com/rix4uni/cvemapping/blob/74eb38d48bf4ff1f1c91e4f5d37b571a985efa6f/2018/CVE-2018-19410/CVE-2018-19410-POC.py",
+    "https://github.com/rix4uni/cvemapping/blob/23441ec855d45e03157b693d7c6d0ff023fe3af5/2018/CVE-2018-19410/CVE-2018-19410-POC.py",
     "https://github.com/himash/CVE-2018-19410-POC",
 ]
