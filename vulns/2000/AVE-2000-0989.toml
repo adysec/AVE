@@ -1,11 +1,11 @@
 [basic]
-description = "MailForm 2.0 是一款 Perl 编写的网页表单处理 CGI 脚本。该脚本在处理文件附件的 XX-attach_file 参数时缺乏严格的输入验证，允许远程攻击者通过构造包含服务器上任意文件路径的 HTTP 请求参数，使脚本将目标文件内容以邮件附件形式回显给攻击者。该漏洞属于任意文件读取漏洞，影响所有部署了 MailForm 2.0 版本的网站。攻击者无需身份认证，仅需向目标服务器发送带有 XX-attach_file 参数的请求即可触发漏洞，进而读取服务器上任何具有读取权限的文件，包括系统配置文件、密码文件或网站源代码等敏感信息。厂商未提供明确的修复版本，建议用户移除该脚本或实施输入过滤等缓解措施。"
+description = "mailform CGI 脚本存在路径遍历漏洞，攻击者可通过构造包含目录遍历序列（如 ../）的参数绕过路径限制，读取服务器上任意文件内容。该漏洞影响使用 mailform 处理表单提交的 Web 应用，攻击者无需身份认证即可远程利用，仅需向目标发送恶意构造的 HTTP 请求即可泄露敏感文件（如 /etc/passwd、配置文件、源代码等），导致信息泄露并可能进一步攻击服务器。"
 published = "2000-11-14"
-remediation = '建议立即将受影响的 MailForm 2.0（mailform.pl）升级至 2.1 或更高版本，该版本已修复 XX-attach_file 参数缺乏输入验证的缺陷。如暂无可用补丁，须在 mailform.pl 源码中对 XX-attach_file 参数进行过滤，禁止传入包含 "../" 或绝对路径的字符串，并将附件目录严格限定为 web 服务器根目录之外的上传专用文件夹，通过 chroot 或 chdir 限制脚本可访问的文件系统范围。同时建议在 Web 服务器（如 Apache）配置中使用 .htaccess 或访问控制规则，限制 mailform.pl 的脚本执行权限，避免将表单处理功能暴露在公网。如果该软件已停止维护，最稳妥的缓解措施是彻底移除 mailform.pl，改用仍在积极维护的现代化表单处理方案。'
+remediation = "更新 MailForm 到最新版本（2.1或更高）并应用安全补丁包。禁用 mailform.pl 脚本或修改 XX-attach_file 参数验证规则，限制文件访问路径并实施权限检查。同时部署 WAF 规则过滤恶意参数访问，并定期审核系统文件权限配置。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "Ranson Johnson mailform 任意文件读取漏洞"
+sources = ["avd"]
+title = "Mailform mailform 任意文件读取漏洞"
 updated = "2000-11-14"
 
 [exploit]
@@ -17,19 +17,19 @@ aliases = ["CVE-2000-0877"]
 ave_id = "AVE-2000-0989"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "https://github.com/CVEProject/cvelistV5/blob/187f9782052f1b70e6e7a8a5791a57c9e8021979/cves/2000/0xxx/CVE-2000-0877.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3919f5d4f46129b5d413845566be804f8af4ae72/CVE/data/2000/CVE-2000-0877.json",
+    "https://github.com/CVEProject/cvelistV5/blob/73e213348ddf142cab7e77d05861fa314ba8e1d0/cves/2000/0xxx/CVE-2000-0877.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cec9fb1846e25b24020f297f65ec2360af0f4267/CVE/data/2000/CVE-2000-0877.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0877",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0877.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0877.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/d478c26e0933f1b427dcee2764a288a5136f688f/CVE-2000/CVE-2000-08xx/CVE-2000-0877.json",
-    "https://github.com/opencve/opencve-kb/blob/6e362f6959b500f9e0530cd95885d05afaa93bae/2000/CVE-2000-0877.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/6e69f660565d27d937b8b70d75c3a224ecbcbcd3/2000/0xxx/CVE-2000-0877.md",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-0877.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/d6e5bf87d27954c5a3cd48e565b212fb97932a81/CVE-2000/CVE-2000-08xx/CVE-2000-0877.json",
+    "https://github.com/opencve/opencve-kb/blob/fc3c209ab3b380e61580f037335fd28cb053661f/2000/CVE-2000-0877.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/68a8e7c8b5d4a203080f3ef6d3d4e3df346511fe/2000/0xxx/CVE-2000-0877.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0877.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0877.json",
 ]

