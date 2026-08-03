@@ -1,11 +1,11 @@
 [basic]
-description = "Pillow 是 Python 流行的图像处理库，其 ImageCms 模块存在可控堆越界写入漏洞。`ImageCms.ImageCmsTransform.apply()` 接口在调用者传入的输出图像模式与转换器声明的输出模式不一致时，仅检查图像尺寸随后就直接调用 LittleCMS 进行颜色空间转换。以 RGBA 转 RGBA 的转换器应用于 L 模式（单字节灰度）输出图像为例，LittleCMS 会按每个像素 4 字节写入行数据，但目标行仅分配了每像素 1 字节的缓冲区，导致堆内存被越界覆盖。攻击者可利用 source image 像素值控制写入内容，进而实现任意代码执行或进程崩溃。该漏洞影响 Pillow 12.3.0 之前的所有版本，攻击者无需身份验证即可通过构造恶意图像数据触发漏洞。Pillow 12.3.0 已通过在调用原生转换前校验输入/输出图像模式修复此问题。"
+description = "Pillow 图像处理库的 ImageCmsTransform.apply() 接口存在堆越界写入漏洞。当调用者提供的输出图像色彩模式与变换声明的输出模式不匹配时（例如将 RGBA→RGBA 变换应用于 L 模式图像），底层 LittleCMS 会按每像素 4 字节写入，而 L 模式图像每行仅分配每像素 1 字节的缓冲区，导致受控的堆内存越界写入。攻击者可通过构造特制的变换参数和输出图像对象触发该漏洞，造成堆元数据损坏或任意地址写入，最终导致拒绝服务或潜在代码执行。该漏洞影响 Pillow 12.3.0 之前版本，CVSS 评分 7.5，危害等级高。"
 published = "2026-07-14T16:17:02.370"
-remediation = "立即将 Pillow 升级至 12.3.0 或更高版本，该版本已在 ImageCmsTransform.apply() 的 Python 层和 _imagingcms.c 的 C 扩展层增加输入/输出图像模式合法性校验，可阻止因模式不匹配引发的受控堆溢出。如暂时无法升级，建议在应用层对用户传入的 ImageCms 转换参数及输出图像对象实施严格白名单过滤，仅允许预期的图像模式通过，以降低被利用风险。"
+remediation = "立即升级 Pillow 至 12.3.0 或更高版本（对应 commit a9ffc42）。如无法立即升级，可在调用 ImageCmsTransform.apply() 前手动校验 im.mode 与 self.input_mode、imOut.mode 与 self.output_mode 是否一致，拒绝不匹配的输入输出图像模式。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
-title = "Pillow 图像处理库 ImageCmsTransform 堆越界写入漏洞"
+title = "Python Pillow ImageCmsTransform 输出模式不匹配导致堆越界写入漏洞"
 updated = "2026-07-14T20:09:27.770"
 
 [exploit]
@@ -20,7 +20,7 @@ aliases = [
 ave_id = "AVE-2026-0691"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -29,14 +29,14 @@ urls = [
     "https://github.com/python-pillow/Pillow/pull/9715",
     "https://github.com/python-pillow/Pillow/releases/tag/12.3.0",
     "https://github.com/python-pillow/Pillow/security/advisories/GHSA-9hw9-ch79-4vh6",
-    "https://github.com/CVEProject/cvelistV5/blob/7385b01d60e95b8b46a82603445449e7e74907b4/cves/2026/59xxx/CVE-2026-59205.json",
-    "https://github.com/cisagov/vulnrichment/blob/c16d5de75824639ce100418081f1869662c7d360/2026/59xxx/CVE-2026-59205.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/8ea97a2f0801990574114178f603d7ac60f28c37/SSVC/data/2026/CVE-2026-59205.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/8ea97a2f0801990574114178f603d7ac60f28c37/CVE/data/2026/CVE-2026-59205.json",
-    "https://github.com/sec-dojo-com/cve-poc/blob/e2fbb25cf36dd17c3ff796c21d6f98188851fe27/pocs/2026/CVE-2026-59205.md",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2026-59205.json",
-    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/6dd9892dd68397ee98232ad0e1fed55a1599cf70/reports/2026-07-14/TIER_2_CVE-2026-59205.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/bc2cc78ad3579ffac9021cace6d52d6b922abd18/CVE-2026/CVE-2026-592xx/CVE-2026-59205.json",
-    "https://github.com/canonical/ubuntu-security-notices/blob/ab103c90c9554428eb622a04965c1c7518c48505/osv/cve/2026/UBUNTU-CVE-2026-59205.json",
-    "https://github.com/Tabll/gemnasium-db/blob/8fd2ccd9bd5df072c2b7289fae39225709d0f7f9/pypi/Pillow/CVE-2026-59205.yml",
+    "https://github.com/CVEProject/cvelistV5/blob/73e213348ddf142cab7e77d05861fa314ba8e1d0/cves/2026/59xxx/CVE-2026-59205.json",
+    "https://github.com/cisagov/vulnrichment/blob/2e0e3782ab192a0dba6edbe5e9deeb3c79e8414c/2026/59xxx/CVE-2026-59205.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cec9fb1846e25b24020f297f65ec2360af0f4267/SSVC/data/2026/CVE-2026-59205.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/cec9fb1846e25b24020f297f65ec2360af0f4267/CVE/data/2026/CVE-2026-59205.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/35f8822ad3b850cb8a922d9066b0d79c83dab6d5/pocs/2026/CVE-2026-59205.md",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-59205.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/77c1c4e2b164ba912ebd6005200ea105caf493c9/reports/2026-07-14/TIER_2_CVE-2026-59205.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/d6e5bf87d27954c5a3cd48e565b212fb97932a81/CVE-2026/CVE-2026-592xx/CVE-2026-59205.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/afc0df6edf4ea320b0cfac74a53aafd9b4a9697f/osv/cve/2026/UBUNTU-CVE-2026-59205.json",
+    "https://github.com/datahub-project/datahub/blob/53064c2d9b41f77a141736ad6eb037966174329b/docs/managed-datahub/release-notes/v_2_1_0.md",
 ]
