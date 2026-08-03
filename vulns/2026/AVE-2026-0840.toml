@@ -1,0 +1,41 @@
+[basic]
+description = "js-yaml 5.x 系列引入了 YAML11_SCHEMA 支持，新增了 `!!omap` 有序映射标签。`src/tag/sequence/omap.ts` 文件中的 `omapTag.addItem()` 函数在每次插入时执行线性 O(n) 扫描来检测重复键，导致文档解析时间复杂度达到 O(n²)。攻击者可构造包含大量有序映射项的恶意 YAML 文档，触发目标应用中 `yaml.load()` 的 CPU 占耗，导致系统严重性能下降甚至事件循环长时间卡死。该漏洞影响所有使用 `yaml.load(input, { schema: yaml.YAML11_SCHEMA })` 解析未信任 YAML 输入的应用，尤其在多任务并行处理时更为明显。研究人员实测在 v5.2.0 版本中，输入 50,000 条记录的恶意文档会导致 Node.js 进程卡死超过 10 秒，严重威胁服务器稳定性和可用性。该漏洞最早出现在 2026-06-20 发布的 5.x 系列中，4.x 系列则未受影响。官方安全补丁已发布于 5.2.1 版本，通过使用哈希集合实现 O(1) 时间复杂度的重复键检测，有效解决了这一二次复杂度拒绝服务问题。"
+published = "2026-07-08T16:16:33.580"
+remediation = "立即升级 js-yaml 到 5.2.1 或更高版本（npm install js-yaml@5.2.1）。若暂时无法升级，请避免使用 yaml.YAML11_SCHEMA 解析不可信 YAML 输入，改用 yaml.JSON_SCHEMA 或 yaml.FAILSAFE_SCHEMA 作为临时缓解措施。修复版本在 omapTag.addItem 中将 O(n) 线性扫描改为 O(1) Set 查找，彻底消除二次复杂度 DoS 风险。"
+score = 5.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "nodeca js-yaml 二次复杂度拒绝服务漏洞"
+updated = "2026-07-10T19:20:49.153"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59870",
+    "GHSA-724g-mxrg-4qvm",
+]
+ave_id = "AVE-2026-0840"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/nodeca/js-yaml/commit/39f3211a2f01b3c6982710cf21434ab7060acefe",
+    "https://github.com/nodeca/js-yaml/releases/tag/5.2.1",
+    "https://github.com/nodeca/js-yaml/security/advisories/GHSA-724g-mxrg-4qvm",
+    "https://github.com/CVEProject/cvelistV5/blob/a14f4e66db68a75a9270d6c9081e9ffb7f931cd8/cves/2026/59xxx/CVE-2026-59870.json",
+    "https://github.com/cisagov/vulnrichment/blob/b8f3faf694c27edd208769ff59c4ed562dd91eaa/2026/59xxx/CVE-2026-59870.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3eab0e512529a79daadefaadf0f05372813e7876/SSVC/data/2026/CVE-2026-59870.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3eab0e512529a79daadefaadf0f05372813e7876/CVE/data/2026/CVE-2026-59870.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/35f8822ad3b850cb8a922d9066b0d79c83dab6d5/pocs/2026/CVE-2026-59870.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/ae03a9d5bcdec0092d3f179316a97b5f3dabc853/vex/cve/2026/CVE-2026-59870.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/ae03a9d5bcdec0092d3f179316a97b5f3dabc853/osv/cve/2026/UBUNTU-CVE-2026-59870.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-59870.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/npm/js-yaml/CVE-2026-59870.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e9b51a58e4ac0e6b00dc38147f459707e98ae056/CVE-2026/CVE-2026-598xx/CVE-2026-59870.json",
+]
