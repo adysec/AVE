@@ -1,0 +1,149 @@
+[basic]
+description = "Apache HTTP Server 2.0 至 2.0.44 版本存在内存泄漏漏洞。远程攻击者可通过向目标服务器发送大量换行符（linefeed）触发该漏洞，Apache 会为每个换行符分配 80 字节内存而未能正确释放，导致服务器内存被持续消耗，最终造成拒绝服务。攻击无需身份认证，通过网络即可发起，影响范围广泛。"
+published = "2003-04-11T04:00:00.000"
+remediation = '''
+[info]
+id = "POC-AVE-2003-00001"
+name = "CVE-2003-0132 PoC"
+author = "AVE"
+severity = "medium"
+tags = ["cve-2003-0132", "apache", "dos", "memory-leak"]
+description = "Apache HTTP Server 2.0.44及之前版本存在内存泄漏漏洞，通过发送大量换行符触发，每个换行符分配80字节内存"
+vuln_id = ["CVE-2003-0132", "AVE-2003-00001"]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+protocol = "http"
+method = "GET"
+path = "/{{BaseURL}}/"
+
+[[poc.requests.matchers]]
+type = "status"
+status = [200]
+expect = true
+```
+
+Hmm, but the PoC needs to actually trigger the vulnerability. The vulnerability is triggered by sending many linefeed characters. Let me think about how to do this in the PoC format.
+
+Actually, for a memory leak DoS, the PoC would need to send many linefeed characters. In the HTTP protocol, this could be done by sending a request with many linefeed characters in the body or headers.
+
+Let me create a more appropriate PoC. Since this is a memory leak triggered by linefeed characters, the PoC should send a large number of linefeed characters.
+
+For the PoC, I'll use a raw TCP approach since we need to send raw linefeed characters:
+
+```toml
+[[poc.requests]]
+protocol = "tcp"
+path = "{{Hostname}}:{{Port}}"
+
+[poc.requests.raw]
+type = "tcp"
+content = "GET / HTTP/1.1\r\nHost: {{Hostname}}\r\nConnection: close\r\nContent-Length: 10000\r\n\r\n" + many linefeeds
+```
+
+Actually, let me reconsider. The vulnerability is about linefeed characters (0x0A). In HTTP, linefeed characters are used as line terminators. The vulnerability is that Apache allocates 80 bytes for each linefeed character it receives. So sending many linefeed characters would cause memory exhaustion.
+
+A simple PoC would be to send a request with many linefeed characters. Let me use the TCP protocol for this since we need to send raw bytes.
+
+Actually, I think the simplest approach is to use the HTTP protocol with a body containing many linefeed characters, or use TCP raw.
+
+Let me go with TCP raw since it gives us more control over the exact bytes sent.
+
+For the EXP, since this is a DoS vulnerability (memory leak), there's no real "exploit" beyond the DoS itself. The PoC is essentially the same as the EXP for a DoS. I'll output NO_EXP since there's no code execution or data exfiltration possible.
+
+Wait, actually the skill says "PoC = 安全无损验证；EXP = 完整利用，仅当网上有明确利用方法时生成". For a memory leak DoS, the PoC is the same as the "exploit" since the only impact is DoS. Let me just provide the PoC and NO_EXP.
+
+Let me now write the complete output.
+
+For the remediation field, I need to write in Chinese, ≥20 characters. The fix was in Apache 2.0.45. Since Apache 2.0 is EOL, the recommendation should be to upgrade to a supported version.
+
+Let me construct the full TOML now.
+
+Actually, I realize I should also check if there's an existing AVE ID. Let me look at the meta.db or existing files. But I don't have access to that. I'll assume this is a new entry.
+
+Let me also think about the AVE ID format. The skill says `AVE-YYYY-NNNNN`. For 2003, I'll use AVE-2003-00001.
+
+Now let me write the complete TOML output.
+
+For the PoC, I need to think about what exactly triggers the vulnerability. The vulnerability is triggered by sending large chunks of linefeed characters. In HTTP, linefeed characters (0x0A, \n) are used as line terminators. The issue is that Apache allocates 80 bytes for each linefeed character it receives.
+
+A PoC would send many linefeed characters to the Apache server. This could be done by:
+1. Sending a request with many linefeed characters in the body
+2. Sending many linefeed characters as raw data
+
+Let me create a TCP-based PoC that sends many linefeed characters.
+
+Actually, I think the simplest and most accurate PoC would be to use the HTTP protocol and send a request with many linefeed characters. But the HTTP protocol in the PoC schema doesn't easily support sending raw linefeed characters in the body.
+
+Let me use the TCP protocol instead, which allows raw byte sending.
+
+For the PoC:
+```toml
+[[poc.requests]]
+protocol = "tcp"
+path = "{{Hostname}}:{{Port}}"
+
+[poc.requests.raw]
+type = "tcp"
+content = "GET / HTTP/1.1\r\nHost: {{Hostname}}\r\n\r\nAAAAAAAAAA..."  # many linefeeds'''
+score = 5
+severity = "MEDIUM"
+sources = ["redhat"]
+title = "Apache HTTP Server 2.0.44 及之前版本换行符内存泄漏拒绝服务漏洞"
+updated = "2026-06-16T22:01:36.517"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2003-0132"]
+ave_id = "AVE-2003-0041"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://lists.apple.com/mhonarc/security-announce/msg00028.html",
+    "http://marc.info/?l=bugtraq&m=104931360606484&w=2",
+    "http://marc.info/?l=bugtraq&m=104982175321731&w=2",
+    "http://marc.info/?l=bugtraq&m=104994239010517&w=2",
+    "http://marc.info/?l=bugtraq&m=104994309010974&w=2",
+    "http://marc.info/?l=bugtraq&m=105001663120995&w=2",
+    "http://marc.info/?l=bugtraq&m=105013378320711&w=2",
+    "http://secunia.com/advisories/34920",
+    "http://secunia.com/advisories/8499",
+    "http://support.ca.com/irj/portal/anonymous/phpsupcontent?contentID=205147",
+    "http://www.idefense.com/advisory/04.08.03.txt",
+    "http://www.kb.cert.org/vuls/id/206537",
+    "http://www.redhat.com/support/errata/RHSA-2003-139.html",
+    "http://www.vupen.com/english/advisories/2009/1233",
+    "https://lists.apache.org/thread.html/54a42d4b01968df1117cea77fc53d6beb931c0e05936ad02af93e9ac%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/5df9bfb86a3b054bb985a45ff9250b0332c9ecc181eec232489e7f79%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r0276683d8e1e07153fc8642618830ac0ade85b9ae0dc7b07f63bb8fc%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r2cb985de917e7da0848c440535f65a247754db8b2154a10089e4247b%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r5001ecf3d6b2bdd0b732e527654248abb264f08390045d30709a92f6%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r7035b7c9091c4b665a3b7205364775410646f12125d48e74e395f2ce%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r8828e649175df56f1f9e3919938ac7826128525426e2748f0ab62feb%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r9e8622254184645bc963a1d47c5d47f6d5a36d6f080d8d2c43b2b142%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/r9f93cf6dde308d42a9c807784e8102600d0397f5f834890708bf6920%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/rd00b45b93fda4a5bd013b28587207d0e00f99f6e3308dbb6025f3b01%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/re028d61fe612b0908595d658b9b39e74bca56f2a1ed3c5f06b5ab571%40%3Ccvs.httpd.apache.org%3E",
+    "https://lists.apache.org/thread.html/rf6449464fd8b7437704c55f88361b66f12d5b5f90bcce66af4be4ba9%40%3Ccvs.httpd.apache.org%3E",
+    "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A156",
+    "https://www.exploit-db.com/exploits/9",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2003/CVE-2003-0132.md",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2003/CVE-2003-0132.md",
+    "https://github.com/CVEProject/cvelistV5/blob/8491df4167cab37455be87043bbd4187ade74c40/cves/2003/0xxx/CVE-2003-0132.json",
+    "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2003/CVE-2003-0132.md",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2003/CVE-2003-0132",
+    "https://github.com/sullo/nikto/blob/d5067406bc0902f8174cb5f8d595f637951974ce/program/databases/db_server_msgs",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2003/CVE-2003-0132.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/16f8cf2a3c129bb57f3727599f3730e6001c1186/CVE/data/2003/CVE-2003-0132.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/db09292fb11e6e85f066b9d4f61163327f785736/CVEs/2003/CVE-2003-0132.md",
+    "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2003/CVE-2003-0132.md",
+]
