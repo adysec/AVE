@@ -1,0 +1,40 @@
+[basic]
+description = "WPGraphQL 插件中 `sendPasswordResetEmail` 变更的返回类型存在信息泄露漏洞。该插件在设计上通过始终返回 `success: true` 来防止用户枚举，但已废弃的 `user` 字段仍注册在 `SendPasswordResetEmailPayload` 输出类型上。未经身份认证的攻击者可向目标 WordPress 站点发送包含目标用户名或邮箱的 GraphQL 查询，若该用户为作者类用户则返回完整的 User 对象（含 databaseId、name、slug 等公开字段），否则返回 null，从而绕过反枚举机制实现用户身份枚举与公开资料窃取。该漏洞影响 WPGraphQL 2.0.0 至 2.15.1 版本，CVSS 评分 6.9，危害等级中危。建议升级至 2.15.1 或移除废弃的 user 字段。"
+published = "2026-07-31T23:17:24.973"
+remediation = "立即将 WPGraphQL 插件升级至 2.15.1 或更高版本，该版本已移除存在信息泄露的已废弃 user 字段。如无法立即升级，可临时在 WPGraphQL 注册的 GraphQL 端点前添加 WAF 规则，拦截对 sendPasswordResetEmail mutation 中 user 字段的查询，或通过 WordPress 插件代码在 Deprecated.php 中将 user 字段的 resolve 函数改为始终返回 null。"
+score = 6.9
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "WPGraphQL 废弃 user 字段导致用户枚举与信息泄露漏洞"
+updated = "2026-07-31T23:17:24.973"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54768",
+    "GHSA-jhh7-832h-f8hv",
+]
+ave_id = "AVE-2026-0801"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/wp-graphql/wp-graphql/releases/tag/wp-graphql/v2.15.1",
+    "https://github.com/wp-graphql/wp-graphql/security/advisories/GHSA-jhh7-832h-f8hv",
+    "https://github.com/CVEProject/cvelistV5/blob/0661b1b09ba7a2e855981f4a1781f3b8de7cf562/cves/2026/54xxx/CVE-2026-54768.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/35f8822ad3b850cb8a922d9066b0d79c83dab6d5/pocs/2026/CVE-2026-54768.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8a257d250bdb59b542a188d62ddae45e6eb5d3f2/CVE/data/2026/CVE-2026-54768.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-54768.json",
+    "https://github.com/Tabll/gemnasium-db/blob/2226f395f690bd125e18792c9fd587b54eb15804/packagist/wp-graphql/wp-graphql/CVE-2026-54768.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3a7c0c4aa01967d2633d808f80f3fcd65491b947/CVE-2026/CVE-2026-547xx/CVE-2026-54768.json",
+    "https://github.com/TMA84/cvealert/blob/e9f55b097256f05949a0f1dbecc8a1a5fe970fe7/content/posts/cve-2026-54768.md",
+    "https://github.com/opencve/opencve-kb/blob/a0a14ea0f3a80067c6bf2249ad236215b48e4418/2026/CVE-2026-54768.json",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/ef57640f19da1737a8612e28839821eee8a753b5/api/2026/CVE-2026-54768.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/2ea9851780633b2caab16fe048a14b38ca9a0b56/content/CVE-2026-54768.md",
+]
