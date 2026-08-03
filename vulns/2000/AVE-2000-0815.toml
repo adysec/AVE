@@ -1,11 +1,11 @@
 [basic]
-description = "IBM AIX 4.3.x 版本中的 piobe 命令存在缓冲区溢出漏洞，本地攻击者可通过设置过长的环境变量触发缓冲区溢出，从而提升本地权限获取系统完全控制权限。该漏洞影响 IBM AIX 4.3.x 版本，攻击者需具备本地系统访问权限，通过构造超长环境变量传递给 piobe 命令触发缓冲区溢出，进而执行任意代码实现权限提升至 root 权限。CVSS 评分 7.2（AV:L/AC:L/Au:N/C:C/I:C/A:C），属于本地权限提升漏洞，影响系统机密性、完整性和可用性均为完全影响。"
+description = "IBM AIX 4.3.x 系统中的 piobe 命令（位于 /usr/lib/lpd/piobe）存在缓冲区溢出漏洞。由于该命令在处理环境变量时未对输入长度进行有效边界检查，本地攻击者可通过设置超长的环境变量触发缓冲区溢出，进而覆盖栈内存并劫持程序执行流程。该漏洞允许本地未授权用户提升自身权限至超级用户级别，从而完全控制受影响的系统。该漏洞影响 IBM AIX 4.3.x 版本，攻击条件要求攻击者已具备对系统的本地访问权限，利用方式为在调用 piobe 命令时通过长环境变量触发溢出，CVSS 评分为 7.2，危害等级高。IBM 已在后续安全更新中修复此漏洞，建议受影响用户升级至更高版本或应用相应补丁。"
 published = "2001-01-09T05:00:00.000"
-remediation = "建议立即应用 IBM AIX 4.3.x 的 APAR IY12638 补丁（PTF U462851 或后续超集 PTF），通过安装对应的 AIX 修补包修复 piobe 缓冲区溢出漏洞。若无法立即打补丁，建议临时限制普通用户对 /usr/lib/lpd/piobe 的执行权限（chmod 750 /usr/lib/lpd/piobe 并限制组权限），同时限制本地用户设置过长环境变量，作为临时缓解措施。建议尽快升级至受支持的 AIX 版本（如 AIX 7.2 TL5 或更高版本）以获得长期安全支持。"
+remediation = "立即安装 IBM 针对 CVE-2000-1124 发布的 APAR 修复包 IY12638，可通过 IBM Fix Central 下载对应 AIX 4.3.x 版本的补丁并执行 installp 命令安装。安装完成后使用 oslevel -s 或 lslpp -l bos.rte.printers 验证补丁版本已更新，然后执行 stopsrc -g spooler 和 startsrc -g spooler 重启打印子系统使修复生效。作为临时缓解措施，可修改 /etc/security/login.cfg 限制非特权用户对 piobe 命令的执行权限，或通过 chmod 移除 /usr/lib/lpd/piobe 的 setuid 位以阻断提权路径。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "IBM AIX 4.3.x piobe 缓冲区溢出漏洞"
+sources = ["epss"]
+title = "IBM AIX piobe 本地缓冲区溢出漏洞"
 updated = "2026-06-16T21:53:11.990"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1124"]
 ave_id = "AVE-2000-0815"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/2037",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5616",
     "https://www.exploit-db.com/exploits/20455",
-    "https://github.com/CVEProject/cvelistV5/blob/f38c5fdc2d5ae016cb5ff615cdaf3941dc98e9f4/cves/2000/1xxx/CVE-2000-1124.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/205083faf6b3f186002bb501f7178bdd84048b96/CVE/data/2000/CVE-2000-1124.json",
+    "https://github.com/CVEProject/cvelistV5/blob/27584df20575115093a915d82c76b5107dd9d51e/cves/2000/1xxx/CVE-2000-1124.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c31c0a9b9af147bd58078ebf7769418f19d3f2e1/CVE/data/2000/CVE-2000-1124.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1124",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1124.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1124.json",
-    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2000/CVE-2000-1124.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/094d6382e9f2b76e665247588266e58be890fb67/2000/1xxx/CVE-2000-1124.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b4e8e071ec72e458e6fba462e799cbd376c49627/CVE-2000/CVE-2000-11xx/CVE-2000-1124.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1124.json",
+    "https://github.com/opencve/opencve-kb/blob/cb4fa88be1e2cec066471c94ef8377b081c79cb6/2000/CVE-2000-1124.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1d7706ed603ab73481cbc20e5bea092e02e7c9be/2000/1xxx/CVE-2000-1124.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b6c80ad7b47e52f64ae2ee2b20e56d7eaaaa57fe/CVE-2000/CVE-2000-11xx/CVE-2000-1124.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1124.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1124.json",
 ]
