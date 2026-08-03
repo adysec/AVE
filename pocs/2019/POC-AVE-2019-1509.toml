@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "向 /service/extdirect 接口发送特制 POST 请求，利用 OrientDB 自定义函数功能注入恶意 JEXL 表达式执行任意系统命令，通过响应中是否包含命令执行结果判断漏洞是否存在"
+id = "POC-AVE-2019-1509"
+name = "Sonatype Nexus Repository Manager 3 远程命令执行漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2019-7238",
+    "nexus",
+    "rce",
+]
+vuln_id = [
+    "CVE-2019-7238",
+    "AVE-2019-1509",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/service/extdirect"
+protocol = "http"
+
+[poc.requests.body]
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+X-Requested-With = "XMLHttpRequest"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["result"]
