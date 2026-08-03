@@ -1,0 +1,40 @@
+[basic]
+description = "FileBrowser Quantum 的 `subtitlesHandler` 接口（`GET /api/media/subtitles`）存在两个独立的路径遍历向量。主要向量为 `path` 参数：未调用 `SanitizeUserPath()` 直接传入 `idx.GetRealPath()`，攻击者可通过 `path=../../etc/passwd` 逃逸存储根目录，无需锚点文件即可将 `parentDir` 设为宿主任意目录。次要向量为 `name` 参数：直接与 `parentDir` 经 `filepath.Join()` 拼接且未去除目录分量，配合有效锚点文件可实现相对路径遍历。任意已认证用户（无需特殊权限）均可利用任一向量读取服务器进程可读的任意文本文件（UTF-8 编码、<50MB），包括 `/etc/passwd`、SSH 私钥、数据库凭据、JWT 签名密钥等敏感信息。受影响版本为 1.4.3-beta 之前，CVSS 3.1 评分 7.7（HIGH），已在 1.4.3-beta 版本修复。"
+published = "2026-07-20T15:16:43.933"
+remediation = "建议立即升级 FileBrowser Quantum 到 1.4.3-beta 或更高版本。若无法立即升级，可在反向代理层面拦截 `/api/media/subtitles` 端点中包含 `..` 路径遍历字符的 `path` 和 `name` 参数请求，或临时禁用字幕功能端点作为缓解措施。部署时建议以最小权限运行容器，避免以 root 身份启动以降低凭证泄露风险。"
+score = 7.7
+severity = "HIGH"
+sources = ["ghsa"]
+title = "FileBrowser Quantum 路径遍历漏洞"
+updated = "2026-07-23T17:58:34.990"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54910",
+    "GHSA-vvp7-h4fj-m28w",
+]
+ave_id = "AVE-2026-0806"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/gtsteffaniak/filebrowser/commit/f3f4bbe80cb569d664174aea874d7bfa008c3b5a",
+    "https://github.com/gtsteffaniak/filebrowser/security/advisories/GHSA-vvp7-h4fj-m28w",
+    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2026/CVE-2026-54910.md",
+    "https://github.com/CVEProject/cvelistV5/blob/0235c22e9b6c7ddb8ada469b545320bce3ffcbfa/cves/2026/54xxx/CVE-2026-54910.json",
+    "https://github.com/cisagov/vulnrichment/blob/0812ebe932b97710173c59d3d74959fb420956eb/2026/54xxx/CVE-2026-54910.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8a257d250bdb59b542a188d62ddae45e6eb5d3f2/SSVC/data/2026/CVE-2026-54910.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/35f8822ad3b850cb8a922d9066b0d79c83dab6d5/pocs/2026/CVE-2026-54910.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8a257d250bdb59b542a188d62ddae45e6eb5d3f2/CVE/data/2026/CVE-2026-54910.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/0c8dd71e3ecd7211889d43b088995c7a1a3f2c10/data/2026/CVE-2026-54910.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-54910.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b5070d3c2d6dc2fda079c163276abcda1c82b124/CVE-2026/CVE-2026-549xx/CVE-2026-54910.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/27a74eedb9de5512b284a88a513f48696206fede/data/anchore/2026/CVE-2026-54910.json",
+]
