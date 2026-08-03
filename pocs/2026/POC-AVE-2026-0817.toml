@@ -1,0 +1,35 @@
+[info]
+author = "AVE"
+description = "通过向 /api/v1/auths/signin 发送登录请求并测量响应时间，检测 Open WebUI 是否存在基于 bcrypt 比对时间的账户枚举漏洞。已注册邮箱的请求因执行 bcrypt 哈希比对而响应较慢（约180ms），未注册邮箱则快速返回（约5ms）。"
+id = "POC-AVE-2026-0817"
+name = "Open WebUI 登录接口响应时间侧信道账户枚举漏洞 PoC"
+severity = "medium"
+tags = ["ave-2026-0817"]
+vuln_id = [
+    "CVE-2026-59218",
+    "AVE-2026-0817",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/auths/signin"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"email":"nonexistent@test.com","password":"wrong"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "error",
+    "detail",
+]
