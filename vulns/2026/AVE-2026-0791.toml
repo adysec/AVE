@@ -1,0 +1,41 @@
+[basic]
+description = "OnionShare 是一款基于 Tor 网络的安全匿名文件共享工具，其 2.6.3 及之前版本存在授权验证绕过漏洞。当接收方将服务配置为仅文本消息模式（启用 --disable-files 参数）时，远程攻击者仍可通过构造包含 file[] 字段的 multipart 表单请求绕过限制，将任意文件写入服务端接收目录。漏洞根源在于 ReceiveModeRequest._get_file_stream() 方法在底层流处理阶段未检查 disable_files 设置，导致文件在路由层跳过处理前已被写入磁盘。攻击者需知晓 OnionShare 服务地址，利用难度较低，可导致非预期文件写入和磁盘空间消耗，影响服务可用性。该漏洞 CVSS 评分 5.4，已在 2.6.4 版本中修复。"
+published = "2026-07-31T17:16:33.870"
+remediation = "立即将 OnionShare 升级至 2.6.4 或更高版本（https://github.com/onionshare/onionshare/releases/tag/v2.6.4），该版本在 ReceiveModeRequest._get_file_stream() 中增加了 disable_files 前置检查，阻止文件流写入磁盘。如无法升级，可在反向代理层（如 Nginx）添加规则拦截含 file[] 字段的 multipart POST 请求到 /upload 和 /upload-ajax 路径，作为临时缓解措施。"
+score = 5.4
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "OnionShare OnionShare 文件上传限制绕过漏洞"
+updated = "2026-08-01T00:17:16.933"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54707",
+    "GHSA-v833-3823-cmhp",
+]
+ave_id = "AVE-2026-0791"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/onionshare/onionshare/commit/a090e97193efc91fbeac9dace7793ea568b83cf5",
+    "https://github.com/onionshare/onionshare/releases/tag/v2.6.4",
+    "https://github.com/onionshare/onionshare/security/advisories/GHSA-v833-3823-cmhp",
+    "https://github.com/CVEProject/cvelistV5/blob/2e429c9a0087eb0ee678d77c344076eb39564d19/cves/2026/54xxx/CVE-2026-54707.json",
+    "https://github.com/cisagov/vulnrichment/blob/de8cd4cf30bb0d13db0dd8e177333d27a938a598/2026/54xxx/CVE-2026-54707.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37abbcb2a8225ed14d2b9dfffb1ad41b15cc2cc8/CVE/data/2026/CVE-2026-54707.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37abbcb2a8225ed14d2b9dfffb1ad41b15cc2cc8/SSVC/data/2026/CVE-2026-54707.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/e9e7730d92360d278d7b57d736f4a4606c1ac1a4/vex/cve/2026/CVE-2026-54707.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/e9e7730d92360d278d7b57d736f4a4606c1ac1a4/osv/cve/2026/UBUNTU-CVE-2026-54707.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-54707.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3a7c0c4aa01967d2633d808f80f3fcd65491b947/CVE-2026/CVE-2026-547xx/CVE-2026-54707.json",
+    "https://github.com/Tabll/gemnasium-db/blob/2226f395f690bd125e18792c9fd587b54eb15804/pypi/onionshare-cli/CVE-2026-54707.yml",
+    "https://github.com/neuvector/vul-source/blob/2880bce38b1c3fec315752297be30e3d60dabff9/ubuntu-cve-tracker/active/CVE-2026-54707",
+]
