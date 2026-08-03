@@ -1,11 +1,11 @@
 [basic]
-description = "GNOME esound（Enlightened Sound Daemon）0.2.19 及更早版本在创建 Unix 域套接字时存在竞争条件漏洞（CWE-362）。该漏洞源于程序在建立套接字过程中未正确处理符号链接，本地攻击者可利用该竞争窗口，通过创建指向目标文件或目录的符号链接进行符号链接攻击（symlink attack），从而在套接字创建时覆盖或修改任意文件和目录的权限。攻击成功后，本地用户可获得额外特权，实现权限提升。该漏洞仅影响本地环境（AV:L），攻击复杂度较高（AC:H），无需身份认证（Au:N），但一旦利用成功，将对机密性、完整性和可用性造成完全影响（C:C/I:C/A:C）。受影响系统包括使用 esound 0.2.19 及更早版本的 Linux/Unix 平台，CVSS 评分为 6.2。攻击者需具备本地访问权限，通过构造恶意符号链接并触发 esound 创建套接字的操作来触发漏洞。建议升级至修复版本或禁用不必要的 esound 服务以消除风险。"
+description = "GNOME esound 0.2.19 及更早版本在创建 Unix 域套接字时存在竞争条件漏洞（CWE-362）。本地攻击者可通过符号链接攻击，在套接字创建与权限设置的时间窗口内替换目标文件，从而修改任意文件或目录的权限，实现本地权限提升。攻击条件为拥有本地系统访问权限，无需认证，但利用复杂度较高。该漏洞影响 GNOME esound 0.2.19 及之前所有版本，CVSS 评分 6.2，危害等级中危。"
 published = "2000-11-14T05:00:00.000"
-remediation = "升级 esound 至 0.2.20 或更高版本，该版本已将 Unix domain socket 目录从全局可写的 `/tmp/.esd` 移至用户主目录 `~/.esd`，并移除了 socket 及目录的 world-write 权限。若无法升级，可手动应用官方补丁：修改 `esd.h` 中 `ESD_UNIX_SOCKET_DIR` 宏为动态获取用户 home 目录的函数，修改 `esd.c` 中 `mkdir` 和 `chmod` 调用移除 `S_IWOTH`（other write）权限位，同时删除 `/tmp/.esd` 目录并设置 sticky bit（`chmod 1755 /tmp/.esd`）作为临时缓解措施，防止其他用户在该目录下创建符号链接。"
+remediation = "升级 GNOME esound 至 0.2.20 或更高版本，该版本修复了 Unix 域套接字创建中的竞争条件。对于已停止维护的旧系统，建议停止使用 esound 服务，改用 PulseAudio 或 PipeWire 替代；如必须保留，确保 /tmp/.esd 目录仅允许受信任用户访问，并限制本地非授权用户的登录权限。"
 score = 6.2
 severity = "MEDIUM"
-sources = ["cve"]
-title = "GNOME esound Unix Domain Socket 竞争条件权限提升漏洞"
+sources = ["avd"]
+title = "GNOME esound Unix Domain 套接字竞争条件漏洞"
 updated = "2026-06-16T21:52:37.687"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0864"]
 ave_id = "AVE-2000-0637"
 
 [meta]
-collected_at = "2026-07-24T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -32,14 +32,14 @@ urls = [
     "http://www.securityfocus.com/bid/1659",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5213",
     "https://www.exploit-db.com/exploits/20212",
-    "https://github.com/CVEProject/cvelistV5/blob/67d48875bcd35ab339290b9a99c435b09bd5c40b/cves/2000/0xxx/CVE-2000-0864.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0661b1b09ba7a2e855981f4a1781f3b8de7cf562/cves/2000/0xxx/CVE-2000-0864.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0864",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/f7d503345a02e01eaaf915c0e3939c46f947a88c/2000/0xxx/CVE-2000-0864.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3e56369e6f703dfde20132e3205d609e016e88bd/CVE/data/2000/CVE-2000-0864.json",
-    "https://github.com/github/advisory-database/blob/d1d7ac405f2460acf0b0e8ed2a5cf8c748023246/advisories/unreviewed/2022/04/GHSA-6743-8vvq-693c/GHSA-6743-8vvq-693c.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/4731f60845c8f35e2bdb03d333a9e9d84c7b1c27/content/CVE-2000-0864.md",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/debiancn/debian.org/blob/6abc98daa6356b20e410013a6920b3764af682d4/english/security/2000/20001008.data",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8a257d250bdb59b542a188d62ddae45e6eb5d3f2/CVE/data/2000/CVE-2000-0864.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0864.json",
-    "https://github.com/blackhook/nessus-plugins/blob/64177d96abbb07c58cf7e131046b067ebc61fcb5/M/mandrake_MDKSA-2000-051.nasl",
+    "https://github.com/opencve/opencve-kb/blob/e395c3db94a950cbea9721adc43f1bb4a8ebb0e4/2000/CVE-2000-0864.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-0864.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c80cd921505a9f88e4aae41f1414ac3763e708ba/2000/0xxx/CVE-2000-0864.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3a7c0c4aa01967d2633d808f80f3fcd65491b947/CVE-2000/CVE-2000-08xx/CVE-2000-0864.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0864.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0864.json",
 ]
