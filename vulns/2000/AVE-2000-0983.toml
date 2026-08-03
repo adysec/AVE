@@ -1,11 +1,11 @@
 [basic]
-description = "SuSE Linux 6.4 默认 Apache 1.3.12 配置存在源代码泄露漏洞，默认配置将 /cgi-bin-sdb/ 目录映射为 CGI 脚本目录，远程未授权攻击者可通过将请求 URL 中的 /cgi-bin/ 替换为 /cgi-bin-sdb/ 直接读取 CGI 脚本源代码。该漏洞影响 SuSE Linux 6.4 默认安装的 Apache 1.3.12，CVSS 5.0（中危），攻击复杂度低、无需认证、远程可利用，攻击者可获取 CGI 脚本源码进而分析业务逻辑、发现硬编码凭证或其他漏洞。SUSE 已发布补丁修复该配置缺陷，建议升级 Apache 或修改 httpd.conf 禁用 cgi-bin-sdb 别名。"
+description = "SuSE Linux 6.4 系统自带的 Apache 1.3.12 存在 Web 服务器源码泄露漏洞。由于默认配置中 CGI 脚本目录 /cgi-bin/ 与实际可执行脚本目录 /cgi-bin-sdb/ 的映射关系处理不当，未经身份认证的远程攻击者仅通过对 URL 路径进行简单替换，将请求中的 /cgi-bin/ 改为 /cgi-bin-sdb/，即可绕过 Apache 对 CGI 脚本的限制，直接读取 CGI 脚本的源代码。该漏洞属于目录别名配置错误导致的敏感信息泄露，攻击者无需任何认证即可利用，可获取服务器上 CGI 脚本的逻辑与源码，为进一步分析并实施攻击提供便利。该漏洞影响 SuSE Linux 6.4 及使用该默认 Apache 1.3.12 配置的版本，建议升级或修正 Apache 的脚本目录映射配置，并对不可信的 CGI 脚本访问请求实施拦截以降低泄露风险。"
 published = "2000-11-14T05:00:00.000"
-remediation = "升级 Apache 至 1.3.13 或更高版本，或升级 SuSE Linux 至 6.4 以上版本；若暂无法升级，请编辑 httpd.conf 删除或注释掉 /cgi-bin-sdb/ 别名配置，并在 <Directory /cgi-bin> 中添加 Options -Indexes 禁止目录浏览，同时配置 AddHandler cgi-script .cgi .pl 确保 CGI 脚本被执行而非显示源码"
+remediation = "建议将 SuSE Linux 6.4 的 Apache 升级至 1.3.12 以上的修复版本（SuSE 官方已修复该默认配置缺陷），或安装 SuSE 发布的相应安全更新。若无法立即升级，可编辑 Apache 主配置文件 /etc/httpd/httpd.conf，删除或注释掉将 cgi 目录映射为源码下载的别名定义（尤其针对用于调试的 /cgi-bin-sdb/ 别名），并确保 /cgi-bin/ 对应的 ScriptAlias 配置启用 ExecCGI 且不允许以普通静态文件方式访问脚本源码，从配置层面阻断攻击者通过改写 URL 读取 CGI 脚本内容。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "SUSE Linux Apache 源代码泄露漏洞"
+sources = ["avd"]
+title = "SuSE Linux Apache 读取源代码漏洞"
 updated = "2026-06-16T21:52:38.250"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0868"]
 ave_id = "AVE-2000-0983"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.atstake.com/research/advisories/2000/a090700-2.txt",
     "http://www.securityfocus.com/bid/1658",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5197",
-    "https://github.com/CVEProject/cvelistV5/blob/f38c5fdc2d5ae016cb5ff615cdaf3941dc98e9f4/cves/2000/0xxx/CVE-2000-0868.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/205083faf6b3f186002bb501f7178bdd84048b96/CVE/data/2000/CVE-2000-0868.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0661b1b09ba7a2e855981f4a1781f3b8de7cf562/cves/2000/0xxx/CVE-2000-0868.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8a257d250bdb59b542a188d62ddae45e6eb5d3f2/CVE/data/2000/CVE-2000-0868.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0868",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0868.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0868.json",
-    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2000/CVE-2000-0868.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/094d6382e9f2b76e665247588266e58be890fb67/2000/0xxx/CVE-2000-0868.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b4e8e071ec72e458e6fba462e799cbd376c49627/CVE-2000/CVE-2000-08xx/CVE-2000-0868.json",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-0868.json",
+    "https://github.com/opencve/opencve-kb/blob/7753953b586683c230526e07a6b8b2948b832025/2000/CVE-2000-0868.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/918ac66f0b50ab0d2a013bdf692688d3c0abefbc/2000/0xxx/CVE-2000-0868.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b5070d3c2d6dc2fda079c163276abcda1c82b124/CVE-2000/CVE-2000-08xx/CVE-2000-0868.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0868.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0868.json",
 ]
