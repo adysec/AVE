@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "Phorum 3.3.2a 存在远程文件包含漏洞，攻击者可通过向 plugin.php、admin.php 或 del.php 发送特制 HTTP 请求，修改 PHORUM[settings_dir] 或 include_path 参数指向远程恶意 PHP 文件，从而在服务器上执行任意命令。该漏洞无需身份认证，危害严重。PoC 通过检测目标上是否存在漏洞文件来验证。"
+id = "POC-AVE-2002-0422"
+name = "Phorum 3.3.2a 远程命令执行漏洞 PoC"
+severity = "high"
+tags = ["cve-2002-0764"]
+vuln_id = [
+    "CVE-2002-0764",
+    "AVE-2002-0422",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/phorum/plugin/replace/plugin.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["plugin"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/phorum/admin/actions/del.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["del"]
