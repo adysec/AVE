@@ -1,11 +1,11 @@
 [basic]
-description = "Apache 1.3.12 在 SuSE Linux 6.4 默认配置中启用了 WebDAV 模块，远程未认证攻击者可通过发送 PROPFIND HTTP 请求方法遍历并列举服务器上任意目录内容，导致敏感目录结构信息泄露。该漏洞影响搭载 SuSE Linux 6.4 默认 Apache 1.3.12 的服务器，CVSS 评分 5.0（中等），攻击向量为网络、攻击复杂度低、无需认证、仅影响机密性。攻击者仅需发送恶意构造的 PROPFIND 请求即可枚举目录结构，获取敏感文件路径信息，进而辅助后续攻击。建议升级 Apache 版本或禁用不必要的 WebDAV 模块并限制 PROPFIND 方法访问。"
+description = "tags.<value>Apache 1.3.12 默认配置存在漏洞，在 SuSE Linux 6.4 发行版中，默认安装即启用了 WebDAV 模块。由于 WebDAV 功能未经过安全加固，远程攻击者可在未进行身份认证的情况下，通过向目标服务器发送特制的 PROPFIND HTTP 请求方法，触发对服务器任意目录的列举操作，从而获取服务器目录结构等敏感信息。该漏洞源于 WebDAV 对 HTTP 的 PROPFIND 方法处理不当，将路径解析能力暴露给任意请求端。攻击条件为服务器运行受影响版本且未禁用 WebDAV，远程网络访问即可触发，CVSS 评分为 5，危害等级中危。漏洞的利用方式较为简单，仅需构造包含目标目录路径的 PROPFIND 请求即可实现目录列举，由此造成信息泄露，可能为后续进一步攻击提供侦察依据。"
 published = "2000-11-14T05:00:00.000"
-remediation = "升级 Apache 至 1.3.14 或更高版本（已修复 WebDAV 默认开启问题），或在 httpd.conf 中注释掉 LoadModule dav_module 和 LoadModule dav_fs_module 以禁用 WebDAV 模块；若必须使用 WebDAV，请在 <Directory> 配置中添加 <Limit PROPFIND> Require all denied </Limit> 限制 PROPFIND 方法访问，并配置防火墙限制 WebDAV 端口仅允许受信 IP 访问"
+remediation = "建议立即禁用 Apache 的 WebDAV 模块：在配置文件中注释或删除 `LoadModule dav_module` 及 `LoadModule dav_fs_module` 相关行，禁止使用 DAV on 指令，防止通过 PROPFIND 请求泄露任意目录列表。同时将该版本升级至 Apache 1.3.14 及以上版本（默认不再启用 WebDAV），并以非 root 权限运行 httpd、加强目录访问控制，仅对必要目录开放 WebDAV 访问。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "Apache HTTP Server 1.3.12 WebDAV 目录遍历漏洞"
+sources = ["avd"]
+title = "Apache WebDAV 目录列举漏洞"
 updated = "2026-06-16T21:52:38.377"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0869"]
 ave_id = "AVE-2000-0639"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/1656",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5204",
     "https://www.exploit-db.com/exploits/20210",
-    "https://github.com/CVEProject/cvelistV5/blob/f38c5fdc2d5ae016cb5ff615cdaf3941dc98e9f4/cves/2000/0xxx/CVE-2000-0869.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0661b1b09ba7a2e855981f4a1781f3b8de7cf562/cves/2000/0xxx/CVE-2000-0869.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0869",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/205083faf6b3f186002bb501f7178bdd84048b96/CVE/data/2000/CVE-2000-0869.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8a257d250bdb59b542a188d62ddae45e6eb5d3f2/CVE/data/2000/CVE-2000-0869.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0869.json",
-    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2000/CVE-2000-0869.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/094d6382e9f2b76e665247588266e58be890fb67/2000/0xxx/CVE-2000-0869.md",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0869.json",
+    "https://github.com/opencve/opencve-kb/blob/7753953b586683c230526e07a6b8b2948b832025/2000/CVE-2000-0869.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/918ac66f0b50ab0d2a013bdf692688d3c0abefbc/2000/0xxx/CVE-2000-0869.md",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-0869.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0869.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b4e8e071ec72e458e6fba462e799cbd376c49627/CVE-2000/CVE-2000-08xx/CVE-2000-0869.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b5070d3c2d6dc2fda079c163276abcda1c82b124/CVE-2000/CVE-2000-08xx/CVE-2000-0869.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0869.json",
 ]
