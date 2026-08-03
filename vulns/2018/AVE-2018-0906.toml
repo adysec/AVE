@@ -1,11 +1,11 @@
 [basic]
-description = "Synacor Zimbra Collaboration Suite (ZCS) 8.7 Patch 1 之前版本及 8.8.x 至 8.8.7 之前版本中，ZmMailMsgView.getAttachmentLinkHtml 函数存在跨站脚本（XSS）漏洞。攻击者可通过发送包含恶意 Content-Location 头的邮件附件，诱导受害者查看邮件时触发 XSS，在受害者浏览器中执行任意 JavaScript 代码。该漏洞影响 Zimbra Collaboration Suite 8.7 及 8.8.x 受影响版本，CVSS 3.1 评分 6.1（中危），攻击向量为网络（AV:N），攻击复杂度低（AC:L），无需权限（PR:N），需用户交互（UI:R），作用域改变（S:C），机密性和完整性影响低（C:L/I:L），无可用性影响（A:N）。攻击者需诱导用户查看精心构造的恶意邮件附件，利用 Content-Location 头注入恶意脚本，窃取用户会话或执行其他恶意操作。Synacor 已在 8.7 Patch 1 和 8.8.7 版本中修复该漏洞，建议升级至修复版本。CVE-2018-6882 对应 CWE-79 跨站脚本漏洞类型。"
+description = "Synacor Zimbra Collaboration Suite（ZCS）的 ZmMailMsgView.getAttachmentLinkHtml 函数存在跨站脚本（XSS）漏洞。该漏洞源于程序在处理邮件附件的 Content-Location HTTP 头时未正确过滤特殊字符，导致攻击者可在邮件附件中注入恶意 HTML 或 JavaScript 代码。当用户查看包含恶意附件的邮件时，注入的脚本将在用户浏览器中执行，造成敏感信息泄露或会话劫持。攻击者只需向目标用户发送特制邮件即可触发，无需身份认证，但需要用户交互（查看邮件）。该漏洞影响 ZCS 8.7 Patch 1 之前版本及 8.8.x 系列中 8.8.7 之前版本，CVSS 评分 6.1，危害等级中危。"
 published = "2018-03-27T16:29:00.530"
-remediation = "立即将 Zimbra Collaboration Suite 升级至 8.7 Patch 1 或 8.8.7 及以上版本以修复 XSS 漏洞。如暂时无法升级，可在邮件网关层面过滤包含异常 Content-Location 头部的入站邮件作为临时缓解措施，并监控邮件附件中的链接行为。"
+remediation = "立即升级至 Zimbra Collaboration 8.7.11 Patch 1 或 8.8.7 及以上版本。升级前可在邮件网关层过滤包含异常 Content-Location 头的邮件附件作为临时缓解措施，同时建议限制用户预览 HTML 格式邮件以降低被攻击风险。"
 score = 6.1
 severity = "MEDIUM"
-sources = ["kev"]
-title = "Synacor Zimbra Collaboration Suite Email Attachment 跨站脚本攻击"
+sources = ["nuclei"]
+title = "Synacor Zimbra Collaboration 跨站脚本漏洞"
 updated = "2026-06-17T02:02:24.587"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2018-6882"]
 ave_id = "AVE-2018-0906"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -30,14 +30,14 @@ urls = [
     "https://www.securify.nl/advisory/SFY20180101/cross-site-scripting-vulnerability-in-zimbra-collaboration-suite-due-to-the-way-it-handles-attachment-links.html",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2018-6882",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2018/CVE-2018-6882.yaml",
-    "https://github.com/trickest/cve/blob/b3a270a001a31742516eaea5c494f365de9d3c80/2018/CVE-2018-6882.md",
-    "https://github.com/CVEProject/cvelistV5/blob/3ea93936438a97f1459a1dd6e83719dbfc798be2/cves/2018/6xxx/CVE-2018-6882.json",
-    "https://github.com/cisagov/vulnrichment/blob/c16d5de75824639ce100418081f1869662c7d360/2018/6xxx/CVE-2018-6882.json",
+    "https://github.com/trickest/cve/blob/7ade3449b58b8e2c679712dc3af64bbd8e638364/2018/CVE-2018-6882.md",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/e9f0fe7fa4f5c548bbd1a4d3b65d0f181021e664/http/cves/2018/CVE-2018-6882.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/b37ddadc32d456372cb07846a95b411ce7a32d9f/cves/2018/6xxx/CVE-2018-6882.json",
+    "https://github.com/cisagov/vulnrichment/blob/380f533205c12eeaa5a8c27e3ae790586a72a402/2018/6xxx/CVE-2018-6882.json",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2018/CVE-2018-6882.md",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2018/CVE-2018-6882.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/a237fbd576a7286b31323c79c10e5d8ddb9ad316/SSVC/data/2018/CVE-2018-6882.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37be0559d0574b93d433d6c01d9f77ea4c420519/SSVC/data/2018/CVE-2018-6882.json",
     "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2018/CVE-2018-6882.rules",
     "https://github.com/youki992/VscanPlus/blob/714a0e276a538a22c1a6215c71458a8b59a920ef/pocs_yml/nucleiFiles/http/cves/2018/CVE-2018-6882.yaml",
     "https://github.com/adampielak/nuclei-templates/blob/a2f3ff3fa5db5c7705ebd942909ec114df063700/nuclei-v3/C/CVE-2018-6882.yaml",
-    "https://github.com/lianqingsec/NucleiPocGather/blob/dcce204f62196117b9c95c52d8101ccf7a5d27bc/poc/cve/CVE-2018-6882.yaml",
 ]
