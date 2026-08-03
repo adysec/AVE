@@ -1,0 +1,41 @@
+[basic]
+description = 'MathLive 是一个用于数学公式显示和输入的 Web 组件库，其 0.110.0 之前版本存在跨站脚本（XSS）漏洞。漏洞源于 `src/core/box.ts` 中 `Box.toMarkup` 方法在拼接 `this.value` 到渲染的 span 元素时未进行 HTML 转义，同时 `src/formats/atom-to-math-ml.ts` 中的 MathML 序列化器也存在独立的转义缺失问题。`\text{}` 和 `\mbox{}` 命令接受任意字符并原样输出到 HTML 和 MathML 标记中，导致攻击者可通过构造包含恶意 HTML/JavaScript 的 LaTeX 表达式（如 `\text{<img src=x onerror=alert(1)>}`）实现任意 JavaScript 代码执行。该漏洞影响所有使用 MathLive 渲染不可信数学表达式的应用，攻击者只需诱导用户访问包含恶意 LaTeX 内容的页面即可触发，CVSS 评分 6.3，危害等级中危。官方已在 0.110.0 版本中修复此漏洞。'
+published = "2026-07-29T18:16:54.857"
+remediation = '''立即将 mathlive 升级至 0.110.0 或更高版本，该版本在 `Box.toMarkup` 和 MathML 序列化器中增加了对 `\text{}`、`\mbox{}` 等文本模式内容的 HTML 转义处理。如无法立即升级，可在应用层对所有用户输入的 LaTeX 表达式进行 HTML 实体编码（转义 `<`、`>`、`&`、`"` 字符）后再传入 `convertLatexToMarkup` 或 `<math-span>` 等 API，同时部署 Content-Security-Policy 头（`script-src 'self'`）作为纵深防御。'''
+score = 6.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "MathLive MathLive 跨站脚本漏洞"
+updated = "2026-07-30T20:07:01.330"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54705",
+    "GHSA-fm7p-gw32-828p",
+]
+ave_id = "AVE-2026-0789"
+
+[meta]
+collected_at = "2026-08-03T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/arnog/mathlive/commit/5fe1c46153883f9ec0249a5c8c34e64aaae9cfb8",
+    "https://github.com/arnog/mathlive/issues/3028",
+    "https://github.com/arnog/mathlive/security/advisories/GHSA-fm7p-gw32-828p",
+    "https://github.com/CVEProject/cvelistV5/blob/2e429c9a0087eb0ee678d77c344076eb39564d19/cves/2026/54xxx/CVE-2026-54705.json",
+    "https://github.com/cisagov/vulnrichment/blob/1fe56a0dafbbcb548bdcdd4fc990cca72ac81c28/2026/54xxx/CVE-2026-54705.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37abbcb2a8225ed14d2b9dfffb1ad41b15cc2cc8/CVE/data/2026/CVE-2026-54705.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/37abbcb2a8225ed14d2b9dfffb1ad41b15cc2cc8/SSVC/data/2026/CVE-2026-54705.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/32ea152709267741509ecbf76022327761e70b91/pocs/2026/CVE-2026-54705.md",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2026-54705.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3a7c0c4aa01967d2633d808f80f3fcd65491b947/CVE-2026/CVE-2026-547xx/CVE-2026-54705.json",
+    "https://github.com/Tabll/gemnasium-db/blob/2226f395f690bd125e18792c9fd587b54eb15804/npm/mathlive/CVE-2026-54705.yml",
+    "https://github.com/TMA84/cvealert/blob/d736f3597b7d4aff3836025a02aa5e53fcadb427/content/posts/cve-2026-54705.md",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/ef57640f19da1737a8612e28839821eee8a753b5/api/2026/CVE-2026-54705.json",
+]
