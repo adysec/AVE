@@ -1,11 +1,11 @@
 [basic]
-description = "Phorum 3.0.7 版本的管理后台 admin.php3 存在未授权密码修改漏洞。由于该页面未对请求来源进行身份验证，远程攻击者无需登录即可通过构造包含 step、option、confirm 及 newPssword 参数的 HTTP 请求，直接修改管理员密码。攻击者可利用此漏洞完全接管论坛管理权限，进而控制整个论坛系统。"
+description = "Phorum 3.0.7 版本的管理后台 admin.php3 存在未经验证的密码修改漏洞。远程攻击者无需任何身份认证，只需向目标服务器发送特制的 HTTP 请求，设置 step、option、confirm 及 newPassword 等参数，即可直接修改管理员密码，从而获得论坛管理权限。该漏洞攻击复杂度低，无需特殊权限，可导致论坛数据被篡改或恶意控制。受影响版本为 Phorum 3.0.7。"
 published = "2000-12-31T05:00:00.000"
-remediation = "立即升级至 Phorum 3.0.8 及以上版本（推荐迁移至 Phorum 5.x 系列），该版本在 admin.php3 中增加了 session 认证检查，确保修改密码操作必须携带有效管理员会话凭证。如无法升级，手动在 admin.php3 文件顶部添加管理员身份验证逻辑：检查 $_SESSION['admin'] 或 $_COOKIE 中的有效登录令牌，未通过验证则拒绝执行密码修改操作（header('Location: login.php') 并 exit）。"
+remediation = "立即升级 Phorum 至 3.0.8 或更高版本，该漏洞已在后续版本中修复。如无法升级，在 Web 服务器（Apache/Nginx）层面对 admin.php3 添加访问控制，例如通过 .htaccess 限制仅允许特定管理 IP 访问，或设置 HTTP Basic 认证。同时检查并删除 admin.php3 中未经验证的密码修改逻辑（step=4 分支），确保密码修改操作必须校验当前管理员密码。"
 score = 5
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "Phorum 3.0.7 管理员密码未授权修改漏洞"
+sources = ["cve"]
+title = "Phorum 3.0.7 未经验证的管理员密码更改漏洞"
 updated = "2026-06-16T21:53:25.480"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1228"]
 ave_id = "AVE-2000-0848"
 
 [meta]
-collected_at = "2026-07-21T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.digitalsec.net/stuff/z-mirrors/hispahack/mi020.htm",
     "http://www.securityfocus.com/bid/2271",
     "https://www.exploit-db.com/exploits/20586",
-    "https://github.com/CVEProject/cvelistV5/blob/3707ef32edab409db4eb6f5766397ecef95f7e15/cves/2000/1xxx/CVE-2000-1228.json",
+    "https://github.com/CVEProject/cvelistV5/blob/03dbfc069b6c638678ff904c80e89aaf72b93764/cves/2000/1xxx/CVE-2000-1228.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/03a7e425813b5ae0ce33712378801e4e929dbdb7/CVE/data/2000/CVE-2000-1228.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1228",
-    "https://github.com/yarencheng/cve-devops-playground/blob/7f1c35ad28226319c149c937b6a2e7a1986924ce/content/CVE-2000-1228.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/df56f4cca3ff4a807de70444fbb8d3458b1d46ca/CVE/data/2000/CVE-2000-1228.json",
-    "https://github.com/github/advisory-database/blob/ca4032f687e5627fcf86913a0441b18137902527/advisories/unreviewed/2022/04/GHSA-c5vm-cg9p-c7r9/GHSA-c5vm-cg9p-c7r9.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1228.json",
-    "https://github.com/magicsword-io/Magic-SigExplorer/blob/2c28b91b003429a144a687199ee99ebd26f1a343/Magic-SigExplorer/docs/cve_report.md",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--ccab3e74-c835-414f-860b-3d0a971f1b34.json",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2000.tsv",
-    "https://github.com/williamjsmail/piranha/blob/e60f12e6edcde8585ee473f701c2421f6efe72d9/CVE2CAPEC/database/CVE-2000.jsonl",
+    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-1228.json",
+    "https://github.com/opencve/opencve-kb/blob/bc6988a2a044e68837754c12506c5490595b4bd3/2000/CVE-2000-1228.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b9f52bb052695dac5cabbd58e049eaac73697161/CVE-2000/CVE-2000-12xx/CVE-2000-1228.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/1xxx/CVE-2000-1228.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1228.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1228.json",
 ]
