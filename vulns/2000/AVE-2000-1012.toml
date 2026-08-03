@@ -1,11 +1,11 @@
 [basic]
-description = "该漏洞存在于 FreeBSD 4.1.1 的 fingerd 服务中。由于程序在处理请求时未能对用户输入的用户名进行严格验证，远程攻击者可以通过在请求中指定目标文件名而非合法用户名，欺骗服务读取并返回系统中的任意文件。该漏洞允许未经身份验证的远程攻击者在无需特权的条件下，通过网络直接获取服务器上的敏感文件，导致信息泄露。"
+description = "FreeBSD 4.1.1 系统中的 fingerd 服务存在任意文件读取漏洞。由于 fingerd 未对用户输入进行充分过滤，远程攻击者无需身份认证即可通过指定目标文件名替代常规用户名的方式，向 fingerd 服务发送特制请求，从而读取系统上的任意文件内容。该漏洞可导致敏感信息泄露，CVSS 评分 5.0，危害等级中危。目前暂无官方补丁信息。"
 published = "2000-12-19T05:00:00.000"
-remediation = '建议升级 FreeBSD 操作系统至 4.2 或更高版本以修复 fingerd 的漏洞；若无需使用 finger 服务，应在 /etc/rc.conf 中将 fingerd_enable 设置为 "NO" 并重启服务，从根本上消除攻击面。'
+remediation = "升级 FreeBSD 至 4.1.1-STABLE（2000-10-05 之后版本），或应用官方补丁修改 finger.c 源码：在参数遍历循环中增加对以 '/' 开头的参数的校验拦截，重新编译 finger 和 fingerd 二进制。临时缓解措施：在 /etc/inetd.conf 中注释掉 finger 服务行（finger stream tcp nowait/3/10 nobody /usr/libexec/fingerd fingerd -s），重启 inetd 或发送 SIGHUP 使其生效。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "FreeBSD fingerd 远程任意文件读取漏洞"
+sources = ["avd"]
+title = "FreeBSD fingerd 任意文件读取漏洞"
 updated = "2026-06-16T21:52:45.440"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0915"]
 ave_id = "AVE-2000-1012"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-03T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.osvdb.org/433",
     "http://www.securityfocus.com/bid/1803",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5385",
-    "https://github.com/CVEProject/cvelistV5/blob/0da25b98d7bcc33832f1568bdeed8ba3a55a37d8/cves/2000/0xxx/CVE-2000-0915.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/12510680d47d531059ad635931375e3cc99ef556/CVE/data/2000/CVE-2000-0915.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a14f4e66db68a75a9270d6c9081e9ffb7f931cd8/cves/2000/0xxx/CVE-2000-0915.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/3eab0e512529a79daadefaadf0f05372813e7876/CVE/data/2000/CVE-2000-0915.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0915",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0915.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-0915.json",
-    "https://github.com/opencve/opencve-kb/blob/ee105ce6a7ae3dcfdca731c9e0103720070344c0/2000/CVE-2000-0915.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/42f7ce3fe01d1b8b4a37ed409361811a74eb1f5b/CVE-2000/CVE-2000-09xx/CVE-2000-0915.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/f4cffac67804f46d22292c2f69fa529dc186f5dd/2000/0xxx/CVE-2000-0915.md",
+    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-0915.json",
+    "https://github.com/opencve/opencve-kb/blob/2adf3d659b2229087465cbedc27cc02d5736df99/2000/CVE-2000-0915.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e9b51a58e4ac0e6b00dc38147f459707e98ae056/CVE-2000/CVE-2000-09xx/CVE-2000-0915.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1d7706ed603ab73481cbc20e5bea092e02e7c9be/2000/0xxx/CVE-2000-0915.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0915.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1811750a5b6a37290aff484954f5ab77b0ca64a7/content/CVE-2000-0915.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/2ea9851780633b2caab16fe048a14b38ca9a0b56/content/CVE-2000-0915.md",
 ]
