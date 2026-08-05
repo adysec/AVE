@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "Kubernetes API Server 在处理特制 YAML/JSON 负载时存在输入验证缺陷，通过发送包含深度嵌套结构的请求可导致 API Server 消耗大量 CPU 和内存资源"
+id = "POC-AVE-2019-0042"
+name = "Kubernetes API Server YAML/JSON 深度嵌套负载拒绝服务漏洞 PoC"
+severity = "high"
+tags = [
+    "cve-2019-11253",
+    "ave-2019-0042",
+]
+vuln_id = [
+    "CVE-2019-11253",
+    "AVE-2019-0042",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/apis/authorization.k8s.io/v1/selfsubjectaccessreviews"
+protocol = "http"
+
+[poc.requests.body]
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/yaml"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Invalid value",
+    "FieldValueInvalid",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [422]
+type = "status"
