@@ -1,0 +1,99 @@
+[basic]
+description = '''
+### Summary
+
+A wrong policy can be an open door. 
+You have to check `input.attributes.request.http.truncated_body` in your policy.
+
+### Description
+
+Incomplete fix for CVE-2026-50197: an oversized declared-`Content-Length` body still hands OPA an empty `parsed_body`, so deny-on-presence Rego policies fail OPEN while the full payload reaches upstream.
+
+The CVE-2026-50197 fix (commit `3152f3b0`, PR #4041, v0.26.10) substituted `expectedSize = maxBodyBytes`
+only when `req.ContentLength < 0` (chunked / HTTP/2 without content-length). But when a request declares a
+`Content-Length` larger than `maxBodyBytes`, `expectedSize > maxBodyBytes`, the body-extraction `if` is
+skipped entirely, and `ExtractHttpBodyOptionally` returns `rawBodyBytes = nil` — so OPA evaluates an empty
+`parsed_body`, while the full forbidden payload still flows to the upstream. A deny-on-presence policy
+(`default allow = true; allow = false if input.parsed_body.<forbidden>`) — the exact Rego shape the
+advisory describes — fails OPEN. The fix's own comment reasons only about `ContentLength == -1`; the
+oversized branch was never considered, and the added PoC test only covers small bodies.
+
+### Affected code
+
+- `filters/openpolicyagent/openpolicyagent.go` `ExtractHttpBodyOptionally`: the
+  `expectedSize <= maxBodyBytes` gate lets an oversized declared body fall through to
+  `return req.Body, nil, func() {}, nil` (OPA sees an empty document).
+- Corroborated by Skipper's own unit test \"Read body exhausting max bytes\" (`{ \"welcome\": \"world\" }`,
+  `maxBodySize: 5` → `bodyInPolicy: \"\"`).
+
+### Steps to reproduce
+
+See attached `docker-compose.yml` (official `golang` image) + `setup.sh` + `exploit.sh`, which run a real
+Skipper proxy (`proxytest`) with a real OPA control plane (`opasdktest`),
+`WithMaxRequestBodyBytes(32)`, policy `allow = false if input.parsed_body.action == \"delete\"`, route
+`* -> opaAuthorizeRequestWithBody(\"test\") -> upstream`:
+- `{\"action\":\"delete\"}` (19B ≤ 32) → **403** (denied).
+- `{\"action\":\"delete\",\"pad\":\"X..64\"}` (> 32) → **200**, upstream received the full body (BYPASS).
+- small chunked `{\"action\":\"delete\"}` → **403** (positive control: the original CVE is fixed).
+
+(Library-tier: validated via Skipper's real proxy test harness, not a deploy of the official image; benign
+oracle = status diff + upstream-received body; no RCE.)
+
+### Impact
+
+Deployments authorizing on request-body content via `opaAuthorizeRequestWithBody` + deny-on-presence Rego
+can be bypassed by inflating the request body past `-open-policy-agent-max-request-body-size` (default
+1 MB); the full payload still reaches the upstream.
+
+### Mitigation
+
+Document how policy owners should block requests with oversized body.
+
+Example deny by default and use \"allow if\" no oversized body:
+```rego
+default allow := false
+
+allow if {
+    input.attributes.request.http.truncated_body == false
+    # ... body-based conditions
+}
+```
+
+Example allow by default and use \"deny if\" an oversized body:
+```rego
+default deny := false
+
+deny if {
+    input.attributes.request.http.truncated_body == true
+    # ... body-based conditions
+}
+```
+
+Documentation is published by https://github.com/zalando/skipper/releases/tag/v0.27.26
+
+### Credit
+
+Reported as part of an incomplete-patch measurement study (responsible disclosure).
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Skipper: Incomplete fix for CVE-2026-50197: an oversized body can bypass OPA deny-on-presence Rego policies"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-8qqm-fp2q-v734"]
+ave_id = "AVE-2026-1046"
+
+[meta]
+collected_at = "2026-08-05T23:02:16.001761756+00:00"
+status = "completed"
+
+[references]
+urls = []
