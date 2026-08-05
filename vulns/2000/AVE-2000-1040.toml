@@ -1,12 +1,12 @@
 [basic]
-description = "OpenBSD、NetBSD 等多款 BSD 系统自带的 eeprom 程序存在格式字符串漏洞。由于程序在处理用户输入时未对格式字符串参数进行正确过滤，本地攻击者可通过向 eeprom 程序传递特制的格式字符串参数触发该漏洞，导致内存越界读写，从而提升至 root 权限。该漏洞影响 OpenBSD、NetBSD 及其他基于 BSD 的操作系统，攻击者需拥有本地访问权限，无需额外认证即可利用，危害等级高。"
-published = "2000-12-19T05:00:00Z"
-remediation = "立即应用 OpenBSD 官方补丁：下载 ftp://ftp.openbsd.org/pub/OpenBSD/patches/2.7/common/028_format_strings.patch 并按照说明编译安装修复后的 eeprom 程序。如无法打补丁，建议升级到 OpenBSD 2.8 及以上版本，或移除 eeprom 的 setuid 位以限制本地提权风险。"
+description = "BSD 系列操作系统（包括 OpenBSD、NetBSD 以及其他可能受影响的类 BSD 系统）的 eeprom 程序中存在格式字符串漏洞。由于程序在处理用户输入时未对格式化字符串进行充分校验，本地攻击者可通过构造包含特殊格式说明符（如 %x、%n 等）的输入触发该漏洞，进而篡改内存数据并实现权限提升，最终获得目标系统的 root 权限。该漏洞影响本地登录用户或拥有 shell 访问权限的攻击者，利用门槛较低，且成功利用后可完全控制受影响系统，对系统机密性、完整性和可用性造成严重危害。OpenBSD 已发布 028_format_strings.patch 补丁修复此问题。"
+published = "2000-12-19T05:00:00.000"
+remediation = "OpenBSD 2.7 用户应立即下载并应用官方补丁 028_format_strings.patch（ftp://ftp.openbsd.org/pub/OpenBSD/patches/2.7/common/028_format_strings.patch），进入 /usr/src 目录后执行 patch -p0 < 028_format_strings.patch，随后依次重新编译并安装受影响的 eeprom（仅 sparc 平台）、fstat、passwd、su、top、ssh 程序。NetBSD 及其他 BSD 衍生版用户应升级至内核源码树已合并该修复的稳定版本，或联系厂商获取对应补丁。如无法立即打补丁，应通过文件系统权限或防火墙规则限制本地非特权用户对 eeprom 及相关系统程序的访问，以降低本地提权风险。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "OpenBSD NetBSD eeprom 格式字符串漏洞"
-updated = "2026-06-16T21:52:56Z"
+sources = ["avd"]
+title = "OpenBSD NetBSD eeprom 格式字符串本地提权漏洞"
+updated = "2026-06-16T21:52:56.293"
 
 [exploit]
 exp_urls = []
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-0997"]
 ave_id = "AVE-2000-1040"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/1752",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5337",
-    "https://github.com/CVEProject/cvelistV5/blob/3ac44cfd6537e05d45dfec0ed67b6d47bebeee2b/cves/2000/0xxx/CVE-2000-0997.json",
+    "https://github.com/CVEProject/cvelistV5/blob/cbc8909f965784fa84e604f999ad78ba1a862d6c/cves/2000/0xxx/CVE-2000-0997.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0997",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/41644568d1e47f962c2cefae75c8b09359290a26/2000/0xxx/CVE-2000-0997.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/73cd39be077fdbedc5ca2ea7e2723723d25285cc/CVE/data/2000/CVE-2000-0997.json",
-    "https://github.com/github/advisory-database/blob/1c8e3f4146e1bef501493d1237acb1611ea8f707/advisories/unreviewed/2022/05/GHSA-crc7-q49r-3c34/GHSA-crc7-q49r-3c34.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-0997.md",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_153000_153100.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d9d0e44f54f90ad1b4ec106b1cac94be29b99757/CVE/data/2000/CVE-2000-0997.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0997.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--9a3cd3d8-1907-4897-9a64-34c79e8223c9.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-0997.json",
+    "https://github.com/opencve/opencve-kb/blob/9854c179c024bf1d349f724d8589444858e69aa7/2000/CVE-2000-0997.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8e09cd003036511dff025515f28920f1d343007b/2000/0xxx/CVE-2000-0997.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-09xx/CVE-2000-0997.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0997.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0997.json",
 ]
