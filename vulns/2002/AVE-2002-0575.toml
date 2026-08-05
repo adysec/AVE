@@ -1,0 +1,41 @@
+[basic]
+description = "traceroute-nanog 6.0 至 6.1.1 版本的 get_origin() 函数存在本地缓冲区溢出漏洞。该函数位于 traceroute.c 中，负责解析 WHOIS 响应的域名信息，但在解析过程中未对缓冲区长度进行 adequate 边界检查。攻击者可通过设置 RA_SERVER 和 RA_SERVICE 环境变量，将 traceroute 的 WHOIS 查询重定向至攻击者控制的恶意 DNS 服务器。该服务器返回特制构造的超长 WHOIS 响应数据，在 get_origin() 函数中使用 strncpy() 复制到 100 字节的 tmp4[] 缓冲区时触发溢出，进而覆盖栈上的 EBP 与返回地址。通过精心构造的 off-by-two 攻击技术，攻击者可将执行流程重定向至存储在环境变量中的 Shellcode，最终在本地获得 root 权限。该漏洞在 SuSE Linux 7.x 及 8.0 等系统上已被验证可被利用，CVSS 评分为 7.2。"
+published = "2002-12-23T05:00:00.000"
+remediation = "升级到 traceroute-nanog 6.1.1-1.3 或更高版本（如 6.3.10-2），该版本在 get_origin() 函数中增加了对 WHOIS 响应数据的边界检查，修复了 strcpy 无边界复制导致的栈溢出问题。Debian 用户可通过 apt-get upgrade 安装 DSA-254 安全更新，SuSE/Novell 用户应安装对应厂商发布的 2002_043 安全补丁。如系统自带标准 traceroute 或 tracepath 工具，建议直接停用 traceroute-nanog 并切换至系统原生工具以彻底消除风险。临时缓解措施：卸载 traceroute-nanog 或设置其二进制文件权限为 000 禁止执行。"
+score = 7.2
+severity = "HIGH"
+sources = ["exploitdb"]
+title = "traceroute-nanog 6 本地缓冲区溢出漏洞"
+updated = "2026-06-16T21:59:10.910"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2002-1364"]
+ave_id = "AVE-2002-0575"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://marc.info/?l=bugtraq&m=103858895600963&w=2",
+    "http://www.debian.org/security/2003/dsa-254",
+    "http://www.novell.com/linux/security/advisories/2002_043_traceroute_nanog_nkitb.html",
+    "http://www.securityfocus.com/bid/6166",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/10778",
+    "https://www.exploit-db.com/exploits/22014",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2002/CVE-2002-1364.md",
+    "https://github.com/CVEProject/cvelistV5/blob/52138c35bcb0784b4efb0e41fb1e599736d809a9/cves/2002/1xxx/CVE-2002-1364.json",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2002/CVE-2002-1364.md",
+    "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2002/CVE-2002-1364.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/fdd3cf49156dc683c87ad86ac7e4c8f79b9d99df/CVE/data/2002/CVE-2002-1364.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-1364",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-1364.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2002/CVE-2002-1364.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2002-1364.json",
+    "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2002/CVE-2002-1364.md",
+]
