@@ -1,12 +1,12 @@
 [basic]
-description = "Pulse Secure Pulse Connect Secure (PCS) 存在路径遍历漏洞，未经身份认证的远程攻击者可通过向设备发送特制的 URI 请求读取系统任意文件内容。该漏洞影响 PCS 8.2（低于 8.2R12.1）、8.3（低于 8.3R7.1）及 9.0（低于 9.0R3.4）版本，由于 Web 接口对用户提供的路径参数缺乏充分验证，攻击者可利用目录遍历技术绕过访问控制，获取 /etc/passwd、/etc/shadow 等敏感系统文件及配置文件，进而提取用户凭证、VPN 私钥等关键信息，造成严重的信息泄露风险。CISA 已将其列入已知被利用漏洞目录，公开 Metasploit 模块及多种利用脚本已在野外广泛传播。"
-published = "2019-05-08T17:29:00Z"
-remediation = "立即将 Pulse Connect Secure 升级至 8.2R12.1、8.3R7.1 或 9.0R3.4 及以上版本（对应各主版本线），升级前务必先运行 Pulse Connect Secure Integrity Tool 检查设备是否已被植入后门（已知攻击者可利用此漏洞在设备上驻留 webshell 并跨越升级周期保持持久化）。若无法立即打补丁，导入 Pulse Secure 提供的 XML 配置文件（SA44784）作为临时缓解措施，限制对 /dana-na/ 路径的访问，并监控 HTTPS 访问日志中是否存在包含 ../../../../ 等路径遍历特征的 URI 请求。升级完成后重置所有相关账户密码并审查配置是否被篡改。"
+description = "Pulse Secure Pulse Connect Secure (PCS) 存在路径遍历漏洞，未经身份认证的远程攻击者可通过向目标设备发送特制的 URI 请求，利用目录遍历技术读取服务器上的任意文件，包括系统配置文件、用户凭据、VPN 会话密钥等敏感信息。该漏洞影响 PCS 8.2R12.1 之前版本、8.3R7.1 之前版本及 9.0R3.4 之前版本，CVSS 评分 10.0，危害等级严重。攻击无需任何认证即可远程触发，且已出现大规模在野利用。厂商 Pulse Secure 已发布安全更新修复此漏洞。"
+published = "2019-05-08T17:29:00.630"
+remediation = "立即升级 Pulse Connect Secure 至以下安全版本：8.2R12.1、8.3R7.1 或 9.0R3.4 及以上。如无法立即升级，可在 Pulse Secure 设备上配置访问控制策略，限制外部 IP 对 /dana/ 路径的访问，并启用 Web Application Firewall 规则拦截包含 `../` 的 URI 请求作为临时缓解措施。"
 score = 10
 severity = "CRITICAL"
-sources = ["kev"]
-title = "脉冲安全 Pulse Connect Secure SSL VPN 任意文件读取漏洞"
-updated = "2026-06-17T02:13:04Z"
+sources = ["nuclei"]
+title = "Pulse Secure Pulse Connect Secure 任意文件读取漏洞"
+updated = "2026-06-17T02:13:04.277"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2019-11510"]
 ave_id = "AVE-2019-0208"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -36,13 +36,13 @@ urls = [
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2019-11510",
     "https://www.exploit-db.com/exploits/47297",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2019/CVE-2019-11510.yaml",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2019/CVE-2019-11510.md",
-    "https://github.com/Mr-xn/Penetration_Testing_POC/blob/8dd4bd11727f92bfc44a4f742b79d2d09c1f5387/vuln_pocs/cve/CVE-2019-11510/README.md",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2019/CVE-2019-11510.md",
+    "https://github.com/Mr-xn/Penetration_Testing_POC/blob/6602db50598d0ed3bff77588ae1140dbe71a025c/vuln_pocs/cve/CVE-2019-11510/README.md",
     "https://github.com/BaizeSec/bylibrary/blob/dee1fbaa831df860c6905f80de8700211ba63098/docs/漏洞库/04-厂商漏洞/脉冲安全/CVE-2019-11510.md",
     "https://github.com/projectzeroindia/CVE-2019-11510/blob/3ce187732a38071591b27684a68a04f619209bc0/CVE-2019-11510.sh",
     "https://github.com/sepehrdaddev/zap-scripts/blob/2b63b02ca79cc7f0023cdbab72c5c6c774354b07/active/CVE-2019-11510.js",
-    "https://github.com/sari3l/Poc-Monitor/blob/42a2de18a223eac62deb96609233ff5da9430e1c/2019/CVE-2019-11510.json",
-    "https://github.com/rix4uni/cvemapping/blob/7e7ddbae8d5ca4ceb41bee21384ca721332871e5/2019/CVE-2019-11510/CVE-2019-11510.sh",
+    "https://github.com/sari3l/Poc-Monitor/blob/e6513c0b48a121b576b654c0b00e8a0bc6d72f6d/2019/CVE-2019-11510.json",
+    "https://github.com/rix4uni/cvemapping/blob/911f59febd1bbb3aa37b38750a1867e7a514757c/2019/CVE-2019-11510/CVE-2019-11510.sh",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2019/CVE-2019-11510.md",
     "https://github.com/jiushill/note/blob/95d7b730981c6562e119d037ce00d6131c8de95d/自己写的工具/CVE-2019-11510-1/README.md",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2019/CVE-2019-11510.md",
