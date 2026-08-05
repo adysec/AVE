@@ -1,0 +1,40 @@
+[basic]
+description = "Capsule 是一个 Kubernetes 多租户策略框架。CVE-2026-22872 的修复在 v0.13.0 中仅对 NamespacedItems 选择路径添加了集群作用域资源拒绝检查，但未覆盖 RawItems 创建路径和 Generators 路径。TenantResource 控制器使用绑定 cluster-admin 角色的 ServiceAccount 应用资源，handleRawItem 和 handleGeneratorItem 函数仅调用 SetNamespace 设置命名空间，而 Kubernetes API 服务器会忽略集群作用域资源的命名空间设置。因此，拥有 TenantResource 创建权限的租户所有者可通过构造包含 ClusterRole、ValidatingWebhookConfiguration 等集群作用域资源的 RawItems，利用控制器提权至集群管理员级别，进而控制所有租户和集群控制面。该漏洞影响 Capsule v0.13.0 至 v0.13.7 版本，CVSS 评分 6.6，危害等级中危。v0.13.8 版本已在 handleRawItem 和 handleGeneratorItem 中增加了 IsNamespacedGVK 集群作用域拒绝检查，完成彻底修复。"
+published = "2026-07-30T20:18:13.267"
+remediation = "升级 Capsule 至 v0.13.8 或更高版本，该版本在 handleRawItem 和 handleGeneratorItem 中增加了 IsNamespacedGVK 集群作用域资源拒绝检查。如无法立即升级，可移除 TenantOwner 的 TenantResource 创建权限（设置 rbac.resources.create=false）作为临时缓解措施。"
+score = 6.6
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Capsule Kubernetes多租户框架TenantResource集群范围资源创建权限提升漏洞"
+updated = "2026-07-31T20:16:53.843"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-65835",
+    "GHSA-jr6p-8pjj-mfx6",
+]
+ave_id = "AVE-2026-0936"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/projectcapsule/capsule/releases/tag/v0.13.8",
+    "https://github.com/projectcapsule/capsule/security/advisories/GHSA-jr6p-8pjj-mfx6",
+    "https://github.com/CVEProject/cvelistV5/blob/7db8931ea0378982e66f435e269a4ed0e4efb7aa/cves/2026/65xxx/CVE-2026-65835.json",
+    "https://github.com/cisagov/vulnrichment/blob/f3d37661d066a8369751ae98676c11a2d9ec4d21/2026/65xxx/CVE-2026-65835.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f80eaead111eac7128eaf77e46b372cdbd675cc9/CVE/data/2026/CVE-2026-65835.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f80eaead111eac7128eaf77e46b372cdbd675cc9/SSVC/data/2026/CVE-2026-65835.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/152c4988e6630edbe300b2d9554f35d9c7963812/data/2026/CVE-2026-65835.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-65835.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-658xx/CVE-2026-65835.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/7c77ebcc357386c71db522f18fa574b7642f74e0/data/anchore/2026/CVE-2026-65835.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/go/github.com/projectcapsule/capsule/CVE-2026-65835.yml",
+    "https://github.com/TMA84/cvealert/blob/3325b9a058340dae0cf4a308bd7383225ee5322b/content/posts/cve-2026-65835.md",
+]
