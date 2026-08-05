@@ -1,42 +1,34 @@
-[id]
-ave_id = "AVE-2026-0409"
-aliases = ["CVE-2026-53530","GHSA-4hgp-59h5-gvrj"]
-
 [basic]
-title = "ratex-parser panics on `\verb` with a multibyte delimiter (UTF-8 byte-boundary slice)"
-description = "### Summary
+description = '''
+### Summary
 
-The public parser entrypoint `ratex_parser::parse(&str)` panics on the **9-byte** input `\verbéxé` (i.e. `\verb` followed by the non-ASCII delimiter `é`). When handling a `\verb` command, the parser slices the verbatim argument with **byte** indices (`arg[1..arg.len() - 1]`); if the delimiter character is multibyte UTF-8, index `1` lands inside that character and Rust panics with *“byte index 1 is not a char boundary”*. Because RaTeX’s release profile sets `panic = \"abort\"` (`Cargo.toml:48`), the panic aborts the **entire process** — not just the current request/thread — making this a hard denial of service for any service that renders untrusted LaTeX.
-
-
+The public parser entrypoint `ratex_parser::parse(&str)` panics on the **9-byte** input `\verbéxé` (i.e. `\verb` followed by the non-ASCII delimiter `é`). When handling a `\verb` command, the parser slices the verbatim argument with **byte** indices (`arg[1..arg.len() - 1]`); if the delimiter character is multibyte UTF-8, index `1` lands inside that character and Rust panics with *"byte index 1 is not a char boundary"*. Because RaTeX's release profile sets `panic = "abort"` (`Cargo.toml:48`), the panic aborts the **entire process** — not just the current request/thread — making this a hard denial of service for any service that renders untrusted LaTeX.
 
 ### Details
-
 
 ## Affected code
 
 `crates/ratex-parser/src/parser.rs`, `parse_symbol_inner`:
 
 ```rust
-if let Some(stripped) = text.strip_prefix(\"\\verb\") {       // parser.rs:901
+if let Some(stripped) = text.strip_prefix("\\verb") {       // parser.rs:901
     self.consume();
-    let arg = stripped.to_string();                         // e.g. \"éxé\"
+    let arg = stripped.to_string();                         // e.g. "éxé"
     let star = arg.starts_with('*');
     let arg = if star { &arg[1..] } else { &arg };          // parser.rs:905  (also byte-sliced)
     if arg.len() < 2 {                                      // byte length
-        return Err(ParseError::new(\"\\verb assertion failed\", Some(&nucleus)));
+        return Err(ParseError::new("\\verb assertion failed", Some(&nucleus)));
     }
     let body = arg[1..arg.len() - 1].to_string();           // parser.rs:910  <-- PANIC on multibyte delimiter
     ...
 }
 ```
 
-For input `\verbéxé`: `arg = \"éxé\"`, where `é` = `U+00E9` (bytes `C3 A9`). `arg.len()` is the **byte** length (5), the `< 2` guard passes, and `arg[1..4]` starts at byte index 1 — inside the first `é` (bytes 0..2) — so the slice panics. The lexer groups `\verb<delim>…<delim>` correctly with char semantics (`lexer.rs` `lex_verb`); only the parser mishandles it.
+For input `\verbéxé`: `arg = "éxé"`, where `é` = `U+00E9` (bytes `C3 A9`). `arg.len()` is the **byte** length (5), the `< 2` guard passes, and `arg[1..4]` starts at byte index 1 — inside the first `é` (bytes 0..2) — so the slice panics. The lexer groups `\verb<delim>…<delim>` correctly with char semantics (`lexer.rs` `lex_verb`); only the parser mishandles it.
 
 ### PoC
 
-<img width=\"1109\" height=\"205\" alt=\"image\" src=\"https://github.com/user-attachments/assets/cd4bc6ae-23dd-458f-826c-6ce4e85c7005\" />
-
+<img width="1109" height="205" alt="image" src="https://github.com/user-attachments/assets/cd4bc6ae-23dd-458f-826c-6ce4e85c7005" />
 
 ```
 $ printf '\\verb\xc3\xa9x\xc3\xa9\n' | ./target/release/parse
@@ -47,7 +39,7 @@ Aborted (core dumped)            # exit 134 — panic=abort kills the whole proc
 
 ### Impact
 
-Any application that renders untrusted LaTeX through RaTeX (web “render this math” endpoint, WASM in-browser use, the FFI embedded in another app) can be crashed by a tiny string. With `panic = \"abort\"` in release builds, the crash takes down the whole process / server, so a single malicious formula causes a full-service DoS (and, in batch pipelines, drops all queued work).
+Any application that renders untrusted LaTeX through RaTeX (web "render this math" endpoint, WASM in-browser use, the FFI embedded in another app) can be crashed by a tiny string. With `panic = "abort"` in release builds, the crash takes down the whole process / server, so a single malicious formula causes a full-service DoS (and, in batch pipelines, drops all queued work).
 
 ## Remediation
 
@@ -55,25 +47,34 @@ Slice by character boundaries instead of byte indices, mirroring the UTF-8-corre
 
 ```rust
 let chars: Vec<char> = arg.chars().collect();
-if chars.len() < 2 { return Err(ParseError::new(\"\\verb assertion failed\", Some(&nucleus))); }
+if chars.len() < 2 { return Err(ParseError::new("\\verb assertion failed", Some(&nucleus))); }
 let body: String = chars[1..chars.len() - 1].iter().collect();
 ```
 
-(Apply the same char-aware handling to the `*` strip at `parser.rs:905`.) More broadly, consider not using `panic = \"abort\"` for builds embedded in long-running services, and/or wrapping parsing in `catch_unwind` at the FFI/WASM boundary — but the byte-slice fix is the direct correction."
-severity = "HIGH"
-score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
+(Apply the same char-aware handling to the `*` strip at `parser.rs:905`.) More broadly, consider not using `panic = "abort"` for builds embedded in long-running services, and/or wrapping parsing in `catch_unwind` at the FFI/WASM boundary — but the byte-slice fix is the direct correction.
+'''
+published = "2026-01-01"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = 'ratex-parser panics on `\verb` with a multibyte delimiter (UTF-8 byte-boundary slice)'
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-53530",
+    "GHSA-4hgp-59h5-gvrj",
+]
+ave_id = "AVE-2026-0409"
+
+[meta]
+collected_at = "2026-07-25T00:07:14.753245138+00:00"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-07-25T00:07:14.753245138+00:00"
