@@ -1,0 +1,42 @@
+[basic]
+description = "LightRAG 在仅配置 LIGHTRAG_API_KEY 而未设置 AUTH_ACCOUNTS 的 API 密钥认证模式下存在认证绕过漏洞。由于代码中硬编码了默认 JWT 密钥 DEFAULT_TOKEN_SECRET，且 /auth-status 和 /login 接口无需认证即可签发访客 JWT 令牌，同时 combined_dependency 认证函数在检查 API 密钥前会先接受有效访客令牌，导致远程未认证攻击者可离线伪造 JWT 或通过公开接口获取令牌后绕过 X-API-Key 保护，进而调用文档读取、上传、删除、知识图谱操作及查询等受保护接口，造成敏感数据泄露和资源滥用。该漏洞影响 v1.5.4 之前的所有版本，CVSS 评分 9.3，危害等级严重。"
+published = "2026-07-15T15:16:48.350"
+remediation = "立即升级 LightRAG 至 v1.5.4 或更高版本，该版本已移除硬编码 DEFAULT_TOKEN_SECRET 并修复认证绕过逻辑。如无法升级，可采取以下临时缓解措施：(1) 在反向代理层（如 Nginx）添加规则阻止对 /auth-status 和 /login 的匿名访问；(2) 设置 AUTH_ACCOUNTS 环境变量启用账户认证模式；(3) 在代码中手动将 lightrag/api/config.py 的 DEFAULT_TOKEN_SECRET 替换为随机生成的强密钥。"
+score = 9.3
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "LightRAG API密钥认证绕过漏洞"
+updated = "2026-07-15T18:15:13.373"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-61740",
+    "GHSA-f4vv-55c2-5789",
+]
+ave_id = "AVE-2026-0900"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/HKUDS/LightRAG/commit/f7819aa3a49a9d8d92eed8251d82d6ebcafa8cba",
+    "https://github.com/HKUDS/LightRAG/pull/3319",
+    "https://github.com/HKUDS/LightRAG/releases/tag/v1.5.4",
+    "https://github.com/HKUDS/LightRAG/security/advisories/GHSA-f4vv-55c2-5789",
+    "https://github.com/trickest/cve/blob/0950a261126c1029f51ef04a190f1baacd16eb08/2026/CVE-2026-61740.md",
+    "https://github.com/CVEProject/cvelistV5/blob/160b2769d023cca3bba96db1842bf8222b2e286a/cves/2026/61xxx/CVE-2026-61740.json",
+    "https://github.com/cisagov/vulnrichment/blob/be53b1e1fe165098245bfbe673cd589934da7e3a/2026/61xxx/CVE-2026-61740.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2850e862cb7837f03ec4af0066c4f9f10414e805/SSVC/data/2026/CVE-2026-61740.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-61740.md",
+    "https://github.com/anchore/nvd-data-overrides/blob/152c4988e6630edbe300b2d9554f35d9c7963812/data/2026/CVE-2026-61740.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2850e862cb7837f03ec4af0066c4f9f10414e805/CVE/data/2026/CVE-2026-61740.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-61740.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/7c77ebcc357386c71db522f18fa574b7642f74e0/data/anchore/2026/CVE-2026-61740.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/pypi/lightrag-hku/CVE-2026-61740.yml",
+]
