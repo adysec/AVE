@@ -1,12 +1,58 @@
 [basic]
-description = "SuSE Linux 6.3及6.4版本中Apache HTTP服务器的默认配置文件(httpd.conf)存在不当的别名配置漏洞。系统默认将/usr/doc目录映射为/doc/packages的Web可访问路径，导致远程攻击者无需任何身份认证即可通过HTTP请求直接访问该目录下的软件包文档。攻击者可借此获取系统已安装软件包列表、版本号及系统配置信息等敏感数据，为后续针对性攻击提供信息支撑。该漏洞利用条件简单，仅需目标开放HTTP服务即可实施信息泄露攻击。"
-published = "2000-12-11T05:00:00Z"
-remediation = "编辑 Apache 配置文件 /etc/httpd/httpd.conf，删除或注释掉 `Alias /doc/packages /usr/doc` 行，然后重启 Apache 服务（`rcapachectl restart`）。如无法立即修改配置，可在 httpd.conf 中对 `/doc/packages` 路径添加 `Deny from all` 访问限制作为临时缓解措施。"
+description = "SuSE Linux 6.3/6.4 系统中 Apache HTTP 服务器的默认配置文件（httpd.conf）包含了对 /usr/doc 目录的别名映射，导致远程攻击者无需认证即可通过 HTTP 请求访问 /doc/packages URL，读取系统已安装软件包的文档信息，从而获取系统配置信息，为进一步攻击提供情报支持。"
+published = "2000-12-11T05:00:00.000"
+remediation = """
+[id]
+ave_id = "AVE-2000-01016"
+aliases = ["CVE-2000-1016"]
+
+[basic]
+title = "SuSE Linux Apache /usr/doc 目录信息泄露漏洞"
+description = "SuSE Linux 6.3/6.4 中 Apache 默认配置文件（httpd.conf）为 /usr/doc 目录设置了别名，远程攻击者无需认证即可通过 HTTP 请求 /doc/packages URL 读取已安装软件包的文档和系统配置信息，导致敏感信息泄露，为后续攻击提供情报支撑。"
+severity = "MEDIUM"
+score = 5.0
+sources = ["cve", "exploitdb"]
+published = "2000-12-11"
+updated = "2000-12-11"
+remediation = "编辑 Apache 配置文件 httpd.conf，移除或注释掉 /usr/doc 目录的 Alias 配置项，或使用 <Directory> 指令限制对该目录的访问权限，仅允许本地或授权 IP 访问。"
+
+[references]
+urls = ["https://nvd.nist.gov/vuln/detail/CVE-2000-1016", "https://www.exploit-db.com/exploits/20236"]
+
+[exploit]
+poc_urls = ["https://www.exploit-db.com/exploits/20236"]
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-08-06T00:00:00Z"
+
+[info]
+id = "POC-AVE-2000-01016"
+name = "CVE-2000-1016 PoC"
+author = "AVE"
+severity = "medium"
+tags = ["cve-2000-1016", "suze", "apache", "information-disclosure"]
+description = "检测 SuSE Linux Apache 是否暴露 /doc/packages 目录，导致已安装软件包信息泄露"
+vuln_id = ["CVE-2000-1016", "AVE-2000-01016"]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+protocol = "http"
+method = "GET"
+path = "/doc/packages/"
+
+[[poc.requests.matchers]]
+type = "word"
+words = ["Index of", "packages"]
+expect = true"""
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "SuSE Linux Apache 默认配置信息泄露漏洞"
-updated = "2026-06-16T21:52:58Z"
+sources = ["avd"]
+title = "SuSE Linux 6.3/6.4 Apache 已安装软件包信息泄露漏洞"
+updated = "2026-06-16T21:52:58.657"
 
 [exploit]
 exp_urls = []
@@ -17,7 +63,7 @@ aliases = ["CVE-2000-1016"]
 ave_id = "AVE-2000-0742"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +72,14 @@ urls = [
     "http://www.securityfocus.com/bid/1707",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5276",
     "https://www.exploit-db.com/exploits/20236",
-    "https://github.com/CVEProject/cvelistV5/blob/57d47b7d3f36bb14623bb27ddb073baead1c6714/cves/2000/1xxx/CVE-2000-1016.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2d66b7c0b89f8bfe02ef8d342b4bf0a1bab5ffd1/CVE/data/2000/CVE-2000-1016.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0b2099d0f1ceb94625ab1ba6dca5a48307538ab8/cves/2000/1xxx/CVE-2000-1016.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6604e71750f28c1fc12ae269817332f21f2b9d84/CVE/data/2000/CVE-2000-1016.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1016",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1016.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-1016.json",
-    "https://github.com/opencve/opencve-kb/blob/0913c49bc4f4fd607e8625f162967246063e1d20/2000/CVE-2000-1016.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/0d2adc4a9428696b559622523817d9cdfdad97f0/CVE-2000/CVE-2000-10xx/CVE-2000-1016.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/67c5e994e49225faeedb88198d627dbdd922374c/2000/1xxx/CVE-2000-1016.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1016.json",
+    "https://github.com/opencve/opencve-kb/blob/81a148a05078ecaf8ff30dafcb6a9851540b3434/2000/CVE-2000-1016.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-10xx/CVE-2000-1016.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8eabcabeccc08fd880f454fd53f7419ecf9a8d7e/2000/1xxx/CVE-2000-1016.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1016.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1016.json",
 ]
