@@ -1,12 +1,12 @@
 [basic]
-description = "Linux 内核 2.2.x 版本的 /proc/pid/mem 接口存在本地拒绝服务漏洞。本地攻击者可通过 mmap() 函数使用 PROT_READ 参数访问不可读的内存页，触发内核崩溃，导致系统拒绝服务。该漏洞需要本地用户权限才能利用，攻击复杂度低，影响运行 Linux 内核 2.2.x 的系统。"
-published = "2002-12-23T05:00:00Z"
-remediation = "升级至 Linux 2.2.26 或更高版本（该版本修复了 /proc/pid/mem 接口允许读取不可读内存页的问题），或升级至 2.4.x/2.6.x 系列内核。如无法升级，可通过移除 /proc/pid/mem 文件的 setuid 权限或限制本地用户对 /proc 文件系统的访问作为临时缓解措施。"
+description = "Linux 内核 2.2.x 存在本地拒绝服务漏洞，其 mmap() 系统调用在处理 /proc/pid/mem 接口时缺少充分的内存页访问权限检查。本地低权限用户可利用 mmap() 函数以 PROT_READ 参数，通过 /proc/pid/mem 伪文件系统映射目标进程的非可读内存页，触发内核错误导致系统崩溃。该漏洞影响运行 Linux 内核 2.2.x 系列的系统，攻击者需先在目标主机上拥有本地登录权限，再利用 ptrace() 附加到自身进程后打开 /proc/self/mem，通过 mmap() 映射不可读的内存区域即可触发内核崩溃，造成拒绝服务。该问题不影响 2.4 内核版本，因为 2.4 内核中已移除了对 /proc/pid/mem 接口的 mmap() 支持。"
+published = "2002-12-23T05:00:00.000"
+remediation = "升级 Linux 内核至 2.2.20-5 或更高版本（Debian woody 可通过 apt-get upgrade linux-image-2.2.20-i386 安装 2.2.20-5 修复版本），或迁移至受官方支持的 2.4/2.6 及以上内核。如无法立即升级，可临时通过 sysctl 设置 vm.mmap_min_addr = 65536 限制 mmap() 对低地址内存的映射，并在 /etc/fstab 中对 /proc 挂载选项添加 noexec,nosuid,nodev 以限制本地用户对 /proc/pid/mem 的访问，同时审查本地用户权限避免未授权访问。"
 score = 2.1
 severity = "LOW"
-sources = ["redhat"]
-title = "Linux Kernel 2.2 mmap 本地拒绝服务漏洞"
-updated = "2026-06-16T21:59:13Z"
+sources = ["exploitdb"]
+title = "Linux Kernel 2.2 mmap() 本地拒绝服务漏洞"
+updated = "2026-06-16T21:59:13.107"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-1380"]
 ave_id = "AVE-2002-0373"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -30,14 +30,14 @@ urls = [
     "http://www.trustix.net/errata/misc/2002/TSL-2002-0083-kernel.asc.txt",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/10884",
     "https://www.exploit-db.com/exploits/22105",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2002/CVE-2002-1380.md",
-    "https://github.com/CVEProject/cvelistV5/blob/81757a559270348b5ed9f7df6d4fbf1e7a4fae68/cves/2002/1xxx/CVE-2002-1380.json",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2002/CVE-2002-1380.md",
+    "https://github.com/CVEProject/cvelistV5/blob/c77fff35609ce3594a3cffb2b3b0994cbb03c5f2/cves/2002/1xxx/CVE-2002-1380.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-1380",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/03a7e425813b5ae0ce33712378801e4e929dbdb7/CVE/data/2002/CVE-2002-1380.json",
-    "https://github.com/opencve/opencve-kb/blob/bb000df9f27fa146ab353b5455f4a8607b3ce719/2002/CVE-2002-1380.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2e34647e2cb70f634f637d7ffe35fe3375a62e16/CVE/data/2002/CVE-2002-1380.json",
+    "https://github.com/opencve/opencve-kb/blob/ed0864e87bec515a12f89ab060c3cbb0a6a56af5/2002/CVE-2002-1380.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-1380.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2002/1xxx/CVE-2002-1380.md",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2002-1380.json",
-    "https://github.com/aquasecurity/vuln-list-debian/blob/338375e9291959a955b9c4f1b7794c4836fe2985/tracker/CVE/2002/CVE-2002-1380.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8666f9d895a0f69afaf7cc8ad269f1c8281f7c7d/2002/1xxx/CVE-2002-1380.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2002-1380.json",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/6bb18b34820034d354785c1f34bbb7285e8899e0/tracker/CVE/2002/CVE-2002-1380.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2002/1xxx/CVE-2002-1380.json",
 ]
