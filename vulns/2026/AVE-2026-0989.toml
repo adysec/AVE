@@ -1,0 +1,73 @@
+[basic]
+description = '''
+### Summary
+**This is a related but independently fixable vulnerability to GHSA-qqf5-x7mj-v43p
+(PostgreSQL SQL injection), reported in the same original disclosure and
+split per GitHub CNA guidance (rule 4.2.11) since it affects a separate
+integration, has a distinct attack precondition, and requires a separate
+patch.**
+
+The MySQL integration enables `multipleStatements: true` on the connection,
+permitting semicolon-separated multi-statement execution. During table
+introspection, table names retrieved from `INFORMATION_SCHEMA.TABLES` are
+interpolated into a `DESCRIBE` query wrapped in backticks, but embedded
+backticks in the table name are never escaped — allowing a malicious table
+name to break out and inject a second, attacker-controlled statement.
+
+### Details
+
+**Vulnerable Code:**
+File: `packages/server/src/integrations/mysql.ts`, lines 172, 305
+
+```typescript
+this.config = { ...config, multipleStatements: true, ... }  // line 172
+...
+{ sql: `DESCRIBE \`${tableName}\`;` }  // line 305 — backtick NOT escaped
+```
+
+Because `multipleStatements` is enabled, any statement appended after the
+backtick break-out executes as a second query in the same round trip.
+
+### Step-by-Step Reproduction
+1. An attacker with the ability to create tables in the target MySQL
+   database (e.g. a lower-privileged database user, or a malicious actor in
+   a multi-tenant database) creates a table named:
+   ``foo`; DROP TABLE users; --``
+2. In Budibase, an administrator triggers schema introspection for that
+   database (e.g. opening the datasource or refreshing its table list).
+3. Budibase reads the malicious table name from `INFORMATION_SCHEMA.TABLES`
+   and interpolates it into the `DESCRIBE` query.
+4. The unescaped backtick terminates the identifier early, and the
+   semicolon-separated payload (enabled by `multipleStatements: true`)
+   executes as a second statement.
+
+### Impact
+Arbitrary SQL execution triggered during routine schema discovery. Unlike
+the PostgreSQL and MS SQL Server findings, this does not require the
+attacker to control the Budibase datasource configuration directly — only
+the ability to create a maliciously named table in the underlying database
+beforehand, with an administrator's normal use of the introspection feature
+serving as the trigger.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Budibase: MySQL DESCRIBE Backtick Injection via multipleStatements in Database Connector"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-2xgg-r2wc-c5r2"]
+ave_id = "AVE-2026-0989"
+
+[meta]
+collected_at = "2026-08-05T17:32:30.856603034+00:00"
+status = "completed"
+
+[references]
+urls = []
