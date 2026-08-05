@@ -1,0 +1,41 @@
+[basic]
+description = "Pterodactyl 游戏服务器管理面板 1.7.0 至 1.13.0 版本中存在认证速率限制缺陷，其 RouteServiceProvider::configureRateLimiting() 方法为登录和双因素认证端点配置的限流器使用了全局共享令牌桶，而非按 IP 或账户进行独立计数。未经身份认证的远程攻击者可通过单个 IP 每秒约发送 10 次请求（利用无 reCAPTCHA 保护的 /auth/login/checkpoint 端点成本最低），耗尽全局共享计数器，导致所有用户（包括管理员）的登录和双因素认证请求均返回 HTTP 429 错误，造成面板级认证拒绝服务。该攻击无需任何权限、无需用户交互，攻击者持续发包即可维持锁定状态，严重影响面板可用性。官方已在 1.13.0 版本中修复此问题。"
+published = "2026-07-28T16:19:28.693"
+remediation = "立即升级 Pterodactyl Panel 至 v1.13.0 或更高版本（https://github.com/pterodactyl/panel/releases/tag/v1.13.0），该版本已为认证限流器添加按 IP 的独立计数。如无法立即升级，可在反向代理层（Nginx/Cloudflare）对 /auth/login 和 /auth/login/checkpoint 端点按来源 IP 设置频率限制（如每 IP 每分钟最多 30 次请求）作为临时缓解措施。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Pterodactyl Panel 认证全局速率限制拒绝服务漏洞"
+updated = "2026-07-30T19:29:19.027"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-61609",
+    "GHSA-xvc3-826v-xf47",
+]
+ave_id = "AVE-2026-0889"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/pterodactyl/panel/commit/98079a01660a61980fe62a72b2c1d48f99c35a5e",
+    "https://github.com/pterodactyl/panel/releases/tag/v1.13.0",
+    "https://github.com/pterodactyl/panel/security/advisories/GHSA-xvc3-826v-xf47",
+    "https://github.com/trickest/cve/blob/0950a261126c1029f51ef04a190f1baacd16eb08/2026/CVE-2026-61609.md",
+    "https://github.com/CVEProject/cvelistV5/blob/160b2769d023cca3bba96db1842bf8222b2e286a/cves/2026/61xxx/CVE-2026-61609.json",
+    "https://github.com/cisagov/vulnrichment/blob/be53b1e1fe165098245bfbe673cd589934da7e3a/2026/61xxx/CVE-2026-61609.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6d30197c1ae0e0b416414f6f0ed16544575a73f/SSVC/data/2026/CVE-2026-61609.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6d30197c1ae0e0b416414f6f0ed16544575a73f/CVE/data/2026/CVE-2026-61609.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/152c4988e6630edbe300b2d9554f35d9c7963812/data/2026/CVE-2026-61609.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-61609.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-616xx/CVE-2026-61609.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/7c77ebcc357386c71db522f18fa574b7642f74e0/data/anchore/2026/CVE-2026-61609.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/c7d5dce5040792ac66f5f987fd2ed030b45edce8/reports/2026-07-28/TIER_2_CVE-2026-61609.md",
+]
