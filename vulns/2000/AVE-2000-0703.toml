@@ -1,12 +1,12 @@
 [basic]
-description = "HP-UX 11.00 和 10.20 版本的 crontab 程序存在符号链接跟随漏洞，本地攻击者可利用 crontab -e 编辑功能创建指向任意目标文件的符号链接，在编辑会话中退出时，crontab 会生成包含目标文件内容的错误信息，导致敏感文件泄露。该漏洞影响 HP-UX 11.00/10.20 系统，CVSS 评分 5.5（中危），攻击向量为本地，需低权限用户交互，无需用户干预，主要影响机密性。攻击者需具备本地账户且能执行 crontab 命令，通过竞争条件在编辑窗口期替换文件为符号链接实现任意文件读取。"
-published = "2000-12-19T05:00:00Z"
-remediation = "建议立即安装 HP-UX 11.00 Service Pack 01 或 HP-UX 11.0A 支持补丁（PH23456）修复 crontab 漏洞。升级到 PH23456 或更高版本可修复 crontab 通过 -e 选项读取任意文件的问题。通过添加文件权限检查和防止符号链接攻击的代码修改，防止未经授权的 symlink 读取攻击。在升级前，如无法立即应用补丁，可在 crontab.allow 文件中限制用户权限，并通过 chroot 沙盒化 crontab 编辑环境作为临时缓解措施。"
+description = "HP-UX 11.00/10.20 的 crontab 工具存在符号链接跟随漏洞（CWE-59）。本地攻击者可通过 crontab -e 选项创建会话，在编辑过程中将临时文件替换为指向目标文件的符号链接，退出会话后 crontab 会读取该符号链接指向的文件并将错误信息返回给攻击者，从而实现对任意文件的读取。该漏洞影响 HP-UX 10.20 和 11.00 版本，CVSS 评分 5.5，危害等级中危。攻击者需拥有本地访问权限，利用难度较低。"
+published = "2000-12-19T05:00:00.000"
+remediation = "升级 HP-UX 至 11.11（11i v1）或更高版本，或安装对应补丁包 PHCO_24672（11.00）和 PHCO_24671（10.20）。如无法升级，在 /var/adm/cron/cron.allow 中严格限制 crontab 使用用户白名单，移除 crontab 的 setuid 位（chmod u-s /usr/bin/crontab）作为临时缓解措施，并监控 /tmp 目录的符号链接创建行为。"
 score = 5.5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "HP HP-UX crontab 符号链接任意文件读取漏洞"
-updated = "2026-06-16T21:52:53Z"
+sources = ["avd"]
+title = "HP HP-UX crontab 任意文件读取漏洞"
+updated = "2026-06-16T21:52:53.140"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-0972"]
 ave_id = "AVE-2000-0703"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-10/0317.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5410",
     "https://www.exploit-db.com/exploits/20329",
-    "https://github.com/CVEProject/cvelistV5/blob/285830d3bc68381daeff2169c3b0a4500df03b19/cves/2000/0xxx/CVE-2000-0972.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/dd1c73c7d44a762cc5a69d15ad07fe20976d7aec/CVE/data/2000/CVE-2000-0972.json",
+    "https://github.com/CVEProject/cvelistV5/blob/3eae031b5df6a3c6a1cc304f5e054cd002eb1bd6/cves/2000/0xxx/CVE-2000-0972.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/5d8a0e95a20fbbbf3a45b439096d57770d841dec/CVE/data/2000/CVE-2000-0972.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0972",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0972.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-0972.json",
-    "https://github.com/opencve/opencve-kb/blob/ce1c7bf4468f226d3b5ffdf52fb2db0cd4a31a97/2000/CVE-2000-0972.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/0xxx/CVE-2000-0972.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e60bb3a306b43cc668d535cff411b9566d5ecc1b/CVE-2000/CVE-2000-09xx/CVE-2000-0972.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-0972.json",
+    "https://github.com/opencve/opencve-kb/blob/b7a3f185461ada4598db88be1e2c953e4d2cddec/2000/CVE-2000-0972.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c45038e15e6e81771cce5512f28070ebf02ca969/2000/0xxx/CVE-2000-0972.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-09xx/CVE-2000-0972.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0972.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0972.json",
 ]
