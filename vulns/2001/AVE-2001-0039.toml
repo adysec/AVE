@@ -1,12 +1,12 @@
 [basic]
-description = "Solaris 2.7 与 2.8 系统中的 catman 工具在处理临时文件时存在不安全的符号链接竞争漏洞，本地攻击者可通过创建恶意的 sman_PID 符号链接指向任意系统文件，当 catman 以高权限写入临时文件时即可覆盖目标文件内容，导致系统文件完整性遭破坏或权限提升。该漏洞利用条件为攻击者拥有本地账号并能预测临时文件名，CVSS 评分 1.2，危害等级低。"
-published = "2001-02-12T05:00:00Z"
-remediation = "建议安装 Sun 官方补丁 107018-10（Solaris 2.7）或 108500-10（Solaris 2.8），修复 catman 临时文件创建的不安全方式。如无法立即打补丁，可临时移除 catman 的 setuid 权限：`chmod 555 /usr/bin/catman`，并设置环境变量 TMPDIR 指向仅当前用户可写的临时目录作为缓解措施。"
+description = "Solaris 2.7 和 2.8 系统中的 catman 工具在处理临时文件时存在不安全的符号链接（symlink）竞争条件漏洞。本地攻击者可通过在 /tmp 目录下预创建恶意的 sman_PID 符号链接，诱使 catman 以 root 权限向攻击者指定的任意文件写入数据，从而实现任意文件覆盖。该漏洞攻击复杂度较高，需要本地访问权限且依赖时序竞争条件，CVSS 评分 1.2，危害等级低。建议升级到不受影响的 Solaris 版本或限制 catman 的 suid 权限。"
+published = "2001-02-12T05:00:00.000"
+remediation = "Solaris 2.7 和 2.8 已停止维护，官方不再提供安全补丁。建议升级至受支持的 Solaris 10/11 或迁移至 Oracle Solaris 11.4 SRU。临时缓解措施：限制本地用户登录权限，使用 `umask 077` 保护临时目录，或通过 `solaris.symlink_hardlink` 安全策略限制符号链接攻击。"
 score = 1.2
 severity = "LOW"
-sources = ["exploitdb"]
-title = "Sun Solaris catman 本地不安全临时文件符号链接漏洞"
-updated = "2026-06-16T21:53:38Z"
+sources = ["cve"]
+title = "Sun Solaris catman 本地符号链接攻击漏洞"
+updated = "2026-06-16T21:53:38.760"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0095"]
 ave_id = "AVE-2001-0039"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.osvdb.org/6024",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5788",
     "https://www.exploit-db.com/exploits/233",
-    "https://github.com/CVEProject/cvelistV5/blob/938c8c7c42ae0687cb1b4bbda0b614ab7a159527/cves/2001/0xxx/CVE-2001-0095.json",
+    "https://github.com/CVEProject/cvelistV5/blob/160b2769d023cca3bba96db1842bf8222b2e286a/cves/2001/0xxx/CVE-2001-0095.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6d30197c1ae0e0b416414f6f0ed16544575a73f/CVE/data/2001/CVE-2001-0095.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0095",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2001-0095.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/09ea4c6e198f67c97f9e843f2fc9dbea00a9ec98/CVE/data/2001/CVE-2001-0095.json",
-    "https://github.com/github/advisory-database/blob/36ddac9224d3973c64320c39be98ecc1f1ca5395/advisories/unreviewed/2022/04/GHSA-pp2v-6wrc-g8x5/GHSA-pp2v-6wrc-g8x5.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2001-0095.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150600_150700.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--d0b44527-6098-4996-9dcd-b55cdceb0aae.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0095.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0095.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-00xx/CVE-2001-0095.json",
+    "https://github.com/opencve/opencve-kb/blob/debb5b9043b725433d6b6e41048f63a9bcce2f7e/2001/CVE-2001-0095.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c45038e15e6e81771cce5512f28070ebf02ca969/2001/0xxx/CVE-2001-0095.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0095.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0095.json",
 ]
