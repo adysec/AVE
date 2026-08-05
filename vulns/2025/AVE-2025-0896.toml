@@ -1,0 +1,41 @@
+[basic]
+description = "Linux 内核块层 BFQ I/O 调度器存在释放后重用漏洞（CWE-416）。在调用 bfq_split_bfqq() 函数拆分请求队列后，waker_bfqq 指针指向的内存已被释放，但后续代码仍通过 bfq_init_rq() 中的 hlist_add_head 操作访问该已释放内存，导致内核 slab 被非法读写。该漏洞影响 Linux 内核 6.6 及之前版本中启用 BFQ 调度器的系统。攻击者需在本地拥有低权限访问权限（PR:L），可通过发起大量文件系统 I/O 操作（如 ext4 目录遍历或 ioctl FIEMAP）触发竞争条件，成功利用可导致权限提升、敏感数据泄露或系统拒绝服务。"
+published = "2025-01-19T11:15:07.667"
+remediation = '建议将 Linux 内核升级至以下已修复版本之一：5.15.177、6.1.125、6.6.72、6.11 或 6.12.10。可通过发行版包管理器执行更新，如 Debian/Ubuntu 运行 apt upgrade linux-image，RHEL/CentOS 运行 dnf update kernel。如暂无法升级，可通过内核启动参数 elevator=deadline 或 elevator=mq-deadline 禁用 BFQ 调度器，或通过 grub 设置 GRUB_CMDLINE_LINUX_DEFAULT 添加 "elevator=mq-deadline" 后运行 update-grub 并重启。'
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 BFQ I/O 调度器释放后使用漏洞"
+updated = "2026-06-17T08:43:53.313"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21631"]
+ave_id = "AVE-2025-0896"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/2550149fcdf2934155ff625d76ad4e3d4b25bbc6",
+    "https://git.kernel.org/stable/c/bc2aeb35ff167e0c6b0cedf0c96a5c41e6cba1ed",
+    "https://git.kernel.org/stable/c/be3eed59ac01f429ac10aaa46e26f653bcf581ab",
+    "https://git.kernel.org/stable/c/f587c1ac68956c4703857d650d9b1cd7bb2ac4d7",
+    "https://git.kernel.org/stable/c/fcede1f0a043ccefe9bc6ad57f12718e42f63f1d",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21631.md",
+    "https://github.com/0xMarcio/cve/blob/aaba13955b6f4608c4d9d9901b41c86a0a514345/2025/CVE-2025-21631.md",
+    "https://github.com/CVEProject/cvelistV5/blob/d3cd9ba427c33ce366db05d18df45d3a792f5f74/cves/2025/21xxx/CVE-2025-21631.json",
+    "https://github.com/cisagov/vulnrichment/blob/f0157eb1d3b7a8fabc66703c974f4c55304d1fa1/2025/21xxx/CVE-2025-21631.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4c1d71175e32f1e731b0a7d2c22a87887c3669cd/SSVC/data/2025/CVE-2025-21631.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21631.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4c1d71175e32f1e731b0a7d2c22a87887c3669cd/CVE/data/2025/CVE-2025-21631.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/853fff3f588474906eaaeec56c4eeef32edfc06c/CVEs/2025/CVE-2025-21631.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21631-2025-11-03-1441",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21631.json",
+]
