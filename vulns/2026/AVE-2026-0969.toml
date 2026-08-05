@@ -1,0 +1,41 @@
+[basic]
+description = "OliveTin 是一款用于执行预配置 Shell 命令的开源 Web 管理界面。其 `checkShellArgumentSafety()` 函数维护了一个不安全的参数类型黑名单，但未将 `regex:` 前缀的自定义参数类型纳入其中。当 Shell 模式动作使用 `regex:` 类型参数时，该参数会绕过安全检查，其值通过 Go 的 `text/template` 直接拼接至 `sh -c` 命令字符串中且未经转义，导致 OS 命令注入。即使管理员设置了看似严格的正则表达式（如 `^[^;|&<>]+$`），攻击者仍可通过 POSIX 命令替换语法（如 `$(command)`）绕过限制。未认证的远程攻击者仅需网络访问即可在 OliveTin 进程用户权限下执行任意系统命令。该漏洞影响 OliveTin 3000.2.0 至 3000.17.0 版本，已在 3000.17.0 版本中修复。"
+published = "2026-07-29T21:17:48.120"
+remediation = "立即升级至 OliveTin 3000.17.0 或更高版本。如使用 Docker 部署，执行 `docker pull ghcr.io/olivetin/olivetin:3000.17.0` 并重启容器。如使用二进制部署，从 https://github.com/OliveTin/OliveTin/releases/tag/3000.17.0 下载最新版本替换。临时缓解措施：在反向代理层限制对 `/api/v1/StartAction` 端点的访问，仅允许受信任 IP 调用；同时审查所有 Shell 模式 action 配置，避免使用 `regex:` 前缀的自定义参数类型。"
+score = 6.6
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "OliveTin 操作系统命令注入漏洞"
+updated = "2026-07-30T19:21:23.297"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-67438",
+    "GHSA-xc5w-4v5w-7x65",
+]
+ave_id = "AVE-2026-0969"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/OliveTin/OliveTin/commit/995ff79736f2bccc364448a3ece84087b550b232",
+    "https://github.com/OliveTin/OliveTin/releases/tag/3000.17.0",
+    "https://github.com/OliveTin/OliveTin/security/advisories/GHSA-xc5w-4v5w-7x65",
+    "https://github.com/CVEProject/cvelistV5/blob/90ce235668535187d033418a98446c7a08506c82/cves/2026/67xxx/CVE-2026-67438.json",
+    "https://github.com/cisagov/vulnrichment/blob/1d36f3e9bfc6430c5bcee0e6bd4df5788a4946f1/2026/67xxx/CVE-2026-67438.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eef981a35a6293dd42587dac1f9be4de4ae1256e/CVE/data/2026/CVE-2026-67438.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eef981a35a6293dd42587dac1f9be4de4ae1256e/SSVC/data/2026/CVE-2026-67438.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-67438.md",
+    "https://github.com/anchore/nvd-data-overrides/blob/152c4988e6630edbe300b2d9554f35d9c7963812/data/2026/CVE-2026-67438.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-67438.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-674xx/CVE-2026-67438.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/7c77ebcc357386c71db522f18fa574b7642f74e0/data/anchore/2026/CVE-2026-67438.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/go/github.com/OliveTin/OliveTin/CVE-2026-67438.yml",
+]
