@@ -1,26 +1,12 @@
 [basic]
-description = """
-" mixed in. I need to produce clean Chinese text ≥50 characters covering: vulnerability principle (buffer overflow), affected scope (Netscape Messaging Server 4.15 Patch 2), attack conditions (remote/local, authentication).
-
-Note the validator said "description 字段为空" — likely because the HTML/XML tags broke parsing. I need to output just the clean description text.
-
-Let me write the description. The NVD says "local users", but the CVSS vector says AV:N (network) and Au:N. There's ambiguity. I'll follow the NVD description text faithfully but can note the CVSS vector context. Actually, to be safe and accurate, I should describe per NVD: buffer overflow in IMAP server in Netscape Messaging Server 4.15 Patch 2, allows local users to execute arbitrary commands via a long LIST command. Since the CVSS vector shows network and no auth, some sources consider it exploitable remotely. I could mention that while NVD描述注明本地用户，CVSS 向量标注为网络可达且无需认证。
-
-Let me craft a description ≥50 Chinese characters.
-
-Draft:
-"Netscape Messaging Server 4.15 Patch 2 的 IMAP 服务器在处理 LIST 命令时，未对命令参数长度进行充分校验，存在缓冲区溢出漏洞。攻击者可向目标服务器的 143 端口发送超长的 LIST 命令，触发缓冲区越界写入并覆盖进程内存中的关键数据，从而在服务器进程权限下执行任意命令。该漏洞可导致邮件服务器被完全控制、敏感邮件数据泄露及服务中断，甚至被用于进一步渗透内网。NVD 描述标注攻击者为本地用户，但其 CVSS 向量 AV:N/AC:L/Au:N 表明网络可达、攻击复杂度低且无需认证，CVSS 评分 10.0，危害等级严重。"
-
-That's well over 50 characters, covers principle (buffer overflow, insufficient length check), affected (Netscape Messaging Server 4.15 Patch 2), attack condition (send long LIST command; local per NVD but CVSS network/no auth).
-
-Output only within <value>..."""
-published = "2000-12-19T05:00:00Z"
-remediation = "tags.<value>Netscape Messaging Server 4.15 已停止维护，官方无补丁可安装，强烈建议将 IMAP 服务迁移至受支持的企业邮件服务器。无法立即迁移时，请在防火墙上仅对受信网段开放 143 端口，并在服务器上配置访问控制列表限制可登录的本地账户，移除不必要账户并按最小权限原则分配；同时部署 IPS/WAF 规则限制 IMAP LIST 命令的参数长度并告警，定期审计 IMAP 日志以发现超长请求等异常攻击行为。"
+description = "Netscape Messaging Server 4.15 Patch 2 的 IMAP 服务组件存在缓冲区溢出漏洞。远程攻击者无需身份认证即可通过向目标服务器的 IMAP 端口发送特制的超长 LIST 命令触发该漏洞，导致缓冲区溢出，进而可在服务器上以服务进程权限执行任意代码。该漏洞 CVSS 评分 10.0，危害等级严重，影响所有运行受影响版本的 Netscape Messaging Server 系统。"
+published = "2000-12-19T05:00:00.000"
+remediation = "Netscape Messaging Server 4.15 Patch 2 已停止维护，官方不再提供安全更新。建议立即迁移至受支持的邮件服务器（如 Dovecot 或 Microsoft Exchange），并停止使用该版本。在迁移完成前，可在防火墙层面限制 IMAP 端口（143/tcp）仅允许受信任 IP 访问，同时禁用不必要的 IMAP 服务以降低攻击面。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "Netscape Messaging Server IMAP服务器缓冲区溢出远程代码执行漏洞"
-updated = "2026-06-16T21:52:51Z"
+sources = ["avd"]
+title = "Netscape Messaging Server IMAP 缓冲区溢出漏洞"
+updated = "2026-06-16T21:52:51.743"
 
 [exploit]
 exp_urls = []
@@ -31,7 +17,7 @@ aliases = ["CVE-2000-0961"]
 ave_id = "AVE-2000-1777"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -39,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-09/0334.html",
     "http://www.securityfocus.com/bid/1721",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5292",
-    "https://github.com/CVEProject/cvelistV5/blob/e409cc3aa72de0994d4d1b2baf38bcac39a42cdc/cves/2000/0xxx/CVE-2000-0961.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/CVE/data/2000/CVE-2000-0961.json",
+    "https://github.com/CVEProject/cvelistV5/blob/160b2769d023cca3bba96db1842bf8222b2e286a/cves/2000/0xxx/CVE-2000-0961.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2850e862cb7837f03ec4af0066c4f9f10414e805/CVE/data/2000/CVE-2000-0961.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0961",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0961.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-0961.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/93d966ccbf562a1a0fe2dcab2089012ce2b11591/CVE-2000/CVE-2000-09xx/CVE-2000-0961.json",
-    "https://github.com/opencve/opencve-kb/blob/47bb69b00d30a4ddac9a224d4b4672d3efbf78ef/2000/CVE-2000-0961.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/0xxx/CVE-2000-0961.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-0961.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-09xx/CVE-2000-0961.json",
+    "https://github.com/opencve/opencve-kb/blob/debb5b9043b725433d6b6e41048f63a9bcce2f7e/2000/CVE-2000-0961.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c45038e15e6e81771cce5512f28070ebf02ca969/2000/0xxx/CVE-2000-0961.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0961.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0961.json",
 ]

