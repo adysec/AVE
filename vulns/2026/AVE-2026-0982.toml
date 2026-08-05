@@ -1,0 +1,35 @@
+[basic]
+description = "QEMU 的 virtio-gpu 驱动程序中存在整数溢出漏洞。calc_image_hostmem() 函数在计算 2D 图像所需内存大小时，使用 32 位整数进行宽度与每像素比特数的乘法运算，当攻击者构造特制的图像尺寸参数时可触发整数溢出，导致分配的内存缓冲区过小，进而引发堆缓冲区溢出。本地攻击者需先在客户机中获得低权限代码执行能力，随后通过向 virtio-gpu 发送恶意构造的资源创建请求触发该漏洞，成功利用可实现权限提升，在宿主机上下文中执行任意代码。该漏洞影响 QEMU 全版本（至修复前），CVSS 评分 8.8，危害等级高。Red Hat 已发布补丁修复此漏洞。"
+published = "2026-01-01"
+remediation = "立即升级 QEMU 至包含补丁的版本（如 openSUSE 升级至 10.0.11 或更高版本）。补丁已合入 QEMU 主线，commit 为 9462ff4695aa 的后续修复，将 calc_image_hostmem 返回值类型提升为 uint64_t 并添加显式整数溢出检查。如无法立即升级，可在虚拟机配置中禁用 virtio-gpu 设备（移除 -device virtio-gpu-pci 参数），改用其他显示后端（如 VGA 或 cirrus）作为临时缓解措施。"
+score = 5
+severity = "MEDIUM"
+sources = ["zdi"]
+title = "QEMU virtio-gpu 整数溢出本地权限提升漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-3886"]
+ave_id = "AVE-2026-0982"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/neuvector/vul-source/blob/07f0931dd35f996dbf6b1a3296eaf61225fd7563/ubuntu-cve-tracker/active/CVE-2026-3886",
+    "https://github.com/canonical/ubuntu-security-notices/blob/7ed81620937dbbe588ba076b06c9b1f7307f7b38/vex/cve/2026/CVE-2026-3886.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/7ed81620937dbbe588ba076b06c9b1f7307f7b38/osv/cve/2026/UBUNTU-CVE-2026-3886.json",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/c6e457224984003aac7610b750677033fb679879/tracker/CVE/2026/CVE-2026-3886.json",
+    "https://github.com/RogoLabs/GhostCVEs/blob/35ee4620a1d6aa9f7041bed7966c6ce98122c682/reports/ghost_report.md",
+    "https://github.com/delikely/ZDI_Advisories/blob/695f74e4e3ab9f7c4448908de5b0c1ff3ae1e78b/advisories/2026/ZDI-26-332.json",
+    "https://github.com/Huangu0/sec_rss_news/blob/49ba1b9a8ffec847e3fe63302bb21daf4e8fbfc2/output/daily/2026-06-10.md",
+    "https://github.com/proshiba/vuln-intel-agent/blob/5b70e3548ecb3b7fb4c680108057261c6ec7c238/vulndb/vulns/suse/2026/07/VW-2026-1123.yaml",
+    "https://github.com/rapidfort/security-advisories/blob/e009e0a4b39022ec1d8a1fff4fdbba643361307f/OS/debian/qemu_advisory.json",
+    "https://github.com/lucacapacci/cve_news/blob/db75e4e6ae0f6edaae1a58b8e4b24ae7c2f170f1/news/2026/06/2026-06-09.json",
+]
