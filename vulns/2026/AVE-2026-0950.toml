@@ -1,0 +1,41 @@
+[basic]
+description = "Flyto2 Core 是用于自动化与 AI Agent 工作流的执行内核，其 2.26.7 之前的版本中，独立的 flyto-verification 验证服务存在缺失关键功能认证（CWE-306）漏洞。该服务在 0.0.0.0:8344 端口监听并暴露无需认证的 POST /run 接口，攻击者无需任何权限即可通过网络远程访问。漏洞根因在于：/run 接口未设置任何认证依赖（缺少 Depends 认证检查）；请求体中的 callback_url 被原样用于发起出站 POST 请求，既未经过 target_allowed 白名单校验，也没有任何 SSRF 防护检查；同时服务在发出回调时无条件携带 X-Internal-Key 头，泄露环境变量 FLYTO_RUNNER_SECRET。攻击者可构造恶意 callback_url 指向内网或云元数据地址，实现带可控 JSON 请求体的未授权 SSRF 访问内部接口，或将内部 runner 密钥外泄至攻击者控制的服务器，进而伪造认证回调接管真实引擎通信。该漏洞影响 Flyto2 Core 2.26.6 及更早版本，CVSS 评分 9.3，危害等级严重，官方已在 2.26.7 版本中修复。"
+published = "2026-07-29T19:16:51.770"
+remediation = "建议立即将 flyto-core 升级至 2.26.7 或更高版本，官方已在该版本修复此漏洞（commit 0a0a528，参考 GHSA-jx74-cqjv-2c67）。如无法立即升级，请采取以下临时缓解措施：1）在防火墙上将 8344 端口（flyto-verification 服务监听端口）限制为仅回环地址 127.0.0.1 可访问，禁止外部网络访问，并修改 Dockerfile.verification 将启动参数由 0.0.0.0 改为 127.0.0.1；2）配置服务代理前，在网关或反向代理层对 /run 端点强制要求身份认证（如 API Key），拦截未经认证的 POST 请求；3）设置对外部回调 URL 的 SSRF 防护，仅允许访问预设的内网信任主机清单，拒绝指向云元数据地址（如 169.254.169.254）及内网 IP 的回调；4）及时轮换已泄露的 FLYTO_RUNNER_SECRET 环境变量值，避免旧密钥被利用伪造回调。升级前请勿将 flyto-verification 暴露于不可信网络。"
+score = 9.3
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Flyto2 Core 未授权服务端请求伪造与内部运行器密钥泄露漏洞"
+updated = "2026-07-30T16:41:25.650"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-67426",
+    "GHSA-jx74-cqjv-2c67",
+]
+ave_id = "AVE-2026-0950"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/flytohub/flyto-core/commit/0a0a528520ec18f5a21f1ddf858a71cc1edfb6e9",
+    "https://github.com/flytohub/flyto-core/releases/tag/v2.26.7",
+    "https://github.com/flytohub/flyto-core/security/advisories/GHSA-jx74-cqjv-2c67",
+    "https://github.com/CVEProject/cvelistV5/blob/cbc8909f965784fa84e604f999ad78ba1a862d6c/cves/2026/67xxx/CVE-2026-67426.json",
+    "https://github.com/cisagov/vulnrichment/blob/a80088c333d18acfc433e05d369205d159a29769/2026/67xxx/CVE-2026-67426.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d9d0e44f54f90ad1b4ec106b1cac94be29b99757/CVE/data/2026/CVE-2026-67426.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d9d0e44f54f90ad1b4ec106b1cac94be29b99757/SSVC/data/2026/CVE-2026-67426.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-67426.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-67426.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-674xx/CVE-2026-67426.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/pypi/flyto-core/CVE-2026-67426.yml",
+    "https://github.com/fankh/vulnerability-poc/blob/d2f211a2392a33dc3802dfba918604d771c8ebf3/2026/CVE-2026-67426/README.md",
+    "https://github.com/fankh/vulnerability-poc/blob/d2f211a2392a33dc3802dfba918604d771c8ebf3/2026/CVE-2026-67426/README_KO.md",
+]
