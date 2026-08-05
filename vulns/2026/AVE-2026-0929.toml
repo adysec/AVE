@@ -1,0 +1,41 @@
+[basic]
+description = "MCP Ruby SDK 的 stdio 传输层（MCP::Server::Transports::StdioTransport 和 MCP::Client::Stdio）在读取换行符分隔的 JSON-RPC 帧时，使用 IO#gets 方法且未设置字节长度限制。攻击者可通过持续发送不含换行符的数据流，使 gets 方法无限累积字符串内容，最终耗尽进程内存导致服务崩溃（DoS）。该漏洞影响 mcp gem 0.23.0 之前的所有版本，CVSS 评分 6.2，危害等级中危。修复方式为升级至 0.23.0 版本，或对 gets 调用添加 4 MiB 的最大行长度限制。"
+published = "2026-07-29T20:17:10.790"
+remediation = "立即将 mcp gem 升级至 0.23.0 或更高版本（`gem update mcp`）。如无法升级，在调用 `StdioTransport` 和 `Client::Stdio` 的代码中为 `IO#gets` 添加第二个参数限制最大读取字节数（建议 4MB），并捕获超限异常关闭连接。对于 HTTP-to-stdio 桥接部署，在转发层增加帧长度校验。"
+score = 6.2
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "MCP Ruby SDK stdio 传输无限制行缓冲区导致内存耗尽拒绝服务漏洞"
+updated = "2026-07-30T19:30:33.710"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-63119",
+    "GHSA-7683-3w9x-ch42",
+]
+ave_id = "AVE-2026-0929"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/modelcontextprotocol/ruby-sdk/commit/267b8fa6285453525c81ce43db6b7dcd7a8a8c2f",
+    "https://github.com/modelcontextprotocol/ruby-sdk/releases/tag/v0.23.0",
+    "https://github.com/modelcontextprotocol/ruby-sdk/security/advisories/GHSA-7683-3w9x-ch42",
+    "https://github.com/rubysec/ruby-advisory-db/blob/1fe38c32f136c99453f4b0912eefa3da079988c2/gems/mcp/CVE-2026-63119.yml",
+    "https://github.com/CVEProject/cvelistV5/blob/7db8931ea0378982e66f435e269a4ed0e4efb7aa/cves/2026/63xxx/CVE-2026-63119.json",
+    "https://github.com/cisagov/vulnrichment/blob/f3d37661d066a8369751ae98676c11a2d9ec4d21/2026/63xxx/CVE-2026-63119.json",
+    "https://github.com/rubysec/rubysec.github.io/blob/0a5bc60878096d39ce1382513d3aa01b5d5c73a3/advisories/_posts/2026-07-07-CVE-2026-63119.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f80eaead111eac7128eaf77e46b372cdbd675cc9/CVE/data/2026/CVE-2026-63119.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f80eaead111eac7128eaf77e46b372cdbd675cc9/SSVC/data/2026/CVE-2026-63119.json",
+    "https://github.com/mcp-security-project/mcp-cve-project/blob/8f19c6692789742733d784a4d63207b68cb14525/cves/CVE-2026-63119.md",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-63119.md",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/0b3a6d2dd2e98c1505f2a4ab6d48402e1d0da9c5/proposals/nvd/CVE-2026-63119.proposal.yaml",
+    "https://github.com/anchore/nvd-data-overrides/blob/152c4988e6630edbe300b2d9554f35d9c7963812/data/2026/CVE-2026-63119.json",
+]
