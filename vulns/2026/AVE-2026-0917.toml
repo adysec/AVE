@@ -1,0 +1,38 @@
+[basic]
+description = "OpenAM（Open Identity Platform）的远程认证端点 `/authservice` 存在反序列化远程代码执行漏洞。该端点接受 XML 元素中指定的任意 Java 类名，服务端通过 `Class.forName` 加载并实例化该类且未做任何校验。在默认配置下，未经身份认证的远程攻击者可利用该漏洞向目标服务器发送特制的 XML 请求，触发任意 Java 类的加载与实例化，最终实现远程代码执行，导致服务器完全沦陷。该漏洞影响 OpenAM 16.1.1 及之前所有版本，CVSS 评分 10.0，危害等级严重。建议升级至 16.1.2 版本修复。"
+published = "2026-01-01"
+remediation = "立即升级 OpenAM 至 16.1.2 版本，该版本修复了 AuthXMLRequest.parseXML 中未经验证的 Class.forName 调用，仅允许实现 DSAMECallbackInterface 的类被实例化，并对序列化 Subject 值做了白名单限制。如无法立即升级，应在反向代理或 WAF 层面彻底阻断外部对 /authservice 端点的访问。注意：启用 sunRemoteAuthSecurityEnabled 无法缓解此漏洞，因为类实例化发生在安全令牌校验之前。"
+score = 9.8
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "OpenAM 未授权远程代码执行漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-62379",
+    "GHSA-wg5r-wc3x-39vc",
+]
+ave_id = "AVE-2026-0917"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/opencve/opencve-kb/blob/e9abd745a1d6114f0fa7d3f67607c023bdf3fa37/2026/CVE-2026-62379.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/maven/org.openidentityplatform.openam/openam-core/CVE-2026-62379.yml",
+    "https://github.com/cyberdudebivash-pvt-ltd/cyberdudebivash-blog/blob/2e0f16a8a0a111ce21baaf7839f3107dffffd682/cve/CVE-2026-62379.html",
+    "https://github.com/RogoLabs/consensus-engine/blob/4570dd41fb40e09eb0fcc9d076ac0114d42a834c/docs/data/2026/CVE-2026-62379.json",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/8cb9d1d568e8427adf1b0ea31b95616bb832cd51/data/history/CVE-2026-62379.json",
+    "https://github.com/cyberdudebivash-pvt-ltd/cyberdudebivash-blog/blob/2e0f16a8a0a111ce21baaf7839f3107dffffd682/api/intel/cve/CVE-2026-62379.json",
+    "https://github.com/github/advisory-database/blob/d7c7dd453060ca5b6d91f7bf6e60584c25b6bbb9/advisories/github-reviewed/2026/07/GHSA-wg5r-wc3x-39vc/GHSA-wg5r-wc3x-39vc.json",
+    "https://github.com/OpenIdentityPlatform/OpenAM/blob/293a589be1c8c6548a87458b7f368f0760a83b59/openam-core/src/main/java/com/sun/identity/authentication/server/AuthXMLRequest.java",
+    "https://github.com/Exllo-Lv/Security-Learning/blob/972e3aa853b333ea59f65953f265fe4478df0a50/AI-vulnerability-collection/vuln-brief-2026-08-01.md",
+    "https://github.com/proshiba/vuln-intel-agent/blob/5b70e3548ecb3b7fb4c680108057261c6ec7c238/vulndb/vulns/github/2026/07/VW-2026-35900.yaml",
+]
