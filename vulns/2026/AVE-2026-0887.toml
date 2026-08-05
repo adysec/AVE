@@ -1,0 +1,38 @@
+[basic]
+description = "Woodpecker CI 的 Kubernetes 后端存在权限提升漏洞，由于 `backend_options.kubernetes.serviceAccountName` 选项被直接传递至 Pod 规约且未经过管理员审批控制，具有仓库 Push 权限的任意用户可在管道命名空间中以任意 ServiceAccount 身份运行管道 Pod，从而获得该账户的 RBAC 权限。若命名空间中存在高权限 ServiceAccount，攻击者可窃取数据库凭证、API 密钥、TLS 证书等敏感信息，甚至实现完全集群接管。该漏洞影响 Woodpecker v1.0.0 至 v3.15.0 版本。"
+published = "2026-01-01"
+remediation = "立即升级至 Woodpecker v3.16.0 或更高版本（PR #6792 已合入），在 `backend_options.kubernetes.serviceAccountName` 字段增加管理员权限校验。如无法升级，可采取以下缓解措施：1）限制仓库 Push 权限仅授予可信用户；2）确保 pipeline 命名空间中不存在高权限 ServiceAccount，default 账户保持最小权限；3）使用 OPA/Gatekeeper 或 Kyverno 准入策略拦截非预期的 serviceAccountName 设置。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Woodpecker Kubernetes 后端服务账户名未限制导致权限提升漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-61549",
+    "GHSA-qf34-295c-26v8",
+]
+ave_id = "AVE-2026-0887"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/opencve/opencve-kb/blob/debb5b9043b725433d6b6e41048f63a9bcce2f7e/2026/CVE-2026-61549.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/go/go.woodpecker-ci.org/woodpecker/v3/CVE-2026-61549.yml",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/go/go.woodpecker-ci.org/woodpecker/v2/CVE-2026-61549.yml",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/go/github.com/woodpecker-ci/woodpecker/CVE-2026-61549.yml",
+    "https://github.com/cyberdudebivash-pvt-ltd/cyberdudebivash-blog/blob/2b0626f5e465171e71082169b1dfac186a2f5e41/cve/CVE-2026-61549.html",
+    "https://github.com/AnuragBathani/portfolio/blob/8c8661e9870f7c6890044a151ede8b31f350064a/src/content/blog/the-name-tag-that-said-admin-cve-2026-61549.md",
+    "https://github.com/RogoLabs/consensus-engine/blob/4570dd41fb40e09eb0fcc9d076ac0114d42a834c/docs/data/2026/CVE-2026-61549.json",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/reports/GO-2026-5992.yaml",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/osv/GO-2026-5992.json",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/8cb9d1d568e8427adf1b0ea31b95616bb832cd51/data/history/CVE-2026-61549.json",
+]
