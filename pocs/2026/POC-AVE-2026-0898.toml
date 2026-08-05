@@ -1,0 +1,39 @@
+[info]
+author = "AVE"
+description = "PoC/EXP for verification"
+id = "POC-AVE-2026-0898"
+name = "LightRAG CORS Wildcard + Credentials PoC"
+severity = "critical"
+tags = [
+    "cve-2026-61736",
+    "cors",
+    "lightrag",
+]
+vuln_id = [
+    "CVE-2026-61736",
+    "AVE-2026-0898",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "OPTIONS"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+Access-Control-Request-Method = "GET"
+Origin = "https://evil.com"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["Access-Control-Allow-Origin: https://evil.com"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["Access-Control-Allow-Credentials: true"]
