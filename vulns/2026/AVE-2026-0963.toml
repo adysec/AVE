@@ -1,0 +1,41 @@
+[basic]
+description = "tags.<value>MCP Ruby SDK 的 StreamableHTTPTransport 组件在处理 JSON-RPC POST 请求时，未对 HTTP 请求体大小进行任何限制，直接将完整请求体读入内存并使用 `JSON.parse` 解析。未经身份认证的远程攻击者可通过发送超大体积的 JSON-RPC POST 请求触发该漏洞，导致进程内存被耗尽而引发拒绝服务。该漏洞影响所有使用 `MCP::Server::Transports::StreamableHTTPTransport` 的部署，无论是否启用状态模式均受影响，且无需会话令牌或凭据。攻击者仅需发送一个精心构造的超大请求即可使工作进程内存激增，在多租户环境中可导致服务不可用。该问题已在 mcp gem 0.23.0 版本中修复。"
+published = "2026-07-29T20:17:12.277"
+remediation = "升级 mcp gem 至 0.23.0 或更高版本，该版本对 StreamableHTTPTransport 的 handle_post 方法增加了请求体大小限制并在 JSON.parse 前进行 Content-Length 检查，同时为 stdio_transport.rb 的 $stdin.gets 添加了 limit 参数。若无法立即升级，可在反向代理层（如 Nginx）设置 client_max_body_size 4m 以拦截超大请求体，或通过防火墙限制单连接速率作为临时缓解措施。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "MCP Ruby SDK StreamableHTTPTransport 拒绝服务漏洞"
+updated = "2026-07-30T19:30:33.710"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-67432",
+    "GHSA-h669-8m4g-r2hc",
+]
+ave_id = "AVE-2026-0963"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/modelcontextprotocol/ruby-sdk/commit/772e0cb1f9db69312006926eee59a7287ad50166",
+    "https://github.com/modelcontextprotocol/ruby-sdk/releases/tag/v0.23.0",
+    "https://github.com/modelcontextprotocol/ruby-sdk/security/advisories/GHSA-h669-8m4g-r2hc",
+    "https://github.com/rubysec/ruby-advisory-db/blob/1fe38c32f136c99453f4b0912eefa3da079988c2/gems/mcp/CVE-2026-67432.yml",
+    "https://github.com/CVEProject/cvelistV5/blob/9c6bb4d80b2633b04c3d95cd11fee4b8b1b012c2/cves/2026/67xxx/CVE-2026-67432.json",
+    "https://github.com/cisagov/vulnrichment/blob/1d36f3e9bfc6430c5bcee0e6bd4df5788a4946f1/2026/67xxx/CVE-2026-67432.json",
+    "https://github.com/rubysec/rubysec.github.io/blob/0a5bc60878096d39ce1382513d3aa01b5d5c73a3/advisories/_posts/2026-07-07-CVE-2026-67432.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/559ec87f609d31af7a4580139706f217d81d7a2e/CVE/data/2026/CVE-2026-67432.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/559ec87f609d31af7a4580139706f217d81d7a2e/SSVC/data/2026/CVE-2026-67432.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-67432.md",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/828bc0c3d151d823031bb5f4967fccfb52da9ec4/proposals/nvd/CVE-2026-67432.proposal.yaml",
+    "https://github.com/anchore/nvd-data-overrides/blob/152c4988e6630edbe300b2d9554f35d9c7963812/data/2026/CVE-2026-67432.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-67432.json",
+]
