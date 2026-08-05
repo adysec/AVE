@@ -1,0 +1,42 @@
+[basic]
+description = 'Directus 文件导入功能中的 SSRF 防护机制存在绕过漏洞。由于 `api/src/request/is-denied-ip.ts` 将 `0.0.0.0` 视为"阻止所有本地网络接口"的关键词而非字面地址加入黑名单，导致该地址未被实际拦截。在 Linux 和 macOS 系统上，连接 `0.0.0.0` 等效于访问 localhost，因此拥有文件上传权限的认证用户可通过 `/files/import` 端点构造 `http://0.0.0.0:端口/` 的请求，使服务器访问绑定在本地回环地址上的内部服务（如数据库、缓存、内部 API），并将响应内容保存为可下载文件，实现全读取 SSRF 攻击。该漏洞影响 Directus ≤ 12.0.0 版本，CVSS 评分 7.7，危害等级高。'
+published = "2026-07-15T15:16:48.470"
+remediation = '立即升级 Directus 至 v12.0.0 或更高版本，该版本已修复 `api/src/request/is-denied-ip.ts` 中对 `0.0.0.0` 字面地址的 SSRF 防护绕过问题。如无法立即升级，可在环境变量或配置文件中将 `IMPORT_IP_DENY_LIST` 显式添加 `"0.0.0.0"` 和 `"::"` 条目，并在网络层面限制 Directus 服务器对内部网络的出站访问。'
+score = 7.7
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Directus 文件导入SSRF防护绕过漏洞"
+updated = "2026-07-28T15:47:21.380"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-61835",
+    "GHSA-j5h6-vqc3-phqh",
+]
+ave_id = "AVE-2026-0903"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/directus/directus/commit/f75b25fa44b05c6022b20f231c20bc6e50f021d7",
+    "https://github.com/directus/directus/pull/27606",
+    "https://github.com/directus/directus/releases/tag/v12.0.0",
+    "https://github.com/directus/directus/security/advisories/GHSA-j5h6-vqc3-phqh",
+    "https://github.com/CVEProject/cvelistV5/blob/3eae031b5df6a3c6a1cc304f5e054cd002eb1bd6/cves/2026/61xxx/CVE-2026-61835.json",
+    "https://github.com/cisagov/vulnrichment/blob/be53b1e1fe165098245bfbe673cd589934da7e3a/2026/61xxx/CVE-2026-61835.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2850e862cb7837f03ec4af0066c4f9f10414e805/SSVC/data/2026/CVE-2026-61835.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2850e862cb7837f03ec4af0066c4f9f10414e805/CVE/data/2026/CVE-2026-61835.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/152c4988e6630edbe300b2d9554f35d9c7963812/data/2026/CVE-2026-61835.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-61835.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/c7d5dce5040792ac66f5f987fd2ed030b45edce8/reports/2026-07-15/TIER_3_CVE-2026-61835.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-618xx/CVE-2026-61835.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/npm/directus/CVE-2026-61835.yml",
+    "https://github.com/anchore/cve-data-enrichment/blob/7c77ebcc357386c71db522f18fa574b7642f74e0/data/anchore/2026/CVE-2026-61835.json",
+]
