@@ -1,12 +1,12 @@
 [basic]
-description = '这是一个针对 mongo-express < 0.54.0 版本的严重远程命令执行漏洞。该漏洞利用了 `toBSON()` 函数处理用户输入时滥用 `vm` 依赖的不安全性，允许攻击者在不安全的环境中执行任意 Node.js 代码。攻击者无需身份验证即可远程发送精心构造的 POST 请求到 `/checkValid` 端点，通过 JavaScript 代码注入实现 RCE。受影响系统包括所有使用默认认证 `admin:pass` 的 Mongo Express 实例，攻击者可完全控制目标服务器、窃取敏感数据或将服务器用于进一步攻击。漏洞由 `vm` 依赖的不安全性引发，攻击者通过发送如 `document=this.constructor.constructor("return process")().mainModule.require("child_process").execSync("touch /tmp/success")` 的 payload 到 `/checkValid` 端点实现利用。CVSS 评分高达 9.9，评级为严重（CRITICAL）。'
-published = "2019-12-24T22:15:11Z"
-remediation = "立即将 mongo-express 升级至 0.54.0 或更高版本（npm install mongo-express@latest）。若暂时无法升级，请在应用层限制对管理接口的访问权限（如仅允受信 IP 访问 / 启用强认证），并在网络层通过防火墙禁止非必要的外部访问 mongo-express 端口（默认 8081）。"
+description = "mongo-express 0.54.0 之前版本中存在远程代码执行漏洞，漏洞位于 lib/bson.js 的 toBSON() 函数中，/checkValid 路由从外部接收输入并调用该函数，由于对 vm 依赖的不安全使用，攻击者可通过构造恶意 document 参数执行任意 Node.js 代码。攻击者需拥有有效凭据（默认账号密码 admin:pass）或已通过身份认证，在成功登录后即可利用该漏洞在目标服务器上执行任意命令，完全控制受影响系统。该漏洞影响 mongo-express 所有低于 0.54.0 的版本，CVSS 评分 9.9，危害等级严重。"
+published = "2019-12-24T22:15:11.183"
+remediation = "立即将 mongo-express 升级至 0.54.0 或更高版本：通过 npm 执行 `npm install mongo-express@0.54.0`，或在 package.json 中将依赖版本更新为 ^0.54.0 后执行 `npm update mongo-express`，然后重启服务使其生效；0.54.0 版本修复了 toBSON 方法在非安全环境下执行 exec 命令的问题。如无法立即升级，可采取以下缓解措施：1) 修改默认账号密码 admin:pass，通过环境变量 ME_CONFIG_BASICAUTH_USERNAME/ME_CONFIG_BASICAUTH_PASSWORD 配置强身份认证；2) 将服务仅绑定至内网或可信网段，禁止将 8081 管理端口暴露于公网；3) 在防火墙或安全组中限制仅允许可信来源 IP 访问该端口。该漏洞已列入 CISA KEV 目录，存在在野利用，应优先尽快修复。"
 score = 9.9
 severity = "CRITICAL"
-sources = ["kev"]
-title = "mongo-express mongo-express 远程命令执行漏洞"
-updated = "2026-06-17T02:11:36Z"
+sources = ["nuclei"]
+title = "mongo-express 远程代码执行漏洞"
+updated = "2026-06-17T02:11:36.920"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2019-10758"]
 ave_id = "AVE-2019-0168"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,8 +25,7 @@ urls = [
     "https://snyk.io/vuln/SNYK-JS-MONGOEXPRESS-473215",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2019-10758",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2019/CVE-2019-10758.yaml",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2019/CVE-2019-10758.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/1d6e950db7856d287e41f25ab3160793b53fc99d/2019/CVE-2019-10758.json",
+    "https://github.com/trickest/cve/blob/0950a261126c1029f51ef04a190f1baacd16eb08/2019/CVE-2019-10758.md",
     "https://github.com/Threekiii/Awesome-POC/blob/0f9e22b660cb1ea12c1c3668f9128d93e08da412/Web应用漏洞/mongo-express 远程代码执行漏洞 CVE-2019-10758.md",
     "https://github.com/wgpsec/AboutSecurity/blob/f3c8574e6fa1f9c1cd5aeaba5a209af796107b34/Vuln/middleware/mongo-express/CVE-2019-10758.md",
     "https://github.com/cckuailong/reapoc/blob/699762e4c31d0183733f64313d8fc3be6470bd37/2019/CVE-2019-10758/poc/pocsploit/CVE-2019-10758.py",
@@ -35,6 +34,7 @@ urls = [
     "https://github.com/gobysec/GobyVuls/blob/a5de8e3be10d51a94e0977ecd8086c176251229f/Mongo-Express/CVE-2019-10758/README.md",
     "https://github.com/veo/vscan/blob/1beb10c08e377e15b7dd417be1843bb75aa8c4f0/pocs_yml/nucleiFiles/cves/2019/CVE-2019-10758.yaml",
     "https://github.com/Ares-X/VulWiki/blob/40e0273754a36f49a6be6a77a7a4c210a07063ed/Web安全/Mongo express/（CVE-2019-10758）Mongo expres rce.md",
+    "https://github.com/Ostorlab/KEV/blob/8feadeb8b7ff54359eab87941769781629146b23/nuclei/CVE-2019-10758.yaml",
     "https://github.com/masahiro331/CVE-2019-10758",
     "https://github.com/lp008/CVE-2019-10758",
     "https://github.com/ossf-cve-benchmark/CVE-2019-10758",
