@@ -1,0 +1,41 @@
+[basic]
+description = "re2 是 Google RE2 正则表达式引擎的 Node.js 绑定库。1.25.2 之前版本中，`lastIndex` 属性在校验时使用目标字符串的 UTF-8 字节长度，但在 `exec`、`test`、`match`、`replace` 和 `split` 方法中却将其作为 UTF-16 码元偏移量使用。当目标字符串包含非 ASCII 字符时，UTF-8 字节长度大于实际字符数，攻击者可通过设置一个介于两者之间的 `lastIndex` 值绕过校验，导致堆缓冲区越界读取，进而触发不可捕获的原生进程崩溃（SIGABRT/SIGSEGV），造成拒绝服务。在部分场景下，越界读取的堆内存数据可能被复制到返回值中，导致有限的信息泄露。攻击者需具备对 `lastIndex` 的控制能力，且正则表达式须使用 `global` 或 `sticky` 标志。该漏洞已在 re2 1.25.2 版本中修复。"
+published = "2026-07-30T20:18:15.030"
+remediation = "升级 re2 至 1.25.2 或更高版本（`npm install re2@^1.25.2`），该版本已将 lastIndex 校验改为基于 UTF-16 长度而非 UTF-8 字节长度，并增加了缓冲区边界检查。如无法升级，在调用 exec/test/match 前将 lastIndex 钳制为 `subject.length`（字符串长度），且勿将 lastIndex 设置为来自不可信输入的值。"
+score = 5.7
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Google re2 越界堆读取拒绝服务漏洞"
+updated = "2026-07-31T23:17:26.660"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-67550",
+    "GHSA-ff84-5f28-78qj",
+]
+ave_id = "AVE-2026-0971"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/uhop/node-re2/commit/56293de4fc0914d7bc35f92e98de25b0d9bb417d",
+    "https://github.com/uhop/node-re2/releases/tag/1.25.2",
+    "https://github.com/uhop/node-re2/security/advisories/GHSA-ff84-5f28-78qj",
+    "https://github.com/CVEProject/cvelistV5/blob/90ce235668535187d033418a98446c7a08506c82/cves/2026/67xxx/CVE-2026-67550.json",
+    "https://github.com/cisagov/vulnrichment/blob/1d36f3e9bfc6430c5bcee0e6bd4df5788a4946f1/2026/67xxx/CVE-2026-67550.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eef981a35a6293dd42587dac1f9be4de4ae1256e/CVE/data/2026/CVE-2026-67550.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eef981a35a6293dd42587dac1f9be4de4ae1256e/SSVC/data/2026/CVE-2026-67550.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-67550.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/5197f6d88a4fb8976a538beb60d39dd5ad36efed/vex/cve/2026/CVE-2026-67550.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/5197f6d88a4fb8976a538beb60d39dd5ad36efed/osv/cve/2026/UBUNTU-CVE-2026-67550.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-67550.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/npm/re2/CVE-2026-67550.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-675xx/CVE-2026-67550.json",
+]
