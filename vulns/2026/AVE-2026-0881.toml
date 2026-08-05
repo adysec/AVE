@@ -1,0 +1,41 @@
+[basic]
+description = "Apollo 配置文件管理系统中访问密钥（AccessKey）认证存在认证绕过漏洞。当为目标应用启用 AccessKey 或管理密钥认证时，ConfigService 在认证阶段从配置和通知请求中提取 appId，若提取到的为非规范（non-canonical）appId 变体，无法与 AccessKey 缓存键精确匹配，则可能被认定为无可用密钥而放行请求，跳过签名验证。这发生在数据库排序规则将变体与真实 appId 视为等价时（如不区分重音的排序规则下的重音变体，或 PAD SPACE 排序规则下的尾随空格变体），下游释放查找仍可匹配到受保护应用。未经认证的远程攻击者可向 /configs 与 /configfiles 端点发送特制请求读取受保护应用的配置数据，造成敏感配置信息泄露（CWE-20，CVSS 7.5 高危），影响 Apollo 2.5.2 之前版本；官方已在 2.5.2 版本修复该问题。"
+published = "2026-07-15T17:16:50.960"
+remediation = '建议立即升级至 Apollo 2.5.2 或更高版本，该版本已修复 ConfigService 在 AccessKey 认证时接受非规范 appId 变体导致绕过签名校验的问题，可通过官方 GitHub Release 页面（v2.5.2）获取安装包并按官方文档完成升级。如暂时无法升级，请先为受影响应用启用 AccessKey/管理密钥认证并严格限制 /configs 与 /configfiles 接口的网络访问来源（仅允许受信内网/IP 白名单访问），同时排查数据库排序规则：将部署所用数据库的排序规则改为区分大小写、非 PAD SPACE、非重音不敏感的 collation（如 utf8mb4_bin），以阻断"规范变体等值匹配"的绕过路径；升级完成后建议重启 ConfigService 实例并复核认证日志，确认无未授权配置读取记录。'
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Apollo ConfigService 访问密钥认证绕过漏洞"
+updated = "2026-07-15T18:16:49.287"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59954",
+    "GHSA-4w3q-qpfq-v992",
+]
+ave_id = "AVE-2026-0881"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/apolloconfig/apollo/commit/310809d557e01c6803051736cd525e333ffe00ec",
+    "https://github.com/apolloconfig/apollo/releases/tag/v2.5.2",
+    "https://github.com/apolloconfig/apollo/security/advisories/GHSA-4w3q-qpfq-v992",
+    "https://github.com/CVEProject/cvelistV5/blob/a0edea60322bafbed67887cf7a4d97a55df8a9fa/cves/2026/59xxx/CVE-2026-59954.json",
+    "https://github.com/cisagov/vulnrichment/blob/66d1812e8a3da670e7f0e03b721b33c3bf9d2035/2026/59xxx/CVE-2026-59954.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6d30197c1ae0e0b416414f6f0ed16544575a73f/CVE/data/2026/CVE-2026-59954.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6d30197c1ae0e0b416414f6f0ed16544575a73f/SSVC/data/2026/CVE-2026-59954.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/152c4988e6630edbe300b2d9554f35d9c7963812/data/2026/CVE-2026-59954.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-59954.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-599xx/CVE-2026-59954.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/7c77ebcc357386c71db522f18fa574b7642f74e0/data/anchore/2026/CVE-2026-59954.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/c7d5dce5040792ac66f5f987fd2ed030b45edce8/reports/2026-07-15/TIER_2_CVE-2026-59954.md",
+    "https://github.com/TMA84/cvealert/blob/223bd6ef36843a3278e36983fe884608e497c8db/content/posts/cve-2026-59954.md",
+]
