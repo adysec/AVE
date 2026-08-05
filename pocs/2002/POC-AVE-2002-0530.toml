@@ -1,0 +1,45 @@
+[info]
+author = "AVE"
+description = "通过 HTTP 访问目标设备 Web 管理界面，检测响应中是否包含 ZyXEL/Prestige 特征字符串，确认设备型号是否为受影响的 Prestige 642R 或 Prestige 310 系列路由器"
+id = "POC-AVE-2002-0530"
+name = "ZyXEL Prestige 642R/310 ICMP 畸形数据包拒绝服务漏洞 PoC"
+severity = "medium"
+tags = ["ave-2002-0530"]
+vuln_id = [
+    "CVE-2002-1072",
+    "AVE-2002-0530",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ZyXEL",
+    "Prestige",
+    "zyxel",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/status"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ZyXEL",
+    "Prestige",
+    "zyxel",
+    "ZyNOS",
+]
