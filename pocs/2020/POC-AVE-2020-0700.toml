@@ -1,0 +1,44 @@
+[info]
+author = "AVE"
+description = "通过HTTP服务特制TTF字体文件（内嵌PNG图像尺寸>65535），在Chrome<86.0.4240.111或FreeType<2.10.3中触发Load_SBit_Png函数堆缓冲区溢出，验证漏洞存在"
+id = "POC-AVE-2020-0700"
+name = "Google Chrome FreeType 堆缓冲区溢出漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2020-15999",
+    "chrome",
+    "freetype",
+    "heap-buffer-overflow",
+]
+vuln_id = [
+    "CVE-2020-15999",
+    "AVE-2020-0700",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/exploit.html"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["CVE-2020-15999"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/font.ttf"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["true_type"]
