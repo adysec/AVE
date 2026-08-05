@@ -1,0 +1,79 @@
+[basic]
+description = 'Sudo 1.8.28 之前版本存在权限绕过漏洞。当用户在 sudoers 中被授予 Runas ALL 权限时，攻击者可通过传入特制的用户 ID 参数（如 `sudo -u\#$((0xffffffff))` 或 `sudo -u#-1` 或 `sudo -u#4294967295`）绕过策略黑名单和会话 PAM 模块的限制。由于 sudo 在处理用户 ID 时存在整数转换缺陷，`0xffffffff` 被解析为 `-1` 后又转换为 `0`（即 root 用户 ID），从而允许低权限用户以 root 身份执行任意命令，同时绕过 `!root` 配置限制并导致日志记录错误。该漏洞影响所有配置了 Runas ALL 权限的 sudo 版本，攻击者只需拥有普通用户权限即可利用，危害严重。'
+published = "2019-10-17T18:15:12.330"
+remediation = "立即将 sudo 升级至 1.8.28 或更高版本。各发行版执行对应命令：Debian/Ubuntu 使用 `apt update && apt upgrade sudo`，RHEL/CentOS 使用 `yum update sudo`，或从 sudo.ws 下载源码编译安装。升级后验证版本：`sudo --version | head -1`。临时缓解措施：检查 `/etc/sudoers` 中 Runas_Alias 和 Defaults 配置，移除 `!root` 等黑名单规则，改用 whitelist 方式限制可执行命令。"
+score = 8.8
+severity = "HIGH"
+sources = ["nuclei"]
+title = "Sudo sudo 本地提权漏洞"
+updated = "2026-06-17T02:18:07.270"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2019-14287"]
+ave_id = "AVE-2019-0074"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://lists.opensuse.org/opensuse-security-announce/2019-10/msg00042.html",
+    "http://lists.opensuse.org/opensuse-security-announce/2019-10/msg00047.html",
+    "http://packetstormsecurity.com/files/154853/Slackware-Security-Advisory-sudo-Updates.html",
+    "http://www.openwall.com/lists/oss-security/2019/10/14/1",
+    "http://www.openwall.com/lists/oss-security/2019/10/24/1",
+    "http://www.openwall.com/lists/oss-security/2019/10/29/3",
+    "http://www.openwall.com/lists/oss-security/2021/09/14/2",
+    "https://access.redhat.com/errata/RHBA-2019:3248",
+    "https://access.redhat.com/errata/RHSA-2019:3197",
+    "https://access.redhat.com/errata/RHSA-2019:3204",
+    "https://access.redhat.com/errata/RHSA-2019:3205",
+    "https://access.redhat.com/errata/RHSA-2019:3209",
+    "https://access.redhat.com/errata/RHSA-2019:3219",
+    "https://access.redhat.com/errata/RHSA-2019:3278",
+    "https://access.redhat.com/errata/RHSA-2019:3694",
+    "https://access.redhat.com/errata/RHSA-2019:3754",
+    "https://access.redhat.com/errata/RHSA-2019:3755",
+    "https://access.redhat.com/errata/RHSA-2019:3895",
+    "https://access.redhat.com/errata/RHSA-2019:3916",
+    "https://access.redhat.com/errata/RHSA-2019:3941",
+    "https://access.redhat.com/errata/RHSA-2019:4191",
+    "https://access.redhat.com/errata/RHSA-2020:0388",
+    "https://lists.debian.org/debian-lts-announce/2019/10/msg00022.html",
+    "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/IP7SIOAVLSKJGMTIULX52VQUPTVSC43U/",
+    "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/NPLAM57TPJQGKQMNG6RHFBLACD6K356N/",
+    "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/TUVAOZBYUHZS56A5FQSCDVGXT7PW7FL2/",
+    "https://resources.whitesourcesoftware.com/blog-whitesource/new-vulnerability-in-sudo-cve-2019-14287",
+    "https://seclists.org/bugtraq/2019/Oct/20",
+    "https://seclists.org/bugtraq/2019/Oct/21",
+    "https://security.gentoo.org/glsa/202003-12",
+    "https://security.netapp.com/advisory/ntap-20191017-0003/",
+    "https://support.f5.com/csp/article/K53746212?utm_source=f5support&amp%3Butm_medium=RSS",
+    "https://support.hpe.com/hpsc/doc/public/display?docLocale=en_US&docId=emr_na-hpesbns03976en_us",
+    "https://usn.ubuntu.com/4154-1/",
+    "https://www.debian.org/security/2019/dsa-4543",
+    "https://www.openwall.com/lists/oss-security/2019/10/15/2",
+    "https://www.sudo.ws/alerts/minus_1_uid.html",
+    "https://www.exploit-db.com/exploits/47502",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/main/code/cves/2019/CVE-2019-14287.yaml",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2019/CVE-2019-14287.md",
+    "https://github.com/0xMarcio/cve/blob/1a583c77a151b9c5f4534bb6fe376ed9456e38c3/2019/CVE-2019-14287.md",
+    "https://github.com/TH3xACE/SUDO_KILLER/blob/27ccd0e2d39528f9383864d5e3fe87f7bd2f60d3/CVE/CVE-2019-14287.txt",
+    "https://github.com/r1cksec/cheatsheets/blob/c4f3f62fd2230bb894ed095a6e7da8142678ff2d/exploit/CVE-2019-14287.md",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/cc5d6bb14ee44fe6899a66509a45981e4f045448/data/by-cve/CVE-2019-14287.md",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2019/CVE-2019-8561.md",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/cc5d6bb14ee44fe6899a66509a45981e4f045448/data/2019/CVE-2019-14287-n0w4n_CVE-2019-14287.md",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2019/CVE-2019-14287.md",
+    "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2019/CVE-2019-14287.md",
+    "https://github.com/redstackio/redstack-vault/blob/85cd4fca816d70b450af0cac6ca430e7220f41fb/tags/CVE-2019-14287.md",
+    "https://github.com/n0w4n/CVE-2019-14287",
+    "https://github.com/CMNatic/Dockerized-CVE-2019-14287",
+    "https://github.com/shallvhack/Sudo-Security-Bypass-CVE-2019-14287",
+    "https://github.com/Tharana/vulnerability-exploitation",
+    "https://github.com/hackingyseguridad/root",
+]
