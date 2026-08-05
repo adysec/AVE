@@ -1,12 +1,36 @@
 [basic]
-description = "OpenSSH 1.2 版本中的 scp 组件存在目录遍历漏洞。当客户端使用 scp 命令从恶意的远程 scp 服务器下载文件时，攻击者可在返回的文件名中注入 ..（点点）序列，绕过路径检查，导致客户端将文件写入任意目录或覆盖任意文件。攻击者无需身份认证即可远程触发，危害等级中等。该漏洞影响 OpenSSH 1.2.x 系列版本，用户应升级至更新版本以修复此问题。"
-published = "2000-12-19T05:00:00Z"
-remediation = "升级 OpenSSH 至 2.1.0 或更高版本（1.2.3 及以上版本已修复 scp 路径遍历漏洞），该漏洞允许恶意 scp 服务器通过 `..` 目录遍历覆盖客户端任意文件。如无法立即升级，应避免使用不可信 scp 服务器，并在客户端侧对 scp 传输的文件路径进行合法性校验，拒绝包含 `..` 的路径。"
+description = "OpenSSH 1.2.x 系列中 scp 组件存在目录遍历漏洞。当客户端连接至恶意的 scp 服务器下载文件时，攻击者可在返回的文件名中包含 ..（点点）序列，绕过路径限制将文件写入任意目录，覆盖客户端任意文件（如 .ssh/authorized_keys）。该漏洞无需身份认证，远程攻击者只需搭建恶意 SCP 服务器并诱骗受害者使用 scp 下载文件即可触发，危害较大。"
+published = "2000-12-19T05:00:00.000"
+remediation = """
+[id]
+ave_id = "AVE-2000-00001"
+aliases = ["CVE-2000-0992"]
+
+[basic]
+title = "OpenSSH 1.2 scp 目录遍历漏洞"
+description = "OpenSSH 1.2.x 系列中 scp 客户端存在目录遍历漏洞。当客户端从恶意的 scp 服务器下载文件时，服务器可返回包含 ..（点点）的构造文件名，导致客户端将文件写入任意目录，覆盖任意文件。攻击者只需搭建恶意 SCP 服务器并诱骗受害者使用 scp 下载文件即可触发，无需认证。"
+severity = "MEDIUM"
+score = 5.0
+sources = ["cve", "exploitdb"]
+published = "2000-12-19"
+updated = "2000-12-19"
+remediation = "升级至 OpenSSH 2.1 或更高版本，该版本已修复 scp 对服务器返回文件名的路径校验问题。临时缓解措施：仅从可信来源使用 scp 下载文件，或改用 sftp 替代 scp。"
+
+[references]
+urls = ["https://nvd.nist.gov/vuln/detail/CVE-2000-0992", "https://www.exploit-db.com/exploits/20253", "http://archives.neohapsis.com/archives/bugtraq/2000-09/0359.html", "http://www.securityfocus.com/bid/1742", "https://exchange.xforce.ibmcloud.com/vulnerabilities/5312"]
+
+[exploit]
+poc_urls = ["https://www.exploit-db.com/exploits/20253"]
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-08-05T00:00:00Z""""
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "OpenSSH scp 目录遍历漏洞"
-updated = "2026-06-16T21:52:55Z"
+sources = ["avd"]
+title = "OpenSSH sshd scp 目录遍历漏洞"
+updated = "2026-06-16T21:52:55.680"
 
 [exploit]
 exp_urls = []
@@ -17,7 +41,7 @@ aliases = ["CVE-2000-0992"]
 ave_id = "AVE-2000-0727"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +51,14 @@ urls = [
     "http://www.securityfocus.com/bid/1742",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5312",
     "https://www.exploit-db.com/exploits/20253",
-    "https://github.com/CVEProject/cvelistV5/blob/81757a559270348b5ed9f7df6d4fbf1e7a4fae68/cves/2000/0xxx/CVE-2000-0992.json",
+    "https://github.com/CVEProject/cvelistV5/blob/86965a1ef7a64a35a4bffc5193446981deb1b2f5/cves/2000/0xxx/CVE-2000-0992.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0992",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/03a7e425813b5ae0ce33712378801e4e929dbdb7/CVE/data/2000/CVE-2000-0992.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d9d0e44f54f90ad1b4ec106b1cac94be29b99757/CVE/data/2000/CVE-2000-0992.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0992.json",
-    "https://github.com/opencve/opencve-kb/blob/71d64a6d3b3901a67b0e17d4598d8a385b75e78d/2000/CVE-2000-0992.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/0xxx/CVE-2000-0992.md",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-0992.json",
-    "https://github.com/aquasecurity/vuln-list-debian/blob/338375e9291959a955b9c4f1b7794c4836fe2985/tracker/CVE/2000/CVE-2000-0992.json",
+    "https://github.com/opencve/opencve-kb/blob/6c23d699ab95dd8042ecb6df739cafdf209913a6/2000/CVE-2000-0992.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8e09cd003036511dff025515f28920f1d343007b/2000/0xxx/CVE-2000-0992.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-0992.json",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/c6e457224984003aac7610b750677033fb679879/tracker/CVE/2000/CVE-2000-0992.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0992.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b9f52bb052695dac5cabbd58e049eaac73697161/CVE-2000/CVE-2000-09xx/CVE-2000-0992.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-09xx/CVE-2000-0992.json",
 ]
