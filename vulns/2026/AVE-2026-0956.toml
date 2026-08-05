@@ -1,0 +1,41 @@
+[basic]
+description = "` tags as specified.<value>Flyto2 Core 是一款用于自动化和 AI 代理工作流的执行内核。在 2.26.6 版本之前，其 `image.download` 及相关文件写入模块未使用集中式路径校验函数 `validate_path_with_env_config`，而是采用调用方可控的 `output_dir` 作为写入基准目录。由于该基准目录本身由攻击者指定，`os.path.commonpath` 的路径校验形同虚设，攻击者可通过特制参数将任意 HTTP 响应内容写入进程可访问的任意文件系统路径。受影响模块包括 `image.download`、`image.convert`、`image.resize`、`image.crop`、`image.compress`、`image.rotate`、`image.watermark`、`image.qrcode_generate`、`document.excel_write`、`document.pdf_fill_form`、`document.word_to_pdf`、`document.pdf_to_word` 及 `browser.pagination` 等。该漏洞影响通过 MCP 工具或托管 API 调用模块的场景，攻击者可利用其绕过 `FLYTO_SANDBOX_DIR` 沙盒限制，向沙盒外目录写入任意内容，进而覆盖配置文件、植入 Shell 脚本、修改 cron 任务或替换 Python 模块，最终导致远程代码执行。官方已在 2.26.6 版本中修复此问题。"
+published = "2026-07-29T19:16:52.240"
+remediation = "升级到 Flyto2 Core 2.26.6 或更高版本。此版本已修复 image.download 及所有文件写入模块的路径校验缺陷，统一使用 validate_path_with_env_config() 将写入操作限制在 FLYTO_SANDBOX_DIR 沙箱目录内。如无法立即升级，请确保 FLYTO_SANDBOX_DIR 环境变量已设置为受限目录，禁止向外部模块传递 output_dir 参数，并限制能调用 file-writing 模块的主体权限。"
+score = 10
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "FlytoHub Flyto2 Core 任意文件写入漏洞"
+updated = "2026-07-30T16:41:25.650"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-67429",
+    "GHSA-2956-977x-2w3r",
+]
+ave_id = "AVE-2026-0956"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/flytohub/flyto-core/commit/d5f89d71303e3c1e6418d347c5c55fcd173cc8cc",
+    "https://github.com/flytohub/flyto-core/releases/tag/v2.26.6",
+    "https://github.com/flytohub/flyto-core/security/advisories/GHSA-2956-977x-2w3r",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/536340d55f91e2a0c09223b3194e9dd68ac48811/data/vuln/flyto2/CVE-2026-67429.yaml",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/536340d55f91e2a0c09223b3194e9dd68ac48811/data/vuln_en/flyto2/CVE-2026-67429.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/9c6bb4d80b2633b04c3d95cd11fee4b8b1b012c2/cves/2026/67xxx/CVE-2026-67429.json",
+    "https://github.com/cisagov/vulnrichment/blob/589311de821634bb522e792ce81e4454553aa500/2026/67xxx/CVE-2026-67429.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/559ec87f609d31af7a4580139706f217d81d7a2e/CVE/data/2026/CVE-2026-67429.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/559ec87f609d31af7a4580139706f217d81d7a2e/SSVC/data/2026/CVE-2026-67429.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-67429.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-67429.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-674xx/CVE-2026-67429.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/pypi/flyto-core/CVE-2026-67429.yml",
+]
