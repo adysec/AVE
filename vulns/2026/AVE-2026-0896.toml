@@ -1,0 +1,38 @@
+[basic]
+description = "nebula-mesh 网格网络中存在证书吊销机制失效漏洞。服务端虽已实现基于证书指纹的 CA 级黑名单吊销功能，但客户端代理在轮询更新时解码了 `blocklist` 字段后直接丢弃，未将其写入 `config.yml` 的 `pki.blocklist` 配置项，导致被吊销/攻陷的主机证书在有效期内（最长 365 天）仍能被所有对等节点接受，握手持续成功。攻击者窃取主机密钥和证书后，即使管理员已在 UI 中封禁该主机，攻击者仍可保持完整的网格网络访问权限，绕过所有访问控制。"
+published = "2026-01-01"
+remediation = "升级 nebula-mesh 至修复版本，确保 agent 端实现 blocklist 应用逻辑：在 `internal/agent/poller.go` 的 `poll()` 函数中增加 `updates.Blocklist` 处理分支，将服务端下发的证书指纹黑名单写入 `config.yml` 的 `pki.blocklist` 字段并触发 SIGHUP 重载配置。同时修改 `internal/configgen/marshal.go`，在 `pkiSection` 结构体中添加 `Blocklist []safeString` 字段（YAML 标签 `blocklist,omitempty`），并在 `GeneratorInput` 中增加对应字段，使服务端渲染的 `config.yml` 能携带黑名单。如无法立即升级，可在 Nebula 配置中手动设置 `pki.blocklist` 并配合 `pki.disconnect_invalid: true` 作为临时缓解措施。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Slack Nebula mesh 证书吊销未强制执行漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-61699",
+    "GHSA-cm26-5974-52h8",
+]
+ave_id = "AVE-2026-0896"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/opencve/opencve-kb/blob/551efeab39fccbe54b7908ab00ab9eb71b9e0872/2026/CVE-2026-61699.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/go/github.com/forgekeep/nebula-mesh/CVE-2026-61699.yml",
+    "https://github.com/cyberdudebivash-pvt-ltd/cyberdudebivash-blog/blob/2b0626f5e465171e71082169b1dfac186a2f5e41/cve/CVE-2026-61699.html",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/osv/GO-2026-5986.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/4570dd41fb40e09eb0fcc9d076ac0114d42a834c/docs/data/2026/CVE-2026-61699.json",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/reports/GO-2026-5986.yaml",
+    "https://github.com/rinz0x0cruz/exploitrank/blob/8cb9d1d568e8427adf1b0ea31b95616bb832cd51/data/history/CVE-2026-61699.json",
+    "https://github.com/Pig-Tail/security-research/blob/fa93bca7c20d4fe5c49e426edfbd15f89032a314/CVE-2026-61699-nebula-mesh/README.md",
+    "https://github.com/cyberdudebivash-pvt-ltd/cyberdudebivash-blog/blob/2b0626f5e465171e71082169b1dfac186a2f5e41/api/intel/cve/CVE-2026-61699.json",
+    "https://github.com/github/advisory-database/blob/d7c7dd453060ca5b6d91f7bf6e60584c25b6bbb9/advisories/github-reviewed/2026/07/GHSA-cm26-5974-52h8/GHSA-cm26-5974-52h8.json",
+]
