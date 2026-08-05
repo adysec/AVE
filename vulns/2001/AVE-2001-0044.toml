@@ -1,15 +1,12 @@
 [basic]
-description = "SuSE Linux 6.x 及 7.0 系统中的 rctab 工具在处理临时文件 rctmp 时存在竞争条件漏洞。本地攻击者可通过符号链接攻击方式，在 rctab 创建临时文件与写入文件之间的时间窗口内，将 rctmp 符号链接指向目标系统任意文件，从而以 rctab 进程权限创建或覆盖系统任意文件。该漏洞需要攻击者拥有本地账户权限，利用难度较低，可能导致敏感文件篡改或权限提升。"
-published = "2001-03-12T00:00:00Z"
-remediation = "SuSE Linux 7.0 及更早版本受此漏洞影响，官方已不再提供安全更新。建议升级至 SUSE Linux Enterprise 或其后继发行版 openSUSE。若无法升级，可手动修改 /sbin/rctab 脚本：使用 mktemp 命令替代硬编码临时文件名，创建临时目录前检查是否已存在，并移除 rctab 的 setuid 权限以降低风险。"
+description = "SuSE Linux 6.x 及 7.0 系统中的 rctab 工具存在竞争条件漏洞。rctab 在处理临时文件 rctmp 时未进行安全的原子操作，本地攻击者可通过符号链接攻击（symlink attack）在 rctab 创建临时文件前预先创建指向目标文件的符号链接，从而利用该竞争条件覆盖或创建系统任意文件，导致本地权限提升或系统文件被篡改。攻击者需要本地访问权限且利用复杂度较高，CVSS 评分 1.2。"
+published = "2001-03-12T05:00:00.000"
+remediation = "升级 SuSE Linux 至 7.0 以上版本，或移除 rctab 的 setuid 权限并限制仅 root 用户可执行。如无法升级，删除 rctab 工具或通过 chmod 移除其 suid 位以缓解风险。"
 score = 1.2
 severity = "LOW"
-sources = [
-    "cve",
-    "exploitdb",
-]
-title = "SuSE Linux rctab 竞争条件漏洞"
-updated = "2026-06-16T00:00:00Z"
+sources = ["cve"]
+title = "SuSE Linux rctab 临时文件符号链接竞争条件漏洞"
+updated = "2026-06-16T21:53:40.360"
 
 [exploit]
 exp_urls = []
@@ -20,7 +17,7 @@ aliases = ["CVE-2001-0109"]
 ave_id = "AVE-2001-0044"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -30,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/2207",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5945",
     "https://www.exploit-db.com/exploits/20555",
-    "https://github.com/CVEProject/cvelistV5/blob/40c65e734a16e244433aafd42706edabef09072d/cves/2001/0xxx/CVE-2001-0109.json",
+    "https://github.com/CVEProject/cvelistV5/blob/94290d9b87aa464f4465c4bb2b955170c77f08c2/cves/2001/0xxx/CVE-2001-0109.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/5d8a0e95a20fbbbf3a45b439096d57770d841dec/CVE/data/2001/CVE-2001-0109.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0109",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2001-0109.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/99462b1672511a2817705398570cd388f155e617/CVE/data/2001/CVE-2001-0109.json",
-    "https://github.com/github/advisory-database/blob/36ddac9224d3973c64320c39be98ecc1f1ca5395/advisories/unreviewed/2022/04/GHSA-q8rh-mh54-r97r/GHSA-q8rh-mh54-r97r.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0109.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_4.list.dict",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--dc1a6ce4-7e6d-42a9-b204-4eb3ab01072a.json",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2001.tsv",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0109.json",
+    "https://github.com/opencve/opencve-kb/blob/e9abd745a1d6114f0fa7d3f67607c023bdf3fa37/2001/CVE-2001-0109.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/e2cba2a029d0a53c95f0000f5eb42e0eb69717b8/2001/0xxx/CVE-2001-0109.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0109.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0109.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0109.json",
 ]
