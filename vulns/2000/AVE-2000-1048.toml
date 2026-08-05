@@ -1,12 +1,12 @@
 [basic]
-description = "FreeBSD 5.0 及更早版本中的 catopen 函数存在环境变量注入漏洞，本地攻击者可通过精心设置 LANG 环境变量，诱使系统加载任意路径的恶意消息目录文件，从而读取系统上的任意文件。该漏洞源于 catopen 函数未对用户提供的 LANG 环境变量进行充分过滤和路径限制，导致攻击者可以利用目录遍历技术访问受保护的系统文件。由于攻击者需要本地系统访问权限，且无需身份认证即可利用，CVSS 评分 7.2，危害等级高。成功利用该漏洞可导致敏感信息泄露，包括密码文件、配置文件等，进而可能提升权限或扩大攻击面。"
-published = "2000-12-11T05:00:00Z"
-remediation = "立即升级 FreeBSD 系统至 5.0 之后的安全修复版本，或应用 FreeBSD-SA-00:53 安全公告提供的 catopen 补丁。如无法升级，可通过限制本地用户设置 LANG 环境变量的权限作为临时缓解措施，或使用强制访问控制机制（如 jail 或 sandbox）限制本地用户对任意文件的读取能力。"
+description = "FreeBSD 5.0 及更早版本中的 catopen 函数存在任意文件读取漏洞，由于该函数在处理 LANG 环境变量时未对路径进行充分校验，导致本地攻击者可通过设置恶意的 LANG 环境变量，诱使 catopen 函数读取系统上任意文件。该漏洞影响 FreeBSD 5.0 及之前版本，攻击者需拥有本地访问权限，无需额外认证即可利用，可导致敏感信息泄露。CVSS 评分 7.2，危害等级高。"
+published = "2000-12-11T05:00:00.000"
+remediation = "` tags. Let me provide the correct remediation text based on the FreeBSD-SA-00:53 advisory I fetched.<value>升级 FreeBSD 系统至 4.1-STABLE（2000-08-22 之后）或 3.5-STABLE（2000-09-07 之后）版本，或参照 FreeBSD-SA-00:53 补丁修改 libc 源码后重新编译（cd /usr/src/lib/libc && patch < 补丁文件 && make all && make install）。然后下载运行 scan_locale.sh 扫描所有 setuid/setgid 二进制文件，对使用了 catopen() 的静态链接程序重新编译或移除 setuid 权限，动态链接程序在重编译 libc 后自动修复。临时缓解措施：移除或限制可疑 setuid/setgid 二进制文件的执行权限。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
+sources = ["avd"]
 title = "FreeBSD catopen 函数本地任意文件读取漏洞"
-updated = "2026-06-16T21:52:58Z"
+updated = "2026-06-16T21:52:58.170"
 
 [exploit]
 exp_urls = []
@@ -17,19 +17,19 @@ aliases = ["CVE-2000-1012"]
 ave_id = "AVE-2000-1048"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "https://github.com/CVEProject/cvelistV5/blob/49bdd0da7f9ed7eb2c6a7d376de641a46364c00a/cves/2000/1xxx/CVE-2000-1012.json",
+    "https://github.com/CVEProject/cvelistV5/blob/8798e9cd5ef72b150fb2d268c425b46a0c6a1408/cves/2000/1xxx/CVE-2000-1012.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1012",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/5ea14f17ec38fb7850c23056beec64877fabc5b1/2000/1xxx/CVE-2000-1012.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/06bd4bafa29f2b5ddfa107ad565d92d39b9a40e1/CVE/data/2000/CVE-2000-1012.json",
-    "https://github.com/github/advisory-database/blob/d91e95989ea5d3a9186ceb621d53a71dff03cab4/advisories/unreviewed/2022/05/GHSA-6pg4-9xrg-8x4f/GHSA-6pg4-9xrg-8x4f.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-1012.md",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88565/info.html",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--db8f1885-b561-400d-8e48-1b0d53bd5f95.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a8ca4b37f0ada74ec6b08db2309dab894440907e/CVE/data/2000/CVE-2000-1012.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1012.json",
-    "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--db8f1885-b561-400d-8e48-1b0d53bd5f95.owl",
+    "https://github.com/opencve/opencve-kb/blob/6c79f038b13e1b688fc233f22ffcfe21236e6044/2000/CVE-2000-1012.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1012.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8eabcabeccc08fd880f454fd53f7419ecf9a8d7e/2000/1xxx/CVE-2000-1012.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-10xx/CVE-2000-1012.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1012.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1012.json",
 ]
