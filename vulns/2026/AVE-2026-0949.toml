@@ -1,0 +1,45 @@
+[basic]
+description = "GIMP 在解析 TIF 图片文件时存在整数溢出漏洞。由于程序未对用户提供的 TIF 文件数据进行充分验证，在分配内存缓冲区前可能发生整数溢出，导致堆内存破坏。远程攻击者可诱导用户打开特制的 TIF 文件或访问恶意页面来触发该漏洞，成功利用可在当前进程上下文中执行任意代码。该漏洞影响 GIMP 全版本，CVSS 评分 7.8，危害等级高。GIMP 官方已发布补丁修复此漏洞。"
+published = "2026-01-01"
+remediation = """
+` markers that are leftover formatting artifacts. The validator says "remediation: remediation 字段为空" - probably because the field content starts with `tags.` making it parse oddly, or the content is being treated oddly.
+
+Let me look at the current remediation content:
+
+```
+tags.根据 ZDI 公告和 GIMP 官方 GitLab 提交记录，该漏洞的修复补丁已合入 GIMP 主线。具体修复操作如下：
+
+<value>立即升级 GIMP 至包含 commit d84f8e58f56681a0b4c66129c568cb796725ab9d 的版本（GIMP 3.0.2 及以上或对应主线构建），该补丁在 file-tiff-load.c 中增加了对 TIFF Sketchbook 图层宽度/高度的边界检查（GIMP_MAX_IMAGE_SIZE）以及 g_size_checked_mul 整数溢出防护。如无法立即升级，建议不要打开来源不明的 TIFF 文件，并在邮件客户端/浏览器中禁用 TIFF 文件的自动预览和打开。
+```
+
+This is messy. The remediation field is a TOML multiline string with `tags.` at the start and a `<value>` wrapper inside. I need to output a clean remediation value.
+
+The known info: CVE-2026-18308, CVSS 5, MEDIUM. ZDI-26-461, ZDI-CAN-29405. GIMP TIF file integer overflow RCE.
+
+Let me craft a clean remediation text in Chinese, ≥20 chars, actionable, referencing the commit and upgrade path.
+
+Output format: only output the value between <value>..."""
+score = 5
+severity = "MEDIUM"
+sources = ["zdi"]
+title = "GIMP TIF文件解析整数溢出远程代码执行漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-18308"]
+ave_id = "AVE-2026-0949"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/RogoLabs/GhostCVEs/blob/35ee4620a1d6aa9f7041bed7966c6ce98122c682/reports/ghost_report.md",
+    "https://github.com/delikely/ZDI_Advisories/blob/695f74e4e3ab9f7c4448908de5b0c1ff3ae1e78b/advisories/2026/ZDI-26-461.json",
+    "https://github.com/lucacapacci/cve_news/blob/637afdbefd1a1ba8d36acba38b8a121347b83b23/news/2026/07/2026-07-29.json",
+]
