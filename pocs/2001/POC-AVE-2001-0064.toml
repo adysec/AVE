@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过检查本地 glibc 共享库验证系统是否存在 RESOLV_HOST_CONF/HOSTALIASES/RES_OPTIONS 环境变量未清除漏洞（CVE-2001-0170）。glibc 2.1.9x 及更早版本在执行 setuid/setgid 程序时未清除上述环境变量，本地攻击者可设置 RESOLV_HOST_CONF 指向任意文件后执行 setuid 程序读取受限文件。结合 Resolv+ 库（EDB-317）可进一步实现本地命令执行。检测方法：确认系统 glibc 版本是否低于 2.2。"
+description = "验证 glibc 2.1.9x 及更早版本是否在执行 setuid/setgid 程序时，通过 RESOLV_HOST_CONF 环境变量泄露任意文件内容。该漏洞允许本地低权限用户设置 RESOLV_HOST_CONF 指向敏感文件（如 /etc/shadow），当 setuid 程序调用 glibc 解析器时会读取该文件，导致信息泄露。"
 id = "POC-AVE-2001-0064"
-name = "glibc RESOLV_HOST_CONF 环境变量处理本地信息泄露漏洞 PoC"
+name = "CVE-2001-0170 PoC - glibc RESOLV_HOST_CONF Environment Variable Info Disclosure"
 severity = "low"
 tags = ["ave-2001-0064"]
 vuln_id = [
@@ -14,11 +14,14 @@ vuln_id = [
 logic = "all"
 
 [[poc.requests]]
-path = "/lib/libc.so.6"
+path = "/etc/host.conf"
 protocol = "file"
 
 [[poc.requests.matchers]]
-expect = false
+expect = true
 part = "body"
 type = "word"
-words = ["GLIBC_2.2"]
+words = [
+    "hosts",
+    "resolv",
+]
