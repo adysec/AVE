@@ -1,12 +1,12 @@
 [basic]
-description = "FreeBSD 5.0 及更早版本中的 setlocale 函数存在任意文件读取漏洞，由于该函数在处理 LANG 环境变量时未对文件路径进行充分校验，导致本地攻击者可通过设置恶意的 LANG 环境变量来触发 setlocale 读取任意系统文件。攻击者只需拥有本地用户权限即可利用该漏洞，无需认证，攻击复杂度低。成功利用后，攻击者可读取 /etc/passwd、配置文件等敏感文件内容，导致敏感信息泄露，进而可能为提权或横向移动提供信息支撑。该漏洞影响 FreeBSD 5.0 及之前所有版本，CVSS 评分 7.2，危害等级高。"
-published = "2000-12-11T05:00:00Z"
-remediation = "升级 FreeBSD 至 5.0 之后的安全修复版本，或安装 FreeBSD-SA-00:53 安全公告中提供的补丁。如无法升级，限制本地用户登录权限，并监控 LANG 环境变量的异常使用行为。"
+description = "FreeBSD 5.0 及更早版本中的 setlocale 函数存在任意文件读取漏洞。本地攻击者可通过设置 LANG 环境变量为特制路径，触发 setlocale 函数读取系统上的任意文件内容。该漏洞源于 setlocale 在处理环境变量时未对路径参数进行充分校验，导致攻击者能够读取 /etc/master.passwd 等敏感文件，进而可能获取系统凭据或敏感信息。攻击条件要求攻击者拥有本地访问权限，无需额外认证即可利用。"
+published = "2000-12-11T05:00:00.000"
+remediation = "立即升级 FreeBSD 系统至 4.1-STABLE 或 3.5-STABLE（2000-09-07 之后版本），或手动修补 libc 源码：下载 FreeBSD-SA-00:53 补丁，以 root 执行 `cd /usr/src/lib/libc && patch < 补丁文件 && make all && make install` 重新编译 libc。修补后运行 `sh scan_locale.sh ./test_locale.sh /` 扫描所有 setuid/setgid 二进制文件，对检测出的静态链接程序移除其 setuid/setgid 权限（`chmod u-s <文件>`）或直接删除，动态链接程序在重编 libc 后自动修复。临时缓解措施：限制可登录系统的用户范围，移除可疑 setuid 二进制文件的 `o+x` 权限。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
+sources = ["avd"]
 title = "FreeBSD setlocale 函数本地任意文件读取漏洞"
-updated = "2026-06-16T21:52:58Z"
+updated = "2026-06-16T21:52:58.290"
 
 [exploit]
 exp_urls = []
@@ -17,19 +17,19 @@ aliases = ["CVE-2000-1013"]
 ave_id = "AVE-2000-1049"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "https://github.com/CVEProject/cvelistV5/blob/49bdd0da7f9ed7eb2c6a7d376de641a46364c00a/cves/2000/1xxx/CVE-2000-1013.json",
+    "https://github.com/CVEProject/cvelistV5/blob/8798e9cd5ef72b150fb2d268c425b46a0c6a1408/cves/2000/1xxx/CVE-2000-1013.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1013",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/5ea14f17ec38fb7850c23056beec64877fabc5b1/2000/1xxx/CVE-2000-1013.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/06bd4bafa29f2b5ddfa107ad565d92d39b9a40e1/CVE/data/2000/CVE-2000-1013.json",
-    "https://github.com/github/advisory-database/blob/d91e95989ea5d3a9186ceb621d53a71dff03cab4/advisories/unreviewed/2022/05/GHSA-7qqm-cwjm-3gq3/GHSA-7qqm-cwjm-3gq3.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/c54e59752dddfc9aa36c13774164384cfa0d1f04/content/CVE-2000-1013.md",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88471/info.html",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--1ea9c0b5-7db6-4333-892d-13a51fa4f36c.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a8ca4b37f0ada74ec6b08db2309dab894440907e/CVE/data/2000/CVE-2000-1013.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1013.json",
-    "https://github.com/Vasileios-Mavroeidis/semantic-stix-vulnerability/blob/30f07606133364b9623f401bc306c8c9cbcf9386/vulnerability/vulnerability--1ea9c0b5-7db6-4333-892d-13a51fa4f36c.owl",
+    "https://github.com/opencve/opencve-kb/blob/7f15ca12380fc765fd5195387509666c3b113208/2000/CVE-2000-1013.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1013.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8eabcabeccc08fd880f454fd53f7419ecf9a8d7e/2000/1xxx/CVE-2000-1013.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-10xx/CVE-2000-1013.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1013.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1013.json",
 ]
