@@ -1,0 +1,42 @@
+[basic]
+description = '''
+### Details
+A number of the functions in PilotManager pass parameters directly through to the database layer, which then does not do any escaping on the parameters. For example setPilotStatus:
+https://github.com/DIRACGrid/DIRAC/blob/1738e7c6d2f31d26f1364255d9d2e87b4896c922/src/DIRAC/WorkloadManagementSystem/Service/PilotManagerHandler.py#L343-L349
+
+https://github.com/DIRACGrid/DIRAC/blob/1738e7c6d2f31d26f1364255d9d2e87b4896c922/src/DIRAC/WorkloadManagementSystem/DB/PilotAgentsDB.py#L117
+
+This won't accept multiple statements separated by a semicolon, but a carefully crafted set of parameters containing SQL escapes would likely be able to change or return other database entries.
+
+Further to this, the PilotManager access control is only set to \"authenticated\"; this allows these functions to be called by any user. This allows any user to manage (e.g. delete, read output of) any pilot pilot job:
+https://github.com/DIRACGrid/DIRAC/blob/1738e7c6d2f31d26f1364255d9d2e87b4896c922/src/DIRAC/WorkloadManagementSystem/ConfigTemplate.cfg#L111-L118
+
+This is fixed by changing the SQL statements to use proper parameter substitution and providing a suitable set of access rules for the exported pilot management functions.
+
+### Patched versions:
+https://pypi.org/project/DIRAC/8.0.79/
+https://pypi.org/project/DIRAC/9.0.22/
+https://pypi.org/project/DIRAC/9.1.10/
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "DIRAC: SQL injection and lack of access control in PilotManager service"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-7xw9-549r-8jrc"]
+ave_id = "AVE-2026-1032"
+
+[meta]
+collected_at = "2026-08-05T21:20:05.349943885+00:00"
+status = "completed"
+
+[references]
+urls = []
