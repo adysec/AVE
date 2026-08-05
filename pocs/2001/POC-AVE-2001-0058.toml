@@ -1,29 +1,51 @@
-[info]
-author = "AVE"
-description = "验证 Microsoft Internet Explorer Telnet 客户端命令参数注入漏洞。通过 telnet: URI 协议处理器传递 -f 参数使 Telnet 客户端（SFU 2.0）将会话日志写入攻击者指定的本地文件，结合 Windows 启动目录实现下次用户登录时执行任意代码。"
-id = "POC-AVE-2001-0058"
-name = "CVE-2001-0150 PoC"
-severity = "medium"
-tags = ["cve-2001-0150"]
-vuln_id = [
-    "CVE-2001-0150",
-    "AVE-2001-0058",
+[basic]
+description = "Microsoft Internet Explorer 5.5 及更早版本的 Telnet 客户端存在参数注入漏洞。当用户访问恶意网站时，攻击者可通过 URL 中指定的命令行参数控制 IE 调用的 Telnet 会话行为，结合 Services for Unix (SFU) 2.0 提供的 Telnet 客户端会创建会话记录文件的特点，实现任意文件覆写或任意命令执行。攻击条件要求用户使用 SFU 2.0 的 Telnet 客户端并点击恶意链接，影响范围包括 IE 5.0.1/5.5/6.0 版本。"
+published = "2001-06-02"
+remediation = "安装微软安全公告 MS01-015 提供的补丁，或升级 Internet Explorer 至 5.5 SP2 及以上版本。禁用 Services for Unix 2.0 的 Telnet 客户端或限制 telnet:// 协议处理器的命令行参数传递。"
+score = 5.1
+severity = "MEDIUM"
+sources = [
+    "cve",
+    "exploitdb",
 ]
+title = "Microsoft Internet Explorer Telnet 客户端参数注入漏洞"
+updated = "2026-06-16"
+
+[id]
+aliases = ["CVE-2001-0150"]
+ave_id = "AVE-2001-00001"
+
+[info]
+author = "ave"
+description = "AVE-2001-0058 verification"
+id = "POC-AVE-2001-0058"
+name = "PoC for AVE-2001-0058"
+severity = "medium"
+tags = ["ave-2001-0058"]
+vuln_id = ["AVE-2001-0058"]
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
 path = "/{{BaseURL}}/"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
-
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["telnet:-f"]
+words = ["telnet://"]
+
+[references]
+urls = [
+    "https://docs.microsoft.com/en-us/security-updates/securitybulletins/2001/ms01-015",
+    "https://www.exploit-db.com/exploits/20680",
+    "http://www.securityfocus.com/bid/2463",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/6230",
+]
