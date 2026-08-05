@@ -1,12 +1,12 @@
 [basic]
-description = "OpenBSD ssh 程序存在格式化字符串漏洞，远程攻击者可通过向 ssh 服务发送特制的格式化字符串触发该漏洞，导致攻击者能够获取 root 权限。该漏洞影响 OpenBSD 及其他基于 BSD 的操作系统，CVSS 评分 10.0，危害等级严重。攻击者无需身份认证即可远程利用，完全控制目标系统。"
-published = "2000-12-11T05:00:00Z"
-remediation = "立即应用 OpenBSD 官方补丁：下载 ftp://ftp.openbsd.org/pub/OpenBSD/patches/2.7/common/028_format_strings.patch 并执行 `patch -p0 < 028_format_strings.patch` 后重新编译安装 ssh 程序；或升级至 OpenBSD 2.8 及以上版本。如无法升级，可在 inetd.conf 中禁用 ssh 服务并改用 telnet 作为临时替代，同时限制 SSH 源 IP 访问。"
+description = "OpenBSD ssh 程序存在格式字符串漏洞，未经身份认证的远程攻击者可通过向 SSH 服务发送包含格式字符串特质的输入，利用服务端代码中未正确过滤用户输入的方式触发漏洞，从而覆盖栈内存或跳转执行流，最终获取目标系统的 root 权限。该漏洞影响 OpenBSD 操作系统上的 ssh 程序及其他基于 BSD 的操作系统。由于 SSH 服务通常暴露在公网且无需预先认证，攻击条件极低，网络可达即可利用，CVSS 评分 10.0，危害等级严重。建议用户升级 OpenBSD 至修复版本并重新编译 ssh 程序以消除漏洞。"
+published = "2000-12-11T05:00:00.000"
+remediation = '立即应用 OpenBSD 2.7 官方安全补丁 028_format_strings.patch，下载地址为 ftp://ftp.openbsd.org/pub/OpenBSD/patches/2.7/common/028_format_strings.patch。执行步骤如下：进入 /usr/src 目录，运行 patch -p0 < 028_format_strings.patch 应用补丁；随后依次重新编译并安装受影响的程序：cd usr.bin/fstat && make depend && make && make install；cd ../passwd && make depend && make && make install；cd ../top && make depend && make && make install；cd ../su && make depend && make && make install；cd ../ssh && make depend && make && make install。补丁通过将所有 printf 风格的函数调用中未加格式化说明符的字符串参数改为使用 "%s" 格式说明符（例如将 log(buf) 改为 log("%s",buf)），修复了 ssh 等特权程序中的格式字符串漏洞，从而消除攻击者利用此漏洞获取 root 权限的风险。如无法立即打补丁，可通过防火墙或 TCP Wrappers 限制 SSH 远程访问作为临时缓解措施，仅允许受信任的 IP 地址连接。'
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "OpenBSD ssh 格式化字符串漏洞"
-updated = "2026-06-16T21:52:56Z"
+sources = ["avd"]
+title = "OpenBSD SSH 程序格式字符串权限提升漏洞"
+updated = "2026-06-16T21:52:56.540"
 
 [exploit]
 exp_urls = []
@@ -17,19 +17,19 @@ aliases = ["CVE-2000-0999"]
 ave_id = "AVE-2000-1900"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2000/CVE-2000-0999.md",
-    "https://github.com/CVEProject/cvelistV5/blob/81757a559270348b5ed9f7df6d4fbf1e7a4fae68/cves/2000/0xxx/CVE-2000-0999.json",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2000/CVE-2000-0999.md",
+    "https://github.com/CVEProject/cvelistV5/blob/9c6bb4d80b2633b04c3d95cd11fee4b8b1b012c2/cves/2000/0xxx/CVE-2000-0999.json",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2000/CVE-2000-0999.md",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2000/CVE-2000-0999.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/03a7e425813b5ae0ce33712378801e4e929dbdb7/CVE/data/2000/CVE-2000-0999.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/559ec87f609d31af7a4580139706f217d81d7a2e/CVE/data/2000/CVE-2000-0999.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0999",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0999.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-0999.json",
-    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/3a751de84316f1f1910c7d0a918a0e2c4180a6d3/CVEs/2000/CVE-2000-0999.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-0999.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/4709d2cbd3a3d8c1f80eac233d785d5a127e7498/CVEs/2000/CVE-2000-0999.md",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-0999.md",
 ]
