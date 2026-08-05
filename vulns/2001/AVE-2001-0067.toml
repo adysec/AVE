@@ -1,12 +1,12 @@
 [basic]
-description = "qDecoder 库 5.08 及更早版本存在远程缓冲区溢出漏洞。该漏洞在处理 CGI 程序（如 CrazyWWWBoard、CrazySearch 等）接收的 HTTP 请求时，未对 MIME Content-Type 头部长度进行正确边界检查，远程攻击者无需身份认证即可通过发送特制的超长 Content-Type 头部触发缓冲区溢出，进而执行任意命令，完全控制目标服务器。"
-published = "2001-05-03T04:00:00Z"
-remediation = "立即升级 qDecoder 库至 5.08 以上版本（如存在），或停止使用基于 qDecoder 开发的 CGI 程序（CrazyWWWBoard、CrazySearch 等），迁移至现代 Web 框架替代方案。建议在 Web 服务器层面对 MIME Content-Type 头长度进行限制（如 Apache 的 LimitRequestLine 指令），并禁用对不可信 CGI 程序的访问。"
+description = "qDecoder 4.x/5.x 库存在远程缓冲区溢出漏洞。该库广泛应用于 CrazyWWWBoard、CrazySearch 及其他 CGI 程序中。未经身份认证的远程攻击者可以通过向目标 CGI 程序发送特制的 HTTP 请求，其中 MIME Content-Type 头部字段包含超长字符串，从而触发缓冲区溢出，覆盖返回地址并执行任意远程命令。该漏洞攻击条件极低，仅需网络访问即可触发，无需用户交互或认证。攻击者可利用此漏洞完全控制受影响服务器，导致机密性、完整性和可用性全部受损， CVSS 评分为 10.0（严重）。漏洞影响范围包括所有使用 qDecoder 5.08 及更早版本的基于 CGI 的 Web 应用程序。"
+published = "2001-05-03T04:00:00.000"
+remediation = "请立即升级到 qDecoder 5.0.9 或更高版本，该版本修复了 Content-Type 头部缓冲区溢出漏洞。若暂时无法升级，可在 Web 服务器或 WAF 层配置规则，限制 HTTP 请求中 Content-Type 头部的最大长度为 254 字符以下，并拒绝包含异常长字符串的请求，以阻断远程代码执行攻击。同时建议审查所有基于 qDecoder 的 CGI 程序（如 CrazyWWWBoard、CrazySearch）并替换为已修复版本的库文件。"
 score = 10
 severity = "CRITICAL"
-sources = ["exploitdb"]
-title = """The user wants me to generate a `title` field for CVE-2001-0173. Based on the skill's format requirement: "厂商 产品 漏洞类型（中文）". From the known info: - Vendor: qDecoder (the library) - Product: qDecoder library - Vulnerability type: Remote Buffer Overflow (remote code execution) So the title should be something like "qDecoder qDecoder 库远程缓冲区溢出漏洞" or cleaner. Looking at the example: "Microsoft Windows TCP/IP 远程代码执行漏洞" - the format is Vendor Product VulnerabilityType. For this case: - Vendor/Product: qDecoder - Product: qDecoder library (or just qDecoder) - Vulnerability: 远程缓冲区溢出漏洞 A cleaner title would be: "qDecoder qDecoder 库远程缓冲区溢出漏洞" Actually, let me think about this more carefully. The vendor is "qDecoder" and the product is "qDecoder library". In Chinese vulnerability titles, we typically see something like: "qDecoder 库远程缓冲区溢出漏洞" Or more precisely: "qDecoder qDecoder库远程缓冲区溢出漏洞" Actually, looking at the AVD description: "qDecoder 4.x/5.x - 远程缓冲区溢出" I think a good title would be: "qDecoder qDecoder 库远程缓冲区溢出漏洞" Hmm, but "qDecoder qDecoder" is redundant. Let me look at the example again: "Microsoft Windows TCP/IP 远程代码执行漏洞" - Microsoft is the vendor"""
-updated = "2026-06-16T21:53:48Z"
+sources = ["cve"]
+title = "qDecoder 库 远程缓冲区溢出漏洞"
+updated = "2026-06-16T21:53:48.583"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0173"]
 ave_id = "AVE-2001-0067"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/2329",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6033",
     "https://www.exploit-db.com/exploits/20606",
-    "https://github.com/CVEProject/cvelistV5/blob/837e8232e5e0f859088f714711fc711909aefe8c/cves/2001/0xxx/CVE-2001-0173.json",
+    "https://github.com/CVEProject/cvelistV5/blob/d3cd9ba427c33ce366db05d18df45d3a792f5f74/cves/2001/0xxx/CVE-2001-0173.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0173",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2001-0173.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/9c3559b25784ca21f930998243369aaa64d45e45/CVE/data/2001/CVE-2001-0173.json",
-    "https://github.com/github/advisory-database/blob/a96652a2a06e880f217d1d6526622d8501dbbd69/advisories/unreviewed/2022/04/GHSA-3j83-v84m-h6f2/GHSA-3j83-v84m-h6f2.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150700_150800.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_3.list.dict",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/2001.tsv",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b4e8232f85e765f05f3516ab979f77c403594cd4/CVE-2001/CVE-2001-01xx/CVE-2001-0173.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4c1d71175e32f1e731b0a7d2c22a87887c3669cd/CVE/data/2001/CVE-2001-0173.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0173.json",
+    "https://github.com/opencve/opencve-kb/blob/7f6551b9664b7c57bdc824f681a941c2766269db/2001/CVE-2001-0173.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/353abf5c18895cee7a7860cfcca22d54b4bee560/2001/0xxx/CVE-2001-0173.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0173.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0173.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0173.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0173.json",
 ]
