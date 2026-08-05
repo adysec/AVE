@@ -1,0 +1,41 @@
+[basic]
+description = "Flyto2 Core 是一款用于自动化和 AI 代理工作流的执行内核。该产品的多个 HTTP 输出模块（包括 core.api.http_get、core.api.http_post、graphql.query、graphql.mutation、monitor.http_check、notification.discord.send_message、notification.slack.send_message、notification.teams.send_message、ai.vision_analyze、verify.visual_diff、browser.proxy_rotate 及 agent/llm 内联 base_url 分支）在向外部发送请求时，未调用项目自带的 SSRF 防护函数 validate_url_with_env_config，导致经过身份认证的工作流作者可构造包含云实例元数据地址（169.254.169.254）、回环地址或 RFC1918 内网地址的请求，从而对内网服务或云元数据端点发起服务端请求伪造攻击。攻击者可利用此漏洞窃取云实例的 IAM 凭据或读取/写入内部网络中的敏感资源，影响版本为 2.26.7 之前的所有版本，CVSSv3.1 评分为 8.5。"
+published = "2026-07-29T19:16:52.087"
+remediation = "立即升级 Flyto2 Core 至 2.26.7 或更高版本，补丁已对受影响模块统一加入 validate_url_with_env_config 校验。若无法立即升级，可在反向代理或防火墙层出站规则中拦截对 169.254.169.254、127.0.0.1/8 及 RFC1918 内网地址的请求，并关闭不需要的外联模块权限作为临时缓解。"
+score = 8.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Flytohub Flyto2 Core 服务端请求伪造漏洞"
+updated = "2026-07-30T16:41:25.650"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-67428",
+    "GHSA-pgwh-4jj4-qm8v",
+]
+ave_id = "AVE-2026-0954"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/flytohub/flyto-core/commit/0a0a528520ec18f5a21f1ddf858a71cc1edfb6e9",
+    "https://github.com/flytohub/flyto-core/releases/tag/v2.26.7",
+    "https://github.com/flytohub/flyto-core/security/advisories/GHSA-pgwh-4jj4-qm8v",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/536340d55f91e2a0c09223b3194e9dd68ac48811/data/vuln/flyto2/CVE-2026-67428.yaml",
+    "https://github.com/Tencent/AI-Infra-Guard/blob/536340d55f91e2a0c09223b3194e9dd68ac48811/data/vuln_en/flyto2/CVE-2026-67428.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/cbc8909f965784fa84e604f999ad78ba1a862d6c/cves/2026/67xxx/CVE-2026-67428.json",
+    "https://github.com/cisagov/vulnrichment/blob/589311de821634bb522e792ce81e4454553aa500/2026/67xxx/CVE-2026-67428.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d9d0e44f54f90ad1b4ec106b1cac94be29b99757/SSVC/data/2026/CVE-2026-67428.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d9d0e44f54f90ad1b4ec106b1cac94be29b99757/CVE/data/2026/CVE-2026-67428.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-67428.md",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/828bc0c3d151d823031bb5f4967fccfb52da9ec4/proposals/nvd/CVE-2026-67428.proposal.yaml",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-67428.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-674xx/CVE-2026-67428.json",
+]
