@@ -1,0 +1,41 @@
+[basic]
+description = "goshs 是一款功能丰富的单二进制文件服务器，其 WebDAV 模式下的权限控制存在安全绕过漏洞。在 `--no-delete` 模式下，服务端本应禁止文件删除操作，但由于 `httpserver/server.go` 中的 `wdGuard` 函数将 WebDAV 的 `MOVE` 方法错误归类为仅写操作，未检查 `fs.NoDelete` 标志，导致未经身份认证的远程攻击者可通过发送特制的 `MOVE` 请求并附带 `Overwrite: T` 头，绕过删除限制，实现任意文件删除或覆盖。该漏洞影响 goshs v2.1.4 之前的所有版本，CVSS 评分 9.1，危害等级严重。开发者已在 v2.1.4 版本中通过将 `MOVE` 方法纳入删除权限检查分支完成修复。"
+published = "2026-07-28T23:17:10.213"
+remediation = "立即升级 goshs 至 v2.1.4 或更高版本，该版本在 wdGuard 中将 MOVE 方法纳入 --no-delete 检查分支，阻止 WebDAV 客户端通过 MOVE 绕过删除限制。如无法立即升级，可在 WebDAV 端口前部署反向代理（如 Nginx），通过拦截 MOVE 方法（`limit_except GET HEAD PROPFIND`）作为临时缓解措施。"
+score = 9.1
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "goshs WebDAV MOVE 安全限制绕过漏洞"
+updated = "2026-07-30T19:19:45.637"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-64863",
+    "GHSA-hq33-8jgp-8qq3",
+]
+ave_id = "AVE-2026-0933"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/goshs-labs/goshs/commit/0444ac6b1a8176ddae70d940adf7a26b2e5a6c29",
+    "https://github.com/goshs-labs/goshs/releases/tag/v2.1.4",
+    "https://github.com/goshs-labs/goshs/security/advisories/GHSA-hq33-8jgp-8qq3",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2026/CVE-2026-64863.md",
+    "https://github.com/CVEProject/cvelistV5/blob/7db8931ea0378982e66f435e269a4ed0e4efb7aa/cves/2026/64xxx/CVE-2026-64863.json",
+    "https://github.com/cisagov/vulnrichment/blob/f3d37661d066a8369751ae98676c11a2d9ec4d21/2026/64xxx/CVE-2026-64863.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f80eaead111eac7128eaf77e46b372cdbd675cc9/CVE/data/2026/CVE-2026-64863.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f80eaead111eac7128eaf77e46b372cdbd675cc9/SSVC/data/2026/CVE-2026-64863.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-64863.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-648xx/CVE-2026-64863.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/c7d5dce5040792ac66f5f987fd2ed030b45edce8/reports/2026-07-28/TIER_3_CVE-2026-64863.md",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/go/goshs.de/goshs/CVE-2026-64863.yml",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/go/goshs.de/goshs/v2/CVE-2026-64863.yml",
+]
