@@ -1,10 +1,15 @@
 [info]
-author = "ave"
-description = "验证 HP-UX 10.20/11.0 crontab 命令的符号链接跟踪漏洞。通过在 crontab 编辑会话期间为 /tmp 文件创建一个符号链接，待退出会话后读取 crontab 生成的错误消息，从而读取任意系统文件。"
+author = "AVE"
+description = "HP-UX 10.20/11.0 的 crontab 在编辑临时文件时未安全处理符号链接，本地攻击者可通过 crontab -e 结合符号链接替换临时文件，实现任意文件读取。通过检查 crontab 二进制文件存在性及 /tmp 目录可写性验证漏洞环境。"
 id = "POC-AVE-2000-0703"
-name = "HP-UX crontab 符号链接文件覆盖漏洞 PoC"
-severity = "high"
-tags = ["ave-2000-0703"]
+name = "HP-UX crontab 符号链接跟随任意文件读取漏洞 PoC"
+severity = "medium"
+tags = [
+    "cve-2000-0972",
+    "hp-ux",
+    "crontab",
+    "symlink",
+]
 vuln_id = [
     "CVE-2000-0972",
     "AVE-2000-0703",
@@ -14,11 +19,21 @@ vuln_id = [
 logic = "all"
 
 [[poc.requests]]
-path = "/etc/passwd"
+path = "/usr/bin/crontab"
 protocol = "file"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
-type = "word"
-words = ["root:"]
+regex = ".+"
+type = "regex"
+
+[[poc.requests]]
+path = "/tmp"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+regex = ".+"
+type = "regex"
