@@ -1,0 +1,68 @@
+[info]
+author = "ave"
+description = "检测 Safari WebKit 版本<6.0 中的内存破坏漏洞。攻击者可通过构造恶意网页向目标用户发起攻击，当用户使用受影响版本的 Safari 浏览器访问该网站时，浏览器在解析网页内容过程中可能触发内存损坏，导致应用程序崩溃或远程执行代码。"
+id = "POC-AVE-2012-0265"
+name = "WebKit Safari 内存破坏漏洞 PoC"
+severity = "critical"
+tags = ["ave-2012-0265"]
+vuln_id = [
+    "CVE-2012-3589",
+    "AVE-2012-0265",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (compatible; AVE-Security-Test/1.0)"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<script>",
+    "javascript:",
+    "<!--",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/malicious.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE html>
+<html>
+<head>
+<title>测试网页</title>
+<script>
+var x = "<script>var x=1;</script>";
+function trigger() {
+    var elem = document.createElement('div');
+    elem.innerHTML = "<img src=x onerror='alert(1)'>";
+    document.body.appendChild(elem);
+}
+</script>
+</head>
+<body onload="trigger()">
+<img src="x" onerror="alert('内存破坏检测')">
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "alert",
+    " onerror=",
+    "img",
+]
