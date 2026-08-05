@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "检测 Oracle XSQL Servlet 1.0.3.0 及更早版本是否存在 xml-stylesheet 参数处理漏洞。攻击者可通过构造特制的 HTTP 请求，利用 xml-stylesheet 参数将 XSQL 服务器重定向至攻击者控制的恶意服务器，从而在目标系统上执行任意 Java 代码"
+id = "POC-AVE-2001-0631"
+name = "Oracle XSQL Servlet 远程代码执行漏洞 PoC"
+severity = "high"
+tags = ["ave-2001-0631"]
+vuln_id = [
+    "CVE-2001-0126",
+    "AVE-2001-0631",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/xsql/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["XSQL"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/servlet/oracle.xml.xsql.XSQLServlet"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["XSQL"]
