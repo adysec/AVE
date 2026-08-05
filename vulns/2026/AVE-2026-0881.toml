@@ -1,12 +1,12 @@
 [basic]
 description = "Apollo 配置文件管理系统中访问密钥（AccessKey）认证存在认证绕过漏洞。当为目标应用启用 AccessKey 或管理密钥认证时，ConfigService 在认证阶段从配置和通知请求中提取 appId，若提取到的为非规范（non-canonical）appId 变体，无法与 AccessKey 缓存键精确匹配，则可能被认定为无可用密钥而放行请求，跳过签名验证。这发生在数据库排序规则将变体与真实 appId 视为等价时（如不区分重音的排序规则下的重音变体，或 PAD SPACE 排序规则下的尾随空格变体），下游释放查找仍可匹配到受保护应用。未经认证的远程攻击者可向 /configs 与 /configfiles 端点发送特制请求读取受保护应用的配置数据，造成敏感配置信息泄露（CWE-20，CVSS 7.5 高危），影响 Apollo 2.5.2 之前版本；官方已在 2.5.2 版本修复该问题。"
-published = "2026-07-15T17:16:50.960"
+published = "2026-07-15T17:16:50Z"
 remediation = '建议立即升级至 Apollo 2.5.2 或更高版本，该版本已修复 ConfigService 在 AccessKey 认证时接受非规范 appId 变体导致绕过签名校验的问题，可通过官方 GitHub Release 页面（v2.5.2）获取安装包并按官方文档完成升级。如暂时无法升级，请先为受影响应用启用 AccessKey/管理密钥认证并严格限制 /configs 与 /configfiles 接口的网络访问来源（仅允许受信内网/IP 白名单访问），同时排查数据库排序规则：将部署所用数据库的排序规则改为区分大小写、非 PAD SPACE、非重音不敏感的 collation（如 utf8mb4_bin），以阻断"规范变体等值匹配"的绕过路径；升级完成后建议重启 ConfigService 实例并复核认证日志，确认无未授权配置读取记录。'
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Apollo ConfigService 访问密钥认证绕过漏洞"
-updated = "2026-07-15T18:16:49.287"
+updated = "2026-07-15T18:16:49Z"
 
 [exploit]
 exp_urls = []
