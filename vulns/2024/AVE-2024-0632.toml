@@ -1,12 +1,12 @@
 [basic]
 description = "该漏洞存在于 Linux 核心 IIO 虚拟设备驱动程序 iio_simply_dummy_buffer 的触发缓冲区处理过程中。 由于使用 iio_for_each_active_channel 仅遍历活动通道，导致分配的 data 数组无法清空不活跃通道的数据。 这样的缺陷导致在向用户空间推送数据时，反复出现初始化不完整，从而形成信息泄漏。 攻击者仅需要低权限本地访问权限即可触发该漏洞，成功会导致严重的信息泄漏和可用性破坏。 通过修改内核代码，将 kmalloc 替换为 kzalloc，确保内存区域初始化完毕，此类方法可有效解决上述问题。"
-published = "2025-01-19T12:15:25.277"
+published = "2025-01-19T12:15:25Z"
 remediation = "升级内核到 ≥6.8 版本（含 CVE-2024-57911 修复），或针对 Debian/Ubuntu 执行 `apt-get install linux-image-$(uname -r | grep -E '^[0-9]+' | cut -d'.' -f1).$(uname -r | awk -F'-' '{print $1}' | cut -d'.' -f2) && reboot`。对于 RHEL/CentOS 使用 `yum update kernel` 或 `dnf install kernel`. 停用所有 iio 虚拟设备模块并避免使用 iio_simply_dummy_buffer 驱动程序，降低信息泄露风险。系统管理员应立即验证内核版本，确保基础补丁已安装。"
 score = 7.1
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux Kernel IIO 子系统 信息泄露漏洞"
-updated = "2026-06-17T08:14:12.867"
+updated = "2026-06-17T08:14:12Z"
 
 [exploit]
 exp_urls = []

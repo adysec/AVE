@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 AMDGPU 驱动的 DRM/AMDKFD 子系统中存在双重释放漏洞（CWE-415）。当 `kfd_process_device_init_vm` 在虚拟内存转换为计算 VM 并设置 PASID 后失败时，由于未正确持有 `pdd->drm_file` 引用计数，导致 drm 关闭文件处理程序与 KFD 进程销毁工作线程可能同时释放同一计算 PASID，引发内核空指针解引用或 IDR 释放警告。本地攻击者可利用此漏洞造成系统崩溃或潜在权限提升，影响使用 AMDGPU 驱动的 Linux 内核版本，CVSS 评分 7.8，危害等级高。"
-published = "2025-09-15T15:15:41.840"
+published = "2025-09-15T15:15:41Z"
 remediation = "升级 Linux 内核至 6.0.19、6.1.5 或 6.2 及以上版本，其中已包含 `amdgpu_amdkfd_gpuvm_set_vm_pasid` 助手函数的修复补丁，防止 KFD 进程在 vm 初始化失败时因未持有 pdd->drm_file 引用导致同一 compute pasid 被双重释放。无法立即升级的发行版可向后移植提交 `1a799c4c190e` / `89f0d766c9e3` / `a02c07b61989` 到受影响内核源码树中 `drivers/gpu/drm/amd/amdgpu/` 和 `drivers/gpu/drm/amd/amdkfd/` 对应文件。"
 score = 7.8
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux kernel DRM/AMDKFD 计算PASID双重释放漏洞"
-updated = "2026-06-17T05:23:11.500"
+updated = "2026-06-17T05:23:11Z"
 
 [exploit]
 exp_urls = []

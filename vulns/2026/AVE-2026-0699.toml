@@ -1,12 +1,12 @@
 [basic]
 description = "Cosmos-Server 0.22.18 中 `/cosmos/api/constellation/public-devices` 接口存在授权绕过漏洞。该接口虽位于需要认证的管理 API 路由下，但仅在收到请求时检查 `Authorization` 头部是否存在，剥离 `Bearer ` 前缀后从未对剩余 token 进行有效性验证，也未将其代入数据库查询。未经身份认证的远程攻击者只需在请求中携带任意非空 `Authorization: Bearer <任意字符串>` 头部即可绕过身份校验，成功获取 Constellation 设备元数据，包括设备名称、用户昵称、内网/VPN IP 地址、节点角色标识、公网主机名及端口号。该漏洞影响已启用 Constellation/VPN 功能并存在可见设备的部署，可导致内网拓扑与资产信息泄露，进而为针对 VPN 或暴露节点的后续攻击提供情报支持。官方已在 0.22.19 版本中修复此问题。"
-published = "2026-07-28T21:17:28.427"
+published = "2026-07-28T21:17:28Z"
 remediation = "立即升级 cosmos-server 至 0.22.19 版本，该版本已修复 public-devices 接口的任意 bearer token 绕过问题。升级后需验证：发送不含 Authorization 头部的请求应返回 401，发送任意无效 token（如 Bearer not-a-real-token）也应返回 401。若无法立即升级，可在反向代理或防火墙层面限制对 /cosmos/api/constellation/public-devices 路径的访问，仅允许可信 IP 访问，并禁用 Constellation 功能以降低暴露面。"
 score = 5.3
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Cosmos-Server 任意Bearer令牌绕过认证导致设备元信息泄露漏洞"
-updated = "2026-07-28T21:17:28.427"
+updated = "2026-07-28T21:17:28Z"
 
 [exploit]
 exp_urls = []

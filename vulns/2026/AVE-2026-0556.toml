@@ -1,12 +1,12 @@
 [basic]
 description = "Koel 音乐流媒体应用存在服务端请求伪造（SSRF）漏洞。其出站 URL 防护函数 `isPublicHost()` 使用 PHP 的 `filter_var` 配合 `FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE` 标志检查 IP 地址是否为公网地址，但该标志位无法识别 NAT64（64:ff9b::/96）和 6to4（2002::/16）等 IPv6 过渡地址形式——这些地址内部嵌入了私有 IPv4 地址（如 127.0.0.1、169.254.169.254 等）。攻击者可通过托管恶意 RSS 播客源，在 `<enclosure url>` 中设置解析到 NAT64/6to4 地址的主机名，诱导已认证用户订阅并播放该播客，从而绕过防护检查。在启用了 NAT64 或 6to4 路由的 IPv6 主机上（如 AWS/GCP 的 IPv6 子网），内核会将请求路由到嵌入的内部 IPv4 地址，导致攻击者可读取云实例元数据（如 IAM 凭证）及内部 HTTP 服务的响应内容，造成敏感信息泄露。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = '建议立即升级 Koel 至 v9.5.1 或更高版本（包含修复 PR 的版本），该版本已修复 `App\Helpers\Network::isPublicHost()` 对 NAT64 (64:ff9b::/96) 和 6to4 (2002::/16) IPv6 过渡地址的过滤缺陷。若暂无法升级，可在应用层面临时禁用播客订阅功能，或在 Web 服务器/Nginx 层添加规则拦截指向 `64:ff9b::/96` 和 `2002::/16` 前缀的 IPv6 地址请求，同时在防火墙层面限制 Koel 服务器对内网元数据端点 (169.254.169.254) 及 RFC1918 地址段的出站访问。'
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Koel 播客订阅功能服务器端请求伪造漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

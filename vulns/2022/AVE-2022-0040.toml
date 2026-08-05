@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核块层限流模块（blk-throttle）存在释放后使用（Use-After-Free）漏洞。当 BIO（块 I/O 请求）需要被限流时，内核启用了定时器并设置 BIO_THROTTLED 标志，但若在定时器到期前该 BIO 已完成并释放，定时器回调函数 `blk_throtl_dispatch_work_fn()` 继续访问已释放的 BIO，导致释放后使用。本地攻击者可通过精心构造的 I/O 操作序列触发该竞态条件，造成系统崩溃或潜在权限提升。该漏洞影响 Linux 内核多个版本，CVSS 评分 7.8，危害等级高。官方已通过将 BIO_THROTTLED 设置移入队列锁（queue_lock）修复此问题。"
-published = "2025-02-26T07:01:22.787"
+published = "2025-02-26T07:01:22Z"
 remediation = "立即升级 Linux 内核至以下修复版本：5.10.248、5.15.198、5.17.14 或 5.18.3 及以上版本。该漏洞通过将 BIO_THROTTLED 标志的设置移入 queue_lock 中修复，避免 bio 完成后的 use-after-free 问题。如无法立即升级，可禁用块层限流功能（通过设置 /sys/block/*/queue/throttle_sample_group 为 0）作为临时缓解。"
 score = 7.8
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux 内核 blk-throttle 使用后释放漏洞"
-updated = "2026-06-17T05:18:07.803"
+updated = "2026-06-17T05:18:07Z"
 
 [exploit]
 exp_urls = []

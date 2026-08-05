@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 存在权限绕过漏洞，由于 API 路由层仅对请求所在仓库（公共基础仓库）进行 token 的 `public-only` 限制检查，而未在更新 Pull Request 操作中重新验证目标仓库是否为私有仓库。拥有 `public-only,write:repository` 令牌的攻击者可向公共基础仓库发起 `POST /api/v1/repos/{public-owner}/{public-repo}/pulls/{index}/update` 请求，利用 `UpdatePullRequest` 服务使用普通 RBAC 鉴权且不再重新检查 token 公共限制的缺陷，将公共仓库的提交推送至私有 PR 目标分支。该漏洞导致受限的仅公开令牌实际获得了私有仓库的写入权限，若私有仓库启用了 Actions，还可触发未授权的自动化工作流执行。攻击者需持有对目标私有仓库具有写入权限的用户的仅公开令牌，并建立一个从公共基础仓库到私有目标仓库的 Pull Request 关系。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "建议立即升级 Gitea 到 1.27.1 或更高版本（已修复 CVE-2026-58443），通过 `docker pull gitea/gitea:1.27.1` 或二进制升级完成。若暂时无法升级，请立即执行以下缓解措施：1）在管理面板「管理面板 → 认证 → 应用令牌」撤销所有 `public-only,write:repository` 作用域的令牌；2）在配置文件 `app.ini` 的 `[api]` 段添加 `ENABLE_PUBLIC_ONLY_TOKENS = false` 禁用公开仓库令牌功能；3）在反向代理/防火墙层面拦截 `POST /api/v1/repos/*/pulls/*/update` 请求，仅允许可信 IP 访问；4）排查私有仓库的 PR 头分支是否存在异常合并提交，必要时回滚并撤销可疑 Action Run。升级后请重新生成并分发新令牌，废弃旧公开令牌。"
 score = 9.8
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "Gitea 仅公开令牌越权更新私有拉取请求分支漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

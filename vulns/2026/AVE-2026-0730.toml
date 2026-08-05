@@ -1,12 +1,12 @@
 [basic]
 description = 'tags.<value>datamodel-code-generator（一款用于从 OpenAPI、JSON Schema 等输入生成 Pydantic 模型、dataclasses、TypedDict 等代码的 Python 工具）存在任意本地文件读取漏洞（CWE-22 路径遍历，CVSS 评分 7.5，高危）。其根因在于解析 JSON Schema 的 $ref 引用时，jsonschema.py 中的 is_url 与 _get_ref_body 未对 file:// 绝对路径及 ../ 相对路径引用实施输入目录包含性校验，也未正确遵循 --no-allow-remote-refs 安全限制，导致任何可读文件均可能被进程打开并解析。攻击者无需任何认证或特权，仅需控制输入的 schema（例如通过"粘贴即生成"的代码生成服务、CI 流水线中提交的规范文件或多租户代码生成平台），构造形如 "$ref": "file:///etc/passwd" 或包含 ../ 逃逸的相对引用即可触发漏洞，成功读取进程用户可读的任意文件（如 /etc/passwd、PEM 私钥、/root/ 下文件），并通过三种可区分的解析结果（正常解析/文件不存在/权限不足）充当文件系统探测"预言机"以还原主机目录结构；此外，当被引用的节点为 JSON Schema 结构时，const/default/enum/description 等字段中的机密值（默认令牌、默认凭据、内部主机名、服务账号 JSON、k8s 密钥清单）会被原样写入生成的代码并泄露给攻击者。受影响版本为 0.62.0 之前的全部版本，该漏洞已在 0.62.0 版本中修复（修复内容为对 file:// 引用及输入基础目录外的本地 JSON Schema 引用应用远程引用门控）。'
-published = "2026-07-28T22:17:48.400"
+published = "2026-07-28T22:17:48Z"
 remediation = "立即将 datamodel-code-generator 升级至 0.62.0 及以上版本，该版本已将 file:// 与越出输入目录的相对引用纳入 --no-allow-remote-refs 拦截范围。升级后使用 `datamodel-codegen --input ... --no-allow-remote-refs` 强制关闭远程与本地引用解析；确需外部引用时仅在受信任环境下显式添加 --allow-remote-refs 并自行校验所有 $ref 是否落在输入 schema 目录内。对于无法立即升级的 CI 或多租户代码生成平台，应禁止直接处理不可信用户提交的 OpenAPI/JSON-Schema，在入口处过滤含 file://、http:// 或 ../ 的 $ref 值，并采用独立低权限账户运行生成进程以缩小任意文件读取的泄露面。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Koxudaxi Datamodel-code-generator 任意本地文件读取漏洞"
-updated = "2026-07-30T19:07:59.843"
+updated = "2026-07-30T19:07:59Z"
 
 [exploit]
 exp_urls = []

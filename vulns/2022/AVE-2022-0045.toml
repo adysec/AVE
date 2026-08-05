@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 Mediatek 视频编解码器驱动（mtk-vcodec-dec）中存在空指针解引用漏洞。当驱动启用子设备（subdev）模式时，`mtk_vcodec_dec_remove` 函数中 `dev->pm.dev` 参数为空指针，在卸载模块（rmmod）时调用 `__pm_runtime_disable` 会触发空指针解引用，导致内核崩溃，造成拒绝服务。本地攻击者可通过加载并卸载受影响驱动模块触发该漏洞。CVSS 评分 5.5，危害等级中危。"
-published = "2025-02-26T07:01:25.800"
+published = "2025-02-26T07:01:25Z"
 remediation = "建议将 Linux 内核升级至 5.18.3 或更高版本，该版本已包含修复提交 c10c0086db68。如无法升级内核，可应用补丁：在 `drivers/media/platform/mediatek/vcodec/mtk_vcodec_dec_drv.c` 的 `pm_runtime_disable(dev->pm.dev)` 前添加 `if (!dev->vdec_pdata->is_subdev_supported)` 条件判断，避免在 subdev 模式下调用空指针。作为临时缓解措施，可禁止卸载 `mtk-vcodec-dec.ko` 模块（通过 `rmmod` 黑名单或模块锁定），减少触发崩溃的风险。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux MediaTek 视频编解码器驱动模块卸载空指针解引用漏洞"
-updated = "2026-06-17T05:18:14.353"
+updated = "2026-06-17T05:18:14Z"
 
 [exploit]
 exp_urls = []

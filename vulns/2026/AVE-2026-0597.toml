@@ -1,12 +1,12 @@
 [basic]
 description = "Pillow（Python 图像处理库）的 BdfFontFile.py 中 bdf_char() 函数在解析 BDF 字体文件时，直接从攻击者可控的 BBX 字段读取宽度和高度值并传递给 Image.new() 创建图像对象，但未调用 _decompression_bomb_check() 进行解压炸弹检测，导致绕过 Pillow 内置的像素数限制保护机制。远程攻击者可通过构造包含超大 BBX 尺寸（如 20000×20000）且 BITMAP 段为空的恶意 BDF 字体文件，触发该漏洞，使 Pillow 在未触发任何异常的情况下分配大量内存（单字形可达 50MB，多字形组合可达数 GB），最终导致目标服务因内存耗尽而拒绝服务。该漏洞影响 Pillow 12.3.0 之前的所有版本，攻击无需身份认证和用户交互，CVSS 评分 7.5，危害等级高。官方已在 Pillow 12.3.0 版本中修复此问题。"
-published = "2026-07-06T19:17:08.577"
+published = "2026-07-06T19:17:08Z"
 remediation = "立即升级 Pillow 至 12.3.0 或更高版本（`pip install --upgrade pillow`）。如无法升级，在加载 BDF 字体前对不可信来源的字体文件进行预处理校验，限制 BBX 宽高乘积不超过 89478485 像素，或禁用 BDF 字体加载功能。同时监控进程内存使用，对异常大内存分配告警。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Pillow BdfFontFile 解压炸弹保护绕过拒绝服务漏洞"
-updated = "2026-07-07T18:59:01.817"
+updated = "2026-07-07T18:59:01Z"
 
 [exploit]
 exp_urls = []

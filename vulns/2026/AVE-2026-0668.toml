@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 团队 API 路由未正确强制执行 `public-only` 访问令牌限制。`/api/v1/teams/{id}` 路由组使用 `orgAssignment(false, true)` 加载团队但未加载组织对象，导致 `checkTokenPublicOnly` 中间件在组织对象为空时静默通过可见性检查。团队仓库处理器未调用 `ctx.TokenCanAccessRepo(repo)` 进行仓库级公开过滤，团队活动流处理器设置 `IncludePrivate: true` 却未应用 `opts.ApplyPublicOnly`。攻击者创建 `public-only` 组织级令牌并作为私有组织中私有仓库团队成员，即可通过团队 API 获取私有仓库元数据及活动流信息，导致私有团队资源泄露。影响 Gitea 1.26.2 及夜间构建版本，CVSS 中危。官方已在后续版本修复。修复建议：升级至修复版本，撤销泄露的 public-only 令牌。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "建议立即将 Gitea 升级至 v1.27.1 或更高版本，该版本已通过 PR #38399 修复了 public-only API token 在团队路由上的权限绕过问题。升级前可通过以下方式临时缓解：1) 在反向代理层限制对 `/api/v1/teams/` 路径的访问，仅允许可信 IP 调用；2) 为 public-only token 所在用户移除其对私有团队和私有仓库的成员身份；3) 在 Gitea 配置中禁用不必要的团队 API 路由。修复后建议重新签发所有 public-only 类型的 API token。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Gitea Gitea API 权限绕过漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

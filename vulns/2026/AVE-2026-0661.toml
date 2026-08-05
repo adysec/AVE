@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 的 SSH LFS 子动词处理存在身份验证绕过漏洞。在 `cmd/serv.go` 的 `getAccessMode` 函数中，当 LFS 子动词既非 `upload` 也非 `download` 时，生产模式下 `PanicInDevOrTesting` 仅记录错误而不触发 panic，返回 `AccessModeNone`（值为 0）。后续权限检查 `userMode < mode` 恒为 false（因 `userMode` 非负），导致私有仓库的权限校验被完全绕过。同时 HTTP LFS 端对下载操作的 `Op` 字段不做校验，攻击者可利用此令牌读取任意私有仓库的所有 LFS 对象。任何拥有 SSH 访问权限的 Gitea 注册用户均可利用此漏洞，通过发送格式错误的 LFS 子动词（如 `badverb`）获取有效 LFS JWT 令牌，从而越权下载实例中所有私有仓库的 LFS 文件，造成严重敏感数据泄露。该漏洞影响 Gitea 默认配置（启用 SSH 和 LFS）的生产环境部署。"
-published = "2026-07-03T21:17:05.550"
+published = "2026-07-03T21:17:05Z"
 remediation = "立即升级 Gitea 至 v1.26.4 或更高版本（该版本已通过 PR #38008 修复 LFS 子动词验证缺陷）。如无法立即升级，可临时禁用 SSH LFS 功能（在 app.ini 中设置 `[server] DISABLE_SSH = true`）或限制用户注册以防止未授权用户获得 SSH 访问权限。"
 score = 7.7
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Gitea LFS SSH 子动词认证绕过导致私有仓库未授权读取漏洞"
-updated = "2026-07-06T18:18:46.870"
+updated = "2026-07-06T18:18:46Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 x86 架构中的 MCE（Machine Check Exception）处理机制存在缺陷。Intel Skylake、Cascade Lake 和 Cooper Lake 代 CPU 的快速字符串拷贝指令（REP; MOVS*）存在勘误，当满足以下条件时可能触发罕见的内核恐慌：1）存在不可纠正的内存错误；2）错误位于页面的第一个缓存行；3）内核正在执行从该页前一页的 copy_page 操作。快速字符串拷贝指令会消耗目标区域后紧接着的缓存行中的不可纠正内存错误并触发 MCE，导致内核崩溃。本地攻击者可通过精心构造内存布局触发此漏洞，造成拒绝服务。CVSS 评分 5.5，危害等级中等。"
-published = "2025-02-26T07:00:49.740"
+published = "2025-02-26T07:00:49Z"
 remediation = "将 Linux 内核升级至 5.17.3 或更高版本（5.18 及以上包含主线修复），该补丁在 MCE 处理程序中直接返回以规避快速字符串拷贝指令的勘误，并在触发后自动禁用受影响超线程的快速字符串拷贝。临时缓解措施可通过 `wrmsr -a 0x1a0 $((0x850089 ^ (1<<0)))` 清除 MSR_IA32_MISC_ENABLE 的 bit 0 以禁用快速字符串拷贝，但会导致全局性能下降，仅建议作为无法升级内核时的应急方案。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux Linux 内核快速字符串复制指令机器检查异常拒绝服务漏洞"
-updated = "2026-06-17T05:17:09.063"
+updated = "2026-06-17T05:17:09Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 在 Webhook 投递和仓库迁移功能中使用了不完整的 SSRF 防护机制，其默认允许列表依赖 Go 标准库 `net.IP.IsPrivate()` 进行内网地址过滤，但该函数仅覆盖 RFC 1918 和 RFC 4193 定义的私有地址段，遗漏了云元数据服务、内部网络及 IPv6 过渡机制中使用的多个 IP 范围。未经认证的远程攻击者可通过构造指向这些未过滤地址段的请求，绕过 SSRF 防护，访问云服务元数据接口或内部系统，导致敏感信息泄露。该漏洞影响 Gitea 1.26.2 及之前所有版本，CVSS 评分 9.6，危害等级严重。"
-published = "2026-07-03T21:16:57.157"
+published = "2026-07-03T21:16:57Z"
 remediation = "立即将 Gitea 升级至 1.26.4 或更高版本（官方强烈建议跳过 1.26.3 直接升级至 1.26.4）。升级后系统将收紧 Webhook 和仓库迁移的默认 SSRF 允许列表，补齐 `net.IP.IsPrivate()` 未涵盖的云元数据 IP 段及 IPv6 过渡地址范围。如无法立即升级，可在 `app.ini` 中手工配置 `[webhook]` 和 `[migration]` 下的 `ALLOWED_HOST_LIST` 选项，限制仅允许访问预期的外部地址，并阻断 169.254.169.0/24、100.64.0.0/10 等内部保留段。"
 score = 9.6
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "Gitea Webhook和迁移允许列表SSRF防护不完整漏洞"
-updated = "2026-07-07T18:16:35.747"
+updated = "2026-07-07T18:16:35Z"
 
 [exploit]
 exp_urls = []

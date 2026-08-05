@@ -1,12 +1,12 @@
 [basic]
 description = "WPGraphQL 插件中 `sendPasswordResetEmail` 变更的返回类型存在信息泄露漏洞。该插件在设计上通过始终返回 `success: true` 来防止用户枚举，但已废弃的 `user` 字段仍注册在 `SendPasswordResetEmailPayload` 输出类型上。未经身份认证的攻击者可向目标 WordPress 站点发送包含目标用户名或邮箱的 GraphQL 查询，若该用户为作者类用户则返回完整的 User 对象（含 databaseId、name、slug 等公开字段），否则返回 null，从而绕过反枚举机制实现用户身份枚举与公开资料窃取。该漏洞影响 WPGraphQL 2.0.0 至 2.15.1 版本，CVSS 评分 6.9，危害等级中危。建议升级至 2.15.1 或移除废弃的 user 字段。"
-published = "2026-07-31T23:17:24.973"
+published = "2026-07-31T23:17:24Z"
 remediation = "立即将 WPGraphQL 插件升级至 2.15.1 或更高版本，该版本已移除存在信息泄露的已废弃 user 字段。如无法立即升级，可临时在 WPGraphQL 注册的 GraphQL 端点前添加 WAF 规则，拦截对 sendPasswordResetEmail mutation 中 user 字段的查询，或通过 WordPress 插件代码在 Deprecated.php 中将 user 字段的 resolve 函数改为始终返回 null。"
 score = 6.9
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "WPGraphQL 废弃 user 字段导致用户枚举与信息泄露漏洞"
-updated = "2026-07-31T23:17:24.973"
+updated = "2026-07-31T23:17:24Z"
 
 [exploit]
 exp_urls = []

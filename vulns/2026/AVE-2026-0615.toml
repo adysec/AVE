@@ -1,12 +1,12 @@
 [basic]
 description = "Cloudreve 内置图片处理器存在拒绝服务漏洞。该软件使用 Go 标准库（image/png、image/jpeg、image/gif）解码用户上传的图片，但仅对压缩文件大小进行限制（最大 75MB），未对解码后的像素尺寸设置上限。攻击者可构造一个仅 65 字节的恶意 PNG 图片，在其 IHDR 块中声明极大的宽高值（如 2147483647×16），触发 Go 运行时分配约 128GB 的像素缓冲区（4×宽×高），导致内核 OOM Killer 终止进程或 Go 运行时抛出致命内存不足错误，造成整个 Cloudreve 服务崩溃。该漏洞可通过两个入口触发：任意已认证用户通过头像上传接口（PUT /api/v4/user/setting/avatar）发送单次请求即可触发；或通过默认启用的缩略图生成功能，将炸弹图片存入公开分享链接后由匿名访问者触发。攻击成本极低（65 字节），可反复执行导致服务持续不可用。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "升级 Cloudreve 至修复版本，在 `pkg/thumb/builtin.go` 的 `NewThumbFromFile` 函数中调用 `image.DecodeConfig` 预检查图像像素尺寸，限制解码像素总数不超过 5000 万像素（50 MP），同时对头像上传和缩略图生成路径统一施加该限制。如无法立即升级，可临时关闭内置缩略图生成器（将 `thumb_builtin_enabled` 设为 `0`）并启用 libvips 替代方案（`thumb_vips_enabled` 设为 `1`），同时在反向代理层限制头像上传的 Content-Type 仅为可信格式。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Cloudreve Cloudreve 图片解码拒绝服务漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

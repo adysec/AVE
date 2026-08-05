@@ -1,12 +1,12 @@
 [basic]
 description = "BabelDOC 的 PDF 解析器（babeldoc/pdfminer/cmapdb.py）在处理 CMap 文件时存在不安全的 pickle 反序列化漏洞。`_load_data()` 方法仅过滤了空字节，未对 PDF 中的 CMap 名称进行路径合法性校验。攻击者可通过在 PDF 的 /Encoding 名称中使用 #xx 十六进制编码注入绝对路径（如 /#2Ftmp#2Fattacker#2Fevil），利用 Python os.path.join() 在遇到绝对路径时丢弃前置目录参数的特性，将反序列化重定向到攻击者可控的 .pickle.gz 文件。处理特制 PDF 后，pickle.loads() 将执行任意 Python 代码，导致完全控制 BabelDOC 进程权限。该漏洞影响 BabelDOC 0.6.3 之前的所有版本，CVSS 评分 7.8，危害等级高。攻击者需在目标系统上放置恶意 pickle 文件（如 /tmp/ 目录），并诱导用户处理恶意 PDF 文件。厂商已在 0.6.3 版本中通过清单白名单、路径包含检查和 SHA-256 完整性校验修复此漏洞。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即升级 BabelDOC 至 0.6.3 或更高版本，该版本移除了 CMAP_PATH 环境变量支持并增加了 CMap 文件白名单校验和完整性检查。如无法立即升级，请勿设置 CMAP_PATH 环境变量，仅处理受信任来源的 PDF 文件，并使用低权限账户运行 BabelDOC 进程。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "funstory-ai BabelDOC CMap Pickle反序列化远程代码执行漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

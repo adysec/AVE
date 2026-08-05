@@ -1,12 +1,12 @@
 [basic]
 description = "Cloudreve 的 WOPI PUT_RELATIVE 处理程序存在路径遍历漏洞。该漏洞源于程序将 `X-WOPI-SuggestedTarget` 头部视为路径而非文件名，通过 `URI.JoinRaw` 调用 Go 的 `url.JoinPath` 解析 `../` 等相对路径段。攻击者可在已获取单文件 WOPI 访问令牌的情况下，构造包含 `a/../../evil.docx` 等遍历序列的 `X-WOPI-SuggestedTarget` 头部，将文件写入同一用户账户下的任意目录（如账户根目录），而后续上传校验仅检查清理后的文件名（如 `evil.docx`），导致绕过单文件作用域限制。该漏洞影响 Cloudreve 4.x 版本，危害等级中危，攻击者可在同一用户账户内创建或覆盖文件。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = '升级 Cloudreve 至修复该漏洞的版本（≥v4.x 补丁版），或在 WOPI 处理函数中对 `X-WOPI-SuggestedTarget` 和 `X-WOPI-RequestedName` 头进行严格路径过滤：拒绝包含 `/`、`\`、`.`、`..` 及 URL 编码变体的输入，仅允许纯文件名。如无法立即升级，可在反向代理层拦截含路径分隔符的 `X-WOPI-SuggestedTarget` 请求头作为临时缓解。'
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Cloudreve WOPI PUT_RELATIVE 路径遍历漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

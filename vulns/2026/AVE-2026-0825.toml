@@ -1,12 +1,12 @@
 [basic]
 description = "Open WebUI 是一款可扩展、功能丰富的自托管 AI 平台，其存在授权机制缺陷漏洞。平台将 `pending` 角色定义为零权限角色，用于新注册用户和已停用用户，正常 HTTP 路由通过 `get_verified_user()` 拒绝 `pending` 角色的访问。然而，自动化调度器在 `execute_automation()` 执行定时任务时，仅重新获取任务所有者信息，未重新校验其角色是否仍为 `user` 或 `admin`，也未检查是否仍持有 `features.automations` 权限；同时 `check_model_access()` 函数仅对精确角色 `user` 执行私有模型 ACL 检查，导致 `pending` 角色绕过该检查。攻击者利用此漏洞，可在账户被停用后仍通过后台调度器继续执行已创建的自动化任务，消耗运营商的模型提供商凭证、配额和共享容量，并绕过私有模型访问控制。该漏洞影响 Open WebUI 0.9.0 至 0.10.0 之前版本，攻击前提是攻击者先前已创建活跃自动化任务且账户随后被停用，CVSS 评分 3.1，危害等级低。已在 0.10.0 版本中修复。"
-published = "2026-07-09T17:17:04.067"
+published = "2026-07-09T17:17:04Z"
 remediation = "立即升级 Open WebUI 至 v0.10.0 或更高版本，该版本在 execute_automation() 中增加了对自动化所有者状态的重新校验，并在 check_model_access() 中为所有非 admin 角色强制执行模型 ACL。如无法立即升级，可临时禁用所有自动化功能（关闭 Settings > Automations 开关），或移除可疑 pending 用户的自动化配置。"
 score = 3.1
 severity = "LOW"
 sources = ["ghsa"]
 title = "Open WebUI 用户停用后自动化任务权限绕过漏洞"
-updated = "2026-07-10T02:42:18.063"
+updated = "2026-07-10T02:42:18Z"
 
 [exploit]
 exp_urls = []

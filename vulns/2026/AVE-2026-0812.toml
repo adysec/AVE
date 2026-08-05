@@ -1,12 +1,12 @@
 [basic]
 description = "Open WebUI 的 `get_all_models` 处理函数在 `routers/openai.py` 和 `routers/ollama.py` 中使用了 aiocache 的 `@cached` 装饰器，但错误地将 `key=` 参数传入了 lambda 表达式而非 `key_builder=` 参数。在 aiocache 0.12.3 中，`key=` 被当作静态缓存键处理，导致所有用户的权限过滤模型列表共享同一个缓存条目。已认证的攻击者可在默认 1 秒的缓存 TTL 窗口内，通过连续请求获取其他用户的模型列表，从而越权查看本应受限的模型信息。该漏洞影响 Open WebUI 0.6.27 至 0.10.0 版本，CVSS 评分 3.5，危害等级低，已在 0.10.0 版本中修复。"
-published = "2026-07-09T17:17:02.030"
+published = "2026-07-09T17:17:02Z"
 remediation = "立即升级 Open WebUI 至 v0.10.0 或以上版本，该版本已将 `routers/openai.py` 和 `routers/ollama.py` 中 `@cached` 装饰器的 `key=` 参数替换为 `key_builder=`，确保每个用户的模型列表缓存按 `user.id` 隔离。如无法立即升级，可将 `MODELS_CACHE_TTL` 设为 0 以禁用缓存，或通过反向代理限制 `/api/models` 等接口的并发请求频率作为临时缓解。"
 score = 3.5
 severity = "LOW"
 sources = ["ghsa"]
 title = "Open WebUI 跨用户模型列表暴露漏洞"
-updated = "2026-07-10T19:49:23.313"
+updated = "2026-07-10T19:49:23Z"
 
 [exploit]
 exp_urls = []

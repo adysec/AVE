@@ -1,12 +1,12 @@
 [basic]
 description = "NocoBase 是一款 AI 驱动的无代码/低代码平台，其 @nocobase/plugin-notification-in-app-message 插件中的 GET /api/myInAppChannels:list 接口存在 SQL 注入漏洞。攻击者通过 filter[latestMsgReceiveTimestamp][$lt] 参数将恶意表达式直接拼接到 Sequelize.literal() 模板字符串中，未经任何转义或参数绑定，导致已注册认证的任意用户可执行堆叠 PostgreSQL 语句。默认部署中 auth-basic 认证器开启 allowSignUp: true，攻击者可匿名注册账号后利用该漏洞。由于默认 docker-compose.yml 使用 postgres:16 镜像且数据库角色 nocobase 被赋予超级用户权限，攻击者可进一步通过 COPY ... TO PROGRAM 在数据库容器内以 postgres 用户身份执行系统命令，实现任意数据窃取（包括管理员密码哈希）和远程代码执行。该漏洞影响 NocoBase 2.0.57 及之前版本，CVSS 评分 10.0，危害等级严重。官方已在 2.0.61 版本中修复。"
-published = "2026-07-15T21:16:54.543"
+published = "2026-07-15T21:16:54Z"
 remediation = "立即升级 NocoBase 至 v2.0.61 或更高版本（`docker pull nocobase/nocobase:2.0.61` 并重启容器），该版本已修复 `@nocobase/plugin-notification-in-app-message` 中 `Sequelize.literal()` 的 SQL 注入问题。如无法立即升级，在 `docker-compose.yml` 中将 `POSTGRES_USER` 改为非超级用户角色（如 `nocobase_limited`）并撤销 `rolsuper` 属性，同时在反向代理层限制 `/api/myInAppChannels:list` 的访问权限或禁用匿名注册（设置 `allowSignUp: false`）。"
 score = 10
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "NocoBase 通知应用内消息插件 SQL 注入漏洞"
-updated = "2026-07-20T16:17:05.020"
+updated = "2026-07-20T16:17:05Z"
 
 [exploit]
 exp_urls = []

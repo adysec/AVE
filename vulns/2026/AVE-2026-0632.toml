@@ -1,12 +1,12 @@
 [basic]
 description = 'File Browser 的 ScopedFs 组件在文件写入操作中存在符号链接验证绕过漏洞。ScopedFs 用于将每个用户限制在其作用域目录内，其 within() 守卫函数本应拒绝任何通过符号链接逃逸出作用域的操作。然而，当符号链接的目标文件不存在时（即悬空符号链接），守卫函数会向上回溯到最近的已存在父目录进行验证，由于该父目录在作用域内，守卫返回"在作用域内"通过检查。随后 os.OpenFile(O_CREATE) 会跟随该悬空符号链接，在作用域外的目标路径创建文件。攻击条件为：攻击者需已通过身份认证，拥有 Create 和 Modify 权限，且用户作用域内存在指向外部路径的悬空符号链接。成功利用后，经过身份验证的低权限用户可在其作用域外创建任意内容的文件，在多用户部署场景下可跨租户写入其他用户目录（如脚本、HTML 页面、SSH 授权密钥等），在 File Browser 以 root 权限运行的部署中可导致远程代码执行。该漏洞是 GHSA-239w-m3h6-ch8v 的补丁绕过变种，影响 File Browser 2.63.15 及之前版本，已在 2.63.16 版本中修复。'
-published = "2026-07-08T15:16:30.057"
+published = "2026-07-08T15:16:30Z"
 remediation = "立即升级 File Browser 至 v2.63.16 或更高版本，该版本已修复 ScopedFs 对悬空符号链接的路径验证缺陷。若无法立即升级，应限制用户的 Create 和 Modify 权限，并定期使用 `find /path/to/scope -type l` 命令扫描用户 scope 目录中的悬空符号链接，及时清理指向外部路径的链接。对于多用户部署，建议将各用户 scope 目录隔离在不同父目录下，避免共享目录结构。详细修复信息请参考 GitHub 安全公告 GHSA-8wc8-hf36-mjh9。"
 score = 6.3
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "File Browser 悬空符号链接跟随导致越界文件创建漏洞"
-updated = "2026-07-08T17:17:24.860"
+updated = "2026-07-08T17:17:24Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Immutable.js 的 List 数据结构在 setListBounds() 方法中存在 32 位有符号整数溢出漏洞。当传入索引或大小处于 [2³⁰, 2³¹) 范围时，位运算 `1 << exp` 因 JavaScript 移位操作符对 32 取模而溢出为负值，导致空 List 进入不可捕获的无限循环（CPU 100% 占用，进程无法恢复），或已填充 List 无限制分配内存直至进程因 OOM 被系统终止（SIGABRT/exit 134）。此外，`setSize` 方法中 `|= 0` 的 ToInt32 强制转换导致大数值静默回绕，造成数据状态静默损坏。攻击者无需认证，仅需通过 HTTP 请求体、URL 参数或 JSON-Patch 端点传入恶意索引值（如 `1073741824`）即可触发，影响所有使用 `fromJS` 配合 `setIn`/`updateIn` 处理不可信输入的应用场景。该漏洞影响 immutable.js 4.3.9 之前和 5.1.8 之前的版本。"
-published = "2026-07-08T17:17:26.370"
+published = "2026-07-08T17:17:26Z"
 remediation = "立即升级 immutable.js 至 v4.3.9 或 v5.1.8 及以上版本。如无法升级，在调用 set/setIn/updateIn 前对外部传入的 List 索引或 key-path 数值段做上限校验，拒绝 ≥1073741824 (2^30) 的数值；同时将请求处理逻辑放入独立 worker 进程并设置 --max-old-space-size 堆上限，防止单请求导致主进程崩溃。"
 score = 8.7
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Immutable.js List 32位trie溢出拒绝服务漏洞"
-updated = "2026-07-10T18:48:54.280"
+updated = "2026-07-10T18:48:54Z"
 
 [exploit]
 exp_urls = []

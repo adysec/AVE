@@ -1,12 +1,12 @@
 [basic]
 description = "Authorizer 的 /authorize 端点未对 redirect_uri 参数进行来源校验，攻击者可构造恶意链接将受害者重定向至攻击者控制的 URL，导致 access_token、id_token 和 refresh_token 等 OAuth2 凭证通过 URL 查询参数泄露。攻击者无需认证即可从公开的 /graphql 接口获取 client_id，诱使已登录用户点击恶意链接后即可窃取令牌并完全冒充受害者身份。该漏洞影响 Authorizer 所有版本，v2.0.1 仅修复了其他处理函数但遗漏了 /authorize 端点。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "升级 Authorizer 到 v2.0.2 或更高版本（v2.0.1 仅修复了 oauth_login 等处理器，/authorize 端点的修复在后续版本中完成）。如暂时无法升级，应在 /authorize 端点的 redirect_uri 参数处理处手动添加校验：在 internal/http_handlers/authorize.go 中，读取 redirect_uri 后立即调用 validators.IsValidOrigin(redirectURI, h.Config.AllowedOrigins)，若校验失败则返回 400 错误并终止请求。可通过反向代理（Nginx/Caddy）层面对 /authorize 路径的 redirect_uri 参数进行白名单过滤作为临时缓解措施，仅允许 redirect_uri 指向已配置的 AllowedOrigins 域名。"
 score = 9.8
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "Authorizer OAuth2 authorize 端点重定向验证绕过漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

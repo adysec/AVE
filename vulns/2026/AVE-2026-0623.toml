@@ -1,12 +1,12 @@
 [basic]
 description = "vLLM 是一款高吞吐量、内存高效的大语言模型推理引擎，其 structured_outputs.regex API 参数将用户提供的正则表达式字符串直接传递给语法编译器后端，且未设置编译超时。在 xgrammar 后端中，字符串直接进入 compile_regex() 函数而无任何防护；在 outlines 后端中，validate_regex_is_buildable() 仅检查前瞻断言、反向引用等结构性问题，但未进行复杂度分析，因此包含嵌套量词（如 (a+)+b）的恶意正则表达式可通过所有校验，导致 DFA 状态空间呈指数级膨胀。未经身份认证的远程攻击者只需发送一个包含此类对抗性正则表达式的请求，即可使推理工作线程无限期挂起，造成拒绝服务。该漏洞影响 vLLM 0.24.0 之前的所有版本，CVSS 评分 8.7，危害等级高。官方已在 v0.24.0 版本中通过为编译调用添加超时机制修复此漏洞。"
-published = "2026-07-06T21:16:57.347"
+published = "2026-07-06T21:16:57Z"
 remediation = "立即升级 vLLM 至 0.24.0 或更高版本，该版本在 regex 编译调用（compile_regex 和 oc.Index）中引入了线程超时机制（建议设为 5 秒）。如无法升级，可在反向代理层对 /v1/chat/completions 等接口的 structured_outputs.regex 参数实施长度限制（建议 ≤512 字符）并配置请求超时，同时禁用 outlines 和 xgrammar 后端的 regex 功能作为临时缓解。"
 score = 8.7
 severity = "HIGH"
 sources = ["ghsa"]
 title = "vLLM 正则表达式拒绝服务漏洞"
-updated = "2026-07-07T19:03:35.010"
+updated = "2026-07-07T19:03:35Z"
 
 [exploit]
 exp_urls = []

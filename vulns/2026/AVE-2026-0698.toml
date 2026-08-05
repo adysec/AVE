@@ -1,12 +1,12 @@
 [basic]
 description = "Cosmos-Server 的 Constellation 隧道代理模块存在身份认证绕过漏洞。该漏洞位于 `src/proxy/routerGen.go` 的 `tokenMiddleware` 函数中，Constellation 隧道绕过分支在上游处理器返回后，未及时清除 `x-cosmos-user`、`x-cosmos-role`、`x-cosmos-user-role` 和 `x-cosmos-mfa` 等身份头字段，且跳过了 `AdminOnlyWithRedirect` 权限网关校验。持有有效 Constellation 设备 API 密钥的攻击者，只需在请求中注入 `x-cosmos-user: admin` 头，即可绕过 Cosmos 的 JWT 登录、密码及 MFA 认证机制，以管理员身份访问代理后端。该漏洞影响所有启用了 Constellation 功能且至少注册了一台设备的 Cosmos-Server 部署。攻击者可在内网或通过 Nebula 隧道远程发起利用，无需管理员账户凭证，即可读取管理员专属应用数据或执行管理员级别的写操作。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即升级 cosmos-server 至 v0.22.19 或更高版本（最新稳定版 v0.22.31）。升级后需逐一检查所有代理路由配置，确保启用了 AuthEnabled=true 的路由不会因 Constellation 隧道而跳过身份校验。若无法立即升级，可在网关层面对所有来自 Constellation 隧道的后端请求，强制移除 x-cosmos-user、x-cosmos-role、x-cosmos-user-role、x-cosmos-mfa 请求头，仅允许经过 JWT 校验的身份信息写入，防止未授权用户通过设备 API 密钥冒充管理员访问代理后端。同时，在后端应用中拒绝信任来自不可信跳点的 x-cosmos-user 头，或对该头附加 HMAC 签名校验以绑定信任。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "azukaar Cosmos-Server 身份认证绕过漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

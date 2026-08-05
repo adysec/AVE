@@ -1,12 +1,12 @@
 [basic]
 description = "NLTK (Natural Language Toolkit) 的 `nltk.pathsec` 模块提供了一个 SSRF 过滤器，旨在阻止访问回环地址、私有地址、链路本地地址和组播地址等内部网络资源，并建议在安全敏感环境中启用严格的 `ENFORCE` 模式。然而，该过滤器存在 DNS 重绑定绕过漏洞。漏洞原理在于 `validate_network_url()` 函数在验证时解析主机名并检查返回的 IP 地址，但在随后建立 HTTP 连接时，`urllib` 会重新独立解析该主机名并连接到第二次解析结果。攻击者可通过控制 DNS 服务器，使主机名在验证时返回公网 IP（绕过过滤器），而在连接时返回内网或回环地址，从而实现对内部服务的访问。该漏洞影响所有使用了 NLTK 3.9.4 及以下版本通过 `nltk.download` 或 `nltk.data.load` 等函数加载远程资源的应用。攻击者仅需网络访问权限以及对某个域名的 DNS 控制权（例如设置 TTL-0 的重绑定记录），即可通过构造包含该域名的 URL 诱导目标系统发起请求，读取内部服务的完整响应，包括回环地址的管理界面和云实例元数据服务（如 AWS 的 169.254.169.254），可能进一步泄露云服务的 IAM 凭证，导致云账号被完全控制。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = '<value>立即升级 NLTK 至 3.10.0 或更高版本（命令：pip install --upgrade "nltk>=3.10.0"），该版本修复了 `nltk.pathsec` 中 DNS 重绑定导致的 SSRF 过滤器绕过问题，使 `validate_network_url()` 与实际 HTTP 连接使用一致的解析结果，有效防御此漏洞。如无法立即升级，可通过防火墙 egress 过滤阻止 NLTK 进程访问 127.0.0.1、169.254.169.254 等内网元地址，并谨慎处理 `nltk.pathsec.ENFORCE` 配置，避免仅依赖该过滤器保护。</arg_value></tool_call>'
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Natural Language Toolkit NLTK nltk.pathsec SSRF 过滤器绕过漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

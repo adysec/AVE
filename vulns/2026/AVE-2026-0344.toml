@@ -1,12 +1,12 @@
 [basic]
 description = "Zalando Skipper 的 OpenPolicyAgent 集成存在请求体绕过漏洞。当使用 opaAuthorizeRequestWithBody 过滤器时，HTTP/1.1 的 Transfer-Encoding: chunked 编码请求或 HTTP/2 中省略 content-length 伪标头的请求，会导致 ExtractHttpBodyOptionally 函数因 ContentLength 为 -1 而生成空的 raw_body，OPA 策略因此评估到空文档而放行请求，但上游服务却接收到完整的攻击载荷。未经身份认证的远程攻击者可利用此漏洞绕过基于请求体内容的授权策略（如字段黑名单、内容审核标记等），将恶意载荷透传至后端服务。该漏洞影响 Skipper ≤v0.26.8 版本，CVSS 评分 7.8，危害等级高。官方已在 v0.26.10 版本中修复。"
-published = "2026-07-17T20:17:24.087"
+published = "2026-07-17T20:17:24Z"
 remediation = "立即将 zalando/skipper 升级至 v0.26.10 或更高版本（commit 3152f3b0bb52ca89c3564be42434db0a2a1cea23）。如无法立即升级，须在 OPA Rego 策略中额外检查 `input.attributes.request.http.truncated_body` 字段，当该字段为 true 时拒绝请求，防止超长或分块请求体绕过 body 内容检查。"
 score = 7.8
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Zalando Skipper OpenPolicyAgent请求体检查绕过漏洞"
-updated = "2026-07-20T16:17:04.550"
+updated = "2026-07-20T16:17:04Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 GICv3 中断控制器 ITS 驱动中存在不正确的锁操作漏洞。函数 `its_irq_set_vcpu_affinity()` 使用 `guard(raw_spinlock_irq)` 宏，该宏在作用域退出时会重新启用中断，但调用链 `irq_set_vcpu_affinity()` → `irq_get_desc_lock()` 已通过 `raw_spin_lock_irqsave()` 在关闭中断的状态下持有自旋锁。这导致在 `irq_put_desc_unlock()` 中检测到中断被意外启用而触发内核警告。本地低权限攻击者可利用此漏洞造成内核拒绝服务（系统不稳定或崩溃），影响 Linux 内核 6.1.95 至 6.1.127、6.6.35 至 6.6.74、6.9.6 至 6.12.11 等多个版本。该漏洞不影响系统机密性和完整性，但可用性影响为高。"
-published = "2025-02-09T12:15:28.570"
+published = "2025-02-09T12:15:28Z"
 remediation = "立即升级 Linux 内核至以下已修复版本：6.1.127、6.6.74、6.12.11 或 6.13 及以上。Debian 用户请参考 DLA-4051-1 公告更新内核包。如无法立即升级，可考虑在 affected 版本中禁用 GICv3 ITS 中断重映射功能（内核启动参数添加 irqchip.gicv3_its=disable），但会降低中断性能。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux kernel irqchip GICv3 ITS 中断嵌套使能导致拒绝服务漏洞"
-updated = "2026-06-17T08:14:18.007"
+updated = "2026-06-17T08:14:18Z"
 
 [exploit]
 exp_urls = []

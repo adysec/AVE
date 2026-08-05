@@ -1,12 +1,12 @@
 [basic]
 description = "gotd/td Telegram MTProto 客户端库的 proto.UnencryptedMessage.Decode 函数存在无界内存分配漏洞。该函数在解析未加密 MTProto 数据包时，直接读取攻击者可控的 32 位 dataLen 字段并立即通过 make([]byte, dataLen) 分配大块内存，而未先校验底层缓冲区是否包含足够字节。攻击者可发送仅 20 字节但声称载荷约 1.75 GB（如 dataLen=0x70000000）的伪造未加密数据包，强制运行时在拒绝长度前分配并零初始化数 GB 堆内存，导致 CPU/GC 压力飙升甚至触发 OOM 终止，造成拒绝服务。该漏洞位于未认证的 MTProto 握手路径，无需凭证或会话即可触发，影响 gotd/td v0.145.1 之前版本，CVSS 7.5 高危，仅影响可用性，不存在内存破坏或代码执行风险。官方已在 v0.145.1 中通过在分配前校验 dataLen 与剩余缓冲区长度修复该漏洞。"
-published = "2026-07-28T23:17:08.617"
+published = "2026-07-28T23:17:08Z"
 remediation = "建议立即升级 gotd/td 到 v0.145.1 或更高版本（修复提交：9d5d1f31ea5022d9798d84ccce15de2e91ba6baa），可通过 `go get github.com/gotd/td@v0.145.1` 升级依赖。如暂时无法升级，必须在网络层面禁止未受信任的客户端访问未加密的 MTProto 握手端口（默认 443/8443），或在网关层拦截异常大的 dataLen 字段（>1MB）的 MTProto 包，防止触发巨额内存分配导致 OOM。建议尽快升级至 v0.145.1 彻底修复该预认证拒绝服务漏洞。参考：https://github.com/gotd/td/releases/tag/v0.145.1 https://github.com/gotd/td/security/advisories/GHSA-whmm-qj9r-wvr2"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "gotd td 预认证拒绝服务漏洞"
-updated = "2026-07-29T15:16:24.990"
+updated = "2026-07-29T15:16:24Z"
 
 [exploit]
 exp_urls = []

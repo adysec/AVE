@@ -1,12 +1,12 @@
 [basic]
 description = "SGI IRIX 6.4 系统中的 startmidi 程序存在符号链接漏洞。该程序在创建或写入临时文件时未对文件路径进行充分校验，本地攻击者可通过创建指向系统任意敏感文件的符号链接，诱使程序跟随链接并修改目标文件内容。由于 startmidi 以较高权限运行，攻击者可利用此漏洞篡改关键系统文件（如密码文件、配置文件和可执行程序），从而实现本地权限提升至 root。该漏洞仅需本地登录权限即可利用，无需额外身份认证，影响所有运行 SGI IRIX 6.4 且默认安装 startmidi 程序的系统。SGI 已在 1998 年安全公告中发布补丁修复此问题。"
-published = "1997-02-01T05:00:00.000"
+published = "1997-02-01T05:00:00Z"
 remediation = "SGI IRIX 6.4 的 startmidi 程序存在符号链接（symlink）攻击漏洞（CVE-1999-0959，公告编号 19980301-01-PX），本地低权限用户可通过竞争条件在 /tmp 等临时目录中创建指向敏感系统文件（如 /etc/passwd、/etc/shadow）的符号链接，当 root 用户执行 startmidi 时，程序会跟随该链接并修改目标文件，导致任意文件篡改或权限提升。建议立即从 SGI 官方补丁服务器 ftp://patches.sgi.com/support/free/security/advisories/19980301-01-PX 下载并安装编号为 19980301-01-PX 的安全补丁，该补丁修复了 startmidi 程序中不安全的临时文件创建逻辑，使其在创建临时文件时使用 O_EXCL 标志并配合安全的临时目录机制，避免符号链接跟随。若无法立即安装补丁，临时缓解措施包括：以 root 身份执行 chmod 755 /usr/sbin/startmidi 并移除 setuid/setgid 位（chmod 755 已隐含移除），或通过文件系统挂载选项将 /tmp 设置为 nosuid、nodev、noexec，以及使用临时 ACL 或 cron 任务定期清理 /tmp 中不属于合法用户的符号链接。长期建议将系统升级至 SGI IRIX 6.5.22 或更高版本，该版本已包含对所有已知 startmidi 及同类 symlink 漏洞的完整修复。"
 score = 7.2
 severity = "HIGH"
 sources = ["avd"]
 title = '{"_meta":{},"stopReason":"end_turn","usage":{"cachedReadTokens":1664,"inputTokens":9144,"outputTokens":24,"totalTokens":10832}}'
-updated = "2026-06-16T21:49:24.607"
+updated = "2026-06-16T21:49:24Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Astro 是一个面向内容驱动型网站的前端框架。其 SSR 渲染路径中的 `renderHTMLElement()` 函数在构建 HTML 元素属性时，直接将扩展运算符传入的属性名（`attr`）未经转义地拼接到属性字符串中，仅对属性值进行了转义处理。此前 CVE-2026-54298 的修复仅加固了 `addAttribute()` 路径，但 `renderHTMLElement()` 拥有独立的属性循环逻辑，未经过 `addAttribute()` 的检查。当 SSR 运行时环境定义了全局 `HTMLElement`（如 Deno、Bun 或使用 jsdom/happy-dom 的 Node 环境），且存在继承自 `HTMLElement` 的组件直接接收攻击者可控键名的扩展属性时，攻击者可通过注入包含事件处理器（如 `onmouseover`）或 `<script>` 标签的恶意属性名，突破属性上下文限制，实现跨站脚本攻击（XSS）。该漏洞影响 Astro 7.0.6 之前的所有版本，CVSS 评分 5.1，危害等级中危。官方已在 7.0.6 版本中修复此漏洞。"
-published = "2026-07-27T20:16:40.303"
+published = "2026-07-27T20:16:40Z"
 remediation = "立即将 Astro 升级至 7.0.6 或更高版本（npm update astro），该版本在 renderHTMLElement 中增加了属性名校验逻辑。如无法立即升级，避免在 SSR 运行时（Deno、Bun 带 DOM shim、jsdom/happy-dom）中使用继承自 HTMLElement 的自定义组件接收不可信扩展属性（spread props），或改用 Node 默认 SSR 环境（HTMLElement 为 undefined 时该分支不可达）。"
 score = 5.1
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Astro Astro renderHTMLElement 跨站脚本漏洞"
-updated = "2026-07-28T16:17:16.127"
+updated = "2026-07-28T16:17:16Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Kubernetes 的 ingress-nginx 准入控制器（Validating Admission Webhook）存在远程代码执行漏洞。在特定条件下，位于 Pod 网络内且无需身份认证的攻击者，可通过向准入控制器暴露的接口发送特制的 AdmissionReview 请求，利用控制器配置校验逻辑中的缺陷注入并执行任意代码，从而在 ingress-nginx 控制器进程上下文中实现远程代码执行。由于默认安装中该控制器可访问集群内全部 Secret，攻击者可借此读取并泄露这些敏感凭据，造成严重的信息泄露与权限提升风险。该漏洞影响未修复的 ingress-nginx 版本，CVSS 评分 9.8（严重）。攻击前提是攻击者能够访问集群的 Pod 网络（如已突破边界进入内部网络或存在暴露的入口）。官方建议升级至 1.12.1 及以上或 1.11.5 及以上版本修复。"
-published = "2025-03-25T00:15:14.753"
+published = "2025-03-25T00:15:14Z"
 remediation = "立即将 ingress-nginx 升级至 1.11.5 或 1.12.1 及以上版本（1.10.x 及更早版本无修复需整体升级）。若无法立即升级，应在网络层面限制对准入 Webhook 服务（默认 8443 端口，ValidatingWebhookConfiguration 指向的 Service）的访问，仅允许 kube-apiserver 来源 IP 访问，禁止 Pod 网络或未授权主机直连；同时通过 NetworkPolicy 或防火墙隔离 ingress-nginx 控制器 Pod 的网络，并收紧其 ServiceAccount 权限，避免控制器读取集群内全部 Secret 造成横向泄露。"
 score = 9.8
 severity = "CRITICAL"
 sources = ["hwpoc"]
 title = "Kubernetes ingress-nginx 准入控制器远程代码执行漏洞"
-updated = "2026-06-17T08:40:27.847"
+updated = "2026-06-17T08:40:27Z"
 
 [exploit]
 exp_urls = []

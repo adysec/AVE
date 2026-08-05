@@ -1,12 +1,12 @@
 [basic]
 description = "nebula-mesh（Nebula 网络管理工具）的 Web UI 主机创建路径未使用服务端配置的注册令牌 TTL 解析器，而是硬编码 24 小时过期时间。API 路径正确调用 tokenTTLFor 函数遵循配置策略，但 POST /ui/hosts 接口始终设置 ExpiresAt: now.Add(24 * time.Hour)。认证后的 Web UI 操作员可通过创建主机操作绕过管理员配置的短生命周期策略（如 30 分钟），获取有效期长达 24 小时的承载令牌。该令牌可用于公共注册端点，延长了令牌泄露后的利用窗口，削弱了依赖短令牌生命周期部署场景的机密性与完整性。影响版本为 v0.3.0 至 v0.3.8。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "升级到 nebula-mesh v0.3.9 或更高版本。如无法立即升级，手动修改 `internal/web/handlers.go:879` 将 `now.Add(24 * time.Hour)` 替换为 `now.Add(s.tokenTTLFor(r.Context(), host.NetworkID))`，使 Web UI 路径复用 API 的 TTL 解析逻辑。同时建议审计所有已签发的 enrollment token，对过期时间超过配置值的 token 执行吊销操作。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Slack Nebula Mesh Web UI 主机创建注册令牌有效期绕过漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Fluent Bit 3.1.9 版本的 Prometheus Remote Write 输入插件存在空指针解引用漏洞。当该插件运行并监听 IP 地址和端口时，攻击者可通过发送 Content-Length 为 0 的恶意数据包触发漏洞，导致服务器崩溃。漏洞根源在于 `process_payload_metrics_ng()` 函数处理 `Content-Length: 0` 时，将值 0 传递给 `cfl_sds_len` 函数，该函数试图对空指针进行类型转换引发空指针解引用。攻击者只需网络访问该端点即可发起远程拒绝服务攻击，无需身份认证。CVSS 评分 7.5，危害等级高。"
-published = "2025-02-18T18:15:25.667"
+published = "2025-02-18T18:15:25Z"
 remediation = "升级 Fluent Bit 至 3.2.3 及以上版本（含 3.2.x 系列），或应用上游 PR #9993 的补丁（commit ed56831），在 prom_rw_prot.c 的 prom_rw_prot_handle_ng 函数中增加 Content-Length <= 0 和 body == NULL 的校验，返回 400 错误而非继续处理。如无法立即升级，可在网络层面限制 Prometheus Remote Write 输入插件的访问来源 IP，或在该插件前加反向代理对 Content-Length 为 0 的请求进行拦截。"
 score = 7.5
 severity = "HIGH"
 sources = ["msrc"]
 title = "Fluent Bit Prometheus Remote Write输入插件空指针解引用拒绝服务漏洞"
-updated = "2026-06-17T08:04:47.737"
+updated = "2026-06-17T08:04:47Z"
 
 [exploit]
 exp_urls = []

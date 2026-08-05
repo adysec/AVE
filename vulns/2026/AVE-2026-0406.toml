@@ -1,12 +1,12 @@
 [basic]
 description = "Better Auth 是一个用于 TypeScript 应用的认证授权库。在 1.6.11 版本之前，该库的 OAuth 回调自动链接机制存在逻辑缺陷：当 OAuth 提供者返回 email_verified: true 时，系统会直接将 OAuth 身份与本地账户隐式关联，而无需验证本地用户行的 emailVerified 字段。攻击者可利用此缺陷，通过 /sign-up/email 接口预先注册受害者的邮箱地址（此时本地账户的 emailVerified 为 false），随后当受害者通过支持 OAuth/SSO 的方式登录时，其 OAuth 身份会被自动绑定到攻击者已创建的账户上，导致账户被劫持。该漏洞影响所有使用 better-auth 版本低于 1.6.11 且启用了 emailAndPassword 和 OAuth/SSO 提供者的应用，并且可绕过 requireEmailVerification: true 的保护机制。修复方案为升级至 better-auth@1.6.11 或更高版本。"
-published = "2026-07-15T18:16:47.967"
+published = "2026-07-15T18:16:47Z"
 remediation = "1. 立即将 better-auth 升级至 1.6.11 或更高版本，该版本在 OAuth 自动关联逻辑中增加了本地账户 emailVerified 状态校验，阻断攻击者利用未验证预注册邮箱进行账号绑定的路径。2. 若短期内无法升级，应在 betterAuth() 配置中将 account.accountLinking.disableImplicitLinking 设为 true，强制所有社交账号关联走已认证会话的 /link-social 端点，防止攻击者利用 OAuth 回调自动绑定受害者邮箱。3. 如业务场景不允许任何自动关联，可将 account.accountLinking.enabled 设为 false 彻底关闭账户关联功能。注意：仅开启 emailAndPassword.requireEmailVerification: true 不足以缓解此漏洞，因为关联过程中 OAuth 提供商的 email_verified 声明会触发本地行的 emailVerified 翻转，使攻击者的密码登录在关联后变为可用状态。"
 score = 8.3
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Better Auth better-auth OAuth自动链接未验证预注册邮箱账户接管漏洞"
-updated = "2026-07-21T14:14:22.307"
+updated = "2026-07-21T14:14:22Z"
 
 [exploit]
 exp_urls = []

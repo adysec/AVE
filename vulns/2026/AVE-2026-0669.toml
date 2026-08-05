@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 代码托管平台存在草稿版本附件访问控制缺失漏洞。漏洞原理：草稿版本的访问控制仅在 API 发布接口（/api/v1/repos/{owner}/{repo}/releases/{id} 及其 /assets 子路由）实施了 `canAccessReleaseDraft` 写权限检查，但 Web 层基于 UUID 的附件下载端点（/attachments/{uuid}、/{owner}/{repo}/attachments/{uuid}、/{owner}/{repo}/releases/attachments/{uuid} 等）仅校验仓库级读取权限，未校验关联发布的 `IsDraft` 标志，导致任何获取到附件 UUID 的用户（含匿名用户）均可直接下载草稿版本附件全量内容。影响范围：Gitea 1.27.0 及后续开发版本，影响所有默认配置部署，涉及预发布签名二进制、安全修复候选版本、内部 SBOM、签名清单、构建产物、变更日志等敏感草稿附件。攻击条件：攻击者需通过浏览器历史记录、反向代理日志、Referer 头、搜索引擎索引、公开页面嵌入链接等侧信道获取附件 UUID（UUIDv4 熵 122 位，暴力破解不可行）。利用方式：攻击者直接访问 Web 端 UUID 下载链接（如 `/attachments/{uuid}`），无需认证即可 200 OK 下载完整附件内容；API 同类端点正确返回 404。此漏洞为 CVE-2026-27660 同类别修复遗漏的 Web 镜像路径，CVSS 3.1 评分 5.9（Medium），建议在 `ServeAttachment` 处理器增加草稿发布写权限检查修复。CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "建议立即升级 Gitea 到 v1.27.1 或更高版本（已修复该漏洞）。若无法立即升级，请手动修补 `routers/web/repo/attachment.go` 的 `ServeAttachment` 函数：在权限检查后添加草稿发布附件的写权限校验（`rel.IsDraft && !perm.CanWrite(unit.TypeReleases)` 返回 404）。临时缓解：在反向代理层拦截 `/attachments/{uuid}`、`/{owner}/{repo}/attachments/{uuid}`、`/{owner}/{repo}/releases/attachments/{uuid}` 路径，要求写权限或拦截匿名访问；同时监控访问日志中的 UUID 泄露并吊泄露的草稿附件。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Gitea Gitea 草稿版本附件访问控制缺失漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

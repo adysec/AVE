@@ -1,12 +1,12 @@
 [basic]
 description = "Langroid 是一个构建大语言模型驱动应用的框架，其 TableChatAgent 和 VectorStore 组件在 full_eval=True 模式下使用 Python 的 eval() 函数执行 LLM 生成的代码时，仅将 locals 参数设为空字典 {} 来限制执行环境，但未从 globals 中移除 __builtins__，导致 Python 解释器隐式注入所有内建函数。远程攻击者可通过提示注入（Prompt Injection）构造恶意载荷，利用 __import__('os').system() 等内建函数绕过沙箱限制，在服务器上执行任意系统命令，实现未授权远程代码执行。该漏洞影响 Langroid 0.65.2 之前的所有版本，CVSS 评分 10.0，危害等级严重。官方已在 0.65.2 版本中通过修复 eval() 调用方式完成修复。"
-published = "2026-07-10T00:16:33.603"
+published = "2026-07-10T00:16:33Z"
 remediation = "立即升级 Langroid 至 0.65.2 或更高版本，该版本已修复 `eval()` 中 `__builtins__` 未显式清理的问题。如无法升级，在调用 `TableChatAgent` 和 `VectorStore` 时设置 `full_eval=False` 禁用 LLM 生成代码的自动执行，并在代码中手动将 `__builtins__` 置空：`eval(code, {**vars, '__builtins__': {}}, {})`。"
 score = 10
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "Langroid TableChatAgent 沙箱逃逸导致远程代码执行漏洞"
-updated = "2026-07-10T15:49:19.093"
+updated = "2026-07-10T15:49:19Z"
 
 [exploit]
 exp_urls = []

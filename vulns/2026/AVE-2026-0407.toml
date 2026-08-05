@@ -1,12 +1,12 @@
 [basic]
 description = "Better Auth 的 OAuth 刷新令牌轮换机制存在并发竞争条件漏洞。`POST /oauth2/token` 端点在处理 `refresh_token` 授权时，对 `oauthRefreshToken` 行执行非原子的读取、验证、撤销和签发操作，两个并发请求携带同一父刷新令牌时，均可在对方完成撤销前通过检查，各自签发新的刷新令牌，导致令牌族分支。该漏洞影响使用 `@better-auth/oauth-provider` 版本 `>=1.6.0, <1.6.11` 或嵌入式 `better-auth` 插件版本 `>=1.4.8-beta.7, <1.6.0` 的项目，且至少有一个 OAuth 客户端请求了 `offline_access` 作用域。攻击者获取一个刷新令牌后，可通过并发重放请求创建无限延续的令牌分支，绕过撤销检测，获得持久化访问权限。CVSS 评分 8.1，危害等级高。修复版本为 `@better-auth/oauth-provider@1.6.11`，该版本在轮换原语中对父行执行原子比较并交换操作，确保竞争条件下只有一个调用方成功签发新令牌，另一个收到 `invalid_grant` 错误。临时缓解措施包括：将数据库适配器设置为可序列化隔离级别、缩短刷新令牌有效期至 60 秒、在客户端使用互斥锁串行化刷新令牌使用，或不请求 `offline_access` 作用域以禁用刷新令牌。"
-published = "2026-07-15T18:16:48.107"
+published = "2026-07-15T18:16:48Z"
 remediation = '立即升级 @better-auth/oauth-provider 至 1.6.11 或更高版本，以及 better-auth 至 1.6.0 或更高版本。如使用内存适配器，需同步升级 @better-auth/memory-adapter 至 1.6.11 以确保原子比较交换（CAS）谓词正确处理 undefined 与 null 的语义。若无法立即升级，可在数据库上手动执行 CREATE UNIQUE INDEX oauth_refresh_token_token_uniq ON "oauthRefreshToken" (token) 作为纵深防御措施，或通过防火墙层限制 /oauth2/token 端点的并发请求频率，或将 refreshTokenExpiresIn 缩短至 60 秒以限制 forked token family 的存活时间，但上述缓解措施均无法完全修复竞态条件。'
 score = 8.1
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Better Auth oauth-provider OAuth 刷新令牌并发竞争漏洞"
-updated = "2026-07-21T16:00:22.173"
+updated = "2026-07-21T16:00:22Z"
 
 [exploit]
 exp_urls = []

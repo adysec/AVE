@@ -1,12 +1,12 @@
 [basic]
 description = "FatFs（ChaN FatFs）R0.16 及更早版本在处理长文件名（LFN）时存在下游缓冲区溢出漏洞。当启用 LFN 功能后，`fno.fname` 字段可长达 255 个字符，但许多调用方将其复制到固定长度的短缓冲区时未进行边界检查，导致缓冲区溢出。本地攻击者可通过构造恶意的长文件名文件（如 255 字符的 LFN）触发此漏洞，造成缓冲区写入越界，可能导致内存破坏或代码执行。该漏洞映射为 CWE-120（输入大小未检查的缓冲区复制），CVSS 评分 7.6，危害等级高。"
-published = "2026-07-01T15:17:13.013"
+published = "2026-07-01T15:17:13Z"
 remediation = '升级 FatFs 到 R0.16 以上版本；在调用 f_readdir() 的代码中，将所有复制 fno.fname 的 strcpy/sprintf 替换为 strncpy/snprintf 并明确限制目标缓冲区大小（如 snprintf(name, sizeof(name), "%s", fno.fname)）；如业务不需要长文件名支持，可在 ffconf.h 中将 FF_USE_LFN 设为 0 禁用 LFN 以彻底规避；同时审查项目所有集成 FatFs 的目录遍历代码路径，确保无其他固定缓冲区的越界复制。'
 score = 7.6
 severity = "HIGH"
 sources = ["hwpoc"]
 title = "ChaN FatFs 长文件名缓冲区溢出漏洞"
-updated = "2026-07-02T14:38:46.120"
+updated = "2026-07-02T14:38:46Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 的 public-only（公开范围限制）个人访问令牌（PAT）在 Repository（仓库）和 Package（软件包）作用域类别中存在权限绕过漏洞。在 Gitea 1.26.2 版本中，尽管 PR #37118（CVE-2026-25714）已统一了 Org/User/ActivityPub 类别下 public-only 令牌的过滤逻辑（使用 `!Visibility.IsPublic()` 进行检查），但 Repository 和 Package 类别仍使用 `repo.IsPrivate` 或 `Owner.Visibility.IsPrivate()` 进行权限判断。由于 `VisibleTypeLimited`（受限可见性）并不等同于 `VisibleTypePrivate`（私有），导致 `IsPrivate()` 对受限用户返回 `false`，使得 public-only PAT 在受限可见性用户上能够访问到超出匿名用户权限范围的内容。该漏洞影响 4 个入口点：API v1 的 `checkTokenPublicOnly` Package 分支（`routers/api/v1/api.go:292`）、`reqPackageAccess` 中间件（`routers/api/packages/api.go:76`）、`TokenCanAccessRepo` 辅助函数以及 `CheckTokenScopes`（`services/context/permission.go:32`）。攻击者只需创建一个带有 `public-only` 范围的 PAT，即可读取受限可见性用户的私有仓库内容（包括 README、问题、PR、标签等）、下载私有软件包（如通过 PUT 上传的通用包），并通过 Git HTTPS 智能协议获取完整克隆能力。在实际验证中，使用同一 PAT 对同一受限用户分别测试 User 类别（返回 403）和 Repository 类别（返回 200 并返回内容），证实该绕过存在。匿名用户在相同端点上返回 401/404，进一步确认 PAT 确实获得了不应有的访问权限。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "升级 Gitea 至包含 CVE-2026-56443 修复的版本（1.26.3 或更高版本）。若无法立即升级，临时缓解措施：在 Gitea 管理后台禁用所有 public-only scope 的个人访问令牌（PAT），或限制 Visibility=Limited 的用户不使用 PAT 访问 API。升级前可手动应用补丁：将 `routers/api/v1/api.go` 第 292 行和 `routers/api/packages/api.go` 第 76 行的 `Owner.Visibility.IsPrivate()` 改为 `!Owner.Visibility.IsPublic()`；将 `services/context/api.go` 中 `TokenCanAccessRepo` 函数的返回条件改为 `!repo.IsPrivate && repo.Owner != nil && repo.Owner.Visibility.IsPublic()`；将 `services/context/permission.go` 第 32 行的 `repo.IsPrivate` 改为 `repo.IsPrivate || (repo.Owner != nil && !repo.Owner.Visibility.IsPublic())`。修改后重启 Gitea 服务生效。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Gitea 代码托管平台 令牌作用域权限绕过漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

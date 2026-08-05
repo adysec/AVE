@@ -1,12 +1,12 @@
 [basic]
 description = "CloudTAK 的 basemap 底图导入接口（PUT /api/basemap）存在服务端请求伪造（SSRF）漏洞。该接口在获取用户提供的 URL 时未对目标主机进行任何 IP 地址分类过滤，且 fetch 默认启用重定向跟随（redirect: follow），导致任意已认证用户可构造恶意请求，使服务端向内部网络地址（如 127.0.0.1 回环地址、169.254.169.254 云元数据端点、RFC1918 私有地址段等）发起 HTTP 请求，并将响应内容（如云实例临时凭证、内部服务敏感信息）原样返回给攻击者。攻击者还可通过十进制 IP 编码（如 2130706433 等价于 127.0.0.1）或 302 重定向跳转至内网地址等方式绕过简单的字符串黑名单检测。该漏洞影响 CloudTAK v13.5.0 及之前版本，CVSS 评分 8.7，危害等级高。修复方案为在服务端 URL 获取前进行 DNS 解析并校验目标 IP 是否属于内网/回环/链路本地地址范围，同时对重定向的每个跳转地址重新执行校验。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即升级 CloudTAK 至 v13.5.0 以上版本，该版本在 `api/routes/basemap.ts` 中引入了 `safeFetch` 函数，对目标 URL 进行 DNS 解析和 IP 地址分类检查，阻止访问回环地址、私有地址、云元数据端点（169.254.0.0/16）及 CGNAT 地址段，并对 HTTP 重定向逐跳重新验证 Location 地址。如无法立即升级，可在反向代理或 WAF 层对 `PUT /api/basemap` 接口的 `url` 参数实施 IP 白名单过滤，仅允许访问已知公开 Tile 服务器域名。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "dfpc-coe CloudTAK 底图导入接口服务端请求伪造漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

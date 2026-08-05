@@ -1,12 +1,12 @@
 [basic]
 description = 'tags.<value>Pillow 图像处理库的 RankFilter 滤镜 API 存在整数溢出导致的堆越界写入漏洞。在 `ImageFilter.RankFilter.filter()` 中，调用 `image.expand(size // 2, size // 2)` 扩展图像边界时未先校验滤镜尺寸，当传入极大奇数尺寸（如 4294967295）时，扩展边距计算为 INT_MAX，导致 `ImagingExpand()` 使用未检查的有符号整数运算计算输出尺寸发生溢出回绕，后续边界扩展循环写入超出已分配堆内存。该漏洞影响 Pillow 1.0 至 12.2.0 所有版本，已在 12.3.0 中修复。攻击者可通过构造恶意滤镜尺寸参数（如 MedianFilter(4294967295)）触发漏洞，若攻击者同时可控输入图像数据，越界写入的像素值可被攻击者控制（模式 "I"/"F" 为 4 字节写入），导致堆内存破坏，可造成拒绝服务或潜在远程代码执行。CVSS 3.1 评分 8.2（HIGH），攻击向量为网络、低复杂度、无需权限、无需用户交互。'
-published = "2026-07-14T17:17:14.487"
+published = "2026-07-14T17:17:14Z"
 remediation = "建议立即升级 Pillow 到 12.3.0 或更高版本（pip install --upgrade Pillow）。若暂时无法升级，请在代码层面限制 RankFilter/MedianFilter/MinFilter/MaxFilter 的 size 参数不超过合理范围（建议 ≤1000），并避免将不可信用户输入直接传递给滤镜 size 参数。修复版本已在 GitHub PR #9695 和 12.3.0 版本中发布，包含 RankFilter.filter() 调用 image.expand() 前的 size 校验及 ImagingExpand() 的溢出防护。"
 score = 8.2
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Pillow 图像过滤器堆溢出写漏洞"
-updated = "2026-07-21T19:17:11.907"
+updated = "2026-07-21T19:17:11Z"
 
 [exploit]
 exp_urls = []

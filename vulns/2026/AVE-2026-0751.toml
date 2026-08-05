@@ -1,12 +1,12 @@
 [basic]
 description = 'tags.<value>Req 是 Elixir 语言中广泛使用的 HTTP 客户端库，其默认响应管道会依据服务器提供的 Content-Type 头（或 URL 扩展名）自动对响应体中的归档和压缩内容进行解码，并使用 :memory 模式将解压后的完整数据全部加载到内存中，且未设置任何大小上限。攻击者若能控制（或诱导受害者访问）由 Req.get!/1 请求的 HTTP 端点，可在自己控制的服务器上返回一个极小的"压缩炸弹"文件，当客户端触发自动解码后，该文件会在内存中膨胀至数百 MB 甚至 GB 级别，从而耗尽 BEAM 虚拟机的内存资源。具体而言，解码逻辑在 lib/req/steps.ex 中的 decode_body/1 函数内实现：当 Content-Type 为 application/zip 时调用 :zip.extract(body, [:memory])，为 application/x-tar 时调用 :erl_tar.extract({:binary, body}, [:memory])，为 application/gzip 或 .tgz 扩展名时调用 :erl_tar.extract({:binary, body}, [:memory, :compressed])，均未对单条目或总大小施加限制。此外，decompress_body/1 函数会遍历 content-encoding 头并链式调用 :zlib、:brotli、:ezstd 解码器，若响应声明多层 content-encoding: gzip，则会无限制地逐层膨胀。上述两个步骤均为 Req 默认管道的组成部分，调用方无需额外配置，攻击者仅需在自己控制的服务器（或通过 Req 自动重定向访问的任意主机）上设置特定的 Content-Type 和 Content-Encoding 头即可触发。该漏洞影响所有使用 Req 默认配置获取不可信 URL 的 Elixir 应用，包括 webhook 发送器、链接预览服务、OAuth/OIDC 发现客户端、包镜像、图片代理以及任何可能跟随重定向到攻击者控制主机的 Req.get!/1 调用场景，无需身份认证，单次响应即可导致 BEAM 进程崩溃并拖垮同一虚拟机上的其他工作负载。受影响版本为 0.1.0 至 0.6.0，升级到 0.6.1 或更高版本可修复此问题。'
-published = "2026-06-08T16:16:43.860"
+published = "2026-06-08T16:16:43Z"
 remediation = '将 Elixir 项目的 req 依赖升级至 0.6.1 或更高版本，该版本引入了解压数据的大小限制，修复了无上限的存档解压导致的内存耗尽问题。在 mix.exs 中更新 `{:req, "~> 0.6.1"}` 后执行 `mix deps.update req`。如暂无法升级，可通过 `Req.Steps.decode_body/1` 和 `Req.Steps.decompress_body/1` 从默认管道中移除来临时缓解，或对回调入口限制 content-type 白名单，仅允许信任来源触发存档自动解压，并避免使用 `Req.get!/1` 跟随不可控的重定向链。'
 score = 8.2
 severity = "HIGH"
 sources = ["ghsa"]
 title = "wojtekmach Req 解压炸弹拒绝服务漏洞"
-updated = "2026-07-23T07:10:00.113"
+updated = "2026-07-23T07:10:00Z"
 
 [exploit]
 exp_urls = []

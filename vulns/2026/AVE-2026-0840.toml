@@ -1,12 +1,12 @@
 [basic]
 description = "js-yaml 5.x 系列引入了 YAML11_SCHEMA 支持，新增了 `!!omap` 有序映射标签。`src/tag/sequence/omap.ts` 文件中的 `omapTag.addItem()` 函数在每次插入时执行线性 O(n) 扫描来检测重复键，导致文档解析时间复杂度达到 O(n²)。攻击者可构造包含大量有序映射项的恶意 YAML 文档，触发目标应用中 `yaml.load()` 的 CPU 占耗，导致系统严重性能下降甚至事件循环长时间卡死。该漏洞影响所有使用 `yaml.load(input, { schema: yaml.YAML11_SCHEMA })` 解析未信任 YAML 输入的应用，尤其在多任务并行处理时更为明显。研究人员实测在 v5.2.0 版本中，输入 50,000 条记录的恶意文档会导致 Node.js 进程卡死超过 10 秒，严重威胁服务器稳定性和可用性。该漏洞最早出现在 2026-06-20 发布的 5.x 系列中，4.x 系列则未受影响。官方安全补丁已发布于 5.2.1 版本，通过使用哈希集合实现 O(1) 时间复杂度的重复键检测，有效解决了这一二次复杂度拒绝服务问题。"
-published = "2026-07-08T16:16:33.580"
+published = "2026-07-08T16:16:33Z"
 remediation = "立即升级 js-yaml 到 5.2.1 或更高版本（npm install js-yaml@5.2.1）。若暂时无法升级，请避免使用 yaml.YAML11_SCHEMA 解析不可信 YAML 输入，改用 yaml.JSON_SCHEMA 或 yaml.FAILSAFE_SCHEMA 作为临时缓解措施。修复版本在 omapTag.addItem 中将 O(n) 线性扫描改为 O(1) Set 查找，彻底消除二次复杂度 DoS 风险。"
 score = 5.3
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "nodeca js-yaml 二次复杂度拒绝服务漏洞"
-updated = "2026-07-10T19:20:49.153"
+updated = "2026-07-10T19:20:49Z"
 
 [exploit]
 exp_urls = []

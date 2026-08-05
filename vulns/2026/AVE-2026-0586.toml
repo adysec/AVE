@@ -1,12 +1,12 @@
 [basic]
 description = 'Langroid SQLChatAgent 存在危险函数黑名单绕过漏洞。该组件通过正则表达式黑名单（`_DANGEROUS_SQL_PATTERNS`）结合 `sqlglot` SELECT 语句白名单实现 SQL 注入防护，但正则要求危险函数名后必须紧跟 `\s*\(`，而 PostgreSQL 支持通过引号标识符（如 `"pg_read_file"(`）、内联注释（如 `pg_read_file/**/(`）或模式限定名（如 `pg_catalog.pg_read_file(`）等等效语法调用同一函数，这些变体可完全绕过正则检测且仍被解析为合法 SELECT 语句。攻击者若能影响 LLM 生成的 SQL 内容，即可诱导 SQLChatAgent 执行 `pg_read_file` 等危险函数，实现服务端任意文件读取。该漏洞影响 Langroid 0.65.1 之前版本，CVSS 评分 9.3，危害等级严重。'
-published = "2026-07-10T00:16:33.477"
+published = "2026-07-10T00:16:33Z"
 remediation = "立即升级 Langroid 至 0.65.1 或更高版本，该版本已修复 SQLChatAgent 中危险函数黑名单的正则绕过问题。如无法立即升级，请将 SQLChatAgent 使用的数据库角色权限降级，移除 pg_read_server_files 等文件读取权限，并确保数据库连接使用最小权限原则，避免使用 superuser 角色。"
 score = 9.3
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "Langroid SQLChatAgent 危险函数黑名单绕过漏洞"
-updated = "2026-07-10T16:16:33.063"
+updated = "2026-07-10T16:16:33Z"
 
 [exploit]
 exp_urls = []

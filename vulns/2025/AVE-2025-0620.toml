@@ -1,12 +1,12 @@
 [basic]
 description = "Kubernetes 内置的 gitRepo 卷插件存在输入验证不当漏洞（CWE-20），由于该插件未对 git 仓库来源进行充分的访问控制检查，拥有高权限的攻击者可通过创建挂载 gitRepo 卷的 Pod，访问同一节点上其他 Pod 中的 git 仓库数据，导致敏感信息泄露或数据篡改。该漏洞影响 Kubelet <= v1.32.2 版本，CVSS 评分 6.5，危害等级中等。由于 in-tree gitRepo 卷功能已被弃用且不再接收上游安全更新，仍在使用该功能的集群将持续面临风险。Kubernetes 官方建议迁移至 CSI 驱动替代方案。"
-published = "2025-03-13T17:15:36.437"
+published = "2025-03-13T17:15:36Z"
 remediation = "立即停止使用已弃用的 in-tree gitRepo 卷类型，改用 init 容器执行 git clone 操作并将目录挂载到 Pod 容器中。同时通过 ValidatingAdmissionPolicy 或 Restricted Pod Security Standard 策略禁止 gitRepo 卷的使用，CEL 表达式：`has(object.spec.volumes) && object.spec.volumes.exists(v, has(v.gitRepo))`。如使用 klts-io/kubernetes-lts 发行版，可应用 CVE-2025-1767.patch 补丁，在 git_repo.go 中增加对本地路径（绝对路径、file://、./、../）的校验拒绝逻辑。"
 score = 6.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Kubernetes gitRepo 卷本地仓库访问控制漏洞"
-updated = "2026-06-17T08:39:44.560"
+updated = "2026-06-17T08:39:44Z"
 
 [exploit]
 exp_urls = []

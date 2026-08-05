@@ -1,12 +1,12 @@
 [basic]
 description = "Open WebUI 是一款自托管的 AI 平台，其频道线程消息处理功能存在授权绕过漏洞（CWE-639）。在 0.10.0 之前版本中，`get_messages_by_parent_id()` 函数在加载线程父消息时仅通过消息 ID 查询，未校验该父消息是否属于当前请求的频道。已认证的攻击者只需知道目标私有频道中某条消息的 ID，即可通过访问自己有权查看的频道线程接口 `GET /api/v1/channels/{id}/messages/{message_id}/thread`，将受害者消息 ID 作为 `parent_id` 传入，从而跨频道读取私有频道或私信频道的消息内容、频道 ID 及作者信息。该漏洞利用条件较高（需知晓目标消息 ID），仅影响机密性，CVSS 评分 3.1，危害等级低。官方已在 v0.10.0 版本中修复，修复方式为在查询父消息时增加 `parent.channel_id == channel_id` 的频道绑定校验。"
-published = "2026-07-09T17:17:02.340"
+published = "2026-07-09T17:17:02Z"
 remediation = "立即升级 Open WebUI 至 v0.10.0 或更高版本（PR #25766）。该版本在 `get_messages_by_parent_id` 中增加了 `parent.channel_id == channel_id` 校验，并在 `new_message_handler` 中拒绝跨通道的 `parent_id`/`reply_to_id`。如无法立即升级，可临时限制 `/api/v1/channels/{id}/messages/{message_id}/thread` 接口的访问权限。"
 score = 3.1
 severity = "LOW"
 sources = ["ghsa"]
 title = "Open WebUI 跨频道线程消息权限绕过漏洞"
-updated = "2026-07-13T12:27:12.263"
+updated = "2026-07-13T12:27:12Z"
 
 [exploit]
 exp_urls = []

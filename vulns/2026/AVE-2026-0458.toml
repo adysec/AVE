@@ -1,12 +1,12 @@
 [basic]
 description = "NukeViet 后台评论编辑功能中存在路径遍历漏洞，允许经过身份验证的管理员通过注入特制的 `attach` 参数删除应用根目录下的任意文件（如 `config.php`）。漏洞位于 `modules/comment/admin/edit.php` 文件中，由于程序在处理 `attach` 参数时仅通过 `substr()` 截取固定前缀长度，未对路径进行合法性校验，攻击者可填充 26 个任意字符后拼接 `../../` 路径遍历序列将目标文件路径存入数据库。当评论被删除时，`del.php` 从数据库中读取该路径并调用 `nv_deletefile()` 执行删除操作，该函数仅检查路径是否在 `NV_ROOTDIR` 范围内，未限制删除目录为上传目录，导致任意文件被删除。攻击者利用此漏洞可删除 `config.php` 导致应用完全不可用并暴露安装向导，造成严重业务中断。CVSS 评分 8.7，危害等级高，影响 NukeViet 多个版本。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "升级 NukeViet 至包含该修复的版本（≥ 4.5.03），修复在 `modules/comment/admin/edit.php` 中增加了 `nv_is_file()` 路径校验，拒绝包含 `../` 的 `attach` 参数。如无法立即升级，可临时移除管理员对评论编辑功能的访问权限，或通过 Web 应用防火墙（WAF）拦截包含 `attach=*../` 模式的 POST 请求。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "NukeViet 评论管理功能路径遍历致任意文件删除漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

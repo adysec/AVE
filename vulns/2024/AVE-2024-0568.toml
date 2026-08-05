@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 btrfs 文件系统在写时复制（COW）树块时存在释放后使用漏洞。当启用 trace_btrfs_cow_block() 跟踪点且内核开启 CONFIG_PREEMPT 时，btrfs_force_cow_block() 函数通过 free_extent_buffer_stale() 释放扩展缓冲区并调度 RCU 回收，若当前进程在调用跟踪点前被抢占，已释放的缓冲区将被访问，触发释放后使用。本地攻击者可在低权限条件下利用此漏洞实现权限提升，导致系统崩溃或信息泄露。CVSS 评分 7.8，危害等级高。受影响的包括 Ubuntu、Debian、SUSE 等主流发行版内核，各厂商已发布安全更新修复。"
-published = "2025-01-06T17:15:40.900"
+published = "2025-01-06T17:15:40Z"
 remediation = "更新内核到 >=5.15.0 版本（或通过发行商（Ubuntu/debian/RedHat等）提供的安全更新），或在跟踪不可用时禁用 tracepoint trace_btrfs_cow_block。Ubuntu: `sudo apt-get update && sudo apt-get install --only-upgrade linux-generic`；Debian: `apt-get update && apt-get install --only-upgrade linux-image-$(uname -r)`；Red Hat/Fedora: `dnf upgrade kernel`。如使用 Kubernetes，请确保控制平面和节点均已更新。内核 5.15+ 包含内核 commit 994a2d51f21668bcbb5e7da3b47050d806cf4a08 的修复。实时跟踪如非必须可选禁用：`echo 0 > /sys/kernel/debug/tracing/events/btrfs/trace_btrfs_cow_block/enable`"
 score = 7.8
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux 内核 btrfs 使用后释放漏洞"
-updated = "2026-06-17T08:12:55.563"
+updated = "2026-06-17T08:12:55Z"
 
 [exploit]
 exp_urls = []

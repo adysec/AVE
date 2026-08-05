@@ -1,12 +1,12 @@
 [basic]
 description = 'Fission 在 pkg/utils/zip.go 的 Unarchive 函数中存在 Zip Slip 路径遍历漏洞。该漏洞原理在于程序在解压 ZIP 存档时，直接使用 filepath.Join 将条目名称与目标目录拼接，而未验证解析后的路径是否仍处于预期的目标目录之内。攻击者可以通过控制 Package.Spec.Source.URL 或 Deployment.URL 提供的恶意 ZIP 压缩包，在其中构造包含 "../" 路径遍历字符的条目，诱导 fission-fetcher 边车进程将文件写入到其权限可触达的任意位置，包括其他租户的目录、挂载的 Secret/Config 卷以及 fetcher 自身的二进制文件，从而导致敏感信息泄露或远程代码执行。该漏洞影响 v1.25.0 之前的所有版本。'
-published = "2026-06-10T18:17:13.197"
+published = "2026-06-10T18:17:13Z"
 remediation = "建议立即将 Fission 升级到 v1.25.0 或更高版本。该版本通过在 Unarchive 函数中使用 os.Root 强制将文件写入限制在目标目录内，并增加了对绝对路径、父级目录遍历（..）以及符号链接条目的校验与拦截。"
 score = 7.7
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Fission 路径遍历漏洞"
-updated = "2026-06-17T10:57:43.153"
+updated = "2026-06-17T10:57:43Z"
 
 [exploit]
 exp_urls = []

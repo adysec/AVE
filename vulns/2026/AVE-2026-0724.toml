@@ -1,12 +1,12 @@
 [basic]
 description = "datamodel-code-generator 在使用 Pydantic v2 输出模式时，会从 --extra-template-data 文件中读取 validators 数组并将其内容直接插值到 @field_validator(...) 装饰器中，字段名与验证模式均未经过转义或验证。攻击者可在 validators 条目中注入单引号以跳出字符串字面量，向装饰器注入任意 Python 表达式，该表达式在开发者导入生成模块时即被求值执行。同时，function 字段中的分号会被注入到生成的 import 语句中，进一步扩大代码执行面。此漏洞影响所有使用 datamodel-code-generator 生成 Pydantic v2 模型且接受了不可信 --extra-template-data 数据的场景，包括 CI/CD 流水线、预提交钩子及多租户构建系统。CVSS 评分为 7.8（高危），影响版本为 0.52.1 至 0.60.1，已在 0.60.2 版本中修复。"
-published = "2026-07-28T22:17:40.507"
+published = "2026-07-28T22:17:40Z"
 remediation = "升级到 datamodel-code-generator 0.60.2 或更高版本，该版本对 validators 条目进行 Pydantic 模型验证，field 名称和 mode 均通过 repr() 输出，防止恶意代码注入。在 CI/CD 流水线或多租户环境中，仅接受来自可信来源的 .template-data.json 配置文件，避免将 Pull Request 提交的模板数据直接投入使用。如无法立即升级，可暂时在 --extra-template-data 中移除 validators 配置项，或切换至 Pydantic v1 输出模式作为临时缓解措施。"
 score = 7.8
 severity = "HIGH"
 sources = ["ghsa"]
 title = "datamodel-code-generator Pydantic v2 远程代码执行漏洞"
-updated = "2026-07-29T15:16:25.197"
+updated = "2026-07-29T15:16:25Z"
 
 [exploit]
 exp_urls = []

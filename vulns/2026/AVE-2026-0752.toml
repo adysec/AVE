@@ -1,12 +1,12 @@
 [basic]
 description = 'Req 的多部分表单编码器在构建每个 part 的头部时，直接将用户控制的 name、filename 和 content_type 等字段值拼接到 content-disposition 及 content-type 行中，未对双引号、回车符（CR）和换行符（LF）进行转义或过滤。攻击者若可影响上述任一字段，即可注入 CRLF 序列以插入额外的 HTTP 头部行、走私额外表单字段，甚至追加完整的伪造 part。该漏洞影响 req 从 0.5.3 到 0.6.0 之前的所有版本，尤其在应用通过 Path.basename/1 将用户上传路径派生出 filename 并用于 form_multipart 请求的上传代理或再上传器场景中风险最高，因 POSIX 文件名本身可能合法包含 \r 和 \n，使利用更为便捷。攻击者可通过构造恶意的 filename 值，在发出的 multipart 请求体中注入 X-Smuggled 等任意头部或完整的伪造表单域，进而实现 HTTP 请求走私或多部分参数走私，危害下游服务。建议升级至 0.6.0 或更高版本以修复此问题。'
-published = "2026-06-08T16:16:44.040"
+published = "2026-06-08T16:16:44Z"
 remediation = '立即升级 Elixir 依赖库 req 至 0.6.0 或更高版本，该版本对 multipart 表单的 name、filename 和 content_type 字段进行了 CRLF 转义修复。如暂无法升级，应在调用 Req.post/2 的 form_multipart 参数前，对所有用户可控的字段值进行校验，剥离其中的换行符（\r、\n）与双引号字符，或改用经白名单过滤后的文件名。对于以 %File.Stream{} 作为上传来源的场景，建议额外对 Path.basename/1 提取的文件名执行 sanitize 处理，仅保留合法文件名字符。'
 score = 2.1
 severity = "LOW"
 sources = ["ghsa"]
 title = "wojtekmach Req 多部分表单数据头部注入漏洞"
-updated = "2026-07-23T07:10:00.113"
+updated = "2026-07-23T07:10:00Z"
 
 [exploit]
 exp_urls = []

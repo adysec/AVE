@@ -1,12 +1,12 @@
 [basic]
 description = 'Gitea 的 `RemoveDependency` 接口在处理跨仓库 issue 依赖删除时存在访问控制缺失漏洞。该函数通过全局 issue ID 获取目标 issue 后，未对目标 issue 所属仓库进行任何权限校验，直接删除依赖关系并写入一条归因于攻击者的"已移除依赖"评论。该漏洞影响所有启用 `ALLOW_CROSS_REPOSITORY_DEPENDENCIES`（默认开启）的 Gitea 版本，包括当前最新版本 v1.26.4。攻击条件为：攻击者需在某仓库 `repoA` 中拥有 issue 写入权限，且获知私有仓库 `repoB` 中某个与攻击者 issue 存在依赖关系的 issue 全局数值 ID。利用方式为构造 HTTP POST 请求至删除接口，携带目标 issue 的全局 ID 作为 `removeDependencyID` 参数，即可在无 `repoB` 读取权限的情况下篡改其 issue 依赖状态并注入评论，实现跨私有仓库边界的未授权写入。'
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "升级 Gitea 至官方发布的最新修复版本（修复 `RemoveDependency` 函数在删除跨仓库依赖前未验证用户权限的问题，即在 `issue.RepoID != dep.RepoID` 时调用 `access_model.GetDoerRepoPermission` 检查用户对目标仓库的读取权限）。如无法立即升级，可在 Gitea 应用配置文件中将 `ALLOW_CROSS_REPOSITORY_DEPENDENCIES` 设置为 `false` 以禁用跨仓库依赖功能作为临时缓解措施。"
 score = 3.5
 severity = "LOW"
 sources = ["ghsa"]
 title = "Gitea issue-dependency 跨仓库访问控制不当漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

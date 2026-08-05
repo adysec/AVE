@@ -1,12 +1,12 @@
 [basic]
 description = "Koel v9.6.0 的 Subsonic 兼容电台接口未对电台 URL 进行 SSRF 防护验证，与常规 Web API 存在校验逻辑不一致的缺陷。已认证的攻击者可通过 Subsonic 接口创建或更新指向内网地址的电台，随后通过电台流播放功能使服务器发起 HTTP 请求并将响应内容返回给攻击者，实现全读取型 SSRF 攻击。攻击者可利用此漏洞访问 Docker 桥接网络、RFC1918 私有地址及 loopback 接口上的内部 HTTP 服务，包括管理面板、监控端点及元数据接口等未公开暴露的服务，造成敏感信息泄露。该漏洞影响使用 phanan/koel:9.6.0 镜像部署的所有实例。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即升级 Koel 至 v9.6.1 或更高版本（官方已修复 Subsonic 接口缺失 URL 校验的问题）。如无法升级，手动修改 `app/Http/Requests/Subsonic/CreateInternetRadioStationRequest.php` 和 `UpdateInternetRadioStationRequest.php`，为 `streamUrl` 字段添加 `SafeUrl` 和 `HasAudioContentType` 校验规则；同时在 `app/Services/Radio/RadioStreamProxy.php` 的 `openStream()` 方法中增加 `isSafeUrl()` 检查。临时缓解措施：在反向代理或 WAF 层面限制 `/rest/createInternetRadioStation.view` 和 `/rest/updateInternetRadioStation.view` 的 `streamUrl` 参数仅允许公网 HTTP/HTTPS 地址。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Koel Koel 认证后全量读取服务端请求伪造漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

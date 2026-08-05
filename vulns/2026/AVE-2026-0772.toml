@@ -1,12 +1,12 @@
 [basic]
 description = 'free5GC 是一款开源的 5G 核心网实现，其 AUSF（认证服务器功能）组件在处理 UE 认证请求时未对 `supiOrSuci` 字段进行输入验证。攻击者可通过向 AUSF 的 `/nausf-auth/v1/ue-authentications` 端点发送包含空字节（`\x00`）的恶意 JSON 请求，由于 Go 的 `encoding/json` 允许字符串中包含空字节，该请求被正常解析后，AUSF 将未转义的 `supiOrSuci` 值直接拼接到 UDM 请求 URL 中，导致 Go 的 `net/url.Parse()` 因 URL 中包含非法控制字符而解析失败，最终返回 HTTP 500 内部错误并泄露内部堆栈信息。未经身份认证的远程攻击者可批量发送此类请求，导致 AUSF 对所有合法用户的认证请求均返回 500 错误，造成服务拒绝。该漏洞影响 free5GC v4.2.2 及之前版本，已在 v1.4.5 中修复。'
-published = "2026-07-31T20:16:51.697"
+published = "2026-07-31T20:16:51Z"
 remediation = '立即升级 free5GC AUSF 至 v1.4.5 或更高版本（对应 free5GC 主项目 v4.2.3+），该版本已合入 supiOrSuci 输入校验和 URL 转义修复。如无法立即升级，可在 AUSF 前端部署反向代理（如 Nginx/Envoy），对 /nausf-auth/v1/ue-authentications 端点请求体中的 supiOrSuci 字段执行控制字符过滤（拒绝含 \x00-\x1f 字符的请求），或修改 AUSF 源码在构造 UDM URL 前调用 url.PathEscape() 对 supiOrSuci 进行转义。'
 score = 6.9
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "free5GC AUSF 空字节注入拒绝服务漏洞"
-updated = "2026-07-31T20:16:51.697"
+updated = "2026-07-31T20:16:51Z"
 
 [exploit]
 exp_urls = []

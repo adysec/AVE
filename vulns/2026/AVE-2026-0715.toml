@@ -1,12 +1,12 @@
 [basic]
 description = 'datamodel-code-generator 在从攻击者可控的 GraphQL 模式生成 Python 模型时存在代码注入漏洞。当 Union 类型描述使用普通字符串形式（`"..."`）且包含字面 `\r` 转义时，Jinja2 模板仅处理 `\n` 将其渲染为 Python `#` 注释，Python 的词法分析器将裸 CR 视为物理行终止符，导致注释在 `\r` 处提前结束，其后文本被解析为模块级 Python 代码。该代码在生成的 `.py` 被导入时即刻执行，影响版本 `>=0.25.0, <0.60.1`，已在 0.60.1 修复。攻击者可提供或影响 GraphQL Schema，导致任意 Python 代码注入生成模型并在导入时执行，影响开发者、CI 流水线及导入生成模块的应用，CVSS 7.8 高危。修复方式为升级至 0.60.1 及以上版本，修复在模板渲染前规范化回车符。'
-published = "2026-07-28T22:17:39.930"
+published = "2026-07-28T22:17:39Z"
 remediation = "建议立即升级 datamodel-code-generator 到 0.60.1 或更高版本（pip install --upgrade datamodel-code-generator==0.60.1）。该版本修复了 GraphQL Union 描述中的回车符转义问题，在渲染为 Python 注释前会归一化回车符。若暂时无法升级，请避免处理不可信的 GraphQL Schema 输入，或在导入生成的 Python 模块前手动检查生成代码中是否存在异常注释截断。"
 score = 7.8
 severity = "HIGH"
 sources = ["ghsa"]
 title = "koxudaxi datamodel-code-generator 代码注入漏洞"
-updated = "2026-07-29T13:18:58.950"
+updated = "2026-07-29T13:18:58Z"
 
 [exploit]
 exp_urls = []

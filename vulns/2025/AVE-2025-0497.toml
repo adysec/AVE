@@ -1,12 +1,12 @@
 [basic]
 description = "Keras 模型加载组件中的 StringLookup 层在处理 vocabulary 参数时存在路径加载限制绕过漏洞。即使启用了 safe_mode=True 安全模式，攻击者仍可通过构造恶意的 .keras 存档文件，在 StringLookup 层配置中嵌入本地文件路径或远程 URL。当受害者加载该恶意模型时，Keras 会利用 tf.io.gfile 读取指定路径内容并纳入模型状态（可通过 get_vocabulary() 获取），导致任意本地文件读取；同时由于 tf.io.gfile 支持 GCS、HDFS 及 HTTP/HTTPS 等远程协议，攻击者可进一步实现服务端请求伪造（SSRF）。该漏洞影响所有使用 Keras Model.load_model 加载不可信模型文件的场景，CVSS 评分 5.9，危害等级中危。"
-published = "2025-10-29T09:15:35.500"
+published = "2025-10-29T09:15:35Z"
 remediation = "立即升级 Keras 至 3.12.3 或更高版本（含 PR #21751 修复），该版本已将 StringLookup/IntegerLookup 的 vocabulary 嵌入 .keras 归档并在 safe_mode=True 时禁止加载外部词汇文件。如无法升级，切勿加载来源不可信的 .keras 模型，并在加载前手动检查 config.json 中 StringLookup/IntegerLookup 层的 vocabulary 字段是否为文件路径或 URL。"
 score = 5.9
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Keras Model.load_model 任意本地文件加载与服务器端请求伪造漏洞"
-updated = "2026-06-17T08:31:38.763"
+updated = "2026-06-17T08:31:38Z"
 
 [exploit]
 exp_urls = []

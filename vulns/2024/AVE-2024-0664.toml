@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 i3c DesignWare 主机控制器驱动中存在释放后使用（Use-After-Free）漏洞，源于 dw_i3c_common_probe 中绑定的工作队列 dw_i3c_hj_work 与模块卸载函数 dw_i3c_common_remove 之间的竞态条件。当驱动模块被卸载时，i3c_master_unregister 会释放 master->base 内存，但此前已触发的中断处理程序可能仍在执行 dw_i3c_hj_work 并访问已释放的内存，导致内核崩溃或潜在权限提升。本地攻击者需具备低权限访问条件，利用该漏洞可实现权限提升，影响系统机密性、完整性和可用性。CVSS 评分 7.8，危害等级高。"
-published = "2025-02-27T02:15:11.603"
+published = "2025-02-27T02:15:11Z"
 remediation = "立即将 Linux 内核升级至 6.6.76、6.12.13、6.13.2 或更高版本（含对应稳定分支的后续更新）。Ubuntu 22.04 LTS 用户执行 `apt update && apt install linux-image-6.8.0-64-generic=6.8.0-64.67~22.04.1` 并重启系统。其他发行版请更新至包含 commit `b75439c945b9` 的内核版本。如无法立即升级，可通过禁用 I3C 控制器模块（`echo blacklist dw-i3c-master > /etc/modprobe.d/blacklist-i3c.conf && update-initramfs -u`）作为临时缓解措施。"
 score = 7.8
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux 内核 DesignWare I3C 主控制器驱动释放后使用漏洞"
-updated = "2026-06-17T08:14:22.757"
+updated = "2026-06-17T08:14:22Z"
 
 [exploit]
 exp_urls = []

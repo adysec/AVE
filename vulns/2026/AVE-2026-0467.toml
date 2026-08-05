@@ -1,12 +1,12 @@
 [basic]
 description = "SiYuan 是一款开源个人知识管理系统，其 Bazaar 插件市场的 README 渲染功能存在存储型跨站脚本（Stored XSS）漏洞。漏洞根因在于 lute 引擎的 HTML 清理器采用事件处理器黑名单机制，仅拦截 w3schools 遗留列表中的旧式事件属性，而 `onpointerover`、`onpointerdown`、`onauxclick`、`onbeforetoggle`、`onfocusin`、`onanimationstart`、`ontransitionend` 等现代事件处理器未被列入黑名单，导致恶意 HTML 属性被原样通过。攻击者可在第三方插件包的 README.md 中嵌入上述事件处理器，当管理员在设置→市场中浏览该插件包并悬停或点击时，恶意 JavaScript 在管理员认证的 SiYuan 源站上下文中执行。前端通过 `innerHTML` 直接赋值渲染结果且未使用 DOMPurify 过滤，内核 HTTP 响应未设置 CSP 等安全头，进一步扩大了攻击面。攻击者可窃取内核 API Token，进而完全控制工作区。该漏洞影响 SiYuan ≤3.6.5 版本，已在 3.7.0 版本中修复。"
-published = "2026-06-24T22:16:48.583"
+published = "2026-06-24T22:16:48Z"
 remediation = "立即升级 SiYuan 至 3.7.0 或更高版本，该版本已修复 lute 引擎的 sanitizer 事件属性黑名单遗漏问题。如无法立即升级，管理员应避免在 Settings → Marketplace 中接受市场信任许可（bazaar.trust 保持默认 false），同时可在反向代理层添加 Content-Security-Policy: script-src 'self' 头作为临时缓解措施。"
 score = 7.1
 severity = "HIGH"
 sources = ["ghsa"]
 title = "SiYuan Bazaar 市场软件包 README 存储型 XSS 漏洞"
-updated = "2026-06-26T19:16:42.520"
+updated = "2026-06-26T19:16:42Z"
 
 [exploit]
 exp_urls = []

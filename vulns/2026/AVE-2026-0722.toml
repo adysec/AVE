@@ -1,12 +1,12 @@
 [basic]
 description = 'datamodel-code-generator 存在代码注入漏洞（CWE-94），源于其 6 个内置 Jinja2 模板将 `--extra-template-data` 中的 `comment` 字段直接渲染为 Python `#` 注释，且未对回车符（`\r`）进行转义。Python 词法分析器将裸露的 CR 视为物理行终止符，导致注释在 `\r` 处截断，其后若跟缩进合适的 Python 代码，会被解析为类体内的可执行语句，在模块被 `import` 时触发任意代码执行。影响版本为 0.14.1 至 0.60.1，修复版本为 0.60.2。攻击条件：开发者或 CI 流水线运行 `datamodel-codegen --extra-template-data <file>` 且 extras 文件受攻击者可控输入影响（如第三方 Schema 注解系统生成、上游仓库供给、环境变量/工单描述/提交元数据模板化生成）。Schema 本身可完全良性，仅需 extras 文件的 `comment` 含恶意 `\r` 及后续缩进代码即可触发。攻击者可在导入时任意执行 Python 代码，获取进程上下文权限，CVSS 3.1 评分 7.8（HIGH，AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H）。修复方案为升级至 0.60.2+，该版本在渲染前规范化 `comment` 值，将 CRLF/裸 CR/垂直制表符/换页符统一转为 LF 并为续行加 `# ` 前缀，将攻击载荷限制在注释块内。补丁参考：https://github.com/koxudaxi/datamodel-code-generator/commit/b73abb5cd703a50471b8950bbd3bd0b82ad71de7；修复版本发布：https://github.com/koxudaxi/datamodel-code-generator/releases/tag/0.60.2。'
-published = "2026-07-28T22:17:40.217"
+published = "2026-07-28T22:17:40Z"
 remediation = '建议立即升级 datamodel-code-generator 至 0.60.2 或更高版本（受影响版本：>=0.14.1, <=0.60.1）。如无法立即升级，可在调用时避免使用 --extra-template-data 参数，或在调用前过滤 extras 文件中 comment 字段中的 \r、\x0b、\x0c 字符作为临时缓解措施。'
 score = 7.8
 severity = "HIGH"
 sources = ["ghsa"]
 title = "koxudaxi datamodel-code-generator 代码注入漏洞"
-updated = "2026-07-29T16:17:53.767"
+updated = "2026-07-29T16:17:53Z"
 
 [exploit]
 exp_urls = []

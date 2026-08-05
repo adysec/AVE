@@ -1,12 +1,12 @@
 [basic]
 description = 'Better Auth 的 OAuth 授权码兑换端点 `POST /oauth2/token` 在处理 `authorization_code` 授权类型时，使用非原子的"查找后删除"原语来兑换单次使用的授权码。当两个并发请求携带相同的授权码同时到达时，两个请求都会在任一删除操作完成前通过读取步骤，随后均通过 PKCE 验证并调用 `createUserTokens`，从而为同一授权码生成多组独立的访问令牌、刷新令牌和 ID 令牌，违反了 RFC 6749 §4.1.2 关于授权码必须单次使用的规定。该漏洞影响使用 `@better-auth/oauth-provider` 版本 >=1.6.0 且 <1.6.11 的项目，以及使用 `better-auth` >=1.4.8-beta.7 且 <1.6.0 并启用了 oidc-provider 或 mcp 插件的项目，攻击者可通过并发发送携带相同授权码的令牌请求，绕过授权码一次性使用的安全限制，获取额外的访问权限。'
-published = "2026-07-15T18:16:48.240"
+published = "2026-07-15T18:16:48Z"
 remediation = "立即升级 @better-auth/oauth-provider 至 1.6.11 或更高版本；若使用 better-auth 的 oidc-provider/mcp 插件，需将 better-auth 升级至 1.6.11。临时缓解：在反向代理层对 code 参数做幂等缓存，或在数据库层面为 oauthAccessToken 表添加唯一约束禁止同一授权码重复兑换。"
 score = 7.6
 severity = "HIGH"
 sources = ["ghsa"]
 title = "better-auth OAuth提供程序授权码并发兑换漏洞"
-updated = "2026-07-21T16:03:12.347"
+updated = "2026-07-21T16:03:12Z"
 
 [exploit]
 exp_urls = []

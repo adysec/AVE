@@ -1,12 +1,12 @@
 [basic]
 description = "该漏洞存在于 Natural Language Toolkit (NLTK) 的 FramenetCorpusReader 类中。当调用 `frame(name)` 方法时，用户控制的帧名称被直接拼接到 XML 文件路径中，但缺乏足够的路径验证防护。攻击者可以通过在帧名称中加入 `../` 路径遍历序列，绕过 NLTK 内置的 `CorpusReader.open()` 机制和 `nltk.pathsec` 沙盒机制（即使在 `ENFORCE=True` 严格模式下也能绕过）。这样，攻击者可以读取 corpus 根目录之外的任意 XML 文件，并获取其解析后的内容。该漏洞影响所有使用 FramenetCorpusReader 读取帧数据的应用，尤其是在安全沙盒环境中部署的用户。由于 `frame_by_name` 方法直接构建字符串路径并创建 `XMLCorpusView` 对象，系统的路径验证函数 `nltk.pathsec.validate_path()` 根本不会被调用，导致安全边界完全失效。攻击者只需提供包含路径遍历字符的帧名称就能触发该漏洞，利用过程无需身份验证，攻击者可以读取目标系统中存储的任意 XML 格式的敏感文件，包括配置信息、数据导出的 XML 文件，甚至可能包含的凭证信息。MITRE 将此漏洞记录为 CVE-2026-12074，CVSS 评分较高，危害等级为严重。该漏洞在 NLTK 的一些后续版本中已经修复，但在未更新到这些版本的应用中仍然存在风险。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "升级 NLTK 到 3.10.0 或更高版本，安装 NLTK 3.10.0 及以上版本以修复 FramenetCorpusReader 路径遍历漏洞。同时更新所有框架资源文件至安全版本，并确保 `nltk.pathsec.set_enforce(True)` 配置生效强制路径验证，防止框架核心组件直接调用系统 open() 函数读取任意 XML 文件。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "自然语言工具包 NLTK FramenetCorpusReader 路径遍历漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

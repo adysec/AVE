@@ -1,12 +1,12 @@
 [basic]
 description = "GoPacket 的 sFlow ExtendedGatewayFlow 解码器存在资源耗尽漏洞。攻击者通过发送一个仅 104 字节的 UDP sFlow 数据报即可触发漏洞，解码器在读取循环之前根据攻击者控制的 32 位 communitiesLength 字段执行 make([]uint32, n) 进行无上限内存分配，单次请求可导致最多 16 GiB 的内存分配，进而使解析进程因 OOM 终止。攻击无需身份认证，任何能向 sFlow 采集器发送 UDP 数据包的主机均可触发。该问题影响 gopacket v1.6.0 及之前版本，已于 v1.6.1 版本中通过在解码前增加边界检查修复。"
-published = "2026-07-28T17:16:51.257"
+published = "2026-07-28T17:16:51Z"
 remediation = "立即将 github.com/gopacket/gopacket 升级至 v1.6.1 或更高版本，该版本已在 decodeExtendedGatewayFlowRecord 和 decodePath 中增加对 communitiesLength 与 ad.Count 的边界校验，在 make 分配前拒绝超出剩余字节数的非法计数字段。如无法立即升级，可在 sFlow 采集器前端部署网络过滤规则，丢弃源端口或长度异常的 UDP 6343 报文，限制单条 datagram 最大字节数以缓解攻击面。"
 score = 6.9
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "gopacket sFlow ExtendedGatewayFlow 解码器无界分配远程拒绝服务漏洞"
-updated = "2026-07-28T18:17:21.847"
+updated = "2026-07-28T18:17:21Z"
 
 [exploit]
 exp_urls = []

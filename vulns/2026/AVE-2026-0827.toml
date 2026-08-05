@@ -1,12 +1,12 @@
 [basic]
 description = "Open WebUI 聊天补全 API 存在跨频道消息覆盖漏洞。攻击条件：任何已认证用户均可利用。漏洞原理：当用户提交 `chat_id` 以 `channel:` 为前缀的聊天补全请求时，后端跳过频道成员资格验证，直接将用户提供的 `message_id` 传入 `_make_channel_emitter` 函数，该函数调用 `Messages.update_message_by_id` 执行数据库写入时未校验 `channel_id` 与 `user_id`，导致攻击者可覆盖任意频道（包括私有频道和私信频道）中的消息内容。影响范围：Open WebUI v0.9.5 至 v0.10.0 之前版本。利用方式：攻击者通过构造包含 `channel:` 前缀的 `chat_id` 和目标 `message_id` 的 API 请求，即可将任意内容写入目标消息，被覆盖的消息保留原始作者信息，可实现身份冒充攻击。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即升级 Open WebUI 至 v0.10.0 或以上版本。如无法立即升级，可在反向代理层限制 `/api/chat/completions` 接口的 `chat_id` 参数，禁止非 `local:` 前缀的请求通过；同时监控日志中异常的 `channel:` 前缀 `chat_id` 请求。v0.9.6 的修复不完整，必须升级到 v0.10.0。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Open WebUI 跨频道消息覆盖漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

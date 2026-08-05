@@ -1,12 +1,12 @@
 [basic]
 description = "ArcadeDB 数据库的 IMPORT DATABASE SQL 语句未正确校验用户权限与输入来源，任何具备 SQL 命令访问权限的认证用户（非仅 root 管理员）均可利用该漏洞实施两类攻击：一是服务端请求伪造（SSRF），通过构造 HTTP/HTTPS 协议的导入源 URL，诱使服务器向任意目标（包括云元数据端点 169.254.169.254 及内网服务）发起请求并将响应内容导入为可查询记录；二是任意本地文件读取，通过 file:// 协议路径读取服务器进程可访问的本地文件（如 /etc/passwd、凭据文件等），将其内容暴露为数据库记录。此外，XML 导入器未禁用 DTD 处理，存在实体扩展攻击（Billion Laughs）风险。攻击者仅需拥有数据库的 SQL 查询权限即可触发，无需管理员角色。该漏洞影响 ArcadeDB 所有版本，官方已在 PR #4422 中修复，修复措施包括：将 IMPORT DATABASE 权限提升至 updateSecurity 级别、对 HTTP(S) 导入源进行网络地址黑名单校验（默认阻止回环/链路本地/私有地址）、增加本地路径白名单配置、禁用 XML DTD 处理。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即升级至包含 PR #4422 修复的 ArcadeDB 版本（≥ 提交 4422），该修复要求 IMPORT DATABASE 操作需具备 updateSecurity 权限，并默认阻止对回环/私有地址的 HTTP 请求。如无法升级，严格限制 SQL 命令/查询端点的访问权限，仅授予受信管理用户，并禁止向不可信用户开放查询接口。同时检查 arcadedb.server.security.importBlockLocalNetworks 配置项确保为 true。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "ArcadeData ArcadeDB 数据库导入功能服务器端请求伪造与任意文件读取漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

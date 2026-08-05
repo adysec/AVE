@@ -1,12 +1,12 @@
 [basic]
 description = """SiYuan（思源笔记）是一款开源个人知识管理系统，其CSS代码片段功能存在存储型跨站脚本（Stored XSS）漏洞。当renderSnippet()通过insertAdjacentHTML将CSS片段内容插入<style>标签时，未对用户输入的</style>字符串进行转义处理，攻击者可在CSS片段中注入</style><img src=x onerror="...">等恶意载荷，突破<style>标签上下文执行任意JavaScript代码。在Electron桌面版中，由于渲染进程启用了nodeIntegration:true，攻击者可进一步通过require('child_process')链式利用实现远程代码执行（RCE）。该漏洞影响SiYuan 3.7.0之前所有版本，CVSS评分9.9，危害等级严重。攻击者只需拥有工作区写入权限（如通过泄露的同步凭证、共享文件系统或多用户Docker服务器），即可植入恶意CSS片段，该片段会通过工作区同步机制传播至所有同步设备，在应用启动或刷新时自动触发，无需用户交互。官方已在3.7.0版本中修复此漏洞。"""
-published = "2026-06-24T22:16:48.177"
+published = "2026-06-24T22:16:48Z"
 remediation = "立即升级 SiYuan 至 v3.7.0 或更高版本，该版本已修复 CSS 代码片段通过 insertAdjacentHTML 插值导致的 XSS 到 RCE 问题。如无法立即升级，可在 app/src/config/util/snippets.ts:32 中将 insertAdjacentHTML 替换为 createElement('style') + textContent 赋值，或对内容中的 < 进行 HTML 转义；同时在服务端 /api/snippet/setSnippet 接口拒绝包含 </style> 的 CSS 片段写入，防止旧版本同步拉取恶意载荷。"
 score = 9.9
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "SiYuan 思源笔记 CSS 代码片段存储型XSS到远程代码执行漏洞"
-updated = "2026-06-25T16:16:39.350"
+updated = "2026-06-25T16:16:39Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "vault-secrets-webhook 是 Kubernetes 的变种准入 Webhook，用于将 Vault 密钥直接注入 Pod。在 1.23.1 版本之前，该组件的 `parseVaultConfig()` 函数（`pkg/webhook/config.go`）无条件读取 ConfigMap 或 Secret 中的 `vault.security.banzaicloud.io/vault-addr` 注解作为 Vault 服务器地址，未进行任何 URL 校验、域名白名单或内网地址过滤。当被准入的资源包含 `vault:` 前缀的值时，`MutateConfigMap` 和 `MutateSecret` 处理函数会在准入审查期间同步调用 `newVaultClient`，向攻击者控制的地址发起 HTTP 请求。同时，`vault.security.banzaicloud.io/vault-serviceaccount` 注解可触发 Webhook 利用集群级别的 `serviceaccounts/token:create` 权限，获取指定 ServiceAccount 的 JWT 令牌并发送至攻击者地址。攻击者只需在 Webhook 监视的命名空间中拥有 ConfigMap 或 Secret 的创建/更新权限，即可触发 Webhook 进程向任意外部地址（包括云元数据服务 IMDS）发起出站 HTTP 连接，并窃取 ServiceAccount JWT 令牌，进而重放至真实 Vault 服务器读取该 SA 角色授权的密钥。该漏洞 CVSS 评分 9.6，危害等级严重，已在 v1.23.1 版本中修复。"
-published = "2026-07-31T18:17:17.013"
+published = "2026-07-31T18:17:17Z"
 remediation = "立即将 vault-secrets-webhook 升级至 v1.23.1 或更高版本，该版本在 parseVaultConfig() 中增加了 vault-addr 注解的 URL 校验和主机名白名单。如无法立即升级，可通过 OPA/Kyverno 准入策略禁止包含 vault.security.banzaicloud.io/vault-addr 注解的 ConfigMap/Secret 创建，并移除 ClusterRole 中 serviceaccounts/token:create 的集群级权限，仅授予必要命名空间。"
 score = 9.6
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "Banzai Cloud vault-secrets-webhook 服务端请求伪造漏洞"
-updated = "2026-07-31T19:17:10.833"
+updated = "2026-07-31T19:17:10Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Elixir HTTP 客户端库 Tesla 的中间件 `Tesla.Middleware.DecompressResponse` 和 `Tesla.Middleware.Compression` 在处理 HTTP 响应体时存在解压炸弹漏洞。`decompress_body/2` 函数在解压响应体时未对输出大小做任何限制，且 `content-encoding` 头支持逗号分隔的多层编码令牌，每层 gzip 解压可膨胀约 1000 倍。攻击者通过控制目标客户端访问的恶意服务器（或利用重定向），返回一个仅数百字节但经过多层 gzip 嵌套压缩的响应，可膨胀至数 GB 的 BEAM 堆内存，导致调用进程内存耗尽崩溃或节点不可用。该漏洞影响 tesla 0.6.0 至 1.18.2 版本，CVSS 评分 8.2，危害等级高。已在 tesla 1.18.3 版本中修复。"
-published = "2026-06-02T20:16:38.193"
+published = "2026-06-02T20:16:38Z"
 remediation = "立即将 tesla 升级至 1.18.3 或更高版本（`mix deps.update tesla`），该版本在 decompress_body/2 中增加了输出大小上限检查。如无法立即升级，请从中间件管道中移除 Tesla.Middleware.DecompressResponse 和 Tesla.Middleware.Compression，或通过反向代理（如 nginx）在进入应用前解压并限制响应体大小。"
 score = 8.2
 severity = "HIGH"
 sources = ["ghsa"]
 title = "elixir-tesla Tesla 解压炸弹拒绝服务漏洞"
-updated = "2026-07-22T19:10:00.120"
+updated = "2026-07-22T19:10:00Z"
 
 [exploit]
 exp_urls = []

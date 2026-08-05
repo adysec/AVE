@@ -1,12 +1,12 @@
 [basic]
 description = "tags only, and avoid any code blocks or formatting.<value>datamodel-code-generator 在解析攻击者控制的 JSON Schema 时存在代码注入漏洞。当 JSON Schema 属性包含 `default_factory` 键时，其值会被原值嵌入生成的 Python 代码中，直接作为 Python 表达式执行。由于此类代码在生成模型时导入时被解析，攻击者可通过控制 Schema 注入任意 Python 代码，实现在目标进程中执行恶意代码。任何运行 datamodel-codegen 的开发者或 CI 管道，只要导入由恶意 Schema 生成的 Python 模型文件，均可能遭受此攻击漏洞。`-vvv` 级别日志中包含转换过程的详细处理日志，最终目标就是找到 `default_factory` 字段在导出时是否会被违反预期地直接被内部转换到目标的 Python 代码中。这些日志提供了攻击方法和补偿措施的重要线索。漏洞影响范围广泛，许多用户都可能受到影响。攻击者只需控制 Schema 输入，无需任何特殊命令行选项即可利用此漏洞。数据模型生成器包含来自开源社区的修改和升级，尽管有多种开发模型可用，但尽管存在多种开发模型，此组件仍然存在安全风险。攻击者可能通过注册攻击打包并精心设计 JSON Schema 来嵌入自定义 Python 表达式，并将其注入到核心代码中。`datamodel-code-generator` 支持多种数据格式，如 JSON、YAML、OpenAPI 等，这些格式可以被解析并生成数据模型，包括 Pydantic v2、dataclass 等模型。`PydanticBase` 和 `DataClass` 等组件将包含来自 Schema 的相关字段，`default_factory` 键代表着需要生成的默认变量工厂，这在数据构建过程中相当重要。`default_factory` 默认可以直接注入 Python 代码，这会导致安全漏洞。`jsonschema` 解析器将 `default_factory` 包含在 `extras` 字段中，之后生成器会直接将 `default_factory` 的值转换为 string 类型并使用 `repr()` 函数将其展示出来。此外，来自 Pydantic、dataclass 或 msgspec 等组件的数据模型将影响到最终生成的 Python 代码。`default_factory` 会直接作为 Python 代码被插入到生成的模型中，从而导致代码执行漏洞。`datamodel-code-generator` 生成 Python 模型时允许攻击者通过 Schema 控制 `default_factory` 字段的值，这导致恶意代码被注入到生成的模型中。攻击者无需使用任何特殊命令行选项，只需向目标系统提供一个包含 `default_factory` 字段的恶意 Schema 即可在目标进程中实现代码执行。`datamodel-code-generator` 支持多种输入格式，包括 JSON Schema、OpenAPI、YAML、JSON、Avro、Protobuf、XML 等，这些格式都会经过相同的解析过程和生成代码路径。通过控制这些格式提供的 Schema，攻击者可以轻易地利用此漏洞在目标系统上实现代码执行。`default_factory` 字段在一个关键的安全过滤链中被自动传播的，它会经过 `src/datamodel_code_generator/parser/jsonschema.py:600-614` 和 `src/datamodel_code_generator/parser/jsonschema.py:457-459` 等组件，从而最终被注入到从 `src/datamodel_code_generator/model/pydantic_base.py`、`src/datamodel_code_generator/model/dataclass.py` 等文件中导出的代码中，实现代码执行攻击。"
-published = "2026-07-28T22:17:40.077"
+published = "2026-07-28T22:17:40Z"
 remediation = "建议立即升级 datamodel-code-generator 到 0.60.2 或更高版本（修复版本）。若暂时无法升级，可使用 --output-model-type typing.TypedDict 输出模式作为临时缓解（该模式不渲染 field()/Field() 调用，default_factory 会被静默丢弃），并避免对不可信的 JSON Schema、OpenAPI、YAML、JSON、Avro、Protobuf、XSD 等模式文件运行代码生成。升级命令：pip install -U datamodel-code-generator==0.60.2。"
 score = 8.8
 severity = "HIGH"
 sources = ["ghsa"]
 title = "koxudaxi datamodel-code-generator 代码注入漏洞"
-updated = "2026-07-29T14:16:31.190"
+updated = "2026-07-29T14:16:31Z"
 
 [exploit]
 exp_urls = []

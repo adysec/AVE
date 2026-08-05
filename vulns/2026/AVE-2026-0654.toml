@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 自托管 Git 服务的 Actions 权限系统存在授权绕过漏洞。在 `GetActionsUserRepoPermission` 函数中，协同所有者（collaborative-owner）分支缺少对 Fork Pull Request 的 `IsForkPullRequest` 检查，而其他同级别分支均已正确实现该守卫。攻击者利用此缺陷，可通过已获批准的 Fork PR 工作流，使用 Actions 任务令牌绕过权限检查，通过 git-HTTP 协议克隆并读取第三方私有仓库 B 的全部源代码。触发条件为：仓库 A 为私有且被仓库 B 配置为协同所有者，攻击者此前有 PR 被批准通过。该漏洞仅导致机密性泄露（只读），不涉及写入或远程代码执行。Gitea 1.27.0 版本已修复此问题。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "升级 Gitea 至 v1.27.0 或更高版本（该版本已在 `models/perm/access/repo_permission.go` 的 collaborative-owner 分支中补上 `!task.IsForkPullRequest` 守卫）。如无法立即升级，可手动在 `GetActionsUserRepoPermission` 函数中将 `if taskRepo.IsPrivate` 改为 `if taskRepo.IsPrivate && !task.IsForkPullRequest`，或临时移除所有私有仓库的 collaborative-owner 信任配置。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Gitea Gitea Actions 协作所有者分支权限校验缺失漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "ToolHive 的 SSRF 防护功能存在严重漏洞，其核心原因是手工维护的私有 IP 地址库缺少 IPv6 NAT64 地址范围。具体而言，防护功能使用了 `pkg/networking/utilities.go` 中的 `IsPrivateIP` 函数，该函数仅包含定义在 `privateIPBlocks` 变量中的特定 CIDR 段，包括 `127.0.0.0/8`、`10.0.0.0/8` 等经典私有地址段，但**完全忽略了** IPv6 网络中用于 IPv4/IPv6 互操作的 NAT64 转换范围，包括 RFC 6052 标准中定义的“64:ff9b::/96”前缀和 RFC 8215 中定义的本地使用前缀“64:ff9b:1::/48”。当攻击者控制一个 URL 并通过 CIMD 取景器访问时（例如外部 OAuth 客户端提供的 `client_id=https://<attacker-domain>/path`），如果该 URL 解析为一个 NAT64 地址（如 `64:ff9b:1::a9fe:a9fe` — 这是链接本地元数据地址 `169.254.169.254` 的 NAT64 编码），防护功能则会错误地将其视为公共地址，允许 SSRF 请求得以建立。在这种情况下，攻击者可以借助 NAT64 网关的透明翻译功能，绕过原本应该阻止的连接安全边界，实现对物联网元数据服务或内部主机达成的盲目连通性探测。尽管这类攻击无法直接窃取证书或凭证，但却提供了对目标系统内部网络结构的精确洞察，从而可能为后续攻击行动提供关键信息。这一缺陷广泛存在于 ToolHive 的多个组件，包括 OAuth 认证服务器的 CIMD 取景器、HTTP 客户端的注册/OIDC 发现以及令牌校验机制所共享的 `protectedDialerControl`，以及技能克隆工具的 Git 解析器中，但那些组件的访问权限通常由操作者或用户进行配置。因此，该漏洞是 ToolHive 中 SSRF 防护机制的一个关键设计弱点，可能导致攻击者获取未授权的内部网络访问权限。CVE 编号为 CVE-2026-54450，威胁等级为严重， CVSS 评分高达 9.8。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "建议立即升级 ToolHive 到 v0.29.1 或更高版本（已在 PR 中修复 pkg/networking/utilities.go 中的 privateIPBlocks，新增 64:ff9b::/96 与 64:ff9b:1::/48 NAT64 前缀，并补充 0.0.0.0/8、::、240.0.0.0/4 等特殊范围）。若暂无法升级，可在防火墙或网络策略层面拦截 64:ff9b::/96 与 64:ff9b:1::/48 目的地址，或临时禁用 IPv6/NAT64 网关作为临时缓解措施。同时建议在部署环境中禁用 IPv6-only 网络栈，强制使用 IPv4 避免 NAT64 转换路径被滥用。"
 score = 3.5
 severity = "LOW"
 sources = ["ghsa"]
 title = "Stacklok ToolHive SSRF防护绕过漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

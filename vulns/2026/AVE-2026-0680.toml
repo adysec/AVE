@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 仓库主页路由 `GET /{owner}/{repo}` 存在令牌作用域绕过漏洞：处理器 `repo.Home` 缺少令牌作用域守卫 `context.CheckRepoScopedToken`，导致不具备 `repository` 作用域或仅为 `public-only` 的个人访问令牌（PAT）或 OAuth2 令牌仍能通过 HTTP Basic 认证访问私有仓库的主页，泄露 README 内容、根目录文件树、描述、语言统计、许可证及最新发布信息。该漏洞影响所有启用私有仓库的 Gitea 实例，攻击者仅需持有受害者合法的低权限令牌（如仅含 `read:user` 或 `public-only,read:repository` 作用域）即可通过访问仓库主页获取私有仓库敏感信息，绕过细粒度令牌的权限限制。利用方式为攻击者使用低权限令牌通过 HTTP Basic 认证直接请求 `GET /{owner}/{repo}`，即可获取私有仓库主页渲染的 HTML 响应。官方建议在 `repo.Home` 处理器入口或路由中间件处添加 `context.CheckRepoScopedToken(ctx, ctx.Repo.Repository, auth_model.Read)` 进行作用域校验，同步修复同类 `AllowBasic` 路由的潜在遗漏。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "升级 Gitea 到 v1.22.4 或更高版本，该版本已包含对 `routers/web/repo/view_home.go` 中缺少 `CheckRepoScopedToken` 检查的修复，确保非 `repository`-scoped 或 `public-only` 令牌无法访问私有仓库的根页面内容。检查包含在 v1.21.0 版本中引入的令牌范围强制机制中，需要应用完整的令牌范围控制。已修复的同类路由包括归档下载、私有仓库文件下载和 RSS/Atom 页面等，如果仍然遇到此问题，请确保使用已修复的版本或版本升级到 v1.22.4。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Gitea 个人访问令牌作用域绕过导致私有仓库内容泄露"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

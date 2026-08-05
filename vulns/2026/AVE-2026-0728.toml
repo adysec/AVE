@@ -1,12 +1,12 @@
 [basic]
 description = "datamodel-code-generator 的内置 HTTP 获取器（http.get_body）存在服务器端请求伪造（SSRF）漏洞。该组件在处理 `--url` 参数或重定向链中的 URL 时，不对目标主机或 IP 地址进行任何白名单/黑名单校验，且默认启用自动重定向（follow_redirects=True）。攻击者可构造恶意 URL 使工具向回环地址（127.0.0.1）、私有网络（RFC1918）、链路本地地址（169.254.169.254 云元数据）及任意可达内网服务发起请求。由于唯一的过滤策略仅为拒绝 text/html 内容类型，非 HTML 的内部 API、云元数据和管理端点的响应体均会被当作 JSON/YAML 模式解析，并嵌入生成的 .py 源代码文件中，导致敏感信息（如 IAM 凭证、内部服务数据）泄露至代码仓库。攻击条件为：受害者安装了带 [http] 额外依赖的 datamodel-code-generator（pip install 'datamodel-code-generator[http]'）并在未充分验证 URL 来源的情况下使用 --url 参数运行该工具。实际利用场景包括：通过恶意文档示例触发 SSRF、利用 CI/CD 环境探测内网服务、窃取云环境元数据凭据等。该漏洞影响 0.9.1 至 0.61.0 所有版本，已在 0.61.0 版本中修复。"
-published = "2026-07-28T22:17:40.800"
+published = "2026-07-28T22:17:40Z"
 remediation = "立即将 datamodel-code-generator 升级至 0.61.0 或更高版本（pip install --upgrade 'datamodel-code-generator[http]>=0.61.0'）。升级后工具默认会阻止 localhost、RFC1918 私有地址及 link-local 地址的访问，并禁用自动跟随重定向，需手动通过 --allow-private-network 参数显式允许内网访问。如无法立即升级，请勿使用 --url 参数传入未经充分校验的外部 URL，并在 CI/CD 流水线中严格限制网络出站规则，禁止访问内网元数据服务（如 169.254.169.254）。"
 score = 8.2
 severity = "HIGH"
 sources = ["ghsa"]
 title = "datamodel-code-generator 服务端请求伪造漏洞"
-updated = "2026-07-29T15:16:26.127"
+updated = "2026-07-29T15:16:26Z"
 
 [exploit]
 exp_urls = []

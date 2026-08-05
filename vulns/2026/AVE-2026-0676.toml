@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 私有仓库存在权限残留漏洞，`services/repository/collaboration.go` 中的 `DeleteCollaboration()` 函数在撤销协作者访问权限时仅清理了关注记录和任务分配，但未删除或禁用该协作者创建的 Webhook，且 Webhook 投递路径也不会重新校验创建者是否仍具备仓库访问权限。具有私有仓库管理员权限的协作者可在权限有效期内创建恶意 Webhook，在自身访问被撤销后，该 Webhook 仍将持续接收并投递仓库后续所有事件——包括 issue 标题与正文、提交数据等私密内容——至攻击者控制的远程端点，形成持续的、对仓库所有者不可见的实时数据外泄。此漏洞影响使用 Gitea 搭建的私有仓库服务，攻击条件为攻击者曾拥有目标私有仓库的协作者（admin）权限，利用方式为事先创建 Webhook 并在自身权限被撤销后继续被动接收仓库私有内容，CVSS 评分 5.3，危害等级中等。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "tags as required.<value>升级到 Gitea 1.27.0 或更高版本以彻底修复该漏洞，该版本在协作权限撤销时会自动清理协作者创建的 Webhook。若暂无法升级，请在每次撤销协作者权限后手动进入仓库设置 → Webhooks 页面，删除或禁用该协作者创建的所有 Webhook，并定期检查 Webhook 交付日志以发现异常回调行为。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Gitea Webhook 协作用户权限撤销后持续触发导致私有仓库内容泄露"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "API Platform Core 的 JSON:API 和 HAL 序列化组件中存在跨用户属性泄漏漏洞。`#[ApiProperty(security: ...)]` 注解用于按请求评估属性是否可暴露，但 `ItemNormalizer` 中的 `componentsCache` 数组以 `$context['cache_key']` 为键进行缓存，该键在委托给父级规范化器之前被无条件设置，未包含用户权限信息。因此，一个请求计算出的属性结构（属性、关系、链接）可被后续不同权限用户的请求复用，导致低权限用户看到本应被安全谓词隐藏的属性结构。该漏洞影响 API Platform Core 2.6.0 至 4.1.29、4.2.26 及 4.3.12 之前版本，利用条件包括：应用通过 JSON:API 或 HAL 格式暴露资源、资源属性使用了依赖当前用户的 `security` 谓词、以及运行在 FrankenPHP/RoadRunner/Swoole 等长生命周期 PHP 运行时中（请求间缓存存活）。攻击者可通过构造特定请求顺序触发缓存重用，实现越权信息泄露。"
-published = "2026-07-01T20:17:10.153"
+published = "2026-07-01T20:17:10Z"
 remediation = "立即升级 api-platform/core、api-platform/json-api 和 api-platform/hal 至 4.1.29、4.2.26 或 4.3.12 及以上版本。如无法升级，可覆写 JSON:API 和 HAL 的 ItemNormalizer 服务，在 $context['cache_key'] 前增加资源类安全检查；或临时避免在 JSON:API/HAL 资源上使用 #[ApiProperty(security: ...)]。将部署切换为传统 php-fpm 工作模式也可缓解，因缓存不会跨请求存活。"
 score = 5.9
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "API Platform Core 跨用户属性泄漏漏洞"
-updated = "2026-07-02T18:41:35.990"
+updated = "2026-07-02T18:41:35Z"
 
 [exploit]
 exp_urls = []

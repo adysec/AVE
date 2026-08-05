@@ -1,12 +1,12 @@
 [basic]
 description = 'Gitea 的 OAuth2 登录回调存在账户激活绕过漏洞。当用户通过不发放刷新令牌（refresh token）的认证源（如 GitHub 或未配置 `offline_access` 的 OIDC/OAuth2 源）登录时，系统会错误地将管理员已停用的账户（`IsActive=false`）重新激活。根本原因在于 PR #38009 的修复不完整：它使用 `RefreshToken == ""` 作为判断账户是否被自动同步定时任务禁用的信号，但对于从不发放刷新令牌的认证源，空 refresh token 是所有用户的正常状态，无法区分管理员手动停用与定时任务自动禁用。攻击者只需以被停用用户的身份通过该认证源重新登录，即可绕过管理员的停用操作，恢复账户活跃状态并获取完整会话权限。若被停用用户拥有管理员权限，恢复后也将重新获得管理员访问权限。该漏洞影响所有使用 GitHub 认证源或未配置 `offline_access` 的 OIDC/OAuth2 认证源的 Gitea 实例。'
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = '升级 Gitea 至包含此漏洞修复的版本（≥1.24.x 对应补丁），修复 `routers/web/auth/oauth.go` 中 `handleOAuth2SignIn` 函数的激活门控逻辑：对于不签发 refresh token 的 OAuth2 认证源（如 GitHub），不应以 `RefreshToken == ""` 作为自动同步禁用的判断依据。临时缓解措施：在管理员禁用用户时同时勾选「禁止登录」（ProhibitLogin），该机制不受此漏洞影响；或为 OIDC 认证源配置 `offline_access` scope 使其签发 refresh token。'
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Gitea OAuth2 登录绕过管理员账户停用漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Pillow 图像处理库中 `PIL/GdImageFile.py` 的 `GdImageFile._open()` 方法在读取 GD 2.x 文件头的图像尺寸并存储到 `self._size` 时，未调用 `Image._decompression_bomb_check()` 进行解压炸弹防护检查。由于 `GdImageFile` 未向 `Image.register_open()` 注册，其自有入口 `PIL.GdImageFile.open(fp)` 直接实例化类，完全绕过了 Pillow 标准的 `Image.open()` 代码路径及其防护机制。攻击者仅需上传一个 1,037 字节的精心构造 `.gd` 文件（头部宽高均设为 65535），即可在调用 `.load()` 时触发约 4.3 GB 的 C 堆内存分配尝试，导致内存不足的系统进程崩溃，可循环请求造成持续拒绝服务。该漏洞影响 Pillow 12.3.0 之前版本，CVSS 7.5 高危，无需认证和用户交互，任何接受用户上传 .gd 文件并调用 `GdImageFile.open()` 后跟 `.load()` 的服务均受影响。Pillow 12.3.0 已修复，补丁在 `_open()` 中补齐了缺失的 `_decompression_bomb_check()` 调用。"
-published = "2026-07-06T19:17:08.703"
+published = "2026-07-06T19:17:08Z"
 remediation = "升级 Pillow 至 12.3.0 或更高版本：pip install --upgrade pillow。若使用系统包管理器，Ubuntu/Debian 执行 sudo apt update && sudo apt install python3-pillow，Alpine 执行 apk upgrade py3-pillow。临时缓解措施：在应用层拦截或校验 .gd 文件尺寸，避免直接调用 PIL.GdImageFile.open() 处理不可信来源的 GD 文件。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Pillow 图像处理库 GD 格式解压炸弹防护绕过漏洞"
-updated = "2026-07-07T18:58:54.647"
+updated = "2026-07-07T18:58:54Z"
 
 [exploit]
 exp_urls = []

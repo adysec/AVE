@@ -1,12 +1,12 @@
 [basic]
 description = "Trivy 安全扫描器在处理 Helm 图表归档文件（.tgz）时，其自定义 tar 解包器使用无大小限制的 io.ReadAll 读取每个条目，存在拒绝服务漏洞。攻击者可将恶意构造的 .tgz 文件放置在 Trivy 扫描路径中，利用 tar 炸弹技术使小体积压缩包解压后膨胀至数 GB，导致 Trivy 进程被操作系统 OOM killer 终止。该漏洞影响 trivy config、trivy filesystem --scanners misconf 及 trivy image --scanners misconf 等扫描模式，在 CI/CD 流水线场景中尤为危险——攻击者可通过提交包含恶意 Helm chart 的 PR 触发扫描失败、流水线阻塞，并可能消耗云 CI 运行器额外资源。已在 Trivy v0.71.0 中修复，使用 helm.sh/helm/v4 SDK 的 archive.LoadArchiveFiles 替代自定义解包器，强制实施条目级和总大小限制。"
-published = "2026-06-25T17:16:41.257"
+published = "2026-06-25T17:16:41Z"
 remediation = "立即升级 Trivy 至 v0.71.0 或更高版本，该版本使用 helm.sh/helm/v4 SDK 的 archive.LoadArchiveFiles 替代了无大小限制的自定义 tar 解包器。如无法立即升级，可通过 cgroup/容器限制 Trivy 进程内存上限，或使用 --skip-dirs 排除包含不可信 Helm Chart 归档文件的目录。"
 score = 6.9
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Aqua Security Trivy Helm 图表解压拒绝服务漏洞"
-updated = "2026-06-26T19:27:05.663"
+updated = "2026-06-26T19:27:05Z"
 
 [exploit]
 exp_urls = []

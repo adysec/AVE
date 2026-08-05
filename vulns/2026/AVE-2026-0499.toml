@@ -1,12 +1,12 @@
 [basic]
 description = "vLLM 大语言模型推理引擎的推测性解码（speculative decoding）状态处理存在输入验证缺陷。在合法的多请求推测性解码工作负载中，拒绝采样器可能生成等于模型词汇表大小边界值（vocab_size=151936）的恢复令牌，该越界值在引擎选择下一个有效令牌时被转换为 -1 并写入推测解码器的输入 ID 序列中。模型嵌入层和注意力路径随后消费该无效令牌，触发 GPU 设备端断言失败（CUDA device-side assert），导致引擎工作进程崩溃。远程攻击者可通过公开的 gRPC Generate 和 Abort 端点发送特定的重叠请求序列触发此漏洞，造成服务拒绝服务（DoS），中断所有并发请求，直至工作进程重启。该漏洞影响 vLLM 0.24.0 之前的所有版本，CVSS 评分 7.5，危害等级高。官方已在 0.24.0 版本中通过修复令牌边界检查逻辑完成修复。"
-published = "2026-07-06T21:16:56.477"
+published = "2026-07-06T21:16:56Z"
 remediation = "立即升级 vLLM 至 0.24.0 或更高版本（对应 commit 8a5cf1ccd65e8ac7635c402c1ec0b08988bc26ca），该版本已修复推测解码中恢复令牌越界导致 GPU 断言的缺陷。如无法立即升级，可在部署层面禁用公共 gRPC Generate/Abort 端点的外部访问，或限制推测解码（speculative decoding）功能的使用作为临时缓解措施。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "vLLM vLLM 远程拒绝服务漏洞"
-updated = "2026-07-07T19:04:17.300"
+updated = "2026-07-07T19:04:17Z"
 
 [exploit]
 exp_urls = []

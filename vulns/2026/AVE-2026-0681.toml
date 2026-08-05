@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 系统中存在一个跨租户授权绕过漏洞，源于 `DeleteIssueLabel` API 的不对等访问控制。攻击者仅需认证并拥有对任意仓库的 `write:issue` 权限，即可通过移除标签端点的差异响应状态码进行标签 ID 的枚举和存在性探测。由于该端点的标签查找逻辑采用全局查找方式，未验证标签是否属于当前请求仓库，所有用户均可利用这一漏洞获取对全局标签 ID 的不可见的信息，从而可能泄露私有仓库和组织层面的标签元数据。目前已知漏洞影响版本为 1.26.3 及更早版本，且暂无官方补丁发布，建议及时升级到最新版本并关注补丁信息更新。该漏洞虽然不涉及标签名称或关联仓库信息的泄露，但作为一种权限绕过漏洞，其潜在安全影响不可小觑，尤其是对于私有部署环境和大型组织使用 Gitea 时，可能导致大量跨租户 ID 信息的泄露。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "建议升级至 Gitea 1.26.4 或更高版本（含修复补丁）。暂时无法升级时，可修改 routers/api/v1/repo/issue_label.go 中 DeleteIssueLabel 函数，在加载标签后添加作用域校验：若 label.RepoID 不等于当前仓库 ID 且 label.OrgID 不等于仓库所有者组织 ID，则返回 404；或临时在反向代理层拦截 DELETE /api/v1/repos/*/issues/*/labels/* 请求并校验标签归属。"
 score = 3.5
 severity = "LOW"
 sources = ["ghsa"]
 title = "Gitea Issues 跨库标签ID枚举漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

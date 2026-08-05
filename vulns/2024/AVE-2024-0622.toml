@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 btrfs 文件系统在卸载（unmount）过程中存在释放后使用（Use-After-Free）漏洞。在 close_ctree() 卸载路径中，内核先通过 kthread_stop() 停止 cleaner 内核线程并释放其 task_struct，随后才停止并销毁 delalloc 工作队列。然而 delalloc_workers 队列中的 worker 可能仍在执行 submit_compressed_extents() 函数，该函数调用 btrfs_add_delayed_iput() 时会尝试唤醒已被销毁的 cleaner 内核线程，导致对已释放 task_struct 的访问，引发内核崩溃或潜在权限提升。本地攻击者需具备低权限即可触发此漏洞，影响系统机密性、完整性和可用性。该漏洞影响 Linux 内核 btrfs 文件系统，CVSS 评分 7.8，危害等级高。"
-published = "2025-01-15T13:15:14.200"
+published = "2025-01-15T13:15:14Z"
 remediation = "立即升级 Linux 内核至以下已修复版本：6.13 及以上、6.12.9、6.6.70、6.1.124、5.15.176 或 5.10.233。Debian 用户请更新至 DLA-4075-1 对应内核版本；Ubuntu 用户请安装 USN-7381-1 安全更新。如无法立即升级，可在卸载 btrfs 文件系统前确保所有 delalloc 工作队列已排空完毕，避免触发释放后使用。"
 score = 7.8
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux Kernel Btrfs 释放后使用漏洞"
-updated = "2026-06-17T08:14:10.200"
+updated = "2026-06-17T08:14:10Z"
 
 [exploit]
 exp_urls = []

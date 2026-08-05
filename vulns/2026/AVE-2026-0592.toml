@@ -1,12 +1,12 @@
 [basic]
 description = "Coder 远程开发环境平台的 `POST /api/v2/files` 接口在处理 ZIP 文件上传时，通过 `CreateTarFromZip` 在内存中将 ZIP 转换为 TAR，虽限制单条目大小但缺失解压后总数据量聚合限制，导致解压数据写入无界内存缓冲区。已认证攻击者可上传符合 100 MiB 上传限制但包含大量高压缩比条目的 ZIP 文件，解压后耗尽内存导致 `coderd` 服务在 RBAC 权限检查前崩溃，重复请求可致服务持续不可用。该漏洞属拒绝服务（CWE-409），不涉及数据泄露或代码执行。影响 Coder 2.17.0 至 2.29.7、2.32.7、2.33.8、2.34.2 前版本，CVSS 3.1 评分 6.5（中危，AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H）。官方已在 v2.29.17、v2.32.7、v2.33.8、v2.34.2 修复，新增元数据预检聚合大小限制及流式写入强制限制。缓解措施为限制文件上传权限或部署反向代理限制请求体大小。"
-published = "2026-07-07T23:16:55.510"
+published = "2026-07-07T23:16:55Z"
 remediation = "建议立即升级 Coder 到修复版本：2.29 线升级至 v2.29.17，2.32 线升级至 v2.32.7，2.33 线升级至 v2.33.8，2.34 线升级至 v2.34.2。升级地址：https://github.com/coder/coder/releases。若暂时无法升级，可在反向代理（如 Nginx）层面限制请求体大小（client_max_body_size 100M），并限制文件上传权限仅对可信用户开放，或在防火墙层面限制 /api/v2/files 接口访问频率作为临时缓解措施。"
 score = 6.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Coder Coder zip上传解压缺失总量限制拒绝服务漏洞"
-updated = "2026-07-08T19:45:05.967"
+updated = "2026-07-08T19:45:05Z"
 
 [exploit]
 exp_urls = []

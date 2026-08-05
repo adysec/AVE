@@ -1,12 +1,12 @@
 [basic]
 description = 'MathLive 是一个用于数学公式显示和输入的 Web 组件库，其 0.110.0 之前版本存在跨站脚本（XSS）漏洞。漏洞源于 `src/core/box.ts` 中 `Box.toMarkup` 方法在拼接 `this.value` 到渲染的 span 元素时未进行 HTML 转义，同时 `src/formats/atom-to-math-ml.ts` 中的 MathML 序列化器也存在独立的转义缺失问题。`\text{}` 和 `\mbox{}` 命令接受任意字符并原样输出到 HTML 和 MathML 标记中，导致攻击者可通过构造包含恶意 HTML/JavaScript 的 LaTeX 表达式（如 `\text{<img src=x onerror=alert(1)>}`）实现任意 JavaScript 代码执行。该漏洞影响所有使用 MathLive 渲染不可信数学表达式的应用，攻击者只需诱导用户访问包含恶意 LaTeX 内容的页面即可触发，CVSS 评分 6.3，危害等级中危。官方已在 0.110.0 版本中修复此漏洞。'
-published = "2026-07-29T18:16:54.857"
+published = "2026-07-29T18:16:54Z"
 remediation = '''立即将 mathlive 升级至 0.110.0 或更高版本，该版本在 `Box.toMarkup` 和 MathML 序列化器中增加了对 `\text{}`、`\mbox{}` 等文本模式内容的 HTML 转义处理。如无法立即升级，可在应用层对所有用户输入的 LaTeX 表达式进行 HTML 实体编码（转义 `<`、`>`、`&`、`"` 字符）后再传入 `convertLatexToMarkup` 或 `<math-span>` 等 API，同时部署 Content-Security-Policy 头（`script-src 'self'`）作为纵深防御。'''
 score = 6.3
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "MathLive MathLive 跨站脚本漏洞"
-updated = "2026-07-30T20:07:01.330"
+updated = "2026-07-30T20:07:01Z"
 
 [exploit]
 exp_urls = []

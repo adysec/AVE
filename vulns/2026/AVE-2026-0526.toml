@@ -1,12 +1,12 @@
 [basic]
 description = "Elixir Protobuf 库（Hex 包 `protobuf`，版本 >= 0.8.0, < 0.16.1）的 `Protobuf.Decoder` 在解码内嵌消息字段时存在无界递归深度漏洞。当 protobuf schema 包含自引用或循环消息类型（如 `message Tree { Tree child = 1; }`）时，攻击者可通过构造特制的 protobuf 二进制数据包，使解码器在 `value_for_field/3` 函数中无限递归。由于递归调用非尾递归，每层嵌套都会在进程栈和堆上保留活动帧，且解码器未设置递归深度上限。攻击者仅需发送一个数 KB 到数 MB 的请求体，即可使目标节点消耗数百 MB 内存和数秒 CPU 时间，数个并发请求即可导致节点离线。参考实现（Google C++/Java）均将递归深度限制为 100 层，而 Elixir 实现未施加此限制，形成请求放大型拒绝服务漏洞。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即将 Elixir protobuf 库升级至 0.16.1 或更高版本（最新 0.17.0），该版本在解码器中添加了递归深度计数器，默认限制为 100 层，超过时抛出 `Protobuf.DecodeError`。如无法立即升级，可在调用 `decode/1` 前对输入 protobuf 二进制数据做大小限制（建议 ≤1MB），并确保服务端不直接解码来自不可信来源的 protobuf 消息。同时检查所有使用了自引用或循环消息类型的 schema，在升级前避免暴露相关解码端点。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "elixir-protobuf Protobuf 解码器无限递归拒绝服务漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

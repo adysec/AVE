@@ -1,12 +1,12 @@
 [basic]
 description = "ToolHive 的远程 MCP 服务器认证发现机制存在服务端请求伪造（SSRF）漏洞。该漏洞源于 `FetchResourceMetadata` 及认证发现客户端在发起 HTTP 请求时未对目标 URL 进行私有 IP/回环地址过滤，也未限制重定向跳转。攻击者控制的远程 MCP 服务器可在 401 认证响应中通过 `WWW-Authenticate` 头的 `resource_metadata` 字段返回恶意 URL，该 URL 通过 HTTPS 检查后，ToolHive 客户端会跟随 302 重定向至内部地址（如 `http://169.254.169.254/latest/meta-data/`），导致主机进程直接获取云实例元数据及 IAM 凭证。该攻击在用户正常连接远程 MCP 服务器时自动触发，无需用户主动访问恶意地址，完全绕过 ToolHive 的容器沙箱隔离机制。影响 ToolHive v0.29.3 及之前所有版本。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即升级 ToolHive 至 v0.29.4 或更高版本（补丁已合入 main 分支）。如无法升级，手动修改 `pkg/auth/discovery/discovery.go`：为 `FetchResourceMetadata`、`DetectAuthenticationFromServer` 及 issuer-discovery 客户端设置 `CheckRedirect` 拒绝跨主机或降级协议的重定向，并在 `DialContext` 中调用 `IsPrivateIP` 守卫（`pkg/networking/utilities.go:105`）过滤内网地址。同时移除三处 `// #nosec G704` 注解以恢复 SSRF 污点分析告警。"
 score = 3.5
 severity = "LOW"
 sources = ["ghsa"]
 title = "ToolHive 远程MCP服务器认证发现服务端请求伪造漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

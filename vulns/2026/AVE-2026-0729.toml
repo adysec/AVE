@@ -1,12 +1,12 @@
 [basic]
 description = "goshs 文件服务器存在基于 .goshs 文件 ACL 的授权绕过漏洞，系 GHSA-wvhv-qcqf-f3cx 修复后遗留的同类问题。bulkDownload（httpserver/updown.go）在处理 ?bulk zip 批量下载路由时，仅对每个 ?file= 参数调用 sanitizePath 进行路径清理，随即以 ZIP 流形式返回文件内容，全程未调用 findEffectiveACL/applyCustomAuth 执行 ACL 校验，且该路由在正常 doDir/doFile/sendFile 授权检查之前即被分发处理。因此，未认证攻击者可绕过按目录配置的 .goshs 访问控制，直接读取 webroot 下受 ACL 保护的任意文件，同时也能绕过逐文件的访问黑名单（block list），造成机密信息泄露。受影响的部署包括依赖 .goshs 作为访问边界的 goshs 服务器实例；仅配置服务器级 -b 基本认证时该路由仍受中间件保护。官方已在 v2.1.1 版本通过提交 7cf911a 修复，建议升级并审计 ?cbDown 等其他替代读取路由。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "建议立即升级到 goshs v2.1.1 或更高版本（该版本包含修复 commit 7cf911a，在 bulkDownload 中对每个请求文件强制执行 .goshs ACL 校验，即调用 findEffectiveACL 与 applyCustomAuth 并遵循 acl.Block，与 sendFile/processDir 的正常读取路径一致）。若暂时无法升级，可将 ?bulk 路由同样纳入全局 -b 基本认证中间件覆盖范围，并通过对 ?bulk 及 ?cbDown 等备选读取路由执行严格 ACL 校验作为临时缓解；同时审查所有备选下载路由是否存在同类绕过，并禁止把 .goshs 作为唯一访问边界。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "goshs 文件共享服务器 .goshs ACL 授权绕过漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

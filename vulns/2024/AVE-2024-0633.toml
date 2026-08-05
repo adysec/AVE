@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 IIO 子系统中压力传感器驱动 zpa2326 的触发缓冲区实现存在信息泄漏漏洞。驱动使用的 'sample' 本地结构体在 temperature 字段（u16）与 timestamp 字段（u64）之间存在未初始化的内存空洞，当通过触发缓冲机制将数据推送至用户空间时，该空洞中的未初始化内核内存内容会被泄露给用户态进程。攻击者需具备本地访问权限且低权限即可利用，无需用户交互，可读取内核栈/堆内存中的敏感信息（如指针、密钥等），CVSS 3.1 评分 7.1（HIGH，AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:H）。影响使用 zpa2326 压力传感器驱动的 Linux 内核版本，修复方案是在使用前将结构体零初始化以避免信息泄露。"
-published = "2025-01-19T12:15:25.380"
+published = "2025-01-19T12:15:25Z"
 remediation = '建议立即升级 Linux 内核至已修复版本：Debian 11 (bullseye) 请升级 linux-6.1 至 6.1.6.1.128-1~deb11u1 或更高版本（`apt update && apt install linux-image-6.1.0-32-amd64`）；Ubuntu 24.04 LTS 请应用 USN-7381-1 提供的内核更新（`apt update && apt upgrade linux-image-generic`）；通用内核请升级至 5.4.290、5.10.234、5.15.177、6.1.125、6.6.72、6.12.10 或 6.13 及以上版本。若无法立即升级内核，可临时卸载 zpa2326 压力传感器驱动作为缓解措施：`modprobe -r zpa2326` 并将其加入 `/etc/modprobe.d/blacklist-zpa2326.conf`（`echo "blacklist zpa2326" > /etc/modprobe.d/blacklist-zpa2326.conf`），重启后生效；同时限制非受信本地用户访问 IIO 子系统设备节点（`/dev/iio:device*`）。'
 score = 7.1
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux 内核 ZPA2326 压力传感器驱动 信息泄漏漏洞"
-updated = "2026-06-17T08:14:13.043"
+updated = "2026-06-17T08:14:13Z"
 
 [exploit]
 exp_urls = []

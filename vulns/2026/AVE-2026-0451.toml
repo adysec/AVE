@@ -1,12 +1,12 @@
 [basic]
 description = 'Pillow（Python 图像处理库）的 `PIL/FontFile.py` 中 `FontFile.compile()` 方法在将每个字形图像组装为组合位图时，调用 `Image.new("1", (xsize, ysize))` 前未执行 `Image._decompression_bomb_check()` 解压炸弹检查。由于 `BdfFontFile` 和 `PcfFontFile` 未通过 `Image.open()` 注册，标准解压炸弹防护机制在字体加载路径中完全缺失。攻击者可构造包含 256 个超大字形（单个字形像素数低于告警阈值）的恶意 BDF/PCF 字体文件，通过 `to_imagefont()` 或 `save()` 触发 `compile()`，组合后位图像素数可达 134 亿（约 1.6 GB 内存分配），超过解压炸弹错误阈值 75 倍，导致服务端 OOM 崩溃或拒绝服务。该漏洞影响 Pillow 12.3.0 之前所有版本，无需身份认证即可远程触发。'
-published = "2026-07-06T19:17:08.270"
+published = "2026-07-06T19:17:08Z"
 remediation = "升级 Pillow 至 12.3.0 或更高版本（`pip install --upgrade pillow`）。如无法立即升级，可在加载不可信字体文件前增加输入校验，限制 BDF/PCF 字体中每个字符的宽高不超过合理阈值（如 1024×1024），或在沙箱环境中处理字体文件以防止 OOM 攻击。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Pillow FontFile.compile 解压炸弹检查缺失导致拒绝服务漏洞"
-updated = "2026-07-07T18:58:45.827"
+updated = "2026-07-07T18:58:45Z"
 
 [exploit]
 exp_urls = []

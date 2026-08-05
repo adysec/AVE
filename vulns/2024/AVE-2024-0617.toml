@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核工作队列（workqueue）子系统存在不正确的警告检测逻辑缺陷。在提交 746ae46c1113 将 amdgpu 调度器工作队列标记为 WQ_MEM_RECLAIM 后，当从非 WQ_MEM_RECLAIM 上下文调用 cancel_delayed_work_sync() 取消内存回收相关工作项时，check_flush_dependency 会误报依赖冲突警告。该问题本质上是取消操作的安全性与刷新操作的依赖性检查之间的语义混淆——取消正在运行或尚未运行的工作项是安全的，不应触发警告。本地攻击者可通过触发特定 GPU 调度场景利用此缺陷，导致内核日志被大量误报信息淹没，影响系统可用性。该漏洞影响 Linux 内核中使用了 amdgpu 驱动的系统，CVSS 评分 5.5，危害等级中危。"
-published = "2025-01-15T13:15:13.240"
+published = "2025-01-15T13:15:13Z"
 remediation = "立即更新 Linux 内核至包含该补丁的版本：对于 Ubuntu 24.04 LTS，安装 USN-7381-1 或 USN-7514-1 安全更新（`sudo apt update && sudo apt upgrade linux-image-$(uname -r)`）；对于其他发行版，升级内核至 6.12 及以上版本。如无法立即升级，可通过内核启动参数 `workqueue.watchdog_thresh=0` 临时关闭 workqueue 依赖检查告警作为缓解措施，但建议优先完成内核更新。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux Kernel 工作队列 WQ_MEM_RECLAIM 取消操作告警误报漏洞"
-updated = "2026-06-17T08:14:09.180"
+updated = "2026-06-17T08:14:09Z"
 
 [exploit]
 exp_urls = []

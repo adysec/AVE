@@ -1,12 +1,12 @@
 [basic]
 description = 'node-tar 是一个 Node.js 的 tar 归档操作库。在 7.5.17 版本之前，其 PAX 扩展头部解析函数 `parseKVLine` 未对路径（path）和链接路径（linkpath）字段中的 NUL 字节进行过滤，而 GNU L/K 长头部处理函数已正确实现了该过滤。攻击者可通过构造包含 NUL 字节的 PAX 记录（如 `path=visible.txt\x00hidden.txt`）的恶意 tar 文件，使 `entry.path` 携带 NUL 字节传入 `fs.lstat()` 或 `fs.open()`，触发 Node.js 核心的 `ERR_INVALID_ARG_VALUE` 异常。该异常在异步回调链中抛出，绕过用户代码的 `try/catch` 捕获，作为未捕获异常（uncaughtException）直接终止进程，造成拒绝服务。远程攻击者无需认证即可利用此漏洞，影响所有通过 `tar.x`/`tar.extract` 解压用户提供 tar 文件的 Node.js 应用，包括 npm 注册表、CI 流水线、容器构建等场景。'
-published = "2026-07-08T16:16:34.107"
+published = "2026-07-08T16:16:34Z"
 remediation = "立即将 node-tar 升级至 7.5.17 或更高版本（npm install tar@^7.5.17）。如无法升级，可在提取 tarball 前使用外部工具（如 GNU tar）预处理过滤含 NUL 字节的路径，或添加全局 uncaughtException 处理器并重启进程作为临时缓解措施。"
 score = 5.3
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "node-tar PAX路径记录NUL字节未捕获异常拒绝服务漏洞"
-updated = "2026-07-10T19:10:59.333"
+updated = "2026-07-10T19:10:59Z"
 
 [exploit]
 exp_urls = []

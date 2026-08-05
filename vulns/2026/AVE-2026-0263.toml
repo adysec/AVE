@@ -1,12 +1,12 @@
 [basic]
 description = "uutils coreutils 的 mkfifo 命令存在权限绕过漏洞。当 mkfifo() 因目标路径已存在文件而创建失败时，代码仅输出错误信息但缺少 `continue;` 语句，导致执行流程意外进入后续的 `set_permissions` 调用，将已存在文件的权限修改为默认 FIFO 模式（0o666 & umask → 0644）。攻击者可通过预创建目标文件并诱导受害者执行 mkfifo 命令，将敏感文件（如 SSH 私钥）权限修改为全局可读，造成信息泄露。该漏洞影响 uutils coreutils 多个版本，CVSS 评分 7.1，危害等级高。"
-published = "2026-04-22T17:16:36.060"
+published = "2026-04-22T17:16:36Z"
 remediation = "立即升级 uutils coreutils 至包含 commit `00f77cc`（2026-01-23）或更新版本，该提交在 mkfifo 创建失败时添加了缺失的 `continue;` 语句，阻止后续 `set_permissions` 执行。如无法升级，可考虑在系统层面使用 GNU coreutils 替代 uutils coreutils 的 mkfifo，或通过文件系统监控（如 fanotify）检测对敏感文件的意外权限变更作为临时缓解措施。"
 score = 7.1
 severity = "HIGH"
 sources = ["ghsa"]
 title = "uutils coreutils mkfifo 现成文件权限修改漏洞"
-updated = "2026-06-17T10:40:25.500"
+updated = "2026-06-17T10:40:25Z"
 
 [exploit]
 exp_urls = []

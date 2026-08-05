@@ -1,12 +1,12 @@
 [basic]
 description = "HAPI FHIR 的 FHIRPathEngine 实现中存在正则表达式拒绝服务（ReDoS）漏洞。FHIRPathEngine 接受任意 FHIRPath 表达式且未做输入验证，其 matches()、matchesFull() 和 replaceMatches() 函数将用户可控的正则表达式传递给 Java 的 Pattern.compile() 和 String.replaceAll()，但超时机制存在缺陷——仅取消了执行线程却无法终止线程内的正则运算。未经身份认证的远程攻击者可通过向 FHIR Validator HTTP 端点发送包含恶意正则模式（如 (a+)+$）的资源，触发 Java 正则引擎的指数级回溯（O(2^n) 时间复杂度），导致 CPU 资源耗尽，造成拒绝服务。该漏洞影响 6.9.9 和 6.9.4.2 之前的所有版本。"
-published = "2026-07-17T22:17:16.893"
+published = "2026-07-17T22:17:16Z"
 remediation = "立即升级 org.hl7.fhir.core 至 6.9.9 或 6.9.4.2 及以上版本，这两个版本已修复 FHIRPathEngine 中 matches()/replaceMatches() 的正则回溯问题。如无法立即升级，可在 FHIR Validator HTTP 端点入口处增加输入校验，限制 FHIRPath 表达式的来源为可信用户，并在网关层对 /fhir 路径设置请求频率限制和超时阈值以缓解 DoS 风险。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "HL7 FHIR Core FHIRPathEngine 正则表达式拒绝服务漏洞"
-updated = "2026-07-20T15:16:39.090"
+updated = "2026-07-20T15:16:39Z"
 
 [exploit]
 exp_urls = []

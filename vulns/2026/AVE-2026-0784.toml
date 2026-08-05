@@ -1,12 +1,12 @@
 [basic]
 description = "MessagePack for Ruby 的 MessagePack::Buffer#clear 方法存在释放后使用（Use-After-Free）漏洞。该函数在清空缓冲区时将 4KB rmem 页面归还到共享内存池后，未重置 rmem_last、rmem_end、rmem_owner 等游标指针，导致后续的 Buffer#write 操作误将已释放页面的内存地址返回给调用者。当第二个 MessagePack::Buffer 从共享池获取同一物理页面时，两个缓冲区会指向同一块内存，造成跨缓冲区信息泄露（可读取其他缓冲区的序列化数据）或数据损坏。攻击者需在本地环境中直接使用 MessagePack::Buffer API 并遵循 clear/复用生命周期模式才能触发，无法通过普通 unpack 字节流利用。该漏洞影响 msgpack gem 1.8.2 之前的所有版本，已在 1.8.2 版本中修复。"
-published = "2026-07-30T17:16:33.030"
+published = "2026-07-30T17:16:33Z"
 remediation = "立即将 msgpack gem 升级至 1.8.2 或更高版本（`gem update msgpack`），该版本已修复 Buffer#clear 中 rmem 游标未重置导致的释放后使用问题。如无法升级，避免在跨缓冲区场景中调用 clear 后立即复用同一 Buffer 写入数据，或改用重新创建 Buffer 实例替代 clear 操作作为临时缓解措施。"
 score = 2.1
 severity = "LOW"
 sources = ["ghsa"]
 title = "MessagePack Ruby 缓冲区释放后重用导致跨缓冲区信息泄露漏洞"
-updated = "2026-07-30T19:27:23.630"
+updated = "2026-07-30T19:27:23Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Pillow 是一款 Python 图像处理库，其 PCF 字体文件加载函数 `PcfFontFile._load_bitmaps()` 在处理 PCF 字体文件的 METRICS 段时，直接从文件中读取字形尺寸（宽度和高度）并传递给 `Image.frombytes()`，但未调用 `Image._decompression_bomb_check()` 进行安全检查。攻击者可通过构造特制的 PCF 字体文件，将字形尺寸声明为最大 65535×131070 像素，导致单次加载即可分配高达 1.07GB 的堆内存，且每个字体文件可包含多个字形，造成拒绝服务。该漏洞影响 Pillow 12.3.0 之前的所有版本，CVSS 评分 7.5，危害等级高。由于 `PcfFontFile` 不通过 `Image.open()` 加载，因此完全绕过了原有的炸弹保护机制。修复版本为 12.3.0，用户应及时升级。"
-published = "2026-07-06T19:17:08.127"
+published = "2026-07-06T19:17:08Z"
 remediation = "立即升级 Pillow 至 12.3.0 或更高版本（pip install --upgrade Pillow）。如无法升级，在加载不可信 PCF 字体文件前增加 _decompression_bomb_check() 调用，或使用 Image.open() 替代 PcfFontFile 直接加载。同时限制应用进程内存使用（如 systemd 的 MemoryLimit 或 Docker 的 --memory 参数）作为纵深防御。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Pillow PcfFontFile 解压炸弹检测绕过漏洞"
-updated = "2026-07-07T18:58:26.730"
+updated = "2026-07-07T18:58:26Z"
 
 [exploit]
 exp_urls = []

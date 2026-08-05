@@ -1,12 +1,12 @@
 [basic]
 description = 'Excelize 是一个 Go 语言编写的 Excel 文档读写库，其 checkSheet() 函数在处理 XLSX 文件中的 `<row r="N">` XML 属性时，未对行号值进行有效性校验，直接将攻击者控制的数值作为 make([]xlsxRow, row) 的切片长度参数。攻击者可通过构造特制的 XLSX 文件触发两种拒绝服务变体：当 r=2147483647 时，强制分配约 16GB 内存导致进程被 OOM 杀死；当 r=-1 时，触发切片越界访问导致运行时 panic 崩溃。该漏洞无需身份认证，任何使用受影响版本解析用户上传 XLSX 文件并调用 GetCellValue 等 API 的服务均受影响。已在 v2.11.0 版本中修复。'
-published = "2026-07-10T17:16:58.440"
+published = "2026-07-10T17:16:58Z"
 remediation = '立即将 github.com/xuri/excelize/v2 升级至 v2.11.0 或更高版本，该版本在 checkSheet() 中增加了对 `<row r="N">` 属性的边界校验（`r.R < 0` 返回错误，`r.R > TotalRows` 返回 ErrMaxRows）。如无法立即升级，可在解析用户上传的 XLSX 文件前增加文件预处理层，拒绝包含异常行号（r 值超出 1~1048576 范围）的 XML 工作表数据。'
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "xuri excelize 工作表解析器无界行索引分配拒绝服务漏洞"
-updated = "2026-07-16T14:11:27.260"
+updated = "2026-07-16T14:11:27Z"
 
 [exploit]
 exp_urls = []

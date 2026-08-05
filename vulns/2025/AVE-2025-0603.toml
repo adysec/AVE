@@ -10,13 +10,13 @@ That covers principles, impact, attack conditions, exploitation. Good.分析：�
 
 <value>libssh 在 Windows 平台存在不安全默认配置漏洞（CWE-427，不受控制的搜索路径元素）。由于库默认自动从 C:\etc 目录加载配置文件，而该目录可由非特权本地用户创建和修改，本地攻击者可借此植入恶意配置，对 SSH 连接实施中间人攻击，导致连接安全降级、受信任主机信息被篡改，进而窃取凭据或篡改通信数据，严重威胁 SSH 通信的机密性、完整性与可用性。攻击条件为攻击者需在目标系统上拥有本地低权限用户账户，无需用户交互即可触发。该漏洞 CVSS 评分为 7.8，危害等级为高。
 '''
-published = "2026-04-07T17:16:25.433"
+published = "2026-04-07T17:16:25Z"
 remediation = '建议立即升级 libssh 至修复版本 0.11.4 或 0.12.0（可通过 GitHub Releases 或系统包管理更新）。如无法立即升级，在 Windows 上重新编译 libssh 时改用以下安全配置：CMake 传入 -DGLOBAL_BIND_CONFIG=C:/ProgramData/ssh/libssh_server_config 与 -DGLOBAL_CLIENT_CONFIG=C:/ProgramData/ssh/ssh_config，将配置文件重定向至受管目录；并在应用中通过 ssh_options_set(session, SSH_OPTIONS_GLOBAL_KNOWNHOSTS, "C:/ProgramData/ssh/ssh_known_hosts") 设置全局 known hosts 路径，避免加载可被普通用户创建的 C:\etc 目录。同时建议以管理员权限回收 C:\etc 目录归属或将其权限收紧至仅 SYSTEM/Administrators 可写，并排查该目录下是否已存在被篡改的 ssh_known_hosts 与配置文件。'
 score = 7.8
 severity = "HIGH"
 sources = ["msrc"]
 title = "libssh libssh Windows 不安全默认配置导致本地中间人攻击漏洞"
-updated = "2026-06-30T07:16:31.023"
+updated = "2026-06-30T07:16:31Z"
 
 [exploit]
 exp_urls = []

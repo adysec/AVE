@@ -1,12 +1,12 @@
 [basic]
 description = "MCP Python SDK (PyPI 包名 mcp) 在 1.27.2 版本前存在会话认证绕过漏洞。其 SSE 传输 (mcp.server.sse.SseServerTransport) 和有状态 Streamable HTTP 传输 (mcp.server.streamable_http_manager.StreamableHTTPSessionManager) 在路由请求到现有会话时，仅依据会话标识符 (SSE 使用 session_id 查询参数，Streamable HTTP 使用 Mcp-Session-Id 头) 进行查找，未验证请求的认证主体是否与创建会话时的主体一致。导致任意获取或猜测到会话 ID 的攻击者，可使用不同的 Bearer Token 向该会话注入 JSON-RPC 消息，绕过基于 Bearer Token 的客户端隔离机制。SSE 传输会将响应返回给原客户端的事件流，Streamable HTTP 则直接在注入请求中返回结果，攻击者可读取执行结果。影响范围：使用 SSE 或有状态 Streamable HTTP 传输且启用了 SDK 内置 Bearer Token 认证的服务器（stdio 传输、无状态 Streamable HTTP、未启用认证的服务器不受影响）。攻击条件：攻击者需通过日志泄露、网络监听等途径获取合法会话 ID（随机 UUID，需窃取）。利用方式：攻击者携带窃取的会话 ID 发送携带恶意 JSON-RPC 消息的 HTTP 请求，劫持目标会话执行任意操作。CVSS 3.1 评分 7.1 (HIGH)，向量 CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:L，CWE-639。官方已在 1.27.2 版本修复，修复版本会记录创建会话时的认证主体（OAuth client_id 及 token 的 issuer/subject），拒绝不同主体的请求。"
-published = "2026-07-15T20:17:38.427"
+published = "2026-07-15T20:17:38Z"
 remediation = "立即升级 MCP Python SDK 到 1.27.2 或更高版本，该版本记录了创建会话时的认证主体信息（OAuth 客户端 ID + 令牌的颁发者和主题），并通过 404 响应拒绝不同主体的认证请求。确保自定义认证后端或其他令牌验证器实现类似比对逻辑，如：从令牌的 sub 声明中提取 subject 字段，实现细粒度的用户级会话隔离。"
 score = 7.1
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Model Context Protocol Python SDK HTTP 传输会话认证绕过漏洞"
-updated = "2026-07-17T18:06:50.957"
+updated = "2026-07-17T18:06:50Z"
 
 [exploit]
 exp_urls = []

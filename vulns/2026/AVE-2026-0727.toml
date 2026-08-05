@@ -1,12 +1,12 @@
 [basic]
 description = "datamodel-code-generator 在解析 JSON-Schema 时，对 `$ref` 字段指向的 HTTP 或 HTTPS URL 会静默发起请求并获取远程内容，且未对目标 IP/主机名进行校验、未限制协议方案、无条件跟随重定向。`--allow-remote-refs` 参数默认值为 `None`，仅输出弃用警告后仍会继续请求远程地址，仅显式设置为 `false` 时才会阻止请求。攻击者可在 JSON-Schema 或 OpenAPI 文档中嵌入指向内网服务（如云元数据服务、内部 API）的恶意 `$ref`，当开发者使用安装了 `[http]` 扩展的 datamodel-codegen 处理该文档时，工具会自动发起服务器端请求伪造（SSRF）攻击，并将获取到的响应内容（如 IAM 凭证、用户数据）直接写入生成的 Python 代码文件中。该漏洞影响 0.9.1 至 0.61.0 之前的所有版本，攻击者无需开发者额外配合，仅需受害者运行工具处理不可信来源的 Schema 文档即可触发。官方已在 0.61.0 版本中通过限制非公网目标访问、强制校验重定向地址并新增 `--allow-private-network` 参数修复此问题。"
-published = "2026-07-28T22:17:40.650"
+published = "2026-07-28T22:17:40Z"
 remediation = "立即将 datamodel-code-generator 升级至 0.61.0 或更高版本，官方在该版本中修复了此问题。如无法立即升级，请显式设置 `--allow-remote-refs=false` 参数与 `--allow-private-network` 参数以阻止远程 $ref 请求，并严格审查所有待处理的 JSON Schema、OpenAPI 文档来源，仅处理可信数据，禁止将工具用于解析来自不可信第三方的 Schema 文件。如使用了 `[http]` 扩展，可在临时缓解期间将其移除。"
 score = 8.2
 severity = "HIGH"
 sources = ["ghsa"]
 title = "datamodel-code-generator JSON Schema $ref 服务器端请求伪造漏洞"
-updated = "2026-07-29T16:17:54.210"
+updated = "2026-07-29T16:17:54Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 的 post-receive git hook 处理器在处理 git push 选项时存在权限控制缺陷。攻击者若拥有目标仓库的 owner 或 admin collaborator 权限，可在执行 git push 时通过 `-o repo.private=false` 和 `-o repo.template=true/false` 两个未公开的 push 选项，未经正常设置流程便直接修改仓库的私有/公开状态及模板标记。该操作绕过了所有正常权限变更应触发的审计日志记录、webhook 事件通知、组织级别告警、团队权限重新计算及邮件提醒，且由于使用 `UpdateRepositoryColsNoAutoTime` 更新数据库，导致 `updated_at` 时间戳不发生变化，使变更难以被检测。攻击者可利用此漏洞在短时间内将私有仓库临时公开以克隆或导出敏感源代码，或在供应链攻击中篡改模板仓库内容后重新标记为模板，影响所有下游项目。CVSS 评分 9.8，危害等级严重。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即升级 Gitea 至 1.27.0 或更高版本，该版本已修复 routers/private/hook_post_receive.go 中未限制 repo.private 与 repo.template 推送选项的问题。如暂时无法升级，可通过在反向代理或防火墙层阻断包含 repo.private 和 repo.template 参数的 git push 请求作为临时缓解措施，并审查仓库管理员权限，限制不必要的 owner/admin 协作者访问。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Gitea 通过 Git 推送选项操纵仓库可见性漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

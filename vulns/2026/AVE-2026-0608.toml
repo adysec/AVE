@@ -1,12 +1,12 @@
 [basic]
 description = "Coder AI Bridge 提供程序端点未对请求体大小进行限制，存在拒绝服务漏洞。具有 AI Bridge 访问权限的认证用户可通过向 `/api/v2/aibridge/anthropic/v1/messages` 等端点发送超大的请求体或分块数据，导致 `io.ReadAll` 无限制读取并耗尽堆内存，进而使操作系统终止进程。由于 AI Bridge 与 `coderd` 运行在同一进程中，此漏洞会导致整个控制平面崩溃，包括 API、工作区协调器和 DERP 中继服务。该漏洞影响 Coder v2.33.0 至 v2.33.7 及 v2.34.0 至 v2.34.1 版本，CVSS 评分 6.5，危害等级中危。厂商已在 v2.33.8 和 v2.34.2 版本中通过引入 `http.MaxBytesReader` 限制请求体大小进行修复。"
-published = "2026-07-07T21:17:27.290"
+published = "2026-07-07T21:17:27Z"
 remediation = "立即升级 Coder 至 v2.33.8（2.33 系列）或 v2.34.2（2.34 系列），这两个版本已在 AI Bridge provider 端点中通过 `http.MaxBytesReader` 限制请求体大小。如无法立即升级，可临时禁用 AI Bridge 功能（`CODER_EXPERIMENTAL_AI_BRIDGE=false`）或通过反向代理层（如 Nginx）对 `/api/v2/aibridge/` 路径设置请求体大小上限（如 `client_max_body_size 1m`）作为缓解措施。"
 score = 6.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Coder AI Bridge provider 接口未限制请求体大小导致拒绝服务漏洞"
-updated = "2026-07-08T19:47:17.140"
+updated = "2026-07-08T19:47:17Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 amdgpu 驱动中的 KFD（Kernel Fusion Driver）子系统存在死锁漏洞。当进程退出时，`kfd_process_notifier_release` 刷新 `svm_range_restore_work` 工作队列，该队列尝试刷新 `deferred_list` 工作；若 `deferred_list` 中的 `mmput` 释放最后一个用户引用，将触发 `exit_mmap` → `notifier_release` 路径，形成循环等待导致死锁。本地攻击者可利用此漏洞触发内核崩溃，造成拒绝服务。该漏洞影响 Linux 内核 amdgpu 驱动，CVSS 评分 5.5，危害等级中等。"
-published = "2025-02-26T07:00:50.590"
+published = "2025-02-26T07:00:50Z"
 remediation = "升级至包含该补丁的 Linux 内核版本（如 5.18+ 或对应长期支持版本 5.15.39+、5.10.119+），该修复已合入主线内核 commit `drm/amdkfd: svm range restore work deadlock when process exit`。如无法立即升级内核，可暂时禁用 amdgpu 驱动中的 SVM（共享虚拟内存）功能模块，或限制受影响 GPU 设备的使用作为临时缓解。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux AMD GPU amdkfd 驱动进程退出时 SVM 范围恢复工作死锁漏洞"
-updated = "2026-06-17T05:17:10.747"
+updated = "2026-06-17T05:17:10Z"
 
 [exploit]
 exp_urls = []

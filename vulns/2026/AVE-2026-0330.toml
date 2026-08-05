@@ -1,12 +1,12 @@
 [basic]
 description = "libp2p的gossipsub模块在处理IHAVE和IWANT控制消息时存在未限制消息ID数量的缺陷。攻击者可向受影响的节点发送包含大量（约18万个）随机消息ID的4MB帧，导致节点同步迭代所有消息ID，阻塞Node.js事件循环约200毫秒。IHAVE变体需要约10个Sybil节点才能完全阻塞事件循环（阻塞时间超过心跳周期），而IWANT变体无速率限制，单个节点即可持续占用80%以上事件循环。该漏洞影响所有使用默认配置的@libp2p/gossipsub节点，包括以太坊共识客户端（如Lodestar）、启用pubsub的IPFS节点及任何调用createLibp2p并配置gossipsub服务的应用。攻击条件为节点接受入站连接且未自定义decodeRpcLimits参数。利用方式为连接目标节点并持续发送特制的超大IHAVE或IWANT控制消息。已在16.0.0版本中通过设置合理的解码限制修复。"
-published = "2026-07-08T21:16:49.137"
+published = "2026-07-08T21:16:49Z"
 remediation = "升级 @libp2p/gossipsub 至 16.0.0 或更高版本，该版本将 maxIhaveMessageIDs 和 maxIwantMessageIDs 默认值从 Infinity 改为 5000，限制单帧迭代的消息 ID 数量。若暂时无法升级，可在创建 gossipsub 实例时显式配置 decodeRpcLimits 参数，将 maxIhaveMessageIDs 和 maxIwantMessageIDs 设置为有限值（如 5000）。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "libp2p @libp2p/gossipsub CPU拒绝服务漏洞"
-updated = "2026-07-10T19:10:59.333"
+updated = "2026-07-10T19:10:59Z"
 
 [exploit]
 exp_urls = []

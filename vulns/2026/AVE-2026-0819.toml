@@ -1,12 +1,12 @@
 [basic]
 description = "Open WebUI 在 0.9.2 至 0.10.0 版本中存在正则表达式拒绝服务漏洞（ReDoS）。后端 `backend/open_webui/utils/middleware.py` 中用于解析 `<$skillId|label>` 技能提及标签的两个正则表达式 `SKILL_MENTION_RE` 和 `strip_re` 存在重叠量词问题，导致在输入包含 `<$` 后跟大量无闭合 `>` 字符时触发 O(n²) 级回溯。这两个正则表达式在每次聊天完成时无条件同步执行于 asyncio 事件循环中，默认单 uvicorn 工作进程部署下，任意认证用户只需发送一条包含恶意模式的消息即可使单个 CPU 核心满载，导致整个实例对所有用户停止响应。该漏洞影响 Open WebUI 0.9.2 至 0.9.6 版本，已在 v0.10.0 版本中修复。"
-published = "2026-07-09T17:17:03.040"
+published = "2026-07-09T17:17:03Z"
 remediation = '立即升级 Open WebUI 至 v0.10.0 或更高版本（`docker pull ghcr.io/open-webui/open-webui:v0.10.0` 或 `pip install open-webui>=0.10.0`）。如无法升级，手动将 `backend/open_webui/utils/middleware.py` 中 `SKILL_MENTION_RE` 和 `strip_re` 的正则表达式替换为修复版本（commit 61a2672），将 `[^|>]+\|?[^>]*` 改为 `[^|>]+(?:\|[^>]*)?` 和 `[^|>]+\|?([^>]*)` 改为 `[^|>]+(?:\|([^>]*))?>` 以消除二次回溯。'
 score = 6.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Open WebUI 技能提及正则表达式拒绝服务漏洞"
-updated = "2026-07-10T18:15:48.287"
+updated = "2026-07-10T18:15:48Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Skipper 的 Kubernetes 准入 Webhook 处理程序在读取请求体时使用 `io.ReadAll(r.Body)` 且未设置任何大小限制。集群内具有网络访问权限的攻击者可通过向 Webhook 端点发送数 GB 大小的恶意请求体，导致 Skipper 进程内存耗尽并被 OOM 杀死，从而中断 Ingress 和 RouteGroup 资源的准入控制。与 OPA 过滤器（已设置 1MB 默认请求体大小限制）不同，准入处理程序缺乏类似保护机制。Kubernetes kubelet 会自动重启被 OOM 杀死的进程，但重启期间准入控制功能不可用。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "升级 Skipper 至包含修复的版本，在 admission webhook 处理函数中调用 `http.MaxBytesReader(r.Body, 1<<20)` 限制请求体最大为 1MB，参考 OPA filter 的 `DefaultMaxRequestBodySize` 实现。如无法升级，可在网络层面限制对 webhook 端口（默认 :9443）的访问来源，仅允许受信任的 kube-apiserver IP 访问。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Zalando Skipper 准入 Webhook 无限制请求体读取致内存耗尽拒绝服务漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "meta-ads-mcp 的 AuthInjectionMiddleware 存在认证绕过漏洞，其认证逻辑仅当 auth_token 和 pipeboard_token 同时缺失时才拒绝请求。由于 extract_token_from_headers() 未识别 X-Pipeboard-Token 头，攻击者发送该头及任意值即可使 auth_token 为 None 而 pipeboard_token 非空，绕过认证检查。绕过后 token getter 回退至服务器环境变量 META_ACCESS_TOKEN，导致后续所有 MCP 工具调用均以运营商的 Meta 凭证执行。攻击者可在网络可达的情况下读取和写入运营商的 Meta Ads 广告账户、活动、受众等敏感数据，危害严重。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即将 meta-ads-mcp 升级至 1.0.115 及以上版本，该版本已将认证中间件中的守卫条件从 `if not auth_token and not pipeboard_token` 修复为 `if not auth_token`，确保 `X-Pipeboard-Token` 不能单独绕过认证。如无法立即升级，可在反向代理层（如 Nginx/Envoy）配置规则，拒绝所有携带 `X-Pipeboard-Token` 头部的 HTTP 请求，或改用默认 stdio 传输模式部署。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Meta meta-ads-mcp X-Pipeboard-Token 认证绕过漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

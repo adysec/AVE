@@ -1,12 +1,12 @@
 [basic]
 description = "Easy!Appointments 是一款自托管的预约调度系统，其 1.6.0 之前版本的 CalDAV 连接测试功能存在服务端请求伪造（SSRF）漏洞。`Caldav::connect_to_server` 方法在 `application/controllers/Caldav.php:60` 处直接将用户输入的 `caldav_url` 参数传递给 Guzzle HTTP 客户端发起 `REPORT` 请求，未对 URL 的 scheme 和主机地址进行任何校验。已登录的后台用户（管理员、服务提供者或秘书）可通过构造指向回环地址、RFC1918 私有地址或链路本地地址的恶意 URL，探测部署环境内部网络中的服务。Guzzle 异常路径会将上游 HTTP 状态码及约 120 字节的响应体内容反射到 JSON 响应的 `message` 字段中，形成半盲 SSRF，攻击者可据此对内网服务进行指纹识别和端口扫描。该漏洞影响所有 1.6.0 之前版本，CVSS 评分 2.7，危害等级低，已在 1.6.0 版本中修复。"
-published = "2026-07-14T16:17:00.670"
+published = "2026-07-14T16:17:00Z"
 remediation = "立即升级至 Easy!Appointments 1.6.0 或更高版本（commit 6eb9336a），该版本在 CalDAV 连接测试中增加了对 URL scheme 和私有地址的校验。如无法立即升级，可在反向代理或 WAF 层限制 `/index.php/caldav/connect_to_server` 接口的访问权限，仅允许受信管理员 IP 调用，并确保后端服务（MySQL、phpMyAdmin 等）不暴露在同一 Docker 网络中。"
 score = 2.7
 severity = "LOW"
 sources = ["ghsa"]
 title = "Easy!Appointments CalDAV连接测试服务端请求伪造漏洞"
-updated = "2026-07-15T14:18:23.000"
+updated = "2026-07-15T14:18:23Z"
 
 [exploit]
 exp_urls = []

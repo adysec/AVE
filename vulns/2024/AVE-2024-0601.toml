@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 Netrom 协议栈中 nr_route_frame 函数未在访问 skb->data 前验证 skb 缓冲区长度，导致通过 IEEE 802.15.4 发送原始消息时触发未初始化内存读取（KMSAN 报告 ax25cmp 中的 uninit-value）。该漏洞影响 Linux 内核 Netrom 子系统，攻击者需本地低权限访问且无需用户交互，通过发送特制的 IEEE 802.15.4 原始帧触发缓冲区越界读取，导致内核崩溃或拒绝服务（高可用性影响），CVSS 5.5（MEDIUM，AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H），Linux Verification Center 使用 Syzkaller 发现，已通过在 nr_route_frame 中添加 skb->len 校验修复。"
-published = "2025-01-15T13:15:11.853"
+published = "2025-01-15T13:15:11Z"
 remediation = "升级内核至支持netrom安全补丁的版本（如Linux 6.10及以上），或直接应用内核补丁以实现skb->len长度验证。通过编译启动参数`hardlockup_detector.unprivileged_only=1`强制启用内核硬锁进行实时监控，禁用不必要的netrom路由协议模块并配置net.ipv4.ipfrag_max_distinct=0以限制潜在的副作用攻击，定期执行`netstat -an | grep netrom`检查端口安全状态，并同时确保系统已应用最新的LTS安全补丁包以防止此类内核区域的缓冲区访问安全问题。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux Kernel netrom 缓冲区访问安全漏洞"
-updated = "2026-06-17T08:14:04.110"
+updated = "2026-06-17T08:14:04Z"
 
 [exploit]
 exp_urls = []

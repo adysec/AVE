@@ -1,12 +1,12 @@
 [basic]
 description = "tags.<value>Ruby oauth2 库（0.4.0 至 2.0.21 版本）的 OAuth2::Client#request 方法在处理 30x 重定向时，若 Location 头为协议相对地址（如 `//attacker.example/leak`），URI#merge 会按照 RFC 3986 §5.2 将其解析为网络路径引用并替换基础 URL 的 authority，同时递归重发请求时保留原始请求中由 OAuth2::AccessToken#configure_authentication! 注入的 Authorization: Bearer 令牌头，导致用户访问令牌被泄露至攻击者控制的服务器。该漏洞影响所有使用该库调用 OAuth2/OpenID Connect 资源接口的 Ruby 应用，攻击者可通过开放重定向、多租户部署中的恶意 IdP 或中间人篡改响应头等条件触发，无需用户二次交互即可在单跳重定向中窃取访问令牌，同时还可利用重定向对内网地址发起 SSRF 攻击。官方已在 2.0.22 版本修复该问题。"
-published = "2026-07-28T17:16:52.227"
+published = "2026-07-28T17:16:52Z"
 remediation = "立即将 oauth2 gem 升级到 v2.0.22 或更高版本，该版本已在 Client#request 中对协议相对型 Location 头添加 ./ 前缀处理以阻止跨域重定向。在升级前，可临时缓解：在应用层对 OAuth2::Client 的 redirect 回调进行封装，检测到 Location 以 // 开头时拒绝跟随或强制改为相对路径；同时配置 Faraday 适配器在跨域重定向时剥离 Authorization 请求头，降低凭证泄露风险。"
 score = 8.6
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Ruby oauth2 协议相对重定向导致Bearer令牌泄露漏洞"
-updated = "2026-07-29T14:16:31.080"
+updated = "2026-07-29T14:16:31Z"
 
 [exploit]
 exp_urls = []

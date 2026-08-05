@@ -1,12 +1,12 @@
 [basic]
 description = "pam_xauth 是 Linux PAM（可插拔认证模块）中用于在用户切换（su/sudo）时保持 X 窗口会话认证信息的模块。该模块默认配置会将 MIT-Magic-Cookie 转发至新的 X 会话，当 root 用户使用 su 命令切换用户时，pam_xauth 会使用原始用户的凭据创建一个临时 .xauth 文件。本地低权限攻击者可通过竞态条件或目录权限不当读取该临时 .xauth 文件，窃取其中存储的 MIT-Magic-Cookie，进而冒充原用户连接 X 显示服务器，最终实现向 root 权限的提权。该漏洞影响使用 PAM pam_xauth 模块且采用默认行为的 Linux/Unix 系统。"
-published = "2003-02-19T05:00:00.000"
+published = "2003-02-19T05:00:00Z"
 remediation = "立即升级 pam 软件包至 RHSA-2003:028  advisory 修复版本（Red Hat Enterprise Linux AS/WS 平台），该版本为 pam_xauth 模块添加了 ACL 访问控制功能并默认禁止 root 转发 cookie。具体操作：运行 `rpm -Uvh pam-*.rpm` 安装更新包，随后编辑 `/etc/pam.d/su` 或 `/etc/pam.d/sudo` 文件，在 pam_xauth 调用行添加 `noxauth` 参数或注释掉该行以禁用 cookie 转发。作为临时缓解措施，执行 `chmod 600 ~/.xauth` 限制 .xauth 文件权限，确保仅文件所有者可读写，防止本地用户窃取 MIT-Magic-Cookie 提升为 root。"
 score = 7.2
 severity = "HIGH"
 sources = ["redhat"]
 title = "Linux PAM pam_xauth 模块本地权限提升漏洞"
-updated = "2026-06-16T21:58:51.600"
+updated = "2026-06-16T21:58:51Z"
 
 [exploit]
 exp_urls = []

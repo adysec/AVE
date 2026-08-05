@@ -1,12 +1,12 @@
 [basic]
 description = "Pillow Python 图像处理库在 12.3.0 版本前存在堆越界写入漏洞（CVE-2026-59199，CVSS 7.5 HIGH）。漏洞源于 `Image.paste()`、`Image.crop()` 和 `Image.alpha_composite()` 等公开 API 在处理接近有符号 32 位整数边界（INT_MIN/INT_MAX）的坐标参数时，C 扩展层 `ImagingPaste()` 和 `ImagingCrop()` 使用有符号 `int` 运算导致整数溢出，绕过边界检查。在 RGBA 等 4 字节像素模式下，攻击者可构造特制坐标参数（如 `box=((1<<31)-W, 0, INT_MIN, 1)`），触发可控的向后堆下溢写入：目标偏移 `-4*W` 字节，写入长度 `4*W` 字节，内容来自攻击者控制的源图像像素数据。理论上可向后写入约 2 GiB 范围。攻击条件为：应用允许不可信用户控制传递给 Pillow 的图像操作坐标（裁剪框、粘贴框、叠加位置），无需私有 API、ctypes、自定义对象或畸形图片文件。利用方式通过公开 API 直接调用即可触发，PoC 演示了 `paste`、`crop`、`alpha_composite` 三条路径均可在 ASAN 下触发 heap-buffer-overflow，非 ASAN 构建下导致堆损坏并 abort。影响 Pillow < 12.3.0 所有版本，修复版本为 12.3.0，建议升级并限制不可信坐标输入。CVE 编号：CVE-2026-59199，CWE-190/CWE-787，CVSS 3.1: AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H。"
-published = "2026-07-14T16:17:01.937"
+published = "2026-07-14T16:17:01Z"
 remediation = "建议立即升级 Pillow 到 12.3.0 或更高版本（pip install --upgrade pillow>=12.3.0）。若暂时无法升级，请在代码层面校验并拦截传入 Image.paste()、Image.crop()、Image.alpha_composite() 的坐标参数，拒绝接近 INT_MIN/INT_MAX（±2147483648）的极值坐标，防止有符号 32 位整数溢出触发堆越界写入。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Python Pillow 图像坐标堆溢写漏洞"
-updated = "2026-07-15T16:16:49.487"
+updated = "2026-07-15T16:16:49Z"
 
 [exploit]
 exp_urls = []

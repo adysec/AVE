@@ -1,12 +1,12 @@
 [basic]
 description = "FileBrowser Quantum 的 `subtitlesHandler` 接口（`GET /api/media/subtitles`）存在两个独立的路径遍历向量。主要向量为 `path` 参数：未调用 `SanitizeUserPath()` 直接传入 `idx.GetRealPath()`，攻击者可通过 `path=../../etc/passwd` 逃逸存储根目录，无需锚点文件即可将 `parentDir` 设为宿主任意目录。次要向量为 `name` 参数：直接与 `parentDir` 经 `filepath.Join()` 拼接且未去除目录分量，配合有效锚点文件可实现相对路径遍历。任意已认证用户（无需特殊权限）均可利用任一向量读取服务器进程可读的任意文本文件（UTF-8 编码、<50MB），包括 `/etc/passwd`、SSH 私钥、数据库凭据、JWT 签名密钥等敏感信息。受影响版本为 1.4.3-beta 之前，CVSS 3.1 评分 7.7（HIGH），已在 1.4.3-beta 版本修复。"
-published = "2026-07-20T15:16:43.933"
+published = "2026-07-20T15:16:43Z"
 remediation = "建议立即升级 FileBrowser Quantum 到 1.4.3-beta 或更高版本。若无法立即升级，可在反向代理层面拦截 `/api/media/subtitles` 端点中包含 `..` 路径遍历字符的 `path` 和 `name` 参数请求，或临时禁用字幕功能端点作为缓解措施。部署时建议以最小权限运行容器，避免以 root 身份启动以降低凭证泄露风险。"
 score = 7.7
 severity = "HIGH"
 sources = ["ghsa"]
 title = "FileBrowser Quantum 路径遍历漏洞"
-updated = "2026-07-23T17:58:34.990"
+updated = "2026-07-23T17:58:34Z"
 
 [exploit]
 exp_urls = []

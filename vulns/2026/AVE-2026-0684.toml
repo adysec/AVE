@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea Webhook 授权头通过 API 以明文形式返回的信息泄露漏洞。漏洞原理在于 `services/webhook/general.go` 中的 `ToHook()` 函数在序列化 API 响应前，会解密数据库中加密存储的 `HeaderAuthorizationEncrypted` 字段，将本应仅写入的加密凭证（Bearer Token、Basic Auth 凭据、API Key 等）以明文形式返回给 API 调用者。影响范围覆盖所有调用 `ToHook()` 的 API 端点，包括仓库级、组织级、站点级和用户级的 Webhook 列表与详情接口，影响范围覆盖所有启用 Webhook 加密存储功能的 Gitea 实例。攻击条件要求攻击者拥有仓库管理员或更高权限，能够调用 Webhook 列表或详情 API。利用方式为：管理员 A 创建包含敏感授权头的 Webhook，管理员 B（同仓库的另一管理员）通过调用 `GET /api/v1/repos/{owner}/{repo}/hooks` 接口即可在响应中获取管理员 A 设置的完整明文授权头，从而窃取凭证进而攻击外部关联服务。该漏洞破坏了静态加密保护机制，CVSS 评分为低危（Low），但会导致跨管理员凭证泄露和外部服务凭证收割风险。Gitea 官方建议将授权头设为仅写入模式，API 响应中返回掩码或布尔标识而非明文。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "建议立即升级 Gitea 至 1.22.5 或 1.23.1 及以上版本（含修复提交 19f0169）。升级前可临时通过反向代理层拦截 `/api/v1/*/hooks*` 接口响应中的 `AuthorizationHeader` 字段作为临时缓解措施。升级后需重新生成所有 Webhook 的授权凭据，因旧凭据可能已泄露。"
 score = 3.5
 severity = "LOW"
 sources = ["ghsa"]
 title = "Gitea Gitea Webhook 授权头明文泄露漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

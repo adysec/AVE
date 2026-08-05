@@ -1,12 +1,12 @@
 [basic]
 description = "CloudTAK 的 /api/esri* 路由家族存在服务端请求伪造（SSRF）漏洞，攻击者可通过 POST /api/esri 的 body url 参数或 GET /api/esri/portal 等路由的查询参数传入恶意 URL，由于后端 EsriBase 库在调用 fetch 前未对目标 IP/域名进行私有地址、回环地址或链路本地地址的校验，导致任意已认证用户（无需管理员权限）可诱使服务器向内部地址发起 GET/POST 请求。该漏洞可被用于读取云实例元数据（如 169.254.169.254 上的 IAM 临时凭证）、枚举 VPC 内部服务及回显响应体，造成敏感信息泄露。影响 CloudTAK 13.7.0 及之前所有版本。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即升级至 CloudTAK 13.7.0 以上版本，官方已在 `api/lib/esri.ts` 中集成 `isSafeUrl` 防护，对所有 ESRI 路由的 URL 参数进行 IP/DNS 分类检查，阻止访问私有/回环/链路本地地址。如无法立即升级，可在反向代理层（如 Nginx/HAProxy）添加规则，拦截 `/api/esri` 路径中 `url`、`portal`、`server`、`layer` 参数包含 `169.254.`、`127.`、`10.`、`172.16-31.`、`192.168.` 等内网地址段的请求，并禁用 AWS IMDSv1 以阻止凭据窃取。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "CloudTAK ESRI API 服务端请求伪造漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

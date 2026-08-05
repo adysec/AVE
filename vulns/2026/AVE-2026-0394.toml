@@ -1,12 +1,12 @@
 [basic]
 description = "MCP Python SDK 实验性任务处理器存在授权缺失漏洞（CWE-862），受影响版本 1.23.0 至 1.27.1。漏洞原理：实验性任务功能启用后，默认处理器（tasks/list、tasks/get、tasks/result、tasks/cancel）仅基于任务标识符操作，未记录创建任务的会话，导致任务隔离失效。影响范围：调用 server.experimental.enable_tasks() 且服务多客户端的 MCP 服务器，CVSS 7.6（HIGH）。攻击条件：攻击者需作为已连接客户端，服务器需启用实验性任务功能且服务多客户端。利用方式：攻击者通过 tasks/list 枚举所有任务，通过 tasks/get 和 tasks/result 读取任意任务状态与结果，消费本应发送给任务创建者的引导消息（如 elicitation 请求），并通过 tasks/cancel 取消他人任务。修复：升级至 1.27.2 或更高版本，或禁用实验性任务功能，或自行实现会话归属校验的任务处理器。修复版本中任务 ID 嵌入不透明会话标记，默认处理器限制会话仅访问自身任务。"
-published = "2026-07-15T20:17:38.577"
+published = "2026-07-15T20:17:38Z"
 remediation = "立即升级 MCP Python SDK 至 1.27.2 或更高版本（pip install -U mcp），修复版本会在任务 ID 中嵌入会话标记并限制会话仅访问自身任务。若无法立即升级，请移除代码中 server.experimental.enable_tasks() 调用以禁用实验性任务功能，或自行实现带会话归属校验的自定义任务处理器作为临时缓解措施。建议同时检查依赖该 SDK 的所有 MCP 服务端部署并同步升级。"
 score = 7.6
 severity = "HIGH"
 sources = ["ghsa"]
 title = "MCP Python SDK 实验性任务功能未授权访问与权限绕过漏洞"
-updated = "2026-07-17T18:07:07.873"
+updated = "2026-07-17T18:07:07Z"
 
 [exploit]
 exp_urls = []

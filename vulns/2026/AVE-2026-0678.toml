@@ -1,12 +1,12 @@
 [basic]
 description = 'Gitea 仓库迁移功能中存在服务器端请求伪造（SSRF）漏洞，漏洞位于 `services/migrations/migrate.go` 的 IP 允许/阻止列表校验逻辑中。当迁移目标主机名通过 DNS 解析返回多个 IP 地址（如一个公网地址和一个内网回环地址）时，验证逻辑错误地采用"任一允许即通过"的判定方式，导致包含内网地址的多重应答主机名可以绕过 SSRF 过滤。后续 `git clone --mirror` 操作会在验证阶段之外重新解析 DNS，若解析结果变为内网地址则可连接到被阻止的内部服务。已认证的低权限用户可通过构造多重应答 DNS 名称，诱使 Gitea 服务端连接到本应被阻止的内部 Git 仓库或 Git 兼容的 HTTP 端点，并将内部仓库内容导入到攻击者控制的仓库中实现数据窃取。'
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即将 Gitea 升级至 v1.27.0 或更高版本，该版本修复了 DNS 多解析冲突绕过 SSRF 过滤的逻辑缺陷。如无法立即升级，可在配置中将 `MIGRATIONS.ALLOW_LOCALNETWORKS` 保持为 `false`，并在防火墙层面限制 Gitea 服务器仅访问可信外部 Git 仓库地址，同时避免使用不受控的自定义 DNS 解析。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Gitea 仓库迁移多答案DNS绕过服务端请求伪造漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

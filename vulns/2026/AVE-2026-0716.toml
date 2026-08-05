@@ -10,13 +10,13 @@ I need to write a proper Chinese description ≥50 characters covering:
 Let me craft the description based on the pre-search data.<value>SIPSorcery 库在处理 RTP/ICE 套接字上的 UDP 数据包时存在输入验证缺陷与错误异常处理。RTPChannel.OnRTPPacketReceived 方法在仅检查数据包非空后直接读取 packet[1]，导致 1 字节数据包触发 IndexOutOfRangeException；STUN 属性解析器在处理 XOR-MAPPED-ADDRESS、XOR-PEER-ADDRESS 或 XOR-RELAYED-ADDRESS 属性时，未校验属性值长度直接读取 attributeValue[1]、AsSpan(2) 和 AsSpan(4)，导致长度为 0-7 字节的属性触发空引用或越界异常。更严重的是，UDP 接收循环在捕获任意异常时直接调用 Close() 关闭通道，而非丢弃异常包并继续接收，导致单个畸形 UDP 包即可远程终止活跃的 RTP 或 WebRTC 媒体会话，造成拒绝服务。
 
 该漏洞影响 NuGet 包 SIPSorcery 10.0.8 及以下版本，已在 10.0.9 中修复。攻击者无需认证，可在 ICE 连通性检查阶段（DTLS 握手前、STUN MESSAGE-INTEGRITY 验证前）向目标 RTP/ICE 端口发送单个畸形 UDP 数据包，触发未捕获异常导致通道关闭，中断正在进行的媒体会话。"""
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即将 SIPSorcery NuGet 包升级至 10.0.9 或更高版本，该版本已修复 RTP/ICE socket 接收循环中异常导致通道关闭的问题。若无法立即升级，可在网络层限制 RTP/ICE 端口的访问范围，仅允许已知对等方访问，以降低被利用风险，但此措施无法完全消除漏洞影响。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "SIPSorcery SIPSorcery 畸形 UDP 数据包导致媒体会话远程终止拒绝服务漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

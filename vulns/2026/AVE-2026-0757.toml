@@ -1,12 +1,12 @@
 [basic]
 description = "Easy!Appointments 是一款自托管的预约调度系统，其 `appointments/store` 和 `appointments/update` 接口存在授权绕过漏洞。系统在 `appointments/search` 中正确实现了服务商隔离过滤，但 `store` 和 `update` 端点仅检查通用预约权限，未验证提交的 `id_users_provider` 字段是否属于当前会话。已认证的服务商可通过构造包含他人服务商 ID 的 POST 请求，向其他服务商的日程中注入预约或将已有预约重新分配至他人名下。此外，`store` 端点存在写入后崩溃的 bug：未授权数据先写入数据库，随后控制器因类型错误返回 500，导致攻击者收到错误响应但数据已持久化。该漏洞影响 1.6.0 之前的所有版本，CVSS 评分 3.3，危害等级低。"
-published = "2026-07-14T16:17:00.540"
+published = "2026-07-14T16:17:00Z"
 remediation = "立即升级至 Easy!Appointments 1.6.0 或更高版本，该版本在 `appointments/store` 和 `appointments/update` 端点中强制校验 `id_users_provider` 与当前会话提供者 ID 一致。如无法立即升级，可在应用层对非管理员角色拦截 `id_users_provider` 参数提交，或通过 Web 应用防火墙（WAF）规则阻断包含外部 `id_users_provider` 的 POST 请求。"
 score = 3.3
 severity = "LOW"
 sources = ["ghsa"]
 title = "Easy!Appointments 跨提供商预约注入漏洞"
-updated = "2026-07-29T17:16:52.630"
+updated = "2026-07-29T17:16:52Z"
 
 [exploit]
 exp_urls = []

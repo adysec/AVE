@@ -1,12 +1,12 @@
 [basic]
 description = "Poweradmin 是一款基于 Web 的 PowerDNS 管理工具。其 OIDC、SAML 及注销认证流程在构建回调 URL 时，直接使用攻击者可控的 HTTP_HOST 请求头作为主机名来源，且未进行任何验证或过滤。攻击者无需认证即可通过伪造 Host 头或利用反向代理配置不当（如 nginx 默认的 proxy_set_header Host $http_host），将 redirect_uri 劫持为攻击者控制的域名，使身份提供商在用户授权后将授权码发送至攻击者服务器，从而实现无需凭证的完整账户接管。该漏洞影响 Poweradmin 4.3.2 及之前版本（4.2.x 系列），同时波及 SAML ACS/SLO URL 和注销重定向构造三个独立代码路径。攻击成功后，攻击者可进一步接管 PowerDNS 管理权限，导致域名劫持、邮件拦截、SSL 证书伪造等严重连锁危害。厂商已在 v4.2.4 和 v4.3.3 版本中修复此问题，建议用户立即升级并配置 interface.base_url 以激活安全分支。"
-published = "2026-06-23T23:16:49.863"
+published = "2026-06-23T23:16:49Z"
 remediation = "立即升级到 Poweradmin v4.2.4 或 v4.3.3，该版本已修复 HTTP_HOST 头在 OIDC/SAML/登出重定向中的未验证使用问题。若无法立即升级，可在 config/settings.php 中设置 interface.base_url 为可信域名（如 https://admin.example.com），使 SamlConfigurationService 走安全分支代码路径，避免使用 HTTP_HOST 构造回调 URL。临时缓解措施：在反向代理层严格校验 Host 头，拒绝非信任域名的请求，nginx 配置中使用 proxy_set_header Host $server_name 替代 $http_host。"
 score = 9.6
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "Poweradmin Poweradmin OIDC/SAML回调URL主机头注入漏洞"
-updated = "2026-06-25T20:18:11.603"
+updated = "2026-06-25T20:18:11Z"
 
 [exploit]
 exp_urls = []

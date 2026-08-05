@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 的 LFS 服务端存在权限提升漏洞，攻击者只需持有某个仓库的写部署密钥（deploy key）私钥，即可通过 SSH git-lfs-authenticate 流程获取合法 JWT，该 JWT 中的 UserID 被错误地设置为仓库所有者的身份。Gitea 在处理 LFS 批量上传请求时，使用该 UserID 进行跨仓库访问控制决策，导致攻击者能够访问受害者拥有的所有私有仓库中的 LFS 对象，甚至当受害者为站点管理员时，可获取整个 Gitea 实例的全部 LFS 数据。攻击无需管理员凭证或服务器密钥，仅需一个写部署密钥和已知的 LFS 对象 OID。该漏洞影响 Gitea 1.25.5 及之前版本，需 LFS 服务启用。修复方案包括：在 LFS 授权检查中禁止使用 JWT 中的 UserID 进行跨仓库决策，要求对未链接对象强制执行持有证明，以及为部署密钥在 JWT 中使用独立的身份标识而非仓库所有者身份。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即将 Gitea 升级至 v1.27.0 或更高版本，该版本已修复 deploy key 的 JWT 中 UserID 错误设置为 repo.OwnerID 的问题，消除了跨仓库 LFS 对象越权访问风险。若暂无法升级，可临时禁用 LFS 服务（设置 LFS_START_SERVER=false）或撤销所有 deploy key 的写权限，以阻断攻击路径。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Gitea LFS 部署密钥权限提升漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

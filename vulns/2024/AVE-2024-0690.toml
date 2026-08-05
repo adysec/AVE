@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 KVM 虚拟化子系统的 kvm_get_vcpu() 函数存在释放后使用（Use-After-Free）漏洞。该函数在通过索引获取 vCPU 时，未先验证目标 vCPU 是否已完全上线，而是先对索引进行 nospec 钳位处理。当传入非法索引时，钳位操作会返回 0，导致函数返回 vCPU0 而非 NULL。由于 KVM 使用 xarray 管理 vCPU 数组，vCPU 在创建完成前即被插入数组，若后续创建失败并释放 vCPU0，其他代码路径仍可能通过该函数访问已释放的 vCPU0，触发释放后使用。本地攻击者需具备低权限访问，可利用此漏洞导致系统崩溃或权限提升。CVSS 评分 7.8，危害等级高。"
-published = "2025-03-06T17:15:21.773"
+published = "2025-03-06T17:15:21Z"
 remediation = "建议立即将 Linux 内核升级至包含 commit 3c1e4a1c 的版本：RHEL 9 升级至 RHSA-2025:20518 提供的 kernel 包；Ubuntu 18.04 LTS 安装 USN-7540-1 更新；Debian 11 应用 DLA-4178-1 内核更新；SUSE Linux Enterprise 15 SP6 安装 SUSE-SU-2025:1177-1 补丁。如无法立即升级，可通过限制本地用户对 KVM 虚拟化设备的访问权限作为临时缓解措施。"
 score = 7.8
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux Kernel KVM 释放后使用漏洞"
-updated = "2026-06-17T08:14:35.720"
+updated = "2026-06-17T08:14:35Z"
 
 [exploit]
 exp_urls = []

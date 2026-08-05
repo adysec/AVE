@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 RISC-V 架构的 die() 函数中存在原子上下文休眠漏洞。die() 函数可在异常处理程序中被调用，此时上下文处于原子态（in_atomic），不允许休眠。然而 die() 使用了 spinlock_t 自旋锁，在启用了 PREEMPT_RT 抢占式实时内核配置下，spinlock_t 会被实现为可休眠锁，导致在原子上下文中调用时触发内核调度器 BUG 警告，表现为系统崩溃或拒绝服务。本地低权限攻击者可通过触发非法指令异常（illegal instruction）等途径，诱使内核进入 die() 路径，从而引发该问题。该漏洞影响 RISC-V 架构的 Linux 内核，CVSS 评分 5.5，危害等级中等。修复方式为改用 raw_spinlock_t，该锁在 PREEMPT_RT 下也不会休眠。"
-published = "2025-01-21T13:15:07.903"
+published = "2025-01-21T13:15:07Z"
 remediation = "立即将 Linux 内核升级至以下修复版本：5.10.234+、5.15.177+、6.1.125+、6.6.72+、6.12.10+ 或 6.13+。对于使用 PREEMPT_RT 的 RISC-V 系统，可通过 `git cherry-pick 8c38baa03ac8` 等补丁提交将 `die()` 中的 `spinlock_t` 替换为 `raw_spinlock_t`。如无法立即升级，可临时禁用 PREEMPT_RT 内核配置作为缓解措施。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux kernel RISC-V 架构 die() 函数自旋锁上下文休眠拒绝服务漏洞"
-updated = "2026-06-17T08:14:16.580"
+updated = "2026-06-17T08:14:16Z"
 
 [exploit]
 exp_urls = []

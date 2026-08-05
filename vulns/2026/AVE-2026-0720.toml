@@ -1,12 +1,12 @@
 [basic]
 description = "openhole-server 项目存在 URL 路径解码漏洞，其在转发 tunnel 客户端请求时使用了 URL 解码后的路径 `r.URL.Path`，而非保留原始的未解码请求路径。这导致百分号编码的路径遍历字符（如 `%2e` 对应 `..`，`%2f` 对应 `/`）在到达目标本地服务时已经变成了实际的路径遍历序列 `../`，绕过了 Go 标准库 ServeMux 对 `../` 路径的检查。通过发送包含路径遍历编码的有效负载（例如 `/%2e%2e/secret.txt`），未经身份验证的远程攻击者可以读取本地服务外部的任意文件，包括 `/etc/passwd` 等敏感系统文件。该漏洞影响 Windows 10/11 及 Windows Server 2019/2022 等版本，使用了传统的路径遍历攻击技术，CVSS 评分高达 8.6，威胁等级极高。Microsoft 已经在 2024 年 8 月的安全更新中修复了此问题，建议所有用户立即升级至最新版本以获取补救措施。"
-published = "2026-07-28T23:17:08.763"
+published = "2026-07-28T23:17:08Z"
 remediation = "立即升级 openhole-server 和 CLI 至 v0.1.2 或更高版本（修复版本使用 r.URL.EscapedPath() 替代 r.URL.Path 防止路径遍历），升级地址：https://github.com/bablilayoub/openhole/releases/tag/v0.1.2。如无法立即升级，建议在防火墙层面限制 openhole 服务器仅允许受信任 IP 访问，并在反向代理层增加路径规范化校验规则拦截包含 %2e、%2f 等编码遍历序列的请求。升级后建议验证 tunnel 服务正常运行并测试路径遍历载荷已被拦截。"
 score = 8.6
 severity = "HIGH"
 sources = ["ghsa"]
 title = "bablilayoub openhole-server 路径遍历漏洞"
-updated = "2026-07-29T15:16:25.093"
+updated = "2026-07-29T15:16:25Z"
 
 [exploit]
 exp_urls = []

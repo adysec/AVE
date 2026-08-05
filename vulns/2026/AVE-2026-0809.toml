@@ -1,12 +1,12 @@
 [basic]
 description = "Netty HTTP/2 解压缩模块存在直接内存泄漏漏洞，当启用 HTTP/2 内容解压功能（DelegatingDecompressorFrameListener）时，远程未认证攻击者可向已关闭解压器通道的流发送 DATA 帧触发漏洞。漏洞原理在于 Http2Decompressor.decompress() 方法调用 decompressor.writeInbound(data.retain()) 时会先增加缓冲区引用计数，但当内部 EmbeddedChannel 已关闭时 writeInbound() 抛出 ClosedChannelException，导致额外的 retain() 从未被释放，每个 DATA 帧泄漏一个直接 ByteBuf。影响范围为 Netty 4.2.0.Final 至 4.2.15.Final 及 4.1.0.Final 至 4.1.135.Final 版本，攻击者只需在长连接中持续发送 END_STREAM 后的 DATA 帧即可耗尽直接内存导致 JVM 抛出 OutOfMemoryError 拒绝服务。该漏洞已在 4.1.136.Final 和 4.2.16.Final 中修复，CVSS 评分 7.5（HIGH）。"
-published = "2026-07-21T23:17:52.263"
+published = "2026-07-21T23:17:52Z"
 remediation = "建议立即升级 Netty 到 4.1.136.Final 或 4.2.16.Final 及以上版本（Maven 坐标：io.netty:netty-codec-http2）。若暂时无法升级，可在应用层禁用 HTTP/2 内容解压功能（移除 DelegatingDecompressorFrameListener），或在网络层限制长连接并发 DATA 帧数量作为临时缓解措施。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Netty Netty HTTP/2 解压内存泄漏导致拒绝服务漏洞"
-updated = "2026-07-30T14:46:35.563"
+updated = "2026-07-30T14:46:35Z"
 
 [exploit]
 exp_urls = []

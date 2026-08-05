@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核蓝牙子系统的 HCI 核心模块存在工作队列未正确禁用漏洞。当调用 `hci_unregister_dev` 注销蓝牙 HCI 设备时，`hci_dev` 结构体即将被释放，但相关工作队列未通过 `disable_work_*` 机制正确禁用，导致新的工作项可能提交到已释放的内存区域，触发释放后使用（Use-After-Free）。本地攻击者需具备低权限（CAP_NET_ADMIN 或蓝牙相关权限），通过触发蓝牙设备热插拔或驱动卸载操作即可利用，导致系统可用性受影响（拒绝服务）。该漏洞影响 Linux 主线内核版本，CVSS 评分 5.5，危害等级中等。"
-published = "2025-09-24T11:15:31.877"
+published = "2025-09-24T11:15:31Z"
 remediation = "立即应用 Linux 内核主线提交 cfdb13a54e05 或稳定分支提交 989fa5171f00 中的补丁，这两个补丁已在 hci_unregister_dev 中增加 disable_work_sync 调用以防止释放后使用。各发行版用户请安装包含该修复的内核更新包（如 Debian/Ubuntu 执行 apt update && apt upgrade linux-image，RHEL/CentOS 执行 yum update kernel），编译自建内核的用户需从 kernel.org 合入上述补丁后重新编译。如无法立即更新，可通过 rmmod bluetooth 卸载蓝牙模块或通过 blacklist btusb 禁用蓝牙驱动加载作为临时缓解措施。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux 内核蓝牙 HCI 核心模块释放后使用漏洞"
-updated = "2026-06-17T08:14:42.250"
+updated = "2026-06-17T08:14:42Z"
 
 [exploit]
 exp_urls = []

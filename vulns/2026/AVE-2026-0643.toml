@@ -1,12 +1,12 @@
 [basic]
 description = 'Gitea 的 API 中创建个人访问令牌的端点（POST /users/{username}/tokens）存在权限提升漏洞。当攻击者将受限的访问令牌以 Authorization: Basic <token>:x-oauth-basic 格式提交时，Basic 认证处理器会验证该令牌并设置 AuthedMethod="basic"，导致 IsBasicAuth 被错误置为 true，从而绕过 reqBasicOrRevProxyAuth 中间件的密码认证检查。随后令牌创建处理器未对请求的作用域进行上限校验，未检查请求的作用域是否为调用者令牌作用域的子集。攻击者只需获取到任意受限作用域的令牌（如从泄露的 CI 密钥中获得的 write:user 令牌），即可在不知晓账户密码的情况下创建具有 all 完全权限的新令牌，实现权限提升。该漏洞影响所有使用 Gitea 且暴露 API 的部署实例。'
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即升级 Gitea 至 v1.27.0 或更高版本，该版本已修复 Basic 认证中间件绕过和令牌作用域未校验的问题。如无法立即升级，可在反向代理层限制对 POST /users/{username}/tokens 端点的访问，仅允许受信任 IP 调用。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Gitea Gitea 访问令牌权限提升漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

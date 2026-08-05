@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 ILA (Identifier-Locator Addressing) IPv6 模块中存在竞争条件漏洞，源于 `ila_add_mapping()` 函数在处理并发 `ILA_CMD_ADD` 命令时，未对 `nf_register_net_hooks()` 调用进行同步保护。syzbot 发现并发执行时会导致 `nf_register_net_hooks()` 重复注册 netfilter 钩子，引发 rhashtable 哈希表的 use-after-free（释放后使用）漏洞。攻击者需具备本地低权限访问权限，通过并发发送 `ILA_CMD_ADD` 命令触发竞争条件，在 IPv6 数据包处理流程（`ipv6_rcv` -> `nf_hook_slow` -> `ila_nf_input` -> `ila_xlat_addr` -> `ila_lookup_wildcards` -> `rhashtable_lookup_fast`）中触发 KASAN 检测到的 slab-use-after-free 读取越界。该漏洞影响 Linux 内核 6.13-rc4 及相关版本，CVSS 3.1 评分 7.8 (HIGH)，攻击向量本地、低复杂度、低权限、无需用户交互，可导致高机密性/完整性/可用性影响。Linux 内核已通过引入互斥锁序列化 `nf_register_net_hooks()` 调用修复该漏洞（commit 031ae72825ce 尝试修复类似问题，后续补丁补充 mutex 保护）。"
-published = "2025-01-15T13:15:14.633"
+published = "2025-01-15T13:15:14Z"
 remediation = '建议立即升级 Linux 内核至 6.13.0-rc4 或更高版本（包含修复提交 031ae72825ce 及后续 mutex 串行化补丁），或应用各发行版回港补丁：Ubuntu 24.04 升级至 linux-image-6.8.0-52-generic 及以上（USN-7381-1），Debian 11 升级至 linux-image-6.1.123-1 及以上（DLA-4075-1），RHEL/Rocky/AlmaLinux 9 升级至 kernel-5.14.0-503.11.1.el9_5 及以上，SLES 15 SP6 Azure 内核升级至 kernel-azure-6.4.0-150600.9.9.1 及以上（SUSE-SU-2025:1177-1）。若暂无法升级内核，可临时禁用 ILA 模块：echo "blacklist ila" > /etc/modprobe.d/ila-blacklist.conf 并执行 update-initramfs -u 后重启，或在防火墙层面禁止 IPv6 ILA 流量作为临时缓解。'
 score = 7.8
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux 内核 ila 网络钩子序列化漏洞"
-updated = "2026-06-17T08:14:10.770"
+updated = "2026-06-17T08:14:10Z"
 
 [exploit]
 exp_urls = []

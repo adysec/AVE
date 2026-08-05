@@ -1,12 +1,12 @@
 [basic]
 description = "meta-ads-mcp 的 upload_ad_image MCP 工具存在服务端请求伪造（SSRF）漏洞。该工具将攻击者可控的 image_url 参数直接传递给 httpx.AsyncClient(follow_redirects=True).get(url) 进行 HTTP 请求，未对 URL 的协议、主机或 IP 地址做任何校验。当服务器以 streamable-http 传输模式部署时，未经身份认证的远程攻击者可通过任意非空 Bearer Token 绕过授权检查，构造指向 127.0.0.1、RFC 1918 内网地址或云实例元数据端点（如 http://169.254.169.254/）的恶意 URL，诱使服务端发起出站 HTTP 请求，导致内网服务探测、云凭据窃取等危害。Meta API 凭证校验发生在图片下载之后，因此 SSRF 请求在认证前即可触发。该漏洞 CVSS 3.1 评分 8.3，危害等级高。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "立即将 meta-ads-mcp 升级至 v1.0.114 及以上版本（最新为 v1.0.118），可通过 `pip install --upgrade meta-ads-mcp` 更新。如无法立即升级，在部署时避免使用 `--transport streamable-http` 模式，或将 MCP 服务绑定至 127.0.0.1 而非 0.0.0.0，并在前端网关层对 `image_url` 参数实施 URL 白名单校验，禁止访问内网地址（127.0.0.0/8、10.0.0.0/8、172.16.0.0/12、192.168.0.0/16）及云元数据端点（169.254.169.254/32）。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Meta meta-ads-mcp 服务端请求伪造漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

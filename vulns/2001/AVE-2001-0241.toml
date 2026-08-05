@@ -1,12 +1,12 @@
 [basic]
 description = """SCO OpenServer 5.0 至 5.0.6 版本中自带的 lpusers 工具存在缓冲区溢出漏洞（CWE-119）。lpusers 是用于设置 LP 打印服务作业队列优先级的管理工具，该程序以 setuid 权限运行。由于对 '-u' 命令行参数缺乏长度校验，本地攻击者可构造超长参数触发缓冲区溢出，覆盖栈上返回地址，从而在目标系统上以 root 权限执行任意代码，实现本地提权。攻击条件为本地低权限用户访问目标系统，无需认证。该漏洞 CVSS v2 评分为 4.6（中危），影响 SCO OpenServer 5.0.6 及更早版本。公开利用代码已收录于 Exploit-DB（编号 20739），攻击方式为执行 `lpusers -u $(perl -e 'print "A" x 700')` 即可触发内存错误。"""
-published = "2001-08-22T04:00:00.000"
+published = "2001-08-22T04:00:00Z"
 remediation = "立即移除 lpusers 二进制文件的 SUID 权限位，执行 chmod u-s /opt/K/SCO/Unix/5.0.6Ga/usr/lib/lpusers 以阻止本地用户通过该程序获取 root 权限。随后安装 SCO 官方安全补丁（可从 SCO Support 下载对应补丁号），将 lpusers 升级至修复缓冲区溢出后的版本。若无法立即打补丁，建议在 /etc/system 中启用栈保护机制，并通过文件系统 ACL 限制非特权用户对 lpusers 的执行权限。对于仍在运行 SCO OpenServer 5.0.x 的系统，应尽快规划升级至 OpenServer 5.0.7 或更高版本。"
 score = 4.6
 severity = "MEDIUM"
 sources = ["exploitdb"]
 title = "SCO OpenServer 5.0.6 lpusers 缓冲区溢出本地提权漏洞"
-updated = "2026-06-16T21:54:33.987"
+updated = "2026-06-16T21:54:33Z"
 
 [exploit]
 exp_urls = []

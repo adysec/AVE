@@ -1,12 +1,12 @@
 [basic]
 description = "Gitea 的 CODEOWNERS 功能使用 regexp2 库匹配文件路径与所有权规则，但用户提供的正则表达式模式未经任何过滤或超时限制直接传入 regexp2.Compile 编译。攻击者只需注册一个普通账号，在仓库默认分支中写入包含灾难性回溯模式（如 (a+)+）的 CODEOWNERS 文件，再创建一个包含长重复字符后接不匹配字符的文件名的拉取请求分支，即可触发正则引擎指数级回溯。Gitea 在处理拉取请求时会在数据库事务中逐条评估 CODEOWNERS 规则且无超时，11 条规则即可导致单次请求耗时超过 30 秒，多个并行请求可耗尽数据库连接池，使整个 Gitea 实例对所有用户不可用。该漏洞影响所有 Gitea 版本，CVSS 评分 7.5，危害等级高，已在 v1.26.4 版本中修复。"
-published = "2026-07-03T21:17:05.347"
+published = "2026-07-03T21:17:05Z"
 remediation = "立即升级 Gitea 至 v1.26.4 或更高版本，该版本已为 regexp2 编译设置匹配超时时间，防止正则表达式灾难性回溯导致拒绝服务。如无法立即升级，可在反向代理层限制单个用户创建 PR 的速率，并监控数据库连接池使用情况。同时建议在 CODEOWNERS 文件中限制规则数量，避免大量规则被恶意利用。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Gitea Gitea CODEOWNERS 正则表达式拒绝服务漏洞"
-updated = "2026-07-06T18:18:46.870"
+updated = "2026-07-06T18:18:46Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Webgrind 1.5 存在目录遍历漏洞。该漏洞源于应用程序在处理 fileviewer 操作时，直接使用用户输入的 file 参数来读取服务器本地文件系统中的任意文件，且未对路径进行有效的过滤和限制。攻击者无需任何身份认证，只需通过向目标 URL 发送 index.php?op=fileviewer&file= 请求配上相对路径 ../ 即可 traversal 到 Web 服务器用户账号可读的任意文件（如 /etc/passwd、应用程序配置文件、源代码等），从而泄露敏感信息。该漏洞利用难度极低，攻击成本几乎为零，适用于任何公网可访问的 Webgrind 部署实例，危及到服务器上的用户凭证、业务数据及系统配置。需要注意的是，Webgrind 官方声明该产品不应部署在公开访问环境中，因此在实际利用前需确认目标已暴露在互联网。CVSS 评分 7.5 属于高危等级，建议立即停止公网服务访问并升级至最新版本。"
-published = "2018-06-27T16:29:00.300"
+published = "2018-06-27T16:29:00Z"
 remediation = "建议立即升级 Webgrind 到 1.9.4 或更高版本。在 1.5 版本中，`index.php` 的 `fileviewer` 操作直接使用用户输入的 `file` 参数调用 `highlight_file()`，导致任意本地文件读取。新版本在 `config.php` 中引入 `exposeServerFile()` 方法，默认返回 `false` 拒绝所有访问，只有在 `/host` 目录下通过 `realpath` 验证后才放行，从而阻止路径穿越攻击。如无法立即升级，可手动修改 `config.php` 中的 `exposeServerFile()` 方法，添加 `return false;` 语句强制拒绝文件查看请求，或通过 Web 服务器访问控制（如 Nginx/Apache 配置文件）限制对 `index.php?op=fileviewer` 的访问，并在防火墙层面禁止非内网 IP 访问 Webgrind 管理界面。"
 score = 7.5
 severity = "HIGH"
 sources = ["nuclei"]
 title = "webgrind 目录遍历任意文件读取漏洞"
-updated = "2026-06-17T01:38:33.523"
+updated = "2026-06-17T01:38:33Z"
 
 [exploit]
 exp_urls = []

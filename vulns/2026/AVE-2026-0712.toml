@@ -1,12 +1,12 @@
 [basic]
 description = "QTINeon（QTI Neon）是一款基于 UDP 中继的多人在线游戏协议库，其重连处理器（handleReconnectRequest）在处理 RECONNECT_REQUEST 数据包时，未对 pendingReconnects 映射表进行去重或大小限制，也未设置类似连接流程中的 maxPendingConnections 上限。未经身份认证的远程攻击者在知晓有效会话 ID 后，可从大量伪造源地址发送 RECONNECT_REQUEST 数据包；每个伪造源的请求均会通过会话查找并被转发至主机端，且每源速率限制器为每个伪造 IP 分配独立令牌桶，无法提供有效防护。在每次清理周期中，主机将收到每个伪造源的一个转发包，导致中继成为针对主机的放大拒绝服务（DoS）攻击向量。此外，当伪造 IP 数量超过 maxRateLimiters 阈值后，performCleanup 调用 rateLimiters.clear() 会重置所有源（含合法源）的速率限制状态，进一步加剧服务不可用。该漏洞影响 QTINeon v1.0.0 的 Java、Python、TypeScript 三种实现版本，CVSS 评分 8.6，危害等级高。"
-published = "2026-07-28T17:16:52.507"
+published = "2026-07-28T17:16:52Z"
 remediation = "暂无官方修复版本，建议立即在三个实现（Java/Python/TypeScript）中对 handleReconnectRequest 应用三项代码修复：1) 在转发前检查 pendingReconnects 大小是否达到 maxPendingConnections，超限则拒绝；2) 仅当 sessionId:clientId 不在 pendingReconnects 中时才转发给主机，已存在则仅更新源地址；3) performCleanup 时优先驱逐被限流条目，避免 rateLimiters.clear() 重置合法客户端状态。网络层面部署 BCP38/uRPF 入站过滤，丢弃伪造源地址的 UDP 包，切断放大攻击路径。"
 score = 8.6
 severity = "HIGH"
 sources = ["ghsa"]
 title = "QTI NeonRelay 未授权中继转发放大拒绝服务漏洞"
-updated = "2026-07-28T18:17:22.200"
+updated = "2026-07-28T18:17:22Z"
 
 [exploit]
 exp_urls = []

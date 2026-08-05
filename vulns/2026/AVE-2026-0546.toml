@@ -1,12 +1,12 @@
 [basic]
 description = "Koel 音乐服务器在修复 CVE-2026-47260 时存在不完整修复，导致播客和电台功能中存在系统性的服务端请求伪造（SSRF）漏洞。该漏洞源于开发者仅对 `EpisodePlayable` 一个路径添加了重定向跳转验证（`on_redirect` 回调），而 `Poddle::fromUrl()`、`getStreamableUrl()`、`isPodcastObsolete()`、`HasAudioContentType` 及 `SafeUrl` 校验规则等多个服务端请求路径均缺乏逐跳重定向目标验证。攻击者只需拥有一个低权限认证账户，即可通过提交指向攻击者控制主机的 URL，利用 HTTP 302 重定向将请求转发至内网地址（如 `127.0.0.1` 或云元数据端点 `169.254.169.254`），实现 SSRF 攻击。此外，`isPublicHost()` 的 DNS 解析与 HTTP 客户端的连接解析分离，存在 DNS rebinding（TOCTOU）绕过风险。成功利用可导致云实例 IAM 凭据泄露（IMDSv1）、内网管理面板访问及内部网络服务探测，危害严重。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "升级 Koel 至 v9.3.6 及以上版本，该版本已集中修复所有出站 HTTP 请求的 SSRF 防御。具体操作：1) 在 `composer.json` 中将 `phanan/koel` 版本约束更新为 `^9.3.6`，执行 `composer update phanan/koel`；2) 如无法立即升级，在应用服务器防火墙（iptables/安全组）中出站方向拒绝发往 `169.254.169.254`、`100.100.100.200` 等云元数据 IP 及 `10.0.0.0/8`、`172.16.0.0/12`、`192.168.0.0/16` 内网段的流量，阻断 SSRF 回连目标。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Koel 播客与电台获取路径服务端请求伪造漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

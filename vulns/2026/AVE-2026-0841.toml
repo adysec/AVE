@@ -1,12 +1,12 @@
 [basic]
 description = "node-tar 是 Node.js 生态中用于 tar 归档文件操作的库。其 PAX 头部解析器在 pax.ts 的 parseKV 函数中，将全数字的 path 或 linkpath 字段值通过 +v 强制转换为 JavaScript 数值类型。当后续代码对 entry.path 调用 .split('/') 方法时，由于数值类型不存在该方法，抛出未捕获的 TypeError，导致 Node.js 进程崩溃。攻击者只需构造一个约 2.5KB 的恶意 tar 归档文件（包含全数字路径的 PAX 扩展头部），任何调用 node-tar 解压该文件的进程（如 npm 包安装、CI/CD 流水线、文件上传处理等）均会崩溃。该漏洞无法通过 strict: false 或 error 事件处理器捕获，属于拒绝服务漏洞，影响 node-tar 7.5.18 之前的所有版本。"
-published = "2026-07-08T16:16:33.723"
+published = "2026-07-08T16:16:33Z"
 remediation = "将 node-tar（npm 包 tar）升级至 7.5.18 或更高版本：执行 `npm install tar@^7.5.18`。如无法升级，在提取不可信 tar 文件前对 PAX 头部的纯数字 path/linkpath 字段做类型校验（如 `String(entry.path)`），或使用其他 tar 解析库（如 `node-archive`）替代。"
 score = 5.3
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "node-tar PAX数字路径类型混淆拒绝服务漏洞"
-updated = "2026-07-10T19:02:55.140"
+updated = "2026-07-10T19:02:55Z"
 
 [exploit]
 exp_urls = []

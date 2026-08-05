@@ -1,12 +1,12 @@
 [basic]
 description = "setuptools 的 FileList 组件在处理 MANIFEST.in 排除规则时，未对文件名和匹配模式进行 Unicode 规范化处理，导致在 macOS APFS/HFS+ 等保留 Unicode 编码形式的文件系统上，以 NFC 编码写入的排除规则无法匹配以 NFD 编码存储的同名字文件。攻击者可在受影响的 Python 项目中放置一个 NFD 编码的敏感文件（如密钥、配置文件），当维护者在 macOS 上构建源码分发包（sdist）时，该文件会绕过 MANIFEST.in 的排除指令被打包进 .tar.gz 并发布到 PyPI，造成敏感信息不可逆泄露。该漏洞影响 setuptools 83.0.0 之前的所有版本，CVSS 评分 6.1，攻击者需诱导维护者构建包含恶意文件的项目，利用条件为文件系统支持 Unicode 编码形式保留且文件名包含非 ASCII 字符。"
-published = "2026-07-08T17:17:27.020"
+published = "2026-07-08T17:17:27Z"
 remediation = """立即升级 setuptools 至 83.0.0 或更高版本（`pip install --upgrade setuptools`）。如无法升级，在 macOS 上构建 sdist 前将所有非 ASCII 文件名统一为 NFC 格式（`python -c "import unicodedata, os; [os.rename(f, unicodedata.normalize('NFC', f)) for f in os.listdir('.') if unicodedata.normalize('NFC', f) != f]"`），并在 CI 中增加 Unicode 规范化检查步骤。"""
 score = 6.1
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "PyPA setuptools MANIFEST.in Unicode 规范化绕过漏洞"
-updated = "2026-07-13T17:04:58.427"
+updated = "2026-07-13T17:04:58Z"
 
 [exploit]
 exp_urls = []

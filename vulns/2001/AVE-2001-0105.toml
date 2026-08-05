@@ -1,12 +1,12 @@
 [basic]
 description = "cfingerd 是一个安全的 finger 守护进程实现，在 1.4.1 至 1.4.3 版本中存在缓冲区溢出漏洞。当启用 ALLOW_LINE_PARSING 配置选项时（该选项默认开启），守护进程在解析用户家目录下的 .nofinger 文件时会逐行读取内容。由于缺乏对输入行长度的充分验证，攻击者可在 .nofinger 文件中写入超长行内容，触发栈缓冲区溢出并覆盖返回地址，从而在上下文中执行任意代码。由于 cfingerd 通常由 inetd 以 root 权限调用，且官方文档甚至鼓励这样配置，因此该漏洞可导致本地普通用户直接获得 root 权限。该漏洞影响 1.4.3 及所有更早版本，在 Red Hat Linux 6.2 及多个 Linux 发行版上均有利用代码验证。CVSS v2 评分 7.2，攻击向量为本地，无需身份认证即可利用。利用方式为在 .nofinger 文件中植入包含 shellcode 的超长行，覆盖函数返回地址指向 shellcode，再通过本地 finger 服务（端口 79）触发代码执行获取 root shell。"
-published = "2001-10-18T04:00:00.000"
+published = "2001-10-18T04:00:00Z"
 remediation = "升级到 cfingerd 1.5 或更高版本，该版本修复了缓冲区溢出漏洞；禁用 .nofinger 文件中的 ALLOW_LINE_PARSING 选项或限制其解析长度；验证所有输入的 .nofinger 文件行长度，并确保其大于缓冲区大小；如无法立即升级，建议使用 chroot  jails 或其他访问控制机制限制对 cfingerd 的本地访问权限。"
 score = 7.2
 severity = "HIGH"
 sources = ["exploitdb"]
 title = "cfingerd cfingerd 1.4.1/1.4.2/1.4.3 缓冲区溢出漏洞"
-updated = "2026-06-16T21:54:51.640"
+updated = "2026-06-16T21:54:51Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 ext2 文件系统的 DAX 模式下存在缺陷，当调用 ext2_setsize 函数且长度参数为页面对齐值时，PAGE_ALIGN 宏直接返回原值，导致 dax_zero_range 以长度 0 调用 iomap_begin，进而触发 ext2_get_blocks 中的 BUG_ON(maxblocks==0) 内核崩溃。本地低权限攻击者可通过在 DAX 挂载的 ext2 文件系统上执行 truncate -s 0 命令触发此漏洞，造成系统拒绝服务。该漏洞影响 Linux 内核 6.3-rc2 及之前版本，CVSS 评分 5.5，危害等级中危。"
-published = "2025-09-16T17:15:38.410"
+published = "2025-09-16T17:15:38Z"
 remediation = '升级到 Linux 内核 v6.3 及以上版本（或对应 LTS 发行版的内核更新，如 RHEL 9.4+、Ubuntu 23.04+），已合入上游修复 commit "ext2/dax: Fix ext2_setsize when len is page aligned"。如无法升级内核，可通过补丁方式手动 cherry-pick 该提交并重新编译内核。业务层面避免在 DAX 挂载的 ext2 文件系统上执行 `truncate -s 0` 操作作为临时规避措施。'
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux kernel ext2 文件系统 DAX 拒绝服务漏洞"
-updated = "2026-06-17T06:44:53.353"
+updated = "2026-06-17T06:44:53Z"
 
 [exploit]
 exp_urls = []

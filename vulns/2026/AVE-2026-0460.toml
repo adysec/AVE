@@ -1,12 +1,12 @@
 [basic]
 description = "SiYuan 是一款开源个人知识管理系统，其发布模式（匿名只读 HTTP 端点，默认端口 6808）下的 `/assets/*path` 路由存在路径遍历漏洞。该漏洞是 CVE-2026-41894 的不完全修复——`/export/` 路由已修复但 `/assets/` 路由存在相同的双重 URL 编码绕过问题。未经身份认证的远程攻击者可通过发送特制的双重 URL 编码请求（如 `GET /assets/%252e%252e/%252e%252e/conf/conf.json`）绕过路径清理逻辑，实现 WorkspaceDir 目录下的任意文件读取，可窃取 `conf/conf.json`（含 AccessAuthCode SHA256 哈希、API Token、同步密钥）、`temp/siyuan.db`（完整笔记内容）等敏感文件。该漏洞影响 SiYuan 3.7.0 之前版本，CVSS 评分 7.5，危害等级高。"
-published = "2026-06-24T22:16:48.043"
+published = "2026-06-24T22:16:48Z"
 remediation = "立即升级 SiYuan 至 3.7.0 或更高版本，该版本已移除 `GetAssetAbsPath` 中的二次 URL 解码回退逻辑并在 `/assets/*path` 路由中增加了敏感文件检查。如无法立即升级，在 `conf.publish.enable = true` 的发布模式下，建议在反向代理层（如 Nginx）添加规则拦截包含 `%25` 双重编码的请求路径，或暂时禁用发布模式（设置 `conf.publish.enable = false`）以消除攻击面。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "SiYuan 思源笔记路径遍历漏洞"
-updated = "2026-06-25T14:22:40.920"
+updated = "2026-06-25T14:22:40Z"
 
 [exploit]
 exp_urls = []

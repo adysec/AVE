@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核网络调度器 netem 的 qlen 计数器存在计数不一致漏洞。netem 作为根 qdisc 使用时，其 qlen 仅统计内部 tfifo 队列中的报文数，未正确计入子 qdisc（如 tbf）中排队的报文。当子 qdisc 通过 qdisc_tree_reduce_backlog 通知 netem 创建或丢弃 SKB 时，netem 的 qlen 被错误更新，导致 qlen 与 tfifo 实际队列深度不一致。攻击者可在本地通过构造特定流量（如启用 GSO 并配置 netem+tbf 组合），使 netem 的 qlen 达到配置的 limit 上限，即使 tfifo 实际为空也无法接收新报文，造成拒绝服务。该漏洞影响所有使用 netem 与子 qdisc 组合的 Linux 内核版本，CVSS 评分 5.5，危害等级中危。"
-published = "2025-01-08T17:15:15.957"
+published = "2025-01-08T17:15:15Z"
 remediation = "立即将 Linux 内核升级到以下已修复版本：5.4.288、5.10.232、5.15.175、6.1.121、6.6.67、6.12.6 或更高版本。各发行版用户请安装对应安全更新（如 Debian 11/12 请参考 DLA-4075-1 公告，Ubuntu 用户安装 USN-7506-1 更新）。如无法立即升级，临时缓解措施为避免将 netem 与 tbf 等子 qdisc 配合使用，或禁用 GSO（ethtool -K <接口> gso off）以防止子 qdisc 分段触发 qlen 计数异常。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux kernel netem 网络调度器拒绝服务漏洞"
-updated = "2026-06-17T08:12:56.993"
+updated = "2026-06-17T08:12:56Z"
 
 [exploit]
 exp_urls = []

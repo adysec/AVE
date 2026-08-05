@@ -1,12 +1,12 @@
 [basic]
 description = "Rust 邮件库 lettre 的 `boring-tls` 后端存在布尔值反转的逻辑错误，导致在调用方使用默认严格配置（未显式启用 `accept_invalid_hostnames`）时，TLS 主机名验证被 silently 关闭。由于 `TlsParametersBuilder` 将 `accept_invalid_hostnames` 标志原样传递给 booring 的 `set_verify_hostname`，导致语义反转：严格模式下本应进行主机名校验，实际却被跳过。影响范围为启用 `boring-tls` 特性的所有 lettre 用户（v0.10.1 至 v0.11.21），`native-tls` 与 `rustls` 后端不受影响。攻击条件要求攻击者位于 lettre 客户端与目标 SMTP 服务器之间的网络路径上（on-path attacker）。利用方式：攻击者持有任意通过信任链的 TLS 证书（如自主域名的 Let's Encrypt 证书），在 SMTP STARTTLS 或隐式 TLS 握手时向客户端提交该证书，lettre 会错误通过主机名校验并继续 SMTP 通信，导致 SMTP 认证凭据（PLAIN/LOGIN/CRAM-MD5）、邮件正文及附件被中间人完整窃取或篡改。 CVSS 评分 9.1，危害等级严重，建议升级至 v0.11.22 修复。"
-published = "2026-07-20T16:17:01.347"
+published = "2026-07-20T16:17:01Z"
 remediation = "立即升级 lettre 库至 v0.11.22 或更高版本，该版本已修复 boring-tls 集成中导致 TLS 主机名验证被禁用的布尔值反转漏洞。若暂时无法升级，建议在编译时移除 boring-tls 特性，改用不受影响的 native-tls 或 rustls 后端。"
 score = 9.1
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "lettre SMTP 库 TLS 主机名验证被禁用漏洞"
-updated = "2026-07-23T17:58:34.990"
+updated = "2026-07-23T17:58:34Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "sigstore-go 是 Sigstore 用于签名与验签的 Go 库（版本早于 1.2.1）。该库在校验 bundle 签名时，未将 bundle 的签名时间戳与签名密钥的有效期窗口进行比对。对于自托管、无证书的长生命周期签名密钥，用户需通过 root.NewExpiringKey 将其包装为带有过期语义的 ExpiringKey 类型，向量参数的校验器却未按 API 约定检查 bundle 签名时间是否落在该有效期窗口内。攻击原理是：获得已过期密钥材料的攻击者可利用这些材料对 bundle 进行签名，由于校验器不检查签名时间戳与密钥有效期，此类签名仍会被当作有效的 bundle 接受。影响范围仅涉及使用长生命周期签名密钥的工作流，不涉及依赖证书颁发机构（CA）的标准部署方式。攻击条件为需持有已过期但被信任的签名密钥材料，可用性与机密性影响有限，该漏洞 CVSS 评分为 3.1（低危）。利用方式为使用过期密钥材料对 bundle 签名并提交验证，从而绕过配置的过期日期。该漏洞已在 1.2.1 版本中修复。"
-published = "2026-07-31T23:17:25.287"
+published = "2026-07-31T23:17:25Z"
 remediation = "建议立即将 sigstore-go 升级到 v1.2.1 或更高版本，该版本已修复签名时间戳未与 ExpiringKey 有效期校验的问题（详见 https://github.com/sigstore/sigstore-go/releases/tag/v1.2.1 与提交 4594ab4c779d08be1f4419803a8249188f35ed5f）。如无法立即升级，需自行实施缓解措施：对使用自管理长期密钥且未使用证书的验证流程，在调用验证逻辑前显式检查 bundle 的签名时间（SignedTimestamp）是否落在密钥有效性窗口内，仅接受位于有效期内的签名；同时严格管控并使用强口令保护长期密钥材料，防止已到期的密钥被泄露或重用，并密切监控密钥生命周期以确保过期密钥无法再用于生成被接受的 bundle。"
 score = 3.1
 severity = "LOW"
 sources = ["ghsa"]
 title = "Sigstore sigstore-go 签名时间戳有效性校验缺失漏洞"
-updated = "2026-08-01T00:17:17.040"
+updated = "2026-08-01T00:17:17Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Linux内核的af_packet协议栈存在链路层数据包处理漏洞。由于vlan_get_tci()函数在处理MSG_PEEK标志位时验证不足，导致函数试图读取和修改内核中共享的socket缓冲区(skb)的数据，但同时没有正确处理多CPU并发访问的情况。攻击者可以向目标系统发送特定的IPv6数据包，触发函数对不受保护的skb成员进行读写操作，从而破坏内核内存一致性，诱发系统崩溃并产生核心转储。受影响的Linux内核版本主要包括Ubuntu 24.04 LTS、Ubuntu 20.04 LTS、Debian 11等系统网络子模块，攻击者通过本地socket接口发送恶意数据包即可触发漏洞，对系统稳定性造成严重影响。该漏洞通过修正vlan_get_tci()函数以完全避免直接操作skb、添加常量修饰符以及完善标志位检查来修复，目前厂商已发布安全补丁。"
-published = "2025-01-15T13:15:14.867"
+published = "2025-01-15T13:15:14Z"
 remediation = "建议立即升级 Linux 内核至 6.13.0 或更高版本（已修复 af_packet vlan_get_tci() MSG_PEEK 崩溃问题）。Debian 11 用户请安装 DLA-4075-1 更新（内核 5.10.223-1 及以上）；Ubuntu 24.04 LTS 用户安装 USN-7381-1 更新（linux-image-6.8.0-52-generic 及以上）；Ubuntu 20.04 LTS 用户安装 USN-7459-1 更新（linux-image-5.15.0-127-generic 及以上）。RHEL/Rocky/AlmaLinux 用户请通过 dnf/yum 更新至内核 5.14.0-503.11.1.el9_5 或更高版本。若无法立即重启内核，可暂时禁用 af_packet 模块（modprobe -r af_packet 并加入 modprobe.blacklist=af_packet 内核参数）作为临时缓解，但会导致抓包工具（如 tcpdump、Wireshark）失效，建议尽快安装内核更新并重启。请通过发行版官方仓库（apt/dnf/yum/zypper）安装更新，避免使用非官方内核。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux 基金会 内核 af_packet 模块 VLAN TCI MSG_PEEK 处理缺陷"
-updated = "2026-06-17T08:14:11.207"
+updated = "2026-06-17T08:14:11Z"
 
 [exploit]
 exp_urls = []

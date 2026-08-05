@@ -1,12 +1,12 @@
 [basic]
 description = "Avo（Ruby on Rails 管理后台框架）的直接附件上传端点缺少服务端上传授权校验，绕过文档中定义的字段级上传策略方法（如 `upload_{FIELD_ID}?`）。已认证的 Avo 用户可直接向 `/avo_api/resources/:resource_name/:id/attachments/` 端点发送 POST 请求，在 `update?` 和 `upload_<field>?` 策略均拒绝操作的情况下，仍能替换或添加目标记录的附件内容（包括二进制文件、文件名和 Content-Type 元数据）。该漏洞源于 `AttachmentsController#create` 方法在创建 `ActiveStorage::Blob` 之前未调用 `authorize_action` 进行上传授权，与删除操作的授权实现不一致。影响 Avo >= 2.28.0 版本，主要危害多角色部署场景中非管理员用户可绕过字段级上传限制，替换受保护的附件字段。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "目前官方尚未发布修复版本。建议持续关注 Avo 官方更新，升级到包含修复的版本。临时缓解措施：(1) 确保仅完全受信任的管理员可访问 Avo 路由；(2) 通过 monkey-patch 重写 `Avo::AttachmentsController#create` 方法，在 `ActiveStorage::Blob.create_and_upload!` 之前执行上传授权检查，对 key-based/Trix 上传流回退到 `update?` 策略判断；(3) 在反向代理层对 `/avo_api/resources/*/attachments/` 路径实施额外的访问控制。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Avo 附件上传接口缺失服务端上传授权导致字段级上传策略绕过漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

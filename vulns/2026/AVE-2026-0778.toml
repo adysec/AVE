@@ -1,12 +1,12 @@
 [basic]
 description = "ApostropheCMS（开源 Node.js 内容管理系统）的 `apos.util.set()` 函数在处理点号路径时未过滤 `__proto__` 关键字，导致存在服务端原型污染漏洞。已通过身份认证的编辑器用户可通过 `$pullAll` 补丁操作符向 `Object.prototype` 写入任意值，进而污染全局对象原型。利用 `publicApiCheck()` 中的确认 gadget，该漏洞可使后续所有未经认证的请求绕过所有 piece-type REST API 端点的授权检查，影响范围包括用户管理、全局配置等接口。攻击者仅需一个 PATCH 请求即可实现权限绕过，且污染效果在 Node.js 进程重启前持续生效。CVSS 评分 9.1，危害等级严重。截至公告发布时尚无修复版本。"
-published = "2026-06-12T22:16:52.803"
+published = "2026-06-12T22:16:52Z"
 remediation = "立即在 `modules/@apostrophecms/util/index.js` 的 `apos.util.set()` 方法中，在遍历路径前增加对 `__proto__`、`constructor`、`prototype` 三个关键字的拦截过滤；同时在 `modules/@apostrophecms/schema/index.js` 的 `implementPatchOperators()` 中，在将用户控制的 key 传入 `apos.util.set()` 前也做同样的校验。如无法修改代码，可在反向代理层（Nginx/HAProxy）配置规则拦截 PATCH 请求 body 中包含 `__proto__` 的请求，并限制 editor 角色的 API 写权限。"
 score = 9.1
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "ApostropheCMS 服务端原型污染致授权绕过漏洞"
-updated = "2026-06-17T10:57:58.447"
+updated = "2026-06-17T10:57:58Z"
 
 [exploit]
 exp_urls = []

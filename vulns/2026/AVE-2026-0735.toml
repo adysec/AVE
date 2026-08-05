@@ -1,12 +1,12 @@
 [basic]
 description = "datamodel-code-generator 存在 SSRF 防护绕过漏洞，源于其反 SSRF 机制在验证目标主机 IP 时仅解析一次，随后让 httpx 独立再次进行 DNS 解析建立连接，导致验证通过的 IP 地址未被固定。攻击者可利用 DNS 重绑定技术，注册一个低 TTL 的恶意域名，在验证阶段解析为公网 IP 通过安全检查，在连接阶段解析为内网 IP（如 127.0.0.1、169.254.169.254 云元数据端点或其他内部服务），从而绕过默认的 `allow_private_network=False` 限制。该漏洞影响所有使用 datamodel-code-generator 处理攻击者可控 URL 的服务或 CI 流水线，包括通过 `--url` 参数或远程 `$ref` 引用获取 Schema 的场景。成功利用可导致服务端请求伪造（CWE-918），读取云实例元数据凭证、访问内网 HTTP 服务、探测内网端口/主机，且获取的内部文档会被解析并可能反射到生成的输出中。CVSS 评分 7.5（HIGH），已在 0.63.0 版本修复，修复方案为在 HTTP 抓取过程中固定验证通过的 DNS 结果集。"
-published = "2026-07-28T22:17:48.697"
+published = "2026-07-28T22:17:48Z"
 remediation = "建议立即升级 datamodel-code-generator 到 0.63.0 或更高版本（修复版本：https://github.com/koxudaxi/datamodel-code-generator/releases/tag/0.63.0）。若暂时无法升级，请在 CLI 调用时添加 `--allow-remote=false` 禁用远程 URL 获取功能，或在代码中显式设置 `allow_remote=False`；同时避免处理攻击者可控的外部 Schema URL，改用本地文件路径或可信内部源。修复提交详见：https://github.com/koxudaxi/datamodel-code-generator/commit/25c8b7e497419eb20b230fa3318c04f9bebc5a6f。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "koxudaxi datamodel-code-generator DNS 重绑定 SSRF 保护绕过漏洞"
-updated = "2026-07-30T19:07:59.843"
+updated = "2026-07-30T19:07:59Z"
 
 [exploit]
 exp_urls = []

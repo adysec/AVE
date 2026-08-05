@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核网络子系统中 udpv6_sendmsg 函数与 `__ip6_datagram_connect` 函数之间存在数据竞争（data race）漏洞。当 UDP 套接字在调用 sendmsg 发送数据时，会无锁读取 `sk->sk_bound_dev_if` 字段，而此时另一线程可能通过 connect 系统调用并发写入该字段，导致读取到不一致的数据。该漏洞由内核并发消毒器（KCSAN）检测发现，可能引发未定义行为或内存访问异常。攻击者可通过精心构造的多线程程序触发竞争条件，在特定场景下造成信息泄露或系统不稳定。影响 Linux 内核版本，CVSS 评分 5.5，危害等级中危。"
-published = "2025-02-26T07:01:18.440"
+published = "2025-02-26T07:01:18Z"
 remediation = "将 Linux 内核升级至 5.18.3 或更高版本（含对应 stable 分支补丁），补丁提交为 4c971d2f3548 和 20b2f6179787。若无法立即更新，可通过内核启动参数 `kcsan.enabled=0` 临时关闭 KCSAN 检测以消除告警，但这仅为排查手段，长期仍需升级内核彻底修复。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux Kernel UDP sk_bound_dev_if 条件竞争漏洞"
-updated = "2026-06-17T05:18:00.173"
+updated = "2026-06-17T05:18:00Z"
 
 [exploit]
 exp_urls = []

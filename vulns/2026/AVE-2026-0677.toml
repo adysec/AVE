@@ -1,12 +1,12 @@
 [basic]
 description = 'Gitea 的 `restore-repo` CLI 命令在从转储目录/归档文件恢复仓库时，会解析其中的 `pull_request.yml` 文件。该命令在调用安全检查函数 `CheckAndEnsureSafePR` 时传入了空的 `commonCloneBaseURL`，导致 `strings.HasPrefix(anything, "")` 始终返回 true，从而使 `Head.CloneURL` 字段绕过验证 survives unchanged。随后 `gitea_uploader.go` 直接使用未经验证的 `Head.CloneURL` 执行 `git remote add` 并发起 `git fetch`，使 Gitea 服务器向攻击者控制的 URL 发起请求，造成 SSRF（服务器端请求伪造）。攻击者只需让管理员对一个包含恶意 `pull_request.yml` 的 dump 目录执行 `gitea restore-repo` 命令即可触发漏洞。该漏洞影响 Gitea v1.26.4 及之前所有版本（包括 release/v1.27 和 main 分支），CVSS 评分 9.8，属于严重级别。此外，攻击者还可利用 `file://` 协议读取 Gitea 进程可访问的本地 Git 仓库内容。此变种与近期修复的路径遍历漏洞（#38215）属于不同的根因——后者修补了 `DownloadURL`/`PatchURL`，但未处理 `Head.CloneURL`。'
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = "建议立即升级至 Gitea v1.26.5 或 v1.27.1 及以上版本（官方已修复该 SSRF 漏洞）。若暂无法升级，请严禁对不可信的仓库转储文件执行 `gitea restore-repo` 命令；若必须恢复，请先人工检查转储目录下的 `pull_request.yml` 中 `Head.CloneURL` 字段，确保其不包含内网地址、`file://` 协议或非预期外部 URL。此外，建议在网络层面限制 Gitea 服务器仅能访问必要的外部 Git 远程地址，并在防火墙层面阻断对云元数据端点（如 169.254.169.254）及内网敏感端口的出站访问作为临时缓解措施。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Gitea 修复仓库服务端请求伪造漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

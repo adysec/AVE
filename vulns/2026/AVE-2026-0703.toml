@@ -1,12 +1,12 @@
 [basic]
 description = "Fission 在对 Environment 和 Function CRD 进行 PodSpec 安全校验时采用了不完整的 Linux 能力（Capabilities）黑名单机制。该黑名单遗漏了 `CAP_SYS_TIME` 等关键能力，导致拥有创建 CRD 权限的租户可以通过在 `securityContext.capabilities.add` 中请求 `SYS_TIME` 来绕过校验，从而在运行容器中获得该权限。由于 Linux 实时时钟（REALTIME）不具备命名空间隔离，攻击者可调用 `clock_settime` 修改宿主机的系统时间，进而破坏整个节点上所有租户的 TLS 证书有效期、Kubernetes 租约续订及时间序列数据。该漏洞影响 v1.25.0 之前的版本，且在未强制执行严格 Pod 安全准入（PSA）策略的集群中可被利用。"
-published = "2026-06-10T18:17:13.623"
+published = "2026-06-10T18:17:13Z"
 remediation = "立即将 Fission 升级至 v1.25.0 或更高版本。该版本将能力检查机制由黑名单改为白名单（仅允许 NET_BIND_SERVICE），并引入了基于 CEL 的 XValidation 规则以增强 PodSpec 校验。若无法立即升级，建议在 Kubernetes 集群中为 Function-pod 命名空间强制执行 PSA restricted 配置文件，以在 API Server 层面拦截非法能力请求。"
 score = 8.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Fission 权限校验绕过导致宿主机时间损坏漏洞"
-updated = "2026-06-17T10:57:43.453"
+updated = "2026-06-17T10:57:43Z"
 
 [exploit]
 exp_urls = []
