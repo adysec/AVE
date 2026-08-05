@@ -1,0 +1,36 @@
+[info]
+author = "AVE"
+description = "检测 Trend Micro Interscan VirusWall 管理接口未加密传输 base64 编码凭据"
+id = "POC-AVE-2001-0800"
+name = "CVE-2001-0133 PoC"
+severity = "critical"
+tags = ["cve-2001-0133"]
+vuln_id = [
+    "CVE-2001-0133",
+    "AVE-2001-0800",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/setpasswd.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["passwd"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/admin/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+regex = "([A-Za-z0-9+/]{20,}={0,2})"
+type = "regex"
