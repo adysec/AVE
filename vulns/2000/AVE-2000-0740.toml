@@ -1,12 +1,12 @@
 [basic]
-description = "SCO Unixware 7.0 自带的 SCOhelp HTTP 服务器中的 search97.cgi CGI 脚本存在格式字符串漏洞。远程攻击者可通过向 queryText 参数提交特制的格式字符串标记（如 %s、%n 等），触发该漏洞，导致任意代码执行或信息泄露。攻击无需身份认证，仅需向目标服务器发送恶意 HTTP 请求即可利用。该漏洞影响 Unixware 7.0 系统，CVSS 评分 7.5，危害等级高。厂商已发布安全补丁修复此问题。"
-published = "2000-12-11T05:00:00Z"
-remediation = "该漏洞影响 SCO Unixware 7.0 的 help HTTP 服务器（search97.cgi），SCO 已停止支持该产品且不再发布补丁。建议立即禁用 search97.cgi CGI 脚本或移除 help HTTP 服务器组件；如业务必须使用，应在前端部署 Web 应用防火墙（WAF）过滤 queryText 参数中的格式字符串特征（如 %n、%s、%x），并迁移至受支持的现代 Unix/Linux 平台。"
+description = "SCO Unixware 7 系统中的 SCOhelp HTTP 服务器所包含的 search97.cgi CGI 脚本存在格式化字符串漏洞。远程攻击者无需身份认证即可通过向 queryText 参数中传入特制的格式化字符串字符（如 %n、%s 等），触发该漏洞，导致攻击者能够在目标服务器上以 Web 服务器进程权限执行任意命令。该漏洞影响 Unixware 7 全版本，CVSS 评分 7.5，危害等级高。"
+published = "2000-12-11T05:00:00.000"
+remediation = "立即禁用 SCOhelp HTTP 服务：以 root 执行 `ps -ef | grep scohelp` 确认进程，然后执行 `/etc/init.d/scohelp stop` 停止服务，并运行 `rm /etc/rc2.d/*scohelp*` 删除开机自启。在防火墙上封锁端口 457/tcp：添加规则 `iptables -A INPUT -p tcp --dport 457 -j DROP`。如业务必须使用，升级至 SCO 官方补丁（联系 SCO 支持获取 Unixware 7 安全补丁包），或将 search97cgi 脚本权限改为 000：`chmod 000 /usr/internet/scohelp/search97cgi/vtopic`。鉴于 Unixware 7 已停止维护，建议迁移至受支持的操作系统。"
 score = 7.5
 severity = "HIGH"
-sources = ["epss"]
-title = "SCO Unixware help HTTP 服务器 search97.cgi 格式字符串漏洞"
-updated = "2026-06-16T21:52:58Z"
+sources = ["avd"]
+title = "SCO Unixware 7.0 help HTTP 服务器 search97.cgi 格式字符串远程代码执行漏洞"
+updated = "2026-06-16T21:52:58.420"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1014"]
 ave_id = "AVE-2000-0740"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/1717",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5291",
     "https://www.exploit-db.com/exploits/20242",
-    "https://github.com/CVEProject/cvelistV5/blob/03dbfc069b6c638678ff904c80e89aaf72b93764/cves/2000/1xxx/CVE-2000-1014.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2d66b7c0b89f8bfe02ef8d342b4bf0a1bab5ffd1/CVE/data/2000/CVE-2000-1014.json",
+    "https://github.com/CVEProject/cvelistV5/blob/8798e9cd5ef72b150fb2d268c425b46a0c6a1408/cves/2000/1xxx/CVE-2000-1014.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6604e71750f28c1fc12ae269817332f21f2b9d84/CVE/data/2000/CVE-2000-1014.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1014",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1014.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-1014.json",
-    "https://github.com/opencve/opencve-kb/blob/0913c49bc4f4fd607e8625f162967246063e1d20/2000/CVE-2000-1014.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/0d2adc4a9428696b559622523817d9cdfdad97f0/CVE-2000/CVE-2000-10xx/CVE-2000-1014.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/67c5e994e49225faeedb88198d627dbdd922374c/2000/1xxx/CVE-2000-1014.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1014.json",
+    "https://github.com/opencve/opencve-kb/blob/7f15ca12380fc765fd5195387509666c3b113208/2000/CVE-2000-1014.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-10xx/CVE-2000-1014.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8eabcabeccc08fd880f454fd53f7419ecf9a8d7e/2000/1xxx/CVE-2000-1014.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1014.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1014.json",
 ]
