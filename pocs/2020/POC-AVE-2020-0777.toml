@@ -1,0 +1,46 @@
+[info]
+author = "AVE"
+description = "检测 SaltStack Salt API SSH 客户端命令注入漏洞，通过向 /run 端点发送特制 POST 请求触发 CherryPy 错误响应"
+id = "POC-AVE-2020-0777"
+name = "CVE-2020-16846 PoC"
+severity = "critical"
+tags = [
+    "cve-2020-16846",
+    "saltstack",
+    "rce",
+]
+vuln_id = [
+    "CVE-2020-16846",
+    "AVE-2020-0777",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/run"
+protocol = "http"
+
+[poc.requests.body]
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [500]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["An unexpected error occurred"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["application/json"]
