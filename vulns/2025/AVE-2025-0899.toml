@@ -1,0 +1,41 @@
+[basic]
+description = "Linux kernel 的 SCTP 协议 sysctl 接口在处理 plpmtud_probe_interval 参数时，通过 current->nsproxy 获取网络命名空间结构。该代码路径在进程退出等场景下（例如通过 acct(2) 系统调用）可能导致 current->nsproxy 为 NULL，引发空指针解引用（null-ptr-deref）漏洞，造成内核崩溃。攻击者作为本地低权限用户，可利用此漏洞触发内核崩溃，造成拒绝服务。该漏洞影响包含受影响 SCTP sysctl 代码的 Linux 内核版本。"
+published = "2025-01-19T11:15:09.110"
+remediation = "升级 Linux 内核至包含修复的稳定版本：5.15.177、6.1.125、6.6.72、6.12.10 或更高版本。主流发行版用户请执行包管理器更新：Ubuntu/Debian 运行 apt update && apt upgrade linux-image，RHEL/CentOS 运行 yum update kernel，SUSE 运行 zypper update kernel。如使用自定义内核，请应用包含 commit 6259d2484d0c（net/sctp/sysctl.c: 将 current->nsproxy->net_ns 替换为 container_of(ctl->data, struct net, sctp.probe_interval)）的补丁后重新编译。临时缓解措施：以 root 权限通过 sysctl 将 net.sctp.probe_interval 设为 0 可关闭路径 MTU 发现探测功能，降低触发概率，但可能影响大包传输性能。升级后重启系统使新内核生效。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel SCTP sysctl plpmtud_probe_interval 空指针解引用漏洞"
+updated = "2026-06-17T08:43:53.980"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21636"]
+ave_id = "AVE-2025-0899"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1dc5da6c4178f3e4b95c631418f72de9f86c0449",
+    "https://git.kernel.org/stable/c/284a221f8fa503628432c7bb5108277c688c6ffa",
+    "https://git.kernel.org/stable/c/44ee8635922b6eb940faddb961a8347c6857d722",
+    "https://git.kernel.org/stable/c/6259d2484d0ceff42245d1f09cc8cb6ee72d847a",
+    "https://git.kernel.org/stable/c/bcf8c60074e81ed2ac2d35130917175a3949c917",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21636.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4cd39de946c4dae2d75d1f265b016c2f29e5b92a/cves/2025/21xxx/CVE-2025-21636.json",
+    "https://github.com/cisagov/vulnrichment/blob/bb8fee28b4e90102956816a94f978ff2574331f4/2025/21xxx/CVE-2025-21636.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4c1d71175e32f1e731b0a7d2c22a87887c3669cd/SSVC/data/2025/CVE-2025-21636.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4c1d71175e32f1e731b0a7d2c22a87887c3669cd/CVE/data/2025/CVE-2025-21636.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/853fff3f588474906eaaeec56c4eeef32edfc06c/CVEs/2025/CVE-2025-21636.md",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21636.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21636.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21636-2025-11-03-1441",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2025-21636.json",
+]
