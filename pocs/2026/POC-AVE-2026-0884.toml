@@ -1,0 +1,45 @@
+[info]
+author = "ave"
+description = "检测 OSNEXUS QuantaStor 中 Kapacitor 配置接口是否存在认证缺失漏洞。向 Kapacitor API 端点发送未经认证的 HTTP 请求，若返回 200 且包含 Kapacitor 相关响应数据，则表明存在未授权访问漏洞，攻击者可利用此漏洞以 root 权限执行任意代码。"
+id = "POC-AVE-2026-0884"
+name = "OSNEXUS QuantaStor Kapacitor 未认证访问 PoC"
+severity = "critical"
+tags = ["ave-2026-0884"]
+vuln_id = [
+    "CVE-2026-18265",
+    "AVE-2026-0884",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/kapacitor/v1/ping"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["version"]
+
+[[poc.requests]]
+method = "GET"
+path = "/kapacitor/v1/tasks"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/kapacitor/v1/tickscripts"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
