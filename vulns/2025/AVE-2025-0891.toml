@@ -1,0 +1,82 @@
+[basic]
+description = "CVE-2025-21585是一个安全漏洞，影响相关产品的安全性。攻击者可能利用此漏洞执行任意代码或获取未授权访问。建议用户及时更新到最新版本以修复此问题。"
+published = "2025-04-15T21:15:54.037"
+remediation = """
+tags), I just need to provide the Chinese text.
+
+Let me also verify the length: "建议立即升级 MySQL Server 到已修复版本：8.0.42、8.4.5 或 9.2.1 及更高版本。对于 Red Hat Enterprise Linux、Rocky Linux 或 AlmaLinux 系统，请安装对应安全更新（如 RHSA-2025:15699、RLSA-2025:16861、ALSA-2025:16046）。如无法立即升级，可临时通过防火墙限制对 3306 端口的访问，仅允许可信网络连接，并审查数据库账号权限，移除不必要的最高权限账号。"
+
+This is well over 20 characters and is in Chinese.
+
+Wait, I want to double-check one thing. The task says "如果 presearch 数据中有补丁链接或修复版本信息，请引用。" I should cite the Oracle CPU link if possible.
+
+Let me revise:
+
+"建议立即应用 Oracle 2025 年 4 月关键补丁更新（https://www.oracle.com/security-alerts/cpuapr2025.html），升级 MySQL Server 到已修复版本：8.0.42、8.4.5 或 9.2.1 及更高版本。对于 Red Hat Enterprise Linux、Rocky Linux 或 AlmaLinux 系统，请安装对应安全更新（如 RHSA-2025:15699、RLSA-2025:16861、ALSA-2025:16046）。如无法立即升级，可临时通过防火墙限制对 3306 端口的访问，仅允许可信网络连接，并审查数据库账号权限，移除不必要的最高权限账号。"
+
+This cites the Oracle CPU link and the distribution advisories. It's specific, actionable, and in Chinese.
+
+Actually, I want to verify one more thing. Looking at the RHEL advisory, it mentions mysql8.4-8.4.6-2.el10_0. This is for RHEL 10. Does this mean upstream 8.4.6 contains the fix? Or did RHEL rebase to 8.4.6?
+
+In RHEL's packaging model, they typically backport patches to the same upstream version. So if RHEL 10 ships mysql8.4-8.4.6-2.el10_0, it means they started from upstream 8.4.6 and applied their own patches. The upstream 8.4.6 would have been released by Oracle.
+
+But wait - was 8.4.6 released before or after the April 2025 CPU? If Oracle released 8.4.6 as part of the CPU, then 8.4.6 contains the fix. If Oracle released 8.4.5 with the fix, and RHEL later rebased to 8.4.6 for other reasons, then 8.4.5 also contains the fix.
+
+Without knowing the exact release timeline, I think it's safer to say "8.4.5 或更高版本" rather than "8.4.6 或更高版本". This covers both possibilities.
+
+Similarly for 8.0.42 and 9.2.1.
+
+Actually, let me reconsider. The RHEL 10 package is 8.4.6-2.el10_0. The "-2.el10_0" part means it's the 2nd RHEL-specific patch on top of upstream 8.4.6. If RHEL had been shipping 8.4.5 before, they would have released a patch for 8.4.5, not rebased to 8.4.6. The fact that they rebased to 8.4.6 suggests that 8.4.6 was the upstream version that included the fix.
+
+But RHEL sometimes rebases to newer upstream versions even for security updates. So I can't be 100% sure.
+
+I'll stick with 8.4.5 as the minimum fixed version for the 8.4 series, since that's the next version after 8.4.4 (the last affected version).
+
+Actually, looking at this more carefully:
+- Affected: 8.4.0-8.4.4
+- Next version: 8.4.5
+
+If Oracle released 8.4.5 with the fix, then 8.4.5 is the minimum fixed version. If Oracle released 8.4.6 with the fix, then 8.4.5 might still be affected.
+
+But the NVD says "Supported versions that are affected are 8.4.0-8.4.4". This implies that versions outside this range (i.e., 8.4.5+) are NOT affected. So 8.4.5+ is the safe recommendation.
+
+Similarly:
+- 8.0.0-8.0.41 affected → 8.0.42+ not affected
+- 9.0.0-9.2.0 affected → 9.2.1+ not affected
+
+This interpretation is consistent with standard CVE version range notation.
+
+OK, I'm confident in my remediation now. Let me provide the final text.<value>建议立即应用 Oracle 2025 年 4 月关键补丁更新（https://www.oracle.com/security-alerts/cpuapr2025.html），升级 MySQL Server 到已修复版本：8.0.42、8.4.5 或 9.2.1 及更高版本。对于 Red Hat Enterprise Linux、Rocky Linux 或 AlmaLinux 系统，请安装对应安全更新（如 RHSA-2025:15699、RLSA-2025:16861、ALSA-2025:16046）。如无法立即升级，可临时通过防火墙限制对 3306 端口的访问，仅允许可信网络连接，并审查数据库账号权限，移除不必要的最高权限账号。"""
+score = 4.9
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Oracle MySQL Server 拒绝服务漏洞"
+updated = "2026-06-17T08:43:47.170"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21585"]
+ave_id = "AVE-2025-0891"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://www.oracle.com/security-alerts/cpuapr2025.html",
+    "https://security.netapp.com/advisory/ntap-20250502-0006/",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21585.md",
+    "https://github.com/CVEProject/cvelistV5/blob/c77fff35609ce3594a3cffb2b3b0994cbb03c5f2/cves/2025/21xxx/CVE-2025-21585.json",
+    "https://github.com/cisagov/vulnrichment/blob/0b6e820f75229c8af13f7ed779288022b3112db2/2025/21xxx/CVE-2025-21585.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2e34647e2cb70f634f637d7ffe35fe3375a62e16/SSVC/data/2025/CVE-2025-21585.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/9328bca6ae326ef51038d517f7dc406d0f9acda9/data/2025/CVE-2025-21585.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2e34647e2cb70f634f637d7ffe35fe3375a62e16/CVE/data/2025/CVE-2025-21585.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21585.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2025-21585.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/fe242ff8f9bd06fa5992f95d5f72ac31b4b3a661/data/anchore/2025/CVE-2025-21585.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21585.md",
+]
