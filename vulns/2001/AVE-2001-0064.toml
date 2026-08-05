@@ -1,12 +1,12 @@
 [basic]
-description = "glibc 2.1.9x 及更早版本在执行 setuid/setgid 程序时，未正确清除 RESOLV_HOST_CONF、HOSTALIASES 和 RES_OPTIONS 等环境变量，导致本地攻击者可通过设置恶意环境变量劫持动态链接库加载路径，从而以提升的权限读取系统上任意文件。该漏洞影响 Linux 系统，攻击者需拥有本地账户权限，利用门槛较低，已有公开利用代码。"
-published = "2001-03-26T05:00:00Z"
-remediation = "升级 glibc 至 2.2 或更高版本，该版本在 execve 调用前正确清除了 RESOLV_HOST_CONF、HOSTALIASES 和 RES_OPTIONS 环境变量。对于无法升级的旧系统，可在编译 setuid/setgid 程序时手动调用 unsetenv() 清除上述环境变量作为临时缓解措施。"
+description = "glibc 2.1.9x 及更早版本在执行 setuid/setgid 程序时，未能正确清除 RESOLV_HOST_CONF、HOSTALIASES 或 RES_OPTIONS 等环境变量，导致本地低权限用户可借助这些残留变量操控 DNS 解析器的配置行为，从而读取系统上的任意文件内容或触发命令执行。该漏洞影响使用了受影响 glibc 版本的 Linux 系统，攻击者需具备本地登录权限，无需身份认证即可利用。由于漏洞仅影响机密性（C:P），CVSS v2 评分为 2.1，危害等级较低。"
+published = "2001-03-26T05:00:00.000"
+remediation = "升级 glibc 至 2.2 或更高版本（如 glibc 2.2.5 及以上），该版本已修复 RESOLV_HOST_CONF/HOSTALIASES/RES_OPTIONS 环境变量在 setuid/setgid 程序中的未清理问题。临时缓解：在 /etc/profile 或用户 shell 配置中显式取消设置上述三个环境变量（unset RESOLV_HOST_CONF HOSTALIASES RES_OPTIONS），并限制普通用户对 setuid 程序的执行权限（chmod o-x /path/to/suid-binary）。"
 score = 2.1
 severity = "LOW"
-sources = ["redhat"]
-title = "GNU glibc setuid/setgid 程序环境变量处理不当本地信息泄露漏洞"
-updated = "2026-06-16T21:53:48Z"
+sources = ["cve"]
+title = "GNU glibc 环境变量信息泄露漏洞"
+updated = "2026-06-16T21:53:48.183"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0170"]
 ave_id = "AVE-2001-0064"
 
 [meta]
-collected_at = "2026-07-23T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.securityfocus.com/bid/2181",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5907",
     "https://www.exploit-db.com/exploits/317",
-    "https://github.com/CVEProject/cvelistV5/blob/7a274ec07043f54c07d0a3b5c7fc89ba5793f023/cves/2001/0xxx/CVE-2001-0170.json",
+    "https://github.com/CVEProject/cvelistV5/blob/1e49eca35d3056672c77df905c5c125f371b8ebb/cves/2001/0xxx/CVE-2001-0170.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0170",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2001-0170.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1decc7ade63192f9f527bfb87145d1636c01cc59/CVE/data/2001/CVE-2001-0170.json",
-    "https://github.com/github/advisory-database/blob/7007cbf91cfd56bead27c222fc520c733ed0ad71/advisories/unreviewed/2022/04/GHSA-6558-8g43-2f27/GHSA-6558-8g43-2f27.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/magicsword-io/Magic-SigExplorer/blob/2c28b91b003429a144a687199ee99ebd26f1a343/Magic-SigExplorer/docs/cve_report.md",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150700_150800.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_2.list.dict",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--7b9715e1-59ea-4f19-99dc-9ad888301019.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1cf21dc2c185a3301ffa683a942c44c61b3a4b1e/CVE/data/2001/CVE-2001-0170.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0170.json",
+    "https://github.com/opencve/opencve-kb/blob/a121c9678feb15c776e19eb9a2198be3c8093209/2001/CVE-2001-0170.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/a34babb9031dd723054cf90c4f7fb7c79c3ea176/2001/0xxx/CVE-2001-0170.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0170.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0170.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0170.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/b41e970743d15aec60299cbc12139ba5a0ac3bb6/content/CVE-2001-0170.md",
 ]
