@@ -1,0 +1,39 @@
+[basic]
+description = "MindPalette NateMail 3.0.15 存在反射型跨站脚本（XSS）漏洞。攻击者可通过向目标应用发送特制的 POST 请求，在 recipient 参数中注入恶意 JavaScript 代码。由于 NateMail 的收件人数组默认使用整数作为键值，任何非数字字符串输入均会被视为无效并直接反射回响应页面，导致恶意脚本在受害者浏览器中执行。攻击者可借此窃取会话凭证、劫持用户会话或实施钓鱼攻击。该漏洞无需身份认证，但需要用户交互（点击恶意链接或提交表单），CVSS 评分 6.1，危害等级中危。"
+published = "2019-10-16T00:15:10.587"
+remediation = "建议立即手动修复 NateMail.php 源代码：在第 379 行将 `$thisRecipKey` 输出改为 `htmlspecialchars($thisRecipKey, ENT_QUOTES, 'UTF-8')` 以防止 XSS；同时在第 638 行起对 redirect 参数实施 URL 白名单验证，仅允许跳转到可信域名。由于 MindPalette 已停止维护 NateMail 且无官方补丁，无法通过升级解决。如无法修改代码，可在 WAF 或反向代理层添加规则，拦截 POST 请求中 recipient 参数包含 `<script>`、`<img>` 等 HTML 标签的恶意载荷。"
+score = 6.1
+severity = "MEDIUM"
+sources = ["nuclei"]
+title = "MindPalette NateMail 反射型跨站脚本漏洞"
+updated = "2026-06-17T02:16:41.687"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2019-13392"]
+ave_id = "AVE-2019-0065"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://mindpalette.com/tag/natemail/",
+    "https://twitter.com/mindpalette",
+    "https://www.doyler.net/security-not-included/natemail-vulnerabilities",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2019/CVE-2019-13392.yaml",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2019/CVE-2019-13392.md",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/3d3e4ac5fc656462e5751cd66b39c577cd9a2341/http/cves/2019/CVE-2019-13392.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/medium/CVE-2019-13392.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/medium/cve-2019-13392-3807.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/medium/cve-2019-13392-3810.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/medium/cve-2019-13392-3809.yaml",
+    "https://github.com/cckuailong/reapoc/blob/699762e4c31d0183733f64313d8fc3be6470bd37/2019/CVE-2019-13392/poc/pocsploit/CVE-2019-13392.py",
+    "https://github.com/GhostTroops/scan4all/blob/fff03b51bf79c8993a46c1da766ec993e1102c47/config/51pwn/yaml/NateMail/CVE-2019-13392.yaml",
+    "https://github.com/cckuailong/pocsploit/blob/fe4a3154e59d2bebd55ccfdf62f4f7efb21b5a2a/modules/cves/2019/CVE-2019-13392.py",
+    "https://github.com/CVEProject/cvelistV5/blob/8798e9cd5ef72b150fb2d268c425b46a0c6a1408/cves/2019/13xxx/CVE-2019-13392.json",
+]
