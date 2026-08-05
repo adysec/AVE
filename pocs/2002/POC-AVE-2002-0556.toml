@@ -1,0 +1,58 @@
+[info]
+author = "ave"
+description = "检测 Prometheus 6.0 及更早版本是否存在远程文件包含漏洞。通过修改 PROMETHEUS_LIBRARY_BASE 参数指向外部服务器，验证应用是否加载远程 PHP 代码。"
+id = "POC-AVE-2002-0556"
+name = "Prometheus 远程文件包含 PoC"
+severity = "high"
+tags = ["ave-2002-0556"]
+vuln_id = [
+    "CVE-2002-1211",
+    "AVE-2002-0556",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "PROMETHEUS_LIBRARY_BASE",
+    "prometheus",
+    "Failed opening",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/install.php"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "PROMETHEUS_LIBRARY_BASE",
+    "prometheus",
+    "Failed opening",
+]
