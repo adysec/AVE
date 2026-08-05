@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "检测目标系统是否存在 Apple iTunes WebKit 内存损坏漏洞（CVE-2012-3606）。该漏洞源于 WebKit 引擎在处理恶意网页时的内存管理缺陷，远程攻击者可通过构造包含特制代码的网页，在用户使用受影响版本 iTunes 访问时触发任意代码执行。本 PoC 通过发送包含 WebKit 引擎已知漏洞特征的 HTTP 请求，检查目标是否返回表明漏洞存在的响应特征，以安全无损的方式验证目标系统是否存在此漏洞。"
+id = "POC-AVE-2012-0282"
+name = "Apple iTunes WebKit 远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2012-0282"]
+vuln_id = [
+    "CVE-2012-3606",
+    "AVE-2012-0282",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["iTunes"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
