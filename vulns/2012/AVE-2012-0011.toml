@@ -1,12 +1,12 @@
 [basic]
-description = "PHP 以 CGI 模式运行时，其 sapi/cgi/cgi_main.c 组件未能正确处理不含等号（=）的查询字符串，导致远程攻击者可通过在 URL 查询字符串中注入 PHP 命令行选项（如 -d 指定配置指令）实现任意代码执行。该漏洞影响 PHP 5.3.12 以下版本及 5.4.2 以下版本，攻击者无需认证即可远程利用，危害等级严重。官方已在 PHP 5.3.12 和 5.4.2 版本中修复此漏洞。"
-published = "2012-05-11T10:15:48Z"
-remediation = "立即将 PHP 升级至 5.3.12 或 5.4.2 及以上版本。如无法升级，将 PHP 运行模式从 CGI 切换为 FastCGI 或 mod_php，或在 Web 服务器层面配置 RewriteRule 拒绝包含 `-d`、`-s` 等命令行参数的 CGI 请求。同时限制 php-cgi 对外部输入的直接访问，避免将用户可控参数传递给 PHP 解释器。"
+description = "PHP 的 CGI 模式（php-cgi）中存在参数注入漏洞，当 PHP 以 CGI 脚本方式运行时，sapi/cgi/cgi_main.c 未能正确处理不含等号（=）的查询字符串，导致远程攻击者可通过在查询字符串中注入命令行选项（如 -d、-s 等）来执行任意代码。该漏洞影响 PHP 5.3.12 之前版本及 5.4.2 之前版本，攻击者无需认证即可远程利用，CVSS 评分 9.8，危害等级严重。攻击者可通过构造类似 /cgi.php?-d+allow_url_include%3don+-d+auto_prepend_file%3dphp://input 的请求实现远程代码执行。"
+published = "2012-05-11T10:15:48.043"
+remediation = "立即升级 PHP 至 5.3.12 或 5.4.2 及以上版本。如无法升级，将运行模式从 CGI 切换为 FastCGI 或 mod_php，或在 Web 服务器层添加 RewriteRule 过滤不含等号的查询字符串：RewriteCond %{QUERY_STRING} ^[^=]*$ [NC]；RewriteRule ^.*$ - [F,L]。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
+sources = ["tenable"]
 title = "PHP PHP-CGI 远程代码执行漏洞"
-updated = "2026-06-16T23:40:22Z"
+updated = "2026-06-16T23:40:22.147"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2012-1823"]
 ave_id = "AVE-2012-0011"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -54,16 +54,16 @@ urls = [
     "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/PKGTQUOA2NTZ3RXN22CSAUJPIRUYRB4B/",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2012-1823",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2012/CVE-2012-1823.yaml",
-    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2012/CVE-2012-1823.md",
-    "https://github.com/vulhub/vulhub/blob/aeaf65793f147f29bd50841ef77f4e9cad07ecc7/php/CVE-2012-1823/README.md",
+    "https://github.com/trickest/cve/blob/0950a261126c1029f51ef04a190f1baacd16eb08/2012/CVE-2012-1823.md",
+    "https://github.com/0xMarcio/cve/blob/7b5ce0c8ddaaec75eae1da91b247176dbec670ba/2012/CVE-2012-1823.md",
+    "https://github.com/wgpsec/AboutSecurity/blob/f3c8574e6fa1f9c1cd5aeaba5a209af796107b34/Vuln/middleware/php/CVE-2012-1823.md",
     "https://github.com/j0bin/Pentest-Resources/blob/94995990abed3dbce8f4bb29e11127265515aa9a/Attack/cve-2012-1823.py",
     "https://github.com/sepehrdaddev/zap-scripts/blob/2b63b02ca79cc7f0023cdbab72c5c6c774354b07/active/CVE-2012-1823.js",
-    "https://github.com/wgpsec/AboutSecurity/blob/f3c8574e6fa1f9c1cd5aeaba5a209af796107b34/Vuln/middleware/php/CVE-2012-1823.md",
-    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2012/CVE-2012-1823",
-    "https://github.com/smartFlash/pySecurity/blob/ebcd0364af1f38444411123443141ff463428b73/SUMMARY.md",
-    "https://github.com/onlurking/awesome-infosec/blob/4e05df2170086298bf7c3623b21598fe325f2ba6/readme_cn.md",
-    "https://github.com/Metarget/metarget/blob/3cd1d6256fbc0e9a7b82d8449ded87f76340af27/CONTRIBUTING.md",
-    "https://github.com/e-m-b-a/emba/blob/4d0f24b3edae0bdb5391177851bad3be54ecea0f/config/msf_cve-db.txt",
+    "https://github.com/trickest/cve/blob/0950a261126c1029f51ef04a190f1baacd16eb08/2012/CVE-2012-2336.md",
+    "https://github.com/trickest/cve/blob/0950a261126c1029f51ef04a190f1baacd16eb08/2021/CVE-2021-2291.md",
+    "https://github.com/trickest/cve/blob/0950a261126c1029f51ef04a190f1baacd16eb08/2012/CVE-2012-2311.md",
+    "https://github.com/trickest/cve/blob/0950a261126c1029f51ef04a190f1baacd16eb08/2013/CVE-2013-4878.md",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2012/CVE-2012-1823.md",
     "https://github.com/0xl0k1/CVE-2012-1823",
     "https://github.com/Unix13/metasploitable2",
     "https://github.com/tardummy01/oscp_scripts-1",
