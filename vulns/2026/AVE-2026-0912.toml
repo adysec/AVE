@@ -1,0 +1,41 @@
+[basic]
+description = '''tags. I can provide brief analysis but final answer in <value> tags. Let me keep it concise - just output the value tags.<value>Jodit 富文本编辑器（内置文件浏览器与图片编辑器）在 sanitizeHTMLElement 方法中校验 href 属性的 javascript: 协议时存在不完整的规范化逻辑，仅使用区分大小写的 href.trim().indexOf('javascript') === 0 进行字面匹配，未像其他 URL 属性那样先经 isDangerousUrl 去除控制字节（\u0000-\u0020）并转小写后再检测协议。攻击者可通过三类混淆形式绕过过滤：一是大小写变体（如 JAVASCRIPT:、Javascript:），二是前置非空白 C0 控制字节（如 \x01），三是在协议内嵌入制表符或换行符（如 java\tscript:、java\nscript:）；浏览器在解析 URL 时会剥离控制字节与制表换行符且协议大小写不敏感，故点击后仍会按 javascript: 协议执行。恶意链接可经 editor.value 赋值并持久化到编辑器存储值中，属于存储型跨站脚本（CWE-79）。攻击前提是攻击者拥有编辑器实例的写入权限（如内容作者或多用户应用中的评论者），当受害者在只读编辑器、服务端渲染页面或 innerHTML 消费端点击该链接时，将在目标页面源域中执行攻击者控制的脚本。该漏洞影响 Jodit 4.12.31 之前的版本，CVSS 评分 5.4（中危），已在 4.12.31 版本中通过将 href 改由 isDangerousUrl 处理而修复。'''
+published = "2026-07-31T20:16:53.197"
+remediation = "建议立即将 Jodit 升级至 4.12.31 及以上版本，该版本已通过将 href 属性接入 isDangerousUrl() 归一化检查修复此 XSS 绕过（对应提交 5fba6ef2381d151d7cb8e3c5ad0b9996af0f97b0）。若暂时无法升级，应在渲染编辑器存储值前强制进行服务端或前端二次清洗，对所有 href 值执行去控制字节、转小写并校验 javascript:/vbscript: 等危险协议，禁止直接通过 innerHTML 渲染用户可控链接，同时可开启 CSP 限制内联脚本执行作为纵深防御。"
+score = 5.4
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Jodit Jodit 编辑器 javascript: 协议 href 过滤绕过跨站脚本漏洞"
+updated = "2026-08-03T18:16:40.340"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-62324",
+    "GHSA-j839-gqq4-gf9j",
+]
+ave_id = "AVE-2026-0912"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/xdan/jodit/commit/5fba6ef2381d151d7cb8e3c5ad0b9996af0f97b0",
+    "https://github.com/xdan/jodit/releases/tag/4.12.31",
+    "https://github.com/xdan/jodit/security/advisories/GHSA-j839-gqq4-gf9j",
+    "https://github.com/CVEProject/cvelistV5/blob/3eae031b5df6a3c6a1cc304f5e054cd002eb1bd6/cves/2026/62xxx/CVE-2026-62324.json",
+    "https://github.com/cisagov/vulnrichment/blob/f3d37661d066a8369751ae98676c11a2d9ec4d21/2026/62xxx/CVE-2026-62324.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/5d8a0e95a20fbbbf3a45b439096d57770d841dec/CVE/data/2026/CVE-2026-62324.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/5d8a0e95a20fbbbf3a45b439096d57770d841dec/SSVC/data/2026/CVE-2026-62324.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/152c4988e6630edbe300b2d9554f35d9c7963812/data/2026/CVE-2026-62324.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-62324.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-623xx/CVE-2026-62324.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/npm/jodit/CVE-2026-62324.yml",
+    "https://github.com/anchore/cve-data-enrichment/blob/7c77ebcc357386c71db522f18fa574b7642f74e0/data/anchore/2026/CVE-2026-62324.json",
+    "https://github.com/TMA84/cvealert/blob/97de0a0c0be6241ec441ae8eb7c7943a5ff88d4f/content/posts/cve-2026-62324.md",
+]
