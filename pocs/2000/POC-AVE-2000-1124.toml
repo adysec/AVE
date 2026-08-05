@@ -1,22 +1,43 @@
 [info]
-author = "ave"
-description = "验证 AdCycle 安装目录中是否遗留 build.cgi 脚本，该脚本可被远程执行以泄露密码或破坏数据库。"
+author = "AVE"
+description = "AdCycle 横幅管理系统安装后未移除 build.cgi，远程攻击者可通过 HTTP GET 请求直接访问该 CGI 脚本，获取明文密码或删除数据库。发送 GET 请求到 /build.cgi 路径，若返回包含密码或数据库操作相关内容的响应，则存在漏洞。"
 id = "POC-AVE-2000-1124"
-name = "AdCycle Banner Management System build.cgi Exposure PoC"
+name = "AdCycle build.cgi 未授权访问 PoC"
 severity = "high"
-tags = ["ave-2000-1124"]
+tags = [
+    "cve-2000-1161",
+    "adcycle",
+    "cgi",
+]
 vuln_id = [
     "CVE-2000-1161",
     "AVE-2000-1124",
 ]
 
 [poc]
-logic = "all"
+logic = "any"
 
 [[poc.requests]]
 method = "GET"
 path = "/{{BaseURL}}/build.cgi"
 protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "password",
+    "Password",
+    "database",
+    "Database",
+    "admin",
+    "Admin",
+]
 
 [[poc.requests.matchers]]
 expect = true
