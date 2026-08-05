@@ -1,0 +1,58 @@
+[basic]
+description = '''
+### Impact
+
+In affected versions, the built-in cURL handlers (`CurlHandler` and `CurlMultiHandler`) put every first-class request header in cURL's origin header list (`CURLOPT_HTTPHEADER`). These handlers are the default when the PHP cURL extension is available. They move `Proxy-Authorization` to the proxy-only list (`CURLOPT_PROXYHEADER`) only when Guzzle predicts an HTTP or HTTPS proxy. A \"first-class\" header is part of the normal request message and can be set on a PSR-7 request, through client `headers` defaults, the `headers` request option, or middleware. It does not include a literal line supplied through raw `CURLOPT_HTTPHEADER`, `CURLOPT_PROXYHEADER`, or `stream_context.http.header` controls.
+
+Because that migration follows Guzzle's prediction rather than the route libcurl actually takes, the credential stays in the origin list and is sent to the origin server when a request is:
+
+- direct, including `proxy` set to `''` to disable proxying.
+- bypassed by a `no`, `no_proxy`, or `NO_PROXY` match.
+- sent through a SOCKS proxy, which does not use the HTTP proxy header channel.
+- redirected from a safely proxied hop into any of those routes: redirect middleware re-evaluates the proxy per hop but, unlike `Authorization` and `Cookie`, does not strip `Proxy-Authorization` cross-origin.
+
+On installations whose libcurl is older than 7.37.0, or whose PHP cURL extension lacks `CURLOPT_PROXYHEADER`, `CURLOPT_HEADEROPT`, and `CURLHEADER_SEPARATE`, no proxy-only channel is available, so cURL left the header in the origin list for every route. The stream handler also serialized first-class values before selecting a proxy. PHP removes only the first `Proxy-Authorization` line from CONNECT, so another first-class value or a URL-userinfo Basic line could reach the tunneled origin. A later raw `stream_context.http.proxy` override could instead reroute either credential directly to the origin.
+
+The disclosed value is a private credential meant only for the proxy. RFC 9110 defines `Proxy-Authorization` as credentials for the next inbound proxy, and an origin is never an intended recipient. The flaw can silently give a working proxy credential to an unrelated third party. In the worst case, an attacker controls the origin and records the credential through access logs, tracing systems, or application logs. If it remains valid, the attacker can abuse a paid or access-controlled proxy, impersonate the proxy principal, or reach destinations the proxy is trusted to reach. A strong remote exploit is possible when an application sends a request to an attacker-controlled HTTP URL through a proxy with a default `Proxy-Authorization` header, then follows the attacker's redirect to an HTTPS or no-proxy destination that Guzzle reaches directly.
+
+Using a first-class `Proxy-Authorization` header is a legitimate, documented configuration, so affected applications are not misusing the library. Guzzle does not create this field, so applications that never configure one are unaffected by the first-class-header flaw. Proxy URL userinfo is not affected on its own, but the stream handler could expose its Basic line when combined with a first-class field or a later raw `stream_context.http.proxy` override. `CURLOPT_PROXYUSERPWD` is unaffected. Literal lines supplied through raw `CURLOPT_HTTPHEADER`, `CURLOPT_PROXYHEADER`, or `stream_context.http.header` remain caller-controlled and outside the first-class-header guarantee.
+
+### Patches
+
+The issue is fixed in `7.14.2`. The cURL handlers keep first-class `Proxy-Authorization` values out of the origin header list. When proxy header separation is available, they pass the values through `CURLOPT_PROXYHEADER` with `CURLHEADER_SEPARATE`. An empty value uses cURL's semicolon form to suppress credentials from proxy URL userinfo. On older builds, Guzzle drops the field for direct, bypassed, and SOCKS routes, but fails before network I/O if the request might use an HTTP or HTTPS proxy.
+
+The stream handler removes the field from origin headers before choosing a route. If it selects a proxy, it accepts one value, including empty, writes a validated proxy header, and gives that value precedence over proxy URL userinfo. Multiple values, line breaks, and raw proxy overrides that could reroute generated credentials fail before connection. Direct and bypassed requests drop the field. Versions before `7.14.2` are affected by these origin-bound credential paths.
+
+### Workarounds
+
+If you cannot upgrade immediately, remove first-class `Proxy-Authorization` fields from requests, client defaults, and middleware. Supply proxy credentials instead through proxy URL userinfo, for example `http://user:pass@proxy.example:8080`, or use `CURLOPT_PROXYUSERPWD` with the cURL handlers. Do not combine proxy URL userinfo with a first-class field or a raw `stream_context.http.proxy` override. If a first-class field is unavoidable, use libcurl 7.37.0 or newer with `CURLOPT_PROXYHEADER`, `CURLOPT_HEADEROPT`, and `CURLHEADER_SEPARATE`, and ensure the field is never present on a client that can issue direct, bypassed, or SOCKS requests or follow redirects into those routes. A newer libcurl is necessary but does not fix Guzzle's route-dependent migration by itself, and disabling redirects reduces but does not eliminate exposure.
+
+### References
+
+* https://www.rfc-editor.org/rfc/rfc9110.html#section-11.7.2
+* https://curl.se/libcurl/c/CURLOPT_PROXYHEADER.html
+* https://curl.se/libcurl/c/CURLOPT_HEADEROPT.html
+* https://curl.se/libcurl/c/CURLOPT_HTTPHEADER.html
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Guzzle: Proxy-Authorization headers can be sent to origin servers"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-94pj-82f3-465w"]
+ave_id = "AVE-2026-1052"
+
+[meta]
+collected_at = "2026-08-05T23:34:41.047853525+00:00"
+status = "completed"
+
+[references]
+urls = []
