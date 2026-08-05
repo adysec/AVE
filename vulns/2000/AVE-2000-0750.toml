@@ -1,12 +1,12 @@
 [basic]
-description = "tcpdump 3.4 及 3.5 版本中的 AFS ACL 数据包解析模块存在多个缓冲区溢出漏洞。远程攻击者可向目标系统发送特制的 AFS ACL 数据包，触发缓冲区溢出，导致任意代码执行。该漏洞影响 tcpdump 3.4 和 3.5 版本，CVSS 评分 10.0，危害等级严重。攻击者无需身份认证即可远程利用，且已有公开的 PoC 利用代码。"
-published = "2000-12-11T05:00:00Z"
-remediation = "升级 tcpdump 至 3.6.2 或更高版本，该版本已修复 AFS ACL 数据包解析中的缓冲区溢出问题。FreeBSD 用户应安装 FreeBSD-SA-00:61 安全公告提供的补丁；Linux 用户通过包管理器更新至最新可用版本。如无法立即升级，可在防火墙上限制对 tcpdump 监听端口的访问，并避免在不可信网络上使用 tcpdump 捕获数据包。"
+description = "tcpdump 3.4/3.5 版本在解析 AFS ACL（访问控制列表）数据包时存在多个缓冲区溢出漏洞。攻击者无需身份认证，只需向运行 tcpdump 的目标主机发送特制的 AFS ACL 数据包，即可触发缓冲区溢出。由于 tcpdump 通常以 root 权限运行（需要 root 权限打开网络接口进行数据包捕获），溢出成功后可导致栈上变量被覆盖，进而实现远程代码执行，完全获取目标主机的 root 权限。该漏洞影响运行 tcpdump 3.4 和 3.5 的 Unix/Linux 系统，CVSS 评分 10.0，危害等级严重。"
+published = "2000-12-11T05:00:00.000"
+remediation = "建议升级 tcpdump 到 3.6 或更高版本（如 4.99.1+），可通过包管理器安装：apt-get update && apt-get install tcpdump（Debian/Ubuntu）或 yum update tcpdump（RHEL/CentOS）。若暂时无法升级，可在防火墙层面阻断非受信网络的 AFS 协议流量（UDP 7000-7007），并限制 tcpdump 仅在受信网络接口上运行（使用 -i 参数指定接口），禁用 AFS 解析功能（-A 参数避免解析 AFS 包）。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "LBNL tcpdump 3.4/3.5 AFS ACL 数据包处理缓冲区溢出漏洞"
-updated = "2026-06-16T21:52:59Z"
+sources = ["avd"]
+title = "tcpdump 远程代码执行漏洞"
+updated = "2026-06-16T21:52:59.913"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1026"]
 ave_id = "AVE-2000-0750"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1870",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5480",
     "https://www.exploit-db.com/exploits/20337",
-    "https://github.com/CVEProject/cvelistV5/blob/57d47b7d3f36bb14623bb27ddb073baead1c6714/cves/2000/1xxx/CVE-2000-1026.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/37abbcb2a8225ed14d2b9dfffb1ad41b15cc2cc8/CVE/data/2000/CVE-2000-1026.json",
+    "https://github.com/CVEProject/cvelistV5/blob/bfe508b10fd666e08d016fd72fb8c9e7ad67f3a1/cves/2000/1xxx/CVE-2000-1026.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/907bec44926228526b90431ce39613fe4cbd9e00/CVE/data/2000/CVE-2000-1026.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1026",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1026.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1026.json",
-    "https://github.com/opencve/opencve-kb/blob/27523a604e3f97178dcb3b94e85e828af75534c5/2000/CVE-2000-1026.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/67c5e994e49225faeedb88198d627dbdd922374c/2000/1xxx/CVE-2000-1026.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/0d2adc4a9428696b559622523817d9cdfdad97f0/CVE-2000/CVE-2000-10xx/CVE-2000-1026.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1026.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8666f9d895a0f69afaf7cc8ad269f1c8281f7c7d/2000/1xxx/CVE-2000-1026.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-10xx/CVE-2000-1026.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1026.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1026.json",
+    "https://github.com/opencve/opencve-kb/blob/15dc4562a27a859de217929d811811b842ebac90/2000/CVE-2000-1026.json",
 ]
