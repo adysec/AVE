@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "检测 MCP Python SDK 已弃用 WebSocket 服务端传输是否缺少 Host/Origin 头部校验。通过发送带有恶意 Origin 的 WebSocket 升级请求，若服务器返回 101 Switching Protocols 则说明存在跨源连接绕过漏洞，攻击者可利用恶意网页诱导用户连接并调用 MCP 工具。"
+id = "POC-AVE-2026-0879"
+name = "MCP Python SDK WebSocket Host/Origin Validation Bypass PoC"
+severity = "high"
+tags = ["ave-2026-0879"]
+vuln_id = [
+    "CVE-2026-59950",
+    "AVE-2026-0879",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/mcp"
+protocol = "http"
+
+[poc.requests.headers]
+Connection = "Upgrade"
+Host = "{{Hostname}}"
+Origin = "https://evil.com"
+Sec-WebSocket-Key = "dGhlIHNhbXBsZSBub25jZQ=="
+Sec-WebSocket-Version = "13"
+Upgrade = "websocket"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["101 Switching Protocols"]
