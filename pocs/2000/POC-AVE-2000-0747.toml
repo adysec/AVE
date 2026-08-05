@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "Alabanza Control Panel 3.0 的 nsManager.cgi CGI 程序未要求密码验证即可执行管理命令，远程攻击者可通过直接访问该 CGI 接口修改域名信息。发送 GET 请求至 nsManager.cgi 路径，若返回管理界面内容则证明存在未授权访问漏洞。"
+author = "ave"
+description = "验证目标是否存在 Alabanza Control Panel 3.0 nsManager.cgi 未授权访问漏洞。通过构造请求访问 nsManager.cgi 管理接口，无需认证即可添加或修改域名记录。若脚本返回 200 状态码且响应包含域名管理表单内容则表明漏洞存在。"
 id = "POC-AVE-2000-0747"
-name = "Alabanza Control Panel nsManager.cgi 未授权访问 PoC"
+name = "Alabanza Control Panel 未授权域名管理 PoC"
 severity = "high"
 tags = ["ave-2000-0747"]
 vuln_id = [
@@ -11,12 +11,17 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/nsManager.cgi"
+path = "/{{BaseURL}}/cp/rac/nsManager.cgi"
 protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
@@ -24,6 +29,6 @@ part = "body"
 type = "word"
 words = [
     "nsManager",
-    "domain",
-    "admin",
+    "Domain",
+    "IP=",
 ]
