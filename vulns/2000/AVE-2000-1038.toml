@@ -1,12 +1,12 @@
 [basic]
-description = "OpenBSD yp_passwd 程序存在格式字符串漏洞，由于程序在处理用户输入时未正确过滤格式字符串参数，本地攻击者可通过向 yp_passwd 程序提交特制的畸形名称参数触发格式字符串漏洞，从而获取 root 权限。该漏洞影响 OpenBSD 及其他基于 BSD 的操作系统，CVSS 评分 7.2，危害等级高，攻击者需要本地访问权限但无需认证即可利用。"
-published = "2000-12-19T05:00:00Z"
-remediation = "立即应用 OpenBSD 2.7 补丁 028_format_strings.patch（下载地址 ftp://ftp.openbsd.org/pub/OpenBSD/patches/2.7/common/028_format_strings.patch），以 root 执行 `patch -p0 < 028_format_strings.patch` 后重新编译内核及受影响的程序。如无法打补丁，可临时移除 yp_passwd 的 setuid 权限：`chmod u-s /usr/bin/yp_passwd`。"
+description = "OpenBSD yp_passwd 程序存在格式字符串漏洞，未经身份认证的本地攻击者可通过向该程序传入包含格式字符串特制名称参数来利用此漏洞，导致在受影响系统上以 root 权限执行任意代码。该漏洞影响 OpenBSD 2.7 及其他基于 BSD 的操作系统，CVSS 评分 7.2，危害等级高。OpenBSD 已于 2000 年 10 月发布安全补丁 028_format_strings.patch 修复此问题。"
+published = "2000-12-19T05:00:00.000"
+remediation = '建议升级至 OpenBSD 2.7 并应用补丁 patch 028（ftp://ftp.openbsd.org/pub/OpenBSD/patches/2.7/common/028_format_strings.patch），或直接升级至 OpenBSD 2.8 及后续版本，该补丁将 yp_passwd.c 中第 75 行的 warn(name) 修正为 warn("%s", name) 以消除格式字符串漏洞。如短期内无法打补丁，可临时执行 chmod u-s /usr/bin/yp_passwd 移除 setuid 位，阻断本地提权路径；若系统不使用 NIS/YP 服务，建议直接停用或卸载 ypbind 及相关 NIS 客户端服务，从根源消除攻击面。'
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
+sources = ["avd"]
 title = "OpenBSD yp_passwd 格式字符串漏洞"
-updated = "2026-06-16T21:52:56Z"
+updated = "2026-06-16T21:52:56.057"
 
 [exploit]
 exp_urls = []
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-0995"]
 ave_id = "AVE-2000-1038"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.osvdb.org/6125",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5635",
-    "https://github.com/CVEProject/cvelistV5/blob/3ac44cfd6537e05d45dfec0ed67b6d47bebeee2b/cves/2000/0xxx/CVE-2000-0995.json",
+    "https://github.com/CVEProject/cvelistV5/blob/cbc8909f965784fa84e604f999ad78ba1a862d6c/cves/2000/0xxx/CVE-2000-0995.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d9d0e44f54f90ad1b4ec106b1cac94be29b99757/CVE/data/2000/CVE-2000-0995.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-0995",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/41644568d1e47f962c2cefae75c8b09359290a26/2000/0xxx/CVE-2000-0995.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/73cd39be077fdbedc5ca2ea7e2723723d25285cc/CVE/data/2000/CVE-2000-0995.json",
-    "https://github.com/github/advisory-database/blob/1c8e3f4146e1bef501493d1237acb1611ea8f707/advisories/unreviewed/2022/05/GHSA-8gqg-96vx-r268/GHSA-8gqg-96vx-r268.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88654/info.html",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-0995.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--bf589711-1420-44fc-ad6e-fe2479ec3d99.json",
-    "https://github.com/Yuning-J/VulnerabilityClassifier/blob/c0f06c21b73c26b5ee2b75c21a498eb04eada4b5/threatPrediction/cveIDThreatType/cve_idgainpre",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-0995.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-09xx/CVE-2000-0995.json",
+    "https://github.com/opencve/opencve-kb/blob/bd65d87495327c522ef03e0100b7141c41565410/2000/CVE-2000-0995.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8e09cd003036511dff025515f28920f1d343007b/2000/0xxx/CVE-2000-0995.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/0xxx/CVE-2000-0995.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/0xxx/CVE-2000-0995.json",
 ]
