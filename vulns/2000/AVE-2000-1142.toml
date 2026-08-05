@@ -1,12 +1,12 @@
 [basic]
-description = "Microsoft Windows NT系统中存在安全漏洞，攻击者可通过建立空会话连接并调用LsaQueryInformationPolicy策略函数获取目标域的SID标识，然后利用该SID进行用户枚举操作。该漏洞导致攻击者能够远程获取整个域中的所有用户信息，包括用户名和SID，严重威胁用户隐私安全。该漏洞影响所有支持网络登录的Windows NT版本，攻击者无需任何权限即可远程执行此操作，且攻击过程相对简单，直接攻击者可迅速掌握目标域的完整用户列表。该漏洞因其影响范围广、易于利用且可能为后续攻击提供关键信息而被评定为中等风险。该漏洞是Windows NT系统中一个典型的身份验证绕过漏洞，攻击者可通过合法的API函数获取敏感身份信息，进而为进一步攻击奠定基础。"
-published = "2001-08-31T04:00:00Z"
-remediation = '建议升级至 Windows 2000 SP4 或更高版本（Windows NT 已停止支持）。若必须保留 NT，请在注册表 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa 中将 RestrictAnonymous 设为 1（仅允许显式匿名访问）或 2（完全禁止匿名访问），并通过防火墙封锁 139/445 端口防止空会话连接。'
+description = "Windows NT 系统的本地安全认证（LSA）服务存在信息泄露漏洞。未经身份验证的远程攻击者可通过建立空会话（null session）的方式，调用 LsaQueryInformationPolicy 策略函数获取域安全标识符（SID），并利用该 SID 枚举出目标域中的所有用户账户信息。该漏洞无需任何身份认证即可利用，攻击者仅需能够网络访问运行 Windows NT 的域控制器或成员服务器的 IPC$ 共享端口（TCP 445/139），即可在不被察觉的情况下完整获取域用户列表，为后续的密码破解、权限提升或横向渗透攻击奠定基础。此漏洞影响所有启用空会话连接的 Windows NT 系统，CVSS v2 评分为 5.0（中等），主要危害为机密信息泄露。"
+published = "2001-08-31T04:00:00.000"
+remediation = '安装 Microsoft Windows NT 4.0 安全补丁（Security Bulletin MS01-044，适用于 Service Pack 6a），或通过 Windows Update 自动更新。如无法立即打补丁，可通过注册表限制空会话：将 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\LSA 下的 RestrictAnonymous 值设为 1（或 2 以完全禁用匿名枚举），并删除 NullSessionShares 和 NullSessionPipes 注册表项，然后重启系统。作为临时缓解措施，在防火墙或路由器上阻断 TCP 139、445 和 UDP 137、138 端口，阻止外部攻击者建立空会话。建议同时升级到 Windows 2000 或更高版本以获得完整防护。'
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Microsoft Windows NT 用户枚举漏洞"
-updated = "2026-06-16T21:53:21Z"
+sources = ["epss"]
+title = "Microsoft Windows NT 域用户信息泄露漏洞"
+updated = "2026-06-16T21:53:21.957"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1200"]
 ave_id = "AVE-2000-1142"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://www.securityfocus.com/archive/1/44430",
     "http://www.securityfocus.com/bid/959",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4015",
-    "https://github.com/CVEProject/cvelistV5/blob/285830d3bc68381daeff2169c3b0a4500df03b19/cves/2000/1xxx/CVE-2000-1200.json",
+    "https://github.com/CVEProject/cvelistV5/blob/cbc8909f965784fa84e604f999ad78ba1a862d6c/cves/2000/1xxx/CVE-2000-1200.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1200",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/dd1c73c7d44a762cc5a69d15ad07fe20976d7aec/CVE/data/2000/CVE-2000-1200.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d9d0e44f54f90ad1b4ec106b1cac94be29b99757/CVE/data/2000/CVE-2000-1200.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1200.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-1200.json",
-    "https://github.com/opencve/opencve-kb/blob/ce1c7bf4468f226d3b5ffdf52fb2db0cd4a31a97/2000/CVE-2000-1200.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/1xxx/CVE-2000-1200.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e60bb3a306b43cc668d535cff411b9566d5ecc1b/CVE-2000/CVE-2000-12xx/CVE-2000-1200.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1200.json",
+    "https://github.com/opencve/opencve-kb/blob/9854c179c024bf1d349f724d8589444858e69aa7/2000/CVE-2000-1200.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8e09cd003036511dff025515f28920f1d343007b/2000/1xxx/CVE-2000-1200.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-12xx/CVE-2000-1200.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1200.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1200.json",
 ]
