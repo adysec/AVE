@@ -1,0 +1,41 @@
+[basic]
+description = "re2 正则表达式库的 Node.js 绑定中，`String.prototype.match` 方法在处理全局匹配模式时存在无限循环漏洞。当使用可匹配空字符串的正则表达式（如 `a*`、`b?`、`(?:)` 等）进行全局匹配时，`lib/match.cc` 中的游标推进逻辑未处理零宽度匹配情况，导致匹配位置始终不变，同一空匹配被无限次追加到原生内存向量中，造成无限制的内存增长。该调用为同步原生代码，会阻塞整个事件循环，无法被 `try/catch`、`AbortController` 或内存限制中断，只能通过外部强制终止进程。攻击者若可控制正则表达式模式或输入字符串（如用户提供的正则表达式应用于用户输入的场景），即可远程触发拒绝服务，单次请求即可耗尽主机内存，影响整个服务。该漏洞影响 re2 1.25.2 之前的所有版本，已在 1.25.2 中修复。"
+published = "2026-07-30T21:18:12.870"
+remediation = "立即将 re2 升级至 1.25.2 或更高版本（`npm install re2@^1.25.2`）。如无法升级，避免对可匹配空字符串或受用户控制的正则表达式使用全局模式调用 `String.prototype.match`，改用 `matchAll` 或 `exec` 方法，或使用非全局模式。同时建议在应用层限制正则表达式输入长度和超时时间作为纵深防御。"
+score = 6.2
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Google node-re2 拒绝服务漏洞"
+updated = "2026-07-31T20:16:54.423"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-68499",
+    "GHSA-6hxr-mr5r-9836",
+]
+ave_id = "AVE-2026-0973"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/uhop/node-re2/commit/56293de4fc0914d7bc35f92e98de25b0d9bb417d",
+    "https://github.com/uhop/node-re2/releases/tag/1.25.2",
+    "https://github.com/uhop/node-re2/security/advisories/GHSA-6hxr-mr5r-9836",
+    "https://github.com/CVEProject/cvelistV5/blob/90ce235668535187d033418a98446c7a08506c82/cves/2026/68xxx/CVE-2026-68499.json",
+    "https://github.com/cisagov/vulnrichment/blob/1d36f3e9bfc6430c5bcee0e6bd4df5788a4946f1/2026/68xxx/CVE-2026-68499.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eef981a35a6293dd42587dac1f9be4de4ae1256e/CVE/data/2026/CVE-2026-68499.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eef981a35a6293dd42587dac1f9be4de4ae1256e/SSVC/data/2026/CVE-2026-68499.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-68499.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/5197f6d88a4fb8976a538beb60d39dd5ad36efed/vex/cve/2026/CVE-2026-68499.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/5197f6d88a4fb8976a538beb60d39dd5ad36efed/osv/cve/2026/UBUNTU-CVE-2026-68499.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-68499.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/npm/re2/CVE-2026-68499.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-684xx/CVE-2026-68499.json",
+]

