@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核 RDS（可靠数据报套接字）子系统的 sysctl 处理程序中存在空指针解引用漏洞。在处理 rds_tcp_rcvbuf 和 rds_tcp_sndbuf 参数时，代码通过 current->nsproxy 获取网络命名空间结构，但在某些场景下（如进程正在退出时执行 acct(2) 系统调用），current->nsproxy 可能为 NULL，导致内核发生空指针解引用（Oops）。该漏洞影响运行受影响 Linux 内核版本的本地系统，具有本地低权限用户可利用的特点，成功利用可导致系统崩溃或拒绝服务。CVSS v3.1 评分为 5.5，危害等级为中等。攻击者需要具备本地访问权限并运行恶意代码才能触发此漏洞。"
+published = "2025-01-19T11:15:09.000"
+remediation = "建议将 Linux 内核升级至 6.12.10 或更高版本（含 6.13 系列），该修复已通过内核提交 de8d6de0ee27 和 7f5611cbc487 合入主线，修复了 net/rds/tcp.c 中 RDS 子系统 sysctl 处理函数通过 current-&gt;nsproxy 获取网络命名空间时空指针解引用的问题。Ubuntu 24.04 LTS 用户应安装 linux-image-6.8.0-60.63 或更高版本（USN-7381-1），升级后需重启系统使新内核生效。对于无法立即升级的内核版本 4.6 至 6.12.9，可通过 sysctl 禁用 RDS 协议模块（执行 echo 1 &gt; /proc/sys/net/core/rds_conn_debug 或卸载 rds 内核模块）作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel RDS 协议空指针解引用漏洞"
+updated = "2026-06-17T08:43:53.833"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21635"]
+ave_id = "AVE-2025-0898"
+
+[meta]
+collected_at = "2026-08-05T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/7f5611cbc4871c7fb1ad36c2e5a9edad63dca95c",
+    "https://git.kernel.org/stable/c/de8d6de0ee27be4b2b1e5b06f04aeacbabbba492",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21635.md",
+    "https://github.com/CVEProject/cvelistV5/blob/d3cd9ba427c33ce366db05d18df45d3a792f5f74/cves/2025/21xxx/CVE-2025-21635.json",
+    "https://github.com/cisagov/vulnrichment/blob/bb8fee28b4e90102956816a94f978ff2574331f4/2025/21xxx/CVE-2025-21635.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4c1d71175e32f1e731b0a7d2c22a87887c3669cd/SSVC/data/2025/CVE-2025-21635.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4c1d71175e32f1e731b0a7d2c22a87887c3669cd/CVE/data/2025/CVE-2025-21635.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/853fff3f588474906eaaeec56c4eeef32edfc06c/CVEs/2025/CVE-2025-21635.md",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21635.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21635.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2025-21635.json",
+    "https://github.com/opencve/opencve-kb/blob/a3231978c760368f8f6b5637cdf1c49798e2fdc5/2025/CVE-2025-21635.json",
+]
