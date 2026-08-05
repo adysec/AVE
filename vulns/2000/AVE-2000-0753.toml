@@ -1,12 +1,12 @@
 [basic]
-description = "HP-UX 11.0 系统中的 cu 程序存在缓冲区溢出漏洞，本地攻击者可通过向 cu 程序的 -l 命令行参数传递超长字符串触发缓冲区溢出，导致攻击者能够获取 root 权限。该漏洞影响 HP-UX 11.0 系统，攻击者需要拥有本地系统访问权限，无需身份认证即可利用，CVSS 评分 7.2，危害等级高。目前已存在公开的利用代码。"
-published = "2000-12-11T05:00:00Z"
-remediation = "立即从 HP 官方渠道（ITRC 或 HP Support Portal）获取并安装针对 HP-UX 11.0 的 PHCO_23043 补丁包。如无法安装补丁，可执行 `chmod 555 /bin/cu` 移除 cu 程序的 setuid 权限，或使用 `chmod 0 /bin/cu` 彻底禁用 cu 命令。对于仍在使用 HP-UX 11.0 的系统，建议升级到受支持的 HP-UX 11i v3 或更高版本，该漏洞已在后续版本中修复。"
+description = "HP-UX 11.0 系统中的 /bin/cu 程序存在缓冲区溢出漏洞。该程序在处理通过 -l 命令行参数指定的设备路径时，未能对输入长度进行有效边界检查，攻击者可传递超长字符串触发栈缓冲区溢出，进而覆盖返回地址并执行任意代码。此漏洞仅影响本地已登录用户，攻击者无需额外身份验证即可在具有普通权限的账户下利用此漏洞获取 root 权限。利用方式为通过构造包含 shellcode 和偏移量的超长字符串作为 -l 参数调用 /bin/cu，覆盖函数返回地址并跳转至嵌入的 shellcode，最终获得系统最高权限。HP-UX 11.00 版本受此漏洞影响，CVSS 评分为 7.2，危害等级为高。"
+published = "2000-12-11T05:00:00.000"
+remediation = "升级 HP-UX 到 11.11 或更高版本（包含安全补丁），并应用最新的 HP-UX 安全更新。通过 HP-UX software configurator 或 HP-UX Manageability package禁用不必要的cu服务。使用sed脚本限制cu命令行参数长度，最大支持512字符。运行HP-UX Security Vault进行漏洞扫描，如发现权限提升风险则紧急修补。对-legacy应用程序进行程序代码审计，修正缓冲区溢出缺陷。使用execattr.conf配置用户执行权限，限制普通用户对/bin/cu的使用权限。如无法立即升级，可将cu命令从PATH中移除或设为不可执行，并部署HP-UX Intrusion Detection System进行持续监控。"
 score = 7.2
 severity = "HIGH"
-sources = ["epss"]
-title = "HP HP-UX /bin/cu 本地缓冲区溢出权限提升漏洞"
-updated = "2026-06-16T21:53:00Z"
+sources = ["avd"]
+title = "HP HP-UX 11.0 cu 本地缓冲区溢出权限提升漏洞"
+updated = "2026-06-16T21:53:00.150"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1028"]
 ave_id = "AVE-2000-0753"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-05T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1886",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5460",
     "https://www.exploit-db.com/exploits/245",
-    "https://github.com/CVEProject/cvelistV5/blob/57d47b7d3f36bb14623bb27ddb073baead1c6714/cves/2000/1xxx/CVE-2000-1028.json",
+    "https://github.com/CVEProject/cvelistV5/blob/71e7ec7831487791fa2712228e5e13057adec23c/cves/2000/1xxx/CVE-2000-1028.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1028",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/37abbcb2a8225ed14d2b9dfffb1ad41b15cc2cc8/CVE/data/2000/CVE-2000-1028.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/fdd3cf49156dc683c87ad86ac7e4c8f79b9d99df/CVE/data/2000/CVE-2000-1028.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1028.json",
-    "https://github.com/opencve/opencve-kb/blob/e615d840f21a506ab4861678584a0f621d55a0d3/2000/CVE-2000-1028.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1028.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/67c5e994e49225faeedb88198d627dbdd922374c/2000/1xxx/CVE-2000-1028.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/0d2adc4a9428696b559622523817d9cdfdad97f0/CVE-2000/CVE-2000-10xx/CVE-2000-1028.json",
+    "https://github.com/opencve/opencve-kb/blob/25203fd38febf163b5a0afeecde6a3effc609cec/2000/CVE-2000-1028.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1028.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8666f9d895a0f69afaf7cc8ad269f1c8281f7c7d/2000/1xxx/CVE-2000-1028.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-10xx/CVE-2000-1028.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1028.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1028.json",
 ]
