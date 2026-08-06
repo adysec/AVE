@@ -1,0 +1,42 @@
+[basic]
+description = "rclone 是一款用于在不同云存储提供商之间同步文件和目录的命令行程序。在使用 `-l/--links` 选项时，rclone 将符号链接序列化为 `.rclonelink` 文本对象，并在同步到本地目标时通过 `os.Symlink` 重新创建符号链接。该软件在重新创建符号链接前未对链接目标进行任何有效性验证，攻击者可通过控制受害者所同步的远程存储内容，将 `.rclonelink` 对象体设置为任意绝对路径或包含 `../` 的相对路径，使符号链接指向目标目录之外的文件系统位置。由于按字典序排列时 `.rclonelink` 对象在普通文件之前被处理，rclone 会先创建逃逸符号链接，随后将后续对象写入该链接所指向的位置，导致文件被写入目标目录外部且内容由攻击者控制。该漏洞影响 rclone 1.74.4 之前的所有版本，攻击者需诱使受害者使用 `--links` 选项从受控远程同步文件，即可在受害者用户权限下向文件系统任意可写位置写入文件，通过覆盖 SSH 公钥认证文件、shell 配置文件或定时任务实现远程代码执行。"
+published = "2026-07-14T22:17:16.533"
+remediation = "建议立即将 rclone 升级至 v1.74.4 或更高版本。在升级之前，应避免在同步不受信任的远程数据源时使用 `-l` 或 `--links` 参数，以防止攻击者通过构造恶意符号链接实现任意文件写入。"
+score = 7.5
+severity = "HIGH"
+sources = ["ghsa"]
+title = "rclone 文件同步工具符号链接目标未验证任意文件写入漏洞"
+updated = "2026-07-17T03:13:56.627"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54572",
+    "GHSA-cf44-9pgv-m4xc",
+]
+ave_id = "AVE-2026-1277"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/rclone/rclone/commit/1154afebee986180b489084d38e2a0c578751498",
+    "https://github.com/rclone/rclone/commit/874a804f5289517defdd7de68b2a374837080265",
+    "https://github.com/rclone/rclone/releases/tag/v1.74.4",
+    "https://github.com/rclone/rclone/security/advisories/GHSA-cf44-9pgv-m4xc",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2026/54xxx/CVE-2026-54572.json",
+    "https://github.com/cisagov/vulnrichment/blob/4ad4bd44d9a7e1cd1fac5b9c91a6019e8978287e/2026/54xxx/CVE-2026-54572.json",
+    "https://github.com/rclone/rclone/blob/e4c7aca6bda5b35b42080a9a4056230c8339285c/docs/content/changelog.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6a1b50264c71aac35268f73e4f9a8ca10ac6b2eb/SSVC/data/2026/CVE-2026-54572.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-54572.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6a1b50264c71aac35268f73e4f9a8ca10ac6b2eb/CVE/data/2026/CVE-2026-54572.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/ffe0b33be8ff1db2a5822dbcfde9dea7e5ac2e5b/data/2026/CVE-2026-54572.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/9048253d5d9d568b5aa4f29a61fbc2297325e29a/vex/cve/2026/CVE-2026-54572.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/9048253d5d9d568b5aa4f29a61fbc2297325e29a/osv/cve/2026/UBUNTU-CVE-2026-54572.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2026-54572.json",
+]
