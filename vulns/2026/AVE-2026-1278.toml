@@ -1,0 +1,157 @@
+[basic]
+description = '''
+### Summary
+
+`rclone archive extract` can write extracted files outside the user-selected destination prefix when extracting a crafted archive. A malicious archive entry containing parent path components such as `../` can escape the requested extraction prefix and create or overwrite sibling objects in the same bucket/path scope.
+
+### Details
+
+The affected code path is in `cmd/archive/extract/extract.go`.
+
+In `ArchiveExtract()`, the archive entry path is taken from `f.NameInArchive`. The code strips only a leading `./` prefix and then joins the archive entry path with the destination directory:
+
+```go
+remote := f.NameInArchive
+remote = strings.TrimPrefix(remote, "./")
+if dstDir != "" {
+    remote = path.Join(dstDir, remote)
+}
+_, err = operations.Rcat(ctx, dst, remote, fin, f.ModTime(), nil)
+```
+
+Parent path components such as `../` are not rejected before `path.Join()` is used.
+
+When the destination is an S3-style remote such as:
+
+```text
+:s3:bucket/safe/prefix
+```
+
+rclone creates the destination filesystem rooted at `bucket/safe` and treats `prefix` as the destination directory. If the archive contains an entry named:
+
+```text
+../escaped-from-prefix.txt
+```
+
+then `path.Join("prefix", "../escaped-from-prefix.txt")` resolves to:
+
+```text
+escaped-from-prefix.txt
+```
+
+As a result, the S3 backend uploads the object to:
+
+```text
+bucket/safe/escaped-from-prefix.txt
+```
+
+instead of the expected destination:
+
+```text
+bucket/safe/prefix/escaped-from-prefix.txt
+```
+
+This allows an attacker-controlled archive to escape the selected extraction prefix on object-storage remotes.
+
+### PoC
+
+Test environment:
+
+- Windows 11
+- rclone v1.74.3 official Windows amd64 binary
+- Local fake S3 HTTP endpoint
+- Crafted ZIP archive containing `../escaped-from-prefix.txt`
+
+Steps to reproduce:https://drive.google.com/file/d/1P_cLKFgiWSVSATB8500yP28jdzwt9FAt/view?usp=sharing
+
+1. Extract the attached PoC ZIP.
+
+2. Run the PoC script:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-poc.ps1 -RcloneExe "C:\path\to\rclone.exe"
+```
+
+3. The PoC creates a ZIP archive containing this entry:
+
+```text
+../escaped-from-prefix.txt
+```
+
+4. The PoC starts a local fake S3 endpoint and runs rclone with an S3-style destination prefix:
+
+```powershell
+rclone archive extract malicious.zip :s3:bucket/safe/prefix
+```
+
+5. Observe the fake S3 request log.
+
+Expected safe behavior:
+
+```text
+PUT /bucket/safe/prefix/escaped-from-prefix.txt
+```
+
+Observed behavior:
+
+```text
+PUT /bucket/safe/escaped-from-prefix.txt?x-id=PutObject
+```
+
+This shows that the archive entry escaped the requested `safe/prefix` destination and was written under `safe/` instead.
+
+The PoC package includes:
+
+- `run-poc.ps1`
+- `fake-s3-server.py`
+- `README.md`
+- `report-draft.md`
+- captured proof logs
+
+### Impact
+
+An attacker who supplies an archive that a victim extracts with `rclone archive extract` can cause extracted files to be written outside the destination prefix selected by the victim when the destination is an S3-style object storage remote.
+
+Depending on the victim's configured remote credentials and bucket permissions, this may allow creation or overwrite of sibling objects outside the intended extraction directory/prefix.
+
+This does not require compromising the S3 service itself. The attack relies on the victim extracting an attacker-controlled archive with rclone into an object-storage prefix.'''
+published = "2026-01-01"
+remediation = '立即升级 rclone 到 v1.74.4 或更高版本，该版本在 cmd/archive/extract/extract.go 中新增 destPath 函数，拒绝包含 ".." 路径组件的归档条目。如无法立即升级，应避免从不受信任的来源提取归档文件至 S3 等对象存储远程，或改用本地文件系统作为中间目标后再手动上传。'
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "rclone archive extract 路径穿越漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59732",
+    "GHSA-4vr5-p2gc-h23p",
+]
+ave_id = "AVE-2026-1278"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/rclone/rclone/commit/1a746732441e8158f32fab35924b23701e719a8c",
+    "https://github.com/rclone/rclone/commit/d11efe0d58fe6a2d6d90675bb9d8ee5840c51e1d",
+    "https://github.com/rclone/rclone/releases/tag/v1.74.4",
+    "https://github.com/rclone/rclone/security/advisories/GHSA-4vr5-p2gc-h23p",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2026/CVE-2026-59732.md",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2026/59xxx/CVE-2026-59732.json",
+    "https://github.com/cisagov/vulnrichment/blob/4ad4bd44d9a7e1cd1fac5b9c91a6019e8978287e/2026/59xxx/CVE-2026-59732.json",
+    "https://github.com/rclone/rclone/blob/e4c7aca6bda5b35b42080a9a4056230c8339285c/docs/content/changelog.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4a3292363e1c82650dc766bf14277e5bdb8c78c9/SSVC/data/2026/CVE-2026-59732.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4a3292363e1c82650dc766bf14277e5bdb8c78c9/CVE/data/2026/CVE-2026-59732.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-59732.md",
+    "https://github.com/anchore/nvd-data-overrides/blob/ffe0b33be8ff1db2a5822dbcfde9dea7e5ac2e5b/data/2026/CVE-2026-59732.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/9048253d5d9d568b5aa4f29a61fbc2297325e29a/vex/cve/2026/CVE-2026-59732.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/9048253d5d9d568b5aa4f29a61fbc2297325e29a/osv/cve/2026/UBUNTU-CVE-2026-59732.json",
+]
