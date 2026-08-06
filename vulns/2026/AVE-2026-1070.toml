@@ -1,0 +1,169 @@
+[basic]
+description = '''
+## Summary
+
+The datapoint export API builds a PostgreSQL crosstab export query by concatenating asset display names into raw SQL. An authenticated user who can create or rename an asset and then request a crosstab datapoint export can inject SQL through the asset name. The injected query output is streamed back to the caller inside the normal ZIP/CSV export response.
+
+This creates a practical database exfiltration primitive through the application API. In a multi-tenant deployment, this can expose data outside the attacker's tenant if the application database role can read shared manager tables.
+
+## Affected Component
+
+- Datapoint export endpoint for asset datapoints.
+- Crosstab export formats, specifically CSV crosstab-style exports.
+- Query builder path that constructs a `COPY (SELECT ... FROM crosstab(...)) TO STDOUT` statement.
+
+## Security Impact
+
+Impact is high. A remote authenticated attacker with asset read/write capabilities can:
+
+- Store SQL syntax inside an asset name.
+- Trigger the crosstab export path for that asset.
+- Cause the backend to execute attacker-influenced SQL through the PostgreSQL connection used by the manager service.
+- Receive injected `SELECT` results in the exported CSV contained in the ZIP response.
+
+The demonstrated impact is database data exfiltration. The proof of concept safely retrieved database execution context and an aggregate table count. A real attacker could adapt the injected `SELECT` to read other database tables accessible to the application database role.
+
+This is especially sensitive in multi-tenant deployments because application tables commonly contain data for multiple realms/tenants in the same database.
+
+## Attack Preconditions
+
+The attacker needs:
+
+- A valid authenticated session.
+- Permission to create or rename at least one asset.
+- Permission to read/export datapoints for at least one attribute on that asset.
+- Access to a crosstab datapoint export format.
+
+No direct database access is required. No server filesystem access is required. No token forgery is required.
+
+## Technical Details
+
+The export implementation derives a crosstab header from the asset name and attribute name. It then embeds that header into two SQL contexts:
+
+1. A PostgreSQL double-quoted column identifier:
+
+```sql
+\"<asset name> : <attribute name>\" text
+```
+
+2. A category query passed to `crosstab(...)`, wrapped in a fixed dollar-quoted delimiter:
+
+```sql
+$cat$ SELECT header FROM (VALUES ('<asset name> : <attribute name>')) AS t(header) $cat$
+```
+
+The current escaping is incomplete:
+
+- Single quotes are escaped in one string-literal context.
+- Double quotes in asset names are not escaped before being placed inside quoted identifiers.
+- The fixed dollar-quote delimiter is not protected against an asset name containing the delimiter token.
+
+As a result, an attacker-controlled asset name can break out of the intended SQL grammar boundary and append SQL to the generated `COPY ... TO STDOUT` query. Because the backend streams `COPY` output into the export response, injected query rows are returned to the attacker as CSV.
+
+## Example Exploit Flow
+
+1. Authenticate normally.
+2. Create or rename an asset using a name containing SQL metacharacters that closes the crosstab column definition.
+3. Ensure the asset has an exportable datapoint attribute.
+4. Write at least one datapoint value for that attribute, if necessary.
+5. Request a CSV crosstab datapoint export for the crafted asset attribute.
+6. Inspect the returned ZIP/CSV. The CSV contains both normal datapoint rows and rows produced by the injected SQL.
+
+A safe proof query demonstrated exfiltration of:
+
+- `current_user`
+- `current_database()`
+- `count(*)` from an application table
+
+The returned CSV contained a row equivalent to:
+
+```text
+<timestamp>,<database_user>:<database_name>:<table_count>
+```
+
+## Root Cause
+
+The root cause is manual SQL string construction using user-controlled display data as SQL syntax.
+
+The asset name is treated as presentation data in the application model, but later reused as part of executable SQL:
+
+- As an SQL identifier in the crosstab output column list.
+- As a value inside a category query string passed to PostgreSQL.
+
+These contexts require different escaping rules. Applying partial string escaping is error-prone and currently misses exploitable grammar boundaries.
+
+## Recommended Fix
+
+Avoid embedding user-controlled asset names directly into executable SQL.
+
+Recommended options:
+
+1. Do not use asset names as SQL identifiers.
+   - Generate deterministic internal column aliases such as `c1`, `c2`, `c3`.
+   - Keep the user-facing asset/attribute labels outside SQL and apply them only when serializing CSV headers.
+
+2. If dynamic identifiers are unavoidable, quote them using a database-aware identifier quoting function.
+   - For PostgreSQL identifiers, double embedded `\"` characters.
+   - Do not perform ad hoc quoting with string concatenation.
+
+3. Avoid fixed dollar-quote delimiters around attacker-influenced content.
+   - Use prepared statements or server-side functions where possible.
+   - If textual SQL must be generated, choose a delimiter that cannot appear in user input or escape/validate before use.
+
+4. Add a strict validation boundary for display names if the product can tolerate it.
+   - This should be defense-in-depth, not the only fix.
+   - Reject control characters and SQL-significant delimiter sequences in asset names if they are not required.
+
+5. Add regression tests for:
+   - Asset names containing `\"`.
+   - Asset names containing the fixed dollar-quote delimiter.
+   - Asset names containing newline/comment syntax.
+   - Crosstab exports with multiple assets and attributes.
+   - Confirmation that returned CSV never contains injected query output.
+
+## Suggested Safe Design
+
+Build the crosstab with internal, non-user-controlled category keys and column names. For example:
+
+- Use asset IDs and attribute names only as parameterized data for filtering.
+- Generate internal column identifiers such as `col_0`, `col_1`.
+- Maintain a separate mapping from `col_0` to the display label.
+- Replace the CSV header row after query execution using application-side serialization, not SQL identifiers derived from user input.
+
+This removes asset display names from SQL syntax entirely.
+
+## Severity
+
+Suggested severity: High
+
+Rationale:
+
+- Network reachable through the authenticated API.
+- Low attack complexity after authentication.
+- Requires only ordinary asset read/write/export capabilities.
+- Demonstrated SQL injection result exfiltration through a normal application response.
+- High confidentiality impact due to possible cross-tenant database reads.
+- Integrity and availability impact were not required for the demonstrated exploit and should be assessed separately based on the database role's privileges.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "OpenRemote has Authenticated SQL Injection via Datapoint Crosstab Export"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-cgfv-jrfp-2r7v"]
+ave_id = "AVE-2026-1070"
+
+[meta]
+collected_at = "2026-08-06T00:51:35.347521444+00:00"
+status = "completed"
+
+[references]
+urls = []
