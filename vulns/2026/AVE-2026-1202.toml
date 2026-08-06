@@ -1,0 +1,112 @@
+[basic]
+description = '''
+### Summary
+
+The API endpoint used to fork repositories into organizations performs a weaker authorization check than the corresponding web UI and other repository creation endpoints.
+
+When a repository is forked into an organization through the API, the endpoint only verifies that the user is an organization member (`IsOrgMember()`), but does not verify whether the user is allowed to create repositories in that organization (`CanCreateOrgRepo()`).
+
+As a result, organization members belonging to teams with `can_create_org_repo=false` can still create repositories inside the organization by using the fork API.
+
+### Details
+
+Affected endpoint:
+
+```
+POST /api/v1/repos/{owner}/{repo}/forks
+```
+
+In `routers/api/v1/repo/fork.go`, the endpoint performs the following authorization check:
+
+```go
+if !ctx.Doer.IsAdmin {
+    isMember, err := org.IsOrgMember(ctx, ctx.Doer.ID)
+    if !isMember {
+        ctx.APIError(http.StatusForbidden, ...)
+        return
+    }
+}
+```
+
+The equivalent web UI implementation uses the stronger permission check:
+
+```go
+isAllowedToFork, err := organization.OrgFromUser(ctxUser).
+    CanCreateOrgRepo(ctx, ctx.Doer.ID)
+```
+
+The same `CanCreateOrgRepo()` authorization check is also used by:
+
+* CreateOrgRepo API endpoint
+* GenerateRepository API endpoint
+
+The fork endpoint appears to be the only repository creation path that relies solely on organization membership.
+
+### Proof of Concept
+
+Tested on Gitea 1.23.7.
+
+1. Create an organization.
+2. Create a team with `can_create_org_repo=false`.
+3. Add a test user to that team.
+4. Verify that normal repository creation is denied:
+
+```http
+POST /api/v1/orgs/target-org/repos
+```
+
+Result:
+
+```http
+403 Forbidden
+```
+
+5. Fork a repository into the organization:
+
+```http
+POST /api/v1/repos/admin/public-repo/forks
+Content-Type: application/json
+
+{
+  \"organization\": \"target-org\"
+}
+```
+
+Result:
+
+```http
+202 Accepted
+```
+
+The repository is successfully created despite repository creation permissions being disabled.
+
+### Impact
+
+Users who are organization members but are intentionally prevented from creating repositories can bypass that restriction through the API.
+
+This allows unauthorized repository creation inside the organization and may expose additional attack surface depending on the organization's Actions, runner, and workflow configuration.
+
+The vulnerability represents an authorization bypass because API behavior is less restrictive than both the web UI and other repository creation endpoints.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Gitea: API Fork Endpoint Authorization Bypass Allows Organization Members to Bypass Repository Creation Restrictions"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-rjvx-x5h2-6px5"]
+ave_id = "AVE-2026-1202"
+
+[meta]
+collected_at = "2026-08-06T12:33:07.393992303+00:00"
+status = "completed"
+
+[references]
+urls = []
