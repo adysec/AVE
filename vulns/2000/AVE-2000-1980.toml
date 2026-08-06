@@ -1,12 +1,12 @@
 [basic]
-description = "ypbind 3.3 存在缓冲区溢出漏洞，远程攻击者无需身份认证即可向目标系统发送特制请求触发该漏洞，成功利用后可获取 root 权限，完全控制受影响系统。该漏洞影响运行 ypbind 3.3 的 Linux 发行版（包括 SuSE、Caldera、Mandrake 等），CVSS v2 评分 10.0，攻击复杂度低，无需认证即可远程利用，可导致机密性、完整性和可用性完全丧失。各厂商已发布安全公告和补丁修复此漏洞。"
-published = "2000-12-11T05:00:00Z"
-remediation = "立即升级 ypbind 至修复版本（如 Caldera OpenLinux 的 ypbind 补丁包、SuSE Linux 对应安全更新、Mandrake Linux MDKSA-2000-064 更新）。如无需 NIS 服务，执行 `service ypbind stop && chkconfig ypbind off` 禁用该服务；若必须使用 NIS，在防火墙上限制仅允许受信任网段访问 ypbind（端口 111/TCP/UDP 及 32768-65535 动态端口）。"
+description = "ypbind 3.3 存在缓冲区溢出漏洞，运行于本地 root 权限下的 ypbind 服务在处理畸形或恶意输入数据时，未对缓冲区写入内容长度进行充分校验，触发越界写入（缓冲区溢出）。攻击者无需预先认证，可构造特制输入数据发送给目标，利用溢出覆盖内存中的关键数据和返回地址，劫持程序执行流程，最终可能获得目标系统的 root 权限。该漏洞影响 NIS 绑定服务的完整性与可用性，CVSS 评分为 10.0，危害等级严重。系统管理员应尽快升级至修复该漏洞的 ypbind 版本或禁用不必要的 NIS 服务以降低风险。"
+published = "2000-12-11T05:00:00.000"
+remediation = "立即升级 ypbind 至 3.3 之后已修复该漏洞的版本；若无法升级，建议将该服务部署于内部可信网络，并在边界防火墙上限制对 834 端口（portmapper）及 ypbind 相关 RPC 服务的来源访问，仅允许受信任主机通过。同时按最小权限原则运行 ypbind 进程，避免其以 root 权限监听，并定期检查系统日志中与该服务相关的异常连接与异常请求，及时阻断可疑流量。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "NIS ypbind 缓冲区溢出漏洞"
-updated = "2026-06-16T21:53:01Z"
+sources = ["avd"]
+title = "ypbind ypbind 3.3 缓冲区溢出漏洞"
+updated = "2026-06-16T21:53:01.910"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1041"]
 ave_id = "AVE-2000-1980"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.calderasystems.com/support/security/advisories/CSSA-2000-039.0.txt",
     "http://www.linux-mandrake.com/en/security/MDKSA-2000-064.php3?dis=7.1",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5759",
-    "https://github.com/CVEProject/cvelistV5/blob/2e429c9a0087eb0ee678d77c344076eb39564d19/cves/2000/1xxx/CVE-2000-1041.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/604ddf5b05f9e8ce70a7b6f9716ba166db0bd437/CVE/data/2000/CVE-2000-1041.json",
+    "https://github.com/CVEProject/cvelistV5/blob/ad23a84307831b745d27b34af84abc59130b2cd5/cves/2000/1xxx/CVE-2000-1041.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bd3fb132c1b8a95ef2bcf26b230a07f7c9700666/CVE/data/2000/CVE-2000-1041.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1041",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1041.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1041.json",
-    "https://github.com/opencve/opencve-kb/blob/cbf0905811e3a7a53efa9a65584bb426cc9bcca8/2000/CVE-2000-1041.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3a7c0c4aa01967d2633d808f80f3fcd65491b947/CVE-2000/CVE-2000-10xx/CVE-2000-1041.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c80cd921505a9f88e4aae41f1414ac3763e708ba/2000/1xxx/CVE-2000-1041.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1041.json",
+    "https://github.com/opencve/opencve-kb/blob/3563307faac29cd78316d24dffd5b35b4d38cc65/2000/CVE-2000-1041.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-10xx/CVE-2000-1041.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/e3f82cb4abb129ac4e65ce1b058ead82032d2595/2000/1xxx/CVE-2000-1041.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1041.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1041.json",
 ]
