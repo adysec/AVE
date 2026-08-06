@@ -1,12 +1,12 @@
 [basic]
-description = "Itetris（智能俄罗斯方块）1.6.2及更早版本的 svgalib 版由于以 setuid root 权限安装，且程序在解压字体文件时通过 system() 函数调用 gunzip，但未指定 gunzip 的绝对路径，而是信任 PATH 环境变量来定位可执行文件。本地攻击者可通过修改 PATH 环境变量，将其指向包含恶意 gunzip 程序的目录（如 /tmp），随后运行 itetris 并传入特制的 .gz 字体文件路径触发解压操作，导致恶意程序以 root 权限执行，从而获取系统完全控制权。该漏洞影响 Linux 系统上安装了 itetris 的所有环境，攻击者无需任何特权即可利用，已存在公开的利用代码。"
-published = "2001-02-12T00:00:00Z"
-remediation = "建议立即卸载 itetris 软件包（如已不再使用），或移除 itetris 二进制文件的 setuid root 权限：`chmod u-s /usr/local/bin/itetris`。如必须使用，可升级至官方修复版本，或通过修改源码将 gunzip 调用改为绝对路径 `/bin/gunzip` 以消除 PATH 环境变量注入风险。"
-score = 5
-severity = "MEDIUM"
-sources = ["cve"]
-title = "itetris itetris 1.6.1/1.6.2 任意命令执行漏洞"
-updated = "2001-02-12T00:00:00Z"
+description = "itetris/xitetris 1.6.2 及更早版本在运行过程中依赖 PATH 环境变量查找并执行 gunzip 程序，未对可执行文件路径进行严格校验，导致存在特权任意命令执行漏洞。攻击者可通过修改自身 PATH 环境变量，使其指向包含恶意 gunzip 程序的自定义目录，从而以 root 权限执行任意系统命令。该漏洞影响运行 itetris 或 xitetris 1.6.1/1.6.2 版本的本地系统，CVSS 评分为 7.2，危害等级为高危。由于漏洞利用仅需本地访问权限，无需额外身份认证，攻击者可利用该漏洞完全控制目标系统。"
+published = "2001-02-12T05:00:00.000"
+remediation = "立即将 itetris 二进制的 setuid 位去除，执行 chmod u-s /usr/local/bin/itetris，阻止程序以 root 权限运行；如仍需要使用，应从源码编译并将 system() 调用中的 gunzip 替换为绝对路径 /bin/gunzip，避免依赖 PATH 环境变量；若该游戏无业务必要，建议直接卸载以彻底消除风险。"
+score = 7.2
+severity = "HIGH"
+sources = ["epss"]
+title = "Itetris xitetris 特权任意命令执行漏洞"
+updated = "2026-06-16T21:53:37.890"
 
 [exploit]
 exp_urls = []
@@ -17,20 +17,23 @@ aliases = ["CVE-2001-0087"]
 ave_id = "AVE-2001-0036"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
+    "http://archives.neohapsis.com/archives/bugtraq/2000-12/0295.html",
+    "http://www.securityfocus.com/bid/2139",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/5795",
     "https://www.exploit-db.com/exploits/20517",
-    "https://github.com/CVEProject/cvelistV5/blob/c6e3b04088d3a34fb448e0c7ffd377395dcc3ef8/cves/2001/0xxx/CVE-2001-0087.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/6e8a79e44f6fbd3ac137885a8646f81e8e0c401a/CVE/data/2001/CVE-2001-0087.json",
+    "https://github.com/CVEProject/cvelistV5/blob/8e508953314efe4f8a66a19b1407eac6138d8179/cves/2001/0xxx/CVE-2001-0087.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/29a0183c5b739ef9ef4602f498af4748f0ecd134/CVE/data/2001/CVE-2001-0087.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0087",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0087.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2001-0087.json",
-    "https://github.com/opencve/opencve-kb/blob/7f050e8fca5626f412366605b1f58958789b2919/2001/CVE-2001-0087.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/9af727c40ac027294e4558abbc02d8967ee2a1d7/CVE-2001/CVE-2001-00xx/CVE-2001-0087.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/ca31171c444e5a175f3ac1833b0261c6587a34e9/2001/0xxx/CVE-2001-0087.md",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2001-0087.json",
+    "https://github.com/opencve/opencve-kb/blob/06a5f92654157098019cd79b92e3e8878cf978f2/2001/CVE-2001-0087.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-00xx/CVE-2001-0087.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/2456d1f3fd18316e5de9a086f9290cc95e66ace4/2001/0xxx/CVE-2001-0087.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0087.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0087.json",
 ]
