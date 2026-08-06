@@ -1,0 +1,129 @@
+[basic]
+description = '''
+### Summary
+A missing human-approval gate on the `create_dynatrace_notebook` tool allows a caller to create persistent tenant-visible documents containing arbitrary content (including embedded DQL that other users execute when opening the notebook) without operator consent.
+
+### Details
+`dynatrace-mcp-server` registers six write tools: `send_slack_message`, `send_email`, `send_event`, `create_workflow_for_notification`, `make_workflow_public`, and `create_dynatrace_notebook`. Five of these call `requestHumanApproval()` before executing the side-effect, which elicits the operator's explicit consent through the MCP elicitation protocol. The CHANGELOG explicitly states these approval gates were added \"to ensure user consent and prevent unintended actions.\"
+
+`create_dynatrace_notebook` does not call `requestHumanApproval()`. The tool was introduced in a separate release from the approval-gate retrofit and was left ungated. As a result, a caller can create persistent, tenant-visible Dynatrace notebooks containing arbitrary content with no operator confirmation. Notebooks can include embedded DQL queries that later execute under the permissions of any tenant user who opens them.
+
+The vulnerable code is in `src/index.ts`, lines 1563-1601:
+
+```typescript
+tool(
+  'create_dynatrace_notebook',
+  'Create Dynatrace Notebook',
+  'Create a new notebook in the Dynatrace platform ...',
+  {
+    name: z.string().describe(/* ... */),
+    description: z.string().optional().describe(/* ... */),
+    content: z.array(z.object({
+      type: z.enum(['dql', 'markdown']),
+      text: z.string(),
+    })).describe(/* ... */),
+  },
+  {
+    readOnlyHint: false,
+  },
+  async ({ name, content, description }) => {
+    const dtClient = await createAuthenticatedHttpClient(allRequiredScopes);
+    const data = await createDynatraceNotebook(dtClient, name, content, description);
+    // No requestHumanApproval() call.
+    // No destructiveHint annotation.
+    // Scopes requested are allRequiredScopes (the broadest possible set)
+    // even though only document:documents:write is needed.
+
+    return data
+      ? `Document created successfully: ${dtEnvironment}/ui/apps/dynatrace.notebooks/notebook/${data.id}`
+      : 'document creation failed';
+  },
+);
+```
+
+By comparison, every other write tool calls `requestHumanApproval()` as its first action:
+
+- `send_email` (line 1274): `const approved = await requestHumanApproval(...);`
+- `send_slack_message` (line 652): `const approved = await requestHumanApproval(...);`
+- `send_event` (line 1367): `const approved = await requestHumanApproval(...);`
+- `create_workflow_for_notification` (line 1069): `const approved = await requestHumanApproval(...);`
+- `make_workflow_public` (line 1118): `const approved = await requestHumanApproval(...);`
+
+
+### PoC
+Tested end-to-end against a real Dynatrace tenant. The MCP server was started in HTTP mode with the operator's Platform Token:
+
+```bash
+export DT_ENVIRONMENT=https://<tenant>.apps.dynatrace.com
+export DT_PLATFORM_TOKEN=dt0s16....
+npx -y @dynatrace-oss/dynatrace-mcp-server@1.8.5 --http --port 3000
+```
+
+A single unauthenticated POST from a process with no Dynatrace credentials of its own:
+
+```bash
+curl -sS http://127.0.0.1:3000/ \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -d '{
+    \"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"tools/call\",
+    \"params\": {
+      \"name\": \"create_dynatrace_notebook\",
+      \"arguments\": {
+        \"name\": \"Unapproved notebook\",
+        \"description\": \"Created without operator approval.\",
+        \"content\": [
+          {\"type\": \"markdown\", \"text\": \"# This notebook was created without approval\"},
+          {\"type\": \"dql\",      \"text\": \"fetch logs | limit 10\"}
+        ]
+      }
+    }
+  }'
+```
+
+The response:
+
+```
+event: message
+data: {\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"Document created successfully:
+       https://<tenant>.apps.dynatrace.com/ui/apps/dynatrace.notebooks/notebook/<uuid>\"}]},
+       \"jsonrpc\":\"2.0\",\"id\":1}
+```
+
+The notebook is visible in the operator's Notebooks app within seconds. No elicitation prompt was sent to any operator client.
+
+By contrast, the same harness invoking `send_email` or `send_slack_message` returns:
+
+```
+\"Operation cancelled: Human approval was not granted for sending this email.\"
+```
+
+The gate logic exists and is wired up for all other write tools - it is simply missing on `create_dynatrace_notebook`.
+
+
+### Impact
+- A caller (an unauthenticated network attacker over the HTTP transport when authentication is missing, or a prompt-injected LLM in stdio mode) can silently create persistent tenant-visible documents.
+- The notebook content is attacker-controlled. Embedded DQL queries execute under the permissions of any tenant user who later opens the notebook - a stored-DQL pattern that crosses identity boundaries within the tenant.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "@dynatrace-oss/dynatrace-mcp-server's create_dynatrace_notebook missing the human-approval gate"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-pc2w-4mq8-32qw"]
+ave_id = "AVE-2026-1165"
+
+[meta]
+collected_at = "2026-08-06T08:55:51.307645352+00:00"
+status = "completed"
+
+[references]
+urls = []
