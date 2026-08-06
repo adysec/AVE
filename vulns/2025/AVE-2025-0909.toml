@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 ipvlan 子系统中存在释放后使用漏洞。由于 ipvlan 未对底层物理设备维护引用计数，当 linkwatch 工作队列处理 ipvlan 设备时，底层设备可能已被释放，导致在 ipvlan_get_iflink() 中访问已释放的 phy_dev 指针。该漏洞影响使用 ipvlan 虚拟化技术的 Linux 内核系统，CVSS 评分 7.8，危害等级高。具有本地低权限访问权限的攻击者可通过竞争条件触发该漏洞，在设备注销过程中触发 linkwatch 工作队列访问已释放内存，导致权限提升或系统崩溃。Linux 内核社区已在后续版本中通过为底层设备添加引用计数保护及使用 RCU 机制修复此问题。"
+published = "2025-01-19T11:15:10.830"
+remediation = '建议将 Linux 内核升级至以下修复版本：6.6.72、6.12.10 或 6.13 及以上版本。该漏洞源于 ipvlan 模块在设备注销后仍访问已释放的底层网络设备内存，导致 use-after-free。主流发行版方面，Ubuntu 24.04 LTS 用户应安装 linux-image-6.8.0-60 或更高版本，Ubuntu 24.10 用户应安装 6.11.0-21 或更高版本。如短期内无法完成内核升级，可通过 sysctl 禁用 ipvlan 模块加载作为临时缓解措施：执行 echo "blacklist ipvlan" > /etc/modprobe.d/disable-ipvlan.conf 并更新 initramfs，同时避免使用 ipvlan 网络接口。'
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Kernel ipvlan 释放后使用漏洞"
+updated = "2026-06-17T08:43:56.347"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21652"]
+ave_id = "AVE-2025-0909"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/52a24538d569f48e79d1a169a5d359d384152950",
+    "https://git.kernel.org/stable/c/ba9f7c16ec879c83bb4f80406773a911aace8267",
+    "https://git.kernel.org/stable/c/cb358ff94154774d031159b018adf45e17673941",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21652.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b565ef51c288ce15e405affdff907e4830eb8f32/cves/2025/21xxx/CVE-2025-21652.json",
+    "https://github.com/cisagov/vulnrichment/blob/76a9c1d3e08b5513880c6f072ae2e14cd09953e6/2025/21xxx/CVE-2025-21652.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/49185e9cdc5fc147738c38ed039cc265d56e905d/SSVC/data/2025/CVE-2025-21652.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21652.md",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/853fff3f588474906eaaeec56c4eeef32edfc06c/CVEs/2025/CVE-2025-21652.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/49185e9cdc5fc147738c38ed039cc265d56e905d/CVE/data/2025/CVE-2025-21652.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21652.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2025-21652.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21652",
+]
