@@ -1,9 +1,9 @@
 [info]
-author = "AVE"
-description = "检测目标是否运行存在CVE-2001-0089漏洞的Internet Explorer 5.0-5.5版本，通过构造包含INPUT TYPE=FILE元素的HTML表单实现客户端任意文件读取"
+author = "ave"
+description = '通过发送GET请求获取漏洞检测页面，页面中包含VBScript脚本，该脚本通过onKeyPress事件拦截用户键盘输入并修改keyCode，将预定义的字符（文件路径c:\winnt\repair\sam._的ASCII码）注入到INPUT TYPE=FILE字段中。若浏览器为IE 5.0-5.5且VBScript可用，则页面标记为VULNERABLE，否则标记为NOT_VULNERABLE。'
 id = "POC-AVE-2001-0037"
-name = "Microsoft Internet Explorer 5.0-5.5 File Upload via Form PoC"
-severity = "medium"
+name = "CVE-2001-0089 Microsoft IE5 INPUT TYPE=FILE Remote File Upload PoC"
+severity = "low"
 tags = ["ave-2001-0037"]
 vuln_id = [
     "CVE-2001-0089",
@@ -15,15 +15,11 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/"
+path = "/{{BaseURL}}/poc/cve-2001-0089-detection.html"
 protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-part = "header"
+part = "body"
 type = "word"
-words = [
-    "MSIE 5.0",
-    "MSIE 5.01",
-    "MSIE 5.5",
-]
+words = ["VULNERABLE"]
