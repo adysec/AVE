@@ -1,0 +1,41 @@
+[basic]
+description = "Linux 内核的 CAN FD 控制器驱动（ctucanfd）中，错误中断处理函数 ctucan_err_interrupt() 在处理 skb 缓冲区分配失败时存在空指针解引用漏洞。当内核无法分配 socket 缓冲区（skb）时，指向 can_frame 结构体的指针为 NULL，而该函数中某处代码未对 NULL 指针进行检查就直接解引用，导致系统崩溃或拒绝服务。该漏洞影响 Linux 内核中集成了 CTU CAN FD 硬件支持的版本，需要攻击者已在目标系统上拥有本地低权限访问权限（PR:L）并具备一定的交互能力（UI:N），攻击向量为本地（AV:L）。成功利用该漏洞可导致系统不可用（A:H），但无法影响保密性或完整性（C:N/I:N）。该漏洞由 Linux Verification Center（linuxtesting.org）通过 SVACE 静态分析工具发现，已在后续内核版本中修复。"
+published = "2025-02-27T03:15:18.167"
+remediation = "升级 Linux 内核至已修复的版本。Ubuntu 24.04 LTS 用户请升级至 linux-image-6.8.0-78-generic 或更高版本（执行 apt update && apt upgrade linux-image-generic 后重启）；Debian 12 (bookworm) 用户请升级至 linux-image-6.1.129-1 或更高版本；Red Hat Enterprise Linux 用户请关注官方安全公告并安装对应内核补丁。如果无法立即升级内核，可通过 modprobe -r ctucanfd 临时卸载 ctucanfd 内核模块以缓解风险。也可通过 sysctl 限制本地用户对 CAN 设备的访问权限（如设置 net.core.somaxconn 并配置相应的 udev 规则）作为临时缓解措施，但最佳做法仍然是尽快应用内核安全更新。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 ctucanfd 空指针解引用漏洞"
+updated = "2026-06-17T08:44:14.973"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21775"]
+ave_id = "AVE-2025-0976"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/84b9ac59978a6a4e0812d1c938fad97306272cef",
+    "https://git.kernel.org/stable/c/9bd24927e3eeb85642c7baa3b28be8bea6c2a078",
+    "https://git.kernel.org/stable/c/b0e592dd46a0a952b41c3bf6c963afdd6a42b526",
+    "https://git.kernel.org/stable/c/e505b83b9ee6aa0ae2f4395f573a66579ae403fb",
+    "https://git.kernel.org/stable/c/e7e2e2318b1f085044126ba553a4e619842fc36d",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00028.html",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2025/CVE-2025-21775.md",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2025/21xxx/CVE-2025-21775.json",
+    "https://github.com/cisagov/vulnrichment/blob/2afa3b8de4952c563341daee974eed8b5a876c0a/2025/21xxx/CVE-2025-21775.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/67e88304703c10b9750253fd05ab77419f3daa1f/SSVC/data/2025/CVE-2025-21775.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/67e88304703c10b9750253fd05ab77419f3daa1f/CVE/data/2025/CVE-2025-21775.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21775.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21775.json",
+    "https://github.com/opencve/opencve-kb/blob/abacd1e99a35ff22d5785cdbb8de9392109c717d/2025/CVE-2025-21775.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2025-21775.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/cc13a3e4316636d22b7909f3cef7666361ccb3cb/references/CveServices-CVE-2025-21775-2025-11-03-1402",
+]

