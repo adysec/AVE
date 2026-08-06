@@ -1,0 +1,57 @@
+[basic]
+description = """
+tags.
+
+Looking at the current TOML, the description field is broken because it contains the AI's internal monologue. I need to provide just the clean description text.
+
+Let me check the exact requirements again:
+- ≥50 字中文
+- 涵盖：漏洞原理、影响范围、攻击条件
+- 将 NVD 英文描述翻译为流畅中文，补充本地数据中的技术细节
+- 不要编造 URL 或具体版本号（除非 presearch 数据中有）
+
+The description I drafted looks good. Let me refine it slightly to make sure it's accurate and flows well.
+
+Final description:
+Linux 内核的 pktgen 网络报文生成器子系统在 net/core/pktgen.c 的 get_imix_entries 函数中存在数组越界访问漏洞。由于边界检查逻辑不正确，当传入的 imix 条目数量超出数组上限（20）时，会导致对 pkt_dev->imix_entries 数组的非法索引访问。该漏洞影响 Linux 内核中启用 pktgen 模块的版本，攻击者需具备本地低权限访问权限，通过向 proc 文件系统写入超量 imix 条目即可触发越界读写，进而可能获取系统最高权限并影响机密性、完整性和可用性。该漏洞由 Linux Verification Center (linuxtesting.org) 通过 SVACE 发现。
+
+This is accurate and covers all requirements.<value>Linux 内核的 pktgen 网络报文生成器子系统在 net/core/pktgen.c 的 get_imix_entries 函数中存在数组越界访问漏洞。由于边界检查逻辑不正确，当传入的 imix 条目数量超出数组上限（20）时，会导致对 pkt_dev->imix_entries 数组的非法索引访问。该漏洞影响 Linux 内核中启用 pktgen 模块的版本，攻击者需具备本地低权限访问权限，通过向 proc 文件系统写入超量 imix 条目即可触发越界读写，进而可能获取系统最高权限并影响机密性、完整性和可用性。该漏洞由 Linux Verification Center (linuxtesting.org) 通过 SVACE 静态分析工具发现。"""
+published = "2025-01-31T12:15:29.160"
+remediation = "建议升级 Linux 内核至包含修复的版本：5.15.177、6.1.127、6.6.74、6.12.11 或更高版本，或从上游仓库应用补丁（commit 76201b5979768500bca362871db66d77cb4c225e）。各发行版用户应安装对应安全更新，例如 Ubuntu 用户执行 apt upgrade linux-image-generic，RHEL 用户安装 RHSA-2025:20095 公告中的 kernel-6.12.0-124.8.1.el10_1 或更高版本。如暂无法升级，可临时卸载 pktgen 内核模块（执行 rmmod pktgen），或通过 chmod 限制 /proc/net/pktgen/ 目录的写权限以阻止本地低权限用户触发越界访问。此外，应严格限制 CAP_NET_ADMIN 权限仅授予可信账号，以缩小本地攻击面。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 pktgen 越界访问漏洞"
+updated = "2026-06-17T08:44:00.363"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21680"]
+ave_id = "AVE-2025-0922"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1a9b65c672ca9dc4ba52ca2fd54329db9580ce29",
+    "https://git.kernel.org/stable/c/3450092cc2d1c311c5ea92a2486daa2a33520ea5",
+    "https://git.kernel.org/stable/c/76201b5979768500bca362871db66d77cb4c225e",
+    "https://git.kernel.org/stable/c/7cde21f52042aa2e29a654458166b873d2ae66b3",
+    "https://git.kernel.org/stable/c/e5d24a7074dcd0c7e76b7e7e4efbbe7418d62486",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21680.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4d38333dcfe51fc2081856da5d31bbece1a0cced/cves/2025/21xxx/CVE-2025-21680.json",
+    "https://github.com/cisagov/vulnrichment/blob/5800be5111a4a9084bc37be685bd7d751f884e33/2025/21xxx/CVE-2025-21680.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/954745087cab3897c1945b517c4fc4f1575af37b/SSVC/data/2025/CVE-2025-21680.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/954745087cab3897c1945b517c4fc4f1575af37b/CVE/data/2025/CVE-2025-21680.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21680.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21680.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21680-2025-11-03-1441",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2025-21680.json",
+    "https://github.com/opencve/opencve-kb/blob/c2d7976a30d9a4bb0d098cbb553bce11e610b2f4/2025/CVE-2025-21680.json",
+]
