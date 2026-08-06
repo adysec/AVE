@@ -1,15 +1,10 @@
 [info]
-author = "AVE"
-description = "验证目标是否可通过 HTML 页面触发 Windows Media Player 7.0 加载恶意 .wmd/.wmz 皮肤文件，导致任意脚本执行。攻击者构造包含恶意 JavaScript 的 .wmz 皮肤文件，通过 iframe 或 window.open 嵌入 HTML 页面，用户访问后自动下载并执行 ActiveX 脚本。"
+author = "ave"
+description = "检测远程托管的 .wms 皮肤文件是否包含可执行脚本元素，验证 Windows Media Player 7.0 在加载自定义皮肤文件时执行嵌入脚本的漏洞条件"
 id = "POC-AVE-2000-0802"
-name = "Microsoft Windows Media Player 7.0 .wms Arbitrary Script Execution PoC"
+name = "CVE-2000-1112 Windows Media Player .wms Script Execution PoC"
 severity = "medium"
-tags = [
-    "cve-2000-1112",
-    "windows-media-player",
-    "arbitrary-script",
-    "ms00-090",
-]
+tags = ["ave-2000-0802"]
 vuln_id = [
     "CVE-2000-1112",
     "AVE-2000-0802",
@@ -20,14 +15,21 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/test.wmd"
+path = "/{{BaseURL}}/skin.wms"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-part = "header"
+part = "body"
 type = "word"
 words = [
-    "application/x-zip-compressed",
-    "application/zip",
+    "<script",
+    "javascript:",
+    "vbscript:",
+    "onload",
+    "onclick",
+    "ActiveXObject",
 ]
