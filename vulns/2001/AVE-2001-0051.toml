@@ -1,12 +1,12 @@
 [basic]
-description = "eXtropia bbs_forum.cgi 1.0 存在目录遍历漏洞，远程攻击者无需身份认证即可通过向 file 参数提交 `../` 等路径穿越序列，突破 Web 根目录限制读取服务器上的任意文件，导致敏感信息泄露。结合 CGI 环境特性，攻击者还可进一步利用该漏洞实现任意命令执行。该漏洞影响 eXtropia bbs_forum.cgi 1.0 版本，攻击复杂度低，危害较大。"
-published = "2001-03-12T05:00:00Z"
-remediation = "立即停止使用并移除 eXtropia bbs_forum.cgi 1.0 脚本，该软件已停止维护且不再提供安全更新。如必须保留论坛功能，应替换为其他受支持的论坛软件。临时缓解措施包括：在 Web 服务器层限制对该 CGI 脚本的访问（如通过 Apache 的 Location 指令仅允许可信 IP 访问），并在反向代理或 WAF 层面过滤 `read` 参数中的 `../` 路径穿越序列及 shell 元字符（如 `;`、`|`、`` ` ``），同时确保 Web 服务器以最低权限用户（如 nobody）运行并限制其可读文件范围。"
+description = "eXtropia bbs_forum.cgi 1.0 存在目录遍历漏洞，远程未经身份认证的攻击者可通过在 file 参数中提交 ../ 序列，突破目录限制读取服务器上的任意文件。该漏洞源于程序未对用户输入的文件路径进行有效过滤和规范化处理，导致路径遍历攻击成为可能。攻击者可利用此漏洞读取敏感系统文件（如 /etc/passwd、配置文件、源代码等），获取服务器敏感信息。CVSS 评分 5.0（中危），攻击向量为网络、攻击复杂度低、无需认证、仅影响机密性。影响范围限于 eXtropia bbs_forum.cgi 1.0 版本。"
+published = "2001-03-12T05:00:00.000"
+remediation = "eXtropia 官方已停止对 bbs_forum.cgi 的维护，未发布修复补丁。建议立即迁移至当前仍受支持的论坛软件（如 phpBB、Discourse 等）；若短期内无法替换，应在 Web 服务器层面通过 mod_security 或 Nginx 规则拦截对 file 参数中包含 .. 及 URL 编码变体的请求，同时将该 CGI 脚本的运行权限降至最低，并限制其仅可访问必要目录。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
+sources = ["epss"]
 title = "eXtropia bbs_forum.cgi 1.0 目录遍历漏洞"
-updated = "2026-06-16T21:53:41Z"
+updated = "2026-06-16T21:53:41.967"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0123"]
 ave_id = "AVE-2001-0051"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.securityfocus.com/bid/2177",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5906",
     "https://www.exploit-db.com/exploits/20533",
-    "https://github.com/CVEProject/cvelistV5/blob/86965a1ef7a64a35a4bffc5193446981deb1b2f5/cves/2001/0xxx/CVE-2001-0123.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f80eaead111eac7128eaf77e46b372cdbd675cc9/CVE/data/2001/CVE-2001-0123.json",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2001/0xxx/CVE-2001-0123.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/000cb996a269164de221ccccadabccc7e862af31/CVE/data/2001/CVE-2001-0123.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0123",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0123.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0123.json",
-    "https://github.com/opencve/opencve-kb/blob/aea030fdb9f850918f67ec4845c1a97cd9f61f7a/2001/CVE-2001-0123.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2001-0123.json",
+    "https://github.com/opencve/opencve-kb/blob/0fc335ed50cf2c3c58c8d1aeff4616317a6158f0/2001/CVE-2001-0123.json",
     "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0123.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/e2cba2a029d0a53c95f0000f5eb42e0eb69717b8/2001/0xxx/CVE-2001-0123.md",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/dde218104d183b4531b1e275856d67b12288f14d/2001/0xxx/CVE-2001-0123.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0123.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0123.json",
 ]
