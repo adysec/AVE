@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 btrfs 文件系统模块中存在空指针解引用漏洞。当使用 `rescue=all,ro` 挂载选项挂载范围树根已损坏的 btrfs 磁盘映像后，如果触发 scrub 操作，`scrub_find_fill_first_stripe()` 函数会依赖 extent root 来定位数据与元数据范围，但在范围树根无效的情况下 extent_root 为空指针，该函数却未对空指针进行校验，导致在 `find_first_extent_item` 中触发空指针解引用，引发内核崩溃。攻击者需具备本地访问权限并能够挂载损坏的 btrfs 映像，通过 ioctl 触发 scrub 操作即可导致系统拒绝服务。该漏洞影响使用 btrfs 文件系统的 Linux 内核版本，CVSS 评分为 5.5，危害等级为中等。内核维护者已在修复补丁中对 extent root 有效性增加额外检查，确保在范围树无效时提前返回错误而非直接解引用空指针。"
+published = "2025-01-21T13:15:09.437"
+remediation = "升级 Linux 内核至修复版本：6.6.72、6.12.10 或 6.13 及以上版本。对于 Ubuntu 24.04 LTS，请安装 linux 6.8.0-60.63 及以后版本；对于 Ubuntu 22.04 LTS，请安装 linux-aws-6.8 6.8.0-1029.31~22.04.1 及以后版本。运行 apt update && apt install linux-image-generic 进行更新，然后重启系统。如运行 6.6 以下内核且无法立即升级，需手动回移植入 scrub_find_fill_first_stripe() 的 extent root 空指针检查补丁（commit 24b85a8b0310e0144da9ab30be42e87e6476638a）。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux内核 btrfs 空指针解引用漏洞"
+updated = "2026-06-17T08:43:57.093"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21658"]
+ave_id = "AVE-2025-0911"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/24b85a8b0310e0144da9ab30be42e87e6476638a",
+    "https://git.kernel.org/stable/c/6aecd91a5c5b68939cf4169e32bc49f3cd2dd329",
+    "https://git.kernel.org/stable/c/aee5f69f3e6cd82bfefaca1b70b40b6cd8f3f784",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21658.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b565ef51c288ce15e405affdff907e4830eb8f32/cves/2025/21xxx/CVE-2025-21658.json",
+    "https://github.com/cisagov/vulnrichment/blob/76a9c1d3e08b5513880c6f072ae2e14cd09953e6/2025/21xxx/CVE-2025-21658.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/49185e9cdc5fc147738c38ed039cc265d56e905d/SSVC/data/2025/CVE-2025-21658.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/853fff3f588474906eaaeec56c4eeef32edfc06c/CVEs/2025/CVE-2025-21658.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/49185e9cdc5fc147738c38ed039cc265d56e905d/CVE/data/2025/CVE-2025-21658.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21658.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21658.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2025-21658.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21658",
+]
