@@ -1,12 +1,12 @@
 [basic]
-description = "Nostromo nhttpd 1.9.6 及更早版本中的 http_verify 函数存在目录遍历漏洞，远程攻击者无需身份认证即可通过发送特制的 HTTP 请求（如包含 `..` 路径序列的 POST 请求）绕过路径限制，实现任意文件读取或远程命令执行。该漏洞影响所有运行 Nostromo nhttpd 1.9.6 及之前版本的系统，CVSS 评分 9.8，危害等级严重。官方已在 1.9.7 版本中修复此漏洞，建议用户立即升级。"
-published = "2019-10-14T17:15:09Z"
-remediation = "立即将 Nostromo nhttpd 升级至 1.9.7 或更高版本，该版本修复了 http_verify 函数中的目录遍历漏洞。如无法升级，可在 Web 服务器前端部署反向代理（如 Nginx）过滤包含 `..` 的恶意请求路径，或在防火墙层面限制对 80/443 端口的非信任来源访问。若业务允许，建议直接替换为积极维护的 Web 服务器（如 Nginx 或 Apache）。"
+description = "Nostromo nhttpd 1.9.6 及之前版本的 http_verify 函数存在目录遍历漏洞。未经身份认证的远程攻击者可通过向目标服务器发送包含路径遍历序列的特制 HTTP 请求触发该漏洞，实现远程代码执行。该漏洞影响运行 Nostromo Web 服务器的 Linux 和 Unix 系统，CVSS 评分 9.8，危害等级严重。"
+published = "2019-10-14T17:15:09.427"
+remediation = '''立即升级 nhttpd 至 1.9.7 或更高版本，该版本修复了 libmy 中 strcutl() 函数对 '\r' 字符处理不当导致的目录遍历漏洞。升级后请确认版本号已更新至 1.9.7 及以上，并重启 nhttpd 服务使补丁生效。如暂时无法升级，建议在 nhttpd.conf 中启用 chroot 模式运行服务器，以限制攻击者通过目录遍历可访问的文件范围，并将 homedirs 配置选项设置为 no，同时部署 Web 应用防火墙过滤包含异常转义字符的 HTTP 请求作为临时缓解措施。'''
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
+sources = ["nuclei"]
 title = "Nostromo nhttpd 目录遍历远程代码执行漏洞"
-updated = "2026-06-17T02:22:03Z"
+updated = "2026-06-17T02:22:03.150"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2019-16278"]
 ave_id = "AVE-2019-0777"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -30,8 +30,8 @@ urls = [
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2019-16278",
     "https://www.exploit-db.com/exploits/47837",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2019/CVE-2019-16278.yaml",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2019/CVE-2019-16278.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/57432302d64f9bc08597d61c88fc5f900569476d/2019/CVE-2019-16278.json",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2019/CVE-2019-16278.md",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/3d3e4ac5fc656462e5751cd66b39c577cd9a2341/http/cves/2019/CVE-2019-16278.yaml",
     "https://github.com/gobysec/GobyVuls/blob/a5de8e3be10d51a94e0977ecd8086c176251229f/CVE-2019-16278.md",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/CVE-2019-16278.yaml",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/high/cve-2019-16278-3920.yaml",
