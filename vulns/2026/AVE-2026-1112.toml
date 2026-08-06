@@ -1,0 +1,149 @@
+[basic]
+description = '''
+## Summary
+
+When an SSO-authenticated user tests an automation in the Budibase builder, their OAuth2 access token and refresh token are included in the automation test results. These results are broadcast via WebSocket to all builders connected to the same dev app and stored in an in-memory cache accessible to any builder who polls the test status endpoint. This allows any co-builder of the same app to steal the testing user's OAuth2 tokens.
+
+## Details
+
+The vulnerability exists because `getUserContextBindings()` intentionally includes OAuth2 tokens in user context bindings (so automations can call external APIs), but the automation test pipeline exposes the full result — including these tokens — to all builders of the same app without sanitization.
+
+**Step 1: Tokens included in user bindings**
+
+In `packages/server/src/sdk/users/utils.ts:134-161`:
+```typescript
+export function getUserContextBindings(user: ContextUser): UserBindings {
+  const bindings: UserBindings = {
+    _id: user._id,
+    email: user.email,
+    // ...
+  }
+  if (isSSOUser(user) && user.oauth2) {
+    bindings.oauth2 = {
+      accessToken: user.oauth2.accessToken,   // <-- sensitive
+      refreshToken: user.oauth2.refreshToken,  // <-- sensitive
+    }
+  }
+  return bindings
+}
+```
+
+**Step 2: Bindings passed to automation execution**
+
+In `packages/server/src/api/controllers/automation.ts:311-312`:
+```typescript
+const user = sdk.users.getUserContextBindings(ctx.user)
+return await triggers.externalTrigger(
+  { ...automation, disabled: false },
+  { ...input, appId, user },  // user with tokens passed as event param
+  { getResponses: true, onProgress: emitProgress }
+)
+```
+
+**Step 3: Tokens placed in trigger outputs**
+
+In `packages/server/src/threads/automation.ts:409-413`:
+```typescript
+const trigger: AutomationTriggerResult = {
+  id: data.automation.definition.trigger.id,
+  stepId: data.automation.definition.trigger.stepId,
+  inputs: null,
+  outputs: data.event,  // data.event includes user.oauth2 tokens
+}
+```
+
+**Step 4: Result broadcast without sanitization**
+
+The full result (including `trigger.outputs.user.oauth2`) is exposed via two vectors:
+
+1. **WebSocket broadcast** — `builderSocket.emitToRoom()` calls `this.io.in(room).emit()` (`packages/server/src/websockets/websocket.ts:291`) which sends to ALL sockets in the app's room, not just the originator.
+
+2. **Test status endpoint** — `recordTestProgress()` stores the result in a Map keyed by `${appId}:${automationId}` with no user isolation (`packages/server/src/automations/testProgress.ts:41-74`). Any builder can call `GET /api/automations/:id/test/status` to retrieve another user's test results.
+
+## PoC
+
+Requires two builder-level users on the same Budibase app, where User A authenticates via SSO/OIDC (Google, Azure AD, etc.) which provides OAuth2 tokens.
+
+```bash
+# Step 1: User A (SSO-authenticated builder) tests an automation asynchronously
+curl -X POST http://localhost:10000/api/automations/<automation-id>/test?async=true \
+  -H 'x-budibase-app-id: app_dev_<appid>' \
+  -H 'Cookie: budibase:auth=<userA_session>' \
+  -H 'Content-Type: application/json' \
+  -d '{\"row\": {\"tableId\": \"ta_xxx\"}}'
+# Returns: {\"message\": \"Automation test started\"}
+
+# Step 2: User B (another builder on the same app) polls the test status
+curl -X GET http://localhost:10000/api/automations/<automation-id>/test/status \
+  -H 'x-budibase-app-id: app_dev_<appid>' \
+  -H 'Cookie: budibase:auth=<userB_session>'
+
+# Response includes the full automation result with:
+# result.trigger.outputs.user.oauth2.accessToken = \"ya29.a0AfH6SM...\"
+# result.trigger.outputs.user.oauth2.refreshToken = \"1//0eXyz...\"
+```
+
+Additionally, User B can passively receive the tokens by simply having the Budibase builder open (connected via WebSocket), as the `BuilderSocketEvent.AutomationTestProgress` event with `status: \"complete\"` includes the full result payload.
+
+## Impact
+
+- **OAuth2 access tokens** for external services (Google Workspace, Azure AD, GitHub, etc.) are exposed to co-builders of the same app. These tokens can be used to access external APIs as the victim user.
+- **OAuth2 refresh tokens** provide persistent access — an attacker can generate new access tokens even after the original expires, maintaining long-term access to the victim's external service accounts.
+- The attack is passive via WebSocket — an attacker only needs to have the builder UI open to receive tokens when any co-builder tests an automation.
+- Test results persist in memory for 5 minutes (TTL in `testProgress.ts:15`), providing a window for polling-based attacks.
+
+## Recommended Fix
+
+Strip OAuth2 tokens from automation test results before storing/broadcasting them. The tokens are needed during automation execution but should not be included in the result sent to clients.
+
+In `packages/server/src/api/controllers/automation.ts`, sanitize the result before passing to `emitProgress`:
+
+```typescript
+function sanitizeAutomationResult(result: AutomationResults): AutomationResults {
+  const sanitized = cloneDeep(result)
+  if (sanitized.trigger?.outputs?.user?.oauth2) {
+    delete sanitized.trigger.outputs.user.oauth2
+  }
+  for (const step of sanitized.steps || []) {
+    if (step.outputs?.user?.oauth2) {
+      delete step.outputs.user.oauth2
+    }
+  }
+  return sanitized
+}
+```
+
+Apply sanitization in the `emitProgress` callback at line 290 and before returning `ctx.body` at line 342:
+
+```typescript
+emitProgress({
+  status: \"complete\",
+  occurredAt: Date.now(),
+  result: sanitizeAutomationResult(result),
+})
+```
+
+Additionally, the `testProgress` store should be scoped per-user (keyed by `${appId}:${automationId}:${userId}`) so that one builder's test results are not accessible to another builder via the `testStatus` endpoint.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Budibase: OAuth2 Token Disclosure via Automation Test Results Broadcast to Other Builders"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-gh4h-34gr-87r7"]
+ave_id = "AVE-2026-1112"
+
+[meta]
+collected_at = "2026-08-06T04:45:40.894653910+00:00"
+status = "completed"
+
+[references]
+urls = []
