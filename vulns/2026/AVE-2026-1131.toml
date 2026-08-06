@@ -1,0 +1,93 @@
+[basic]
+description = '''
+## Summary
+
+The `@astrojs/netlify` adapter converts each `image.remotePatterns` entry into a regular expression that is written to `.netlify/v1/config.json` under `images.remote_images`. Netlify's Image CDN uses these regexes as the allowlist that decides which remote image URLs it will optimize. `remotePatternToRegex()` escapes `.` in the hostname but interpolates the literal `pathname` into the regex **without escaping regex metacharacters**. As a result, the generated allowlist is broader than the pattern the developer declared, and broader than Astro's canonical `matchPattern()` helper (which compares non-wildcard pathnames by exact string equality).
+
+This is a residual of the same bug class addressed in CVE-2026-54300 (PR #17018, commit `1310277d`). That fix corrected wildcard semantics and added a `$` anchor but did not add metacharacter escaping for literal pathnames.
+
+## Details
+
+In `packages/integrations/netlify/src/index.ts`, `remotePatternToRegex()` escapes dots in the hostname:
+
+```js
+regexStr += hostname.replace(/\./g, '\\.');
+```
+
+but interpolates the pathname unescaped in all three branches, e.g. the exact-match branch:
+
+```js
+regexStr += `(\\${pathname})`;
+```
+
+Any regex metacharacter in the literal path (`.`, `+`, `?`, `(`, `[`, ...) is therefore passed through raw. Because `.` matches any character (including `/`), a restrictive pattern is silently widened.
+
+The security boundary on Netlify is the generated regex itself — Netlify's Image CDN enforces it directly and Astro's runtime `matchPattern()` is not in the loop for this path, so there is no compensating layer that re-validates the request.
+
+## Proof of Concept
+
+Configure an SSR site with a literal pathname containing a `.`:
+
+```js
+// astro.config.mjs
+image: {
+  remotePatterns: [{
+    protocol: 'https',
+    hostname: 'cdn.example.com',
+    pathname: '/img/v1.0/file',
+  }],
+}
+```
+
+Run `astro build` and inspect `.netlify/v1/config.json` `images.remote_images[0]`:
+
+```
+https://cdn\.example\.com(:[0-9]+)?(\/img/v1.0/file)([?][^#]*)?$
+```
+
+Testing the generated regex:
+
+- `https://cdn.example.com/img/v1.0/file` -> MATCH (intended)
+- `https://cdn.example.com/img/v1X0/file` -> MATCH (bypass; the unescaped `.` matches any character)
+- `https://cdn.example.com/img/v1/0/file` -> MATCH (bypass; `.` also matches `/`, crossing a path segment)
+
+Astro's canonical `matchPattern()` (exact string equality on the pathname) rejects both bypass URLs.
+
+## Impact
+
+Netlify's Image CDN accepts optimization requests for URLs on the allowed host that the developer's `remotePatterns` entry was intended to exclude. The hostname remains correctly anchored, so the broadening is confined to the pathname dimension on an already-allowed host. Realistic impact depends on whether other images the developer meant to keep out of their CDN exist at metacharacter-adjacent paths on that host. This affects reasonable, non-permissive configurations, since any `pathname` containing a `.` (file extensions, version segments) is affected.
+
+## Patches
+
+A fix will escape all regex metacharacters in the literal portions of each `remotePatterns` component before interpolation, applying only Astro's documented wildcard semantics explicitly. A regression corpus validates the generated Netlify regexes against `@astrojs/internal-helpers`' `matchPattern()`.
+
+## Workarounds
+
+Avoid regex metacharacters (notably `.`) in `image.remotePatterns[].pathname` values, or scope the allowed host so that unintended paths are not reachable.
+
+## Credit
+
+Reported by @sec-reex as part of an incomplete-patch measurement study (responsible disclosure).
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "@astrojs/netlify generates an overly-broad Netlify Image CDN allowlist because remotePatterns.pathname metacharacters are not escaped"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-hp3v-mfqw-h74c"]
+ave_id = "AVE-2026-1131"
+
+[meta]
+collected_at = "2026-08-06T06:13:19.420513880+00:00"
+status = "completed"
+
+[references]
+urls = []
