@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "检测 phpGB 1.20 及更早版本中 admin/savesettings.php 脚本的未认证访问漏洞。该脚本无需身份认证即可直接访问，攻击者可通过发送特制 POST 请求修改 config.php 配置文件，进而执行任意 PHP 代码或造成服务拒绝。"
+id = "POC-AVE-2002-0602"
+name = "PHPGB savesettings.php 未认证访问 PoC"
+severity = "high"
+tags = ["ave-2002-0602"]
+vuln_id = [
+    "CVE-2002-1481",
+    "AVE-2002-0602",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/phpGB/admin/savesettings.php"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "dbpassword",
+    "Guestbook",
+    "config",
+]
