@@ -1,12 +1,12 @@
 [basic]
 description = """tags.<value>TidGi Desktop（基于 TiddlyWiki 的个人知识管理桌面应用）在 0.13.0 及更早版本中存在高危远程代码执行漏洞。其根因在于应用启动 wiki 工作区时，会从磁盘自动加载 tiddlers/ 目录下所有 .tid 文件并注入 wiki store；随后 TiddlyWiki 内核的 defineTiddlerModules() 会自动将带有 module-type 字段的 tiddler 注册为可执行模块，而启动阶段 executeNextStartupTask() 会无条件调用其中 type 为 "startup" 模块的 exports.startup() 函数，且该函数在 Node.js Wiki Worker 进程中拥有完整的 require() 权限。攻击者无需身份认证，只需构造一个恶意 TiddlyWiki 仓库，在其中放入一个包含恶意 JavaScript 启动模块的 .tid 文件，并诱导受害者通过"添加工作区"克隆或打开该仓库，应用启动时恶意代码便自动执行，可实现任意文件读写、反弹 Shell 及持久化。已在 macOS（TiddlyWiki 5.4.0、Node.js v26）上验证通过 require('child_process').execSync() 成功执行任意系统命令。建议升级至修复版本，并禁止用户 tiddler 定义 module-type 或在沙箱中执行用户模块。"""
-published = "2026-07-05"
+published = "2026-07-05T00:00:00Z"
 remediation = "建议立即升级 TidGi Desktop 至修复该漏洞的最新版本（目前受影响的最高版本为 0.13.0，请关注 tiddly-gittly/TidGi-Desktop 仓库的修复发布，启用自动更新）。若无法立即升级，可采取以下缓解措施：1) 严禁打开或导入来源不明的 Git 仓库，尤其警惕包含 tiddlers/$__plugins__*__startup.js.tid 等含 module-type: startup 字段的恶意 wiki；2) 在宿主防火墙或系统层限制 TidGi 子进程对网络的访问能力；同时建议在 TiddlyWiki 核心的 defineTiddlerModules() 中增加校验，拒绝用户创建的模块定义 module-type 字段，从而阻断启动期自动执行攻击链。"
 score = 9.8
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "TidGi Desktop 通过恶意 TiddlyWiki 仓库导入导致的远程代码执行漏洞"
-updated = "2026-07-05"
+updated = "2026-07-05T00:00:00Z"
 
 [exploit]
 exp_urls = []
