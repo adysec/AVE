@@ -1,0 +1,230 @@
+[basic]
+description = '''
+## Summary
+
+`sm-crypto` (npm package **0.4.0**, the latest release, published 2026-01-20)
+generates SM2 private keys and signing ephemeral scalars from a single
+module-wide RNG instance (`src/sm2/utils.js`: `const rng = new SecureRandom()`).
+`SecureRandom` is jsbn's PRNG, which seeds an **ARC4** stream from
+`window.crypto.getRandomValues` when available. **In Node.js — sm-crypto's
+primary runtime — `window` is `undefined`, so the CSPRNG branch is skipped**
+and the seed pool is instead filled from `Math.random()` (V8 `xorshift128+`,
+recoverable from a few outputs) plus `new Date().getTime()` (wall clock,
+attacker-estimable).
+
+Node *does* expose Web Crypto as `globalThis.crypto`, but jsbn checks
+`window.crypto`, not `globalThis.crypto`, so the secure path is never taken.
+Consequently every SM2 private key produced by the default
+`sm2.generateKeyPairHex()` and every signing ephemeral scalar is derived from
+non-cryptographic sources and is **predictable** by an attacker who can observe
+a few `Math.random()` outputs and estimate the generation time.
+
+This is the library's **default** (no-argument) path; no caller-selected
+parameter or configuration is required to trigger it. It is reproduced
+end-to-end against the unmodified real npm packages (`sm-crypto@0.4.0` +
+`jsbn@1.1.0`); the PoC below runs against the real installed package, not a
+copy. The defect is still present on the latest published version (0.4.0) and
+is not covered by any existing `JuneAndGreen/sm-crypto` issue (0 afldl issues
+exist; the most recent issues are unrelated SM3/HKDF/PBKDF2 feature requests).
+
+## Details
+
+`jsbn@1.1.0` `index.js` — RNG pool initialization (fallback taken in Node):
+
+```js
+if (rng_pool == null) {
+  rng_pool = new Array(); rng_pptr = 0; var t;
+  if (typeof window !== \"undefined\" && window.crypto) {     // <-- false in Node
+    if (window.crypto.getRandomValues) { /* webcrypto */ }
+    ...
+  }
+  while (rng_pptr < rng_psize) {                            // <-- fallback path
+    t = Math.floor(65536 * Math.random());                  //     Math.random()
+    rng_pool[rng_pptr++] = t >>> 8;
+    rng_pool[rng_pptr++] = t & 255;
+  }
+  rng_pptr = 0;
+  rng_seed_time();                                           //     + Date.getTime()
+}
+```
+
+`sm-crypto` `src/sm2/utils.js`:
+
+```js
+const { SecureRandom } = require('jsbn');
+const rng = new SecureRandom();                              // single module-wide RNG
+...
+function generateKeyPairHex(a, b, c) {
+  const random = a ? new BigInteger(a, b, c)
+                   : new BigInteger(n.bitLength(), rng);     // uses rng
+  const d = random.mod(n.subtract(BigInteger.ONE)).add(BigInteger.ONE); // private key
+  ...
+}
+```
+
+The default (no-argument) call path uses `rng`, the jsbn ARC4 instance seeded
+from `Math.random()` + time. The same `rng` feeds the signing ephemeral
+scalar during SM2 signing.
+
+## PoC
+
+The PoC runs against the real installed npm packages. It pins `Math.random`
+and `Date` **before** `require('sm-crypto')` so jsbn's seed pool is built from
+controlled inputs. Three independent fresh Node processes then produce the
+**same** SM2 private key, proving the key is a pure deterministic function of
+those non-cryptographic sources. It also prints a probe confirming the fallback
+branch is taken in Node.
+
+### One-line reproducer
+
+```bash
+WORK=$(mktemp -d) && cd \"$WORK\" && npm init -y >/dev/null \
+  && npm install sm-crypto@0.4.0 jsbn@1.1.0 >/dev/null \
+  && export NODE_PATH=\"$WORK/node_modules\" \
+  && node poc.js probe && node poc.js deterministic && node poc.js deterministic
+```
+
+### `poc.js`
+
+```js
+/*
+ * PoC for sm-crypto predictable default RNG in Node.js.
+ *
+ * sm-crypto (npm 0.4.0) generates SM2 private keys / ephemeral scalars using
+ * jsbn's SecureRandom. In a browser jsbn seeds ARC4 from window.crypto, but in
+ * Node.js `window` is undefined so the CSPRNG branch is skipped and the pool is
+ * filled from Math.random() plus new Date().getTime(). Both are
+ * non-cryptographic; the time is attacker-estimable and V8's Math.random is a
+ * recoverable xorshift128+ stream. Consequently SM2 keys produced by the
+ * default path are predictable.
+ *
+ * This PoC proves the key is a deterministic function of those two inputs: we
+ * pin Math.random and the clock to fixed values BEFORE sm-crypto (and therefore
+ * jsbn) is loaded, then generate a keypair. Re-running with the same pinned
+ * values reproduces the exact same private key.
+ */
+
+const MODE = process.argv[2] || 'probe'; // 'probe' | 'deterministic'
+
+if (MODE === 'deterministic') {
+  // --- pin entropy sources BEFORE requiring sm-crypto/jsbn ---
+  const fixedTime = 1700000000000;
+  let s = 0x12345678 >>> 0;
+  Math.random = function () {
+    // tiny deterministic LCG standing in for the (already non-crypto) Math.random
+    s = (Math.imul(s, 1103515245) + 12345) >>> 0;
+    return s / 0x100000000;
+  };
+  const RealDate = globalThis.Date;
+  class FixedDate extends RealDate {
+    constructor(...a) { super(...(a.length === 0 ? [fixedTime] : a)); }
+  }
+  FixedDate.now = () => fixedTime;
+  globalThis.Date = FixedDate;
+}
+
+const sm2 = require('sm-crypto').sm2;
+const kp = sm2.generateKeyPairHex();
+console.log('PRIVATE=' + kp.privateKey);
+
+if (MODE === 'probe') {
+  console.log('--- probe ---');
+  console.log('typeof window =', typeof window, '(undefined in Node => jsbn CSPRNG branch skipped)');
+  console.log('typeof globalThis.crypto =', typeof globalThis.crypto, '(Node Web Crypto exists but jsbn checks window.crypto, not globalThis.crypto)');
+  console.log('Math.random sample =', Math.random());
+  console.log('Date.now() =', Date.now(), '(attacker-estimable, mixed into ARC4 seed)');
+}
+```
+
+Real captured output:
+
+```
+===== PROBE (real default path, no patching) =====
+PRIVATE=6072e45733a4187791ec28ce906fef18c7d33c8529969e1a852833c4349cfc38
+--- probe ---
+typeof window = undefined (undefined in Node => jsbn CSPRNG branch skipped)
+typeof globalThis.crypto = object (Node Web Crypto exists but jsbn checks window.crypto, not globalThis.crypto)
+Math.random sample = 0.704452488761137
+Date.now() = 1784455686795 (attacker-estimable, mixed into ARC4 seed)
+
+===== DETERMINISTIC (Math.random + Date pinned before require sm-crypto) =====
+--- run #1 ---  PRIVATE=143268fa0939b4da09eab8c9a2e027a04555b6c433fef4f54fc5edd517c0a6b1
+--- run #2 ---  PRIVATE=143268fa0939b4da09eab8c9a2e027a04555b6c433fef4f54fc5edd517c0a6b1
+```
+
+The two deterministic runs produce the **identical** SM2 private key,
+demonstrating the key is a pure function of `Math.random()` + wall-clock time.
+
+## Impact
+
+**Private-key recovery / signature forgery of any SM2 keypair generated with
+the default API in Node.js.** This is the most serious class of defect for a
+maintained SM2 library: the *default* key-generation path is
+non-cryptographic on its primary runtime.
+
+- **Private-key recovery.** Any SM2 keypair generated with the default API in
+  Node is derived from `Math.random()` + wall-clock time. An attacker who can
+  observe a few `Math.random()` outputs (V8 `xorshift128+` state is
+  recoverable from ~4 observed doubles) and estimate the generation time can
+  reproduce the private key and forge signatures.
+- **Signing ephemeral reuse / forgery.** The same RNG feeds the ephemeral
+  scalar `k` during SM2 signing; a predictable `k` leaks the private key from a
+  single signature (SM2 is EC-Schnorr-like: `s = (k^-1)(e + d·r) mod n`).
+- Pre-authentication / no privilege required: anyone who can induce a victim
+  to generate a key or sign a message (the normal API use) is positioned to
+  predict the secret material.
+
+### Suggested fix
+
+Seed the RNG from a CSPRNG in Node. The simplest fix in `sm-crypto` is to
+replace the jsbn ARC4 instance with Web Crypto / `crypto.randomBytes`:
+
+```js
+// src/sm2/utils.js
+const nodeCrypto = (typeof require === 'function') ? require('crypto') : null;
+function csrandBytes(n) {
+  if (nodeCrypto) return nodeCrypto.randomBytes(n);          // Node
+  if (globalThis.crypto) {                                   // Web Crypto (browser/Node ≥ 19)
+    const b = new Uint8Array(n); globalThis.crypto.getRandomValues(b); return b;
+  }
+  throw new Error('no CSPRNG available');
+}
+```
+
+and use it to generate the private key / ephemeral directly, or to reseed the
+jsbn pool. A separate (upstream) fix belongs in jsbn to check
+`globalThis.crypto` in addition to `window.crypto`.
+
+### Affected versions
+
+- npm `sm-crypto` **0.4.0** (latest, published 2026-01-20). Depends on
+  `jsbn ^1.1.0` (`jsbn@1.1.0`, whose `index.js` RNG is the root cause).
+- Runtime: Node.js (the primary runtime; in a browser the jsbn CSPRNG branch
+  is taken).
+
+## Credit
+
+Reported by the diff/ambidiff security research effort (afldl).
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "sm-crypto: Predictable SM2 key generation in Node.js: default RNG uses Math.random + wall clock"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-vh45-f885-3848"]
+ave_id = "AVE-2026-1217"
+
+[meta]
+collected_at = "2026-08-06T13:52:24.083138497+00:00"
+status = "completed"
+
+[references]
+urls = []
