@@ -1,0 +1,80 @@
+[basic]
+description = '''
+### Am I affected?
+
+Users are affected if all of the following hold:
+
+-  Their application depends on `@better-auth/oauth-provider` on any stable `1.6.x` release (the stable line is not patched) or on a pre-release before `1.7.0-beta.4`.
+- Their application either configures validAudiences` with more than one audience, or it issues JWT access tokens whose `aud`  (resource) claim is consumed by their resource servers.
+- Their resource servers make authorization decisions based on that `aud` or resource value.
+
+A deployment with a single `validAudiences` entry (or the default, their server's base URL) cannot mint a token for a different audience. The provider rejects any resource outside the allowlist. Such a deployment still does not bind the resource to the authorization grant, so the spec-compliance gap remains even where cross-audience escalation does not apply.
+
+Fix:
+
+1. Upgrade to `@better-auth/oauth-provider@1.7.0-beta.4` (then `1.7.0`), then run the schema migration (`npx auth migrate`). This is a breaking change: a token or refresh request may only narrow the authorized `resource`, an uncovered resource returns `invalid_target`, and `customAccessTokenClaims` receives a `resources` array in place of `resource`.
+2. The `1.6.x` stable line is not patched. If an application stays on it, developers should apply the workarounds below.
+
+### Summary
+
+`@better-auth/oauth-provider` lets an OAuth client choose the access-token audience through the RFC 8707 `resource` parameter at the token endpoint. It does not bind that choice to the authorization grant. A client that completes a normal authorization flow can request a JWT access token whose audience targets a resource server the authorization never covered. The only constraint is that the resource appears in the server's `validAudiences` allowlist. The same gap applies to the refresh grant: a refresh token issued in a flow targeting one resource can be redeemed for an access token bound to a different allow-listed resource.
+
+### Details
+
+The provider accepts `resource` only at the token endpoint, never at the authorization endpoint. At `/oauth2/token` it validates each requested resource against the server-wide `validAudiences` allowlist and writes the result into the JWT `aud` claim. It does not record the requested resources on the authorization code, and it does not store them on the refresh-token row.
+
+Two consequences follow. For the authorization-code grant, the resource a client states at `/oauth2/authorize` is discarded, and the resource it sends at `/oauth2/token` is honored on its own, checked only against the allowlist. For the refresh grant, the audience is re-derived from the refresh request body alone, because no resource from the original grant is retained to constrain it. In both cases the audience becomes a per-request, client-chosen value rather than a property of the authorization.
+
+This diverges from RFC 8707. The specification expects the authorization server to record the resources requested at authorization, then let the token endpoint narrow them but never widen them. A refresh token should stay bound to the resources of the original grant.
+
+### Patches
+
+Fixed in `@better-auth/oauth-provider@1.7.0-beta.4` (then `1.7.0`). The fix records the requested resources at authorization, stores them with the authorization code, enforces subset narrowing at the token endpoint, retains the original resource set across refresh, and exposes `aud` at introspection. The `1.6.x` stable line is not patched.
+
+The fix is a breaking change. It replaces `customAccessTokenClaims.resource` with a `resources` array, returns `invalid_target` for a resource the authorization did not cover, and adds a schema field that requires a migration. After upgrading, run `npx auth migrate` (or `npx auth generate` if developers manage the schema themselves).
+
+### Workarounds
+
+If developers cannot upgrade their applications:
+
+- Set `validAudiences` to a single audience, or leave it unset so it defaults to their application's base URL. The provider then rejects any other requested resource, which removes cross-audience selection.
+- Configure each resource server to accept a token only when its own identifier is the expected audience, and to reject tokens whose `aud` is an array that also lists other audiences.
+- Do not rely on the `resource` indicator as an authorization boundary until developers run a release that contains the fix.
+
+### Impact
+
+An attacker who can complete an OAuth flow for a registered client can obtain an access token whose audience points at a resource server that the user's authorization never covered. Where resource servers enforce the `aud` or resource value for authorization, a token granted for one resource becomes usable at another. The reachable data and operations stay limited to the scopes granted to that client, since the provider checks scopes independently of the resource.
+
+### Credit
+
+Reported and fixed by @dvanmali.
+
+### Resources
+
+- RFC 8707, \"Resource Indicators for OAuth 2.0\", Section 2.2 \"Access Token Request\": https://www.rfc-editor.org/rfc/rfc8707#section-2.2
+- RFC 9068, \"JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens\", Section 2.2 \"Data Structure\": https://www.rfc-editor.org/rfc/rfc9068#section-2.2
+- CWE-863, \"Incorrect Authorization\": https://cwe.mitre.org/data/definitions/863.html
+- CWE-285, \"Improper Authorization\": https://cwe.mitre.org/data/definitions/285.html
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "@better-auth/oauth-provider may provide access tokens for unauthorized audiences via unbound resource indicators"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-p2fr-6hmx-4528"]
+ave_id = "AVE-2026-1160"
+
+[meta]
+collected_at = "2026-08-06T08:32:23.810717115+00:00"
+status = "completed"
+
+[references]
+urls = []
