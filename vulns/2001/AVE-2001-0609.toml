@@ -1,12 +1,12 @@
 [basic]
-description = "Windows NT 4.0 的 RAS 管理注册表项默认权限设置不当，本地攻击者可修改该注册表项的值指向恶意 DLL，从而在系统上下文中执行任意命令。该漏洞属于注册表权限类漏洞，影响 Windows NT 4.0 系统，CVSS 评分 10.0，危害等级严重。攻击者需具备本地访问权限，无需用户交互即可利用。"
-published = "2001-02-16T05:00:00Z"
-remediation = '立即下载并运行 Microsoft 提供的 regacl40.exe 工具（下载地址：https://www.microsoft.com/download/details.aspx?FamilyId=8E7C68EE-98BC-440E-A99D-6A97308FDCB0），该工具会自动将 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\RAS 等注册表项的权限重置为仅 Administrators 和 System 拥有完全控制权。运行命令：regacl40.exe -v。同时确保已安装 Windows NT 4.0 Service Pack 6a，并通过注册表限制远程注册表访问（将 Winreg 项权限设为仅 Administrators 完全控制）。如无法立即打补丁，可卸载 RAS 服务作为临时缓解措施。'
+description = "Windows NT 4.0 系统中，RAS Administration 注册表项的默认权限配置不当，允许本地用户修改该注册表键值并将其指向恶意的 DLL 文件。当系统或相关服务尝试加载此 DLL 时，将在受影响系统上执行任意代码。该漏洞影响 Windows NT 4.0 版本，攻击者需具备目标系统的本地访问权限。利用方式上，攻击者可将 RAS Administration 注册表项的值修改为指向自己控制的恶意 DLL 路径，从而在系统加载该组件时触发代码执行，进而完全掌控目标系统。该漏洞属于注册表权限配置类安全缺陷，CVSS 评分高达 10 分，危害等级严重。"
+published = "2001-02-16T05:00:00.000"
+remediation = '立即安装 Microsoft 安全公告 MS00-095 发布的注册表权限修复工具（regacl40），该工具可将 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\RAS 注册表项的默认权限修改为仅允许 Administrators、System 和 Creator Owner 完全控制，从而阻止普通用户修改 RAS Administration 键值指向恶意 DLL。可从 Microsoft Download Center（FamilyID=8E7C68EE-98BC-440E-A99D-6A97308FDCB0）下载对应 Windows NT 4.0 Service Pack 5 或 6a 版本的工具，运行命令为 regacl40，或使用 regedt32 手动删除 Everyone 对该键的写权限。如系统未安装 RAS 服务，可通过控制面板移除远程访问服务作为临时缓解措施。'
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "Microsoft Windows NT 4.0 RAS 管理注册表权限提升漏洞"
-updated = "2026-06-16T21:53:33Z"
+sources = ["epss"]
+title = "Microsoft Windows NT 4.0 注册表权限远程代码执行漏洞"
+updated = "2026-06-16T21:53:33.110"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0045"]
 ave_id = "AVE-2001-0609"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-095",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5671",
     "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A500",
-    "https://github.com/CVEProject/cvelistV5/blob/1cc9b895b10fb3dcc8a308563cbbcfad083cd221/cves/2001/0xxx/CVE-2001-0045.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/5828423617831cae14862aac31158752df709f44/CVE/data/2001/CVE-2001-0045.json",
+    "https://github.com/CVEProject/cvelistV5/blob/7a64d14d4e99e9e15688962dcc640f9e44c67eb2/cves/2001/0xxx/CVE-2001-0045.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d547588420a9a1d22d6d9d3bde1463155fe33c31/CVE/data/2001/CVE-2001-0045.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0045",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0045.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2001-0045.json",
-    "https://github.com/opencve/opencve-kb/blob/74a5eea2f8e7bbf8745be52f073af8f9cdbbb080/2001/CVE-2001-0045.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/a939a0e06ea28df0537defbf2bf781fcb02ed201/2001/0xxx/CVE-2001-0045.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/7c13974e8672408967145db42c357210cb59d951/CVE-2001/CVE-2001-00xx/CVE-2001-0045.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2001-0045.json",
+    "https://github.com/opencve/opencve-kb/blob/b290a4630bf00bc86efda07bc07c03b933274d3f/2001/CVE-2001-0045.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8aab22d02785f79271894073fc1a1d558c4aae6b/2001/0xxx/CVE-2001-0045.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-00xx/CVE-2001-0045.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0045.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0045.json",
 ]
