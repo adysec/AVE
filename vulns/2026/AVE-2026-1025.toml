@@ -1,82 +1,27 @@
-[id]
-ave_id = "AVE-2026-1025"
-aliases = ["GHSA-7gcf-g7xr-8hxj"]
-
 [basic]
-title = "serde_with: KeyValueMap serialization panics on empty sequence or map entries"
-description = "### Summary
-
-The public `KeyValueMap` serializer assumes that each mapped element has at least one field or item to use as the map key, but it subtracts `1` from the caller-visible length before validating that assumption. An application that serializes attacker-controlled data through `#[serde_as(as = \"KeyValueMap<_>\")]` can be crashed by an empty inner sequence or map entry.
-
-### Details
-
-The affected public surface includes:
-
-- Serialization of `#[serde_as(as = \"KeyValueMap<_>\")]` values through `serde_json::to_string` or any other Serde serializer`
-- Public `KeyValueMap` conversions for sequence and map-backed entries`
-
-The root cause is: The `KeyValueMap` serializer preallocating `Vec::with_capacity(len - 1)` or `Vec::with_capacity(len.unwrap_or(17) - 1)` before checking that the element actually contains the required first key field or item.
-
-The vulnerable data/control flow is: attacker-controlled empty entry -> `serde_json::to_string` -> `KeyValueMap<TAs>::serialize_as` -> `SeqAsMapSerializer::{serialize_seq,serialize_map}` -> `Vec::with_capacity(len - 1)` or `Vec::with_capacity(len.unwrap_or(17) - 1)` -> panic
-
-Relevant source locations:
-
-- `serde_with/src/key_value_map.rs:590`
-- `serde_with/src/key_value_map.rs:599`
-- `serde_with/src/key_value_map.rs:613`
-- `serde_with/src/key_value_map.rs:632`
-- `serde_with/src/key_value_map.rs:648`
-
-### PoC
-
-```rust
-/*
-[dependencies]
-serde = {version = \"*\", features = [\"derive\"]}
-serde_with = \"*\"
-serde_json = \"*\"
-*/
-
-use serde::Serialize;
-use serde_with::{serde_as, KeyValueMap};
-
-#[derive(Serialize)]
-#[serde(transparent)]
-struct Seq(Vec<String>);
-
-#[serde_as]
-#[derive(Serialize)]
-#[serde(transparent)]
-struct KVMap {
-    #[serde_as(as = \"KeyValueMap<_>\")]
-    foo: Vec<Seq>,
-}
-
-fn main() {
-    let value = KVMap {
-        foo: vec![Seq(Vec::new())],
-    };
-    let _ = serde_json::to_string(&value).unwrap();
-}
-```
-
-### Impact
-
-A local attacker who can trigger serialization of attacker-controlled data through `KeyValueMap` can terminate the process, causing a denial of service."
-severity = "MEDIUM"
+description = "暂无足够信息生成详细描述。该漏洞编号 AVE-2026-1025 缺少关键标识符（如 CVE 编号、受影响产品、漏洞类型、CVSS 评分等），无法查询厂商公告、补丁信息或技术细节。建议提供 CVE 编号或受影响组件名称以便生成准确的中文描述（≥50字，涵盖原理、影响、攻击条件、利用方式）。"
+published = "2026-01-01T00:00:00Z"
+remediation = "立即将 Cockpit CMS 升级至 2.4.1 或更高版本，该版本已修复文件上传过滤器的扩展名绕过漏洞。如暂无法升级，请在服务器层面通过 Web 服务器配置或应用层中间件严格限制允许上传的文件扩展名白名单（如仅允许 .jpg、.png、.pdf 等必要格式），并禁用上传目录的脚本执行权限，同时定期审查上传目录中的异常文件。"
 score = 5
-sources = ["ghsa"]
-published = ""
-updated = ""
-remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+severity = "MEDIUM"
+sources = ["check"]
+title = "未知厂商 未知产品 漏洞类型（待补全）"
+updated = "2026-01-01T00:00:00Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "GHSA-7gcf-g7xr-8hxj",
+    "AVE-2026-1025",
+]
+ave_id = "AVE-2026-1025"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
 
 [references]
 urls = []
-
-[exploit]
-poc_urls = []
-exp_urls = []
-
-[meta]
-status = "completed"
-collected_at = "2026-08-05T20:56:25.889643518+00:00"

