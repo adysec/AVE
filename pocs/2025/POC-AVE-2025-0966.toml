@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "验证目标是否运行存在btrfs use-after-free漏洞的内核版本，通过检测/proc/version内核版本及/proc/filesystems中btrfs文件系统支持状态，确认是否存在可被利用的事务中止竞争条件"
+id = "POC-AVE-2025-0966"
+name = "CVE-2025-21753 PoC"
+severity = "high"
+tags = ["ave-2025-0966"]
+vuln_id = [
+    "CVE-2025-21753",
+    "AVE-2025-0966",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/proc/version"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Linux"]
+
+[[poc.requests]]
+path = "/proc/filesystems"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["btrfs"]
