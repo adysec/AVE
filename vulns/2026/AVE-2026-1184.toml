@@ -1,0 +1,99 @@
+[basic]
+description = '''
+## Summary
+A critical SQL injection vulnerability was discovered in Budibase's MySQL integration that allows remote attackers to execute arbitrary SQL commands.
+
+## Details
+### Vulnerability Type
+SQL Injection
+
+### Description
+The MySQL integration component in Budibase is configured with `multipleStatements: true`, enabling execution of multiple SQL statements in a single query. Attackers can inject malicious SQL commands through user input fields, leading to complete database compromise.
+
+### Location
+```typescript
+// File: packages/server/src/integrations/mysql.ts
+// Line: 173
+
+this.config = {
+  ...config,
+  typeCast: defaultTypeCasting,
+  multipleStatements: true,  // VULNERABLE
+  timezone: \"Z\",
+}
+```
+
+## Proof of Concept
+
+### Exploit
+```javascript
+const mysql = require('mysql2');
+
+// Budibase vulnerable configuration
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'password',
+  multipleStatements: true,  // Vulnerable setting
+  timezone: \"Z\"
+});
+
+// Attack: Data destruction
+connection.query(
+  `SELECT * FROM users WHERE id = 1; DROP TABLE sensitive_data; --`,
+  (err, results) => {
+    if (!err) console.log(\"Table dropped successfully\");
+  }
+);
+```
+
+## Impact
+- **Data Destruction**: Execute DROP TABLE, DELETE commands
+- **Data Theft**: Exfiltrate data via SELECT INTO OUTFILE
+- **Privilege Escalation**: Grant database admin privileges
+- **Denial of Service**: Disrupt service operations
+- **Complete Database Compromise**: Full control over database
+
+## Remediation
+### Patch
+```diff
+--- a/packages/server/src/integrations/mysql.ts
++++ b/packages/server/src/integrations/mysql.ts
+@@ -170,7 +170,7 @@ class MySQLIntegration extends Sql implements DatasourcePlus {
+     this.config = {
+       ...config,
+       typeCast: defaultTypeCasting,
+-      multipleStatements: true,
++      multipleStatements: false,
+       timezone: \"Z\",
+     }
+   }
+```
+
+### Workarounds
+1. Temporarily disable MySQL integration
+2. Implement web application firewall (WAF)
+3. Restrict database user privileges
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Budibase: SQL Injection via `multipleStatements: true`"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-q6x4-v3qx-85qw"]
+ave_id = "AVE-2026-1184"
+
+[meta]
+collected_at = "2026-08-06T10:45:33.524379340+00:00"
+status = "completed"
+
+[references]
+urls = []
