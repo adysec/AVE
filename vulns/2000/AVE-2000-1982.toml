@@ -1,12 +1,12 @@
 [basic]
-description = "Mandrake Linux 7.1及更早版本中的 ypserv（NIS 服务）存在格式化字符串漏洞。当 ypserv 在编译时未启用 vsyslog() 函数时，程序未能正确过滤用户可控输入中的格式化字符串占位符（如 %n、%s 等），远程攻击者可通过向 ypserv 发送特制的格式化字符串请求触发该漏洞，实现任意内存写入，从而获取 root 权限。该漏洞影响 Mandrake Linux 6.1/7.0/7.1 等多个版本，CVSS v2 评分 10.0，危害严重，无需身份认证即可远程利用。"
-published = "2000-12-11T00:00:00Z"
-remediation = "立即安装 Mandrake Linux 官方安全补丁 MDKSA-2000-064，将 ypserv 升级至修复了格式化字符串漏洞的版本。如无法升级，确保 ypserv 编译时启用 vsyslog() 函数（添加编译选项 -DHAVE_VSYSLOG），并在防火墙层面限制对 ypserv 服务（TCP/UDP 834 端口）的访问，仅允许受信任的 NIS 客户端连接。"
-score = 5
-severity = "MEDIUM"
-sources = ["epss"]
+description = "Mandrake Linux 7.1 及更早版本中的 ypserv（网络信息服务守护进程）存在格式化字符串漏洞。当 ypserv 在未链接 vsyslog() 函数的情况下编译时，未经身份认证的远程攻击者可通过向该服务发送包含格式化字符串特数的恶意输入，触发内存写入操作，从而以 root 权限执行任意代码。该漏洞影响 Mandrake Linux 7.1 及更早版本，以及可能其他未正确编译 ypserv 的 Linux 发行版。由于 ypserv 通常以 root 权限运行，攻击者可借此完全控制目标系统。攻击者无需任何凭据即可远程利用此漏洞，攻击复杂度低，危害极为严重。"
+published = "2000-12-11T05:00:00.000"
+remediation = "立即升级 Mandrake Linux 7.1 的 ypserv 软件包至 Mandrake Security Advisory MDKSA-2000-064 发布的修复版本，或升级至 Mandrake Linux 7.2 及更高版本。临时缓解措施：通过 /etc/rc.d/init.d/ypserv stop 或 chkconfig ypserv off 禁用 ypserv 服务，并关闭防火墙对 TCP 111 端口和 ypserv 相关端口的入站访问。同时确认 ypserv 在编译时已启用 vsyslog() 函数支持，避免格式化字符串被攻击者利用提权至 root。"
+score = 10
+severity = "CRITICAL"
+sources = ["avd"]
 title = "Mandrake Linux ypserv 格式化字符串漏洞"
-updated = "2000-12-11T00:00:00Z"
+updated = "2026-06-16T21:53:02.197"
 
 [exploit]
 exp_urls = []
@@ -17,19 +17,21 @@ aliases = ["CVE-2000-1043"]
 ave_id = "AVE-2000-1982"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "https://github.com/CVEProject/cvelistV5/blob/2e429c9a0087eb0ee678d77c344076eb39564d19/cves/2000/1xxx/CVE-2000-1043.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/604ddf5b05f9e8ce70a7b6f9716ba166db0bd437/CVE/data/2000/CVE-2000-1043.json",
+    "http://www.linux-mandrake.com/en/security/MDKSA-2000-064.php3?dis=7.1",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/5731",
+    "https://github.com/CVEProject/cvelistV5/blob/ad23a84307831b745d27b34af84abc59130b2cd5/cves/2000/1xxx/CVE-2000-1043.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bd3fb132c1b8a95ef2bcf26b230a07f7c9700666/CVE/data/2000/CVE-2000-1043.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1043",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1043.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1043.json",
-    "https://github.com/opencve/opencve-kb/blob/fbdcc0a51e272b519ec8a57a1db338df26d96406/2000/CVE-2000-1043.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3a7c0c4aa01967d2633d808f80f3fcd65491b947/CVE-2000/CVE-2000-10xx/CVE-2000-1043.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c80cd921505a9f88e4aae41f1414ac3763e708ba/2000/1xxx/CVE-2000-1043.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1043.json",
+    "https://github.com/opencve/opencve-kb/blob/3563307faac29cd78316d24dffd5b35b4d38cc65/2000/CVE-2000-1043.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-10xx/CVE-2000-1043.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/e3f82cb4abb129ac4e65ce1b058ead82032d2595/2000/1xxx/CVE-2000-1043.md",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1043.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1043.json",
 ]
