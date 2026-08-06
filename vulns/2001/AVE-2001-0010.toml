@@ -1,12 +1,12 @@
 [basic]
-description = "Leif M. Wright everythingform.cgi 2.0 程序存在一个严重的安全漏洞。该 CGI 脚本在处理 config 参数时未能对用户输入进行有效过滤，导致攻击者能够通过注入 shell 特殊字符来执行任意 shell 命令。该漏洞影响到 everythingform.cgi 2.0 版本及类似版本，由未经验证的远程攻击者可利用此漏洞在目标服务器上执行系统命令，可能导致系统完全被入侵。攻击者可以利用此漏洞窃取敏感数据、修改系统配置或植入恶意后门程序，严重威胁服务器安全。此漏洞 CVSS 评分达到 10.0，属于最高危等级。2001 年发现的这一漏洞是早期网络安全的重要案例，凸显了 Web 应用中输入验证的重要性。"
-published = "2001-02-12T05:00:00Z"
-remediation = "由于该软件已停止维护，建议立即从服务器上删除 everythingform.cgi 脚本以消除风险。若必须保留，请在 Web 服务器（如 Apache/Nginx）层面配置 WAF 规则，拦截包含 `;`, `|`, `&`, `` ` `` 等 Shell 元字符的请求，或通过代码重写对 config 参数进行严格的白名单过滤。"
+description = "everythingform.cgi 是 Leif M. Wright 开发的 CGI 程序（版本 2.0），该程序在处理用户提交的 config 参数时未对 shell 元字符进行充分过滤，导致未经身份认证的远程攻击者可通过在 config 参数中注入 shell 元字符（如分号、管道符、反引号等）来执行任意操作系统命令。运行 everythingform.cgi 2.0 版本的所有 Web 服务器均受影响，攻击者无需任何身份认证，只需能够远程访问目标 Web 服务器上的该 CGI 脚本，并通过 HTTP 请求向 config 参数提交包含恶意 shell 元字符的输入即可触发漏洞。攻击者通过构造包含 shell 元字符的 HTTP 请求将 payload 嵌入 config 参数，Web 服务器执行该 CGI 脚本时会解析并执行注入的命令，从而获得服务器的命令执行权限，可进一步用于信息窃取、权限提升或作为后续攻击的跳板。该漏洞的 CVSS 评分为满分 10.0，危害程度极为严重，远程利用难度极低且影响范围广泛。"
+published = "2001-02-12T05:00:00.000"
+remediation = "1. 立即从 Web 服务器中移除 everythingform.cgi 文件，或将其权限修改为不可执行（如 chmod 644 并置于 cgi-bin 之外）；2. 如仍需使用，升级到 Leif M. Wright 发布的最新修正版本并确认漏洞已修复；3. 在 Web 服务器配置（如 Apache httpd.conf）中禁用对 .cgi 脚本的自动执行，或使用 suEXEC/cgiwrap 等机制限制脚本权限；4. 临时缓解措施：在防火墙或 Web 服务器层面对 /everythingform.cgi 路径实施访问控制（IP 白名单或路径阻断），并开启 CGI 执行日志监控异常请求。"
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "Leif Wright everythingform.cgi 任意命令执行漏洞"
-updated = "2026-06-16T21:53:30Z"
+sources = ["epss"]
+title = "Leif M. Wright everythingform.cgi 远程命令执行漏洞"
+updated = "2026-06-16T21:53:30.530"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0023"]
 ave_id = "AVE-2001-0010"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/2101",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5736",
     "https://www.exploit-db.com/exploits/20497",
-    "https://github.com/CVEProject/cvelistV5/blob/73e213348ddf142cab7e77d05861fa314ba8e1d0/cves/2001/0xxx/CVE-2001-0023.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/cec9fb1846e25b24020f297f65ec2360af0f4267/CVE/data/2001/CVE-2001-0023.json",
+    "https://github.com/CVEProject/cvelistV5/blob/9aad85737366330ff6d3c29419443c9111c35207/cves/2001/0xxx/CVE-2001-0023.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/089f2bd75278699e025a97f7a87bc7cf94b50970/CVE/data/2001/CVE-2001-0023.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0023",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0023.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2001-0023.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b5070d3c2d6dc2fda079c163276abcda1c82b124/CVE-2001/CVE-2001-00xx/CVE-2001-0023.json",
-    "https://github.com/opencve/opencve-kb/blob/1a96290b5e035ce53ab9adc58193928385ac790b/2001/CVE-2001-0023.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/918ac66f0b50ab0d2a013bdf692688d3c0abefbc/2001/0xxx/CVE-2001-0023.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0023.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-00xx/CVE-2001-0023.json",
+    "https://github.com/opencve/opencve-kb/blob/578e3191a13a48b3de7e4ff1967f7100da5c1b72/2001/CVE-2001-0023.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/73af4cfb14d58e2696d2d55ddfcc14e42bb1eef7/2001/0xxx/CVE-2001-0023.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0023.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0023.json",
 ]
