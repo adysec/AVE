@@ -1,12 +1,12 @@
 [basic]
-description = "Apache Solr 5.0.0 至 8.3.1 版本中的 VelocityResponseWriter 组件存在模板注入远程命令执行漏洞。攻击者可通过两种方式利用：一是通过配置集 API 上传包含恶意 Velocity 模板的可信配置集（需认证权限）；二是在 Solr 配置中启用 `params.resource.loader.enabled` 参数后，通过 HTTP 请求参数直接传入恶意 Velocity 模板。成功利用后可在目标服务器上以 Solr 进程权限执行任意命令，获取服务器控制权。该漏洞影响范围广泛，CVSS 评分 7.5，危害等级高。Apache 官方在 Solr 8.4 版本中移除了参数资源加载器，并限制仅可信配置集可渲染模板，建议用户升级至 8.4 或更高版本。"
-published = "2019-12-30T17:15:19Z"
-remediation = "立即升级 Apache Solr 至 8.4.0 或更高版本，该版本已彻底移除 params.resource.loader 功能。如无法升级，在 solrconfig.xml 中禁用 VelocityResponseWriter 的 params.resource.loader.enabled 参数，并确保仅允许受信用户上传 configset。"
+description = "Apache Solr 5.0.0 至 8.3.1 版本中的 VelocityResponseWriter 存在远程代码执行漏洞。攻击者可通过 Velocity 模板注入，在 configset 的 velocity/ 目录中放置恶意模板，或通过参数传入恶意模板代码。当管理员在响应写入器配置中启用 params.resource.loader.enabled 设置后，具有配置 API 访问权限的远程攻击者即可通过发送特制请求执行任意系统命令。该漏洞利用后可直接获取服务器控制权，导致敏感数据泄露及系统被完全接管，危害等级严重。Apache 已在 Solr 8.4 版本中移除了 params 资源加载器并修复此问题。"
+published = "2019-12-30T17:15:19.780"
+remediation = "建议将受影响的软件升级到厂商发布的最新安全版本，或根据官方安全公告应用相应的安全补丁。如暂无补丁，建议采取临时缓解措施限制攻击面。"
 score = 7.5
 severity = "HIGH"
-sources = ["kev"]
-title = "Apache Solr Velocity 模版注入远程代码执行漏洞"
-updated = "2026-06-17T02:24:09Z"
+sources = ["nuclei"]
+title = "Apache Solr Velocity 模板注入远程代码执行漏洞"
+updated = "2026-06-17T02:24:09.007"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2019-17558"]
 ave_id = "AVE-2019-0906"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -54,14 +54,14 @@ urls = [
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2019-17558",
     "https://www.exploit-db.com/exploits/48338",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2019/CVE-2019-17558.yaml",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2019/CVE-2019-17558.md",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2019/CVE-2019-17558.md",
     "https://github.com/zhzyker/exphub/blob/946405b3447dbaf2a5eb49e2f56ec33fe1165e49/solr/cve-2019-17558_cmd.py",
-    "https://github.com/0xMarcio/cve/blob/986b45a0ac2dd215b3a5515fba0cebac769043dd/2019/CVE-2019-17558.md",
+    "https://github.com/0xMarcio/cve/blob/735b7181f9cc676afd10704df69ba6e3d23ba358/2019/CVE-2019-17558.md",
     "https://github.com/wgpsec/AboutSecurity/blob/f3c8574e6fa1f9c1cd5aeaba5a209af796107b34/Vuln/middleware/solr/CVE-2019-17558.md",
     "https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/f4596359a8b7b31ae4d231eeaec711706b892ed2/docs/wiki/webserver/Apache/Apache Solr Velocity模板远程执行 CVE-2019-17558.md",
     "https://github.com/cckuailong/reapoc/blob/699762e4c31d0183733f64313d8fc3be6470bd37/2019/CVE-2019-17558/poc/pocsploit/CVE-2019-17558.py",
     "https://github.com/cckuailong/pocsploit/blob/fe4a3154e59d2bebd55ccfdf62f4f7efb21b5a2a/modules/cves/2019/CVE-2019-17558.py",
-    "https://github.com/apache/solr-site/blob/2e5508411721aefb851827a4cffac3df8d85eefd/content/solr/security/2019-12-30-cve-2019-17558.md",
+    "https://github.com/apache/solr-site/blob/809adea95ae06047fc7336dc2450424a735ce313/content/solr/security/2019-12-30-cve-2019-17558.md",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2019/CVE-2019-17558.md",
     "https://github.com/CLincat/vulcat/blob/4ac98801f331920dd8c0840b8332164176edcab8/payloads/ApacheSolr/apache-solr-cve-2019-17558-rce.py",
     "https://github.com/zhzyker/exphub",
