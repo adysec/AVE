@@ -1,0 +1,37 @@
+[basic]
+description = "Linux内核btrfs文件系统在RAID配置下存在逻辑缺陷，代码错误地使用btrfs_set_item_key_safe()函数修改RAID stripe-tree的键值，而非采用安全的btrfs_duplicate_item()复制条目方式，导致B树结构损坏并触发内核BUG，引发系统崩溃。该漏洞影响采用btrfs RAID配置的Linux系统，具有本地低权限访问权限的攻击者可通过特定文件系统操作（如删除文件或执行压力测试工具）触发内核panic，造成拒绝服务攻击。修复方案为改用btrfs_duplicate_item()复制条目并调整键与设备物理地址，以确保树结构完整性。"
+published = "2025-02-27T03:15:15.853"
+remediation = "升级到包含修复的 Linux 内核版本（≥6.13.0-rc1 及以上），或从主线内核应用修复补丁。具体修复通过修改 fs/btrfs/ctree.c 文件，在 btrfs_delete_raid_extent() 函数中将 btrfs_set_item_key_safe() 调用替换为 btrfs_duplicate_item() 的安全实现。此外，如果您不依赖 btrfs RAID 条带化功能，可通过编辑 /etc/btrfs/raid-stripe-extents 配置文件将其禁用，以避免潜在的树 corruption 风险。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 Btrfs 文件系统 RAID stripe-extents 拒绝服务漏洞"
+updated = "2026-06-17T08:44:11.443"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21752"]
+ave_id = "AVE-2025-0965"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1c25eff52ee5a02a2c4be659a44ae972d9989742",
+    "https://git.kernel.org/stable/c/dc14ba10781bd2629835696b7cc1febf914768e9",
+    "https://github.com/CVEProject/cvelistV5/blob/8e508953314efe4f8a66a19b1407eac6138d8179/cves/2025/21xxx/CVE-2025-21752.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c1b6e2adcc7023d61f7ee10641f53c515712154b/CVE/data/2025/CVE-2025-21752.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21752.json",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/0274e3152f045058fa5c33f6d602778b76d936e8/tracker/CVE/2025/CVE-2025-21752.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2025-21752.json",
+    "https://github.com/opencve/opencve-kb/blob/b2bd0e6317a987fe580af355dd899a55ee2d3a75/2025/CVE-2025-21752.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2025/21xxx/CVE-2025-21752.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21752.yaml",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21752",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2025/CVE-2025-217xx/CVE-2025-21752.json",
+]
