@@ -1,0 +1,125 @@
+[basic]
+description = '''
+## Summary
+
+The vulnerability in oapi-codegen seems to be similar with CVE-2026-22785,  which is a generated-code injection issue where untrusted OpenAPI `summary` text is embedded into generated TypeScript MCP server source without proper escaping. `oapi-codegen` has a similar vulnerability in its server URL generator: untrusted OpenAPI `servers[].description` text is inserted into a generated Go line comment without normalizing embedded newlines. A crafted description can break out of the comment, add imports through `goimports`, and emit executable Go declarations into the generated package.
+
+> [!NOTE]
+> A vulnerability like this requires that it is missed in code review **and** that you then call the malicious method.
+> 
+> Using an `init()` function could be enough to not require a direct call to the code, and instead rely on you importing the package, but either way, code review should be performed before any `oapi-codegen` generated code is executed.
+> 
+> We **strongly recommend** all users to be reviewing changes to their generated code before they execute anything within it, to protect against supply chain attacks or malicious injected code.
+>
+> This is also why we recommend `oapi-codegen` generated code is committed to source control.
+
+## Details
+The vulnerable sink is in `pkg/codegen/templates/server-urls.tmpl`.
+
+```gotemplate
+// {{ .GoName }} defines the Server URL for {{ if len .OAPISchema.Description }}{{ .OAPISchema.Description }}{{ else }}{{ .OAPISchema.URL }}{{ end }}
+const {{ .GoName}} = \"{{ .OAPISchema.URL }}\"
+```
+
+This template assumes the OpenAPI server description remains inside a single Go line comment. However, OpenAPI descriptions are attacker-controlled strings and may contain newlines. Once a newline is present, the next line is no longer part of the comment.
+
+The same raw description is also used in the function form of server URL generation:
+
+```gotemplate
+// New{{ .GoName }} constructs the Server URL for {{ .OAPISchema.Description }}, with the provided variables.
+func New{{ .GoName }}({{ .NewServerFunctionParams }}) (string, error) {
+```
+
+Identifier generation does not protect this sink. In `pkg/codegen/server_urls.go`, the description is normalized only for the generated Go identifier:
+
+```go
+suffix := server.Description
+if suffix == \"\" {
+	suffix = nameNormalizer(server.URL)
+}
+name = serverURLPrefix + UppercaseFirstCharacter(suffix)
+name = nameNormalizer(name)
+```
+
+The identifier is sanitized, but the raw `server.Description` is still rendered in the comment template. This leaves the code-generation context vulnerable.
+
+The generated file is then formatted with `goimports` in `pkg/codegen/codegen.go`:
+
+```go
+goCode := SanitizeCode(buf.String())
+
+outBytes, err := imports.Process(opts.PackageName+\".go\", []byte(goCode), nil)
+```
+
+`SanitizeCode` only removes byte-order marks:
+
+```go
+func SanitizeCode(goCode string) string {
+	return strings.ReplaceAll(goCode, \"\uFEFF\", \"\")
+}
+```
+
+It does not escape comments, replace newlines, or otherwise serialize untrusted text for a Go source-code context. As a result, attacker-controlled source can be preserved and formatted as valid Go.
+
+### How to Reproduce
+The attacker-controlled input is an OpenAPI document whose `servers[].description` contains a newline followed by Go declarations:
+
+```yaml
+openapi: \"3.0.0\"
+info:
+  title: oapi-codegen server URL description injection
+  version: \"1.0.0\"
+servers:
+  - url: https://api.example.com
+    description: |
+      benign
+      var _ = func() int {
+          panic(\"oapi-codegen generated-code execution\")
+          return 0
+      }()
+      //
+paths: {}
+```
+
+Generate Go source with server URL generation enabled. No special local path or helper file is required for the vulnerability; the malicious description is copied into the generated source-code context.
+
+The generated source contains attacker-controlled executable code:
+
+```go
+// ServerUrlBenignvarFuncIntPanicOapiCodegenGeneratedCodeExecutionReturn0 defines the Server URL for benign
+var _ = func() int {
+	panic(\"oapi-codegen generated-code execution\")
+	return 0
+}()
+
+//
+
+const ServerUrlBenignvarFuncIntPanicOapiCodegenGeneratedCodeExecutionReturn0 = \"https://api.example.com\"
+```
+
+## Impact
+
+An attacker who can supply or influence an OpenAPI document consumed by `oapi-codegen` can inject arbitrary Go source into the generated package. In common API-client/server generation workflows, this can lead to build-time or runtime code execution in developer machines, CI systems, or downstream applications that trust generated code.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "oapi-codegen: OpenAPI Server Description Escapes Generated Go Comment and Injects Executable Code"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-rjwr-m7qx-3fjr"]
+ave_id = "AVE-2026-1204"
+
+[meta]
+collected_at = "2026-08-06T12:40:08.862489967+00:00"
+status = "completed"
+
+[references]
+urls = []
