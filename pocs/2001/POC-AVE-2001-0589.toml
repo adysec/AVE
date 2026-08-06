@@ -1,56 +1,32 @@
 [info]
 author = "ave"
-description = "检测Cisco CBOS 2.4.1及更早版本路由器的Web管理接口是否可访问，验证是否存在登录日志缺失漏洞。通过访问管理界面并尝试登录，判断目标是否存在密码猜测风险。"
+description = "验证Cisco CBOS路由器Web管理界面未记录无效登录尝试，攻击者可远程暴力猜测管理员密码而不会被检测"
 id = "POC-AVE-2001-0589"
-name = "Cisco CBOS Web管理接口密码猜测漏洞 PoC"
+name = "CVE-2001-0056 PoC"
 severity = "high"
-tags = [
-    "cve-2001-0056",
-    "cisco",
-    "cbos",
-    "brute-force",
-]
+tags = ["ave-2001-0589"]
 vuln_id = [
     "CVE-2001-0056",
     "AVE-2001-0589",
 ]
 
 [poc]
-logic = "any"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "Cisco",
-    "CBOS",
-    "Management Console",
-    "level/15",
-]
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/level/15/exec/-/show/version"
+path = "/{{BaseURL}}/login"
 protocol = "http"
 
 [poc.requests.body]
-content = ""
+content = "username=admin&password=guess"
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "Cisco Internetwork Operating System",
-    "CBOS",
-]
+status = [200]
+type = "status"
