@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "检测 Apple WebKit QuickTimePluginReplacement Use-After-Free 漏洞（CVE-2021-1879）。该漏洞影响 iOS、iPadOS 和 watchOS 中的 WebKit 引擎，攻击者通过构造恶意网页内容可触发通用跨站脚本攻击（universal XSS）。漏洞已在野被利用（Nobelium 组织针对 iPhone 用户的定向攻击）。修复版本：iOS 12.5.2、iOS 14.4.2、iPadOS 14.4.2、watchOS 7.3.3。"
+id = "POC-AVE-2021-0100"
+name = "CVE-2021-1879 WebKit Universal XSS PoC"
+severity = "high"
+tags = ["ave-2021-0100"]
+vuln_id = [
+    "CVE-2021-1879",
+    "AVE-2021-0100",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/index.html"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "var idd = null",
+    "function onl()",
+    "exp.html",
+    "requestAnimationFrame",
+    "worker.GetURL",
+]
