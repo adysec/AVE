@@ -1,12 +1,12 @@
 [basic]
-description = "Poll It CGI 2.0 及更早版本中的 pollit.cgi 脚本存在认证绕过漏洞，远程攻击者无需知道真实管理员密码，只需在 HTTP 请求中同时提交相同的值给 entered_password 和 admin_password 两个参数，即可绕过身份验证直接访问后台管理功能。该漏洞攻击复杂度低，无需任何权限，可导致敏感信息泄露和配置被篡改。"
-published = "2000-12-11T05:00:00Z"
-remediation = "立即停止使用 Poll It CGI 脚本，该脚本存在多处严重安全缺陷且作者未彻底修复。如必须使用，升级到 2.01 版本（将 ReadForm 调用移至变量声明之前）可部分缓解密码绕过问题，但 admin_password 变量仍可在 2.01 中被覆盖，建议彻底替换为其他投票程序。临时缓解措施：在 Web 服务器（Apache/Nginx）配置中对 pollit.cgi 所在目录添加 IP 白名单访问控制，并移除 pollit_files 目录的 Web 可读权限。"
+description = "Poll It CGI 2.01 及更早版本的 pollit.cgi 脚本存在认证绕过漏洞。该脚本在处理投票提交和管理员功能时，对 entered_password 和 admin_password 两个参数进行比对，仅当两者相同时才允许执行管理操作。由于该脚本未对管理员接口 load=admin 执行严格的密码验证，未经身份认证的远程攻击者只需将 entered_password 和 admin_password 设置为相同的空值，即可绕过管理员密码认证，获得对投票系统的完全管理权限。成功利用后，攻击者可删除当前投票、过期投票、创建新投票、添加投票选项，甚至通过命令执行或路径遍历读取服务器上的任意文件，导致敏感信息泄露和服务器被完全控制。该漏洞影响部署了 Poll It CGI 2.0/2.01 的 Web 服务器，CVSS v3 评分为 6.4，危害等级为中等。"
+published = "2000-12-11T05:00:00.000"
+remediation = "Poll It CGI 2.0/2.01 已停止维护且存在严重认证绕过漏洞，建议立即将 pollit.cgi 从 Web 服务器中移除并替换为现代投票系统。若短期内无法替换，可对 pollit.cgi 源代码进行补丁修复：找到处理管理员密码验证的逻辑，将 entered_password 与硬编码的 admin_password 变量进行比对而非与表单参数 admin_password 比对，具体为将条件判断从 if ($entered_password eq $admin_password) 修改为 if ($entered_password eq $config_admin_password)，其中 $config_admin_password 为脚本中预设的实际管理员密码哈希值。同时，在 Web 服务器配置中通过 .htaccess 或 nginx 规则禁止对外提供 pollit.cgi 的访问权限，或将其移至仅允许内网访问的目录。临时缓解措施还包括在 Apache 配置中使用 Require ip 指令限制 pollit.cgi 仅对可信 IP 开放。"
 score = 6.4
 severity = "MEDIUM"
-sources = ["epss"]
-title = "Poll It CGI 2.0 认证绕过漏洞"
-updated = "2026-06-16T21:53:05Z"
+sources = ["avd"]
+title = "Poll It CGI 身份验证绕过漏洞"
+updated = "2026-06-16T21:53:05.270"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1069"]
 ave_id = "AVE-2000-0770"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=97236719315352&w=2",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5419",
     "https://www.exploit-db.com/exploits/177",
-    "https://github.com/CVEProject/cvelistV5/blob/73e213348ddf142cab7e77d05861fa314ba8e1d0/cves/2000/1xxx/CVE-2000-1069.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/cec9fb1846e25b24020f297f65ec2360af0f4267/CVE/data/2000/CVE-2000-1069.json",
+    "https://github.com/CVEProject/cvelistV5/blob/74dc69e33a88e8337ec5752efbf3c7f9ff972c4b/cves/2000/1xxx/CVE-2000-1069.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/46a996f0289605434908b7f2bee2aa87049865d7/CVE/data/2000/CVE-2000-1069.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1069",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1069.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1069.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/d6e5bf87d27954c5a3cd48e565b212fb97932a81/CVE-2000/CVE-2000-10xx/CVE-2000-1069.json",
-    "https://github.com/opencve/opencve-kb/blob/b5ed23ad1e6e5869267a4c8091cffdf6711227b5/2000/CVE-2000-1069.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/68a8e7c8b5d4a203080f3ef6d3d4e3df346511fe/2000/1xxx/CVE-2000-1069.md",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2000-1069.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-10xx/CVE-2000-1069.json",
+    "https://github.com/opencve/opencve-kb/blob/dd39090b66ba37823c9d39b1b14ea39a58874d96/2000/CVE-2000-1069.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/d04c47fa1c5351dcfc0e5326362cbbabb6ce30da/2000/1xxx/CVE-2000-1069.md",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1069.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1069.json",
 ]
