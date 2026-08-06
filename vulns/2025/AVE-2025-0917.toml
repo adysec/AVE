@@ -1,0 +1,37 @@
+[basic]
+description = 'Linux 内核 AFS（Andrew File System）文件系统模块中存在锁机制不当漏洞，位于 fs/afs/addr_prefs.c 的 afs_proc_addr_prefs_write 函数内。该函数在处理合并偏好规则时，若传入参数 argc 小于 0，会直接 return 退出而未释放已持有的 inode 锁，导致内核锁泄露。当进程返回用户空间时触发 "WARNING: lock held when returning to user space" 警告。该漏洞影响开启了 AFS 文件系统支持的内核版本，本地低权限用户可通过向 /proc/afs/addr_prefs 写入非法格式数据触发该条件，进而可能造成系统性能下降或拒绝服务。开发者已通过将错误存入 ret 并跳转到 done 标签进行统一清理修复该问题。'
+published = "2025-01-31T12:15:28.360"
+remediation = "升级 Linux 内核到 6.12.11 或更高稳定版本，该补丁已合并入 stable 分支。如使用 6.13 开发版，请确保已包含 commit 22be1d90a621。如无法立即升级，可临时禁用 afs 模块（rmmod kafs）或限制本地用户访问 /proc/fs/afs/addr_prefs 作为缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 AFS 不正确的锁释放漏洞"
+updated = "2026-06-17T08:43:59.103"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21672"]
+ave_id = "AVE-2025-0917"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/17a4fde81d3a7478d97d15304a6d61094a10c2e3",
+    "https://git.kernel.org/stable/c/22be1d90a6211c88dd093b25d1f3aa974d0d9f9d",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21672.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4d38333dcfe51fc2081856da5d31bbece1a0cced/cves/2025/21xxx/CVE-2025-21672.json",
+    "https://github.com/cisagov/vulnrichment/blob/5800be5111a4a9084bc37be685bd7d751f884e33/2025/21xxx/CVE-2025-21672.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/954745087cab3897c1945b517c4fc4f1575af37b/SSVC/data/2025/CVE-2025-21672.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/954745087cab3897c1945b517c4fc4f1575af37b/CVE/data/2025/CVE-2025-21672.json",
+    "https://github.com/kernelslacker/trinity/blob/fa8e3333b28b55e4bc5ccc73e25a596f363b445a/stats/subsys/nl80211.h",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21672.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21672.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2025-21672.json",
+    "https://github.com/opencve/opencve-kb/blob/09467eccc569d3c2d05f9926f06cbaa3adc3361a/2025/CVE-2025-21672.json",
+]
