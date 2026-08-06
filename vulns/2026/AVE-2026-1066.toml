@@ -1,0 +1,54 @@
+[basic]
+description = '''
+### Summary
+
+An authenticated path traversal in `assets/icon` allows local SVG file read by passing traversal sequences in the `extension` parameter. The issue is caused by file existence checks happening before extension validation.
+
+### Details
+The endpoint:
+- `src/controllers/AssetsController.php:1115-1123`
+- `actionIcon(string $extension)` calls `Assets::iconPath($extension)` and returns `sendFile($path, ...)`.
+
+In `Assets::iconPath()`:
+- Path is built from user-controlled `extension`:
+  - `src/helpers/Assets.php:906-909`
+- If `file_exists($path)` is true, path is returned immediately:
+  - `src/helpers/Assets.php:910-912`
+
+Validation exists in `Assets::iconSvg()`:
+  - `preg_match('/^\w+$/', $extension)`
+  - `src/helpers/Assets.php:927-931`
+
+However, that validation is only reached if `iconPath()` does **not** find a file.
+So traversal payloads that resolve to existing `.svg` files bypass validation and are served by `sendFile()`.
+
+### Impact
+
+- Authenticated users can read local .svg files accessible to the application process.
+
+### References
+
+- https://github.com/craftcms/cms/commit/30f5f1a8d6edf0f3a00be72c42c78d9dc7d72d5c
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Craft CMS has authenticated path traversal in `assets/icon`, allowing local `.svg` file read"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-c43v-4cr8-6mvp"]
+ave_id = "AVE-2026-1066"
+
+[meta]
+collected_at = "2026-08-06T00:30:25.978946922+00:00"
+status = "completed"
+
+[references]
+urls = []
