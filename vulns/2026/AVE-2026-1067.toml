@@ -1,0 +1,69 @@
+[basic]
+description = '''
+## Summary
+
+Kite versions 0.6.9 through 0.14.0 authorize Kubernetes proxy requests against the pod or service identified by the original route parameters. Encoded path traversal segments can cause the upstream URL to resolve to a different Kubernetes API endpoint after authorization.
+
+## Impact
+
+An authenticated user with `get` permission on pods or services in one namespace can cause Kite to issue GET requests to Kubernetes API endpoints outside that namespace using Kite's service account.
+
+With Kite's default Helm RBAC configuration, this allows cluster-wide resource disclosure, including Secrets. The validated impact is confidentiality only; resource modification and denial of service were not demonstrated.
+
+Deployments using a restricted Kite service account are affected only up to the permissions granted to that service account.
+
+## Technical details
+
+The authorization check is performed against the original namespace and kind route parameters. The proxy path is subsequently decoded and passed to `url.JoinPath`, which resolves `..` segments and can produce an upstream URL outside the authorized pod or service proxy prefix.
+
+Two input locations were affected:
+
+1. Encoded traversal segments in the proxy catch-all path.
+2. Encoded traversal and slash characters in the resource name.
+
+## Reproduction
+
+
+1. Create a user with a role granting only `pods:get` in namespace `default`.
+2. Create any pod in `default` (e.g. `nginx`).
+3. Send the following request (auth cookie required):
+
+```bash
+curl --path-as-is --cookie \"auth_token=<JWT>\" \
+  'http://<kite-host>/api/v1/_clusters/<cluster>/namespaces/default/pods/nginx/proxy/%2e%2e/%2e%2e/%2e%2e/%2e%2e/kube-system/secrets'
+```
+
+## Patches
+
+Fixed in Kite 0.14.1.
+
+- https://github.com/kite-org/kite/releases/tag/v0.14.1
+
+## Workarounds
+
+Upgrade to 0.14.1 or later.
+
+If upgrading is temporarily impossible, reject encoded dot segments and encoded slashes at the reverse proxy and restrict Kite's Kubernetes service account permissions. Reverse-proxy normalization should not be treated as a permanent fix.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Kite Kubernetes proxy path traversal allows authenticated users to bypass RBAC and read cluster-wide resources"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-c534-2w9c-x7fm"]
+ave_id = "AVE-2026-1067"
+
+[meta]
+collected_at = "2026-08-06T00:39:34.174633258+00:00"
+status = "completed"
+
+[references]
+urls = []
