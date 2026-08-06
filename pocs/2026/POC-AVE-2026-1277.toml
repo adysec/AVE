@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "验证 rclone 在使用 --links 选项同步文件时，是否会未经验证地将 .rclonelink 文件中的符号链接目标重建到本地文件系统，导致攻击者可利用逃逸符号链接向目标目录之外写入任意文件。"
+id = "POC-AVE-2026-1277"
+name = "rclone --links 符号链接目标未验证任意文件写入漏洞 PoC"
+severity = "high"
+tags = ["ave-2026-1277"]
+vuln_id = [
+    "CVE-2026-54572",
+    "AVE-2026-1277",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "{{BaseURL}}"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["link"]
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["authorized_keys"]
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [".ssh"]

