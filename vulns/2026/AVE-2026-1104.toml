@@ -1,0 +1,100 @@
+[basic]
+description = '''
+## Description
+
+A vulnerability was discovered in TSDProxy where it forwards its internal per-process authentication token to all proxied backend services. When `identityHeaders` is enabled (the default), tsdproxy injects `x-tsdproxy-auth-token` into every upstream HTTP request alongside user identity headers. This token is the same secret used by the management HTTP server to trust forwarded Tailscale identity claims. A backend that receives this token can replay it from localhost to the management port with an arbitrary `x-tsdproxy-id` value, bypassing Tailscale authentication entirely.
+
+The token is forwarded unconditionally: `ProviderUserMiddleware` always calls `WhoisNewContext` regardless of whether the user is authenticated. In the `ReverseProxy.Rewrite` function, `WhoisFromContext` returns `ok=true` even for zero-value `Whois{}` (unauthenticated or Funnel requests). The `HeaderAuthToken` is set for every request when `identityHeaders=true`.
+
+The attack requires the backend to reach `127.0.0.1:8080`. This holds in: (1) non-Docker deployments where tsdproxy and a backend run on the same host, (2) Docker host-network-mode containers, (3) containers sharing tsdproxy's network namespace.
+
+## Affected files
+
+- `internal/proxymanager/port.go:123-132`
+- `internal/core/admin.go:160-182`
+
+```go
+// port.go: auth token forwarded regardless of user authentication state
+if identityHeaders {
+    if user, ok := model.WhoisFromContext(r.In.Context()); ok {
+        // ok=true even for empty Whois{} stored by ProviderUserMiddleware
+        r.Out.Header.Set(consts.HeaderAuthToken, core.ProxyAuthToken()) // token sent to backend
+    }
+}
+
+// admin.go: management port trusts x-tsdproxy-id from localhost when token is valid
+func ResolveWhois(r *http.Request) model.Whois {
+    if IsLocalhost(r.RemoteAddr) {
+        return model.Whois{
+            ID: r.Header.Get(consts.HeaderID), // attacker-controlled after stealing token
+        }
+    }
+    return model.Whois{}
+}
+```
+
+## Steps to reproduce
+
+1. Deploy tsdproxy on a host (non-Docker) with a backend at `http://localhost:3000`.
+2. Make a request through the Tailscale proxy. The backend receives `x-tsdproxy-auth-token` in the request headers.
+3. From the host, replay the token to the management API:
+
+```bash
+# Capture token from backend headers (e.g., via a header-reflection endpoint)
+TOKEN=$(curl -s http://localhost:3000/debug/headers | python3 -c \"import sys,json; d=json.load(sys.stdin); print(d['headers'].get('X-Tsdproxy-Auth-Token',''))\")
+
+# Replay from localhost to gain admin access
+curl -H \"x-tsdproxy-auth-token: $TOKEN\" \
+     -H \"x-tsdproxy-id: attacker\" \
+     http://127.0.0.1:8080/api/v1/proxies
+# Returns full proxy list with admin access
+```
+
+## Fix
+
+Remove `HeaderAuthToken` from the outgoing backend request, and guard identity-header injection on `user.ID != \"\"`:
+
+```go
+// port.go: only inject headers for actually authenticated users
+if identityHeaders {
+    if user, ok := model.WhoisFromContext(r.In.Context()); ok && user.ID != \"\" {
+        r.Out.Header.Set(consts.HeaderID, user.ID)
+        // HeaderAuthToken should NOT be forwarded to backends
+    }
+}
+```
+
+## Impact
+
+An attacker with code execution in any backend proxied by tsdproxy (on the same host) gains full management API control: restart or pause all proxied services (DoS), enumerate all proxy configurations and backend network topology, and trigger webhook deliveries (SSRF via configured webhook URLs).
+
+## Credits
+
+Reported by Vishal Shukla (@shukla304 / @therawdev).
+
+## Sponsorship
+
+This audit is from an AI-assisted research agent at [sechub.dev](https://sechub.dev). Running it on OSS projects is free for maintainers.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "TSDProxy: Internal proxy auth token forwarded to backend services enables management API escalation"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-g936-7jqj-mwv8"]
+ave_id = "AVE-2026-1104"
+
+[meta]
+collected_at = "2026-08-06T03:59:52.731707044+00:00"
+status = "completed"
+
+[references]
+urls = []
