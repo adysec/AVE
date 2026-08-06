@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "验证Trend Micro Apex One 2019和OfficeScan XG迁移工具组件是否存在远程代码执行漏洞。该漏洞需要用户认证才能触发，攻击者通过构造恶意请求可绕过迁移工具的安全检查，在目标系统上执行任意代码。"
+id = "POC-AVE-2020-1908"
+name = "CVE-2020-8467 PoC"
+severity = "high"
+tags = ["ave-2020-1908"]
+vuln_id = [
+    "CVE-2020-8467",
+    "AVE-2020-1908",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/migrationTool/api/authenticate"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"username":"admin","password":"test"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "authenticated",
+    "session",
+    "token",
+    "migration",
+]
