@@ -1,12 +1,12 @@
 [basic]
 description = 'Linux 内核 AFS（Andrew File System）文件系统模块中存在锁机制不当漏洞，位于 fs/afs/addr_prefs.c 的 afs_proc_addr_prefs_write 函数内。该函数在处理合并偏好规则时，若传入参数 argc 小于 0，会直接 return 退出而未释放已持有的 inode 锁，导致内核锁泄露。当进程返回用户空间时触发 "WARNING: lock held when returning to user space" 警告。该漏洞影响开启了 AFS 文件系统支持的内核版本，本地低权限用户可通过向 /proc/afs/addr_prefs 写入非法格式数据触发该条件，进而可能造成系统性能下降或拒绝服务。开发者已通过将错误存入 ret 并跳转到 done 标签进行统一清理修复该问题。'
-published = "2025-01-31T12:15:28.360"
+published = "2025-01-31T12:15:28Z"
 remediation = "升级 Linux 内核到 6.12.11 或更高稳定版本，该补丁已合并入 stable 分支。如使用 6.13 开发版，请确保已包含 commit 22be1d90a621。如无法立即升级，可临时禁用 afs 模块（rmmod kafs）或限制本地用户访问 /proc/fs/afs/addr_prefs 作为缓解措施。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux 内核 AFS 不正确的锁释放漏洞"
-updated = "2026-06-17T08:43:59.103"
+updated = "2026-06-17T08:43:59Z"
 
 [exploit]
 exp_urls = []

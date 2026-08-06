@@ -1,12 +1,12 @@
 [basic]
 description = "Linux kernel 的 USB 串行驱动中，Quatech2 设备的 qt2_process_read_urb() 函数存在空指针解引用漏洞。该函数在处理 USB 串行设备读取请求时，对端口索引的边界检查不正确，原代码仅判断 newport 是否大于 serial->num_ports，未涵盖等于的情况，导致当 newport 等于 serial->num_ports 时，serial->port 数组发生越界访问并返回 NULL，后续 dereference 操作引发内核崩溃。具有本地低权限的攻击者可通过向 Quatech2 USB 串行设备发送特制数据包触发此漏洞，造成系统拒绝服务。该漏洞影响所有使用 quatech2 驱动的 Linux 内核版本，CVSS 评分 5.5，危害等级中等。修复补丁已通过增加 newport 大于等于 num_ports 的边界检查解决此问题。"
-published = "2025-02-10T16:15:38.447"
+published = "2025-02-10T16:15:38Z"
 remediation = '升级 Linux 内核至包含修复的稳定版本：5.4.290、5.10.234、5.15.178、6.1.128、6.6.75 或 6.12.12 及以上。使用发行版包管理器更新内核（如 Debian/Ubuntu 执行 apt install linux-image-* && apt upgrade，RHEL/CentOS 执行 yum update kernel），更新后重启系统加载新内核。如暂时无法升级，可将 quatech2 模块加入黑名单（echo "blacklist quatech2" >> /etc/modprobe.d/blacklist.conf 并执行 update-initramfs -u）作为临时缓解措施，阻止该 USB 串口驱动自动加载，避免触发空指针解引用导致内核崩溃。'
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux 内核 USB 串口 Quatech2 驱动空指针解引用漏洞"
-updated = "2026-06-17T08:44:01.713"
+updated = "2026-06-17T08:44:01Z"
 
 [exploit]
 exp_urls = []

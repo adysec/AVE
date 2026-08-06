@@ -48,13 +48,13 @@ This is malformed TOML - triple quotes with `<value>` tags inside the triple quo
 
 I should output just the clean description text inside `<value>` tags.<value>Linux内核netem（网络仿真）模块中存在释放后使用漏洞。其根本原因在于，在调用`qdisc_tree_reduce_backlog()`函数通知父队列调度器之前，代码未先减少子队列调度器的backlog计数，导致该函数无法检测到子队列已清空的状态，从而错过了调用`cops->qlen_notify()`回调的机会。在使用DRR（Deficit Round Robin）队列调度算法的系统中，该回调用于维护活跃队列列表，错过调用将触发释放后使用，KASAN检测到`drr_dequeue`函数中存在slab-use-after-free错误。该漏洞影响配置DRR队列调度规则的Linux内核版本，CVSS评分为7.8。具有本地访问权限的低权限攻击者可通过特定操作触发此漏洞，无需用户交互，成功利用后可导致系统拒绝服务或获取高权限执行权限。
 '''
-published = "2025-02-18T15:15:18.633"
+published = "2025-02-18T15:15:18Z"
 remediation = "标签之间。<value>升级 Linux 内核至修复版本：5.4.291、5.10.235、5.15.179、6.1.129、6.6.78 或 6.12.14 及以上。Ubuntu 用户可通过 apt 安装对应版本：20.04 LTS 升级至 5.4.0-214.234、22.04 LTS 升级至 5.15.0-138.148、24.10 升级至 6.11.0-24.24。如暂无法升级，可临时禁用 netem 流量控制模块（rmmod sch_netem 或删除相关 tc 规则），并限制本地低权限用户访问网络命名空间中的 DRR qdisc 配置，以降低利用风险。"
 score = 7.8
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux 内核 netem 网络模拟器释放后使用漏洞"
-updated = "2026-06-17T08:44:04.110"
+updated = "2026-06-17T08:44:04Z"
 
 [exploit]
 exp_urls = []

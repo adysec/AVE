@@ -1,12 +1,12 @@
 [basic]
 description = "Netscape iPlanet iCal 2.1 Patch 2 的 csstart 程序存在本地权限提升漏洞。csstart 程序在安装 libsocket 和 libnsl 共享库时使用相对路径进行加载，且运行 csstart 时会默认从用户当前所在目录启动 cshttpd 服务，导致攻击者无需身份认证即可利用该漏洞获取 root 权限。攻击者可在当前目录或父目录中放置特制的共享库（如 libsocket.so.1 伪造库），当 csstart 以 setuid 权限执行时，会优先加载攻击者放置的恶意库，进而通过劫持 socket() 等函数执行任意代码，将权限从普通用户提升至 icsuser 甚至 root。icsuser 账户拥有 iCal 目录和文件的所有权，攻击者可进一步利用该账户在 iCal 库目录中放置 shim 库，在下次 iCal 服务启动或重启时获得 root 权限。该漏洞影响 Solaris 平台上的 Netscape iPlanet iCal 2.1 Patch 2，CVSS 评分满分 10.0，危害等级为严重。攻击条件为攻击者需拥有目标系统本地访问权限并能够执行 csstart 命令，利用方式包括伪造 cshttpd 服务获取 icsuser  shell，以及通过恶意共享库获取 root 权限。@stake 安全公司已于 2000 年发布了完整的利用代码和安全公告。"
-published = "2000-12-11T05:00:00.000"
+published = "2000-12-11T05:00:00Z"
 remediation = "升级到 Netscape iPlanet iCal 2.1 Patch 3 或更高版本，该版本修复了 csstart 程序的相对路径漏洞。如无法升级，应删除 csstart 程序的 setuid 权限（chmod -s /opt/SUNWicsrv/cal/bin/csstart），限制普通用户对 iCal 安装目录的写入权限，并监控 /opt/SUNWicsrv/cal/bin/ 目录下是否存在异常的 libsocket.so.1 或 libnsl.so.1 文件。如业务允许，建议直接停用 iCal 服务以消除攻击面。"
 score = 10
 severity = "CRITICAL"
 sources = ["avd"]
 title = "Netscape iPlanet iCal 本地权限提升漏洞"
-updated = "2026-06-16T21:53:05.833"
+updated = "2026-06-16T21:53:05Z"
 
 [exploit]
 exp_urls = []

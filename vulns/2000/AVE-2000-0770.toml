@@ -1,12 +1,12 @@
 [basic]
 description = "Poll It CGI 2.01 及更早版本的 pollit.cgi 脚本存在认证绕过漏洞。该脚本在处理投票提交和管理员功能时，对 entered_password 和 admin_password 两个参数进行比对，仅当两者相同时才允许执行管理操作。由于该脚本未对管理员接口 load=admin 执行严格的密码验证，未经身份认证的远程攻击者只需将 entered_password 和 admin_password 设置为相同的空值，即可绕过管理员密码认证，获得对投票系统的完全管理权限。成功利用后，攻击者可删除当前投票、过期投票、创建新投票、添加投票选项，甚至通过命令执行或路径遍历读取服务器上的任意文件，导致敏感信息泄露和服务器被完全控制。该漏洞影响部署了 Poll It CGI 2.0/2.01 的 Web 服务器，CVSS v3 评分为 6.4，危害等级为中等。"
-published = "2000-12-11T05:00:00.000"
+published = "2000-12-11T05:00:00Z"
 remediation = "Poll It CGI 2.0/2.01 已停止维护且存在严重认证绕过漏洞，建议立即将 pollit.cgi 从 Web 服务器中移除并替换为现代投票系统。若短期内无法替换，可对 pollit.cgi 源代码进行补丁修复：找到处理管理员密码验证的逻辑，将 entered_password 与硬编码的 admin_password 变量进行比对而非与表单参数 admin_password 比对，具体为将条件判断从 if ($entered_password eq $admin_password) 修改为 if ($entered_password eq $config_admin_password)，其中 $config_admin_password 为脚本中预设的实际管理员密码哈希值。同时，在 Web 服务器配置中通过 .htaccess 或 nginx 规则禁止对外提供 pollit.cgi 的访问权限，或将其移至仅允许内网访问的目录。临时缓解措施还包括在 Apache 配置中使用 Require ip 指令限制 pollit.cgi 仅对可信 IP 开放。"
 score = 6.4
 severity = "MEDIUM"
 sources = ["avd"]
 title = "Poll It CGI 身份验证绕过漏洞"
-updated = "2026-06-16T21:53:05.270"
+updated = "2026-06-16T21:53:05Z"
 
 [exploit]
 exp_urls = []

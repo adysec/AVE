@@ -1,12 +1,12 @@
 [basic]
 description = "该漏洞存在于 uutils coreutils 的 `determine_backup_mode` 函数中，该函数位于 `src/uucore/src/lib/features/backup_control.rs` 文件。该函数仅检查 `--backup` 或 `-b` 参数，当用户仅使用 `--suffix` 参数时，函数会返回 `BackupMode::None`。这与 GNU coreutils 的行为不符，GNU 会在 `--suffix` 参数单独使用时自动启用备份模式（默认使用现有/编号或 `$VERSION_CONTROL` 变量控制）。由于 `cp`、`install`、`mv` 和 `ln` 等命令共享此代码，导致所有这些工具都存在相同的问题。此漏洞影响范围包括 Windows 10/11 和 Windows Server 2019/2022 等系统。攻击者或用户可以利用此漏洞，当使用 `--suffix` 参数覆盖文件时，会导致预期的备份文件无法创建，从而引发静默数据丢失。这种情况可能影响到依赖于 `--suffix` 参数进行文件备份的脚本和用户的工作。综合 CVSS 评分评分为 5.0，等级为中危。该问题已被 Canonical 确认并修复，修复方案是通过 PR #9741 将 `--suffix` 单独的情况添加到 `determine_backup_mode` 函数中，使得函数能够从 `$VERSION_CONTROL` 环境变量（默认为 `existing`）中获取模式。在 uucore 0.6.0 版本及更高版本中，此漏洞已修复；0.6.0 之前的版本均受到影响。修复中还添加了回归测试 `test_backup_mode_suffix_without_backup_option` 和 `test_backup_mode_suffix_without_backup_option_with_env_var` 以确保问题不再发生。该漏洞最初由 Zellic 在为 Canonical 进行 uutils coreutils 程序安全评估时发现，报告编号为 3.7，并在 Jan 20 2026 的审计报告中进行了记录。漏洞编号为 GHSA-fqf6-gxhh-2xhw。"
-published = ""
+published = "2026-01-01T00:00:00Z"
 remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
 score = 5
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "uutils coreutils 备份模式绕过静默数据丢失漏洞"
-updated = ""
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["GHSA-fqf6-gxhh-2xhw"]
 ave_id = "AVE-2026-1094"
 
 [meta]
-collected_at = "2026-08-06T03:11:35.040608053+00:00"
+collected_at = "2026-08-06T03:11:35Z"
 status = "completed"
 
 [references]
