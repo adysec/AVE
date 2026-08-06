@@ -1,12 +1,12 @@
 [basic]
-description = "iPlanet iCal 2.1 Patch2 中的 csstart 程序在安装 libsocket 和 libnsl 库时使用了相对路径，导致本地攻击者可在当前目录或父目录中放置特洛伊木马库文件，利用 icsuser 账户权限提升至 root。该漏洞为本地权限提升漏洞，攻击者需拥有系统本地访问权限，通过构造恶意库文件并诱导 csstart 程序加载即可实现提权，完全控制目标系统。"
-published = "2000-12-11T05:00:00Z"
-remediation = "立即升级 iPlanet iCal 至 Patch 3 或更高版本，该版本已修复 csstart 使用相对路径安装 libsocket/libnsl 库的问题。如无法升级，手动修改 csstart 脚本，将库路径改为绝对路径（如 /opt/iPlanet/iCal/lib/libsocket.so），并确保 icsuser 用户对库目录无写权限。由于 iPlanet iCal 已停止维护，建议迁移至受支持的日历服务（如 Oracle Communications Calendar Server）作为根本解决方案。"
+description = "Netscape iPlanet iCal 2.1 Patch 2 的 csstart 程序存在本地权限提升漏洞。csstart 程序在安装 libsocket 和 libnsl 共享库时使用相对路径进行加载，且运行 csstart 时会默认从用户当前所在目录启动 cshttpd 服务，导致攻击者无需身份认证即可利用该漏洞获取 root 权限。攻击者可在当前目录或父目录中放置特制的共享库（如 libsocket.so.1 伪造库），当 csstart 以 setuid 权限执行时，会优先加载攻击者放置的恶意库，进而通过劫持 socket() 等函数执行任意代码，将权限从普通用户提升至 icsuser 甚至 root。icsuser 账户拥有 iCal 目录和文件的所有权，攻击者可进一步利用该账户在 iCal 库目录中放置 shim 库，在下次 iCal 服务启动或重启时获得 root 权限。该漏洞影响 Solaris 平台上的 Netscape iPlanet iCal 2.1 Patch 2，CVSS 评分满分 10.0，危害等级为严重。攻击条件为攻击者需拥有目标系统本地访问权限并能够执行 csstart 命令，利用方式包括伪造 cshttpd 服务获取 icsuser  shell，以及通过恶意共享库获取 root 权限。@stake 安全公司已于 2000 年发布了完整的利用代码和安全公告。"
+published = "2000-12-11T05:00:00.000"
+remediation = "升级到 Netscape iPlanet iCal 2.1 Patch 3 或更高版本，该版本修复了 csstart 程序的相对路径漏洞。如无法升级，应删除 csstart 程序的 setuid 权限（chmod -s /opt/SUNWicsrv/cal/bin/csstart），限制普通用户对 iCal 安装目录的写入权限，并监控 /opt/SUNWicsrv/cal/bin/ 目录下是否存在异常的 libsocket.so.1 或 libnsl.so.1 文件。如业务允许，建议直接停用 iCal 服务以消除攻击面。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "Netscape iCal 2.1 Patch2 本地权限提升漏洞"
-updated = "2026-06-16T21:53:05Z"
+sources = ["avd"]
+title = "Netscape iPlanet iCal 本地权限提升漏洞"
+updated = "2026-06-16T21:53:05.833"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1074"]
 ave_id = "AVE-2000-0773"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/1769",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5757",
     "https://www.exploit-db.com/exploits/20276",
-    "https://github.com/CVEProject/cvelistV5/blob/73e213348ddf142cab7e77d05861fa314ba8e1d0/cves/2000/1xxx/CVE-2000-1074.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4ca6e07c2a2a0094c502e8dff7bec24959ab07fd/CVE/data/2000/CVE-2000-1074.json",
+    "https://github.com/CVEProject/cvelistV5/blob/46b010b6722307e014d6f10d53a573bb1f6478ce/cves/2000/1xxx/CVE-2000-1074.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1e8fbb4daef37ec7346b508b9405ee7d135ec28c/CVE/data/2000/CVE-2000-1074.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1074",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1074.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1074.json",
-    "https://github.com/opencve/opencve-kb/blob/eaba6ba6891dae2972376e68ae56a38b641030d7/2000/CVE-2000-1074.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/d6e5bf87d27954c5a3cd48e565b212fb97932a81/CVE-2000/CVE-2000-10xx/CVE-2000-1074.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/68a8e7c8b5d4a203080f3ef6d3d4e3df346511fe/2000/1xxx/CVE-2000-1074.md",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2000-1074.json",
+    "https://github.com/opencve/opencve-kb/blob/d5efef4fd74ef7181076173af290c3cdae5dbeb5/2000/CVE-2000-1074.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-10xx/CVE-2000-1074.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/8aab22d02785f79271894073fc1a1d558c4aae6b/2000/1xxx/CVE-2000-1074.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1074.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1074.json",
 ]
