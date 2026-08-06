@@ -1,0 +1,53 @@
+[basic]
+description = '''
+### Impact
+_What kind of vulnerability is it? Who is impacted?_
+
+A user granted READ permission on a single, exact key can use the Watch gRPC API with `clientv3.WithFromKey()` (an open-ended, \"from this key to the end of the keyspace\" watch) to receive watch events for every key lexicographically greater than or equal to their permitted key — not just the one key they were granted. 
+
+This is an authorization bypass in etcd's RBAC enforcement for the Watch API; Range/Get and DeleteRange requests are not affected. It only affects clusters with authentication enabled — clusters running without auth already allow unrestricted read access.
+
+### Patches
+_Has the problem been patched? What versions should users upgrade to?_
+
+This vulnerability is patched in the following versions:
+
+- etcd 3.7.1
+- etcd 3.6.14
+- etcd 3.5.33
+
+### Workarounds
+_Is there a way for users to fix or remediate the vulnerability without upgrading?_
+
+If upgrading is not immediately possible, the following mitigations reduce exposure:
+
+- Audit READ grants. Any READ grant — even on one key — can be leveraged via Watch to read everything after it. Review who holds READ permissions and revoke/tighten any you wouldn't trust with full read access.
+- Restrict network access. Limit which hosts can reach etcd's client (gRPC) port via firewall rules or network policy, reducing who can attempt exploitation.
+
+### Reporter
+
+- Luis Toro ([@lobuhi](https://github.com/lobuhi) on Github)
+- Anthropic  and Adam Korczynski ([@AdamKorcz](https://github.com/AdamKorcz) on Github)
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "etcd: Watch API authorization bypass via open-ended range requests"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-xg4h-6gfc-h4m8"]
+ave_id = "AVE-2026-1235"
+
+[meta]
+collected_at = "2026-08-06T15:26:31.868689003+00:00"
+status = "completed"
+
+[references]
+urls = []
