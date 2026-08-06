@@ -1,12 +1,12 @@
 [basic]
-description = "Linux man 命令存在格式字符串漏洞，本地攻击者可通过向 `man -l` 参数传递特制的格式字符串触发该漏洞，导致内存越界读写，进而实现本地权限提升（LPE）。该漏洞影响 Debian 2.2 及 S.u.S.E 6.3/6.4/7.0 等发行版，CVSS 评分 7.2，危害等级高。攻击者需拥有本地账户并执行恶意构造的 man 命令来利用此漏洞。"
-published = "2001-05-03T04:00:00Z"
-remediation = "对于 Debian 2.2 (potato)，立即升级 man-db 软件包至已修复版本：执行 `apt-get update && apt-get upgrade man-db` 或参考 DSA-028 安全公告手动安装补丁。对于 S.u.S.E Linux 6.3/6.4/7.0，升级 man 软件包至厂商提供的修复版本。如无法立即升级，可通过移除 man 的 setuid 位作为临时缓解：`chmod u-s /usr/bin/man`。"
+description = "man 命令存在格式字符串漏洞，由于处理 -l 参数时未对用户输入进行 adequate 验证，本地低权限用户可通过向 man 命令传递特制的格式字符串，利用栈上的内存地址写入覆盖函数返回地址，从而在栈上执行任意代码。由于多个 Linux 发行版中的 man 程序以 SUID root 权限安装，攻击者成功利用后可获得 root 权限，完全控制系统。该漏洞影响 Debian 2.2 以及 S.u.S.E 6.3、6.4、7.0 等版本，攻击条件为攻击者需具备本地登录权限，利用方式为通过构造包含格式化说明符的 -l 参数触发格式化字符串漏洞，进而执行提权代码获取管理员权限。CVSS 评分 7.2，危害等级高，影响系统的机密性、完整性和可用性。"
+published = "2001-05-03T04:00:00.000"
+remediation = "建议升级到包含 man 命令安全补丁的发行版，如升级到 Ubuntu 20.04 LTS 及以上版本、Debian 10 及以上版本，或从相应的 Linux 发行版供应商处获取 man 命令的安全更新。如无法立即升级，可立即将 /usr/bin/man 文件的 SUID 权限移除（chmod 755 /usr/bin/man），并避免在 shell 中直接使用 man -l 选项进行手册查询，如确需使用应预先验证输入参数。"
 score = 7.2
 severity = "HIGH"
-sources = ["exploitdb"]
-title = "Linux man 本地格式字符串漏洞"
-updated = "2026-06-16T21:53:51Z"
+sources = ["cve"]
+title = "Linux man 命令格式字符串漏洞"
+updated = "2026-06-16T21:53:51.257"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0193"]
 ave_id = "AVE-2001-0074"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/2327",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6059",
     "https://www.exploit-db.com/exploits/20604",
-    "https://github.com/CVEProject/cvelistV5/blob/0e6d432d517e5cdf9829125ecfaa3a6437985a0c/cves/2001/0xxx/CVE-2001-0193.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4d38333dcfe51fc2081856da5d31bbece1a0cced/cves/2001/0xxx/CVE-2001-0193.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0193",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2001-0193.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/8575b52c5f0d68ec89781aae82e849b4f469cd84/CVE/data/2001/CVE-2001-0193.json",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/debian_DSA-028.nasl",
-    "https://github.com/github/advisory-database/blob/a96652a2a06e880f217d1d6526622d8501dbbd69/advisories/unreviewed/2022/04/GHSA-xgp2-f259-4rjq/GHSA-xgp2-f259-4rjq.json",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150700_150800.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--b8f0a534-673f-4190-ac8e-fd162d12d62c.json",
-    "https://github.com/jbeasl7/openvas-feed-sync-local/blob/0ca27158e3313c25f9fa1fe358be43c227fdedbe/openvas-feeds/nvt-feed/2008/debian/deb_028.nasl",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/954745087cab3897c1945b517c4fc4f1575af37b/CVE/data/2001/CVE-2001-0193.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0193.json",
+    "https://github.com/opencve/opencve-kb/blob/c2d7976a30d9a4bb0d098cbb553bce11e610b2f4/2001/CVE-2001-0193.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2001-0193.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c55f50b14ae2241dec1fd7ddec6b7ce3c90c1fdb/2001/0xxx/CVE-2001-0193.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0193.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0193.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0193.json",
 ]
