@@ -1,0 +1,41 @@
+[basic]
+description = "tags.<value>Linux 内核 SCTP 协议栈的 sysctl udp_port 处理函数存在空指针解引用漏洞。该函数通过 current->nsproxy 指针获取网络命名空间结构，但在当前任务退出等特定场景下（如 syzbot 利用 acct(2) 系统调用所发现的），该指针可能为 NULL，导致内核发生空指针解引用（Oops）并触发系统崩溃，造成拒绝服务攻击。受影响版本包括所有采用该脆弱代码路径的 Linux 内核发行版。攻击者需要在目标系统上拥有低权限本地访问权限，无需任何用户交互即可在触发条件满足时利用此漏洞，直接影响系统可用性并可能损害数据完整性。开发者已通过将 net 结构体获取方式从 current->nsproxy 改为从 table->data 使用 container_of() 来修复该问题。"
+published = "2025-01-19T11:15:09.217"
+remediation = "立即升级 Linux 内核至修复版本：Debian 12 (bookworm) 升级至 6.1.128-1 或更高，Ubuntu 22.04 LTS 升级至 5.15.0-1077.83 或更高。执行 `apt update && apt install linux-image-$(uname -r)` 后重启系统使新内核生效。如暂无法升级，可通过限制本地低权限用户对 SCTP sysctl 接口的访问权限作为临时缓解措施。"
+score = 7.1
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux kernel SCTP sysctl udp_port 空指针解引用漏洞"
+updated = "2026-07-30T06:16:41.190"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21637"]
+ave_id = "AVE-2025-0900"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0a0966312ac3eedd7f5f2a766ed4702df39a9a65",
+    "https://git.kernel.org/stable/c/55627918febdf9d71107a1e68d1528dc591c9a15",
+    "https://git.kernel.org/stable/c/5b77d73f3be5102720fb685b9e6900e3500e1096",
+    "https://git.kernel.org/stable/c/c10377bbc1972d858eaf0ab366a311b39f8ef1b6",
+    "https://git.kernel.org/stable/c/e919197fb8616331f5dc81e4c3cc3d12769cb725",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21637.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4cd39de946c4dae2d75d1f265b016c2f29e5b92a/cves/2025/21xxx/CVE-2025-21637.json",
+    "https://github.com/cisagov/vulnrichment/blob/bb8fee28b4e90102956816a94f978ff2574331f4/2025/21xxx/CVE-2025-21637.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4c1d71175e32f1e731b0a7d2c22a87887c3669cd/SSVC/data/2025/CVE-2025-21637.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4c1d71175e32f1e731b0a7d2c22a87887c3669cd/CVE/data/2025/CVE-2025-21637.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/853fff3f588474906eaaeec56c4eeef32edfc06c/CVEs/2025/CVE-2025-21637.md",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21637.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21637.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21637-2025-11-03-1441",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2025-21637.json",
+]
