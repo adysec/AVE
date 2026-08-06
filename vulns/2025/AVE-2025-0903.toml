@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核中 SCTP 协议的 sysctl 参数 `cookie_hmac_alg` 存在空指针解引用（NULL pointer dereference，CWE-476）漏洞。该参数通过 `current` 结构体间接获取 `net` 命名空间信息，但 `current->nsproxy` 在某些情况下（如当前任务正在退出）可能为 NULL，从而触发空指针解引用导致内核崩溃（Oops）。攻击者可在本地获取受限权限后，通过修改相关 sysctl 设置（利用 acct(2) 等触发场景）来利用该漏洞，造成系统拒绝服务（DoS）。该漏洞影响多个发行版的 Linux 内核，CVSS 3.1 评分为 7.1，危害等级高，攻击向量为本地、低复杂度，需要低权限。修复方案是通过 `container_of()` 直接从表数据中获取 `net` 结构，避免使用 `current->nsproxy`，相关补丁已合入 Linux 内核主分支，并随 SUSE、Debian、Ubuntu 等厂商安全公告（如 SUSE-SU-2025:0847-1、DLA-4075-1、USN-7381-1 等）发布。"
+published = "2025-01-19T11:15:09.537"
+remediation = "该漏洞是 Linux 内核 sctp sysctl 处理 remote_hmac_alg 时通过 current->nsproxy 获取 net 结构可能触发空指针解引用（CWE-476），导致系统崩溃（内核 oops）。建议优先升级内核到包含 commit 修复的版本，将内核更新到 6.6 系列 6.6.7x 之后、6.12 系列 6.12.x 最新稳定版，或发行版安全内核版本：Ubuntu 22.04/24.04 内核升级至 USN-7381-1 所指定版本，Debian 11 升级至 DLA-4075 对应内核（如 6.1__*），SUSE 升级至 SUSE-SU-2025:0847-1 指定 kernel-default 版本。如无法立即升级，暂不可关闭 SCTP，可用 sysctl 停用不信任的协议以降低暴露面，并在更新前对系统做监控，防范本地利用导致的拒绝服务；长期应保持内核安全补丁及时更新。"
+score = 7.1
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 SCTP 子系统 cookie_hmac_alg 空指针解引用漏洞"
+updated = "2026-07-30T06:17:03.190"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21640"]
+ave_id = "AVE-2025-0903"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/03ca51faba2b017bf6c90e139434c4117d0afcdc",
+    "https://git.kernel.org/stable/c/3cd0659deb9c03535fd61839e91d4d4d3e51ac71",
+    "https://git.kernel.org/stable/c/5599b212d2f4466e1832a94e9932684aaa364587",
+    "https://git.kernel.org/stable/c/86ddf8118123cb58a0fb8724cad6979c4069065b",
+    "https://git.kernel.org/stable/c/ad673e514b2793b8d5902f6ba6ab7e890dea23d5",
+    "https://git.kernel.org/stable/c/ea62dd1383913b5999f3d16ae99d411f41b528d4",
+    "https://git.kernel.org/stable/c/f0bb3935470684306e4e04793a20ac4c4b08de0b",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-265688.html",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21640.md",
+    "https://github.com/0xMarcio/cve/blob/aaba13955b6f4608c4d9d9901b41c86a0a514345/2025/CVE-2025-21640.md",
+    "https://github.com/CVEProject/cvelistV5/blob/ad23a84307831b745d27b34af84abc59130b2cd5/cves/2025/21xxx/CVE-2025-21640.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/853fff3f588474906eaaeec56c4eeef32edfc06c/CVEs/2025/CVE-2025-21640.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bd3fb132c1b8a95ef2bcf26b230a07f7c9700666/CVE/data/2025/CVE-2025-21640.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21640.md",
+    "https://github.com/RedHatProductSecurity/aegis-ai/blob/2e1430d90ca3b8234fa3c3fd031fd0135ed9cf5c/evals/osidb_cache/CVE-2025-21640.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21640-2025-11-03-1452",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21640-2025-11-03-1441",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21640.json",
+]
