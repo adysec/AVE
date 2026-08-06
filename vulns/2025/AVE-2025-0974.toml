@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 IPv6 协议栈中的 RPL、Seg6 和 ioam6 轻量级隧道（lwtunnel）实现存在目的地引用循环漏洞。该漏洞的原理在于，这些 lwtunnel 在数据包转换后会缓存目的地址（dst cache），当数据包目的地未发生变化时，代码可能将 lwtunnel 自身的引用记录到其缓存中，导致引用循环。由于该引用无法被释放，lwtunnel 状态将永久泄漏，造成内核 per-CPU 内存泄漏（CWE-401）。该漏洞影响 Linux 内核 4.10 至 6.13.x 版本，具有本地权限的攻击者可通过构造特定的 IPv6 网络流量反复触发 dst 缓存写入，逐渐耗尽系统内存，最终导致拒绝服务。该漏洞通过 ioam6.sh 测试用例被发现，利用 kmemleak 工具可检测到 per-CPU 内存泄漏。攻击者需要具备本地访问权限和一定用户权限才能利用此漏洞。Linux 内核已在 5.4.281、6.1.131、6.12.16、6.13.4 等稳定版本中发布补丁修复此问题。"
+published = "2025-02-27T03:15:17.480"
+remediation = "升级到 SUSE Linux Enterprise 15 SP7 或更新版本，应用包含CVE-2025-21768修复的安全更新包。升级方法：通过ZYPPER命令执行`zypper update kernel-default`命令，或在高级管理界面启用所有安全更新。同时，通过修改配置文件`/etc/modprobe.d/00-blacklist.conf`，增加`blacklist ioam6`行来临时禁用受影响的lwtunnel模块，以缓解内存消耗风险。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel IPv6 lwtunnel 拒绝服务漏洞"
+updated = "2026-06-17T08:44:14.007"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21768"]
+ave_id = "AVE-2025-0974"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/4c0f200c7d06fedddde82209c099014d63f4a6c0",
+    "https://git.kernel.org/stable/c/5ab11a4e219e93b8b31a27f8ec98d42afadd8b7a",
+    "https://git.kernel.org/stable/c/92191dd1073088753821b862b791dcc83e558e07",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2025/21xxx/CVE-2025-21768.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/78ee00e0fc2916e3b3e3d159605a09df95a384c9/CVE/data/2025/CVE-2025-21768.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21768.yaml",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21768.json",
+    "https://github.com/opencve/opencve-kb/blob/00892e78e1293940156abd2e1ac7826ce0f7ce0e/2025/CVE-2025-21768.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2025-21768.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21768",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/0274e3152f045058fa5c33f6d602778b76d936e8/tracker/CVE/2025/CVE-2025-21768.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2025/21xxx/CVE-2025-21768.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21768",
+]
