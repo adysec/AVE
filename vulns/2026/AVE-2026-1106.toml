@@ -1,0 +1,24 @@
+[basic]
+description = "russh 是一个用于 Rust 的 SSH 协议库。该漏洞存在于 russh 客户端 Curve25519 密钥交换实现中：`compute_shared_secret` 函数在调用 `clone_from_slice` 前未对服务端 ephemeral 公钥长度进行校验，而其他密钥交换路径（如 `server_dh`、ECDH-NIST、DH/GEX）均已在复制前验证长度。攻击者可通过伪造的 SSH 服务端，在密钥交换阶段向客户端发送长度为 16 字节（而非预期的 32 字节）的特制 `KEX_ECDH_REPLY` 消息，触发客户端 panic，造成预认证阶段的拒绝服务（DoS）。受影响版本为 russh <= 0.62.3，修复版本为 0.62.4。攻击条件为远程网络可达，无需认证凭据，单次交互即可确定性终止当前连接，但不会导致宿主进程崩溃（panic 被 tokio runtime 捕获为 JoinError）。"
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "russh SSH 客户端预认证拒绝服务漏洞"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-g9hv-x236-4qp3"]
+ave_id = "AVE-2026-1106"
+
+[meta]
+collected_at = "2026-08-06T04:08:06.240095904+00:00"
+status = "completed"
+
+[references]
+urls = []
