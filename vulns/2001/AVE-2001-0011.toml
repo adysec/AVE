@@ -1,12 +1,12 @@
 [basic]
-description = "Leif M. Wright simplestmail.cgi 1.0 版本存在远程命令执行漏洞，其 CGI 程序在处理 MyEmail 参数时未对用户输入进行充分验证和过滤，导致攻击者可通过注入 Shell 元字符（如分号、反引号、管道符等）在服务器上执行任意系统命令。该漏洞影响部署了该 CGI 脚本的所有 Web 服务器，CVSS 评分 10.0（满分），属于严重级别。攻击条件为：目标服务器运行该 CGI 程序且可通过网络访问，无需身份认证即可远程利用。利用方式为构造包含恶意 Shell 命令的 MyEmail 参数发送 HTTP 请求，服务器在处理邮件发送逻辑时会拼接并执行攻击者注入的命令，从而实现完全控制服务器。官方未发布补丁，建议停用该脚本或升级至安全的替代方案。"
-published = "2001-02-12T05:00:00Z"
-remediation = "建议立即停用或删除 simplestmail.cgi 1.0 脚本，改用经过安全审计的邮件发送程序（如 sendmail/postfix 配合 PHP mail() 或 Python smtplib）。若必须保留 CGI，需在代码中对 MyEmail 参数实施严格白名单校验（仅允许邮箱格式字符），并禁用 shell 调用函数（system/exec/popen），改用语言原生邮件库发送。同时在 WAF 层面拦截含反引号、分号、管道符、$() 等 Shell 元字符的请求。"
+description = "simplestmail.cgi 是 Leif M. Wright 开发的一款用于处理网页表单邮件响应的 CGI 脚本程序。该脚本在处理用户提交的 MyEmail 参数时，对 open() 函数的调用存在不安全结构，未能对用户输入中的 shell 元字符进行有效过滤。未经身份认证的远程攻击者可通过向目标服务器发送特制的 HTTP POST 请求，在 MyEmail 参数中注入 shell 元字符，从而在 Web 服务器权限下执行任意操作系统命令。该漏洞影响所有部署了 simplestmail.cgi 1.0 版本的 Web 服务器，攻击者无需认证即可获得服务器的命令执行权限，进而可能导致服务器被完全控制。CVSS 评分为 10.0，危害等级为严重。"
+published = "2001-02-12T05:00:00.000"
+remediation = "立即从服务器上删除 simplestmail.cgi 文件及其在 cgi-bin 目录下的所有副本，该脚本作者 Leif M. Wright 早已停止维护且从未发布补丁版本。将其替换为受支持的现代替代方案，如使用 PHP 内置 mail() 函数或成熟的 Web 表单邮件库，替代方案必须对用户输入进行严格的参数化过滤，禁止将未经过滤的输入直接传入 shell 命令。若短期内无法完成替换，应在 Web 服务器层面对 cgi-bin 目录实施访问控制（如 Apache 的 <Directory> 指令或 Nginx 的 location 匹配规则）阻断外部对该脚本的访问，同时在防火墙规则中禁止对外访问该 CGI 端口作为临时缓解措施。"
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
+sources = ["epss"]
 title = "Leif M. Wright simplestmail.cgi 远程命令执行漏洞"
-updated = "2026-06-16T21:53:30Z"
+updated = "2026-06-16T21:53:30.653"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0024"]
 ave_id = "AVE-2001-0011"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/2102",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5739",
     "https://www.exploit-db.com/exploits/20503",
-    "https://github.com/CVEProject/cvelistV5/blob/73e213348ddf142cab7e77d05861fa314ba8e1d0/cves/2001/0xxx/CVE-2001-0024.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/cec9fb1846e25b24020f297f65ec2360af0f4267/CVE/data/2001/CVE-2001-0024.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4d38333dcfe51fc2081856da5d31bbece1a0cced/cves/2001/0xxx/CVE-2001-0024.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/954745087cab3897c1945b517c4fc4f1575af37b/CVE/data/2001/CVE-2001-0024.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0024",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0024.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2001-0024.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/d6e5bf87d27954c5a3cd48e565b212fb97932a81/CVE-2001/CVE-2001-00xx/CVE-2001-0024.json",
-    "https://github.com/opencve/opencve-kb/blob/fc3c209ab3b380e61580f037335fd28cb053661f/2001/CVE-2001-0024.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/918ac66f0b50ab0d2a013bdf692688d3c0abefbc/2001/0xxx/CVE-2001-0024.md",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2001-0024.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-00xx/CVE-2001-0024.json",
+    "https://github.com/opencve/opencve-kb/blob/09467eccc569d3c2d05f9926f06cbaa3adc3361a/2001/CVE-2001-0024.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/73af4cfb14d58e2696d2d55ddfcc14e42bb1eef7/2001/0xxx/CVE-2001-0024.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0024.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0024.json",
 ]
