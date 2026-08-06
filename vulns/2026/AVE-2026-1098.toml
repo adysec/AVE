@@ -1,0 +1,59 @@
+[basic]
+description = '''
+### Summary
+Oh My Posh renders dynamic, potentially attacker-controlled strings (the current directory name, Git commit metadata, environment variable values, command output) into the prompt without neutralizing raw terminal control characters. An attacker who controls one of these values can inject ANSI/OSC escape sequences that the victim's terminal executes on every prompt render. (This is separate from the path-segment command-execution report; it has a different root cause and fix.)
+
+### Details
+`src/terminal/writer.go`, `write(s rune)`: the literal characters of rendered segment content are emitted to the output buffer, and the only neutralization is a lookup in `formats.EscapeSequences`, which per shell contains only the shell's prompt-length markers (`\` for bash, `%` for zsh, nothing for fish/pwsh/cmd/nu). Raw C0/C1 control bytes (ESC `0x1b`, BEL `0x07`, CSI, OSC) are written verbatim.
+
+Oh My Posh's own styling is emitted through separate paths (`writeEscapedAnsiString`, `writeColorise`, `builder.WriteString(formats.Hyperlink...)`), so any control rune reaching `write(s rune)` originates from rendered data. `trimAnsi` is already applied to the console title (`FormatTitle`) but not to the prompt body.
+
+### Attacker-controlled sources (both verified)
+1. Current directory name (default config, Linux/macOS). Directory names may contain any byte except `/` and NUL, including `0x1b`. The path segment renders the working directory in every theme.
+2. Git commit subject / author / upstream URL (cross-platform, including Windows). `Git.Commit()` runs `git log -1 --pretty=format:...su:%s...` and exposes `.Commit.Subject`, `.Commit.Author.Name`/`.Email` and `.RawUpstreamURL`; Git imposes no restriction on these, so they can carry raw escape sequences.
+
+### PoC
+Git commit-subject vector (config: a single git segment with template `{{ .Commit.Subject }}`):
+
+```
+printf 'feat: \033]0;HACKED\007\033]52;c;ZWNobyBQV05FRA==\007 update' > msg.txt
+git commit --allow-empty -F msg.txt
+oh-my-posh print primary --config poc.omp.json --shell fish | xxd
+```
+
+Output (excerpt) shows the attacker's OSC 0 (set title) and OSC 52 (clipboard write) passed through unmodified, wrapped only in Oh My Posh's colors:
+
+```
+...255m feat: 1b5d 303b 4841 434b 4544 07 1b5d 3532 3b63 3b5a 574e ... 07 ...
+              ESC ] 0 ; H A C K E D  BEL  ESC ] 5 2 ; c ; <base64>  BEL
+```
+
+The directory-name vector reproduces identically via the path segment.
+
+### Impact
+The terminal interprets the injected sequences on every render, enabling, per emulator: clipboard hijacking (OSC 52 write, so a command placed in the clipboard runs when the victim pastes), prompt/screen spoofing, window-title manipulation, and terminal denial of service. Delivery is remote (repo/archive/share); execution is local when the prompt renders after cd.
+
+Suggested fix: neutralize C0/C1 control characters in untrusted segment data before it reaches the terminal, at minimum the path segment (folder names) and the git segment (`Commit.Subject`, `Commit.Author.*`, `RawUpstreamURL`). `trimAnsi` already exists and is applied to the title; extending equivalent handling to segment data closes the gap. Filtering control runes in `write(s rune)` would also work as defense in depth (Oh My Posh's own styling never flows through that function), optionally behind an opt-out for users who deliberately embed escapes in their own templates.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Oh My Posh: Terminal escape sequence injection via unsanitized prompt segment data"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-fwjx-9p69-h25h"]
+ave_id = "AVE-2026-1098"
+
+[meta]
+collected_at = "2026-08-06T03:33:09.187535936+00:00"
+status = "completed"
+
+[references]
+urls = []
