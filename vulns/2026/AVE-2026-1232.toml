@@ -1,0 +1,35 @@
+[basic]
+description = "Docker MCP Gateway 存在参数注入漏洞，攻击者可通过恶意构造的 OCI 镜像标签（io.docker.server.metadata）注入任意 docker run 参数。MCP Gateway 在启动容器时将镜像标签中的 YAML 直接反序列化到 catalog.Server 结构体，该结构体包含 Volumes、User、Command、ExtraHosts 等运行时控制字段，且这些字段均带有 YAML 标签，会被攻击者控制的标签内容覆盖。随后网关代码将这些字段原样拼接为 docker run 命令行参数（如 -v、-u、--add-host），未经过任何白名单校验或来源检查。攻击者只需控制受害者通过 docker:// 引用的镜像或镜像目录快照，即可挂载主机文件系统、以 UID 0 权限运行并执行任意代码，完全绕过容器与主机之间的信任边界。该漏洞影响 Docker MCP Gateway 所有 >=0.21.0 且 <0.42.2 的版本，已在 0.42.2 版本中修复。CVSS v3.1 评分为 8.0（HIGH），CWE 编号为 CWE-88（参数注入）。"
+published = "2026-01-01"
+remediation = "立即将 Docker MCP Gateway 升级至 0.42.2 或更高版本，该版本修复了 OCI 镜像标签解析器，使其仅填充描述性字段而排除控制容器运行时的字段（如 Volumes、User、Command 等）。升级命令：go get github.com/docker/mcp-gateway@v0.42.2 并重新构建镜像。在升级前，可通过配置 MCP 网关的 allowlist 策略限制仅允许可信镜像源（docker:// URI）被引用，并禁用非必要的 --add-host、-v、-u 等运行时参数传递，同时将 MCP 监听器绑定至本地回环接口而非公开网络面，以降低攻击面。"
+score = 5
+severity = "MEDIUM"
+sources = ["zdi"]
+title = "Docker MCP Gateway 参数注入漏洞"
+updated = "2026-01-01"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-55887"]
+ave_id = "AVE-2026-1232"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/mcp-security-project/mcp-cve-project/blob/8f19c6692789742733d784a4d63207b68cb14525/cves/CVE-2026-55887.md",
+    "https://github.com/opencve/opencve-kb/blob/b2bd0e6317a987fe580af355dd899a55ee2d3a75/2026/CVE-2026-55887.json",
+    "https://github.com/Tabll/gemnasium-db/blob/db96a5d12e1a4bc3df59241db4f4f41371d4bdc0/go/github.com/docker/mcp-gateway/CVE-2026-55887.yml",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/osv/GO-2026-5604.json",
+    "https://github.com/RogoLabs/consensus-engine/blob/516d09c25563627bc3489e16e62c31e1ae1c48d5/docs/data/2026/CVE-2026-55887.json",
+    "https://github.com/golang/vulndb/blob/4a2cb55ee69f6a16c07b5b551676eca8f2065019/data/reports/GO-2026-5604.yaml",
+    "https://github.com/github/advisory-database/blob/861aba0a4db4986457c395d371df670ccab13219/advisories/github-reviewed/2026/06/GHSA-r2xf-7jw5-pjg6/GHSA-r2xf-7jw5-pjg6.json",
+    "https://github.com/mcp-security-project/mcp-cve-project/blob/8f19c6692789742733d784a4d63207b68cb14525/README.md",
+    "https://github.com/bmwiedemann/openSUSE/blob/cb6f38a9039a2c8648e996e0c6ece1d347f97243/packages/g/govulncheck-vulndb/govulncheck-vulndb.changes",
+    "https://github.com/delikely/ZDI_Advisories/blob/cebf338cfb5baf90d3ab45b2ff282791aee2d34a/advisories/2026/ZDI-26-363.json",
+]
