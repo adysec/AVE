@@ -1,0 +1,42 @@
+[basic]
+description = "Rclone 在启用 `serve restic --private-repos` 多租户模式时，授权中间件 `checkPrivate` 与路径构建中间件 `WithRemote` 使用不同的路径来源且未规范化：前者依据 chi 路由参数 `userID` 校验用户身份，后者直接使用未清理的原始 URL 路径构建后端对象键。攻击者作为合法认证用户，可在请求路径中注入 `..` 遍历序列（如 `GET /mallory/../alice/config`），导致 `checkPrivate` 因首段路径匹配自身用户名而放行，而后端对象键经 `path.Join`/`path.Clean` 规范化后塌陷为受害者路径。受影响后端包括内置 `memory`、广泛部署的 `sftp`、`ftp` 等采用 POSIX 路径语义的存储。攻击者无需受害者交互，即可跨越租户边界读取、覆盖、删除其他用户的 restic 备份仓库（配置、密钥、打包文件等），完全绕过 `--private-repos` 设计的隔离机制。漏洞影响 rclone 1.74.3 及更早版本，已在 1.74.4 修复，CVSS 3.1 评分 8.8 (HIGH)，向量 CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H，CWE-22 路径遍历。"
+published = "2026-07-14T22:17:30.050"
+remediation = '立即升级 rclone 至 1.74.4 或更高版本，该版本对请求路径进行了 path.Clean 规范化处理并拒绝包含 ".." 的元素，从而修复了多租户仓库隔离绕过漏洞。如暂无法立即升级，可暂时移除 --private-repos 参数停止托管多用户仓库，或在反向代理层通过路由规则限制每个 Basic Auth 账户仅能访问对应 /&lt;username&gt;/ 前缀的路径。对于使用 sftp 或 ftp 后端的部署，建议额外启用 --append-only 以限制攻击者的写入和删除能力，但需注意该措施无法阻止读取绕过。'
+score = 8.8
+severity = "HIGH"
+sources = ["ghsa"]
+title = "rclone serve restic --private-repos 路径穿越授权绕过漏洞"
+updated = "2026-07-29T20:17:04.773"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-59733",
+    "GHSA-fqj9-69pf-6pjg",
+]
+ave_id = "AVE-2026-1281"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/rclone/rclone/commit/015fd0eba1cb138eef081517795fed47a2873f2d",
+    "https://github.com/rclone/rclone/commit/dade21c1616035b044df0eef7ee6a85aeb06a139",
+    "https://github.com/rclone/rclone/releases/tag/v1.74.4",
+    "https://github.com/rclone/rclone/security/advisories/GHSA-fqj9-69pf-6pjg",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2026/59xxx/CVE-2026-59733.json",
+    "https://github.com/cisagov/vulnrichment/blob/a1a80524a4f2155e42bf6e124cee8563882c5fb6/2026/59xxx/CVE-2026-59733.json",
+    "https://github.com/rclone/rclone/blob/e4c7aca6bda5b35b42080a9a4056230c8339285c/docs/content/changelog.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4a3292363e1c82650dc766bf14277e5bdb8c78c9/SSVC/data/2026/CVE-2026-59733.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4a3292363e1c82650dc766bf14277e5bdb8c78c9/CVE/data/2026/CVE-2026-59733.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-59733.md",
+    "https://github.com/anchore/nvd-data-overrides/blob/ffe0b33be8ff1db2a5822dbcfde9dea7e5ac2e5b/data/2026/CVE-2026-59733.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/9048253d5d9d568b5aa4f29a61fbc2297325e29a/vex/cve/2026/CVE-2026-59733.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/9048253d5d9d568b5aa4f29a61fbc2297325e29a/osv/cve/2026/UBUNTU-CVE-2026-59733.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2026-59733.json",
+]
