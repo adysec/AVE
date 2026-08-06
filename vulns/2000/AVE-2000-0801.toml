@@ -1,12 +1,12 @@
 [basic]
-description = "IBM Net.Data 7.0 的 db2www 组件中的 document.d2w CGI 程序存在路径泄露漏洞。远程攻击者无需身份认证，通过向该程序发送一个不存在的命令参数，即可触发服务器返回包含物理路径的错误信息，从而泄露 Web 服务器的绝对路径。该信息可被攻击者用于进一步探测系统目录结构，为后续攻击提供信息支撑。攻击条件简单，仅需目标开放 HTTP 服务且运行 Net.Data 组件。"
-published = "2001-01-09T05:00:00Z"
-remediation = "IBM Net.Data 产品已停止支持，官方不再提供安全补丁。建议立即将 Net.Data 升级到 7.0 以上版本（如 7.1），或迁移至 IBM HTTP Server 等替代产品。如无法升级，可在 Web 服务器层面配置访问控制，限制对 document.d2w CGI 程序的访问，仅允许授权 IP 段访问，或在 httpd.conf 中添加 RewriteRule 拒绝所有对 document.d2w 的请求。"
+description = 'IBM Net.Data 7.0 的 db2www 软件包中 document.d2w CGI 程序存在路径信息泄露漏洞。未经身份认证的远程攻击者可通过向该 CGI 程序发送一个不存在的命令参数，触发程序返回包含服务器物理文件路径的错误信息，从而泄露 Web 服务器的真实文件系统路径。利用方式为构造类似 http://target/cgi-bin/db2www/library/document.d2w/show 的请求并附加无效命令，服务器响应中将出现类似 "DTWP029E: Net.Data is unable to locate the HTML block SHOW in file /projects/www/netdata/macro/software/library/document.d2w" 的错误消息，完整暴露了服务器磁盘上的目录结构。该漏洞攻击条件简单，攻击者无需任何认证凭据即可利用，成功泄露的文件系统路径可被攻击者用于进一步构造路径遍历攻击或定向利用其他漏洞。CVSS 评分 5.0，危害等级为中危。'
+published = "2001-01-09T05:00:00.000"
+remediation = "建议升级至 IBM Net.Data 7.1.3 或更高版本（含修复补丁），或通过 WebSphere 管理控制台禁用 db2www/document.d2w CGI 程序。若无法升级，可在 Web 服务器（Apache/IIS）配置中添加访问控制规则拦截对 /cgi-bin/db2www/ 的请求，或部署 WAF 规则过滤触发路径泄露的异常命令参数。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "IBM Net.Data 完整路径泄露漏洞"
-updated = "2026-06-16T21:53:10Z"
+sources = ["avd"]
+title = "IBM Net.Data 7.0 物理路径信息泄露漏洞"
+updated = "2026-06-16T21:53:10.103"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1110"]
 ave_id = "AVE-2000-0801"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-11/0384.html",
     "http://www.securityfocus.com/bid/2017",
     "https://www.exploit-db.com/exploits/20441",
-    "https://github.com/CVEProject/cvelistV5/blob/a14f4e66db68a75a9270d6c9081e9ffb7f931cd8/cves/2000/1xxx/CVE-2000-1110.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3eab0e512529a79daadefaadf0f05372813e7876/CVE/data/2000/CVE-2000-1110.json",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2000/1xxx/CVE-2000-1110.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/29a0183c5b739ef9ef4602f498af4748f0ecd134/CVE/data/2000/CVE-2000-1110.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1110",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1110.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1110.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e9b51a58e4ac0e6b00dc38147f459707e98ae056/CVE-2000/CVE-2000-11xx/CVE-2000-1110.json",
-    "https://github.com/opencve/opencve-kb/blob/2adf3d659b2229087465cbedc27cc02d5736df99/2000/CVE-2000-1110.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/1d7706ed603ab73481cbc20e5bea092e02e7c9be/2000/1xxx/CVE-2000-1110.md",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2000-1110.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-11xx/CVE-2000-1110.json",
+    "https://github.com/opencve/opencve-kb/blob/06a5f92654157098019cd79b92e3e8878cf978f2/2000/CVE-2000-1110.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/ae01e5dac3a829c8ae12e5191906c7e84d0bcd21/2000/1xxx/CVE-2000-1110.md",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1110.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1110.json",
 ]
