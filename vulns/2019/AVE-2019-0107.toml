@@ -1,0 +1,45 @@
+[basic]
+description = "rConfig 3.9.2 版本中存在操作系统命令注入漏洞，影响网络设备配置管理工具 rConfig。漏洞原理为：在安装目录的 `install/lib/ajaxHandlers/ajaxServerSettingsChk.php` 文件中，`rootUname` 参数通过 GET 请求直接传入后未经任何过滤便拼接进命令字符串并传入 PHP 的 `exec()` 函数执行，导致攻击者可通过注入分号等特殊字符逃逸原命令上下文，从而在服务器上执行任意操作系统命令。该漏洞无需身份认证即可利用，攻击条件仅要求目标服务器处于 rConfig 3.9.2 版本且安装目录可访问，攻击者只需向目标发送精心构造的 GET 请求即可触发，利用方式为在 `rootUname` 参数中注入类似 `;cat /etc/passwd #` 的命令序列实现命令执行，也可进一步利用 PHP 反弹 shell 获取服务器完全控制权。CVSS 评分为 9.8，危害等级为严重。"
+published = "2019-10-28T12:15:10.377"
+remediation = "建议将 rConfig 升级至官方发布的最新稳定版本（3.9.4 或更高），该版本已修复 ajaxServerSettingsChk.php 中 rootUname 参数的命令注入漏洞。如暂无法升级，应立即删除或禁用 /install 目录及其下的所有文件，并配置 Web 服务器（如 Nginx 或 Apache）拒绝对该路径的访问。此外，对需保留的参数应实施输入验证，仅允许包含字母、数字、下划线和连字符的用户名格式，避免直接拼接至 exec() 函数中。"
+score = 9.8
+severity = "CRITICAL"
+sources = ["nuclei"]
+title = "rConfig 3.9.2 远程代码执行漏洞"
+updated = "2026-06-17T02:22:31.623"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2019-16662"]
+ave_id = "AVE-2019-0107"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://packetstormsecurity.com/files/154999/rConfig-3.9.2-Remote-Code-Execution.html",
+    "http://packetstormsecurity.com/files/155186/rConfig-3.9.2-Command-Injection.html",
+    "https://drive.google.com/file/d/1bTpTn4-alJ8qGCEATLq-oVM6HbhE65iY/view?usp=sharing",
+    "https://drive.google.com/open?id=1OXI5cNuwWqc6y-7BgNCfYHgFPK2cpvnu",
+    "https://gist.github.com/mhaskar/ceb65fa4ca57c3cdccc1edfe2390902e",
+    "https://rconfig.com/download",
+    "https://shells.systems/rconfig-v3-9-2-authenticated-and-unauthenticated-rce-cve-2019-16663-and-cve-2019-16662/",
+    "https://www.exploit-db.com/exploits/47555",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2019/CVE-2019-16662.yaml",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2019/CVE-2019-16662.md",
+    "https://github.com/0xMarcio/cve/blob/735b7181f9cc676afd10704df69ba6e3d23ba358/2019/CVE-2019-16662.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/2204bbca7a1888da763370fee251c1e100b26ce8/2019/CVE-2019-16662.json",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/3d3e4ac5fc656462e5751cd66b39c577cd9a2341/http/cves/2019/CVE-2019-16662.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/CVE-2019-16662.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/cve-2019-16662-3946.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/cve-2019-16662-3950.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/cve-2019-16662-3949.yaml",
+    "https://github.com/GhostTroops/scan4all/blob/fff03b51bf79c8993a46c1da766ec993e1102c47/config/51pwn/CVE-2019-16662.yaml",
+    "https://github.com/GhostTroops/scan4all/blob/fff03b51bf79c8993a46c1da766ec993e1102c47/config/51pwn/yaml/rConfig/CVE-2019-16662.yaml",
+    "https://github.com/mhaskar/CVE-2019-16662",
+]
