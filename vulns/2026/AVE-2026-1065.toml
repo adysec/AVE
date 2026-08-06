@@ -1,0 +1,68 @@
+[basic]
+description = """
+The user wants me to fix the `[description]` field for CVE-2026-44104. Let me analyze the current description and the pre-search data.
+
+Current description: "CHARX SEC3xxx 充电控制器基础模块的固件更新过程仅验证 CRC32 校验和而未进行加密签名验证。未经身份认证的远程攻击者可向受影响设备推送特制固件，结合 CVE-2026-44103 漏洞可实现完整系统入侵，导致充电控制器完全沦陷。该漏洞影响 CHARX SEC-3000、SEC-3050、SEC-3100 及 SEC-3150 等型号，受影响固件版本为低于 1.9.1 的所有版本。攻击者无需任何凭据即可通过网络远程触发利用，成功利用后可完全控制充电设备，造成机密性、完整性和可用性的全面损失。"
+
+The issue is "描述包含占位符". Looking at the description, it mentions "结合 CVE-2026-44103 漏洞可实现完整系统入侵" - this seems like a placeholder/reference to another CVE that was added artificially. The original NVD description doesn't mention CVE-2026-44103 at all.
+
+From the pre-search data:
+- NVD description: "The firmware update process for the basemodule of the charging controller only validates the CRC32 checksum without cryptographic signature verification. This allows an unauthenticated remote attacker to install a modified firmware, resulting in full system compromise."
+- Affected product: Phoenix Contact CHARX SEC-3150 (from CVE list)
+- CWE-347: Improper Verification of Cryptographic Signature
+- CVSS: 9.3 CRITICAL
+
+The description should:
+1. Cover vulnerability principle: firmware update process only validates CRC32 checksum without cryptographic signature verification
+2. Impact scope: Phoenix Contact CHARX SEC-3150 (and possibly other SEC-3xxx models), firmware versions below 1.9.1
+3. Attack conditions: unauthenticated remote attacker, no credentials needed, network access required
+
+The current description has some issues:
+- It mentions CVE-2026-44103 which isn't in the original description and seems like a placeholder
+- The description is already long enough (>50 chars)
+
+Let me rewrite it to be accurate based on NVD data and remove the CVE-2026-44103 reference which seems to be the "占位符" (placeholder).
+
+New description should be:
+Phoenix Contact CHARX SEC-3150 充电控制器基础模块的固件更新过程仅验证 CRC32 校验和而未进行加密签名验证。未经身份认证的远程攻击者可通过网络向受影响设备推送特制固件，导致固件被篡改并完全控制系统。该漏洞影响 CHARX SEC-3150 等型号，受影响固件版本为低于 1.9.1 的所有版本。攻击者无需任何凭据即可远程触发利用，成功利用后可完全控制充电设备，造成机密性、完整性和可用性的全面损失。
+
+Wait, let me check if there are other models. From the github code preview, it shows "CHARX SEC-3150" as the product. The current TOML mentions SEC-3000, SEC-3050, SEC-3100, SEC-3150 but the CVE data specifically shows CHARX SEC-3150. However, the CISA report mentions "CHARX SEC-3xxx". Let me look more carefully.
+
+From the alan-turing-institute report: "Phoenix Contact CHARX SEC-3xxx EV charging controllers"
+From CVE list: "CHARX SEC-3150"
+
+I should probably keep it accurate to what we know. The NVD data and CVE list specifically mention CHARX SEC-3150. But the current description mentions multiple models. Since"""
+published = "2026-07-30T07:16:58.760"
+remediation = "将受影响的 CHARX SEC-3000、SEC-3050、SEC-3100 和 SEC-3150 充电控制器固件升级到 1.9.1 或更高版本，升级包请至 Phoenix Contact 官网产品页面下载。如暂无法升级，应将设备部署于封闭工业网络内，并通过防火墙限制外部对固件更新端口的访问，以降低被远程利用的风险。"
+score = 9.3
+severity = "CRITICAL"
+sources = ["zdi"]
+title = "Phoenix Contact CHARX SEC-3000 充电控制器固件签名验证绕过漏洞"
+updated = "2026-07-30T15:16:33.297"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-44104"]
+ave_id = "AVE-2026-1065"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://www.certvde.com/en/advisories/VDE-2026-008/",
+    "https://github.com/CVEProject/cvelistV5/blob/ad23a84307831b745d27b34af84abc59130b2cd5/cves/2026/44xxx/CVE-2026-44104.json",
+    "https://github.com/cisagov/vulnrichment/blob/bb8fee28b4e90102956816a94f978ff2574331f4/2026/44xxx/CVE-2026-44104.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bd3fb132c1b8a95ef2bcf26b230a07f7c9700666/SSVC/data/2026/CVE-2026-44104.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bd3fb132c1b8a95ef2bcf26b230a07f7c9700666/CVE/data/2026/CVE-2026-44104.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/8a9f1e134a847eb59530b63828f75867023ec363/reports/2026-07-30/TIER_3_CVE-2026-44104.md",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2026-44104.json",
+    "https://github.com/fankh/vulnerability-poc/blob/d2f211a2392a33dc3802dfba918604d771c8ebf3/2026/CVE-2026-44104/README.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-441xx/CVE-2026-44104.json",
+    "https://github.com/fankh/vulnerability-poc/blob/d2f211a2392a33dc3802dfba918604d771c8ebf3/2026/CVE-2026-44104/README_KO.md",
+    "https://github.com/TMA84/cvealert/blob/a0b0997e025982b6ed5bd32499f8742032e17637/content/posts/cve-2026-44104.md",
+]
