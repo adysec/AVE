@@ -1,12 +1,12 @@
 [basic]
-description = "SuSE Linux 6.2 及可能其他 Linux 发行版中的 ypbind-mt 存在格式化字符串漏洞。远程攻击者可通过向 ypbind-mt 服务发送特制的包含格式化字符串占位符（如 %n、%s）的请求，利用该漏洞实现任意内存写入，从而以 root 权限执行任意代码。该漏洞无需身份认证即可远程利用，攻击复杂度低，CVSS 评分 10.0，危害等级严重，可导致目标系统完全受控。"
-published = "2000-12-11T05:00:00Z"
-remediation = "立即升级 ypbind-mt 至 SuSE 官方补丁版本（参见 SuSE 安全公告 2000 年 11 月补丁），或从 http://archives.neohapsis.com/archives/linux/suse/2000-q4/0262.html 获取修补后的二进制包。如无法立即升级，可在 /etc/inetd.conf 中注释掉 ypbind-mt 服务行并重启 inetd，或使用防火墙限制仅允许受信任子网访问 RPC 端口（111/ypbind 端口）。"
+description = "SuSE Linux 发行版中的 ypbind-mt（多线程 NIS/黄页绑定守护进程）存在格式化字符串漏洞。该漏洞源于程序在处理客户端请求时，将未经净化的用户可控数据直接作为格式化字符串参数传递给 printf 系列函数，攻击者可通过注入 %n、%x 等格式化字符串序列覆写内存数据并劫持程序执行流程。未经身份认证的远程攻击者仅需向目标主机的 ypbind-mt 服务发送特制网络数据包即可触发该漏洞，进而在系统权限上下文中执行任意代码，最终获得 root 权限并完全控制受影响主机。该漏洞影响 SuSE 6.2 及其他部分 Linux 操作系统版本，CVSS 评分 10.0，危害等级为严重。"
+published = "2000-12-11T05:00:00.000"
+remediation = "建议升级 SuSE Linux 到 7.0 及以上版本，或安装 SuSE 官方发布的 ypbind-mt 修补补丁（ftp://ftp.suse.com/pub/suse/i386/update/6.2/rpm/ypbind-mt-1.14-13.i386.rpm）。若无法立即升级，请停用 ypbind 服务（/etc/init.d/ypbind stop 并 chkconfig ypbind off），并在防火墙层面封锁 111/TCP/UDP 端口（rpcbind/portmap）防止远程攻击。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
+sources = ["avd"]
 title = "SuSE ypbind-mt 格式化字符串漏洞"
-updated = "2026-06-16T21:53:02Z"
+updated = "2026-06-16T21:53:02.340"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1044"]
 ave_id = "AVE-2000-1983"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/linux/suse/2000-q4/0262.html",
     "http://www.securityfocus.com/bid/1820",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5394",
-    "https://github.com/CVEProject/cvelistV5/blob/0661b1b09ba7a2e855981f4a1781f3b8de7cf562/cves/2000/1xxx/CVE-2000-1044.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/8a257d250bdb59b542a188d62ddae45e6eb5d3f2/CVE/data/2000/CVE-2000-1044.json",
+    "https://github.com/CVEProject/cvelistV5/blob/663b7221ac0c437440bcbb2f29bd619793e09cad/cves/2000/1xxx/CVE-2000-1044.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bd3fb132c1b8a95ef2bcf26b230a07f7c9700666/CVE/data/2000/CVE-2000-1044.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1044",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1044.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1044.json",
-    "https://github.com/opencve/opencve-kb/blob/65a328502a723ec4191dc80b53c8c169dc6165eb/2000/CVE-2000-1044.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c80cd921505a9f88e4aae41f1414ac3763e708ba/2000/1xxx/CVE-2000-1044.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3a7c0c4aa01967d2633d808f80f3fcd65491b947/CVE-2000/CVE-2000-10xx/CVE-2000-1044.json",
+    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1044.json",
+    "https://github.com/opencve/opencve-kb/blob/3979a7633898f20f850131e08d621fa27d545855/2000/CVE-2000-1044.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/e3f82cb4abb129ac4e65ce1b058ead82032d2595/2000/1xxx/CVE-2000-1044.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-10xx/CVE-2000-1044.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1044.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1044.json",
 ]
