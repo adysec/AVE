@@ -1,12 +1,12 @@
 [basic]
 description = "OpenBSD ssh 程序存在格式字符串漏洞，未经身份认证的远程攻击者可通过向 SSH 服务发送包含格式字符串特质的输入，利用服务端代码中未正确过滤用户输入的方式触发漏洞，从而覆盖栈内存或跳转执行流，最终获取目标系统的 root 权限。该漏洞影响 OpenBSD 操作系统上的 ssh 程序及其他基于 BSD 的操作系统。由于 SSH 服务通常暴露在公网且无需预先认证，攻击条件极低，网络可达即可利用，CVSS 评分 10.0，危害等级严重。建议用户升级 OpenBSD 至修复版本并重新编译 ssh 程序以消除漏洞。"
-published = "2000-12-11T05:00:00.000"
+published = "2000-12-11T05:00:00Z"
 remediation = '立即应用 OpenBSD 2.7 官方安全补丁 028_format_strings.patch，下载地址为 ftp://ftp.openbsd.org/pub/OpenBSD/patches/2.7/common/028_format_strings.patch。执行步骤如下：进入 /usr/src 目录，运行 patch -p0 < 028_format_strings.patch 应用补丁；随后依次重新编译并安装受影响的程序：cd usr.bin/fstat && make depend && make && make install；cd ../passwd && make depend && make && make install；cd ../top && make depend && make && make install；cd ../su && make depend && make && make install；cd ../ssh && make depend && make && make install。补丁通过将所有 printf 风格的函数调用中未加格式化说明符的字符串参数改为使用 "%s" 格式说明符（例如将 log(buf) 改为 log("%s",buf)），修复了 ssh 等特权程序中的格式字符串漏洞，从而消除攻击者利用此漏洞获取 root 权限的风险。如无法立即打补丁，可通过防火墙或 TCP Wrappers 限制 SSH 远程访问作为临时缓解措施，仅允许受信任的 IP 地址连接。'
 score = 10
 severity = "CRITICAL"
 sources = ["avd"]
 title = "OpenBSD SSH 程序格式字符串权限提升漏洞"
-updated = "2026-06-16T21:52:56.540"
+updated = "2026-06-16T21:52:56Z"
 
 [exploit]
 exp_urls = []
