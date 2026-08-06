@@ -1,12 +1,12 @@
 [basic]
 description = 'Directus 文件导入功能中的 SSRF 防护机制存在绕过漏洞。由于 `api/src/request/is-denied-ip.ts` 将 `0.0.0.0` 视为"阻止所有本地网络接口"的关键词而非字面地址加入黑名单，导致该地址未被实际拦截。在 Linux 和 macOS 系统上，连接 `0.0.0.0` 等效于访问 localhost，因此拥有文件上传权限的认证用户可通过 `/files/import` 端点构造 `http://0.0.0.0:端口/` 的请求，使服务器访问绑定在本地回环地址上的内部服务（如数据库、缓存、内部 API），并将响应内容保存为可下载文件，实现全读取 SSRF 攻击。该漏洞影响 Directus ≤ 12.0.0 版本，CVSS 评分 7.7，危害等级高。'
-published = "2026-07-15T15:16:48.470"
+published = "2026-07-15T15:16:48Z"
 remediation = '立即升级 Directus 至 v12.0.0 或更高版本，该版本已修复 `api/src/request/is-denied-ip.ts` 中对 `0.0.0.0` 字面地址的 SSRF 防护绕过问题。如无法立即升级，可在环境变量或配置文件中将 `IMPORT_IP_DENY_LIST` 显式添加 `"0.0.0.0"` 和 `"::"` 条目，并在网络层面限制 Directus 服务器对内部网络的出站访问。'
 score = 7.7
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Directus 文件导入SSRF防护绕过漏洞"
-updated = "2026-07-28T15:47:21.380"
+updated = "2026-07-28T15:47:21Z"
 
 [exploit]
 exp_urls = []

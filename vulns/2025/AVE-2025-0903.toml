@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核中 SCTP 协议的 sysctl 参数 `cookie_hmac_alg` 存在空指针解引用（NULL pointer dereference，CWE-476）漏洞。该参数通过 `current` 结构体间接获取 `net` 命名空间信息，但 `current->nsproxy` 在某些情况下（如当前任务正在退出）可能为 NULL，从而触发空指针解引用导致内核崩溃（Oops）。攻击者可在本地获取受限权限后，通过修改相关 sysctl 设置（利用 acct(2) 等触发场景）来利用该漏洞，造成系统拒绝服务（DoS）。该漏洞影响多个发行版的 Linux 内核，CVSS 3.1 评分为 7.1，危害等级高，攻击向量为本地、低复杂度，需要低权限。修复方案是通过 `container_of()` 直接从表数据中获取 `net` 结构，避免使用 `current->nsproxy`，相关补丁已合入 Linux 内核主分支，并随 SUSE、Debian、Ubuntu 等厂商安全公告（如 SUSE-SU-2025:0847-1、DLA-4075-1、USN-7381-1 等）发布。"
-published = "2025-01-19T11:15:09.537"
+published = "2025-01-19T11:15:09Z"
 remediation = "该漏洞是 Linux 内核 sctp sysctl 处理 remote_hmac_alg 时通过 current->nsproxy 获取 net 结构可能触发空指针解引用（CWE-476），导致系统崩溃（内核 oops）。建议优先升级内核到包含 commit 修复的版本，将内核更新到 6.6 系列 6.6.7x 之后、6.12 系列 6.12.x 最新稳定版，或发行版安全内核版本：Ubuntu 22.04/24.04 内核升级至 USN-7381-1 所指定版本，Debian 11 升级至 DLA-4075 对应内核（如 6.1__*），SUSE 升级至 SUSE-SU-2025:0847-1 指定 kernel-default 版本。如无法立即升级，暂不可关闭 SCTP，可用 sysctl 停用不信任的协议以降低暴露面，并在更新前对系统做监控，防范本地利用导致的拒绝服务；长期应保持内核安全补丁及时更新。"
 score = 7.1
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux 内核 SCTP 子系统 cookie_hmac_alg 空指针解引用漏洞"
-updated = "2026-07-30T06:17:03.190"
+updated = "2026-07-30T06:17:03Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "goshs 是一款功能丰富的单二进制文件服务器，其 WebDAV 模式下的权限控制存在安全绕过漏洞。在 `--no-delete` 模式下，服务端本应禁止文件删除操作，但由于 `httpserver/server.go` 中的 `wdGuard` 函数将 WebDAV 的 `MOVE` 方法错误归类为仅写操作，未检查 `fs.NoDelete` 标志，导致未经身份认证的远程攻击者可通过发送特制的 `MOVE` 请求并附带 `Overwrite: T` 头，绕过删除限制，实现任意文件删除或覆盖。该漏洞影响 goshs v2.1.4 之前的所有版本，CVSS 评分 9.1，危害等级严重。开发者已在 v2.1.4 版本中通过将 `MOVE` 方法纳入删除权限检查分支完成修复。"
-published = "2026-07-28T23:17:10.213"
+published = "2026-07-28T23:17:10Z"
 remediation = "立即升级 goshs 至 v2.1.4 或更高版本，该版本在 wdGuard 中将 MOVE 方法纳入 --no-delete 检查分支，阻止 WebDAV 客户端通过 MOVE 绕过删除限制。如无法立即升级，可在 WebDAV 端口前部署反向代理（如 Nginx），通过拦截 MOVE 方法（`limit_except GET HEAD PROPFIND`）作为临时缓解措施。"
 score = 9.1
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "goshs WebDAV MOVE 安全限制绕过漏洞"
-updated = "2026-07-30T19:19:45.637"
+updated = "2026-07-30T19:19:45Z"
 
 [exploit]
 exp_urls = []

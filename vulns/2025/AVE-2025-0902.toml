@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 SCTP 协议的 sysctl 处理存在空指针解引用漏洞。在 sctp 的 rto_min/rto_max 系统配置处理器中，代码通过 current->nsproxy 获取 net 结构体，但该指针在某些情况下（如当前任务正在退出，syzbot 通过 acct(2) 触发）可能为 NULL，导致空指针解引用引发内核崩溃（Oops/null-ptr-deref）。该漏洞影响 Linux 内核 3.13 及更高版本，攻击需本地权限（低权限），攻击复杂度低，无需用户交互，成功利用可导致拒绝服务（系统崩溃），属于 NULL 指针解引用类漏洞（CWE-476）。官方已通过改用 container_of() 从 table->data 获取 net 结构的方式修复该问题。"
-published = "2025-01-19T11:15:09.423"
+published = "2025-01-19T11:15:09Z"
 remediation = "立即升级内核至包含该修复的版本。该漏洞通过 Linux 内核 git 稳定分支的补丁提交修复（如 git.kernel.org/stable/c/0f78f094 等），受影响主线版本应升级到包含该 commit 的 6.13 及更高版本。各发行版请安装对应安全更新：Ubuntu 安装 USN-7381-1 内核更新、Debian 11 应用 DLA-4075、SUSE 应用 SUSE-SU-2025:0847 提供的已修复内核包。若无法立即打补丁，可采取缓解措施：限制低权限用户在命名空间内触发 SCTP 相关 sysctl 读写操作，并避免调用 acct(2) 造成任务退出期间并发读取 netns 配置的场景，降低空指针引用崩溃（DoS）被触发的概率。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux kernel SCTP 协议栈 sysctl rto_min/max 处理空指针引用漏洞"
-updated = "2026-06-17T08:43:54.480"
+updated = "2026-06-17T08:43:54Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核网络子系统中，先前的提交禁用了在支持 NETIF_F_IPV6_CSUM 功能的网络设备上对携带 IPv6 扩展头数据包的硬件校验和卸载。BIG TCP 功能引入 IPV6_TLV_JUMBO IPv6 扩展头以传递巨型数据包长度信息，但该扩展头仅存在于 PF_PACKET 类抓包接口（如 tcpdump）中，并不会由物理网卡实际传输。由于内核校验和卸载检查逻辑未区分这一特殊情况，导致处理 BIG TCP 数据包时触发 skb_warn_bad_offload 内核告警。未经身份认证的远程攻击者可通过向目标系统发送特制的 IPv6 BIG TCP 数据包触发该问题，造成内核告警及潜在的服务中断，影响使用 IPv6 和 BIG TCP 功能的 Linux 内核版本。CVSS 评分 8.2，危害等级高。"
-published = "2025-01-15T13:15:15.220"
+published = "2025-01-15T13:15:15Z"
 remediation = "建议立即升级 Linux 内核至已修复版本：6.12.8、6.11.11、6.6.73、6.1.122、5.15.176、5.10.233、5.4.291 或更高版本。Ubuntu 24.04 LTS 用户请安装 USN-7381-1 安全更新（linux-image-6.8.0-51-generic 等）。Red Hat/CentOS 用户请应用 RHSA-2025 对应补丁。若无法立即升级，可通过 sysctl 临时禁用 IPv6 扩展头处理：`sysctl -w net.ipv6.conf.all.disable_ipv6=1`（会影响 IPv6 连通性），或在网卡驱动层面关闭 NETIF_F_IPV6_CSUM 硬件卸载功能（`ethtool -K eth0 rx-csumming off tx-csumming off`），重启网络服务生效。"
 score = 8.2
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux Kernel IPv6 硬件校验和卸载拒绝服务漏洞"
-updated = "2026-07-30T06:16:31.237"
+updated = "2026-07-30T06:16:31Z"
 
 [exploit]
 exp_urls = []

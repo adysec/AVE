@@ -1,12 +1,12 @@
 [basic]
 description = "tags.<value>MCP Ruby SDK 的 StreamableHTTPTransport 组件在处理 JSON-RPC POST 请求时，未对 HTTP 请求体大小进行任何限制，直接将完整请求体读入内存并使用 `JSON.parse` 解析。未经身份认证的远程攻击者可通过发送超大体积的 JSON-RPC POST 请求触发该漏洞，导致进程内存被耗尽而引发拒绝服务。该漏洞影响所有使用 `MCP::Server::Transports::StreamableHTTPTransport` 的部署，无论是否启用状态模式均受影响，且无需会话令牌或凭据。攻击者仅需发送一个精心构造的超大请求即可使工作进程内存激增，在多租户环境中可导致服务不可用。该问题已在 mcp gem 0.23.0 版本中修复。"
-published = "2026-07-29T20:17:12.277"
+published = "2026-07-29T20:17:12Z"
 remediation = "升级 mcp gem 至 0.23.0 或更高版本，该版本对 StreamableHTTPTransport 的 handle_post 方法增加了请求体大小限制并在 JSON.parse 前进行 Content-Length 检查，同时为 stdio_transport.rb 的 $stdin.gets 添加了 limit 参数。若无法立即升级，可在反向代理层（如 Nginx）设置 client_max_body_size 4m 以拦截超大请求体，或通过防火墙限制单连接速率作为临时缓解措施。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "MCP Ruby SDK StreamableHTTPTransport 拒绝服务漏洞"
-updated = "2026-07-30T19:30:33.710"
+updated = "2026-07-30T19:30:33Z"
 
 [exploit]
 exp_urls = []

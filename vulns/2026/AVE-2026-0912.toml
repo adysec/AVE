@@ -1,12 +1,12 @@
 [basic]
 description = '''tags. I can provide brief analysis but final answer in <value> tags. Let me keep it concise - just output the value tags.<value>Jodit 富文本编辑器（内置文件浏览器与图片编辑器）在 sanitizeHTMLElement 方法中校验 href 属性的 javascript: 协议时存在不完整的规范化逻辑，仅使用区分大小写的 href.trim().indexOf('javascript') === 0 进行字面匹配，未像其他 URL 属性那样先经 isDangerousUrl 去除控制字节（\u0000-\u0020）并转小写后再检测协议。攻击者可通过三类混淆形式绕过过滤：一是大小写变体（如 JAVASCRIPT:、Javascript:），二是前置非空白 C0 控制字节（如 \x01），三是在协议内嵌入制表符或换行符（如 java\tscript:、java\nscript:）；浏览器在解析 URL 时会剥离控制字节与制表换行符且协议大小写不敏感，故点击后仍会按 javascript: 协议执行。恶意链接可经 editor.value 赋值并持久化到编辑器存储值中，属于存储型跨站脚本（CWE-79）。攻击前提是攻击者拥有编辑器实例的写入权限（如内容作者或多用户应用中的评论者），当受害者在只读编辑器、服务端渲染页面或 innerHTML 消费端点击该链接时，将在目标页面源域中执行攻击者控制的脚本。该漏洞影响 Jodit 4.12.31 之前的版本，CVSS 评分 5.4（中危），已在 4.12.31 版本中通过将 href 改由 isDangerousUrl 处理而修复。'''
-published = "2026-07-31T20:16:53.197"
+published = "2026-07-31T20:16:53Z"
 remediation = "建议立即将 Jodit 升级至 4.12.31 及以上版本，该版本已通过将 href 属性接入 isDangerousUrl() 归一化检查修复此 XSS 绕过（对应提交 5fba6ef2381d151d7cb8e3c5ad0b9996af0f97b0）。若暂时无法升级，应在渲染编辑器存储值前强制进行服务端或前端二次清洗，对所有 href 值执行去控制字节、转小写并校验 javascript:/vbscript: 等危险协议，禁止直接通过 innerHTML 渲染用户可控链接，同时可开启 CSP 限制内联脚本执行作为纵深防御。"
 score = 5.4
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Jodit Jodit 编辑器 javascript: 协议 href 过滤绕过跨站脚本漏洞"
-updated = "2026-08-03T18:16:40.340"
+updated = "2026-08-03T18:16:40Z"
 
 [exploit]
 exp_urls = []

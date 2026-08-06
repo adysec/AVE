@@ -1,12 +1,12 @@
 [basic]
 description = "Sylius Mollie Plugin 存在支付状态伪造漏洞（CWE-639），其支付 Webhook 端点 `POST /{_locale}/update-payment` 接受攻击者可控的 `id`（Mollie 支付 ID）和 `orderId`（Sylius 订单 ID）参数，但未验证该 Mollie 支付是否确实属于所引用的订单。未经身份认证的远程攻击者只需持有任意有效的已支付 Mollie 支付 ID（例如自己支付 1 欧元订单获取的 ID），即可将其与任意受害订单 ID 组合提交，使受害订单的支付状态被标记为已完成，而无需为该订单实际转移任何资金。Sylius 订单 ID 为顺序递增整数，且该端点无需认证、CSRF 令牌或速率限制，攻击者可批量扫描所有待处理订单进行利用。该漏洞影响 Sylius Mollie Plugin 2.2.8 之前版本及 3.2.4/3.3.1 之前版本，CVSS 评分 7.5，危害等级高。厂商已在 2.2.8、3.2.4 和 3.3.1 版本中修复，修复方式为在 Webhook 处理中校验传入的 Mollie 支付 ID 是否与订单创建时服务端存储的 ID 一致。"
-published = "2026-07-30T21:18:13.007"
+published = "2026-07-30T21:18:13Z"
 remediation = "立即升级至 Sylius Mollie Plugin v2.2.8（2.x 分支）、v3.2.4（3.2.x 分支）或 v3.3.1（3.3.x 分支），以上版本已在 webhook 中校验 Mollie 支付 ID 与订单的绑定关系。如无法立即升级，可创建装饰器覆盖 `sylius_mollie.controller.shop.payment_webhook` 服务，在调用原始控制器前比对 `id` 参数与订单存储的 Mollie 支付 ID，不匹配时返回 HTTP 200 且不改变订单状态，详见官方安全公告 GHSA-rc52-c4hv-w89p。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Sylius Mollie Plugin 未授权支付状态篡改漏洞"
-updated = "2026-07-31T15:18:01.430"
+updated = "2026-07-31T15:18:01Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "LightRAG 在仅配置 LIGHTRAG_API_KEY 而未设置 AUTH_ACCOUNTS 的 API 密钥认证模式下存在认证绕过漏洞。由于代码中硬编码了默认 JWT 密钥 DEFAULT_TOKEN_SECRET，且 /auth-status 和 /login 接口无需认证即可签发访客 JWT 令牌，同时 combined_dependency 认证函数在检查 API 密钥前会先接受有效访客令牌，导致远程未认证攻击者可离线伪造 JWT 或通过公开接口获取令牌后绕过 X-API-Key 保护，进而调用文档读取、上传、删除、知识图谱操作及查询等受保护接口，造成敏感数据泄露和资源滥用。该漏洞影响 v1.5.4 之前的所有版本，CVSS 评分 9.3，危害等级严重。"
-published = "2026-07-15T15:16:48.350"
+published = "2026-07-15T15:16:48Z"
 remediation = "立即升级 LightRAG 至 v1.5.4 或更高版本，该版本已移除硬编码 DEFAULT_TOKEN_SECRET 并修复认证绕过逻辑。如无法升级，可采取以下临时缓解措施：(1) 在反向代理层（如 Nginx）添加规则阻止对 /auth-status 和 /login 的匿名访问；(2) 设置 AUTH_ACCOUNTS 环境变量启用账户认证模式；(3) 在代码中手动将 lightrag/api/config.py 的 DEFAULT_TOKEN_SECRET 替换为随机生成的强密钥。"
 score = 9.3
 severity = "CRITICAL"
 sources = ["ghsa"]
 title = "LightRAG API密钥认证绕过漏洞"
-updated = "2026-07-15T18:15:13.373"
+updated = "2026-07-15T18:15:13Z"
 
 [exploit]
 exp_urls = []

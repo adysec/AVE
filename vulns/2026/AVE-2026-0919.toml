@@ -1,12 +1,12 @@
 [basic]
 description = "File Browser 的 Share API 在创建密码保护的分享链接或列出已有分享时，JSON 响应中直接包含完整的 bcrypt 密码哈希值 `password_hash` 和绕过密码的 `token` 字段。这是由于 `Link` 结构体使用 `json.Marshal` 直接序列化且未做字段过滤，导致任何认证用户都能获取自己分享的敏感信息，而管理员通过 `GET /api/shares` 接口可获取所有用户分享的密码哈希和绕过令牌。攻击者可离线破解 bcrypt 哈希恢复分享密码，或直接使用泄露的 token 绕过密码访问受保护的分享内容，造成敏感数据泄露和权限绕过。"
-published = "2026-01-01"
+published = "2026-01-01T00:00:00Z"
 remediation = '立即升级 File Browser 至修复版本（≥v2.63.16），或手动修改 `share/share.go` 中 `Link` 结构体：将 `PasswordHash` 的 JSON 标签改为 `json:"-"`，将 `Token` 的 JSON 标签改为 `json:"-"`，确保 bcrypt 哈希和绕过令牌不再序列化到 API 响应中。如无法升级，可在反向代理层拦截 `GET /api/shares` 和 `POST /api/share/` 响应，过滤 `password_hash` 和 `token` 字段作为临时缓解。'
 score = 3.5
 severity = "LOW"
 sources = ["ghsa"]
 title = "File Browser Share API 密码哈希与绕过令牌泄露漏洞"
-updated = "2026-01-01"
+updated = "2026-01-01T00:00:00Z"
 
 [exploit]
 exp_urls = []

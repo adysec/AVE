@@ -1,12 +1,12 @@
 [basic]
 description = "Capsule 是一个基于策略的 Kubernetes 多租户框架。其 CapsuleConfiguration 自定义资源中的 NodeMetadata.ForbiddenLabels.Regex 和 ForbiddenAnnotations.Regex 字段在配置准入 webhook 中缺乏正则表达式合法性校验，导致拥有 Cluster Admin 权限的攻击者可以将格式错误的正则表达式（如 `[invalid-regex(`）持久化到 etcd 中。当后续任何 Node 的 CREATE、UPDATE 或 PATCH 请求触发 internal/webhook/node/user_metadata.go 调用 pkg/api/forbidden_list.go 中的 regexp.MustCompile() 时，由于 MustCompile 在遇到非法正则时会 panic 而非返回错误，导致节点准入 webhook 崩溃，进而造成集群范围内所有节点管理操作（标签、注解、污点设置、扩缩容、节点维护等）的拒绝服务。该漏洞影响所有使用 Capsule 且版本低于 0.13.8 的 Kubernetes 集群，需要 Cluster Admin 权限才能触发，但影响范围覆盖整个集群。官方已在 v0.13.8 版本中修复，通过在配置 webhook 中添加正则表达式校验 handler 来阻止非法正则写入 etcd。"
-published = "2026-07-30T20:18:13.107"
+published = "2026-07-30T20:18:13Z"
 remediation = "立即升级 Capsule 至 v0.13.8 或更高版本，该版本在 internal/webhook/cfg/ 中新增了 node_metadata_regex.go 校验器，对 CapsuleConfiguration 中 NodeMetadata 的 ForbiddenLabels.Regex 和 ForbiddenAnnotations.Regex 字段进行正则合法性校验。如无法立即升级，Cluster Admin 应避免在 CapsuleConfiguration 中设置未经验证的 NodeMetadata 正则表达式，并限制拥有 CapsuleConfiguration 写权限的用户范围。"
 score = 6.8
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Project Capsule Capsule NodeMetadata正则表达式校验缺失导致拒绝服务漏洞"
-updated = "2026-07-31T12:16:53.700"
+updated = "2026-07-31T12:16:53Z"
 
 [exploit]
 exp_urls = []

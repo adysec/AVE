@@ -1,12 +1,12 @@
 [basic]
 description = "OliveTin 是一款用于执行预配置 Shell 命令的开源 Web 管理界面。其 `checkShellArgumentSafety()` 函数维护了一个不安全的参数类型黑名单，但未将 `regex:` 前缀的自定义参数类型纳入其中。当 Shell 模式动作使用 `regex:` 类型参数时，该参数会绕过安全检查，其值通过 Go 的 `text/template` 直接拼接至 `sh -c` 命令字符串中且未经转义，导致 OS 命令注入。即使管理员设置了看似严格的正则表达式（如 `^[^;|&<>]+$`），攻击者仍可通过 POSIX 命令替换语法（如 `$(command)`）绕过限制。未认证的远程攻击者仅需网络访问即可在 OliveTin 进程用户权限下执行任意系统命令。该漏洞影响 OliveTin 3000.2.0 至 3000.17.0 版本，已在 3000.17.0 版本中修复。"
-published = "2026-07-29T21:17:48.120"
+published = "2026-07-29T21:17:48Z"
 remediation = "立即升级至 OliveTin 3000.17.0 或更高版本。如使用 Docker 部署，执行 `docker pull ghcr.io/olivetin/olivetin:3000.17.0` 并重启容器。如使用二进制部署，从 https://github.com/OliveTin/OliveTin/releases/tag/3000.17.0 下载最新版本替换。临时缓解措施：在反向代理层限制对 `/api/v1/StartAction` 端点的访问，仅允许受信任 IP 调用；同时审查所有 Shell 模式 action 配置，避免使用 `regex:` 前缀的自定义参数类型。"
 score = 6.6
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "OliveTin 操作系统命令注入漏洞"
-updated = "2026-07-30T19:21:23.297"
+updated = "2026-07-30T19:21:23Z"
 
 [exploit]
 exp_urls = []

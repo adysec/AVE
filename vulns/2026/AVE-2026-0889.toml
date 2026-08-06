@@ -1,12 +1,12 @@
 [basic]
 description = "Pterodactyl 游戏服务器管理面板 1.7.0 至 1.13.0 版本中存在认证速率限制缺陷，其 RouteServiceProvider::configureRateLimiting() 方法为登录和双因素认证端点配置的限流器使用了全局共享令牌桶，而非按 IP 或账户进行独立计数。未经身份认证的远程攻击者可通过单个 IP 每秒约发送 10 次请求（利用无 reCAPTCHA 保护的 /auth/login/checkpoint 端点成本最低），耗尽全局共享计数器，导致所有用户（包括管理员）的登录和双因素认证请求均返回 HTTP 429 错误，造成面板级认证拒绝服务。该攻击无需任何权限、无需用户交互，攻击者持续发包即可维持锁定状态，严重影响面板可用性。官方已在 1.13.0 版本中修复此问题。"
-published = "2026-07-28T16:19:28.693"
+published = "2026-07-28T16:19:28Z"
 remediation = "立即升级 Pterodactyl Panel 至 v1.13.0 或更高版本（https://github.com/pterodactyl/panel/releases/tag/v1.13.0），该版本已为认证限流器添加按 IP 的独立计数。如无法立即升级，可在反向代理层（Nginx/Cloudflare）对 /auth/login 和 /auth/login/checkpoint 端点按来源 IP 设置频率限制（如每 IP 每分钟最多 30 次请求）作为临时缓解措施。"
 score = 7.5
 severity = "HIGH"
 sources = ["ghsa"]
 title = "Pterodactyl Panel 认证全局速率限制拒绝服务漏洞"
-updated = "2026-07-30T19:29:19.027"
+updated = "2026-07-30T19:29:19Z"
 
 [exploit]
 exp_urls = []

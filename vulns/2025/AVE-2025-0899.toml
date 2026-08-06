@@ -1,12 +1,12 @@
 [basic]
 description = "Linux kernel 的 SCTP 协议 sysctl 接口在处理 plpmtud_probe_interval 参数时，通过 current->nsproxy 获取网络命名空间结构。该代码路径在进程退出等场景下（例如通过 acct(2) 系统调用）可能导致 current->nsproxy 为 NULL，引发空指针解引用（null-ptr-deref）漏洞，造成内核崩溃。攻击者作为本地低权限用户，可利用此漏洞触发内核崩溃，造成拒绝服务。该漏洞影响包含受影响 SCTP sysctl 代码的 Linux 内核版本。"
-published = "2025-01-19T11:15:09.110"
+published = "2025-01-19T11:15:09Z"
 remediation = "升级 Linux 内核至包含修复的稳定版本：5.15.177、6.1.125、6.6.72、6.12.10 或更高版本。主流发行版用户请执行包管理器更新：Ubuntu/Debian 运行 apt update && apt upgrade linux-image，RHEL/CentOS 运行 yum update kernel，SUSE 运行 zypper update kernel。如使用自定义内核，请应用包含 commit 6259d2484d0c（net/sctp/sysctl.c: 将 current->nsproxy->net_ns 替换为 container_of(ctl->data, struct net, sctp.probe_interval)）的补丁后重新编译。临时缓解措施：以 root 权限通过 sysctl 将 net.sctp.probe_interval 设为 0 可关闭路径 MTU 发现探测功能，降低触发概率，但可能影响大包传输性能。升级后重启系统使新内核生效。"
 score = 5.5
 severity = "MEDIUM"
 sources = ["msrc"]
 title = "Linux Kernel SCTP sysctl plpmtud_probe_interval 空指针解引用漏洞"
-updated = "2026-06-17T08:43:53.980"
+updated = "2026-06-17T08:43:53Z"
 
 [exploit]
 exp_urls = []

@@ -1,12 +1,12 @@
 [basic]
 description = "Linux 内核 SCTP 协议栈的 auth_enable sysctl 配置处理器存在空指针解引用漏洞。由于该处理器通过 current->nsproxy 获取 net 网络命名空间结构，而未采用更为稳妥的方式从 sysctl 表数据（table->data）中提取，当任务进程正在退出时 current->nsproxy 可能为 NULL，从而引发空指针解引用（空指针解引用，CWE-476），导致内核崩溃（Oops）。该漏洞需要在本地环境中执行，攻击者若具备相应权限，在满足特定时序条件下可利用 acct 等系统调用触发该问题，造成系统拒绝服务（DoS）。该漏洞影响 Linux 内核的 SCTP 认证使能配置路径，CVSS 评分 7.1，危害等级为高。内核开发团队已建议改用 container_of() 从 table->data 获取 net 结构，以修复此问题。"
-published = "2025-01-19T11:15:09.317"
+published = "2025-01-19T11:15:09Z"
 remediation = "立即升级 Linux 内核至包含该修复提交的版本（kernel commit 将 SCTP sysctl auth_enable 处理器中获取 net 结构的方式改为通过 table->data 使用 container_of()，避免引用 current->nsproxy），主要发行版修复版本如下：内核主线修复于 6.13 之前，请更新至包含该补丁的稳定内核；SUSE SLES15 SP6 建议安装 SUSE-SU-2025:0847-1 更新；Debian 11 请应用 DLA-4075 更新；Ubuntu 24.04/22.04/20.04 安装 USN-7381-1、USN-7459-1 对应内核包。在无法立即打补丁时，可限制低权限本地用户创建 SCTP 套接字或对含 SCTP 的内核配置启用 sysctl netns 隔离，并监控 dmesg 中与 sysctl auth_enable 相关的 Oops 空指针错误，作为临时缓解措施。"
 score = 7.1
 severity = "HIGH"
 sources = ["msrc"]
 title = "Linux kernel SCTP 子系统 auth_enable 系统配置空指针解引用漏洞"
-updated = "2026-07-30T06:16:57.903"
+updated = "2026-07-30T06:16:57Z"
 
 [exploit]
 exp_urls = []

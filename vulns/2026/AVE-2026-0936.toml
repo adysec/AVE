@@ -1,12 +1,12 @@
 [basic]
 description = "Capsule 是一个 Kubernetes 多租户策略框架。CVE-2026-22872 的修复在 v0.13.0 中仅对 NamespacedItems 选择路径添加了集群作用域资源拒绝检查，但未覆盖 RawItems 创建路径和 Generators 路径。TenantResource 控制器使用绑定 cluster-admin 角色的 ServiceAccount 应用资源，handleRawItem 和 handleGeneratorItem 函数仅调用 SetNamespace 设置命名空间，而 Kubernetes API 服务器会忽略集群作用域资源的命名空间设置。因此，拥有 TenantResource 创建权限的租户所有者可通过构造包含 ClusterRole、ValidatingWebhookConfiguration 等集群作用域资源的 RawItems，利用控制器提权至集群管理员级别，进而控制所有租户和集群控制面。该漏洞影响 Capsule v0.13.0 至 v0.13.7 版本，CVSS 评分 6.6，危害等级中危。v0.13.8 版本已在 handleRawItem 和 handleGeneratorItem 中增加了 IsNamespacedGVK 集群作用域拒绝检查，完成彻底修复。"
-published = "2026-07-30T20:18:13.267"
+published = "2026-07-30T20:18:13Z"
 remediation = "升级 Capsule 至 v0.13.8 或更高版本，该版本在 handleRawItem 和 handleGeneratorItem 中增加了 IsNamespacedGVK 集群作用域资源拒绝检查。如无法立即升级，可移除 TenantOwner 的 TenantResource 创建权限（设置 rbac.resources.create=false）作为临时缓解措施。"
 score = 6.6
 severity = "MEDIUM"
 sources = ["ghsa"]
 title = "Capsule Kubernetes多租户框架TenantResource集群范围资源创建权限提升漏洞"
-updated = "2026-07-31T20:16:53.843"
+updated = "2026-07-31T20:16:53Z"
 
 [exploit]
 exp_urls = []
