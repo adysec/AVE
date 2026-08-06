@@ -1,0 +1,285 @@
+[basic]
+description = '''
+## Preface
+
+Poweradmin maps OIDC identities into local users through `oidc_user_links.oidc_subject` plus `provider_id`. In the MySQL schema, the OIDC link table explicitly uses `utf8mb4_unicode_ci`, which is case-insensitive and accent-insensitive. OIDC `sub` is a stable external subject identifier and should be matched byte-for-byte within the issuer/provider scope.
+
+The confirmed local PoC used two different OIDC users:
+
+- Victim subject: `victim-login`
+- Attacker subject: `victím-login` (`í`, U+00ED)
+
+MySQL reported those two subjects as equal under `utf8mb4_unicode_ci`. After the victim linked their OIDC account, the attacker authenticated to the same provider with the attacker's own password and Poweradmin resolved the session to the victim's local account.
+
+## Server Info
+
+- **Application:** Poweradmin
+- **Version:** `targets/poweradmin` git `e1f9c9a`
+- **Database:** MySQL `8.4.10`, `character_set_server=utf8mb4`, `collation_server=utf8mb4_unicode_ci`
+- **Access Permissions:** Any user who can create or control an account in the connected OIDC provider
+- **Auth Method:** OIDC generic provider
+- **Tools:** Docker Compose, local OIDC provider, Python PoC harness
+
+**Affected Entry Point:**
+
+```text
+GET /oidc/login?provider=generic
+GET /oidc/callback?code=...&state=...
+```
+
+Relevant request properties:
+
+- Authentication: valid OIDC authorization code flow
+- Trigger: attacker OIDC account has a `sub` that collides with a victim's linked `sub`
+- Vulnerable field: OIDC `sub` stored and looked up as `oidc_user_links.oidc_subject`
+
+## Root Cause Analysis
+
+### part0 — `oidc_user_links.oidc_subject` uses an accent-insensitive collation
+
+The MySQL schema defines the OIDC link table with `utf8mb4_unicode_ci`:
+
+```sql
+-- sql/poweradmin-mysql-db-structure.sql:341-356
+CREATE TABLE `oidc_user_links` (
+  `user_id` INT(11) NOT NULL,
+  `provider_id` VARCHAR(50) NOT NULL,
+  `oidc_subject` VARCHAR(255) NOT NULL,
+  ...
+  UNIQUE KEY `unique_subject_provider` (`oidc_subject`, `provider_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+In the PoC database:
+
+```text
+Field          Type          Collation
+provider_id    varchar(50)   utf8mb4_unicode_ci
+oidc_subject   varchar(255)  utf8mb4_unicode_ci
+
+SELECT 'victim-login' = 'victím-login' COLLATE utf8mb4_unicode_ci;
+-- accent_collision = 1
+```
+
+### part1 — OIDC `sub` flows into a normal SQL equality lookup
+
+Poweradmin reads the subject from OIDC userinfo data. If no custom `subject` mapping is configured, it uses the `sub` claim:
+
+```php
+// lib/Application/Service/OidcService.php:424-459
+$resourceOwner = $provider->getResourceOwner($token);
+$userData = $resourceOwner->toArray();
+...
+subject: $userData[$mapping['subject'] ?? 'sub'] ?? '',
+```
+
+The callback passes the resulting `OidcUserInfo` to provisioning:
+
+```php
+// lib/Application/Service/OidcService.php:269-291
+$userInfo = $this->getUserInfo($provider, $token, $providerId);
+$userId = $this->userProvisioningService->provisionUser($userInfo, $providerId);
+```
+
+Provisioning first tries to find an existing user by subject:
+
+```php
+// lib/Application/Service/UserProvisioningService.php:86-90
+$existingUserId = $authMethod === self::AUTH_METHOD_SAML
+    ? $this->findUserBySamlSubject($userInfo->getSubject(), $providerId)
+    : $this->findUserByOidcSubject($userInfo->getSubject(), $providerId);
+```
+
+The lookup is normal SQL equality evaluated under the column's weak collation:
+
+```php
+// lib/Application/Service/UserProvisioningService.php:145-149
+$stmt = $this->db->prepare(\"
+    SELECT user_id FROM oidc_user_links
+    WHERE oidc_subject = ? AND provider_id = ?
+\");
+$stmt->execute([$subject, $providerId]);
+```
+
+When the attacker authenticates with `sub = victím-login`, MySQL matches the existing row for `oidc_subject = victim-login` and returns the victim's `user_id`.
+
+### part2 — The returned user ID becomes the authenticated session
+
+After provisioning returns the matched `user_id`, Poweradmin fetches the database username for that user and stores the matched user ID in the session:
+
+```php
+// lib/Application/Service/OidcService.php:307-317
+$databaseUsername = $this->userProvisioningService->getDatabaseUsername($userId);
+$this->setSessionValue('userlogin', $databaseUsername);
+```
+
+```php
+// lib/Application/Service/OidcService.php:360-371
+$this->setSessionValue('userid', $userId);
+...
+$this->setSessionValue('authenticated', true);
+```
+
+The attacker's OIDC password is validated by the IdP, but the local `user_id` selected by Poweradmin comes from the weak-collation SQL lookup.
+
+## Security Impact
+
+An attacker who can register or control an OIDC principal with an accent/collation variant of a victim's OIDC subject can authenticate with the attacker's own IdP credentials and obtain a Poweradmin session for the victim's local account.
+
+The confirmed PoC used distinct OIDC usernames, subjects, emails, and passwords. The attacker did not know or modify the victim's password.
+
+## Reproduction
+
+### 1. Start the local Poweradmin OIDC lab
+
+```bash
+sudo -n docker compose -p poweradminoidcpoc -f poc/work/poweradmin-oidc-collation/docker-compose.yml up -d
+```
+
+The lab uses MySQL `utf8mb4_unicode_ci` and a local OIDC provider with two real login accounts:
+
+```text
+Victim:
+  username/sub: victim-login
+  email: victim.poweradmin@example.com
+  password: VictimPassword123!
+
+Attacker:
+  username/sub: victím-login
+  email: attacker.poweradmin@example.com
+  password: AttackerPassword123!
+```
+
+### 2. Log in once as the victim through OIDC
+
+Authenticate through `GET /oidc/login?provider=generic` using:
+
+```text
+username: victim-login
+password: VictimPassword123!
+```
+
+Poweradmin creates the victim local user and OIDC link:
+
+```text
+users:
+id  username      fullname            email
+2   victim-login  Victim Poweradmin   victim.poweradmin@example.com
+
+oidc_user_links:
+id  user_id  provider_id  oidc_subject
+1   2        generic      victim-login
+```
+
+### 3. Log in as the attacker OIDC user
+
+Authenticate from a separate browser session with:
+
+```text
+username: victím-login
+password: AttackerPassword123!
+```
+
+Observed result from `poc/work/poweradmin-oidc-collation/run_poc.py`:
+
+```json
+{
+  \"attacker_login\": {
+    \"selected_idp_user\": \"attacker\",
+    \"selected_idp_username\": \"victím-login\",
+    \"has_session_cookie\": true,
+    \"home_contains_victim_username\": true,
+    \"home_contains_attacker_username\": false
+  },
+  \"attacker_resolved_to_victim\": true
+}
+```
+
+Database evidence after both logins:
+
+```text
+version  charset_server  collation_server
+8.4.10   utf8mb4         utf8mb4_unicode_ci
+
+accent_collision
+1
+
+users:
+id  username      fullname            email
+2   victim-login  Victim Poweradmin   victim.poweradmin@example.com
+
+oidc_user_links:
+id  user_id  provider_id  oidc_subject  oidc_subject_hex
+1   2        generic      victim-login   76696374696D2D6C6F67696E
+```
+
+The application audit log also records all OIDC login events as the victim user:
+
+```text
+user:victim-login operation:login_success auth_method:oidc
+```
+
+No local user or OIDC link was created for `victím-login`.
+
+## Recommended Fix
+
+Treat OIDC subject identifiers as byte-exact strings.
+
+For MySQL, migrate the OIDC mapping identifiers to a binary or byte-preserving collation:
+
+```sql
+ALTER TABLE oidc_user_links
+  MODIFY COLUMN provider_id varchar(50)
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  MODIFY COLUMN oidc_subject varchar(255)
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL;
+```
+
+Also make lookup queries byte-preserving so patched application code protects existing deployments before schema migrations are complete:
+
+```php
+$stmt = $this->db->prepare(\"
+    SELECT user_id FROM oidc_user_links
+    WHERE BINARY oidc_subject = BINARY ?
+      AND BINARY provider_id = BINARY ?
+\");
+```
+
+Review related identity and authorization lookups:
+
+- `findUserByEmail()` uses `users.email = ?` and can be impacted when `link_by_email` is enabled.
+- `findPermissionTemplateByName()` uses `perm_templ.name = ?` for SSO permission template mapping.
+- `findGroupByName()` uses `user_groups.name = ?` for SSO group mapping.
+
+Those fields should either be intentionally documented as case/accent-insensitive or migrated/looked up with byte-preserving semantics where they represent security boundaries.
+
+## Patches
+
+Fixed in 4.2.5, 4.3.4, and 4.4.0. OIDC and SAML subject identifiers are now matched byte-for-byte. The fix includes a database migration that changes the collation of the identity link columns, so upgrading requires running the SQL update script for your database in the `sql/` directory.
+
+## Acknowledge / Credit
+
+whale120 (@whale120_tw), working with DEVCORE Internship Program
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Poweradmin: OIDC `sub` collation bypass in Poweradmin leading to account takeover"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-cmwh-g2h8-c222"]
+ave_id = "AVE-2026-1073"
+
+[meta]
+collected_at = "2026-08-06T01:10:35.772614703+00:00"
+status = "completed"
+
+[references]
+urls = []
