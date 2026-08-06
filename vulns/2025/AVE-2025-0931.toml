@@ -1,0 +1,37 @@
+[basic]
+description = "Linux 内核的 zswap 压缩交换子系统存在释放后重用漏洞。在 zswap_compress() 和 zswap_decompress() 函数中，代码获取并使用当前 CPU 的 per-CPU acomp_ctx 结构体以完成压缩或解压缩操作，但由于未禁用抢占或禁止迁移，进程可能在操作执行期间被调度到其他 CPU 上运行。若原始 CPU 在此过程中被热卸载，而 acomp_ctx 仍然处于被使用状态，则会触发释放后重用：acomp_ctx 所关联的资源（如压缩缓冲区、请求对象或异步压缩引擎）会在 zswap_cpu_comp_dead() 中被提前释放，导致攻击者可通过竞争条件利用该漏洞执行任意代码或造成系统崩溃。该漏洞影响启用了 zswap 功能的 Linux 内核版本，攻击者需在目标系统上拥有低权限本地访问权限，无需用户交互即可触发，成功利用后可实现本地权限提升或拒绝服务。CVSS 评分 7.8，危害等级高。"
+published = "2025-02-10T16:15:38.883"
+remediation = "建议将 Linux 内核升级至 6.12.12 或 6.13 及以上版本，该补丁通过 commit 12dcb0ef5406 修复 mm/zswap.c 中 CPU 热插拔时的 UAF 漏洞。Ubuntu 24.04/24.10 Azure 内核用户请升级至 6.11.0-1013.13 或更高版本；RHEL 9 用户请安装 RHSA-2025:20518 安全更新；SUSE Linux Enterprise 15 用户请安装 SUSE-SU-2025:01967-1 安全更新。如短期无法升级，可在访问控制层面严格限制具备 CAP_SYS_ADMIN 权限的本地用户，并避免在不需要的场景下执行 CPU 热插拔操作。更新后需重启系统以使内核补丁生效。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 zswap 使用后释放漏洞"
+updated = "2026-06-17T08:44:02.480"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21693"]
+ave_id = "AVE-2025-0931"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/12dcb0ef540629a281533f9dedc1b6b8e14cfb65",
+    "https://git.kernel.org/stable/c/8d29ff5d50304daa41dc3cfdda4a9d1e46cf5be1",
+    "https://github.com/CVEProject/cvelistV5/blob/74dc69e33a88e8337ec5752efbf3c7f9ff972c4b/cves/2025/21xxx/CVE-2025-21693.json",
+    "https://github.com/cisagov/vulnrichment/blob/afe20f4bdb52ae870e113add0571518dc2153513/2025/21xxx/CVE-2025-21693.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/46a996f0289605434908b7f2bee2aa87049865d7/SSVC/data/2025/CVE-2025-21693.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/46a996f0289605434908b7f2bee2aa87049865d7/CVE/data/2025/CVE-2025-21693.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21693.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2025-21693.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21693",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/89fbba38c2d6be5ae7165c8ae7c8f3c0641ea56f/tracker/CVE/2025/CVE-2025-21693.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21693",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2025/CVE-2025-216xx/CVE-2025-21693.json",
+]
