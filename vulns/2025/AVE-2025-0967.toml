@@ -1,0 +1,50 @@
+[basic]
+description = "Linux内核vsock虚拟套接字子系统存在释放后使用（use-after-free）漏洞。内核在处理vsock套接字绑定时未正确维护引用计数：当传输层释放套接字时，vsock_remove_bound()在未检查套接字是否已绑定到绑定列表的情况下直接递减引用计数，导致引用计数提前归零并释放内存。随后vsock_bind()函数在操作已释放的内存时触发KASAN告警。攻击者可在本地利用此漏洞，通过创建vsock套接字并触发特定的绑定与释放流程，导致内核崩溃或权限提升。该漏洞影响Linux内核相关版本，CVSS评分为7.8（高危）。"
+published = "2025-02-27T03:15:16.250"
+remediation = '建议立即将 Linux 内核升级到已修复该漏洞的稳定版本：6.6.79、6.12.16、6.13.4 或 6.14-rc1 及以上版本，或应用补丁 commit fcdd2242c0231032fc84e1404315c245ae56322a。如当前系统内核版本在 5.5-rc1 至 6.13.3 之间且无法立即升级，可执行以下临时缓解措施：运行命令 modprobe -r vsock 卸载 vsock 内核模块，或在 /etc/modprobe.d/disable-vsock.conf 文件中添加 "install vsock /bin/true" 和 "blacklist vsock" 配置以阻止模块加载，同时使用 sysctl 或 iptables 限制本地进程对 AF_VSOCK 套接字的创建。完成内核升级后需重启系统以确保新内核生效。'
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux vsock 虚拟套接字 Use-After-Free 漏洞"
+updated = "2026-06-17T08:44:11.970"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21756"]
+ave_id = "AVE-2025-0967"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/3f43540166128951cc1be7ab1ce6b7f05c670d8b",
+    "https://git.kernel.org/stable/c/42b33381e5e1f2b967dc4fb4221ddb9aaf10d197",
+    "https://git.kernel.org/stable/c/645ce25aa0e67895b11d89f27bb86c9d444c40f8",
+    "https://git.kernel.org/stable/c/b1afd40321f1c243cffbcf40ea7ca41aca87fa5e",
+    "https://git.kernel.org/stable/c/e48fcb403c2d0e574c19683f09399ab4cf67809c",
+    "https://git.kernel.org/stable/c/e7754d564579a5db9c5c9f74228df5d6dd6f1173",
+    "https://git.kernel.org/stable/c/fcdd2242c0231032fc84e1404315c245ae56322a",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-082556.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-265688.html",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2025/CVE-2025-21756.md",
+    "https://github.com/linux-test-project/ltp/blob/36dad3e738e61c86669a76affb6d557f17311a7e/testcases/cve/cve-2025-21756.c",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/237151d5db25ce2de80f91fb4d940b3a9a4e4d0a/2025/CVE-2025-21756.json",
+    "https://github.com/0xMarcio/cve/blob/e976796744bfa658517fd53ca155f1c8c68dab47/2025/CVE-2025-21756.md",
+    "https://github.com/google/security-research/blob/81e4607529d6184e397c26f92eefae1eff3f87fd/pocs/linux/kernelctf/CVE-2025-21756_lts_cos/docs/vulnerability.md",
+    "https://github.com/google/security-research/blob/81e4607529d6184e397c26f92eefae1eff3f87fd/pocs/linux/kernelctf/CVE-2025-21756_cos/metadata.json",
+    "https://github.com/google/security-research/blob/81e4607529d6184e397c26f92eefae1eff3f87fd/pocs/linux/kernelctf/CVE-2025-21756_lts_cos/metadata.json",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/41eb59a5bb2149eef9fa5ad20725dd2c4f67c23c/data/by-cve/CVE-2025-21756.md",
+    "https://github.com/gelusus/wxvl/blob/c1cde8a70bafa363da11ce304d18495363e6e74c/doc/2025-05/CVE-2025-21756｜Linux提权漏洞（PoC）.md",
+    "https://github.com/sari3l/Poc-Monitor/blob/b32a70f2490f2717df7984a4ab563101dae35942/2025/CVE-2025-21756.json",
+    "https://github.com/hoefler02/CVE-2025-21756",
+    "https://github.com/khoatran107/cve-2025-21756",
+    "https://github.com/h3raklez/CVE-2025-21756",
+    "https://github.com/KuanKuanQAQ/cve-testing",
+]
