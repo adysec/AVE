@@ -1,0 +1,40 @@
+[basic]
+description = 'undici 缓存拦截器在处理带有可选空格的 `no-cache` 或 `private` Cache-Control 指令时存在解析缺陷，攻击者可在指令中等号两侧插入空格（如 `no-cache ="authorization"` 或 `no-cache= "authorization"`），使解析器丢弃该指令或带有字面量引号字符存储字段名，导致缓存决策无法识别限定条件并将响应存入共享缓存。在共享缓存模式下，包含某用户认证数据的响应会被后续请求复用，甚至提供给未认证用户，造成跨用户信息泄露。影响使用 `interceptors.cache()` 并启用共享缓存模式、转发 `Authorization` 头且接收包含限定 `private` 或 `no-cache` 指令的可缓存响应的 undici 应用程序，受影响版本为 7.0.0 至 7.29.0 之前以及 8.0.0 至 8.9.0 之前。攻击者无需认证即可通过构造带空格的 Cache-Control 头触发漏洞，影响响应数据的保密性。建议升级至 undici v7.29.0 或 v8.9.0 进行修复。'
+published = "2026-07-29T22:16:52.337"
+remediation = "建议升级 undici 至 v7.29.0（7.x 分支）或 v8.9.0（8.x 分支）。如当前版本暂时无法立即升级，可在应用代码中禁用 cache 拦截器的 shared-cache 模式，或确保对包含 Authorization 头的请求响应设置 Vary: Authorization 响应头，防止包含用户认证数据的响应被共享缓存复用给未认证用户。"
+score = 5.9
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Node.js undici 缓存拦截器跨用户信息泄露漏洞"
+updated = "2026-08-04T15:53:30.723"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-14643",
+    "GHSA-jr45-8vmc-qm54",
+]
+ave_id = "AVE-2026-1249"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://cna.openjsf.org/security-advisories.html",
+    "https://github.com/nodejs/undici/security/advisories/GHSA-jr45-8vmc-qm54",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2026/14xxx/CVE-2026-14643.json",
+    "https://github.com/cisagov/vulnrichment/blob/2afa3b8de4952c563341daee974eed8b5a876c0a/2026/14xxx/CVE-2026-14643.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/78ee00e0fc2916e3b3e3d159605a09df95a384c9/SSVC/data/2026/CVE-2026-14643.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/119d515352a9f024fb6f5b07a8a05d51829c759a/vex/cve/2026/CVE-2026-14643.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/78ee00e0fc2916e3b3e3d159605a09df95a384c9/CVE/data/2026/CVE-2026-14643.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/119d515352a9f024fb6f5b07a8a05d51829c759a/osv/cve/2026/UBUNTU-CVE-2026-14643.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2026-14643.json",
+    "https://github.com/neuvector/vul-source/blob/2dbe8b505f89f1e14ef2428672f307de575cbef6/ubuntu-cve-tracker/active/CVE-2026-14643",
+    "https://github.com/twentyhq/twenty/blob/712e5ece7e7b69ec885c0fb8f3f1333dca23c4db/package.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-146xx/CVE-2026-14643.json",
+]
