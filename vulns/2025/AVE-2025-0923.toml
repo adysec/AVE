@@ -1,0 +1,43 @@
+[basic]
+description = "Linux 内核 Open vSwitch（OVS）子系统中存在无限循环漏洞。当网络设备正在注销（unregistering）过程中，其发送队列数归零，而 OVS 数据路径在发送数据包时未正确检查设备状态，导致 `skb_tx_hash` 函数中的哈希校验循环陷入无限循环，引发内核核心锁定。该漏洞影响使用 OVS 的 Linux 系统，攻击者无需身份认证，只要在目标设备处于注销状态时向其发送特制数据包即可触发内核死锁，系统将完全失去响应，唯一恢复方式为重启机器。"
+published = "2025-01-31T12:15:29.260"
+remediation = "立即升级 Linux 内核至包含修复的稳定版本。该漏洞位于 Open vSwitch 数据路径，当向正在注销的网络设备发送数据包时，因未同时检查设备运行状态导致内核无限循环锁死。上游修复已回移植至 6.1.127、6.6.74 及 6.12.11。主流发行版修复版本：Ubuntu 22.04 LTS HWE 内核升级至 6.8.0-64.67~22.04.1（执行 apt update && apt upgrade linux-image-hwe-6.8）；Ubuntu 24.04 LTS 升级至 6.8.0-62.65（执行 apt update && apt upgrade linux-image）；SUSE Linux Enterprise 15 应用 SUSE-SU-2025:0847-1（执行 zypper patch）。升级后必须重启系统。如暂时无法升级，可通过固定 Open vSwitch 端口配置、避免动态注销网络设备来降低触发概率。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel Open vSwitch 无限循环拒绝服务漏洞"
+updated = "2026-06-17T08:44:00.537"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21681"]
+ave_id = "AVE-2025-0923"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/47e55e4b410f7d552e43011baa5be1aab4093990",
+    "https://git.kernel.org/stable/c/82f433e8dd0629e16681edf6039d094b5518d8ed",
+    "https://git.kernel.org/stable/c/87fcf0d137c770e6040ebfdb0abd8e7dd481b504",
+    "https://git.kernel.org/stable/c/930268823f6bccb697aa5d2047aeffd4a497308c",
+    "https://git.kernel.org/stable/c/b5c73fc92f8d15c16e5dc87b5c17d2abf1e6d092",
+    "https://git.kernel.org/stable/c/ea966b6698785fb9cd0fdb867acd91b222e4723f",
+    "https://git.kernel.org/stable/c/ea9e990356b7bee95440ba0e6e83cc4d701afaca",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21681.md",
+    "https://github.com/0xMarcio/cve/blob/735b7181f9cc676afd10704df69ba6e3d23ba358/2025/CVE-2025-21681.md",
+    "https://github.com/CVEProject/cvelistV5/blob/a7bcc119a9ab3b42563555b8edc8c417e3560925/cves/2025/21xxx/CVE-2025-21681.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/954745087cab3897c1945b517c4fc4f1575af37b/CVE/data/2025/CVE-2025-21681.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21681.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21681-2025-11-03-1441",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21681.json",
+    "https://github.com/opencve/opencve-kb/blob/1a293285bf198645eacfa1fb6bdd6757780626e5/2025/CVE-2025-21681.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21681",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/89fbba38c2d6be5ae7165c8ae7c8f3c0641ea56f/tracker/CVE/2025/CVE-2025-21681.json",
+]
