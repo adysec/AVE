@@ -1,0 +1,38 @@
+[basic]
+description = 'Linux内核SCSI MPI3MR驱动存在空指针解引用漏洞。当bsg_setup_queue()初始化失败时，bsg_queue被赋予非NULL值，导致mpi3mr_bsg_exit()中的清理条件"if(!mrioc->bsg_queue)"无法满足，程序跳过bsg_remove_queue()的正常清理流程，最终在mpi3mr_bsg_exit+0x1f处触发内核空指针解引用崩溃。攻击者需具备本地访问权限并能触发BSG队列设置失败的条件（如加载特定SCSI设备配置），即可导致内核崩溃或拒绝服务。该漏洞影响使用MPI3MR驱动的Linux系统，CVSS评分为5.5（中等），危害等级中等。Linux内核社区已在后续版本中修复此问题，建议用户升级至已修补的内核版本。'
+published = "2025-02-27T02:15:15.993"
+remediation = "立即升级 Linux 内核至 6.12.13、6.13.2 或 6.14 及以上版本以修复 MPI3MR 驱动 BSG 队列释放缺陷。Ubuntu 用户执行 `sudo apt update && sudo apt upgrade linux-image-generic`，Debian 用户执行 `sudo apt update && sudo apt upgrade linux-image-amd64`，RHEL/CentOS 用户执行 `sudo dnf update kernel`。升级后重启系统使新内核生效，并通过 `uname -r` 确认版本已更新。若无法立即升级，可在 `/etc/default/grub` 中禁用 BSG 功能作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux内核 SCSI MPI3MR驱动 BSG设置失败时空指针解引用导致崩溃漏洞"
+updated = "2026-06-17T08:44:07.453"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21723"]
+ave_id = "AVE-2025-0946"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/19b248069d1b1424982723a2bf3941ad864d5204",
+    "https://git.kernel.org/stable/c/295006f6e8c17212d3098811166e29627d19e05c",
+    "https://git.kernel.org/stable/c/832b8f95a2832321b8200ae478ed988b25faaef4",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21723.md",
+    "https://github.com/CVEProject/cvelistV5/blob/bf513d363f62b0bf97e0ff2db204316f3de74c35/cves/2025/21xxx/CVE-2025-21723.json",
+    "https://github.com/cisagov/vulnrichment/blob/32f9be00542607b689bab08150d882c2b6e4bbac/2025/21xxx/CVE-2025-21723.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d298130c054449290f2ae401fa8b7ea01bcc70f5/SSVC/data/2025/CVE-2025-21723.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d298130c054449290f2ae401fa8b7ea01bcc70f5/CVE/data/2025/CVE-2025-21723.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21723.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21723.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2025-21723.json",
+    "https://github.com/opencve/opencve-kb/blob/af31e42ef5d3a64123b3cd4becdbdbc8517c3235/2025/CVE-2025-21723.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21723.yaml",
+]
