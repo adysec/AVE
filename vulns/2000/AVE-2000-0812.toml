@@ -1,12 +1,12 @@
 [basic]
-description = 'IBM AIX 4.3.x 及更早版本中的 setsenv 命令存在缓冲区溢出漏洞。本地攻击者可通过向 setsenv 命令传入过长的"x="参数触发堆栈缓冲区溢出，从而在受影响系统上执行任意命令。该漏洞影响 AIX 4.x 系列操作系统，攻击者需要具备本地登录权限或本地 shell 访问权限才能利用此漏洞。成功利用后，攻击者可在系统上下文中执行任意代码，可能导致敏感数据泄露、权限提升或系统被进一步控制，CVSS 评分为 4.6。'
-published = "2001-01-09T05:00:00Z"
-remediation = "安装 IBM 官方 APAR 补丁 IY08812（AIX 4.3.x）或 IY10721（AIX 4.2.x），或升级至 AIX 4.3.3 及更高版本。临时缓解措施可执行命令 `chmod u-s /usr/bin/setsenv` 移除该程序的 setuid 位，限制普通用户执行权限，并定期审查系统 setuid/setgid 程序列表。"
+description = 'IBM AIX 4.3.x 及更早版本中，/usr/bin/setsenv 命令存在缓冲区溢出漏洞。该漏洞源于 setsenv 在处理带有过长"x="参数的环境变量时未对输入长度进行充分边界检查，本地低权限用户可通过传入超长字符串触发堆栈溢出，覆盖返回地址并执行任意 shell 命令。受影响系统包括 IBM AIX 4.x 全系列版本，攻击者需具备目标主机的本地登录权限，通过构造恶意环境变量即可在 setuid 权限下获得 root 级别代码执行能力，危害等级为中等。'
+published = "2001-01-09T05:00:00.000"
+remediation = '立即应用 IBM 官方修复补丁：AIX 4.3.x 系统安装 APAR IY08812 对应的 PTF 补丁包，AIX 4.2.x 系统安装 APAR IY10721 对应的 PTF 补丁包，补丁下载地址为 http://techsupport.services.ibm.com/rs6k/fixes.html，也可通过 SMIT 工具执行 "smit update_all" 安装最新维护包以修复 /usr/bin/setsenv 的缓冲区溢出漏洞。作为临时缓解措施，若暂无法安装补丁，可执行 "chmod o-rwx /usr/bin/setsenv" 限制非授权用户执行 setsenv 命令，并定期审计系统日志排查本地提权行为。建议长期将 AIX 系统升级至 4.3.3 或更高受支持版本。'
 score = 4.6
 severity = "MEDIUM"
-sources = ["epss"]
-title = "IBM AIX setsenv 本地缓冲区溢出漏洞"
-updated = "2026-06-16T21:53:11Z"
+sources = ["avd"]
+title = "IBM AIX 4.x setsenv 本地缓冲区溢出漏洞"
+updated = "2026-06-16T21:53:11.277"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1119"]
 ave_id = "AVE-2000-0812"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -29,14 +29,14 @@ urls = [
     "http://www.securityfocus.com/bid/2032",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5621",
     "https://www.exploit-db.com/exploits/20452",
-    "https://github.com/CVEProject/cvelistV5/blob/b37ddadc32d456372cb07846a95b411ce7a32d9f/cves/2000/1xxx/CVE-2000-1119.json",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2000/1xxx/CVE-2000-1119.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1119",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/37be0559d0574b93d433d6c01d9f77ea4c420519/CVE/data/2000/CVE-2000-1119.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/67e88304703c10b9750253fd05ab77419f3daa1f/CVE/data/2000/CVE-2000-1119.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1119.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2000-1119.json",
-    "https://github.com/opencve/opencve-kb/blob/124ab3e5e42be0a51c386ce59b3e73127df55887/2000/CVE-2000-1119.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/1d7706ed603ab73481cbc20e5bea092e02e7c9be/2000/1xxx/CVE-2000-1119.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b6c80ad7b47e52f64ae2ee2b20e56d7eaaaa57fe/CVE-2000/CVE-2000-11xx/CVE-2000-1119.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2000-1119.json",
+    "https://github.com/opencve/opencve-kb/blob/93a1bd1ffcadd441040d80039bc1fb21e74258a8/2000/CVE-2000-1119.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/dde218104d183b4531b1e275856d67b12288f14d/2000/1xxx/CVE-2000-1119.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-11xx/CVE-2000-1119.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1119.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/2ea9851780633b2caab16fe048a14b38ca9a0b56/content/CVE-2000-1119.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/8ad35b62b45404de8f2963cc958f5644815c9afa/content/CVE-2000-1119.md",
 ]
