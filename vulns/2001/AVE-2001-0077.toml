@@ -1,12 +1,12 @@
 [basic]
-description = "SEDUM HTTP Server 2.0 存在目录遍历漏洞，远程攻击者无需身份认证即可向目标服务器发送包含 `../`（点点斜杠）序列的特制 HTTP GET 请求，突破 Web 根目录限制，读取服务器上的任意文件，如 `/etc/passwd` 等敏感配置文件。该漏洞影响 SEDUM HTTP Server 2.0 版本，CVSS 评分 5.0，危害等级中等。建议升级至最新版本或部署 Web 应用防火墙进行防护。"
-published = "2001-05-03T04:00:00Z"
-remediation = "SEDUM HTTP Server 2.0 官方未发布修复该目录遍历漏洞的补丁（CERT/CC 确认无已知解决方案），且该软件已长期停止维护。建议立即迁移至活跃维护的 Web 服务器（如 Apache HTTP Server 或 Nginx）。若无法立即迁移，可在反向代理或 WAF 层面过滤包含 ../ 路径遍历序列的 HTTP GET 请求，并配置服务器仅监听内网接口作为临时缓解措施。"
+description = "SEDUM HTTP Server 2.0 存在目录遍历漏洞，该服务器未对 HTTP GET 请求中的文件路径进行充分过滤和校验，导致远程攻击者可通过在请求路径中插入 .. (dot dot) 序列实现目录穿越，从而读取服务器文件系统上的任意敏感文件。该漏洞影响范围为运行 SEDUM HTTP Server 2.0 的所有系统，攻击者无需身份认证即可利用，攻击条件为能够向目标服务器发送特制的 HTTP GET 请求，利用方式为构造包含多层 ../ 路径穿越序列的请求，即可突破 Web 根目录限制访问系统配置文件、密码文件或其他敏感数据，造成信息泄露风险。"
+published = "2001-05-03T04:00:00.000"
+remediation = "建议将 SEDUM HTTP Server 2.0 替换为 Apache、Nginx 等仍受支持的现代 HTTP 服务器；如确需临时继续使用，应在服务器配置中严格过滤 URL 中的 ../ 和 .../ 序列，限制 Web 根目录外的文件访问权限，并在防火墙或反向代理层禁止外部直接访问服务器端口，仅允许通过前端代理转发请求。"
 score = 5
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "Guido Frassetto SEDUM HTTP Server 2.0 目录遍历漏洞"
-updated = "2026-06-16T21:53:52Z"
+sources = ["cve"]
+title = "SEDUM HTTP Server 2.0 目录遍历漏洞"
+updated = "2026-06-16T21:53:52.067"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0199"]
 ave_id = "AVE-2001-0077"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-08-06T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.securityfocus.com/bid/2335",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6063",
     "https://www.exploit-db.com/exploits/20608",
-    "https://github.com/CVEProject/cvelistV5/blob/0e6d432d517e5cdf9829125ecfaa3a6437985a0c/cves/2001/0xxx/CVE-2001-0199.json",
+    "https://github.com/CVEProject/cvelistV5/blob/9180d6f38159151a7725b3a82799fa2950c45f22/cves/2001/0xxx/CVE-2001-0199.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c77ca3ed9b9756399e7dd2586c1a3745e93a0ac9/CVE/data/2001/CVE-2001-0199.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0199",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2001-0199.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/8575b52c5f0d68ec89781aae82e849b4f469cd84/CVE/data/2001/CVE-2001-0199.json",
-    "https://github.com/github/advisory-database/blob/a96652a2a06e880f217d1d6526622d8501dbbd69/advisories/unreviewed/2022/04/GHSA-gwgq-248p-5j84/GHSA-gwgq-248p-5j84.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x3000/2335/info.html",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150800_150900.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--4bbaa77c-48c6-4714-9197-1b6629a37559.json",
-    "https://github.com/olbat/nvdcve/blob/5b92f5917a4a825187ccaac594f43456a77ea8f3/nvdcve/CVE-2001-0199.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0199.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2001-0199.json",
+    "https://github.com/opencve/opencve-kb/blob/1b4388551935a161c058c6e5c833599d33c7e097/2001/CVE-2001-0199.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0199.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c55f50b14ae2241dec1fd7ddec6b7ce3c90c1fdb/2001/0xxx/CVE-2001-0199.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0199.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0199.json",
 ]
