@@ -1,0 +1,24 @@
+[info]
+author = "ave"
+description = "验证Linux内核SCSI MPI3MR驱动在bsg_setup_queue()失败后因空指针解引用导致内核崩溃的漏洞。攻击者需具备本地访问权限并能触发BSG队列设置失败的条件，通过加载特定SCSI设备配置使bsg_queue被赋予非NULL值，导致mpi3mr_bsg_exit()跳过清理流程，最终在空指针地址0x41c处触发内核崩溃。"
+id = "POC-AVE-2025-0946"
+name = "CVE-2025-21723 PoC"
+severity = "medium"
+tags = ["ave-2025-0946"]
+vuln_id = [
+    "CVE-2025-21723",
+    "AVE-2025-0946",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/sys/kernel/debug/mpi3mr/bsg_queue"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["NULL pointer"]

