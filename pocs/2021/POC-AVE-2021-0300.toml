@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "验证 Google Chrome 89.0.4389.72 之前版本的音频数据竞争漏洞。该漏洞源于 ScriptProcessorNode::process() 中音频线程与主线程并发访问共享缓冲区时缺乏同步锁，攻击者通过构造包含 AudioContext、ScriptProcessorNode 和 inputBuffer.sort() 的 HTML 页面可触发越界写入和堆内存损坏，最终实现远程代码执行。"
+id = "POC-AVE-2021-0300"
+name = "CVE-2021-21166 Chrome AudioContext Data Race PoC"
+severity = "high"
+tags = ["ave-2021-0300"]
+vuln_id = [
+    "CVE-2021-21166",
+    "AVE-2021-0300",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.69 Safari/537.36"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["createScriptProcessor"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["inputBuffer.sort"]

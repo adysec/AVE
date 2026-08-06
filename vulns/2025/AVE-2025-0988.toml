@@ -1,0 +1,35 @@
+[basic]
+description = "Linux 内核 AX.25  amateur 无线电协议实现中存在引用计数(refcount)泄漏漏洞。当通过 SO_BINDTODEVICE 套接字选项将 AX25 网络设备绑定到套接字时，设备引用计数未被正确递增，导致套接字关闭时 ax25_release() 中对 refcount 的递减操作发生下溢，触发 refcount_warn_saturate 警告并可能导致 use-after-free。该漏洞影响 Linux 内核 5.18 至 6.13.x 及 4.14.277、4.19.240、5.4.190、5.10.112、5.15.35、5.17.2 等多个版本，SUSE Linux Enterprise 15、openSUSE 15、Debian 11 等发行版均受波及。攻击者仅需在本地拥有 AX.25 协议支持的系统上以普通用户权限创建 AF_AX25 SOCK_DGRAM 套接字并设置 SO_BINDTODEVICE 选项后关闭套接字即可触发，无需网络交互或特殊权限。反复触发该漏洞可导致内核 slab 被重新分配，攻击者可利用释放后的 ax25_dev 和 net_device 对象进行任意内核内存读取、控制流劫持，最终实现本地权限提升或系统拒绝服务。Linux 内核社区已在稳定版更新中修复了 ax25_setsockopt() 的实现，补充了对新绑定设备的 refcount 递增及旧解绑设备的递减操作。"
+published = "2025-02-27"
+remediation = "升级Linux内核至包含修复的稳定版本：4.15、4.20、5.5、5.11、5.16、6.1.129、6.6.79、6.12.16、6.13.4或更高版本。Debian用户安装dla-4102安全更新，SUSE用户应用SUSE-SU-2025:01964-1、SUSE-SU-2025:01614-1等公告中的内核补丁进行修复。"
+score = 5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 AX.25 引用计数泄漏漏洞"
+updated = "2025-02-27"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21792"]
+ave_id = "AVE-2025-0988"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2025/CVE-2025-21792.md",
+    "https://github.com/0xMarcio/cve/blob/e976796744bfa658517fd53ca155f1c8c68dab47/2025/CVE-2025-21792.md",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2025/21xxx/CVE-2025-21792.json",
+    "https://github.com/cisagov/vulnrichment/blob/4ad4bd44d9a7e1cd1fac5b9c91a6019e8978287e/2025/21xxx/CVE-2025-21792.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4a3292363e1c82650dc766bf14277e5bdb8c78c9/SSVC/data/2025/CVE-2025-21792.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21792.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4a3292363e1c82650dc766bf14277e5bdb8c78c9/CVE/data/2025/CVE-2025-21792.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21792.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5baf1658e856a5069633dabfa2677f685666cc89/references/CveServices-CVE-2025-21792-2025-11-03-1402",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2025-21792.json",
+]
