@@ -1,0 +1,45 @@
+[basic]
+description = "Linux kernel 的 USB 串行驱动中，Quatech2 设备的 qt2_process_read_urb() 函数存在空指针解引用漏洞。该函数在处理 USB 串行设备读取请求时，对端口索引的边界检查不正确，原代码仅判断 newport 是否大于 serial->num_ports，未涵盖等于的情况，导致当 newport 等于 serial->num_ports 时，serial->port 数组发生越界访问并返回 NULL，后续 dereference 操作引发内核崩溃。具有本地低权限的攻击者可通过向 Quatech2 USB 串行设备发送特制数据包触发此漏洞，造成系统拒绝服务。该漏洞影响所有使用 quatech2 驱动的 Linux 内核版本，CVSS 评分 5.5，危害等级中等。修复补丁已通过增加 newport 大于等于 num_ports 的边界检查解决此问题。"
+published = "2025-02-10T16:15:38.447"
+remediation = '升级 Linux 内核至包含修复的稳定版本：5.4.290、5.10.234、5.15.178、6.1.128、6.6.75 或 6.12.12 及以上。使用发行版包管理器更新内核（如 Debian/Ubuntu 执行 apt install linux-image-* && apt upgrade，RHEL/CentOS 执行 yum update kernel），更新后重启系统加载新内核。如暂时无法升级，可将 quatech2 模块加入黑名单（echo "blacklist quatech2" >> /etc/modprobe.d/blacklist.conf 并执行 update-initramfs -u）作为临时缓解措施，阻止该 USB 串口驱动自动加载，避免触发空指针解引用导致内核崩溃。'
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 USB 串口 Quatech2 驱动空指针解引用漏洞"
+updated = "2026-06-17T08:44:01.713"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21689"]
+ave_id = "AVE-2025-0928"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/4b9b41fabcd38990f69ef0cee9c631d954a2b530",
+    "https://git.kernel.org/stable/c/575a5adf48b06a2980c9eeffedf699ed5534fade",
+    "https://git.kernel.org/stable/c/6068dcff7f19e9fa6fa23ee03453ad6a40fa4efe",
+    "https://git.kernel.org/stable/c/6377838560c03b36e1153a42ef727533def9b68f",
+    "https://git.kernel.org/stable/c/8542b33622571f54dfc2a267fce378b6e3840b8b",
+    "https://git.kernel.org/stable/c/94770cf7c5124f0268d481886829dc2beecc4507",
+    "https://git.kernel.org/stable/c/f371471708c7d997f763b0e70565026eb67cc470",
+    "https://git.kernel.org/stable/c/fa4c7472469d97c4707698b4c0e098f8cfc2bf22",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21689.md",
+    "https://github.com/CVEProject/cvelistV5/blob/9180d6f38159151a7725b3a82799fa2950c45f22/cves/2025/21xxx/CVE-2025-21689.json",
+    "https://github.com/cisagov/vulnrichment/blob/afe20f4bdb52ae870e113add0571518dc2153513/2025/21xxx/CVE-2025-21689.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c77ca3ed9b9756399e7dd2586c1a3745e93a0ac9/SSVC/data/2025/CVE-2025-21689.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/c77ca3ed9b9756399e7dd2586c1a3745e93a0ac9/CVE/data/2025/CVE-2025-21689.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21689.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21689.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21689-2025-11-03-1453",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21689-2025-11-03-1441",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2025-21689.json",
+]
