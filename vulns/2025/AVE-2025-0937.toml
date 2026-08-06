@@ -1,0 +1,92 @@
+[basic]
+description = '''
+` tags, which is causing the "description field is empty" error
+5. I need to output ONLY the field value inside `<value>` tags
+
+Let me analyze the NVD data:
+- Linux kernel netem module vulnerability
+- Use-after-free (UAF) vulnerability
+- Root cause: before calling `qdisc_tree_reduce_backlog()`, the code didn't reduce the child qdisc's backlog count
+- This causes the function to miss the opportunity to call `cops->qlen_notify()`
+- In DRR (Deficit Round Robin) queue discipline, this callback maintains the active list
+- Missing the call results in UAF
+- CVSS: 7.8, AV:L/AC:L/PR:L - local attacker, low privileges needed
+- CWE-416 (Use After Free)
+
+From local data:
+- SEC-bench verified KASAN_UAF: `BUG: KASAN: slab-use-after-free in drr_dequeue`
+- Affects Linux kernel with DRR qdisc configuration
+- Red Hat: moderate severity
+- Multiple kernel versions affected (from remediation field: 5.4, 5.10, 5.15, 6.1, 6.6, 6.12 before fix)
+
+The fix commits are for stable kernels: 5.4.291, 5.10.235, 5.15.179, 6.1.129, 6.6.78, 6.12.14
+
+I need to write a clean Chinese description without the malformed `<value>` tags. Let me craft it carefully.
+
+Key points to include:
+- 漏洞原理: 释放后使用(UAF)，netem模块中`qdisc_tree_reduce_backlog()`调用前未减少子qdisc的backlog计数，导致DRR队列调度器错过`cops->qlen_notify()`回调，维护活跃队列列表时发生释放后使用
+- 影响范围: Linux内核中使用DRR（Deficit Round Robin）队列调度规则的版本
+- 攻击条件: 本地低权限攻击者，无需用户交互
+- 后果: 拒绝服务或权限提升
+- CVSS 7.8
+
+Let me write a comprehensive description:
+
+Linux内核netem（网络仿真）模块中存在释放后使用漏洞。其根本原因在于，在调用`qdisc_tree_reduce_backlog()`函数通知父队列调度器之前，代码未先减少子队列调度器的backlog计数，导致该函数无法检测到子队列已清空的状态，从而错过了调用`cops->qlen_notify()`回调的机会。在使用DRR（Deficit Round Robin）队列调度算法的系统中，该回调用于维护活跃队列列表，错过调用将导致释放后使用。具有本地访问权限的低权限攻击者可通过特定操作触发此漏洞，无需用户交互，成功利用后可导致系统拒绝服务或获取高权限执行权限。
+
+Let me count characters... That's well over 50 characters.
+
+Wait, looking at the current TOML, the description field has:
+```
+description = """
+标签之间。Linux内核netem...
+...
+"""
+```
+
+This is malformed TOML - triple quotes with `<value>` tags inside the triple quotes. That's why the parser sees it as empty or invalid. The fix is to replace the entire description value with a clean string.
+
+I should output just the clean description text inside `<value>` tags.<value>Linux内核netem（网络仿真）模块中存在释放后使用漏洞。其根本原因在于，在调用`qdisc_tree_reduce_backlog()`函数通知父队列调度器之前，代码未先减少子队列调度器的backlog计数，导致该函数无法检测到子队列已清空的状态，从而错过了调用`cops->qlen_notify()`回调的机会。在使用DRR（Deficit Round Robin）队列调度算法的系统中，该回调用于维护活跃队列列表，错过调用将触发释放后使用，KASAN检测到`drr_dequeue`函数中存在slab-use-after-free错误。该漏洞影响配置DRR队列调度规则的Linux内核版本，CVSS评分为7.8。具有本地访问权限的低权限攻击者可通过特定操作触发此漏洞，无需用户交互，成功利用后可导致系统拒绝服务或获取高权限执行权限。
+'''
+published = "2025-02-18T15:15:18.633"
+remediation = "标签之间。<value>升级 Linux 内核至修复版本：5.4.291、5.10.235、5.15.179、6.1.129、6.6.78 或 6.12.14 及以上。Ubuntu 用户可通过 apt 安装对应版本：20.04 LTS 升级至 5.4.0-214.234、22.04 LTS 升级至 5.15.0-138.148、24.10 升级至 6.11.0-24.24。如暂无法升级，可临时禁用 netem 流量控制模块（rmmod sch_netem 或删除相关 tc 规则），并限制本地低权限用户访问网络命名空间中的 DRR qdisc 配置，以降低利用风险。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 netem 网络模拟器释放后使用漏洞"
+updated = "2026-06-17T08:44:04.110"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21703"]
+ave_id = "AVE-2025-0937"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1f8e3f4a4b8b90ad274dfbc66fc7d55cb582f4d5",
+    "https://git.kernel.org/stable/c/6312555249082d6d8cc5321ff725df05482d8b83",
+    "https://git.kernel.org/stable/c/638ba5089324796c2ee49af10427459c2de35f71",
+    "https://git.kernel.org/stable/c/7b79ca9a1de6a428d486ff52fb3d602321c08f55",
+    "https://git.kernel.org/stable/c/7f31d74fcc556a9166b1bb20515542de7bb939d1",
+    "https://git.kernel.org/stable/c/839ecc583fa00fab785fde1c85a326743657fd32",
+    "https://git.kernel.org/stable/c/98a2c685293aae122f688cde11d9334dddc5d207",
+    "https://git.kernel.org/stable/c/e395fec75ac2dbffc99b4bce57b7f1f3c5449f2c",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00028.html",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21703.md",
+    "https://github.com/0xMarcio/cve/blob/735b7181f9cc676afd10704df69ba6e3d23ba358/2025/CVE-2025-21703.md",
+    "https://github.com/CVEProject/cvelistV5/blob/46b010b6722307e014d6f10d53a573bb1f6478ce/cves/2025/21xxx/CVE-2025-21703.json",
+    "https://github.com/cisagov/vulnrichment/blob/afe20f4bdb52ae870e113add0571518dc2153513/2025/21xxx/CVE-2025-21703.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1e8fbb4daef37ec7346b508b9405ee7d135ec28c/SSVC/data/2025/CVE-2025-21703.json",
+    "https://github.com/xairy/linux-kernel-exploitation/blob/1120e9cea80c6039b8c8151bde6067c2cd76daa4/README.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1e8fbb4daef37ec7346b508b9405ee7d135ec28c/CVE/data/2025/CVE-2025-21703.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/c93d2643e035f504bcc39587d19bad3c64044b2f/CVEs/2025/CVE-2025-21703.md",
+    "https://github.com/SEC-bench/SEC-bench-Pro/blob/a6cedddd3ffee87d1e47b8f03744aab4872efe0e/projects/linux/CVE-2025-21703/VERIFIED.txt",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21703.md",
+]
