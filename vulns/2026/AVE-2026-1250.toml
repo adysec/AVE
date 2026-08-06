@@ -1,0 +1,107 @@
+[basic]
+description = """
+` mixed in. The quality check says description field is empty - this is because the current TOML has malformed description with those tags.
+
+Requirements:
+- ≥50 字中文
+- 涵盖：漏洞原理、影响范围、攻击条件（远程/本地、是否需要认证）
+- 将 NVD 英文描述翻译为流畅中文
+- 不要编造 URL 或具体版本号（除非 presearch 数据中有）
+
+From presearch, I have version info:
+- Foxit PDF Editor: versions 14.0.3 and earlier
+- Foxit PDF Reader: versions 2026.1 and earlier
+
+CVSS vector says AV:L (Local) - but the title says "Remote Code Execution". Let me re-read the CVSS vector: CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+
+AV:L = Local attack vector. This means the attack requires local access. PR:N = No privileges required. UI:R = Requires user interaction.
+
+So the attack vector is LOCAL, not remote. The user needs to open a malicious PDF file. But the title in the AVD data says "远程代码执行" (remote code execution) - this refers to the impact (code execution), not the attack vector. The attack is local (requires user to open file).
+
+Wait, actually in the current TOML the description mentions "攻击者可构造恶意 PDF 文件，通过网络诱骗用户使用受影响版本的 Foxit PDF 编辑器或阅读器打开该文件" - this suggests a remote attack via social engineering. The CVSS vector confirms local attack vector but with user interaction.
+
+Let me construct a proper description:
+
+漏洞原理：解析逻辑缺陷导致非签名数据被错误识别为有效签名，在处理畸形表单字段层级结构时引发无效内存写入和程序崩溃（CWE-20  improper input validation）。
+
+影响范围：Foxit PDF 编辑器（14.0.3 及更早版本）和 Foxit PDF 阅读器（2026.1 及更早版本）。
+
+攻击条件：攻击者需诱骗用户在受影响版本的软件中打开特制 PDF 文件，无需身份认证即可触发漏洞，成功利用可导致应用程序崩溃或潜在的代码执行风险。
+
+CVSS: 3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H means:
+- Attack Vector: Local
+- Attack Complexity: Low
+- Privileges Required: None
+- User Interaction: Required
+- Scope: Unchanged
+- Confidentiality/Integrity/Availability: High
+
+Let me write a comprehensive Chinese description ≥50 chars:
+
+Foxit PDF 编辑器与阅读器的 AcroForm 签名验证模块存在输入验证不当漏洞（CWE-20）。当软件处理包含畸形表单字段层级结构的特制 PDF 文件时，解析逻辑缺陷会导致非签名数据被错误识别为有效签名，进而在内部数据结构构建过程中引发无效内存写入和程序崩溃。该漏洞影响 Foxit PDF 编辑器 14.0.3 及更早版本、Foxit PDF 阅读器 2026.1 及更早版本。攻击者可通过构造恶意 PDF 文件诱骗用户打开，无需身份认证即可触发，成功利用可能导致应用程序拒绝服务或远程代码执行。CVSS 评分 7.8，危害等级高。
+
+Let me count characters... This looks well over 50 characters.
+
+Actually, looking at the current broken TOML, there are some garbled strings with `<value>` tags that need to be cleaned up. But the user only asked for the description field value.
+
+The instructions say: "只输出 <value>..."""
+published = "2026-04-27T12:16:24.487"
+remediation = """
+` 标签和 `tags.分析` 这样的乱码，说明当前字段确实有问题。
+
+从预搜索数据中，我能确认的：
+- 产品：Foxit PDF Editor/Reader
+- 受影响版本：14.0.3 及更早版本、2026.1 及更早版本
+- 参考链接：https://www.foxit.com/support/security-bulletins.html
+
+我没有看到明确的"修复版本"具体编号。现有内容中的 2026.1.1 和 14.0.4 可能是不准确的猜测。
+
+由于 skill 要求"如果 presearch 数据中有补丁链接或修复版本信息，请引用"，但 presearch 数据中没有明确的修复版本号。
+
+我需要基于现有可靠信息编写 remediation。由于 Foxit 安全公告链接已经给出，但没有在预搜索数据中获取到具体修复版本，我应该：
+1. 指出访问 Foxit 安全公告获取修复版本
+2. 但避免套话"请参考官方公告"
+
+等等，让我再看看。现有 TOML 中的 remediation 已经有了一些版本信息（2026.1.1 和 14.0.4），但被错误标记为空。
+
+实际上，从 Trickest 的 GitHub 内容中：
+```
+![](https://img.shields.io/static/v1?label=Version&message=Versions%2014.0.3%20and%20earlier%20&color=brightgreen)
+![](https://img.shields.io/static/v1?label=Version&message=Versions%202026.1%20and%20earlier%20&color=brightgreen)
+```
+
+这表示受影响版本，但没有给出修复版本。
+
+让我重新阅读任务要求。用户要求只输出 `<value>..."""
+score = 7.8
+severity = "HIGH"
+sources = ["zdi"]
+title = "Foxit PDF编辑器/阅读器 AcroForm签名远程代码执行漏洞"
+updated = "2026-06-17T10:59:55.717"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2026-5941"]
+ave_id = "AVE-2026-1250"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://www.foxit.com/support/security-bulletins.html",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2026/CVE-2026-5941.md",
+    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2026/5xxx/CVE-2026-5941.json",
+    "https://github.com/cisagov/vulnrichment/blob/2afa3b8de4952c563341daee974eed8b5a876c0a/2026/5xxx/CVE-2026-5941.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/78ee00e0fc2916e3b3e3d159605a09df95a384c9/CVE/data/2026/CVE-2026-5941.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/78ee00e0fc2916e3b3e3d159605a09df95a384c9/SSVC/data/2026/CVE-2026-5941.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2026/CVE-2026-5941.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2026-5941.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-59xx/CVE-2026-5941.json",
+    "https://github.com/TMA84/cvealert/blob/ce5dcc9bfe58aa6c1c22d6430572f71edc4ceb80/content/posts/cve-2026-5941.md",
+    "https://github.com/opencve/opencve-kb/blob/c9903fa58105aab30b4854a4663d14a61a56500f/2026/CVE-2026-5941.json",
+]
