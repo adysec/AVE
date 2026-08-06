@@ -1,0 +1,41 @@
+[basic]
+description = "Linux 内核 FEC（Fast Ethernet Controller）网络驱动存在空指针解引用漏洞。在 `fec_enet_update_cbd` 函数中，调用 `page_pool_dev_alloc_pages` 分配内存页面时，若因系统内存压力较大导致该函数返回 NULL，驱动未对 NULL 返回值进行正确处理，仅触发 WARN_ON 告警后继续使用空指针，导致系统内核崩溃。该漏洞影响使用 FEC 以太网控制器的嵌入式平台（如 NXP i.MX6Q 等），在系统内存不足或高负载场景下可被触发，攻击者可通过持续网络流量或 SMB 文件写入等方式诱发内存紧张，进而造成拒绝服务。CVSS v3.1 评分 7.5，危害等级为高。"
+published = "2025-01-31T12:15:28.780"
+remediation = "升级 Linux 内核至包含修复的稳定版本：6.1 系列升级至 6.1.167 或更高版本，6.6 系列升级至 6.6.74 或更高版本，6.12 系列升级至 6.12.11 或更高版本。对于 Ubuntu 24.04 LTS，安装内核版本 6.8.0-62.65 或更新版本；Ubuntu 24.10 则升级至 6.11.0-24.24 或更新版本。如暂时无法升级内核，可通过执行 sysctl -w vm.min_free_kbytes=65536 增大系统空闲内存阈值，或加载 fec 模块时增加 page pool 预分配数量以降低内存紧张时的分配失败概率，但此措施仅为临时缓解，最终仍需升级内核以彻底修复。"
+score = 7.5
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux内核 fec以太网控制器空指针解引用拒绝服务漏洞"
+updated = "2026-07-30T06:18:28.787"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21676"]
+ave_id = "AVE-2025-0921"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/001ba0902046cb6c352494df610718c0763e77a5",
+    "https://git.kernel.org/stable/c/1425cb829556398f594658512d49292f988a2ab0",
+    "https://git.kernel.org/stable/c/8a0097db0544b658c159ac787319737712063a23",
+    "https://git.kernel.org/stable/c/eacdcc14f3c8d4c1447565521e792ddb3a67e08d",
+    "https://cert-portal.siemens.com/productcert/html/ssa-019113.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-082556.html",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21676.md",
+    "https://github.com/0xMarcio/cve/blob/735b7181f9cc676afd10704df69ba6e3d23ba358/2025/CVE-2025-21676.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4d38333dcfe51fc2081856da5d31bbece1a0cced/cves/2025/21xxx/CVE-2025-21676.json",
+    "https://github.com/cisagov/vulnrichment/blob/5800be5111a4a9084bc37be685bd7d751f884e33/2025/21xxx/CVE-2025-21676.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/954745087cab3897c1945b517c4fc4f1575af37b/SSVC/data/2025/CVE-2025-21676.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/954745087cab3897c1945b517c4fc4f1575af37b/CVE/data/2025/CVE-2025-21676.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21676.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21676.json",
+    "https://github.com/opencve/opencve-kb/blob/09467eccc569d3c2d05f9926f06cbaa3adc3361a/2025/CVE-2025-21676.json",
+    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2025-21676.json",
+]
