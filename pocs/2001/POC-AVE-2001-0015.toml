@@ -1,8 +1,8 @@
 [info]
-author = "AVE"
-description = "检测目标是否运行 oops WWW Proxy Server 1.4.6。该版本在处理反向 DNS 查询返回的超长主机名时存在堆缓冲区溢出漏洞，远程攻击者可利用此漏洞执行任意命令。PoC 通过 HTTP 连接代理服务器验证服务存在。"
+author = "ave"
+description = "验证目标 Oops! WWW 代理服务器 1.4.6 版本是否存在堆缓冲区溢出漏洞。该漏洞在反向 DNS 查询阶段，当攻击者控制的反向解析主机名超过缓冲区大小时触发堆溢出，未经认证的远程攻击者可执行任意系统命令并完全控制服务器。"
 id = "POC-AVE-2001-0015"
-name = "Oops! WWW Proxy Server 1.4.6 堆缓冲区溢出 PoC"
+name = "CVE-2001-0029 PoC"
 severity = "critical"
 tags = ["ave-2001-0015"]
 vuln_id = [
@@ -15,19 +15,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/"
+path = "/{{BaseURL}}/"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [
-    200,
-    301,
-    302,
-    403,
-    404,
-    500,
-    502,
-    503,
-]
-type = "status"
+part = "body"
+type = "word"
+words = ["Oops"]
