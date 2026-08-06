@@ -1,0 +1,44 @@
+[basic]
+description = "Linux内核的eBPF模块中，bpf_sk_select_reuseport()函数在处理sockmap查找结果时存在引用计数错误，未能正确释放socket对象的引用计数，导致内存泄漏。当sockmap查找返回一个已处于TCP ESTABLISHED状态的socket时，该socket可能在连接建立前已通过setsockopt设置了SO_ATTACH_REUSEPORT_EBPF选项，此时sk_reuseport_cb非空但socket并未增加引用计数，函数在错误处理路径中直接返回而未释放引用，造成内核内存泄漏。该漏洞影响Linux内核，攻击者需要本地低权限用户权限，通过触发特定的BPF程序或socket操作即可复现该漏洞，长期运行可导致系统内存耗尽。CVSS 3.1评分为5.5，危害等级为中等。"
+published = "2025-01-31T12:15:29.460"
+remediation = "建议将 Linux 内核升级至以下修复版本之一：5.15.177、6.1.127、6.6.74、6.12.11 或更新版本。可通过发行版包管理器执行升级，例如 Debian/Ubuntu 使用 apt，RHEL/CentOS 使用 dnf/yum。如暂无法升级，可通过 sysctl 临时禁用 bpf_sk_select_reuseport() 相关 BPF 程序加载，或限制本地用户对 SO_ATTACH_REUSEPORT_EBPF setsockopt 的访问权限作为缓解措施。升级后请重启系统使新内核生效。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 BPF 模块内存泄漏漏洞"
+updated = "2026-06-17T08:44:00.843"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21683"]
+ave_id = "AVE-2025-0925"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0ab52a8ca6e156a64c51b5e7456cac9a0ebfd9bf",
+    "https://git.kernel.org/stable/c/b02e70be498b138e9c21701c2f33f4018ca7cd5e",
+    "https://git.kernel.org/stable/c/b3af60928ab9129befa65e6df0310d27300942bf",
+    "https://git.kernel.org/stable/c/bb36838dac7bb334a3f3d7eb29875593ec9473fc",
+    "https://git.kernel.org/stable/c/cccd51dd22574216e64e5d205489e634f86999f3",
+    "https://git.kernel.org/stable/c/d0a3b3d1176d39218b8edb2a2d03164942ab9ccd",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-265688.html",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21683.md",
+    "https://github.com/0xMarcio/cve/blob/735b7181f9cc676afd10704df69ba6e3d23ba358/2025/CVE-2025-21683.md",
+    "https://github.com/CVEProject/cvelistV5/blob/a7bcc119a9ab3b42563555b8edc8c417e3560925/cves/2025/21xxx/CVE-2025-21683.json",
+    "https://github.com/cisagov/vulnrichment/blob/5800be5111a4a9084bc37be685bd7d751f884e33/2025/21xxx/CVE-2025-21683.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/82509eeac924c04179aa9efa2ba736077707b551/SSVC/data/2025/CVE-2025-21683.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/82509eeac924c04179aa9efa2ba736077707b551/CVE/data/2025/CVE-2025-21683.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21683.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21683.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21683-2025-11-03-1453",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21683-2025-11-03-1441",
+]
