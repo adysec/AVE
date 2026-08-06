@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核 SCTP 协议的 sysctl 处理存在空指针解引用漏洞。在 sctp 的 rto_min/rto_max 系统配置处理器中，代码通过 current->nsproxy 获取 net 结构体，但该指针在某些情况下（如当前任务正在退出，syzbot 通过 acct(2) 触发）可能为 NULL，导致空指针解引用引发内核崩溃（Oops/null-ptr-deref）。该漏洞影响 Linux 内核 3.13 及更高版本，攻击需本地权限（低权限），攻击复杂度低，无需用户交互，成功利用可导致拒绝服务（系统崩溃），属于 NULL 指针解引用类漏洞（CWE-476）。官方已通过改用 container_of() 从 table->data 获取 net 结构的方式修复该问题。"
+published = "2025-01-19T11:15:09.423"
+remediation = "立即升级内核至包含该修复的版本。该漏洞通过 Linux 内核 git 稳定分支的补丁提交修复（如 git.kernel.org/stable/c/0f78f094 等），受影响主线版本应升级到包含该 commit 的 6.13 及更高版本。各发行版请安装对应安全更新：Ubuntu 安装 USN-7381-1 内核更新、Debian 11 应用 DLA-4075、SUSE 应用 SUSE-SU-2025:0847 提供的已修复内核包。若无法立即打补丁，可采取缓解措施：限制低权限用户在命名空间内触发 SCTP 相关 sysctl 读写操作，并避免调用 acct(2) 造成任务退出期间并发读取 netns 配置的场景，降低空指针引用崩溃（DoS）被触发的概率。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel SCTP 协议栈 sysctl rto_min/max 处理空指针引用漏洞"
+updated = "2026-06-17T08:43:54.480"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21639"]
+ave_id = "AVE-2025-0902"
+
+[meta]
+collected_at = "2026-08-06T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0f78f09466744589e420935e646ae78212a38290",
+    "https://git.kernel.org/stable/c/246428bfb9e7db15c5cd08e1d0eca41b65af2b06",
+    "https://git.kernel.org/stable/c/4059507e34aa5fe0fa9fd5b2b5f0c8b26ab2d482",
+    "https://git.kernel.org/stable/c/9fc17b76fc70763780aa78b38fcf4742384044a5",
+    "https://git.kernel.org/stable/c/c87f1f6ade56c711f8736901e330685b453e420e",
+    "https://git.kernel.org/stable/c/c8d179f3b1c1d60bf4484f50aa67b4c70f91bff9",
+    "https://git.kernel.org/stable/c/dc9d0e3cfd16f66fbf0862857c6b391c8613ca9f",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00001.html",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00002.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-265688.html",
+    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2025/CVE-2025-21639.md",
+    "https://github.com/0xMarcio/cve/blob/aaba13955b6f4608c4d9d9901b41c86a0a514345/2025/CVE-2025-21639.md",
+    "https://github.com/CVEProject/cvelistV5/blob/ad23a84307831b745d27b34af84abc59130b2cd5/cves/2025/21xxx/CVE-2025-21639.json",
+    "https://github.com/cisagov/vulnrichment/blob/bb8fee28b4e90102956816a94f978ff2574331f4/2025/21xxx/CVE-2025-21639.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bd3fb132c1b8a95ef2bcf26b230a07f7c9700666/SSVC/data/2025/CVE-2025-21639.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/853fff3f588474906eaaeec56c4eeef32edfc06c/CVEs/2025/CVE-2025-21639.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/bd3fb132c1b8a95ef2bcf26b230a07f7c9700666/CVE/data/2025/CVE-2025-21639.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21639.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21639.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/0988da272fdff1c0478190f98ae908e713ffb42d/references/CveServices-CVE-2025-21639-2025-11-03-1452",
+]
