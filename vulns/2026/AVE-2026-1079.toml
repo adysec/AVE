@@ -1,0 +1,169 @@
+[basic]
+description = '''
+Resolved: https://github.com/plabayo/rama/commit/89ddff578fd78bbebec99482d7030f28c07757a3
+
+## Summary
+
+`plabayo/rama` contains a stored/reflected cross-site scripting issue in the `ServeDir` HTML directory listing feature.
+
+When `ServeDir` is configured with `DirectoryServeMode::HtmlFileList`, file names and URI path components are inserted directly into generated HTML without HTML escaping. If an attacker can create or influence a file or directory name inside a served directory, they may inject HTML or JavaScript into the directory listing page.
+
+This can execute script in the browser of any user who visits the affected directory listing.
+
+## Affected Repository
+
+`plabayo/rama`
+
+## Affected Component
+
+`rama-http/src/service/fs/serve_dir/open_file.rs`
+
+## Root Cause
+
+The HTML directory listing is constructed using string formatting and inserts untrusted values directly into HTML.
+
+The directory listing row includes the file or directory name in both the link text and the `href` attribute:
+
+    rows.push(format!(
+        \"<tr><td>{5} <a href=\\"{1}{2}{0}\\">{0}</a></td><td>{3}</td><td>{4}</td></tr>\",
+        entry.name,
+        uri.path().trim_end_matches('/'),
+        ...
+    ));
+
+The navigation breadcrumb also inserts URI path parts into generated HTML:
+
+    nav_parts.push(format!(\"<a href=\\"{current_path}\\">{part}</a>\"));
+
+The page title and heading also include the current URI path:
+
+    <title>Directory listing for .{0}</title>
+    <h1>Directory listing for .{0}</h1>
+
+These values are not HTML-escaped before being embedded into the generated page.
+
+## Security Impact
+
+If an application uses `ServeDir` with `DirectoryServeMode::HtmlFileList`, an attacker who can create or influence file names inside the served directory can inject HTML or JavaScript into the generated directory listing.
+
+Possible impact includes:
+
+- Script execution in the browser of users viewing the directory listing
+- Session or token theft if the application uses cookies or browser-accessible credentials
+- UI redressing or phishing inside the application origin
+- Unauthorized actions within the same origin if the victim is authenticated
+- Security boundary impact if the directory listing is served under a trusted application domain
+
+The attack requires the directory listing feature to be enabled and the attacker to control or influence at least one file or directory name in the served path.
+
+## Proof of Concept
+
+This proof of concept uses a benign payload.
+
+Create a directory with a file name containing HTML:
+
+    mkdir rama-xss-test
+    cd rama-xss-test
+    touch '\"><img src=x onerror=alert(document.domain)>.txt'
+
+Serve this directory with Rama using `ServeDir` and `DirectoryServeMode::HtmlFileList`.
+
+Example intended configuration:
+
+    ServeDir::new(\"rama-xss-test\")
+        .with_directory_serve_mode(DirectoryServeMode::HtmlFileList)
+
+Then visit the directory listing in a browser.
+
+Expected behavior:
+
+The file name should be displayed as text. Special characters such as `<`, `>`, `\"`, and `'` should be HTML-escaped.
+
+Actual behavior:
+
+The file name is inserted directly into the generated HTML. The browser interprets the injected HTML and executes the benign JavaScript payload.
+
+## Expected Behavior
+
+All file names, directory names, URI path parts, and other untrusted values should be escaped before being inserted into HTML.
+
+For example:
+
+- `<` should become `&lt;`
+- `>` should become `&gt;`
+- `\"` should become `&quot;`
+- `'` should become `&#x27;`
+- `&` should become `&amp;`
+
+Untrusted values used inside HTML attributes should be escaped using an attribute-safe escaping function.
+
+## Actual Behavior
+
+The directory listing is generated with `format!()` and inserts file names and path values directly into HTML without escaping.
+
+## Suggested Fix
+
+Escape all untrusted values before inserting them into the generated HTML.
+
+Recommended changes:
+
+1. HTML-escape `entry.name` before using it as link text.
+2. Attribute-escape values used inside `href`.
+3. HTML-escape URI path components used in breadcrumbs.
+4. HTML-escape the current path used in the page title and heading.
+5. Add regression tests with file names containing HTML metacharacters.
+
+Example test payloads:
+
+    \"><img src=x onerror=alert(1)>.txt
+    <script>alert(1)</script>.txt
+    a&b.txt
+    quote\"test.txt
+    single'test.txt
+
+The secure output should render these as text only and should not create executable HTML or JavaScript.
+
+## Suggested Severity
+
+Medium.
+
+Suggested CVSS:
+
+`CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N`
+
+Rationale:
+
+- The vulnerability is remotely reachable when an application exposes `ServeDir` directory listings.
+- Exploitation requires the attacker to create or influence a file or directory name in the served directory.
+- User interaction is required because a victim must view the affected directory listing.
+- The impact is browser-side script execution in the application origin.
+- Scope may change if the listing is served under a trusted authenticated application origin.
+
+## Additional Notes
+
+This report is limited to the HTML directory listing generated by `ServeDir` when `DirectoryServeMode::HtmlFileList` is enabled.
+
+This report is not claiming remote code execution on the server. The issue is browser-side cross-site scripting caused by unescaped file names and path values in generated HTML.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "rama has Stored XSS in ServeDir HTML directory listing via unescaped file names and URI path"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-cwv4-h3j5-w3cf"]
+ave_id = "AVE-2026-1079"
+
+[meta]
+collected_at = "2026-08-06T01:49:49.680510851+00:00"
+status = "completed"
+
+[references]
+urls = []
