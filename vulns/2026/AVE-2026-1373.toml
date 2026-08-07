@@ -1,0 +1,39 @@
+[basic]
+description = "Flowise 是一款通过拖拽方式构建大语言模型流程的用户界面工具。在 3.1.3 及之前版本中，OAuth2 令牌刷新接口（`POST /api/v1/oauth2-credential/refresh/:credentialId`）被错误地列入 `WHITELIST_URLS` 白名单，导致该接口无需身份验证即可被任意用户访问。攻击者获取到有效的凭证 ID 后，即可直接调用该刷新接口，服务端会解密存储的 OAuth 凭证（包含 clientId、clientSecret 和 refresh_token），向配置的 OAuth 提供商发起刷新请求，并将新获取的 access_token 直接返回在响应体中。攻击者由此可窃取受害者的 OAuth2 访问令牌，进而完全访问受害者在 Google、Microsoft、GitHub 等第三方平台上的关联账户和数据，同时还可通过大量刷新请求耗尽刷新令牌配额实施拒绝服务攻击。"
+published = "2026-08-04T20:16:54Z"
+remediation = "立即升级 Flowise 至 3.1.3 或更高版本，该版本已从 WHITELIST_URLS 中移除 OAuth2 token refresh 端点并要求身份验证。若无法立即升级，可编辑 packages/server/src/utils/constants.ts，将 /api/v1/oauth2-credential/refresh/:credentialId 从 WHITELIST_URLS 常量中删除，并在 packages/server/src/routes/oauth2/index.ts 的对应路由处理器中添加认证中间件检查，确保仅授权用户可调用该接口。同时建议轮转所有已暴露 OAuth2 凭证的 clientSecret 和 refresh_token，并审查服务日志以确认是否存在未授权访问记录。"
+score = 9.2
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Flowise OAuth2 令牌刷新端点未授权访问漏洞"
+updated = "2026-08-05T20:17:16Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-70478",
+    "GHSA-qgvm-j2hm-6m38",
+]
+ave_id = "AVE-2026-1373"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-qgvm-j2hm-6m38",
+    "https://github.com/CVEProject/cvelistV5/blob/218bad847444129ddbebfeea62eb92fdb08e16d7/cves/2026/70xxx/CVE-2026-70478.json",
+    "https://github.com/cisagov/vulnrichment/blob/9f2635e41b440c54a9faab293f8a5836ca6093fc/2026/70xxx/CVE-2026-70478.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ec48735dfbcbc981aa038a6c8bc606e4fdbd898/SSVC/data/2026/CVE-2026-70478.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ec48735dfbcbc981aa038a6c8bc606e4fdbd898/CVE/data/2026/CVE-2026-70478.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-70478.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise/CVE-2026-70478.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/63a532b725792b89ea32ae40fb744f9c8a9ba2df/CVE-2026/CVE-2026-704xx/CVE-2026-70478.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/485354b91740f3a138561e440c19b7a203f3c378/reports/2026-08-04/TIER_2_CVE-2026-70478.md",
+    "https://github.com/TMA84/cvealert/blob/252040eaa4054cd6a0f6dcf29c7a7aec631c299b/content/posts/cve-2026-70478.md",
+    "https://github.com/opencve/opencve-kb/blob/77006653aa7ba8b36e269250aa6eafe7862d68d5/2026/CVE-2026-70478.json",
+]
