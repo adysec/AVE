@@ -1,11 +1,11 @@
 [basic]
-description = "tags.<value>Red Hat Linux 7.x 及 6.x 系统中的 pam_localuser PAM 模块存在缓冲区溢出漏洞。该模块用于本地用户认证时将用户名复制到固定大小的缓冲区，由于缺少足够的边界检查，攻击者可构造超长字符串导致缓冲区溢出，进而覆盖内存中的关键数据。该漏洞影响使用 pam_localuser 模块的 Red Hat Linux 6.x 和 7.x 系列版本。攻击条件为攻击者需获得本地系统访问权限，可通过构造特制的输入数据触发溢出，成功利用后可能获得系统 root 权限，实现本地权限提升，对系统的机密性、完整性和可用性造成严重影响。"
+description = "Red Hat Linux 6.x 和 7.x 的 pam_localuser PAM 模块存在缓冲区溢出漏洞。未经身份认证的本地攻击者可通过向该模块发送超长输入触发缓冲区溢出，在目标系统上执行任意代码并提升至 root 权限。该漏洞影响所有使用受影响版本 PAM 模块的 Red Hat Linux 系统，攻击者只需具备本地登录权限即可利用此漏洞获取系统完全控制权，对系统机密性、完整性和可用性造成严重威胁。"
 published = "2001-01-09T05:00:00Z"
-remediation = "建议升级 pam 软件包到修复版本（Red Hat 7.0 需更新至 pam-0.75-3 及以上，Red Hat 6.x/7.x 请安装对应 RHSA 勘误公告中的 pam 更新包）。可通过 Red Hat Network 或 `rpm -Uvh pam-*.rpm` 手动安装补丁包后重启相关服务。由于 pam_localuser 模块是本地登录认证的关键组件，该漏洞可导致本地权限提升，受影响系统均为已停止维护的老版本，强烈建议迁移至仍受支持的操作系统版本，避免长期暴露风险。"
+remediation = "Red Hat Linux 6.x 和 7.x 用户应立即安装 Red Hat 安全公告 RHSA-2000:120 中发布的 pam 软件包更新，该更新修复了 pam_localuser PAM 模块中的缓冲区溢出漏洞。受影响版本（Red Hat Linux 6.0/6.1/6.2/7.0/7.0j）可通过 `rpm -Uvh pam-*.rpm` 手动升级，或使用 `up2date` 自动更新至补丁版本。鉴于这些发行版早已停止官方支持，强烈建议迁移至受支持的 Red Hat Enterprise Linux 版本。如短期内无法迁移，可通过在 `/etc/pam.d/system-auth` 等 PAM 配置文件中注释或移除 `pam_localuser.so` 相关条目，以禁用该模块作为临时缓解措施，但需评估对本地用户认证策略的影响。Mandrake Linux 用户则应安装 MDKSA-2000:082-1 安全更新。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Red Hat Linux pam_localuser 模块缓冲区溢出权限提升漏洞"
+sources = ["avd"]
+title = "Red Hat Linux PAM 模块缓冲区溢出权限提升漏洞"
 updated = "2026-06-16T21:53:20Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1189"]
 ave_id = "AVE-2000-0931"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.linux-mandrake.com/en/security/MDKSA-2000-082.php3",
     "http://www.redhat.com/support/errata/RHSA-2000-120.html",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5747",
-    "https://github.com/CVEProject/cvelistV5/blob/e409cc3aa72de0994d4d1b2baf38bcac39a42cdc/cves/2000/1xxx/CVE-2000-1189.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a6c3378408e019d0dc051e6d11f7eb3d66abc66c/cves/2000/1xxx/CVE-2000-1189.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1189",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/CVE/data/2000/CVE-2000-1189.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e9d9b9e8f0cec249d0b02d488b7a1cd8b6f01325/CVE/data/2000/CVE-2000-1189.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1189.json",
-    "https://github.com/opencve/opencve-kb/blob/47bb69b00d30a4ddac9a224d4b4672d3efbf78ef/2000/CVE-2000-1189.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-1189.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/1xxx/CVE-2000-1189.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/93d966ccbf562a1a0fe2dcab2089012ce2b11591/CVE-2000/CVE-2000-11xx/CVE-2000-1189.json",
+    "https://github.com/opencve/opencve-kb/blob/ec517b60abdc2464cb36bd910facacf8fe8c502b/2000/CVE-2000-1189.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1189.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/cd90277053a061943a42bd9eb5e7a1ee22f10bdd/2000/1xxx/CVE-2000-1189.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/800e0951ee534700ac309055ede267b068e5fc70/CVE-2000/CVE-2000-11xx/CVE-2000-1189.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1189.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1189.json",
 ]
