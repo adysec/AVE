@@ -1,11 +1,11 @@
 [basic]
-description = "FileSeek CGI 脚本存在目录遍历漏洞，攻击者可通过在 `head` 或 `foot` 参数中提交经过变形的 `....//` 序列绕过服务器端的路径过滤，实现对任意文件的读取。该漏洞无需身份认证，仅需通过 HTTP POST/GET 请求向运行脚本的 Web 服务器发送恶意构造的参数即可触发，危及服务器上储存的敏感配置文件、源代码及系统口令等数据。漏洞利用难度低，攻击条件苛刻但网络可达即可，广泛影响部署旧版 FileSeek CGI 脚本的 Web 应用系统。当前尚无官方补丁，建议及时升级或移除存在缺陷的脚本。"
+description = "FileSeek.cgi 脚本存在目录遍历漏洞，由于 head 和 foot 参数未对用户输入进行严格过滤，远程攻击者可通过在参数中插入修改后的点号序列（....//）绕过路径检查，从而读取服务器上的任意文件内容。该漏洞影响运行 FileSeek 程序的 Web 服务器，攻击者无需身份认证即可通过网络直接发送构造好的 HTTP 请求发起攻击，造成敏感信息泄露，CVSS v2 评分 5.0，危害等级中等。"
 published = "2002-06-18T04:00:00Z"
-remediation = "立即移除或禁用 FileSeek.cgi 脚本，若必须使用，请从作者 Craig Patchett 官方网站获取最新版本（https://www.cs.hmc.edu/~hadas/）并升级。对 head 和 foot 参数输入实施严格的路径遍历过滤，拦截 `....//`、`../`、`%2e%2e%2f` 等恶意序列。配置 Apache mod_security 或 Nginx 防火墙规则，阻止包含目录遍历特征的请求。限制 Web 服务器用户的文件系统读写权限，确保脚本只能访问 wwwroot 目录内文件。如暂无法升级，建议在 Web 服务器层面使用 Alias/DirectoryMatch 指令强制限定访问路径为 wwwroot，防止突破。同时启用审计日志记录可疑请求并及时告警。"
+remediation = "建议立即从 Web 服务器 cgi-bin 目录中删除或禁用 FileSeek.cgi 与 FileSeek2.cgi 脚本，阻止未经授权的目录遍历访问。如确需保留该脚本功能，应在代码中对 head 和 foot 参数进行输入过滤，拒绝包含 ....// 或 ../ 等路径遍历序列的请求，并将脚本运行目录严格限制在 Web 根目录以内。同时建议在 Web 服务器配置中限制 cgi-bin 目录的访问权限，或替换为经安全审计的现代文件搜索方案。"
 score = 5
 severity = "MEDIUM"
-sources = ["exploitdb"]
-title = "FileSeek - CGI Script File Disclosure 漏洞"
+sources = ["tenable"]
+title = "FileSeek CGI 脚本目录遍历文件读取漏洞"
 updated = "2026-06-16T21:57:46Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-0611"]
 ave_id = "AVE-2002-0356"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/vuln-dev/2002-q2/0132.html",
     "http://www.iss.net/security_center/static/8858.php",
     "https://www.exploit-db.com/exploits/22228",
-    "https://github.com/CVEProject/cvelistV5/blob/e6aabfe8f44c300141dcaef9d34124defc87c0a5/cves/2002/0xxx/CVE-2002-0611.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/b89c1361e80164e63267f0c56728f3ef6b54b865/CVE/data/2002/CVE-2002-0611.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0e947e3b857b8c6a4563d0922ad99a93265311a3/cves/2002/0xxx/CVE-2002-0611.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9cadf2781966b46cf2833362970d0629a97c0767/CVE/data/2002/CVE-2002-0611.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-0611",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-0611.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2002-0611.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/99a2d0f359c44d8b27ea5e35eaa72ec2eb0f3016/CVE-2002/CVE-2002-06xx/CVE-2002-0611.json",
-    "https://github.com/opencve/opencve-kb/blob/399bcc30c25c09ed012c9f952b7942b4002015c0/2002/CVE-2002-0611.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2002/0xxx/CVE-2002-0611.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2002-0611.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/0a80f9b51044ff7d242f7696687f9d0e2ab628da/CVE-2002/CVE-2002-06xx/CVE-2002-0611.json",
+    "https://github.com/opencve/opencve-kb/blob/db96875ac5ac7d5604926ae5714d3a05b58a674d/2002/CVE-2002-0611.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/28c11efbbe2ece133aeda47abdfc148f7512ec85/2002/0xxx/CVE-2002-0611.md",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2002/0xxx/CVE-2002-0611.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2002/0xxx/CVE-2002-0611.json",
 ]
