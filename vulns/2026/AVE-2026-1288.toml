@@ -1,0 +1,40 @@
+[basic]
+description = "Traefik 的 Kubernetes Gateway API Provider 存在跨命名空间引用混淆（Namespace Confusion）漏洞。在解析 HTTPRoute.spec.rules[].backendRefs[].filters[].extensionRef 时，Traefik 错误地使用了后端 Service 所在的命名空间，而非 HTTPRoute 自身的命名空间来解析扩展引用。Gateway API 的 ReferenceGrant 仅授权路由作者引用指定命名空间中的后端对象（如 Service），并不应隐式授权其绑定该命名空间中的其他策略对象。受影响的代码路径会将 backendRef.namespace 复制到本地 namespace 变量，在解析后端 Service 时正确使用该命名空间，但随后又复用同一命名空间去解析 backendRef.filters[].extensionRef，导致低权限路由作者可跨命名空间绑定 Traefik CRD Middleware 而无需单独的授权。若被复用的 Middleware 设置了可信反向代理身份头（如 X-WEBAUTH-USER），下游应用可能接收到攻击者选择的认证身份状态，从而造成身份冒充。攻击条件为：攻击者需具备 Gateway API 部署中低权限的路由编写（HTTPRoute）能力，并获得跨命名空间 Service 的 ReferenceGrant；若共享 Gateway 暴露于公网，路由创建后可通过公网发送触发请求。Traefik 已发布 v3.7.7 版本修复该漏洞，修复方案为将 extensionRef 相对于 HTTPRoute 命名空间解析。"
+published = "2026-01-01T00:00:00Z"
+remediation = "升级到 Traefik v3.7.7 及以上版本，官方已通过 commit 26c96a3935cafb473f4a5bae1886560d9aa4e4f0 修复该命名空间混淆漏洞，使 backendRef.filters[].extensionRef 改为按 HTTPRoute 自身命名空间解析。升级后应立即回滚任何直接绑定后端命名空间 Middleware 的跨命名空间路由。若暂时无法升级，可采取以下缓解措施：避免向不可信命名空间授予对共享 Gateway 的 HTTPRoute 创建权限；不要将携带身份认证头（如 X-WEBAUTH-USER）等敏感 Middleware 置于可被不可信跨命名空间引用访问的命名空间中；优先使用路由本地过滤器，并人工审计所有 HTTPRoute.spec.rules[].backendRefs[].filters[].extensionRef 的引用关系；同时在后端应用边界剥离可信反向代理身份头，除非请求确实来自专用认证网关。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Traefik Kubernetes Gateway API 命名空间混淆漏洞"
+updated = "2026-01-01T00:00:00Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-65601",
+    "GHSA-qq9q-x9w4-chhj",
+]
+ave_id = "AVE-2026-1288"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/traefik/traefik/commit/26c96a3935cafb473f4a5bae1886560d9aa4e4f0",
+    "https://github.com/traefik/traefik/security/advisories/GHSA-qq9q-x9w4-chhj",
+    "https://github.com/CVEProject/cvelistV5/blob/b6b9b8a9ba416bc448aedc424a8c362f5dc145e0/cves/2026/65xxx/CVE-2026-65601.json",
+    "https://github.com/cisagov/vulnrichment/blob/2b378968144e6dc0a8c495fb930fcd182468c7c1/2026/65xxx/CVE-2026-65601.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a07446c9841eff2cadbd30b5a823ea70c1834a2b/SSVC/data/2026/CVE-2026-65601.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a07446c9841eff2cadbd30b5a823ea70c1834a2b/CVE/data/2026/CVE-2026-65601.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-65601.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-656xx/CVE-2026-65601.json",
+    "https://github.com/opencve/opencve-kb/blob/4e5c74d6610699781cf5b1cdf6503b7f32a73dfe/2026/CVE-2026-65601.json",
+    "https://github.com/TMA84/cvealert/blob/51f05e6189d7161590dfa8c7a4a10a7090050c4a/content/posts/cve-2026-65601.md",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/83c283a70b57d801ab2d1247a1ec5f1a6dcc40d1/tracker/CVE/2026/CVE-2026-65601.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/91be9eb9295258fcf9346546d639e773f775edc3/content/CVE-2026-65601.md",
+]
