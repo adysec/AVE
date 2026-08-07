@@ -1,0 +1,40 @@
+[basic]
+description = "ATP HTTPd 0.4b 及更早版本中的 sock_gets 函数存在单字节缓冲区溢出漏洞（CWE-193）。未经身份认证的远程攻击者可通过向目标服务器发送超长的 HTTP GET 请求触发该溢出，由于边界检查不严导致缓冲区写入超出预期范围一个字节，攻击者可利用此漏洞执行任意远程代码。该漏洞影响所有运行受影响版本 ATPhttpd 的系统，利用方式简单直接，ExploitDB 已公开相关利用代码。"
+published = "2002-12-31T05:00:00Z"
+remediation = "鉴于 ATP HTTPd 0.4b 官方项目已长期停止维护且从未发布修复补丁，强烈建议将服务迁移至仍在维护的 Web 服务器（如 Nginx 1.28+ 或 Apache HTTPD 2.4.62+），从根本上消除该缓冲区溢出风险。如因业务限制短期内无法替换，可采取以下缓解措施：第一，在服务器前置防火墙或反向代理处限制 HTTP 请求头的最大长度，将 `client_header_buffer_size` 和 `large_client_header_buffers` 设置为不超过 1KB，使攻击者无法发送足以触发溢出的超长 GET 请求；第二，若坚持使用 ATP HTTPd，须手动修改源码中 `sockhelp.c` 内 `sock_gets` 函数的缓冲区定义，将原有固定大小的字符数组增大至至少 2048 字节，并在读取输入时改用 `snprintf` 替代不安全的字符串拷贝操作，重新编译后部署，同时建议配合 TCP Wrapper 或 iptables 规则仅允许可信来源访问 80 端口，以降低被远程利用的可能性。"
+score = 9.8
+severity = "CRITICAL"
+sources = ["exploitdb"]
+title = "ATP httpd 0.4 缓冲区溢出漏洞"
+updated = "2026-06-16T22:00:06Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2002-1816"]
+ave_id = "AVE-2002-0694"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://archives.neohapsis.com/archives/bugtraq/2002-10/0187.html",
+    "http://secunia.com/advisories/7293",
+    "http://www.iss.net/security_center/static/10362.php",
+    "http://www.securityfocus.com/bid/5956",
+    "https://www.exploit-db.com/exploits/21936",
+    "https://github.com/CVEProject/cvelistV5/blob/9d7a36673f1bb2c673dcce0f4cb7592e8a55c52a/cves/2002/1xxx/CVE-2002-1816.json",
+    "https://github.com/cisagov/vulnrichment/blob/8c7fdea3bf2582d42ade99496d8da2c6b3b68bfa/2002/1xxx/CVE-2002-1816.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/24fd852826426077fab5deff7dee8e1c33b7de89/SSVC/data/2002/CVE-2002-1816.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/24fd852826426077fab5deff7dee8e1c33b7de89/CVE/data/2002/CVE-2002-1816.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-1816",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-1816.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2002-1816.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/0a80f9b51044ff7d242f7696687f9d0e2ab628da/CVE-2002/CVE-2002-18xx/CVE-2002-1816.json",
+    "https://github.com/opencve/opencve-kb/blob/6d26d78400c4747b58ec582f74fbcb84b4d8d834/2002/CVE-2002-1816.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/97b3eba28d573b062ca7499df2c4d7877ce60c0c/2002/1xxx/CVE-2002-1816.md",
+]
