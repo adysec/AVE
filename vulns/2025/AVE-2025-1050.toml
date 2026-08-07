@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核的 Intel-ish-HID 驱动存在释放后使用（use-after-free）漏洞。当系统卸载该驱动时，`ishtp_hid_remove()` 函数会在销毁 HID 设备的循环中直接释放 `driver_data` 内存，而 `hid_destroy_device()` 在调用 `hid_ishtp_set_feature()` 关闭传感器电源时仍会使用该内存，导致访问已释放的内存区域。拥有本地访问权限的攻击者可在驱动被移除后的几分钟内触发此漏洞，造成系统随机崩溃或导致权限提升。该漏洞影响搭载 Intel-ish-HID 传感器 hub 的 Linux 系统，CVSS v3.1 评分 7.8，危害等级为高。Linux 内核社区已通过将 `driver_data` 存储在临时变量中、延迟释放内存的方式修复此问题。"
+published = "2025-04-01T16:15:23Z"
+remediation = "建议将 Linux 内核升级至已修复版本：5.4.291、5.10.235、5.15.179、6.1.131、6.6.83、6.12.19 或 6.13.7 及之后版本。可通过各发行版官方包管理器（如 apt、yum、dnf）安装对应安全更新。如暂时无法升级，可通过 modprobe 命令卸载 intel-ish-hid 驱动模块（rmmod intel-ish-hid）作为临时缓解措施，但会导致 ISH（Integrated Sensor Hub）相关传感器功能不可用。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 Intel ISH-TP HID 驱动 use-after-free 漏洞"
+updated = "2026-06-17T08:44:38Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21928"]
+ave_id = "AVE-2025-1050"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/01b18a330cda61cc21423a7d1af92cf31ded8f60",
+    "https://git.kernel.org/stable/c/07583a0010696a17fb0942e0b499a62785c5fc9f",
+    "https://git.kernel.org/stable/c/0c1fb475ef999d6c22fc3f963fdf20cb3ed1b03d",
+    "https://git.kernel.org/stable/c/560f4d1299342504a6ab8a47f575b5e6b8345ada",
+    "https://git.kernel.org/stable/c/cf1a6015d2f6b1f0afaa0fd6a0124ff2c7943394",
+    "https://git.kernel.org/stable/c/d3faae7f42181865c799d88c5054176f38ae4625",
+    "https://git.kernel.org/stable/c/dea6a349bcaf243fff95dfd0428a26be6a0fb44e",
+    "https://git.kernel.org/stable/c/eb0695d87a81e7c1f0509b7d8ee7c65fbc26aec9",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21928.md",
+    "https://github.com/CVEProject/cvelistV5/blob/f49209b1530b3bed8355297b4e4fe87d9bdbe9e5/cves/2025/21xxx/CVE-2025-21928.json",
+    "https://github.com/cisagov/vulnrichment/blob/bfb1ed18d84de445aef9dfa712f1cbc54ae73923/2025/21xxx/CVE-2025-21928.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9b3ccc0b6aa4a9f3405ce9f43548bd95edfa1060/SSVC/data/2025/CVE-2025-21928.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9b3ccc0b6aa4a9f3405ce9f43548bd95edfa1060/CVE/data/2025/CVE-2025-21928.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21928.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21928.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/83801adff4809288a771f0aa145ef16d9c2279fb/references/CveServices-CVE-2025-21928-2025-11-03-1327",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/83801adff4809288a771f0aa145ef16d9c2279fb/references/CveServices-CVE-2025-21928-2025-11-03-1337",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21928.json",
+]
