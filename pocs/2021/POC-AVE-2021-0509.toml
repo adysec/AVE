@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "检测 VMware vCenter Server Analytics 服务（客户体验改进计划组件）是否存在任意文件上传漏洞（CVE-2021-22005），未经身份认证的远程攻击者可通过 443 端口访问 vCenter Server，向 Analytics 服务上传特制文件，最终在服务器上执行任意代码获取控制权"
+id = "POC-AVE-2021-0509"
+name = "CVE-2021-22005 VMware vCenter Server Analytics 任意文件上传漏洞检测"
+severity = "critical"
+tags = ["ave-2021-0509"]
+vuln_id = [
+    "CVE-2021-22005",
+    "AVE-2021-0509",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/analytics/upload"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+-----------------------------7d4b6a2f3e8c\r
+Content-Disposition: form-data; name="any"; filename="test.txt"\r
+\r
+AVE-TEST\r
+-----------------------------7d4b6a2f3e8c--\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=---------------------------7d4b6a2f3e8c"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
