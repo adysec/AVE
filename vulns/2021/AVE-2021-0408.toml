@@ -1,0 +1,45 @@
+[basic]
+description = "Dell dbutil_2_3.sys 驱动存在权限控制不足漏洞，攻击者可通过该驱动执行任意写操作，从而获取系统内核级别的写入权限。该漏洞影响安装了该驱动的 Dell 系统，可能导致本地特权提升、拒绝服务或信息泄露。攻击者需要具备本地认证用户访问权限，才能利用此漏洞向系统发送特制请求，触发驱动中的越权写入，最终获取 SYSTEM 权限并完全控制目标系统。CVSSv3.1 评分为 8.8，危害等级为高。"
+published = "2021-05-04T16:15:07Z"
+remediation = '根据 Dell 安全公告 DSA-2021-088（https://www.dell.com/support/kbdoc/en-us/000186019），立即安装 Dell 客户端平台安全更新以修复 dbutil_2_3.sys 驱动的访问控制缺陷。受影响驱动版本为 2.3 及更早版本，该驱动由 Dell BIOS Updater、SupportAssist 等工具安装，本地已认证用户可通过特制 IOCTL 请求在内核模式下执行任意读写，从而获取 SYSTEM 权限。企业管理员应通过 Dell Command Update 或 Dell SupportAssist 检查并安装所有可用更新，将 dbutil 驱动升级至 Dell 发布的修复版本（版本号高于 2.3）。如无法立即打补丁，可通过组策略在域内批量部署临时缓解措施：检查 C:\Windows\System32\drivers\ 目录下是否存在 dbutil_2_3.sys 文件，若存在则通过 sc.exe stop dbutil_2_3 && sc.exe delete dbutil_2_3 命令停止并删除该脆弱驱动，同时在防火墙中出站规则阻止 Dell BIOS Updater 和 SupportAssist 的网络通信，直至完成补丁更新。建议同时启用 Windows Defender 或 EDR 的 YARA 规则检测对 CVE-2021-21551 的利用行为（如 IOCTL 0x22640C 的异常调用），并参照 CISA KEV 目录要求最迟于 2022 年 4 月 21 日前完成修复。'
+score = 8.8
+severity = "HIGH"
+sources = ["kev"]
+title = "Dell dbutil_2_3.sys 本地权限提升漏洞"
+updated = "2026-06-17T03:35:45Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2021-21551"]
+ave_id = "AVE-2021-0408"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "http://packetstormsecurity.com/files/162604/Dell-DBUtil_2_3.sys-IOCTL-Memory-Read-Write.html",
+    "http://packetstormsecurity.com/files/162739/DELL-dbutil_2_3.sys-2.3-Arbitrary-Write-Privilege-Escalation.html",
+    "https://www.dell.com/support/kbdoc/en-us/000186019/dsa-2021-088-dell-client-platform-security-update-for-dell-driver-insufficient-access-control-vulnerability",
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2021-21551",
+    "https://www.exploit-db.com/exploits/49893",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2021/CVE-2021-21551.md",
+    "https://github.com/gmh5225/awesome-game-security/blob/dec2a4169f36de25d59e2dacf50678854879b3b9/archive/gmh5225/CVE-2021-21551.txt",
+    "https://github.com/gmh5225/awesome-game-security/blob/dec2a4169f36de25d59e2dacf50678854879b3b9/archive/gmh5225/CVE-2021-21551-POC.txt",
+    "https://github.com/Ascotbe/Kernelhub/blob/e55eb366bab445539ff16c63d3831ed4af91c92f/Windows/TestFailure/CVE-2021-21551/README.md",
+    "https://github.com/Ascotbe/Kernelhub/blob/e55eb366bab445539ff16c63d3831ed4af91c92f/Windows/TestFailure/CVE-2021-21551/README_EN.md",
+    "https://github.com/gmh5225/awesome-game-security/blob/dec2a4169f36de25d59e2dacf50678854879b3b9/description/gmh5225/CVE-2021-21551-POC/description_en.txt",
+    "https://github.com/mthcht/awesome-lists/blob/68de80ad378506345dc5f8c5be04c91c010b7487/Lists/Others/Defender_yara_rules/Win64/Exploit/CVE-2021-21551.yara",
+    "https://github.com/cisagov/vulnrichment/blob/20c5629bae3147ed33b8b7189394250d1ce7a879/2021/21xxx/CVE-2021-21551.json",
+    "https://github.com/sari3l/Poc-Monitor/blob/a6ce9cad24c437468ff1c867adc87c2e994ed5e4/2021/CVE-2021-21551.json",
+    "https://github.com/roadwy/DefenderYara/blob/59e39903d9e6667c7c3e55a1f2887f1faab0e423/Exploit/Win64/CVE-2021-21551/Exploit_Win64_CVE-2021-21551_B_MTB.yar",
+    "https://github.com/waldo-irc/CVE-2021-21551",
+    "https://github.com/tijme/kernel-mii",
+    "https://github.com/mathisvickie/CVE-2021-21551",
+    "https://github.com/ihack4falafel/Dell-Driver-EoP-CVE-2021-21551",
+    "https://github.com/nanabingies/CVE-2021-21551",
+]
