@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "验证 post-query 示例 CGI 程序是否存在缓冲区溢出漏洞。通过 HTTP POST 请求发送超过 10001 个参数触发缓冲区溢出，检测目标程序是否返回错误响应，确认存在远程命令执行风险。"
+id = "POC-AVE-2001-1314"
+name = "CVE-2001-0291 post-query CGI 缓冲区溢出漏洞 PoC"
+severity = "high"
+tags = ["ave-2001-1314"]
+vuln_id = [
+    "CVE-2001-0291",
+    "AVE-2001-1314",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/post-query"
+protocol = "http"
+
+[poc.requests.body]
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    200,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Internal Server Error",
+    "buffer overflow",
+]
