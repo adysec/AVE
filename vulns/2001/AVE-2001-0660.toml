@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD 3.x 和 4.x 版本中，inetd 内置的 ident 服务器（RFC1413 协议实现）在运行过程中错误地使用了 root 用户的组权限而非实际连接用户的组权限，导致未经身份认证的远程攻击者可以读取系统中 wheel 组可访问文件的前 16 字节内容。该漏洞影响所有未修复的 FreeBSD 3.x 和 4.x 版本，攻击者只需向目标主机 113 端口发送 ident 协议请求即可触发，无需任何身份验证。成功利用可能导致敏感配置文件或密钥材料的片段泄露，进而辅助后续攻击。FreeBSD 已在 2000 年 11 月和 2001 年 1 月分别发布针对 4.x 和 3.x 版本的补丁修复此问题。"
+description = "FreeBSD 4.x 及更早版本中，inetd 超级服务器所加载的 ident 服务（RFC 1413）存在权限配置缺陷。该服务在处理远程 ident 请求时未正确设置组权限，导致无需任何身份认证的远程攻击者即可读取由 wheel 用户组可访问文件的前 16 个字节内容。由于 wheel 组成员在 FreeBSD 系统中通常拥有读取系统关键敏感文件（如密码文件等）的权限，攻击者可通过向目标主机 113/tcp 端口发送特制 ident 查询请求来获取文件片段信息，从而造成系统敏感信息泄露。该漏洞影响所有启用 ident 服务且运行 FreeBSD 4.x 及更早版本的网络可达系统，攻击条件简单，仅需目标系统开放 ident 服务端口。FreeBSD 安全团队已发布安全公告 FreeBSD-SA-01:11.inetd 提供修复补丁，建议用户升级系统或应用补丁以消除该信息泄露风险。"
 published = "2001-05-03T04:00:00Z"
-remediation = '将受影响的 FreeBSD 系统升级至 4.2-STABLE 或更高版本（或 3.5-STABLE 及其后续版本），以获取修复后的 inetd 代码。若暂无法升级，可编辑 /etc/inetd.conf 注释掉所有以 "auth" 开头的 ident 服务行，然后执行 killall -HUP inetd 重启 inetd 以禁用 ident 服务器作为临时缓解。也可从 ftp://ftp.FreeBSD.org/pub/FreeBSD/CERT/patches/SA-01:11/ 下载对应版本的 inetd 补丁，在 /usr/src/usr.sbin/inetd 目录下执行 patch -p 后重新编译安装并重启 inetd。'
+remediation = "建议升级 FreeBSD 系统至 4.x 之后的安全补丁版本。如无需使用 ident 服务，可通过编辑 /etc/inetd.conf 文件，将 ident 服务相关的配置行注释掉，并重启 inetd 服务以彻底禁用该服务，从而消除权限漏洞风险。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "FreeBSD inetd ident server 信息泄露漏洞"
+sources = ["epss"]
+title = "FreeBSD inetd ident 服务信息泄露漏洞"
 updated = "2026-06-16T21:53:51Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0196"]
 ave_id = "AVE-2001-0660"
 
 [meta]
-collected_at = "2026-08-06T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://www.osvdb.org/1753",
     "http://www.securityfocus.com/bid/2324",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6052",
-    "https://github.com/CVEProject/cvelistV5/blob/a7bcc119a9ab3b42563555b8edc8c417e3560925/cves/2001/0xxx/CVE-2001-0196.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/c77ca3ed9b9756399e7dd2586c1a3745e93a0ac9/CVE/data/2001/CVE-2001-0196.json",
+    "https://github.com/CVEProject/cvelistV5/blob/d751b60bd21b768f55379fe787bc52645e43b112/cves/2001/0xxx/CVE-2001-0196.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e9d9b9e8f0cec249d0b02d488b7a1cd8b6f01325/CVE/data/2001/CVE-2001-0196.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0196",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0196.json",
-    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2001-0196.json",
-    "https://github.com/opencve/opencve-kb/blob/1df391c77d130b035c18b078a1d93cfdac5c26df/2001/CVE-2001-0196.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c55f50b14ae2241dec1fd7ddec6b7ce3c90c1fdb/2001/0xxx/CVE-2001-0196.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0196.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0196.json",
+    "https://github.com/opencve/opencve-kb/blob/84c7787ec518ff0af30800320099cbf04431984f/2001/CVE-2001-0196.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/cd90277053a061943a42bd9eb5e7a1ee22f10bdd/2001/0xxx/CVE-2001-0196.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/800e0951ee534700ac309055ede267b068e5fc70/CVE-2001/CVE-2001-01xx/CVE-2001-0196.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0196.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0196.json",
 ]
