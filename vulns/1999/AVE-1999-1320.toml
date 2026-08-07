@@ -1,11 +1,13 @@
 [basic]
-description = "Excite for Web Servers (EWS) 1.1 存在权限提升漏洞。该软件将加密后的用户密码以明文形式存储在全局可读的 Architext.conf 认证配置文件中，本地攻击者可读取该文件获取加密密码，然后通过 HTTP 请求将加密密码重放至 AT-generated.cgi 或 AT-admin.cgi 接口，从而以其他用户身份执行操作，实现权限提升。该漏洞影响 EWS 1.1 版本，CVSS 评分 7.2，危害等级高。"
+description = """
+标签之间。<value>
+Excite for Web Servers（EWS）1.1 存在身份验证绕过导致的权限提升漏洞。由于系统的 Architext.conf 认证文件以全局可读方式存储用户加密密码，本地用户可直接读取该文件获取密码密文，随后通过向 AT-generated.cgi 或 AT-admin.cgi 发送特制 HTTP 请求重放该加密密码，绕过正常身份验证流程获得更高权限。该漏洞影响 EWS 1.1 版本，CVSS 评分为 7.2。攻击需具备本地访问权限，且目标服务器上的 Architext.conf 文件权限配置不当（世界可读），攻击复杂度低，无需额外认证即可完成利用。"""
 published = "1998-11-30T05:00:00Z"
-remediation = "立即将 EWS 安装目录权限设置为仅 CGI 运行用户可访问，移除 Architext.conf 的世界可读权限（chmod 600），确保所有 EWS 文件非全局可写。同时修改认证机制，使用随机盐值加密密码，避免明文密码前两字符直接暴露在密文中。由于该产品已停止维护，建议迁移至其他受支持的 Web 服务器软件。"
+remediation = "Excite for Web Servers (EWS) 1.1 因 Architext.conf 认证文件以全局可读方式存储加密密码，攻击者获取密码密文后重放即可获得管理员权限，同时密码加密未使用随机盐导致安全性极低。修复措施：若仍在使用该版本，应立即将 Architext.conf 文件权限改为仅限管理员用户可读（如 chmod 600），禁止全局可读或可写；修改 EWS 安装目录权限，确保仅 Web 服务器运行账户可访问；在 CGI 认证逻辑中增加会话令牌等二次校验机制，避免仅依赖加密密码进行身份验证；鉴于 EWS 1.1 为 1998 年发布的老旧产品且已停止维护，强烈建议迁移至受支持的现代 Web 服务器（如 Nginx、Apache HTTP Server 最新稳定版），并启用防火墙访问控制与最小权限原则。"
 score = 7.2
 severity = "HIGH"
-sources = ["avd"]
-title = "Excite Excite for Web Servers 1.1 权限提升漏洞"
+sources = ["tenable"]
+title = "Excite EWS 权限提升漏洞"
 updated = "2026-06-16T21:49:39Z"
 
 [exploit]
@@ -17,20 +19,20 @@ aliases = ["CVE-1999-1072"]
 ave_id = "AVE-1999-1320"
 
 [meta]
-collected_at = "2026-07-18T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://marc.info/?l=bugtraq&m=91248445931140&w=2",
-    "https://github.com/CVEProject/cvelistV5/blob/5546763f2cbf8b9d0a5bd1b009f21d50c3edeb8b/cves/1999/1xxx/CVE-1999-1072.json",
+    "https://github.com/CVEProject/cvelistV5/blob/b6b9b8a9ba416bc448aedc424a8c362f5dc145e0/cves/1999/1xxx/CVE-1999-1072.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7c0ef39a22957afc03910342f675d7ccbcb3511f/CVE/data/1999/CVE-1999-1072.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1072",
-    "https://github.com/yarencheng/cve-devops-playground/blob/5cf8ba64f356efe9269b21eca2f657231acd746c/content/CVE-1999-1072.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/1eab609178bfac1fdc1fdc37b8b4d17d9ecf98b7/CVE/data/1999/CVE-1999-1072.json",
-    "https://github.com/github/advisory-database/blob/799c403529fad0f67d5473eea397e9968232a5ec/advisories/unreviewed/2022/04/GHSA-9ccm-5r3x-gxvr/GHSA-9ccm-5r3x-gxvr.json",
-    "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/pre2008/dangerous_cgis.nasl",
-    "https://github.com/olbat/nvdcve/blob/134977c5f4ce4f427a914ca161b4f075e34b560b/nvdcve/CVE-1999-1072.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x89000/88040/info.html",
-    "https://github.com/magicsword-io/Magic-SigExplorer/blob/2c28b91b003429a144a687199ee99ebd26f1a343/Magic-SigExplorer/docs/cve_report.md",
-    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000395.txt",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1072.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-1999-1072.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-1999/CVE-1999-10xx/CVE-1999-1072.json",
+    "https://github.com/opencve/opencve-kb/blob/2aa2a979f818f60c7582838a19e7be4c3eb23e3e/1999/CVE-1999-1072.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/62b6ea777dcd262199483cc6d705125ea71803a8/1999/1xxx/CVE-1999-1072.md",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/cd50e1f81ab3d7ad9dd94737c22b59042f42a7e0/api/1999/CVE-1999-1072.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/1999/1xxx/CVE-1999-1072.json",
 ]
