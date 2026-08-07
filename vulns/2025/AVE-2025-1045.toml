@@ -1,0 +1,43 @@
+[basic]
+description = "Linux 内核调度器（sched/fair）子系统的 child_cfs_rq_on_list 函数中存在潜在内存损坏漏洞。该函数尝试将 'prev' 指针转换为 cfs_rq 结构体，但该指针可能源自 struct rq 的 leaf_cfs_rq_list，导致转换无效并可能引发内存破坏。由于当前内存结构布局可能尚未导致崩溃，该问题可能表现为不可预测的行为，但在结构布局发生变化时可能触发严重的内存错误或数据损坏。影响范围涵盖受影响的 Linux 内核版本，攻击者需在目标系统上拥有低权限本地访问权限（PR:L），无需用户交互即可利用此漏洞。利用成功后可导致本地权限提升或系统不稳定。修复方案是在 child_cfs_rq_on_list 函数中增加对 'prev' 指针的边界检查，确保 container_of 操作仅作用于正确的 cfs_rq 结构。"
+published = "2025-04-01T16:15:22Z"
+remediation = "升级 Linux 内核至修复版本：Ubuntu 22.04 LTS 升级至 5.15.0-140.150 或更高版本，Ubuntu 24.04 LTS 升级至 6.8.0-84.84 或更高版本；Debian 12 (bookworm) 升级至 linux 6.1.133-1 或更高版本。临时缓解措施：通过 sysctl 限制本地用户权限，或使用 grsecurity/PaX 等内核安全模块限制进程调度器内存访问；如业务允许，可通过 SELinux 或 AppArmor 限制非特权用户对调度子系统相关 sysfs 接口的写入访问。建议立即通过系统包管理器执行全量内核更新并重启系统，更新完成后执行 uname -r 确认内核版本已升级。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 CFS 调度器内存损坏漏洞"
+updated = "2026-07-14T13:17:26Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21919"]
+ave_id = "AVE-2025-1045"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/000c9ee43928f2ce68a156dd40bab7616256f4dd",
+    "https://git.kernel.org/stable/c/3b4035ddbfc8e4521f85569998a7569668cccf51",
+    "https://git.kernel.org/stable/c/5cb300dcdd27e6a351ac02541e0231261c775852",
+    "https://git.kernel.org/stable/c/9cc7f0018609f75a349e42e3aebc3b0e905ba775",
+    "https://git.kernel.org/stable/c/b5741e4b9ef3567613b2351384f91d3f16e59986",
+    "https://git.kernel.org/stable/c/e1dd09df30ba86716cb2ffab97dc35195c01eb8f",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-019113.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21919.md",
+    "https://github.com/0xMarcio/cve/blob/fc5597c8065a1490bb4aa3ceac7c4f57a4d3db2a/2025/CVE-2025-21919.md",
+    "https://github.com/CVEProject/cvelistV5/blob/2ed40ac6388b6b0944090d1b83263695e50f7b65/cves/2025/21xxx/CVE-2025-21919.json",
+    "https://github.com/cisagov/vulnrichment/blob/9f2635e41b440c54a9faab293f8a5836ca6093fc/2025/21xxx/CVE-2025-21919.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ec48735dfbcbc981aa038a6c8bc606e4fdbd898/SSVC/data/2025/CVE-2025-21919.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ec48735dfbcbc981aa038a6c8bc606e4fdbd898/CVE/data/2025/CVE-2025-21919.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21919.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21919.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/83801adff4809288a771f0aa145ef16d9c2279fb/references/CveServices-CVE-2025-21919-2025-11-03-1327",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21919.json",
+]

