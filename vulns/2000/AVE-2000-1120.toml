@@ -1,11 +1,11 @@
 [basic]
-description = "tags.<value>StarOffice 5.2 办公套件在处理临时文件时，会跟随 /tmp/soffice.tmp 目录的符号链接，并将该目录权限设置为全局可读（world-readable）。未经身份认证的本地攻击者可通过创建符号链接，将 soffice.tmp 指向目标用户的敏感文件，当 StarOffice 进程尝试访问临时目录时，即可读取其他用户的数据文件，导致敏感信息泄露。该漏洞影响 StarOffice 5.2 版本，攻击者需要具备本地系统访问权限，利用条件较低，可造成信息泄露。"
+description = "StarOffice 5.2 在运行过程中会在 /tmp 目录下创建 soffice.tmp 临时目录，并在创建时遵循符号链接（symlink）同时设置全局可读权限。该漏洞允许同一系统上的本地用户通过预先在 /tmp/soffice.tmp 路径下创建指向其他用户敏感文件的符号链接，当使用 StarOffice 的其他合法用户启动应用时，该用户可读取符号链接指向的文件内容，造成信息泄露。该漏洞利用条件要求攻击者具有目标系统的本地访问权限，利用复杂度低，无需认证。攻击者可借此读取 StarOffice 用户的个人文件、邮件、文档等敏感数据。建议升级至修复该漏洞的 StarOffice 版本，或在系统级对 /tmp 目录实施严格权限管控并禁用对临时目录中符号链接的跟随。"
 published = "2001-01-09T05:00:00Z"
-remediation = "建议立即升级至 StarOffice 6.0 或更高版本，或迁移至 OpenOffice/LibreOffice 等不受影响的办公套件。临时缓解措施包括：将环境变量 TMPDIR 设置为用户私有目录（如 $HOME/tmp）以替代默认 /tmp，确保该目录权限为 700；或通过 umask 设置默认文件权限为 077，防止临时文件被其他用户读取；同时在 /tmp 目录下定期清理并检查 soffice.tmp 符号链接，避免攻击者利用。"
+remediation = "升级 StarOffice 5.2 至 5.2 后续补丁版本或更高版本（如 StarOffice 6.0/7.0），Sun Microsystems 已发布安全补丁修复 /tmp/soffice.tmp 符号链接及权限问题。临时缓解措施：设置 umask 为 077 限制临时文件权限，或将 TMPDIR 环境变量指向用户私有目录，避免使用全局可写的 /tmp 目录。"
 score = 3.6
 severity = "LOW"
-sources = ["cve"]
-title = "StarOffice 临时目录符号链接本地文件读取漏洞"
+sources = ["avd"]
+title = "Sun Microsystems StarOffice 符号链接信息泄露漏洞"
 updated = "2026-06-16T21:53:16Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1156"]
 ave_id = "AVE-2000-1120"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-11/0115.html",
     "http://www.securityfocus.com/bid/1922",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5487",
-    "https://github.com/CVEProject/cvelistV5/blob/ab00a662168d29727ed07327ed7248857f064d23/cves/2000/1xxx/CVE-2000-1156.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/e52b937328f58a3e9a1e7e8e4c1ac9025c3099d3/CVE/data/2000/CVE-2000-1156.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a232ca6c60c71e8deaa180d6ea7fa913c0dd2527/cves/2000/1xxx/CVE-2000-1156.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1fee701bbb734582e3d59b764d6d3df80b9ea779/CVE/data/2000/CVE-2000-1156.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1156",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1156.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1156.json",
-    "https://github.com/opencve/opencve-kb/blob/a8ff0f0688217475a7ba2a404f9887907cad5560/2000/CVE-2000-1156.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/1b01d01b655cac08088621898fd70278524e2f0e/CVE-2000/CVE-2000-11xx/CVE-2000-1156.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/537c626a629083369daa568372a12317339c7514/2000/1xxx/CVE-2000-1156.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1156.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/10af4013c239913b9e2b28873060d55f8f810752/CVE-2000/CVE-2000-11xx/CVE-2000-1156.json",
+    "https://github.com/opencve/opencve-kb/blob/28b3024f219eb2a1495b602bb70beeb139e8093f/2000/CVE-2000-1156.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1e53829637c97b07c1ec2e16b94b83996680e174/2000/1xxx/CVE-2000-1156.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1156.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1156.json",
 ]
