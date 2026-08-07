@@ -1,11 +1,11 @@
 [basic]
-description = 'Recourse ManTrap 1.6 蜜罐系统存在内核修改漏洞，攻击者通过查看 /proc 目录列表中缺少 ".." 父目录项这一特征，即可识别出目标系统为 ManTrap 蜜罐环境。该漏洞影响 Recourse ManTrap 1.6 版本，攻击者需具备本地访问权限（本地访问 AV:L）且无需认证即可通过查看 /proc 目录列表识别蜜罐环境，属于信息泄露类漏洞（CVSS 2.1，C:P/I:N/A:N）。攻击者利用内核修改导致 /proc 目录结构异常这一特征，通过简单的目录遍历操作即可识别蜜罐环境，从而规避蜜罐监控并调整攻击策略。Recourse 公司已停止维护该产品，建议迁移至现代蜜罐解决方案。'
+description = 'Recourse ManTrap 1.6 蜜罐系统通过修改内核，使 /proc 目录列表中的 ".." 条目不再显示。未经身份认证的攻击者可以通过列出 /proc 目录并检测 ".." 条目的缺失，判断其正在与蜜罐环境交互而非真实生产系统。该漏洞影响使用 ManTrap 1.6 的蜜罐部署，攻击者只需具备基本系统访问权限即可通过简单的目录枚举操作识别蜜罐，从而规避监控或误导分析。'
 published = "2001-01-09T05:00:00Z"
-remediation = '建议立即停止使用 Recourse ManTrap 1.6 并迁移至现代蜜罐解决方案（如 Cowrie、Dionaea、Conpot 等）。若必须继续使用，可通过重新编译内核恢复 /proc 目录中 ".." 条目的显示，或在内核参数中启用 procfs 完整显示（如启用 hidepid=0），但需注意这会降低蜜罐隐蔽性。建议尽快部署现代主动防御蜜罐系统替代已停止维护的 ManTrap 产品。'
+remediation = "升级到 Recourse ManTrap 2.0 版本，修复内核修改 /proc 列表隐藏目录条目的问题。由于 2.0 版本仍无法修复 crash 工具导致的进程枚举漏洞，部署 cage 后应立即禁用 cage 内的 crash 等调试工具，限制 cage 进程对外部进程的枚举权限，关闭不必要的调试接口，确保日志进程（rti_*）不被 cage 内进程终止，并设置内核级别的进程可见性限制，防止攻击者通过 /proc 目录枚举判断 honeypot 环境。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "Recourse ManTrap 信息泄露漏洞"
+sources = ["avd"]
+title = "Recourse ManTrap 蜜罐检测信息泄露漏洞"
 updated = "2026-06-16T21:53:14Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1141"]
 ave_id = "AVE-2000-1105"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-11/0100.html",
     "http://marc.info/?l=bugtraq&m=97349791405580&w=2",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5473",
-    "https://github.com/CVEProject/cvelistV5/blob/3ea93936438a97f1459a1dd6e83719dbfc798be2/cves/2000/1xxx/CVE-2000-1141.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4a364075e0f1d18be5590f7700d143d985f1789f/CVE/data/2000/CVE-2000-1141.json",
+    "https://github.com/CVEProject/cvelistV5/blob/ff7e569387aea0062ce3b3b0a6555166b4aa491f/cves/2000/1xxx/CVE-2000-1141.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/694379c8a953b4d106540076b482d281ae9c2bda/CVE/data/2000/CVE-2000-1141.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1141",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1141.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1141.json",
-    "https://github.com/opencve/opencve-kb/blob/3846f10533f33b6add488388e63fdc90a48d6484/2000/CVE-2000-1141.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/5ff0b9e6ad0b51b419967392a23ca6a8c4176810/CVE-2000/CVE-2000-11xx/CVE-2000-1141.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/0a07da1560249b2b9027d6c5d908418017bb7740/2000/1xxx/CVE-2000-1141.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1141.json",
+    "https://github.com/opencve/opencve-kb/blob/1bc0670cecb45de26e5d9d30012d7fcae91f215c/2000/CVE-2000-1141.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f5446ab1422bc50f191f3eb4d0c7a25d007c51de/CVE-2000/CVE-2000-11xx/CVE-2000-1141.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/900a3670ef971f3fb80084697643cb41250f878f/2000/1xxx/CVE-2000-1141.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1141.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/6ccaaffc515caa9809eafc85eced3a0696abe41f/content/CVE-2000-1141.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/91be9eb9295258fcf9346546d639e773f775edc3/content/CVE-2000-1141.md",
 ]
