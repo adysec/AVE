@@ -1,0 +1,39 @@
+[basic]
+description = "Linux 内核的 ksmbd（SMB3 服务器）在处理客户端 oplock break notification 时存在竞争条件漏洞。当 ksmbd_work 正在处理 oplock break 通知期间，若底层连接被意外释放，工作队列结构体可能被提前释放，导致后续处理过程中发生释放后使用（use-after-free）或空指针解引用。该漏洞影响运行 Linux 内核且启用 ksmbd 模块的系统，攻击者需要具有目标服务器的网络访问权限并具备一定身份认证，可通过向 SMB 服务发送特制请求触发 oplock break 流程并利用该竞争条件，最终可能导致系统崩溃或特权提升。CVSS 评分为 8.8（高危），影响 Ubuntu 22.04/24.04 LTS 等多个发行版。"
+published = "2025-04-01T16:15:26Z"
+remediation = "立即升级 Linux 内核至已修复此漏洞的版本。该漏洞存在于 ksmbd（内核态 SMB 服务器）的 oplock break 通知处理流程中，可在特定条件下触发 use-after-free，导致本地低权限攻击者获得系统最高权限。受影响的 Linux 内核版本为 5.15 至 6.6.83、6.7 至 6.12.19、6.13 至 6.13.7。修复已于以下版本中合入：Ubuntu 24.04 LTS 请升级至内核 6.8.0-84.84 或更高版本，Ubuntu 24.10 请升级至内核 6.11.0-28.28 或更高版本，RHEL 9 系列请升级至内核 6.12.20 或更高版本，Debian 12 请升级至内核 6.1.123-1 或更高版本。执行 sudo apt update && sudo apt install linux-image-$(uname -r) 完成升级后重启系统。如短期内无法立即升级，可执行 sudo rmmod ksmbd 卸载 ksmbd 内核模块作为临时缓解措施，或通过防火墙屏蔽 TCP 445 端口以阻断 SMB 入站连接，直至完成内核补丁更新。"
+score = 8.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 ksmbd 使用后释放漏洞"
+updated = "2026-07-30T06:21:59Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21955"]
+ave_id = "AVE-2025-1064"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/09aeab68033161cb54f194da93e51a11aee6144b",
+    "https://git.kernel.org/stable/c/3aa660c059240e0c795217182cf7df32909dd917",
+    "https://git.kernel.org/stable/c/a4261bbc33fbf99b99c80aa3a2c5097611802980",
+    "https://git.kernel.org/stable/c/f17d1c63a76b0fe8e9c78023a86507a3a6d62cfa",
+    "https://github.com/CVEProject/cvelistV5/blob/25d2835389cb063fdfa4c6ce4f2eac179227ec45/cves/2025/21xxx/CVE-2025-21955.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6383c78237400b01eaca440114073e7df0a76cff/CVE/data/2025/CVE-2025-21955.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21955.yaml",
+    "https://github.com/opencve/opencve-kb/blob/1c7f3664bdd6b0fef0c0228c5964678cbeeb97ef/2025/CVE-2025-21955.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21955.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21955.json",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/84a384b819986ec191690bb7ca8e108c6be28f15/tracker/CVE/2025/CVE-2025-21955.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2025/21xxx/CVE-2025-21955.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21955",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/59fcb0e6f5e022cbcf3d6b6e8dfa8ab050c85b5f/CVE-2025/CVE-2025-219xx/CVE-2025-21955.json",
+]
