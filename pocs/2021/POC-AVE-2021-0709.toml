@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "检测 Pulse Connect Secure 9.1R11.4 及之前版本中会议房间功能的缓冲区溢出漏洞。漏洞源于程序在处理会议房间数据时未对输入进行充分大小校验，已通过身份认证的攻击者可通过发送特制会议房间数据触发溢出，以 root 权限执行任意代码。"
+id = "POC-AVE-2021-0709"
+name = "CVE-2021-22894 Pulse Connect Secure 缓冲区溢出 PoC"
+severity = "high"
+tags = ["ave-2021-0709"]
+vuln_id = [
+    "CVE-2021-22894",
+    "AVE-2021-0709",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Pulse Connect Secure",
+    "PulseOne",
+    "pulsesecure",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    301,
+    302,
+]
+type = "status"

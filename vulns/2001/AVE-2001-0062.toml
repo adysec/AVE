@@ -1,11 +1,11 @@
 [basic]
-description = "CVE-2001-0168是一个安全漏洞，影响相关产品的安全性。攻击者可能利用此漏洞执行任意代码或获取未授权访问。建议用户及时更新到最新版本以修复此问题。"
+description = "AT&T WinVNC（Virtual Network Computing）3.3.3r7 及更早版本的 Windows 平台服务器存在栈缓冲区溢出漏洞。当注册表键 DebugLevel 的值大于 0 时，服务器在处理 HTTP GET 请求的过程中，通过无边界检查的 vsprintf() 函数将超长请求数据写入固定大小的缓冲区，导致栈上的返回地址被覆盖。未经身份认证的远程攻击者只需向目标服务器发送一条特制的超长 HTTP GET 请求，即可在 VNC 服务进程上下文中执行任意代码，完全控制远程主机。该漏洞影响 WinVNC 3.3.3r7 及以下所有版本，CVSS v2.0 评分 10.0，危害等级严重。官方修复方案为将 Log.cpp 中的 vsprintf() 替换为带长度限制的 _vsnprintf()，或临时将 DebugLevel 注册表值设为 0 以禁用调试日志输出，阻止漏洞触发路径。"
 published = "2001-05-03T04:00:00Z"
-remediation = '立即将 WinVNC 升级至官方发布的安全版本，并手工修改 vnc_winsrc/winvnc/Log.cpp 文件，将第 133 行的 vsprintf(line, format, ap) 替换为 _vsnprintf(line, sizeof(line)-sizeof(TCHAR), format, ap)，重新编译部署。若无法立即升级，应将注册表项 HKEY_LOCAL_MACHINE\Software\ORL\WinVNC3\DebugLevel 的值设为 0 以关闭调试日志功能，并在防火墙规则中阻断 5800/tcp 和 5900/tcp 端口的公网访问。官方补丁文件可从 ftp://ftp.core-sdi.com/pub/patches/VNC-serverBO.patch 获取。'
+remediation = "升级到 AT&T WinVNC 3.3.3r7 之后版本，或手动应用官方补丁修改 Log.cpp 中的 vsprintf 调用为 _vsnprintf 以修复缓冲区溢出。如无法立即升级，可通过注册表将 WinVNC 的 DebugLevel 键值设为 0 禁用 Web 服务端的调试日志功能，或在防火墙层面限制 5800/5900 端口仅允许可信网络访问作为临时缓解措施。"
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "AT&T WinVNC HTTP GET 请求缓冲区溢出漏洞"
+sources = ["epss"]
+title = "AT&T WinVNC 缓冲区溢出漏洞"
 updated = "2026-06-16T21:53:47Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0168"]
 ave_id = "AVE-2001-0062"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/2306",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6026",
     "https://www.exploit-db.com/exploits/16491",
-    "https://github.com/CVEProject/cvelistV5/blob/c67c7954c46b752d4b167913e3e046ed998744d0/cves/2001/0xxx/CVE-2001-0168.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2e34647e2cb70f634f637d7ffe35fe3375a62e16/CVE/data/2001/CVE-2001-0168.json",
+    "https://github.com/CVEProject/cvelistV5/blob/6965489bbb0e546f402d9f723160a02c114a0639/cves/2001/0xxx/CVE-2001-0168.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/CVE/data/2001/CVE-2001-0168.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0168",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0168.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0168.json",
-    "https://github.com/opencve/opencve-kb/blob/52862ce9daccf736821f20dad3f82fea401e5f1e/2001/CVE-2001-0168.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0168.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/a34babb9031dd723054cf90c4f7fb7c79c3ea176/2001/0xxx/CVE-2001-0168.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0168.json",
+    "https://github.com/opencve/opencve-kb/blob/a33ad1a3dbb4c6af18336d58bbab331bb7d32075/2001/CVE-2001-0168.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/10af4013c239913b9e2b28873060d55f8f810752/CVE-2001/CVE-2001-01xx/CVE-2001-0168.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/2cdc01e5f2a5245dccba7ac76faa67bfc61bca5a/2001/0xxx/CVE-2001-0168.md",
     "https://github.com/e-m-b-a/emba/blob/7b0091a6728c321d97febad01bf502be7a113020/config/msf_cve-db.txt",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0168.json",
 ]
