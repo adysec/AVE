@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核的 nilfs2 文件系统存在释放后使用（Use-After-Free）漏洞。nilfs_lookup_dirty_data_buffers() 函数在遍历附着于脏数据 folio/页面的缓冲区时，未对相关页/folio 进行加锁保护。当文件系统降级为只读时，nilfs_clear_folio_dirty() 会被异步调用，导致缓冲区在遍历过程中失去脏状态保护，进而可能被 try_to_free_buffers() 意外释放，从而触发释放后使用漏洞。本地攻击者可通过诱导系统进入只读状态并触发相关文件系统操作来利用该漏洞，造成内存数据破坏、系统崩溃（拒绝服务）或潜在的本地权限提升。该漏洞利用条件为需要本地访问权限，CVSS 评分 7.8，危害等级高。"
+published = "2025-02-27T20:16:03Z"
+remediation = '建议立即升级 Linux 内核至包含修复提交（"nilfs2: protect access to buffers with no active references"）的稳定版本，或安装各发行版安全更新。具体操作：Ubuntu 用户执行 `sudo apt update && sudo apt upgrade linux-image-generic` 并重启（对应 USN-7930-1、USN-7511-1 等公告）；Debian 用户执行 `apt update && apt upgrade` 安装 DLA-4178/DLA-4102 更新；Amazon Linux 用户安装 ALAS2KERNEL-5.10-2025-088 公告对应内核。升级后务必重启系统使新内核生效。若无法立即升级，临时缓解措施：避免在受影响主机上挂载或使用 nilfs2 文件系统，并通过本地账号权限控制与最小权限原则限制本地攻击面，直至完成内核更新。'
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 nilfs2 文件系统释放后使用漏洞"
+updated = "2026-06-17T08:44:20Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21811"]
+ave_id = "AVE-2025-0994"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/367a9bffabe08c04f6d725032cce3d891b2b9e1a",
+    "https://git.kernel.org/stable/c/4b08d23d7d1917bef4fbee8ad81372f49b006656",
+    "https://git.kernel.org/stable/c/58c27fa7a610b6e8d44e6220e7dbddfbaccaf439",
+    "https://git.kernel.org/stable/c/72cf688d0ce7e642b12ddc9b2a42524737ec1b4a",
+    "https://git.kernel.org/stable/c/8e1b9201c9a24638cf09c6e1c9f224157328010b",
+    "https://git.kernel.org/stable/c/c437dfac9f7a5a46ac2a5e6d6acd3059e9f68188",
+    "https://git.kernel.org/stable/c/d8ff250e085a4c4cdda4ad1cdd234ed110393143",
+    "https://git.kernel.org/stable/c/e1fc4a90a90ea8514246c45435662531975937d9",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00028.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2025/CVE-2025-21811.md",
+    "https://github.com/CVEProject/cvelistV5/blob/e4fe257e02d6ecdcb83f2a0bd1ddf47878d0f58d/cves/2025/21xxx/CVE-2025-21811.json",
+    "https://github.com/cisagov/vulnrichment/blob/2b378968144e6dc0a8c495fb930fcd182468c7c1/2025/21xxx/CVE-2025-21811.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a07446c9841eff2cadbd30b5a823ea70c1834a2b/SSVC/data/2025/CVE-2025-21811.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a07446c9841eff2cadbd30b5a823ea70c1834a2b/CVE/data/2025/CVE-2025-21811.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21811.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21811.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/c1b9f6c948898dc0e9a98888d84c2a20cc92bff4/references/CveServices-CVE-2025-21811-2025-11-03-1402",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/c1b9f6c948898dc0e9a98888d84c2a20cc92bff4/references/CveServices-CVE-2025-21811-2025-11-03-1336",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21811.json",
+]
