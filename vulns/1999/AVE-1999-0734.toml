@@ -1,15 +1,12 @@
 [basic]
-description = "Classifieds.cgi 1.0 存在 shell 元字符注入漏洞，远程攻击者可通过在请求参数中注入分号、管道符等 shell 元字符，使服务器执行额外的系统命令，从而读取服务器上的任意文件，导致敏感信息泄露。该漏洞影响 Greg Matthews 开发的 Classifieds.cgi 1.0 版本。"
-published = "1999-12-15T00:00:00Z"
-remediation = "建议升级到已修复该漏洞的最新版本，或对用户输入进行严格过滤，禁止 shell 元字符传入系统命令执行函数。"
-score = 5.0
+description = "classifieds.cgi 是 Classifieds.cgi 1.0 这一 CGI 程序的脚本，该脚本对用户输入参数的处理缺乏安全校验，未正确过滤或转义列目录、读文件等操作传给操作系统的外壳命令，从而在拼接执行系统命令时引入了注入风险。由于任意输入参数可直接拼接并传递给底层 shell 进行解析执行，任何能够访问该脚本的远程用户都可以利用此缺陷，通过在请求参数中注入管道符、重定向符等列元字符（shell metacharacters）构造恶意指令，实现任意文件的读取，进而可能导致服务器敏感信息泄露，破坏数据的机密性与完整性。该漏洞攻击条件低，无需身份认证即可触发，属于典型的命令注入类安全缺陷。攻击者可构造特殊请求，通过 web 服务器调用 classifieds.cgi 并注入包含元字符内容来执行任意命令或读取任意文件，从而获取目标系统上的敏感数据。"
+published = "1999-12-15T05:00:00Z"
+remediation = "该漏洞源于老旧 CGI 脚本 classifieds.cgi 对用户输入的处理存在缺陷，允许攻击者通过 shell 元字符（如 |、;、$()）拼接系统命令实现任意文件读取。由于该脚本年代久远且原作者已停止维护，无安全补丁可升级，建议采取以下措施：1) 立即从 Web 目录（如 cgi-bin 目录）中移除或重命名该脚本，彻底停止对外提供服务，同时排查是否还有其他类脚本可被调出；2) 对 CGI 程序（尤其是本脚本）一律不做任何 shell 命令拼接处理，改用参数化调用或禁止通过函数 exec/system 执行用户输入；3) 在 Web 服务器层面对 CGI 目录做白名单限制，仅允许必要的可信脚本访问，并限制运行 CGI 的用户权限为最低权限账号（不可读取 /etc/passwd 等敏感文件）；4) 在网络层面通过防火墙/WAF 拦截包含管道符、分号等特殊字符的 CGI 请求参数。若业务仍依赖该类功能，应改用现代方案重新实现并立即升级。由于系统过于陈旧，更好的方案是彻底弃用该脚本并迁移至受支持的较新平台。"
+score = 5
 severity = "MEDIUM"
-sources = [
-    "cve",
-    "epss",
-]
-title = "Greg Matthews Classifieds.cgi 1.0 任意文件读取漏洞"
-updated = "1999-12-15T00:00:00Z"
+sources = ["tenable"]
+title = "Greg Matthews Classifieds.cgi 命令注入任意文件读取漏洞"
+updated = "2026-06-16T21:49:21Z"
 
 [exploit]
 exp_urls = []
@@ -20,11 +17,22 @@ aliases = ["CVE-1999-0934"]
 ave_id = "AVE-1999-0734"
 
 [meta]
-collected_at = "2026-07-19T02:43:56Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.securityfocus.com/bid/2020",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/3102",
+    "https://www.exploit-db.com/exploits/20444",
+    "https://github.com/CVEProject/cvelistV5/blob/e4fe257e02d6ecdcb83f2a0bd1ddf47878d0f58d/cves/1999/0xxx/CVE-1999-0934.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a07446c9841eff2cadbd30b5a823ea70c1834a2b/CVE/data/1999/CVE-1999-0934.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0934",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0934.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-1999-0934.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-1999/CVE-1999-09xx/CVE-1999-0934.json",
+    "https://github.com/opencve/opencve-kb/blob/01331dd5a0c3aaea25823b9e0d49daafe99f2da1/1999/CVE-1999-0934.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1d4ceab3e3595548e1f33e68d5077f03cb69774d/1999/0xxx/CVE-1999-0934.md",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/cd50e1f81ab3d7ad9dd94737c22b59042f42a7e0/api/1999/CVE-1999-0934.json",
+    "https://github.com/justakazh/CVE_Database/blob/06bd07f32c89b43f30d59ff450dfbb661e471cbe/1999/CVE-1999-0934.json",
 ]
