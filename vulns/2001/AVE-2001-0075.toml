@@ -1,11 +1,11 @@
 [basic]
-description = "Icecast 流媒体服务器存在格式字符串漏洞，1.3.8beta2 及更早版本的 print_client 函数未正确过滤用户输入，远程攻击者可通过发送特制 HTTP 请求触发该漏洞，进而执行任意系统命令。该漏洞影响 Icecast 1.3.7 和 1.3.8 等多个版本，CVSS 评分 10.0，危害等级严重。攻击者无需身份认证即可利用，攻击复杂度低，影响范围广泛。"
+description = "Icecast 是一款开源的流媒体音频服务器软件，其 1.3.8beta2 及更早版本（包括 1.3.7、1.3.8）中的 print_client() 函数存在格式字符串漏洞。当远程攻击者向运行有漏洞版本的 Icecast 服务器发起连接时，服务器会将用户可控的输入作为格式字符串直接传递给格式化输出函数而未进行适当过滤，攻击者可利用 %s、%n、%x 等格式说明符读取或覆盖内存任意地址，进而执行任意系统命令。由于该漏洞无需身份认证，攻击条件极为简单：只要目标服务器暴露在网络上且运行着受影响的版本，远程攻击者即可单步触达利用并完全控制服务器。该漏洞影响所有使用 Icecast 1.3.x 系列早期版本的流媒体服务部署，CVSS 评分为满分 10.0，危害等级为严重。攻击者成功利用后可在目标系统上执行任意代码，造成信息泄露、服务中断乃至系统沦陷等严重后果。"
 published = "2001-03-26T05:00:00Z"
-remediation = "立即升级 Icecast 至 1.3.9 或更高版本，该版本已修复 utility.c 中 print_client() 函数的格式字符串漏洞。如当前使用 Red Hat Linux 7.0，请安装 Red Hat 官方安全补丁 RHSA-2001:004。如暂时无法升级，应在防火墙或 iptables 中限制对 Icecast 服务端口的远程访问，仅允许可信网段连接，并停止运行 Icecast 服务直至完成版本更新。"
+remediation = '立即将 Icecast 升级至已修复的 1.3.8.beta2-2 或更高版本（Red Hat 6.x 系列）及 1.3.8.beta2-3（Red Hat 7.0），或从源码打补丁：修改 utility.c 中 print_client() 函数，将所有 fd_write(info.statsfile, buf) 调用改为 fd_write(info.statsfile, "%s", buf)，并将 sprintf(buf, ...) 替换为 snprintf(buf, BUFSIZE, ...)，确保缓冲区大小限制，防止格式字符串被当作格式化指令解析。如无法立即升级，可临时在防火墙层阻断对 Icecast 端口（默认 8000）的外部访问，直至完成补丁更新。'
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "Icecast 1.3.7/1.3.8 格式字符串远程代码执行漏洞"
+sources = ["epss"]
+title = "Xiph Icecast 格式字符串远程代码执行漏洞"
 updated = "2026-06-16T21:53:51Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0197"]
 ave_id = "AVE-2001-0075"
 
 [meta]
-collected_at = "2026-08-06T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.securityfocus.com/bid/2264",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5978",
     "https://www.exploit-db.com/exploits/20582",
-    "https://github.com/CVEProject/cvelistV5/blob/a7bcc119a9ab3b42563555b8edc8c417e3560925/cves/2001/0xxx/CVE-2001-0197.json",
+    "https://github.com/CVEProject/cvelistV5/blob/58c29810a355e4000a3340113bc4ba33f0d1eeb7/cves/2001/0xxx/CVE-2001-0197.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0197",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/c77ca3ed9b9756399e7dd2586c1a3745e93a0ac9/CVE/data/2001/CVE-2001-0197.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e9d9b9e8f0cec249d0b02d488b7a1cd8b6f01325/CVE/data/2001/CVE-2001-0197.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0197.json",
-    "https://github.com/opencve/opencve-kb/blob/1df391c77d130b035c18b078a1d93cfdac5c26df/2001/CVE-2001-0197.json",
-    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2001-0197.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c55f50b14ae2241dec1fd7ddec6b7ce3c90c1fdb/2001/0xxx/CVE-2001-0197.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0197.json",
+    "https://github.com/opencve/opencve-kb/blob/50b7c8589529eb9c5eddcf04f3e916ecfb44f151/2001/CVE-2001-0197.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0197.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/cd90277053a061943a42bd9eb5e7a1ee22f10bdd/2001/0xxx/CVE-2001-0197.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/800e0951ee534700ac309055ede267b068e5fc70/CVE-2001/CVE-2001-01xx/CVE-2001-0197.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0197.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/8ad35b62b45404de8f2963cc958f5644815c9afa/content/CVE-2001-0197.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/91be9eb9295258fcf9346546d639e773f775edc3/content/CVE-2001-0197.md",
 ]
