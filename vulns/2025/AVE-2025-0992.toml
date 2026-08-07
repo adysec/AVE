@@ -1,0 +1,47 @@
+[basic]
+description = "Linux 内核 NFS 服务子系统（nfsd）的 3 版本 getacl 处理逻辑存在 use-after-free（释放后使用）漏洞。在 nfs3svc_release_getacl 中，当获取 acl_default 失败时，acl_access 与 acl_default 会被同时释放，但 acl_access 仍保留指向已释放 posix_acl 的悬空指针，后续访问会触发引用计数（refcount）下溢，进而产生内核警告甚至在内核开启 panic_on_warn 时导致内核崩溃。该漏洞属于 CWE-416 类型，影响所有使用易受影响版本内核并启用 NFSv3 ACL 功能的服务端系统，可由本地或受信任网络中的客户端通过发起 ACL 查询请求触发，CVSS 评分 9.8。修复方式是调用 posix_acl_release 后将 acl_access 与 acl_default 指针置空以防止被再次访问，用户应及时应用发行商内核更新。"
+published = "2025-02-27T03:15:20Z"
+remediation = "请立即升级内核至以下已修复版本（含此补丁，git commit 8a1737ae42c9 等）：主线 6.13.4 及以上、6.12.16 及以上、6.6.79 及以上、6.1.129 及以上、5.15.179 及以上、5.10.235 及以上。RHEL 9 用户通过 yum update kernel 安装 RHSA-2025:20518 公告中的 kernel 包，Debian 11 用户执行 apt update && apt install linux-image 按 DLA-4178 公告更新后重启。重启前可先通过 systemctl stop nfs-server 停止并禁用 nfsd 服务（systemctl disable --now nfs-server），并在防火墙仅对可信网段开放 2049/TCP、2049/UDP 以缩小暴露面；若无法立即打补丁，可在 /etc/exports 中移除相关导出目录并临时用 no_root_squash 配合只读挂载等降低风险，但根本解决仍需升级内核并在重启后确认 uname -r 已含修复版本。"
+score = 9.8
+severity = "CRITICAL"
+sources = ["msrc"]
+title = "Linux kernel NFSD ACL访问控制列表释放后使用内存损坏漏洞"
+updated = "2026-07-30T06:21:31Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21796"]
+ave_id = "AVE-2025-0992"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1fd94884174bd20beb1773990fd3b1aa877688d9",
+    "https://git.kernel.org/stable/c/2e59b2b68782519560b3d6a41dd66a3d01a01cd3",
+    "https://git.kernel.org/stable/c/55d947315fb5f67a35e4e1d3e01bb886b9c6decf",
+    "https://git.kernel.org/stable/c/6f7cfee1a316891890c505563aa54f3476db52fd",
+    "https://git.kernel.org/stable/c/7faf14a7b0366f153284db0ad3347c457ea70136",
+    "https://git.kernel.org/stable/c/8a1737ae42c928384ab6447f6ee1a882510e85fa",
+    "https://git.kernel.org/stable/c/f8d871523142f7895f250a856f8c4a4181614510",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00028.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-019113.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-082556.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-265688.html",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2025/CVE-2025-21796.md",
+    "https://github.com/0xMarcio/cve/blob/febb421243df0b39ea4f19c16e9f8dd6f45a14d4/2025/CVE-2025-21796.md",
+    "https://github.com/CVEProject/cvelistV5/blob/e4fe257e02d6ecdcb83f2a0bd1ddf47878d0f58d/cves/2025/21xxx/CVE-2025-21796.json",
+    "https://github.com/cisagov/vulnrichment/blob/2b378968144e6dc0a8c495fb930fcd182468c7c1/2025/21xxx/CVE-2025-21796.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a07446c9841eff2cadbd30b5a823ea70c1834a2b/SSVC/data/2025/CVE-2025-21796.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21796.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a07446c9841eff2cadbd30b5a823ea70c1834a2b/CVE/data/2025/CVE-2025-21796.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/c1b9f6c948898dc0e9a98888d84c2a20cc92bff4/references/CveServices-CVE-2025-21796-2025-11-03-1336",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/c1b9f6c948898dc0e9a98888d84c2a20cc92bff4/references/CveServices-CVE-2025-21796-2025-11-03-1402",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21796.json",
+]
