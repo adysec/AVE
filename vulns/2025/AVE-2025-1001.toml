@@ -1,0 +1,38 @@
+[basic]
+description = 'Linux 内核 BPF 子系统在启用 PREEMPT_RT 实时补丁时存在锁顺序违规漏洞。当对预分配哈希表（htab）执行覆盖更新时，旧元素的释放操作持有 bucket 锁（raw-spin-lock），但释放过程中 check_and_free_fields() 会尝试获取 spin-lock，违反锁依赖规则，触发 "scheduling while atomic" 警告，可能导致系统崩溃或挂起。该漏洞影响 Linux 内核 6.12 及以上启用 PREEMPT_RT 的版本。本地低权限攻击者可通过加载特定的 BPF 程序触发竞态条件，利用该漏洞造成拒绝服务或潜在内存破坏。修复方案通过 kworker 异步取消正在运行的 bpf_timer 来解决锁冲突问题。'
+published = "2025-03-06T16:15:54Z"
+remediation = "升级 Linux 内核至已包含修复的稳定版本。对于 Ubuntu 24.04 LTS 应安装 6.8.0-64.67 或更高版本的内核包；对于 Ubuntu 24.10 应安装 6.11.0-26.26 或更高版本。SUSE Linux Enterprise 15 SP6 用户应安装 SUSE-SU-2025:1177-1 安全更新中的内核补丁。如当前系统启用了 PREEMPT_RT 且无法立即升级内核，可暂时禁用 PREEMPT_RT 配置并重新编译内核作为临时缓解措施，或避免在启用 PREEMPT_RT 的系统上运行使用 BPF 定时器的程序。执行 apt update && apt upgrade linux-image-generic 或使用对应发行版的内核更新命令进行升级，升级后重启系统使新内核生效。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 BPF 双重释放漏洞"
+updated = "2026-07-30T06:21:39Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21825"]
+ave_id = "AVE-2025-1001"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/33e47d9573075342a41783a55c8c67bc71246fc1",
+    "https://git.kernel.org/stable/c/58f038e6d209d2dd862fcf5de55407855856794d",
+    "https://git.kernel.org/stable/c/fbeda3d939ca10063aafa7a77cc0f409d82cda88",
+    "https://github.com/CVEProject/cvelistV5/blob/ae00d53db94d9c257c1ceaee6a4649b24ed0ac25/cves/2025/21xxx/CVE-2025-21825.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/69447a98db4299f7710572c60da23ac499cec4c1/CVE/data/2025/CVE-2025-21825.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21825.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21825",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/941cb4c2dcf5da18963a0e39c065be3ea976c44b/tracker/CVE/2025/CVE-2025-21825.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21825.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21825",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21825.yaml",
+    "https://github.com/MatALass/anssi-vulnerability-intelligence/blob/77a0771d93df03375a6a04965087efb0123e795f/data/raw/anssi_snapshot/first/CVE-2025-21825",
+    "https://github.com/Alexandre-gng/ANSSI_alerts/blob/70d44ad0e93bb331b572bd411ab72438068e6dba/scraped_data/first/CVE-2025-21825",
+]
