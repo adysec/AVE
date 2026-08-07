@@ -1,0 +1,41 @@
+[basic]
+description = "Linux 内核 ipvlan 网络虚拟化驱动存在安全漏洞，`ipvlan_process_v6_outbound()` 函数在处理 IPv6 出站数据包时，错误地假设 IPv6 网络标头一定位于套接字缓冲区（skb）的线性内存区域（head）中，而未预先通过 `pskb_network_may_pull()` 确保该标头已完整拷贝到线性部分。当 skb 数据实际分散在非线性内存片段时，函数将访问未初始化的内存区域，触发 KMSAN 检测到的未初始化值读取，进而导致 IPv6 地址类型判断错误、路由查找异常或系统崩溃。该漏洞同时影响 IPv4 和 IPv6 处理路径，存在于使用 ipvlan 虚拟网络接口的 Linux 内核版本中。攻击者需要在拥有本地权限（L）的容器或网络命名空间环境中，通过发送特制的 IPv6 数据包触发此条件，从而可能造成拒绝服务（DoS）或系统不稳定等影响。Linux 内核社区已通过在 IPv4 和 IPv6 处理函数中增加 `pskb_network_may_pull()` 调用修复此问题，确保网络标头始终位于 skb 线性内存中再进行处理。"
+published = "2025-03-27T15:15:57Z"
+remediation = '建议将 Linux 内核升级至以下修复版本之一：上游主线 6.14-rc5 或更高版本、6.1.130、6.6.81、6.12.18、6.13.6。Debian 12 (bookworm) 用户应升级内核至 6.1.133-1 或更高版本，Debian 11 (bullseye) 用户应通过 backports 升级至 6.1.180-1~deb11u1；Ubuntu 24.04 LTS 用户应执行 apt upgrade 安装 linux 6.8.0-84.84 或更高版本（AWS 6.8.0-1039.41、Azure 6.8.0-1038.44、GKE 6.8.0-1036.40）；Ubuntu 22.04 LTS 用户应升级 linux-aws-6.8 至 6.8.0-1039.41~22.04.1 或 linux-azure-6.8 至 6.8.0-1036.42~22.04.1；Ubuntu 24.10 用户应升级至 6.11.0-26.26。如系统暂无法升级内核且业务无需使用 ipvlan 虚拟网卡功能，可通过 echo -e "blacklist ipvlan" >> /etc/modprobe.d/disable-ipvlan.conf 并执行 update-initramfs -u 禁用 ipvlan 模块作为临时缓解措施，但必须在维护窗口内完成内核升级以彻底消除漏洞。'
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 ipvlan 驱动未初始化内存读取漏洞"
+updated = "2026-06-17T08:44:32Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21891"]
+ave_id = "AVE-2025-1032"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/27843ce6ba3d3122b65066550fe33fb8839f8aef",
+    "https://git.kernel.org/stable/c/4ec48f812804f370f622e0874e6dd8fcc58241cd",
+    "https://git.kernel.org/stable/c/5353fd89663c48f56bdff975c562cfe78b1a2e4c",
+    "https://git.kernel.org/stable/c/5b8dea8d1612dc7151d2457d7d2e6a69820309bf",
+    "https://git.kernel.org/stable/c/e2a4f76a2d8a44816ecd25bcbdb47b786d621974",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21891.md",
+    "https://github.com/CVEProject/cvelistV5/blob/f44a116d4d536826c4e2d2e60db49f9e9faec5a2/cves/2025/21xxx/CVE-2025-21891.json",
+    "https://github.com/cisagov/vulnrichment/blob/ad8131514e1f432a711b6df2ca6924188ce8239b/2025/21xxx/CVE-2025-21891.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9cadf2781966b46cf2833362970d0629a97c0767/SSVC/data/2025/CVE-2025-21891.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9cadf2781966b46cf2833362970d0629a97c0767/CVE/data/2025/CVE-2025-21891.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21891.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21891.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/83801adff4809288a771f0aa145ef16d9c2279fb/references/CveServices-CVE-2025-21891-2025-11-03-1326",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21891.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21891",
+]
