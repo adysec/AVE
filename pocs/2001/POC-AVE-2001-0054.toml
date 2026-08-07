@@ -1,26 +1,21 @@
 [info]
-author = "AVE"
-description = "检测目标是否托管了利用 Windows Media Player 7.0 .wmz 皮肤文件执行任意 Java 小程序的恶意页面。攻击者通过 IFRAME 加载恶意 skin.wmz 文件到已知路径，再通过 applet 标签的 codebase 参数执行其中的 Java 代码。"
+author = "ave"
+description = "验证 Microsoft Windows Media Player 7 .wmz 皮肤文件任意 Java 小程序执行漏洞。攻击者通过 IFRAME 加载恶意 .wmz 皮肤文件到已知目录，随后通过 JavaScript setTimeout 打开包含 APPLET 标签的第二页，引用本地已下载的 Java 类文件执行任意代码。PoC 检测恶意 HTML 页面中是否包含 IFRAME 引用 .wmz 文件及 setTimeout 跳转的第二阶段页面。"
 id = "POC-AVE-2001-0054"
-name = "Microsoft Windows Media Player 7.0 .wmz Arbitrary Java Applet PoC"
+name = "CVE-2001-0137 PoC"
 severity = "medium"
-tags = [
-    "cve-2001-0137",
-    "windows-media-player",
-    "wmz",
-    "java-applet",
-]
+tags = ["ave-2001-0054"]
 vuln_id = [
     "CVE-2001-0137",
     "AVE-2001-0054",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/wmp2.wmz"
+path = "/{{BaseURL}}/"
 protocol = "http"
 
 [[poc.requests.matchers]]
@@ -28,6 +23,15 @@ expect = true
 part = "body"
 type = "word"
 words = [
-    "PK",
-    "application/zip",
+    "<IFRAME",
+    ".wmz",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "setTimeout",
+    "wmp7-3a.html",
 ]
