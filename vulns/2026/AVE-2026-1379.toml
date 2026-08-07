@@ -1,0 +1,42 @@
+[basic]
+description = "Open WebUI 在 0.7.0 至 0.11.0 版本中存在权限绕过漏洞。当管理员已撤销某用户的图像生成权限（features.image_generation）时，该用户仍可通过在聊天补全（chat-completions）请求中携带 features.image_generation 标志来调用图像生成功能。这是因为聊天管道直接信任了客户端提供的 features 对象，未像直接图像路由和原生函数调用路径那样重新检查用户权限。成功利用后，攻击者可消耗运营商配置的图像生成服务提供商的 API 额度和配额，并将生成的文件写入运营商存储空间。该漏洞不影响原生函数调用路径（native function calling），且不会暴露提供程序凭据或其他用户数据。漏洞已在 0.11.0 版本中修复。"
+published = "2026-08-04T20:16:55Z"
+remediation = "立即将 Open WebUI 升级至 0.11.0 或更高版本。该版本修复了 legacy chat-features 块未重新校验 features.image_generation 权限的缺陷，确保被撤销图像生成权限的用户无法通过聊天补全接口生成图像。如暂时无法升级，可关闭 ENABLE_IMAGE_GENERATION 配置项禁用图像生成功能，或在聊天请求中将 params.function_calling 设置为 native 模式（而非 legacy）作为临时缓解措施，因为 native 模式会在注册图像工具前正确检查用户权限。"
+score = 4.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Open WebUI 图像生成权限绕过漏洞"
+updated = "2026-08-05T16:17:02Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-70484",
+    "GHSA-g423-grf7-98rv",
+]
+ave_id = "AVE-2026-1379"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/open-webui/open-webui/commit/897d69a35c65f8ab54583bb9ca8dc74eab7bcd29",
+    "https://github.com/open-webui/open-webui/pull/26703",
+    "https://github.com/open-webui/open-webui/releases/tag/v0.11.0",
+    "https://github.com/open-webui/open-webui/security/advisories/GHSA-g423-grf7-98rv",
+    "https://github.com/CVEProject/cvelistV5/blob/9a8a3c32015143180dac972cdde44f1ded37f1dd/cves/2026/70xxx/CVE-2026-70484.json",
+    "https://github.com/cisagov/vulnrichment/blob/bfb1ed18d84de445aef9dfa712f1cbc54ae73923/2026/70xxx/CVE-2026-70484.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9b3ccc0b6aa4a9f3405ce9f43548bd95edfa1060/SSVC/data/2026/CVE-2026-70484.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9b3ccc0b6aa4a9f3405ce9f43548bd95edfa1060/CVE/data/2026/CVE-2026-70484.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/fd83d7300ad2d6d69a40586722d4416f017c1bdf/data/2026/CVE-2026-70484.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-70484.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/63a532b725792b89ea32ae40fb744f9c8a9ba2df/CVE-2026/CVE-2026-704xx/CVE-2026-70484.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/pypi/open-webui/CVE-2026-70484.yml",
+    "https://github.com/anchore/cve-data-enrichment/blob/f95ed70ff4572bede3f68dd12496edb1151d4685/data/anchore/2026/CVE-2026-70484.json",
+    "https://github.com/TMA84/cvealert/blob/252040eaa4054cd6a0f6dcf29c7a7aec631c299b/content/posts/cve-2026-70484.md",
+]
