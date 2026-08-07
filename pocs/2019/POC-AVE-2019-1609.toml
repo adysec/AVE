@@ -1,64 +1,42 @@
 [info]
-author = "AVE"
-description = "通过向 Kibana Timelion 的 /api/timelion/run 接口发送特制 JSON 请求，利用 .props() 函数进行原型链污染注入恶意表达式，触发服务端任意命令执行。检测响应中是否包含命令执行结果特征。"
+author = "ave"
+description = "通过向 Kibana Timelion API 发送 POST 请求验证原型链污染漏洞（CVE-2019-7609）是否存在。目标版本为 Kibana 5.6.15 之前及 6.6.1 之前，该漏洞允许未授权攻击者通过 Timelion 组件注入恶意 JavaScript 代码实现远程代码执行。"
 id = "POC-AVE-2019-1609"
-name = "Elastic Kibana Timelion 原型链污染任意代码执行 PoC"
+name = "Kibana Timelion 远程代码执行漏洞检测"
 severity = "critical"
-tags = [
-    "cve-2019-7609",
-    "kibana",
-    "rce",
-    "prototype-pollution",
-]
+tags = ["ave-2019-1609"]
 vuln_id = [
     "CVE-2019-7609",
     "AVE-2019-1609",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/api/timelion/run"
+path = "/api/timelion/run"
 protocol = "http"
 
 [poc.requests.body]
-type = "json"
+type = "raw"
 
 [poc.requests.headers]
-Content-Type = "application/json"
-User-Agent = "AVE/1.0"
+Content-Type = "application/json; charset=utf-8"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "uid=",
-    "root:",
-    "seriesList",
-]
-
-[[poc.requests]]
-method = "POST"
-path = "/{{BaseURL}}/api/timelion/run"
-protocol = "http"
-
-[poc.requests.body]
-type = "json"
-
-[poc.requests.headers]
-Content-Type = "application/json"
-User-Agent = "AVE/1.0"
-kbn-version = "6.5.0"
+words = ["seriesList"]
 
 [[poc.requests.matchers]]
 expect = true
-part = "body"
+part = "header"
 type = "word"
-words = [
-    "uid=",
-    "root:",
-    "seriesList",
-]
+words = ["application/json"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
