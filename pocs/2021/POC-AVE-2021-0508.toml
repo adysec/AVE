@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "检测 VMware vCenter Server 是否存在 CVE-2021-21985 远程代码执行漏洞。该漏洞源于 Virtual SAN Health Check 插件的输入验证缺失，未经认证的攻击者可通过 443 端口发送特制 POST 请求在底层操作系统上以 root 权限执行任意命令。本检测通过向指定 REST 接口发送请求并校验响应体中是否包含特定 JSON 结构来判断目标是否易受攻击，攻击复杂度低，无需用户交互即可利用。"
+id = "POC-AVE-2021-0508"
+name = "VMware vCenter Server RCE 漏洞检测"
+severity = "critical"
+tags = ["ave-2021-0508"]
+vuln_id = [
+    "CVE-2021-21985",
+    "AVE-2021-0508",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/ui/h5-vsan/rest/proxy/service/com.vmware.vsan.client.services.capability.VsanCapabilityProvider/getClusterCapabilityData"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"methodInput":[{"type":"ClusterComputeResource","value":null,"serverGuid":null}]}'
+type = "json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['{"result":{"isDisconnected":']
