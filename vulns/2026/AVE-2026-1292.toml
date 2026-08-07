@@ -1,0 +1,41 @@
+[basic]
+description = "Russh 是 Rust 编写的 SSH 客户端与服务器库。在 0.62.5 及更早版本中，服务端存在 SSH channel 生命周期管理缺陷。当客户端完成认证后，即使未发送 `SSH_MSG_CHANNEL_OPEN` 消息请求建立会话通道，`russh` 仍会为任意 recipient channel ID 调度 channel-scoped 回调函数（如 `exec_request`、`shell_request`、`subsystem_request`、`pty_request` 等）。具体而言，在 `server_read_authenticated` 函数中处理 `CHANNEL_REQUEST` 消息时，代码未先验证 recipient channel ID 是否存在于加密会话的已确认 channel 表中，就直接调用应用层的 handler 回调。攻击者作为已认证的 SSH 客户端（需提供有效用户名和密码），可直接伪造 `SSH_MSG_CHANNEL_REQUEST` 数据包并指定任意的 recipient channel ID，从而绕过服务端应用程序的 channel-open 策略，触发本应仅对已授权开放 channel 执行的操作（如执行受限命令）。此漏洞并非认证绕过，攻击前提是已通过身份验证，危害在于 channel-open 决策边界未被正确执行，可能导致未授权命令执行或工作流触发。修复建议将受影响的 channel-scoped 回调调度前增加 `enc.channels` 中的 established channel 确认检查，并确保应用层 channel 引用仅在 channel 被批准时才插入。"
+published = "2026-08-03T17:16:44Z"
+remediation = "将项目依赖中的 russh 升级至 0.62.5 或更高版本。在 Cargo.toml 中将 russh 版本修改为 0.62.5，执行 cargo update 拉取修复版本。如暂无法立即升级，可在应用层对 exec_request、shell_request、subsystem_request、data、channel_eof、channel_close 等 channel-scoped 回调前增加显式校验，仅处理 enc.channels 中已确认打开的 channel，拒绝任何未经过 CHANNEL_OPEN 确认的 recipient channel ID 请求，以阻止未打开通道的请求触发状态变更操作。"
+score = 6.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Russh SSH 服务端通道回调绕过漏洞"
+updated = "2026-08-03T17:16:44Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-68930",
+    "GHSA-m65r-rprj-r5rg",
+]
+ave_id = "AVE-2026-1292"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Eugeny/russh/commit/7c5659f8cf6f6f2f9989d12dba0ebf49dc50a171",
+    "https://github.com/Eugeny/russh/releases/tag/v0.62.5",
+    "https://github.com/Eugeny/russh/security/advisories/GHSA-m65r-rprj-r5rg",
+    "https://github.com/CVEProject/cvelistV5/blob/5d0ad05157b8fd78394d7708a91ae3d6407d11a2/cves/2026/68xxx/CVE-2026-68930.json",
+    "https://github.com/cisagov/vulnrichment/blob/9f3cd8876e413c1dafc4ceaa59bb9544bbb0c8a3/2026/68xxx/CVE-2026-68930.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7c0ef39a22957afc03910342f675d7ccbcb3511f/CVE/data/2026/CVE-2026-68930.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7c0ef39a22957afc03910342f675d7ccbcb3511f/SSVC/data/2026/CVE-2026-68930.json",
+    "https://github.com/sec-dojo-com/cve-poc/blob/ce677e1fe99e62548579ac57c76908be32c0ec8d/pocs/2026/CVE-2026-68930.md",
+    "https://github.com/anchore/nvd-data-overrides/blob/3185decd4974fd632046fe2bcfefaac11de4556f/data/2026/CVE-2026-68930.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-68930.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2026/CVE-2026-689xx/CVE-2026-68930.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/e66a055508fe00cafa53e7f94ccbdeb07c7172ea/data/anchore/2026/CVE-2026-68930.json",
+    "https://github.com/neuvector/vul-source/blob/91874708be2fd0c7de49361fa5ebca82e17eb0c7/ubuntu-cve-tracker/active/CVE-2026-68930",
+]
