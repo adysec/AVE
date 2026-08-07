@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核 RDMA/mlx5 驱动的 UMR 队列对恢复流程中存在竞态条件。当队列对处于错误状态时，若软件未等待所有未完成工作请求（WR）结束就提前将其重置，固件可能跳过部分错误的完成队列事件并直接丢弃，导致完成队列事件丢失。该漏洞需要本地低权限用户在高复杂度攻击条件下触发 RDMA 资源错误恢复流程，利用此竞态条件可使系统任务在注销内存注册资源时被阻塞卡死超过 120 秒，最终引发拒绝服务。修复补丁通过在重置队列对前插入一个屏障工作请求，确保收到其完成事件后再执行状态转换，从而安全完成恢复流程。"
+published = "2025-03-27T15:15:57Z"
+remediation = "建议立即升级内核至以下版本之一：Linux 6.13+（主线）、6.12.1+（稳定分支）、6.1.x LTS（长期支持分支，已回港修复）。Ubuntu 22.04/24.04 LTS 用户执行 `apt update && apt install linux-image-6.8.0-1039-nvidia` 并重启，版本需 ≥ 6.8.0-1039.42。若无法立即升级且不使用 Mellanox Connect-IB 硬件，可通过 `echo 'blacklist mlx5_ib' > /etc/modprobe.d/mlx5_ib.conf && update-initramfs -u` 禁用 mlx5_ib 模块作为临时缓解措施，随后重启生效。RHEL/CentOS 用户请关注 Red Hat 安全公告（RHSA）并应用对应内核更新，或按上述方法黑名单 mlx5_ib 模块。"
+score = 4.7
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 RDMA/mlx5 竞争条件任务挂起漏洞"
+updated = "2026-06-17T08:44:32Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21892"]
+ave_id = "AVE-2025-1033"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1d2b84d8d054313deed2b2fcafe1168bbcb9e99f",
+    "https://git.kernel.org/stable/c/3e3bf255992cc02404e9d209b127c1c9944239cf",
+    "https://git.kernel.org/stable/c/d97505baea64d93538b16baf14ce7b8c1fbad746",
+    "https://github.com/CVEProject/cvelistV5/blob/e089fbede0f95f2d4df85cd26008124a09d73dc8/cves/2025/21xxx/CVE-2025-21892.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9cadf2781966b46cf2833362970d0629a97c0767/CVE/data/2025/CVE-2025-21892.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21892.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21892",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/c9d2df1ca6a644222999e57cc00bd3742d4ae6f9/tracker/CVE/2025/CVE-2025-21892.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21892.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21892.yaml",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21892",
+    "https://github.com/opencve/opencve-kb/blob/db96875ac5ac7d5604926ae5714d3a05b58a674d/2025/CVE-2025-21892.json",
+    "https://github.com/MatALass/anssi-vulnerability-intelligence/blob/77a0771d93df03375a6a04965087efb0123e795f/data/raw/anssi_snapshot/first/CVE-2025-21892",
+]
