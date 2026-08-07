@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核 VLAN 子系统存在越界读取漏洞。当在非以太网设备（如 GRE 隧道设备）上创建 VLAN 设备时，内核会为该底层设备初始化 GARP 和 MRP 协议，并通过 dev_mc_add 添加组播地址。由于底层设备的地址长度（dev->addr_len）可能大于以太网的 6 字节，而 GARP/MRP 提供的组播地址固定为 6 字节，导致内核发生越界读取，可能将内核函数地址泄露到用户态。攻击者需要具备本地低权限访问权限，通过在主机上创建基于非以太网设备的 VLAN 接口并执行特定命令即可触发该漏洞，造成信息泄露。该漏洞影响使用受影响内核版本的 Linux 系统，CVSS 评分为 7.1（高危）。"
+published = "2025-04-01T16:15:22Z"
+remediation = "建议立即升级 Linux 内核至以下修复版本之一：5.4.291、5.10.235、5.15.179、6.1.131、6.6.83、6.12.19、6.13.7 或更高版本。具体操作：Debian 12 用户执行 apt update && apt upgrade linux-image-$(uname -r)，升级至 6.1.133-1 及以上；Ubuntu 22.04 LTS 用户通过 apt install --only-upgrade linux-image-generic-hwe-22.04 升级至 5.15.0-140.150 及以上；RHEL 9 用户通过 yum update kernel 安装 RHSA-2025:8643 补丁后重启系统。如无法立即重启，可通过 sysctl -w kernel.unprivileged_userns_clone=0 限制非特权用户命名空间克隆，或通过 sysctl -w net.ipv4.ip_forward=0 禁用不必要的隧道接口，并移除 gretap/ip6gre 等非以太网隧道设备的 VLAN 绑定配置，以临时缓解越界读取风险。"
+score = 7.1
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux kernel VLAN 越界读取信息泄露漏洞"
+updated = "2026-06-17T08:44:36Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21920"]
+ave_id = "AVE-2025-1046"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0fb7aa04c19eac4417f360a9f7611a60637bdacc",
+    "https://git.kernel.org/stable/c/30e8aee77899173a82ae5ed89f536c096f20aaeb",
+    "https://git.kernel.org/stable/c/3561442599804905c3defca241787cd4546e99a7",
+    "https://git.kernel.org/stable/c/5a515d13e15536e82c5c7c83eb6cf5bc4827fee5",
+    "https://git.kernel.org/stable/c/7f1564b2b2072b7aa1ac75350e9560a07c7a44fd",
+    "https://git.kernel.org/stable/c/b33a534610067ade2bdaf2052900aaad99701353",
+    "https://git.kernel.org/stable/c/b6c72479748b7ea09f53ed64b223cee6463dc278",
+    "https://git.kernel.org/stable/c/fa40ebef69234e39ec2d26930d045f2fb9a8cb2b",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21920.md",
+    "https://github.com/CVEProject/cvelistV5/blob/2ed40ac6388b6b0944090d1b83263695e50f7b65/cves/2025/21xxx/CVE-2025-21920.json",
+    "https://github.com/cisagov/vulnrichment/blob/9f2635e41b440c54a9faab293f8a5836ca6093fc/2025/21xxx/CVE-2025-21920.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ec48735dfbcbc981aa038a6c8bc606e4fdbd898/SSVC/data/2025/CVE-2025-21920.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ec48735dfbcbc981aa038a6c8bc606e4fdbd898/CVE/data/2025/CVE-2025-21920.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21920.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21920.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/83801adff4809288a771f0aa145ef16d9c2279fb/references/CveServices-CVE-2025-21920-2025-11-03-1337",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/83801adff4809288a771f0aa145ef16d9c2279fb/references/CveServices-CVE-2025-21920-2025-11-03-1327",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21920.json",
+]
