@@ -1,12 +1,12 @@
 [basic]
-description = "多种 Unix 系统（包括 tcsh、csh、sh、bash）的 shell 程序在处理 here-document（<< 重定向）时存在符号链接竞争条件漏洞。本地攻击者可通过创建符号链接指向其他用户的可写文件，利用 shell 在处理临时文件时未正确检查符号链接的缺陷，诱使目标用户执行包含恶意重定向的脚本，从而覆盖其他用户的任意文件。该漏洞影响 HP-UX、RedHat、SCO、IRIX、Mandriva、Apple Mac OSX 等多种 Unix 系统，CVSS 评分 7.2，危害等级高。"
-published = "2001-01-09T05:00:00Z"
-remediation = "建议立即升级受影响 shell 到已修复版本：Red Hat Linux 用户安装 RHSA-2000-117/RHSA-2000-121 提供的更新包；Debian 用户参照 DSA-20001111a 升级 shell 包；FreeBSD 用户应用 SA-00:76 补丁；Caldera 用户安装 CSSA-2000-042/CSSA-2000-043 更新；Mandrake 用户升级至 MDKSA-2000-069/MDKSA-2000-075 对应版本。如无法立即升级，可通过 umask 限制临时目录权限、避免在多用户环境下使用未信任的 here-document 重定向作为临时缓解措施。"
-score = 7.2
-severity = "HIGH"
-sources = ["epss"]
-title = "多种Unix Shell 程序 Here-Document 符号链接文件覆盖漏洞"
-updated = "2026-06-16T21:53:13Z"
+description = "UUCP（Unix-to-Unix Copy）工具集在处理文件创建及重定向操作时存在符号链接（symlink）跟随竞态条件漏洞。由于 UUCP 的相关命令在写文件前未对目标路径进行正确校验，攻击者可通过在目标目录中预先放置符号链接等手段，诱导 UUCP 以运行权限覆盖或创建任意文件，进而实现文件篡改、提权或底层攻击。该漏洞主要影响 Apple MacOS X 10、HP-UX 9/10/11、Mandriva 6/7、RedHat 5/6、SCO 5、IRIX 6 等众多 Unix 系操作系统。攻击条件为攻击者具备本地账户并能够控制文件系统的特定目录，利用方式通常是在目标目录创建指向敏感文件的符号链接，再触发 UUCP 的文件创建/覆盖操作，从而实现对任意文件的写入或损坏，属于本地权限提升类安全风险。"
+published = "2001-01-09T00:00:00Z"
+remediation = "建议立即将 UUCP 升级到 1.07 或更高版本（如 tar.gz 补丁 1.07.8），该版本修复了通过 symlink 创建/覆盖任意文件及 shell 重定向的竞赛条件漏洞。如无法升级，可在受影响系统上为 uucp 目录设置严格权限，限制 uucp 用户对用户可写目录的符号链接跟踪，并禁止攻击者控制的进程以 root 权限调用重定向。对于 HP-UX、RedHat、SCO、IRIX 等受影响系统的相关临时目录，使用 sticky bit 并收紧 /dev 及 spool 目录的写权限，作为临时缓解措施。"
+score = 5
+severity = "MEDIUM"
+sources = ["avd"]
+title = "UUCP 涉及多个 Unix 平台 shell 重定向符号链接竞态导致文件创建或覆盖漏洞"
+updated = "2001-01-09T00:00:00Z"
 
 [exploit]
 exp_urls = []
@@ -17,37 +17,20 @@ aliases = ["CVE-2000-1134"]
 ave_id = "AVE-2000-0821"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "http://archives.neohapsis.com/archives/bugtraq/2000-10/0418.html",
-    "http://archives.neohapsis.com/archives/tru64/2002-q1/0009.html",
-    "http://distro.conectiva.com.br/atualizacoes/?id=a&anuncio=000350",
-    "http://distro.conectiva.com.br/atualizacoes/?id=a&anuncio=000354",
-    "http://marc.info/?l=bugtraq&m=97561816504170&w=2",
-    "http://www.calderasystems.com/support/security/advisories/CSSA-2000-042.0.txt",
-    "http://www.calderasystems.com/support/security/advisories/CSSA-2000-043.0.txt",
-    "http://www.debian.org/security/2000/20001111a",
-    "http://www.kb.cert.org/vuls/id/10277",
-    "http://www.linux-mandrake.com/en/security/MDKSA-2000-069.php3",
-    "http://www.linux-mandrake.com/en/security/MDKSA-2000-075.php3",
-    "http://www.redhat.com/support/errata/RHSA-2000-117.html",
-    "http://www.redhat.com/support/errata/RHSA-2000-121.html",
-    "http://www.securityfocus.com/archive/1/146657",
-    "http://www.securityfocus.com/bid/1926",
-    "http://www.securityfocus.com/bid/2006",
-    "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A4047",
     "https://www.exploit-db.com/exploits/20436",
-    "https://github.com/trickest/cve/blob/7ade3449b58b8e2c679712dc3af64bbd8e638364/2000/CVE-2000-1134.md",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2000/CVE-2000-1134.md",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2000/CVE-2000-1134.md",
-    "https://github.com/CVEProject/cvelistV5/blob/a31aa101497b2d23391e84ef31f75e6600381dae/cves/2000/1xxx/CVE-2000-1134.json",
+    "https://github.com/CVEProject/cvelistV5/blob/b6b9b8a9ba416bc448aedc424a8c362f5dc145e0/cves/2000/1xxx/CVE-2000-1134.json",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2000/CVE-2000-1134.md",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1134",
-    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/a98b678de864d822449fa563f0932aa46fad56c0/CVEs/2000/CVE-2000-1134.md",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/3080d87f73e663ce3742fcfbca9ee2ea57d7f5cc/CVEs/2000/CVE-2000-1134.md",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-1134.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/be7c9eef0523e112dce5fde0006bf85d14a40618/CVE/data/2000/CVE-2000-1134.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a07446c9841eff2cadbd30b5a823ea70c1834a2b/CVE/data/2000/CVE-2000-1134.json",
     "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2000/CVE-2000-1134.md",
-    "https://github.com/opencve/opencve-kb/blob/abb3d9c240bc75ee9d5885882897d780d10d15cb/2000/CVE-2000-1134.json",
+    "https://github.com/opencve/opencve-kb/blob/4e5c74d6610699781cf5b1cdf6503b7f32a73dfe/2000/CVE-2000-1134.json",
 ]
