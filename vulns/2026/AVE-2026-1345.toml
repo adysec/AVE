@@ -1,0 +1,42 @@
+[basic]
+description = "Flowise 是一款用于构建大语言模型流程的拖放式用户界面。在 3.1.3 版本之前，CSVAgent 节点允许用户提供通过 pyodide 执行的 Python 代码以处理 CSV 文件。尽管系统配置了黑名单拦截危险的 Python 构造（如 import、eval、exec 等），但攻击者可以利用 pandas 库的 read_pickle() 函数反序列化恶意 pickle 载荷，从而绕过黑名单实现远程代码执行。受影响文件为 flowise-components/nodes/agents/CSVAgent/CSVAgent.ts，用户可控的 customReadCSVFunc 参数会被直接拼入 pd.${customReadCSVFunc} 执行。具备创建或修改聊天流程权限的认证用户，可在 CSV Agent 的 Additional Parameters 中注入恶意代码，保存流程后通过向 /api/v1/prediction/&lt;UUID&gt; 发送 POST 请求触发，最终在服务器上执行任意操作系统命令。该漏洞 CVSS 评分 9.4，危害等级严重，已在 Flowise 3.1.3 版本中修复。"
+published = "2026-08-04T17:17:00Z"
+remediation = "立即升级 Flowise 至 3.1.3 或更高版本，该版本已移除 CSVAgent 节点中通过 pyodide 执行用户自定义 Python 代码的能力，从根本上消除 pandas.read_pickle() 反序列化攻击面。如暂无法立即升级，应通过访问控制列表（ACL）限制仅有受信任管理员可创建或修改 Chatflow，并在部署环境中临时禁用或移除 CSVAgent 节点及其相关功能入口。"
+score = 9.4
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Flowise CSVAgent 远程代码执行漏洞"
+updated = "2026-08-05T14:17:10Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69256",
+    "GHSA-x6vm-w76m-8j7g",
+]
+ave_id = "AVE-2026-1345"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/FlowiseAI/Flowise/commit/c79fe56a6c249850e96bce9b4859f7a0083e4507",
+    "https://github.com/FlowiseAI/Flowise/pull/6257",
+    "https://github.com/FlowiseAI/Flowise/releases/tag/flowise@3.1.3",
+    "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-x6vm-w76m-8j7g",
+    "https://github.com/CVEProject/cvelistV5/blob/8d761288c12d1a9bf761b0c5cf276b970a7806ba/cves/2026/69xxx/CVE-2026-69256.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6120c40ff117bee56ffec7d2c1707dc537c2f66/CVE/data/2026/CVE-2026-69256.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69256.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise/CVE-2026-69256.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2dd45b48e0efa0fde64742f95da829dc45ea506c/CVE-2026/CVE-2026-692xx/CVE-2026-69256.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise-components/CVE-2026-69256.yml",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/baaabdeedc4b09f0484f180f040071dd4f95812b/nvd/2026/CRITICAL/CVE-2026-69256/README.md",
+    "https://github.com/TMA84/cvealert/blob/28d98e023aa8fad90c20ec94b202da55048de4bf/content/posts/cve-2026-69256.md",
+    "https://github.com/opencve/opencve-kb/blob/ab57f0f5941edfcae5978f583ee8f5b3de27e9c0/2026/CVE-2026-69256.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/91be9eb9295258fcf9346546d639e773f775edc3/content/CVE-2026-69256.md",
+]
