@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核 HID appleir 驱动存在空指针解引用漏洞。当使用特制畸形 USB HID 设备发送异常报告数据时，由于报告项中无有效字段导致输入设备配置失败、hidinput_connect() 返回错误，事件回调函数被触发时 input_dev 指针为空，从而在 input_event() 中触发空指针解引用。该漏洞需要本地低权限用户通过物理接触或模拟 USB HID 设备发送畸形数据方可触发，成功利用可导致系统崩溃或拒绝服务。受影响版本包括 Linux 6.13.0-rc4 等内核版本，CVSS 评分为 5.5（中危）。Linux 验证中心通过 Syzkaller 模糊测试发现该问题，修复方案是在事件回调函数中增加 HID_CLAIMED_INPUT 标志检查，在未成功申请输入设备时提前返回避免空指针解引用。"
+published = "2025-04-01T16:15:25Z"
+remediation = "升级 Linux 内核至 6.13-rc5 或更高稳定版本（该修复已于 2025 年 4 月合并到主线），或手动应用 commit gf097a36ef88d 之后的补丁：在 drivers/hid/hid-appleir.c 的 appleir_raw_event() 函数入口处检查 HID_CLAIMED_INPUT 标志是否设置，若未设置则提前返回，避免对空指针 input_dev 的访问。如无法立即升级内核，可通过 modprobe.blacklist=hid_appleir 禁用该模块作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 HID appleir 驱动空指针解引用漏洞"
+updated = "2026-06-17T08:44:41Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21948"]
+ave_id = "AVE-2025-1061"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0df1ac8ee417ad76760ff076faa4518a4d861894",
+    "https://git.kernel.org/stable/c/2ff5baa9b5275e3acafdf7f2089f74cccb2f38d1",
+    "https://git.kernel.org/stable/c/68cdf6710f228dfd74f66ec61fbe636da2646a73",
+    "https://git.kernel.org/stable/c/6db423b00940b05df2a1265d3c7eabafe9f1734c",
+    "https://git.kernel.org/stable/c/8d39eb8c5e14f2f0f441eed832ef8a7b654e6fee",
+    "https://git.kernel.org/stable/c/b1d95d733cd6e74f595653daddcfc357bea461e8",
+    "https://git.kernel.org/stable/c/d335fce8b88b2353f4bb20c631698e20384e3610",
+    "https://git.kernel.org/stable/c/fc69e2c3219d433caabba4b5d6371ba726a4b37f",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21948.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b0ae64d398af575cc8fc4dbcb672decf1c29c5b8/cves/2025/21xxx/CVE-2025-21948.json",
+    "https://github.com/cisagov/vulnrichment/blob/120beb0c7e841b5baa49e42f909e2b46b302b304/2025/21xxx/CVE-2025-21948.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d8a3a899d1eefc2c1649de96e2290c55d12029cb/SSVC/data/2025/CVE-2025-21948.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21948.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d8a3a899d1eefc2c1649de96e2290c55d12029cb/CVE/data/2025/CVE-2025-21948.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/91ece4b64c50642397da36724a41d94be4de3a9d/references/CveServices-CVE-2025-21948-2025-11-03-1337",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/91ece4b64c50642397da36724a41d94be4de3a9d/references/CveServices-CVE-2025-21948-2025-11-03-1327",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21948.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21948.json",
+]
