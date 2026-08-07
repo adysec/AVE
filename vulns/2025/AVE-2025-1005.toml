@@ -1,0 +1,42 @@
+[basic]
+description = "Linux内核KVM子系统的x86虚拟化模块存在调试寄存器竞争条件漏洞。当访客虚拟机禁用调试寄存器拦截后，KVM在VM-Enter时将访客DR6值加载到硬件寄存器，但该加载操作位于.vcpu_run()核心循环内部，而保存操作却由通用代码在循环外部执行。在嵌套虚拟化场景（如KVM-on-KVM）下，若二级访客修改DR6后触发快速路径VM-Exit（例如VMX抢占计时器中断），KVM将用过时的宿主机DR6缓存值覆盖硬件寄存器，导致访客实际DR6值被破坏。该漏洞影响启用Intel VT-x或AMD-V嵌套虚拟化功能并运行受影响Linux内核版本的宿主机系统。攻击者需具备本地访客虚拟机中的低权限访问权限，无需用户交互即可利用。成功利用可能导致宿主机hypervisor调试状态紊乱、虚拟机崩溃或拒绝服务，CVSS评分7.3，危害等级为高。"
+published = "2025-03-07T09:15:16Z"
+remediation = "建议立即升级 Linux 内核到修复版本：Red Hat Enterprise Linux 9 升级至 kernel-5.14.0-570.17.1.el9_5 或更高版本（RHSA-2025:20518）；Debian 12 升级至 linux-image-6.1.123-1 或更高版本（DSA-5925）；SUSE Linux Enterprise 15 SP7 升级至 kernel-default-6.4.0-150600.23.30.1 或更高版本（SUSE-SU-2025:02997-1）；Ubuntu 22.04 LTS 升级至 linux-image-5.15.0-139-generic 或更高版本（USN-7686-1）。如无法立即升级，可暂时禁用嵌套虚拟化（在内核参数添加 kvm_intel.nested=0 kvm_amd.nested=0）作为临时缓解措施。"
+score = 7.3
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 KVM x86 调试寄存器 DR6 状态覆盖漏洞"
+updated = "2026-07-30T06:21:40Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21839"]
+ave_id = "AVE-2025-1005"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/4eb063de686bfcdfd03a8c801d1bbe87d2d5eb55",
+    "https://git.kernel.org/stable/c/93eeb6df1605b3a24f38afdba7ab903ba6b64133",
+    "https://git.kernel.org/stable/c/9efb2b99b96c86664bbdbdd2cdb354ac9627eb20",
+    "https://git.kernel.org/stable/c/a1723e9c53fe6431415be19302a56543daf503f5",
+    "https://git.kernel.org/stable/c/c2fee09fc167c74a64adb08656cb993ea475197e",
+    "https://git.kernel.org/stable/c/d456de38d9eb753a4e9fde053c18d4ef8e485339",
+    "https://lists.debian.org/debian-lts-announce/2025/08/msg00010.html",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2025/CVE-2025-21839.md",
+    "https://github.com/CVEProject/cvelistV5/blob/a961b14b1ebbcaa24b398d7eaa2511e8b05eedcf/cves/2025/21xxx/CVE-2025-21839.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21839.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/694379c8a953b4d106540076b482d281ae9c2bda/CVE/data/2025/CVE-2025-21839.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5e8562b3a5799c26af53e6d5c536ab278b612e46/references/CveServices-CVE-2025-21839-2025-11-03-1304",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21839.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21839",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/941cb4c2dcf5da18963a0e39c065be3ea976c44b/tracker/CVE/2025/CVE-2025-21839.json",
+    "https://github.com/CVEProject/cve-reference-ingest/blob/4378ee16ffe8c47478273bc6b79b461271c073f2/references/contrib1-CveServices-CVE-2025-21839-2025-11-03-1304",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21839",
+]

