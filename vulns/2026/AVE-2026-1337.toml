@@ -1,0 +1,42 @@
+[basic]
+description = "Flowise 是一个用于构建 AI 应用的低代码平台，其多个自定义工具组件（AgentAsTool、ChatflowTool 和 ExecuteFlow）在 vm2 沙箱内执行用户自定义 JavaScript 代码。然而，这些组件在构建脚本时直接将用户可控的 baseURL 值拼接进 JavaScript 源代码，而 isValidURL 校验未阻止 URL 哈希片段中的特殊字符。已认证攻击者可通过构造包含代码注入的 baseURL，闭合字符串后注入任意 JavaScript 代码，利用 vm2 沙箱与 Flowise 在同一 Node.js 进程中执行且暴露危险依赖的特性，最终绕过沙箱限制在服务器上执行任意代码，获得与 Flowise 进程用户等同的权限。该漏洞影响 Flowise 3.1.1 及之前版本，攻击者只需拥有有效用户会话即可利用。"
+published = "2026-08-04T16:16:29Z"
+remediation = '立即将 Flowise 升级至 3.1.3 或更高版本，该版本已移除对不安全 vm2 沙箱的依赖并修复了 baseURL 代码注入漏洞。如暂时无法升级，应在流量入口处通过防火墙或 WAF 拦截包含 `#";\n` 等注入特征的请求，同时禁用 AgentAsTool、ChatflowTool 和 ExecuteFlow 节点中对 vm2 沙箱的使用，并将 `useSandbox` 设为 `false` 的组件切换至 E2B 沙箱或 isolated-vm 替代方案，以降低被利用风险。'
+score = 9
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "FlowiseAI Flowise vm2 沙箱逃逸远程代码执行漏洞"
+updated = "2026-08-05T16:17:01Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69253",
+    "GHSA-wg86-r78f-74mp",
+]
+ave_id = "AVE-2026-1337"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/FlowiseAI/Flowise/commit/3f257bdc8196082a178da7134a075824401b13b9",
+    "https://github.com/FlowiseAI/Flowise/pull/6417",
+    "https://github.com/FlowiseAI/Flowise/releases/tag/flowise@3.1.3",
+    "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-wg86-r78f-74mp",
+    "https://github.com/CVEProject/cvelistV5/blob/6965489bbb0e546f402d9f723160a02c114a0639/cves/2026/69xxx/CVE-2026-69253.json",
+    "https://github.com/cisagov/vulnrichment/blob/22f707ccf2b59cc84867f2491d2a1b6cbfbe80c1/2026/69xxx/CVE-2026-69253.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/SSVC/data/2026/CVE-2026-69253.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/CVE/data/2026/CVE-2026-69253.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69253.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise/CVE-2026-69253.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/10af4013c239913b9e2b28873060d55f8f810752/CVE-2026/CVE-2026-692xx/CVE-2026-69253.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise-components/CVE-2026-69253.yml",
+    "https://github.com/TMA84/cvealert/blob/28d98e023aa8fad90c20ec94b202da55048de4bf/content/posts/cve-2026-69253.md",
+    "https://github.com/opencve/opencve-kb/blob/dea28c76d2bb882d2a39e50cdffbf575e4222640/2026/CVE-2026-69253.json",
+]
