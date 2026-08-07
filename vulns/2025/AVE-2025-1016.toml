@@ -1,0 +1,46 @@
+[basic]
+description = "Linux 内核 USB gadget 子系统的 f_midi 驱动存在死锁漏洞。当使用 USB MIDI 功能时，完成处理程序 f_midi_complete 会直接调用 f_midi_transmit 函数，导致该函数被递归调用，从而尝试两次获取同一把自旋锁，引发内核死锁。该漏洞影响所有启用 USB gadget f_midi 功能的 Linux 内核版本，攻击者需在本地具有低权限且能触发 USB MIDI 数据传输，无需用户交互即可利用。成功利用后会导致内核工作队列挂起，系统可用性完全丧失，造成拒绝服务。CVSSv3.1 评分为 5.5（MEDIUM），向量为 AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H。Linux 内核维护者已通过将 f_midi_transmit 调用改为通过 queue_work() 调度至高优先级工作队列异步执行的方式修复此问题。"
+published = "2025-03-12T10:15:18Z"
+remediation = "建议将 Linux 内核升级至已修复版本，例如 5.4.291、5.10.235、5.15.179 或 6.1.130 及以上稳定版，以合并 commit 1f10923404705a94891e612dff3b75e828a78368 对 drivers/usb/gadget/function/f_midi.c 的补丁，该补丁通过 queue_work() 将 f_midi_transmit() 调度至高优先级工作队列，消除完成处理程序中的重入死锁。如暂无法升级内核，可通过 modprobe.blacklist=usb_f_midi 禁用 f_midi 模块作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 USB gadget f_midi 死锁漏洞"
+updated = "2026-06-17T08:44:27Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21859"]
+ave_id = "AVE-2025-1016"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1f10923404705a94891e612dff3b75e828a78368",
+    "https://git.kernel.org/stable/c/24a942610ee9bafb2692a456ae850c5b2e409b05",
+    "https://git.kernel.org/stable/c/4ab37fcb42832cdd3e9d5e50653285ca84d6686f",
+    "https://git.kernel.org/stable/c/727dee0857946b85232526de4f5a957fe163e89a",
+    "https://git.kernel.org/stable/c/8aa6b4be1f4efccbfc533e6ec8841d26e4fa8dba",
+    "https://git.kernel.org/stable/c/b09957657d7767d164b3432af2129bd72947553c",
+    "https://git.kernel.org/stable/c/deeee3adb2c01eedab32c3b4519337689ad02e8a",
+    "https://git.kernel.org/stable/c/e9fec6f42c45db2f62dc373fb1a10d2488c04e79",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-265688.html",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2025/CVE-2025-21859.md",
+    "https://github.com/0xMarcio/cve/blob/8bc21e001936acb7383ce82840b519a1f9fea751/2025/CVE-2025-21859.md",
+    "https://github.com/CVEProject/cvelistV5/blob/ecf42c524346a5c0444f5293c684b6080cbff2d3/cves/2025/21xxx/CVE-2025-21859.json",
+    "https://github.com/cisagov/vulnrichment/blob/a6813569605c0b32bd9b1b6284ff40fb89f816e7/2025/21xxx/CVE-2025-21859.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eda6f9f68e3be16431e4e13ed5bafbf65426f7ea/SSVC/data/2025/CVE-2025-21859.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eda6f9f68e3be16431e4e13ed5bafbf65426f7ea/CVE/data/2025/CVE-2025-21859.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21859.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21859.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5e8562b3a5799c26af53e6d5c536ab278b612e46/references/CveServices-CVE-2025-21859-2025-11-03-1326",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5e8562b3a5799c26af53e6d5c536ab278b612e46/references/CveServices-CVE-2025-21859-2025-11-03-1337",
+]
