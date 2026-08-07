@@ -1,15 +1,12 @@
 [basic]
-description = "BNBSurvey 的 survey.cgi 程序存在命令注入漏洞，远程攻击者可通过在 HTTP 请求参数中插入 shell 元字符（如管道符、分号等）来执行任意系统命令，导致服务器被完全控制。攻击无需身份认证，通过网络即可触发，危害极大。"
-published = "1998-12-03T00:00:00Z"
-remediation = "BNBSurvey 已停止维护，建议立即下线该程序或移除 survey.cgi 脚本。如必须使用，应对用户输入进行严格过滤，禁止 shell 元字符（|;&`$(){}[]<>）传入系统命令调用接口。"
-score = 10.0
+description = "BNBSurvey 组件中的 survey.cgi 脚本存在远程命令注入漏洞。该脚本在处理用户提交的参数时未对输入中的 shell 元字符（如管道符、分号等）进行过滤和校验，而是将可控数据直接拼接到系统命令中执行，攻击者无需身份认证即可利用。远程攻击者只需向目标 Web 服务器发送包含恶意元字符的特制 HTTP 请求，即可在服务器上以 Web 服务进程权限执行任意系统命令，进而读取敏感文件、修改网站内容、上传恶意程序，甚至获取服务器控制权。该漏洞攻击条件宽松、利用方式简单，在当时广泛部署 BNBSurvey 的站点上影响面极大，CVSS 评分为 10.0，危害等级为严重。建议使用该组件的用户立即升级补丁或彻底禁用相关 CGI 脚本。"
+published = "1998-12-03T05:00:00Z"
+remediation = "tags.<value>该漏洞源于 BNBSurvey 的 survey.cgi 脚本未对用户提交的参数进行过滤，将输入直接拼入 shell 命令，攻击者通过注入 |、&、;、$、` 等元字符实现远程任意命令执行。建议立即从 Web 目录中删除或停用该 CGI 脚本，若业务必需，应升级到修复了输入校验问题的官方版本或改用受支持的同类调查软件；无法升级时，需重写脚本对参数做白名单校验、剥离所有 shell 元字符，并配置 Web 服务器仅允许可信目录执行 CGI、以最小权限账户运行服务。"
+score = 10
 severity = "CRITICAL"
-sources = [
-    "cve",
-    "epss",
-]
-title = "BNBSurvey survey.cgi 命令注入漏洞"
-updated = "2026-06-16T00:00:00Z"
+sources = ["tenable"]
+title = "BNB BNBSurvey 远程代码执行漏洞"
+updated = "2026-06-16T21:49:21Z"
 
 [exploit]
 exp_urls = []
@@ -20,8 +17,20 @@ aliases = ["CVE-1999-0936"]
 ave_id = "AVE-1999-1229"
 
 [meta]
-collected_at = "2026-07-19T02:56:38Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
-urls = ["https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0936"]
+urls = [
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0936",
+    "https://github.com/CVEProject/cvelistV5/blob/e4fe257e02d6ecdcb83f2a0bd1ddf47878d0f58d/cves/1999/0xxx/CVE-1999-0936.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a07446c9841eff2cadbd30b5a823ea70c1834a2b/CVE/data/1999/CVE-1999-0936.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-0936.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-0936",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-1999-0936.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-1999/CVE-1999-09xx/CVE-1999-0936.json",
+    "https://github.com/justakazh/CVE_Database/blob/06bd07f32c89b43f30d59ff450dfbb661e471cbe/1999/CVE-1999-0936.json",
+    "https://github.com/opencve/opencve-kb/blob/4e5c74d6610699781cf5b1cdf6503b7f32a73dfe/1999/CVE-1999-0936.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/3727bcbc3d14c1fc3378778d245dbf092aa84716/1999/0xxx/CVE-1999-0936.md",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/cd50e1f81ab3d7ad9dd94737c22b59042f42a7e0/api/1999/CVE-1999-0936.json",
+]
