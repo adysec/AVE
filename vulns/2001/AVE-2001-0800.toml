@@ -1,11 +1,11 @@
 [basic]
-description = "Trend Micro Interscan VirusWall 3.6.x及更早版本的Web管理接口未对通信内容进行加密保护。未经身份认证的远程攻击者可通过网络嗅探手段截获管理员提交的HTTP GET请求，或直接访问setpasswd.cgi等管理程序，从中提取base64编码的用户名和密码凭据，进而获取系统管理员权限。该漏洞影响所有部署了受影响版本Interscan VirusWall的邮件安全网关设备，攻击者无需任何前置认证即可远程利用，导致系统完全被接管并可能进一步渗透内部网络。"
+description = "Trend Micro Interscan VirusWall 3.6.x 及更早版本的 Web 管理界面未对通信进行加密，管理员登录凭据通过 HTTP GET 请求以 Base64 编码形式传输。由于 Base64 仅为编码而非加密，未经身份认证的远程攻击者只要能够监听网络流量，即可通过抓包方式获取 setpasswd.cgi 或其他包含 Base64 编码用户名和密码的 HTTP GET 请求，解码后直接获得明文管理员密码，从而完全控制 VirusWall 管理界面。该漏洞影响 Interscan VirusWall 3.6.x 及之前所有版本，攻击条件为攻击者可访问并监听目标设备的网络通信，无需事先拥有任何凭据即可实施利用。"
 published = "2001-03-12T05:00:00Z"
-remediation = "Trend Micro 确认 Interscan VirusWall 3.6.x 及更早版本无法通过补丁修复此漏洞，建议立即升级到 3.7.x 或更高版本，新版已对 Web 管理接口启用 HTTPS 加密传输。如暂无法升级，应在防火墙层面仅允许受信任的 IP 地址访问管理端口 1812，或仅在本地主机使用浏览器配置工具，避免远程通过 HTTP 协议传输管理员凭证。同时建议修改默认管理员密码为高强度密码，并定期审计 /tmp 目录下可疑的临时文件。"
+remediation = "升级 Trend Micro Interscan VirusWall 至 3.6.1 或更高版本，修复后 Web 管理界面将启用 SSL/TLS 加密传输，不再以明文 Base64 编码方式在 HTTP 中传递管理员凭证。如暂无法升级，应通过网络防火墙或 ACL 仅允许受信任的 IP 地址访问 VirusWall 的 Web 管理端口（默认 80/443），或暂时禁用远程 Web 管理界面，改用本地控制台进行管理操作。同时修改默认管理员密码，防止凭证泄露后被直接利用。"
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "趋势科技 Interscan VirusWall 弱管理员密码保护漏洞"
+sources = ["epss"]
+title = "趋势科技 Interscan VirusWall 管理界面密码明文传输漏洞"
 updated = "2026-06-16T21:53:44Z"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-2001-0133"]
 ave_id = "AVE-2001-0800"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2001-01/0235.html",
     "http://www.securityfocus.com/bid/2212",
-    "https://github.com/CVEProject/cvelistV5/blob/9c6bb4d80b2633b04c3d95cd11fee4b8b1b012c2/cves/2001/0xxx/CVE-2001-0133.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/559ec87f609d31af7a4580139706f217d81d7a2e/CVE/data/2001/CVE-2001-0133.json",
+    "https://github.com/CVEProject/cvelistV5/blob/5d0ad05157b8fd78394d7708a91ae3d6407d11a2/cves/2001/0xxx/CVE-2001-0133.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7c0ef39a22957afc03910342f675d7ccbcb3511f/CVE/data/2001/CVE-2001-0133.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0133",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0133.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0133.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0133.json",
     "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0133.json",
-    "https://github.com/opencve/opencve-kb/blob/045dd815c5c9edb2f848de9196b8b22db27288ca/2001/CVE-2001-0133.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/8e09cd003036511dff025515f28920f1d343007b/2001/0xxx/CVE-2001-0133.md",
+    "https://github.com/opencve/opencve-kb/blob/25a275df848accf6299d471aae40861f8e39fc8c/2001/CVE-2001-0133.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/a62bcc9f8daeceba7cf75b2bcec0520d0f6d833f/2001/0xxx/CVE-2001-0133.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0133.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0133.json",
 ]
