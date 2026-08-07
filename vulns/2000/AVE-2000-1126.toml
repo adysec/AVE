@@ -1,11 +1,11 @@
 [basic]
-description = "Balabit syslog-ng 1.4.6、1.4.7 及 1.4.8 版本存在拒绝服务漏洞。远程攻击者可通过向目标 syslog-ng 服务发送特制的畸形日志消息，该消息在优先级说明符中缺少闭合的 > 符号，导致服务解析异常崩溃，造成拒绝服务。攻击无需身份认证，通过网络即可触发，利用难度低，但仅影响系统可用性，不涉及机密性和完整性。受影响的 syslog-ng 版本需及时升级至 1.4.9 或更高版本以修复此漏洞。"
+description = "Balabit syslog-ng 是一款开源的日志管理系统，广泛用于集中收集、过滤和存储系统日志。该漏洞存在于 1.4.6、1.4.7 和 1.4.8 版本的日志优先级（Priority）解析功能中。攻击者可通过向 syslog-ng 服务发送一个格式错误的日志消息，该消息在优先级说明符中缺少右尖括号 `>` 作为闭合标记。由于程序未对优先级字段进行充分的边界检查和格式验证，导致解析异常并触发应用程序崩溃。该漏洞影响运行受影响版本 syslog-ng 的 Linux 和 Unix 服务器。攻击者无需身份认证即可在网络中远程发起攻击，攻击复杂度低，只要目标系统对外开放 syslog 端口（默认为 UDP 514 或 TCP 514），攻击者即可构造恶意日志数据包发送至目标，造成拒绝服务，使日志服务中断，影响系统审计与监控能力。Balabit 后续版本已修复此问题，建议用户升级至最新版本。"
 published = "2001-01-09T05:00:00Z"
-remediation = "立即升级 syslog-ng 至 1.4.9 或更高版本（如 1.4.10）。FreeBSD 用户可通过 ports collection 更新或直接安装预编译包 syslog-ng-1.4.10.tgz。如无法升级，可删除 syslog-ng 改用系统自带 syslogd，或使用 watchdog 进程（如 daemontools/supervise）监控 syslog-ng 进程，在崩溃后自动重启作为临时缓解措施。"
+remediation = "将 Balabit syslog-ng 升级到 1.4.9 或更高版本，该版本已修复对日志消息优先级字段缺少闭合大于号的 malformed input 处理。对于 FreeBSD 系统，安装安全公告 FreeBSD-SA-01:02.syslog-ng 对应的二进制补丁。如暂时无法升级，可在防火墙或入站日志接收端过滤不包含闭合 '>' 的畸形 syslog 消息，限制 untrusted 网络对 syslog 接收端口（默认 514/UDP）的访问，仅允许可信日志源发送数据。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "Balabit syslog-ng 日志优先级解析拒绝服务漏洞"
+sources = ["avd"]
+title = "Balabit syslog-ng 拒绝服务漏洞"
 updated = "2026-06-16T21:53:17Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1165"]
 ave_id = "AVE-2000-1126"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.balabit.hu/products/syslog-ng/",
     "http://www.securityfocus.com/bid/1981",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5576",
-    "https://github.com/CVEProject/cvelistV5/blob/160b2769d023cca3bba96db1842bf8222b2e286a/cves/2000/1xxx/CVE-2000-1165.json",
-    "https://github.com/anchore/nvd-data-overrides/blob/152c4988e6630edbe300b2d9554f35d9c7963812/data/2000/CVE-2000-1165.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2850e862cb7837f03ec4af0066c4f9f10414e805/CVE/data/2000/CVE-2000-1165.json",
+    "https://github.com/CVEProject/cvelistV5/blob/305043f74d74b13fcda473fa8c09412222702db2/cves/2000/1xxx/CVE-2000-1165.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/3665a1bca06e18d978fb6f235997fb471ee6a642/data/2000/CVE-2000-1165.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6120c40ff117bee56ffec7d2c1707dc537c2f66/CVE/data/2000/CVE-2000-1165.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1165",
-    "https://github.com/anchore/cve-data-enrichment/blob/7c77ebcc357386c71db522f18fa574b7642f74e0/data/anchore/2000/CVE-2000-1165.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/6b24ccd766bc412f5477a18e55f6f03d7c6d7b9b/data/anchore/2000/CVE-2000-1165.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1165.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1165.json",
-    "https://github.com/opencve/opencve-kb/blob/551efeab39fccbe54b7908ab00ab9eb71b9e0872/2000/CVE-2000-1165.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c45038e15e6e81771cce5512f28070ebf02ca969/2000/1xxx/CVE-2000-1165.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-11xx/CVE-2000-1165.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1165.json",
+    "https://github.com/opencve/opencve-kb/blob/cdfb9c2c3a0c170c2be11717df100bd0a2167fe3/2000/CVE-2000-1165.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/7f8ba6894adb76a390a207db92dd8f98e1366782/2000/1xxx/CVE-2000-1165.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2dd45b48e0efa0fde64742f95da829dc45ea506c/CVE-2000/CVE-2000-11xx/CVE-2000-1165.json",
 ]
