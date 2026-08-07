@@ -1,0 +1,39 @@
+[basic]
+description = "Linux 内核网络子系统的套接字缓冲区（skb）内存分配逻辑存在缺陷。当内核配置较大的 MAX_SKB_FRAGS 值时，small head cache 的大小无法适配 GRO（Generic Receive Offload）和 TCP 分配需求，导致 napi_alloc_skb() 和 __netdev_alloc_skb() 函数在分配内存时触发内核警告（splat）。该漏洞影响使用大页缓存配置的 Linux 内核，远程未经身份认证的攻击者可通过向目标系统发送网络流量触发该分配路径，导致内核出现拒绝服务（DoS）。受影响系统包括配置了 MAX_SKB_FRAGS=45 及类似较大值的 Linux 内核版本。攻击者无需交互即可利用此漏洞。官方补丁已修复此问题，通过确保 small head cache 能够适配 TCP 和 GRO 分配大小，并相应调整 kmalloc() 分配策略。"
+published = "2025-03-27T14:15:47Z"
+remediation = "建议立即升级 Linux 内核至 6.14 正式版或各发行版修复版本：SUSE Linux Enterprise 15 SP7 应用 SUSE-SU-2025:02307-1 补丁；Ubuntu 22.04/24.04 LTS 应用 USN-7703-1 更新；RHEL 系发行版关注 RHSA 公告升级内核包。若暂时无法升级，可通过设置内核参数 net.core.gro_max_head 调小 GRO 头部缓存限制作为临时缓解。"
+score = 7.5
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux kernel 网络子系统拒绝服务漏洞"
+updated = "2026-07-30T06:21:42Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21868"]
+ave_id = "AVE-2025-1024"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/14ad6ed30a10afbe91b0749d6378285f4225d482",
+    "https://git.kernel.org/stable/c/648e440c98e260dec835e48a5d7a9993477b1f9d",
+    "https://git.kernel.org/stable/c/ed0ca7d2127c63991cfaf1932b827e3f4f8ee480",
+    "https://git.kernel.org/stable/c/ed8a77fee4618facd2a539cad7b7366697b5a575",
+    "https://github.com/CVEProject/cvelistV5/blob/d77e46bafed7ce82e7eabeb0d491762382725743/cves/2025/21xxx/CVE-2025-21868.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/CVE/data/2025/CVE-2025-21868.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21868.json",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/c9d2df1ca6a644222999e57cc00bd3742d4ae6f9/tracker/CVE/2025/CVE-2025-21868.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21868.yaml",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21868.json",
+    "https://github.com/opencve/opencve-kb/blob/46635c2361d812b9621a9b8ff1c32152c86711ab/2025/CVE-2025-21868.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21868",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2025-21868",
+    "https://github.com/keryanchpn/ia-data/blob/534363d1afb19db8eaf67f9cab2c9be27811247b/data_fallback/data/first/CVE-2025-21868",
+]
