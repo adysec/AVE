@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核的 RAVB 以太网驱动（drivers/net/ethernet/renesas/ravb_main.c）在系统挂起（suspend）与恢复（resume）路径中缺少对 rtnl 锁的持有。当系统执行休眠/唤醒操作时，ravb_open、ravb_close 以及 WOL（唤醒局域网）相关操作未在 rtnl 锁保护下执行，可能与正在进行的 ndo（网络设备操作）例程产生并发冲突，并触发内核的 RCU 使用警告（lockdep_rcu_suspicious），最终导致内核发出竞态告警甚至行为异常。该漏洞影响使用 Renesas RAVB 网卡驱动的 Linux 内核（如基于 r9a08g045、RAVB SMARC 等 Renesas 平台的系统），以及受影响的 Ubuntu 22.04 LTS 等发行版内核包。攻击前提为本地用户或攻击者能使目标系统进入并退出挂起状态来触发该竞态；触发后可能破坏内核同步逻辑，削弱系统稳定性并降低正常运行状态的安全性。利用方式为构造系统级电源管理（挂起/恢复）场景以驱动网卡驱动路径，从而复现并利用该并发缺陷。该漏洞 CVSS 评分 7.8，危害等级为高，需在挂起/恢复路径中确保 rtnl 锁被正确持有。"
+published = "2025-02-27T20:16:02Z"
+remediation = "建议升级 Linux 内核到包含该修复的稳定版本（如 6.13 系列中应用此补丁的版本），Red Hat 修复为 RHSA 公告对应内核包，Ubuntu 22.04/24.04 用户请安装 USN-7653-1 中列出的更新内核包（`apt update && apt install linux-generic`）。若暂无法升级内核，可临时停止在 RAVB 网卡（eth0 所在 Renesas 平台）上执行频繁挂起/恢复操作，并避免系统休眠往返以规避触发条件，待补丁就绪后尽快重启生效。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux Kernel RAVB 以太网驱动 本地权限提升漏洞"
+updated = "2026-07-30T06:21:32Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21801"]
+ave_id = "AVE-2025-0993"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0296981941cf291edfbc318d3255a93439f368e4",
+    "https://git.kernel.org/stable/c/2c2ebb2b49573e5f8726112ad06b1dffc3c9ea03",
+    "https://git.kernel.org/stable/c/ad19522c007bb24ed874468f8baa1503c4662cf4",
+    "https://github.com/CVEProject/cvelistV5/blob/e4fe257e02d6ecdcb83f2a0bd1ddf47878d0f58d/cves/2025/21xxx/CVE-2025-21801.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a07446c9841eff2cadbd30b5a823ea70c1834a2b/CVE/data/2025/CVE-2025-21801.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21801.json",
+    "https://github.com/opencve/opencve-kb/blob/01331dd5a0c3aaea25823b9e0d49daafe99f2da1/2025/CVE-2025-21801.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21801.yaml",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21801.json",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/83c283a70b57d801ab2d1247a1ec5f1a6dcc40d1/tracker/CVE/2025/CVE-2025-21801.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21801",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2025/CVE-2025-218xx/CVE-2025-21801.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2025/21xxx/CVE-2025-21801.json",
+]
