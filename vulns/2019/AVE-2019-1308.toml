@@ -1,11 +1,11 @@
 [basic]
-description = "VMware ESXi 及 Horizon DaaS 设备中使用的 OpenSLP 服务存在堆缓冲区覆写漏洞（CWE-787），未经身份认证的远程攻击者可通过发送精心构造的 SLP（服务位置协议）数据包触发堆内存破坏，进而在目标系统上实现远程代码执行。该漏洞影响 VMware ESXi 6.5/6.7 及 Horizon DaaS 相关版本，CVSS v3.1 评分 9.8（严重），攻击向量为网络（AV:N）、攻击复杂度低（AC:L）、无需权限（PR:N）且无需用户交互（UI:N），可直接导致系统完全沦陷。VMware 已发布安全补丁修复此漏洞，建议受影响用户尽快升级至修复版本。"
+description = "tags.<value>VMware ESXi 及 Horizon DaaS 设备中使用的 OpenSLP 服务存在堆内存覆写漏洞（CWE-787）。未经身份认证的远程攻击者若能够网络访问目标系统 427 端口（SLP 服务），即可通过发送特制的 SLP 请求触发堆溢出，进而实现远程代码执行。该漏洞影响 VMware ESXi 6.0/6.5/6.7 以及 Horizon DaaS 8.x 等多个版本，CVSS v3 评分为 9.8（严重等级）。攻击者无需交互即可利用此漏洞获取宿主机完全控制权限，目前已发现野外利用。VMware 已发布对应安全补丁（如 ESXi670-201912001）并提供了禁用 SLP 服务的临时缓解措施。"
 published = "2019-12-06T16:15:11Z"
-remediation = "建议立即将 VMware ESXi 升级至 6.7 Update 2 或 6.5 Update 3 及其更高版本。若无法立即更新，可通过执行命令 `vim-cmd hostsvc/slp-set-enabled 0` 禁用 SLP 服务，或在防火墙中拦截 TCP/UDP 427 端口以缓解风险。"
+remediation = "立即为 VMware ESXi 6.0/6.5/6.7 应用对应补丁：ESXi 6.7 安装补丁 ESXi670-201912001，ESXi 6.5 安装补丁 ESXi650-201912001，ESXi 6.0 安装补丁 ESXi600-201912001；补丁可通过 VMware Patch Portal 下载或通过 vSphere Update Manager 推送安装。如暂时无法打补丁，可通过 SSH 登录 ESXi 主机，依次执行以下命令禁用 SLP 服务作为临时缓解措施：执行 /etc/init.d/slpd stop 停止服务，执行 esxcli network firewall ruleset set -r CIMSLP -e 0 关闭防火墙规则，执行 chkconfig slpd off 禁止服务开机自启。对于 VMware Horizon DaaS 8.x，应升级至 Horizon DaaS 9.0.0.0 或更高版本，升级包可从 VMware 官网下载。所有修复措施实施后需重启相关服务并验证 SLP 端口 427 已关闭。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
-title = "VMware ESXi OpenSLP 堆缓冲区覆写漏洞"
+sources = ["nuclei"]
+title = "VMware ESXi 远程代码执行漏洞"
 updated = "2026-06-17T02:37:52Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2019-5544"]
 ave_id = "AVE-2019-1308"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -32,16 +32,16 @@ urls = [
     "https://security.gentoo.org/glsa/202005-12",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2019-5544",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/network/cves/2019/CVE-2019-5544.yaml",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2019/CVE-2019-5544.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/c908bbff86d2944f8f8a39e75f549a966c642420/2019/CVE-2019-5544.json",
-    "https://github.com/cisagov/vulnrichment/blob/bc943eb819a406135c2391ed30d595e2ea60281b/2019/5xxx/CVE-2019-5544.json",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2020/CVE-2020-3992.md",
-    "https://github.com/sari3l/Poc-Monitor/blob/ed3533775a9ade21f1577e57c130e65e8f80898c/2019/CVE-2019-5544.json",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2019/CVE-2019-5544.md",
+    "https://github.com/cisagov/vulnrichment/blob/1ec26b4bfdf4d4994876319583b66cbf88277812/2019/5xxx/CVE-2019-5544.json",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2020/CVE-2020-3992.md",
+    "https://github.com/sari3l/Poc-Monitor/blob/484284b7bb016e1f0bca76b283aa2557c6ad88c4/2019/CVE-2019-5544.json",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2019/CVE-2019-5544.md",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2021/CVE-2021-21974.md",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2021/CVE-2021-21974.md",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2019/CVE-2019-5544.md",
-    "https://github.com/rix4uni/cvemapping/blob/23441ec855d45e03157b693d7c6d0ff023fe3af5/2019/CVE-2019-5544/README.md",
-    "https://github.com/canonical/ubuntu-security-notices/blob/afc0df6edf4ea320b0cfac74a53aafd9b4a9697f/vex/cve/2019/CVE-2019-5544.json",
+    "https://github.com/rix4uni/cvemapping/blob/26b43d3f6ecf2a8c3df642f8a85c5010a8755756/2019/CVE-2019-5544/README.md",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/vex/cve/2019/CVE-2019-5544.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/osv/cve/2019/UBUNTU-CVE-2019-5544.json",
     "https://github.com/dgh05t/VMware_ESXI_OpenSLP_PoCs",
     "https://github.com/HynekPetrak/CVE-2019-5544_CVE-2020-3992",
 ]
