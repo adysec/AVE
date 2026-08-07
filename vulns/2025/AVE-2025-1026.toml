@@ -1,0 +1,41 @@
+[basic]
+description = "Linux 内核在启动阶段通过 efi_mokvar_table_init() 函数处理 UEFI 固件提供的 MOKvar（Machine Owner Key variable）配置表时，存在映射逻辑缺陷。该函数在遍历表条目以确定表大小的循环中，每次迭代都将整个 mokvar 表重新映射到内存。由于内核 early_ioremap() 机制对早期内存映射存在大小限制，当 mokvar 表增长至超过一定尺寸时，映射操作将失败并触发内核警告及栈回溯，导致系统启动过程中出现不可预期的行为。该漏洞影响使用 UEFI 启动并启用 Secure Boot 相关功能的 Linux 内核版本。攻击条件方面，该漏洞需要本地低权限访问权限，攻击者可在系统启动阶段通过使 mokvar 表异常膨胀来触发映射失败，进而引发系统拒绝服务，影响系统可用性。"
+published = "2025-03-27T15:15:54Z"
+remediation = "建议将 Linux 内核升级至已修复的稳定版本：5.10.x 系列升级至 5.10.235 或更高版本，6.6.x 系列升级至 6.6.83 或更高版本，6.12.x 系列升级至 6.12.18 或更高版本，6.13.x 系列升级至 6.13.6 或更高版本。可通过发行版官方包管理器执行内核更新（如 Debian/Ubuntu 使用 apt install linux-image-<version>，RHEL/CentOS 使用 yum update kernel），更新后重启系统以加载新内核。如短期内无法升级，可在 UEFI 启动配置中禁用 MOK（Machine Owner Key）变量加载作为临时缓解措施，但此操作会影响安全启动的密钥管理功能，需在测试环境中验证后再实施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel EFI MOKvar 表映射拒绝服务漏洞"
+updated = "2026-06-17T08:44:30Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21872"]
+ave_id = "AVE-2025-1026"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/2b90e7ace79774a3540ce569e000388f8d22c9e0",
+    "https://git.kernel.org/stable/c/46c0454ffb78ce9d3355a3cccac86383ea8ddd55",
+    "https://git.kernel.org/stable/c/65f4aebb8127708ba668dd938e83b8558abfc5cd",
+    "https://git.kernel.org/stable/c/97bd560b6cc4c26386a53b4881bf03e96f9ba03a",
+    "https://git.kernel.org/stable/c/ea3f0b362dfe4ef885ef812bfaf4088176422c91",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21872.md",
+    "https://github.com/CVEProject/cvelistV5/blob/8d761288c12d1a9bf761b0c5cf276b970a7806ba/cves/2025/21xxx/CVE-2025-21872.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6120c40ff117bee56ffec7d2c1707dc537c2f66/CVE/data/2025/CVE-2025-21872.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21872.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5e8562b3a5799c26af53e6d5c536ab278b612e46/references/CveServices-CVE-2025-21872-2025-11-03-1337",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21872.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21872.yaml",
+    "https://github.com/opencve/opencve-kb/blob/ab57f0f5941edfcae5978f583ee8f5b3de27e9c0/2025/CVE-2025-21872.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21872",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/c9d2df1ca6a644222999e57cc00bd3742d4ae6f9/tracker/CVE/2025/CVE-2025-21872.json",
+]
