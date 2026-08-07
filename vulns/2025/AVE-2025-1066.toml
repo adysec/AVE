@@ -1,0 +1,46 @@
+[basic]
+description = "Linux 内核 netfilter 子系统的 nf_conncount 连接计数模块在 insert_tree() 函数中未完全初始化 struct nf_conncount_tuple 结构体。此前一次提交向该结构体引入了 cpu 和 jiffies32 字段，但仅在 nf_conncount_add() 分配结构体时进行了初始化，而 insert_tree() 函数（由原 count_tree() 拆分而来）未能同步初始化这两个字段。当系统通过 iptables 或 nftables 的连接数限制规则处理网络数据包时，nf_conncount_count() 会调用 insert_tree() 将未完全初始化的元组插入红黑树，随后 find_or_evict() 读取这些未初始化字段时触发 KMSAN 报告的 uninit-value 错误。未经身份认证的远程攻击者可通过向目标系统发送特制网络连接请求，触发连接数限制匹配路径，利用未初始化内存读取造成内核信息泄露或系统稳定性下降。该漏洞影响包含受影响 netfilter 代码的 Linux 内核版本，CVSS 评分为 7.3，危害等级为高。"
+published = "2025-04-01T16:15:27Z"
+remediation = "建议将 Linux 内核升级至 5.10.236、5.15.180 或 6.12.20 及之后的稳定版本，上述版本已包含对 net/netfilter/nf_conncount.c 中 insert_tree() 函数的补全初始化修复。若当前系统运行了 iptables -m connlimit 规则或 Open vSwitch conntrack 区域限制，可临时移除相关规则以降低未初始化内存值被利用的风险，直至完成内核升级。"
+score = 7.3
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 netfilter nf_conncount 模块未初始化值漏洞"
+updated = "2026-07-30T06:21:59Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21959"]
+ave_id = "AVE-2025-1066"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/2a154ce766b995494e88d8d117fa82cc6b73dd87",
+    "https://git.kernel.org/stable/c/2db5baaf047a7c8d6ed5e2cc657b7854e155b7fc",
+    "https://git.kernel.org/stable/c/a62a25c6ad58fae997f48a0749afeda1c252ae51",
+    "https://git.kernel.org/stable/c/d653bfeb07ebb3499c403404c21ac58a16531607",
+    "https://git.kernel.org/stable/c/db1e0c0856821c59a32ea3af79476bf20a6beeb2",
+    "https://git.kernel.org/stable/c/e8544a5a97bee3674e7cd6bf0f3a4af517fa9146",
+    "https://git.kernel.org/stable/c/f522229c5563b59b4240261e406779bba6754159",
+    "https://git.kernel.org/stable/c/fda50302a13701d47fbe01e1739c7a51114144fb",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-019113.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21959.md",
+    "https://github.com/0xMarcio/cve/blob/fc5597c8065a1490bb4aa3ceac7c4f57a4d3db2a/2025/CVE-2025-21959.md",
+    "https://github.com/CVEProject/cvelistV5/blob/25d2835389cb063fdfa4c6ce4f2eac179227ec45/cves/2025/21xxx/CVE-2025-21959.json",
+    "https://github.com/cisagov/vulnrichment/blob/0a61aa4bfcb382160e788a4fdf055f4ce3b1bb54/2025/21xxx/CVE-2025-21959.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6383c78237400b01eaca440114073e7df0a76cff/SSVC/data/2025/CVE-2025-21959.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21959.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6383c78237400b01eaca440114073e7df0a76cff/CVE/data/2025/CVE-2025-21959.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/91ece4b64c50642397da36724a41d94be4de3a9d/references/CveServices-CVE-2025-21959-2025-11-03-1338",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/91ece4b64c50642397da36724a41d94be4de3a9d/references/CveServices-CVE-2025-21959-2025-11-03-1327",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21959.json",
+]
