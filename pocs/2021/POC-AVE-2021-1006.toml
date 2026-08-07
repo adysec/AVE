@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = "验证目标是否存在 ScadaBR view_edit.shtm 任意文件上传漏洞，检测 uploads 目录和上传页面是否存在"
+id = "POC-AVE-2021-1006"
+name = "OpenPLC ScadaBR 任意文件上传漏洞 PoC"
+severity = "high"
+tags = ["ave-2021-1006"]
+vuln_id = [
+    "CVE-2021-26828",
+    "AVE-2021-1006",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ScadaBR/view_edit.shtm"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "ScadaBR",
+    "view_edit",
+    "upload",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ScadaBR/uploads/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = ""
+status = [
+    200,
+    403,
+]
+type = "status"
