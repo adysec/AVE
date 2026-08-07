@@ -1,11 +1,11 @@
 [basic]
-description = "man 命令存在格式字符串漏洞，由于处理 -l 参数时未对用户输入进行 adequate 验证，本地低权限用户可通过向 man 命令传递特制的格式字符串，利用栈上的内存地址写入覆盖函数返回地址，从而在栈上执行任意代码。由于多个 Linux 发行版中的 man 程序以 SUID root 权限安装，攻击者成功利用后可获得 root 权限，完全控制系统。该漏洞影响 Debian 2.2 以及 S.u.S.E 6.3、6.4、7.0 等版本，攻击条件为攻击者需具备本地登录权限，利用方式为通过构造包含格式化说明符的 -l 参数触发格式化字符串漏洞，进而执行提权代码获取管理员权限。CVSS 评分 7.2，危害等级高，影响系统的机密性、完整性和可用性。"
+description = "man命令在处理-l参数时存在格式字符串漏洞，未经身份认证的本地攻击者可通过向man命令传递特制的-l参数触发该漏洞，进而实现权限提升并执行任意代码。该漏洞影响Debian 2.2、S.u.S.E 6.3/6.4/7.0等Linux发行版。攻击者需已登录目标系统并具备执行man命令的权限，通过构造包含格式说明符的恶意参数即可利用此漏洞覆盖内存中的关键数据，最终获取root权限并在受影响系统上执行任意指令。"
 published = "2001-05-03T04:00:00Z"
-remediation = "建议升级到包含 man 命令安全补丁的发行版，如升级到 Ubuntu 20.04 LTS 及以上版本、Debian 10 及以上版本，或从相应的 Linux 发行版供应商处获取 man 命令的安全更新。如无法立即升级，可立即将 /usr/bin/man 文件的 SUID 权限移除（chmod 755 /usr/bin/man），并避免在 shell 中直接使用 man -l 选项进行手册查询，如确需使用应预先验证输入参数。"
+remediation = "对于 Debian 2.2 系统，应立即升级 man-db 包至 2.3.17-3.1 或更高版本（Debian Security Advisory DSA-028）。对于 S.u.S.E 6.3/6.4/7.0 系统，应安装 SUSE 发布的安全更新补丁，将 man 程序升级至修复格式字符串漏洞的版本。如暂无法应用补丁，可通过临时移除 man 程序的 SUID 权限（执行 chmod u-s /usr/bin/man）作为缓解措施，但会丧失普通用户查看手册页的能力；更稳妥的临时方案是使用文件系统访问控制限制本地用户执行 man -l 参数，或升级至较新的 Linux 发行版以彻底消除该漏洞。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Linux man 命令格式字符串漏洞"
+sources = ["epss"]
+title = "Debian SuSE Linux man 命令格式字符串漏洞"
 updated = "2026-06-16T21:53:51Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0193"]
 ave_id = "AVE-2001-0074"
 
 [meta]
-collected_at = "2026-08-06T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.securityfocus.com/bid/2327",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6059",
     "https://www.exploit-db.com/exploits/20604",
-    "https://github.com/CVEProject/cvelistV5/blob/4d38333dcfe51fc2081856da5d31bbece1a0cced/cves/2001/0xxx/CVE-2001-0193.json",
+    "https://github.com/CVEProject/cvelistV5/blob/9a8a3c32015143180dac972cdde44f1ded37f1dd/cves/2001/0xxx/CVE-2001-0193.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0193",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/954745087cab3897c1945b517c4fc4f1575af37b/CVE/data/2001/CVE-2001-0193.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9b3ccc0b6aa4a9f3405ce9f43548bd95edfa1060/CVE/data/2001/CVE-2001-0193.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0193.json",
-    "https://github.com/opencve/opencve-kb/blob/c2d7976a30d9a4bb0d098cbb553bce11e610b2f4/2001/CVE-2001-0193.json",
-    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2001-0193.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c55f50b14ae2241dec1fd7ddec6b7ce3c90c1fdb/2001/0xxx/CVE-2001-0193.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0193.json",
+    "https://github.com/opencve/opencve-kb/blob/278d727944a4ae0fff81300262db32b1bf422da3/2001/CVE-2001-0193.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0193.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/a3d99febce63e7084e82394e3dece13e71549c22/2001/0xxx/CVE-2001-0193.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/63a532b725792b89ea32ae40fb744f9c8a9ba2df/CVE-2001/CVE-2001-01xx/CVE-2001-0193.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0193.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0193.json",
 ]
