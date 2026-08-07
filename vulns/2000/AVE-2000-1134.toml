@@ -1,11 +1,11 @@
 [basic]
-description = "FreeBSD 4.2 及更早版本中的 telnetd 守护进程在处理 TERMCAP 环境变量时存在资源耗尽漏洞。远程攻击者无需身份认证即可通过向目标系统的 telnet 服务发送特制的 TERMCAP 变量，指定一个任意大文件路径，导致服务器在处理该文件时消耗大量系统资源，最终造成拒绝服务。该漏洞影响 FreeBSD 3.0/3.5.1/4.0/4.1/4.1.1/4.2 等多个版本，CVSS 评分 5.0，危害等级中危。"
+description = "FreeBSD telnetd 服务在处理 TERMCAP 环境变量时，会读取并解析攻击者指定的文件内容。未经身份认证的远程攻击者可在连接 Telnet 服务时，将 TERMCAP 环境变量设置为一个极大文件的路径，导致服务器在解析该文件过程中消耗大量内存和 CPU 资源，从而引发拒绝服务。该漏洞影响 FreeBSD 4.2 及更早版本（包括 3.0、3.5.1、4.0、4.1、4.1.1），攻击者无需账号凭证，只要能够通过网络访问目标系统 23 端口即可触发。成功利用后目标系统资源将被耗尽，导致合法用户无法正常使用 Telnet 服务，严重时可造成系统不稳定或宕机。FreeBSD 官方在后续版本中已修复此漏洞，建议升级并限制 Telnet 服务的网络访问范围。"
 published = "2001-01-09T05:00:00Z"
-remediation = "建议立即升级 FreeBSD 至 4.1.1-STABLE 或 3.5.1-STABLE（2000-11-19 之后版本），或应用 FreeBSD-SA-00:69 补丁：下载 telnetd.patch.v1.1 后以 root 执行 `cd /usr/src/libexec/telnetd && patch -p < /path/to/patch && make depend && make all install`。补丁将 line 指针改为固定缓冲区、过滤危险环境变量（TERMCAP=/ 等）、替换 sprintf/strcpy 为 snprintf/strlcpy。临时缓解措施：在 /etc/inetd.conf 中注释 telnet 行并重启 inetd，或通过 TCP wrappers/ipfw 限制 telnet 访问来源。"
+remediation = "升级到 FreeBSD 4.2-RELEASE 或更高版本，该版本已修复 telnetd 对 TERMCAP 环境变量未加验证的问题。若无法立即升级，可在 /etc/inetd.conf 中注释掉 telnet 服务行并重启 inetd，或通过 TCP wrappers（/etc/hosts.allow）及防火墙（ipfw）仅允许受信任的主机访问 23 端口作为临时缓解措施。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "FreeBSD Telnet Daemon 环境变量拒绝服务漏洞"
+sources = ["avd"]
+title = "FreeBSD Telnet 守护进程环境变量拒绝服务漏洞"
 updated = "2026-06-16T21:53:20Z"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-1184"]
 ave_id = "AVE-2000-1134"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://www.osvdb.org/6083",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5959",
-    "https://github.com/CVEProject/cvelistV5/blob/7db8931ea0378982e66f435e269a4ed0e4efb7aa/cves/2000/1xxx/CVE-2000-1184.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/f80eaead111eac7128eaf77e46b372cdbd675cc9/CVE/data/2000/CVE-2000-1184.json",
+    "https://github.com/CVEProject/cvelistV5/blob/9a8a3c32015143180dac972cdde44f1ded37f1dd/cves/2000/1xxx/CVE-2000-1184.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9b3ccc0b6aa4a9f3405ce9f43548bd95edfa1060/CVE/data/2000/CVE-2000-1184.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1184",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1184.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1184.json",
-    "https://github.com/opencve/opencve-kb/blob/8ed64b4e31209e933908eff50d33cf701402ff24/2000/CVE-2000-1184.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/e2cba2a029d0a53c95f0000f5eb42e0eb69717b8/2000/1xxx/CVE-2000-1184.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-11xx/CVE-2000-1184.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1184.json",
+    "https://github.com/opencve/opencve-kb/blob/8d954d282b5a38a70a9479de4dda4f83464980a2/2000/CVE-2000-1184.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/a3d99febce63e7084e82394e3dece13e71549c22/2000/1xxx/CVE-2000-1184.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/63a532b725792b89ea32ae40fb744f9c8a9ba2df/CVE-2000/CVE-2000-11xx/CVE-2000-1184.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1184.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1184.json",
 ]
