@@ -1,0 +1,42 @@
+[basic]
+description = "Open WebUI 内置知识搜索功能允许已认证用户选择用于检索知识文件的正则表达式模式。当模式包含正则元字符时，系统使用 Python 回溯式 re 引擎对每个文件的每一行执行匹配，且全程未设置执行时间限制。攻击者可构造特殊的回溯正则模式（如 (x|x)*y），配合上传的短文本文件，使单个 CPU 核心长时间满载并阻塞事件循环，导致同一 worker 上的其他用户请求无法得到响应；默认配置下（UVICORN_WORKERS=1）整实例将不可用。该漏洞影响 0.9.6 至 0.11.0 版本，CVSS 评分为 6.5。攻击前提为：默认配置、任意已认证用户（无需提升权限）、用户可上传并读取文件，且需诱导模型调用含攻击模式的知识搜索工具。Open WebUI 已在 0.11.0 版本中将 re 引擎替换为支持超时的 regex 引擎，并设置 2 秒匹配超时以修复此问题。"
+published = "2026-08-04T21:16:38Z"
+remediation = "立即将 Open WebUI 升级至 0.11.0 或更高版本，可通过 GitHub Releases 页面下载最新安装包或更新 Docker 镜像至 v0.11.0。升级后无需额外配置，系统自动使用 regex 引擎并启用 2 秒匹配超时限制，从根本上阻断正则回溯导致的 CPU 耗尽攻击。如暂时无法升级，可在防火墙或反向代理层限制 knowledge-search 工具接口的访问权限，仅允许受信 IP 调用，以降低被任意认证用户利用的风险。"
+score = 6.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Open WebUI 正则表达式回溯拒绝服务漏洞"
+updated = "2026-08-05T15:17:12Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-70493",
+    "GHSA-2f54-p244-32q6",
+]
+ave_id = "AVE-2026-1388"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/open-webui/open-webui/commit/3ab2026262ef6f09810e4d235c5f9a9cb903e595",
+    "https://github.com/open-webui/open-webui/pull/27471",
+    "https://github.com/open-webui/open-webui/releases/tag/v0.11.0",
+    "https://github.com/open-webui/open-webui/security/advisories/GHSA-2f54-p244-32q6",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2026/CVE-2026-70493.md",
+    "https://github.com/CVEProject/cvelistV5/blob/028d8aaeb2b276eef072de95b682a0b000740ac9/cves/2026/70xxx/CVE-2026-70493.json",
+    "https://github.com/cisagov/vulnrichment/blob/120beb0c7e841b5baa49e42f909e2b46b302b304/2026/70xxx/CVE-2026-70493.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d8a3a899d1eefc2c1649de96e2290c55d12029cb/SSVC/data/2026/CVE-2026-70493.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d8a3a899d1eefc2c1649de96e2290c55d12029cb/CVE/data/2026/CVE-2026-70493.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/fd83d7300ad2d6d69a40586722d4416f017c1bdf/data/2026/CVE-2026-70493.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-70493.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/59fcb0e6f5e022cbcf3d6b6e8dfa8ab050c85b5f/CVE-2026/CVE-2026-704xx/CVE-2026-70493.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/pypi/open-webui/CVE-2026-70493.yml",
+    "https://github.com/anchore/cve-data-enrichment/blob/f95ed70ff4572bede3f68dd12496edb1151d4685/data/anchore/2026/CVE-2026-70493.json",
+]
