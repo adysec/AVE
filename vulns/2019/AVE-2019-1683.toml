@@ -1,10 +1,10 @@
 [basic]
-description = "Zimbra Collaboration Suite 的 ProxyServlet 组件存在服务端请求伪造（SSRF）漏洞，未经身份认证的远程攻击者可利用该漏洞向内部网络发送恶意请求，结合 XML 外部实体注入（XXE）实现命令执行。该漏洞影响 Zimbra 8.6 patch 13 之前、8.7.11 patch 10 之前及 8.8.10 patch 7/8.8.11 patch 3 之前的多个版本，CVSS 评分 7.5，危害等级高。攻击者无需认证即可远程触发，利用复杂度低，已存在公开的 PoC 和 Metasploit 利用模块。"
+description = "Zimbra Collaboration Suite 的 ProxyServlet 组件存在服务端请求伪造（SSRF）漏洞。未经身份认证的远程攻击者可利用该漏洞，通过构造包含特定端口号的 Host 头绕过管理员权限校验，将请求代理至本地管理端口 7071。结合 Autodiscover 请求处理中的 XML 外部实体注入（XXE）漏洞，攻击者可首先读取本地配置文件获取管理员凭据，再利用 SSRF 获取全局管理员认证令牌，最终通过 ClientUploader 扩展上传 WebShell 实现远程代码执行。该漏洞影响 Zimbra Collaboration Suite 8.6 至 8.8.x 多个版本，CVSS 评分为 7.5（高危），无需用户交互即可在公开 Web 端口上完成全链路利用。"
 published = "2019-04-30T18:29:08Z"
-remediation = "升级 Zimbra Collaboration Suite 至 8.6 patch 13、8.7.11 patch 10、8.8.10 patch 7 或 8.8.11 patch 3 及以上版本。如无法立即升级，可在反向代理或 WAF 层面限制对 /ProxyServlet 路径的访问，并禁用不必要的 SSRF 功能入口。"
+remediation = "Zimbra官方已发布安全补丁修复ProxyServlet组件的SSRF漏洞：8.6版需升级至8.6 Patch 13（该版本已停止支持，建议直接升级至8.7.11及以上长期支持版本），8.7.x需升级至8.7.11 Patch 10，8.8.x需升级至8.8.10 Patch 7或8.8.11 Patch 3。升级前请务必备份邮件数据和系统配置，执行升级包安装后需重启Zimbra服务使补丁生效，并通过浏览器访问ProxyServlet测试修复效果。如暂无法立即升级，可在防火墙层面限制对ProxyServlet组件的外部访问，或在前端反向代理层拦截包含外部URL的请求作为临时缓解措施。"
 score = 7.5
 severity = "HIGH"
-sources = ["kev"]
+sources = ["nuclei"]
 title = "Zimbra Collaboration Suite 服务端请求伪造漏洞"
 updated = "2026-06-17T02:44:03Z"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2019-9621"]
 ave_id = "AVE-2019-1683"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -34,15 +34,15 @@ urls = [
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2019-9621",
     "https://www.exploit-db.com/exploits/46967",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2019/CVE-2019-9621.yaml",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2019/CVE-2019-9621.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/c908bbff86d2944f8f8a39e75f549a966c642420/2019/CVE-2019-9621.json",
-    "https://github.com/projectdiscovery/nuclei-templates/blob/e9f0fe7fa4f5c548bbd1a4d3b65d0f181021e664/http/cves/2019/CVE-2019-9621.yaml",
-    "https://github.com/CVEProject/cvelistV5/blob/8491df4167cab37455be87043bbd4187ade74c40/cves/2019/9xxx/CVE-2019-9621.json",
-    "https://github.com/cisagov/vulnrichment/blob/6ff73fb4bb99974a2b535c179f337dd820550366/2019/9xxx/CVE-2019-9621.json",
-    "https://github.com/0x727/FingerprintHub/blob/5784554659c9500df8525e8db4f986630a56d8a1/plugins/zimbra/collaboration_server/CVE-2019-9621.yaml",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2019/CVE-2019-9621.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/de64028c1808cad4f45db6225abb2123857d47b0/2019/CVE-2019-9621.json",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/a59bc25d9f5ca1e2e0b6dfb956fc7eb7fed93b96/http/cves/2019/CVE-2019-9621.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/b0ae64d398af575cc8fc4dbcb672decf1c29c5b8/cves/2019/9xxx/CVE-2019-9621.json",
+    "https://github.com/cisagov/vulnrichment/blob/120beb0c7e841b5baa49e42f909e2b46b302b304/2019/9xxx/CVE-2019-9621.json",
+    "https://github.com/0x727/FingerprintHub/blob/b3b0b04ddffeb4e4ef4cf727feceae2f4993325c/plugins/zimbra/collaboration_server/CVE-2019-9621.yaml",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2019/CVE-2019-9621.md",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2019/CVE-2019-9621.md",
     "https://github.com/Ares-X/VulWiki/blob/40e0273754a36f49a6be6a77a7a4c210a07063ed/Web安全/Zimbra/（CVE-2019-9621）（CVE-2019-9670）Zimbra 远程代码执行漏洞.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/16f8cf2a3c129bb57f3727599f3730e6001c1186/SSVC/data/2019/CVE-2019-9621.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d8a3a899d1eefc2c1649de96e2290c55d12029cb/SSVC/data/2019/CVE-2019-9621.json",
     "https://github.com/k8gege/ZimbraExploit",
 ]
