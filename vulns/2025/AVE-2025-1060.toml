@@ -1,0 +1,41 @@
+[basic]
+description = "Linux 内核 ksmbd SMB 服务器组件在处理 IPC 消息时存在竞争条件漏洞。由于 req->handle 通过 ida_alloc 分配，来自 ksmbd_ipc_login_request 和 FSCTL_PIPE_TRANSCEIVE ioctl 的请求可能获得相同的 handle 值，导致消息类型混淆，攻击者可能利用此问题访问意外内存区域。此外，ksmbd 在检查 IPC 响应类型时缺少 continue 语句，无法正确跳过错误响应并继续检查下一个响应。该漏洞影响使用 ksmbd 的 Linux 系统，无需身份验证即可在网络可达条件下触发，CVSS v3.1 评分 8.1。成功利用可能导致内存越界读取，造成敏感信息泄露或系统崩溃。"
+published = "2025-04-01T16:15:25Z"
+remediation = "升级 Linux 内核至包含修复提交 e2ff19f0b7a3 的版本。Debian 12 用户应安装 Linux 6.1.133-1 或更高版本，Ubuntu 24.04 LTS 用户应升级至 Linux 6.8.0-84.84，Ubuntu 22.04 LTS HWE 用户应升级至 Linux 6.8.0-85.85~22.04.1，Ubuntu 24.10 用户应升级至 Linux 6.11.0-28.28。如无法立即升级内核，可通过 modprobe -r ksmbd 命令卸载 ksmbd 模块作为临时缓解措施，或通过内核启动参数禁用 ksmbd。建议通过系统包管理器（apt upgrade linux-image-*）自动安装安全更新并重启系统。"
+score = 8.1
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux ksmbd 竞争条件类型混淆漏洞"
+updated = "2026-06-17T08:44:40Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21947"]
+ave_id = "AVE-2025-1060"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1e8833c03a38e1d5d5df6484e3f670a2fd38fb76",
+    "https://git.kernel.org/stable/c/3cb2b2e41541fe6f9cc55ca22d4c0bd260498aea",
+    "https://git.kernel.org/stable/c/6321bbda4244b93802d61cfe0887883aae322f4b",
+    "https://git.kernel.org/stable/c/76861630b29e51373e73e7b00ad0d467b6941162",
+    "https://git.kernel.org/stable/c/e2ff19f0b7a30e03516e6eb73b948e27a55bc9d2",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21947.md",
+    "https://github.com/CVEProject/cvelistV5/blob/028d8aaeb2b276eef072de95b682a0b000740ac9/cves/2025/21xxx/CVE-2025-21947.json",
+    "https://github.com/cisagov/vulnrichment/blob/120beb0c7e841b5baa49e42f909e2b46b302b304/2025/21xxx/CVE-2025-21947.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d8a3a899d1eefc2c1649de96e2290c55d12029cb/SSVC/data/2025/CVE-2025-21947.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d8a3a899d1eefc2c1649de96e2290c55d12029cb/CVE/data/2025/CVE-2025-21947.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21947.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21947.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/91ece4b64c50642397da36724a41d94be4de3a9d/references/CveServices-CVE-2025-21947-2025-11-03-1327",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21947.json",
+    "https://github.com/opencve/opencve-kb/blob/dafc7f4abdf2f67ac5d2b2bc7faa67d21efcd6a5/2025/CVE-2025-21947.json",
+]
