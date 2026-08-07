@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过构造恶意的EMBED标签，向HREF参数传入超长字符串触发QuickTime Player 4.1.2（日文版）Windows插件缓冲区溢出，导致任意代码执行。受害者使用受影响的浏览器访问特制HTML页面时触发。"
+description = "验证目标系统是否存在 Apple QuickTime Player 4.1.2（日文版）浏览器插件缓冲区溢出漏洞。该漏洞允许远程攻击者通过网页中 EMBED 标签的超长 HREF 参数触发缓冲区溢出，从而执行任意命令。本 PoC 通过向目标发送包含超长 HREF 参数的 EMBED 标签的 HTML 页面，验证 QuickTime 插件是否存在该溢出漏洞。"
 id = "POC-AVE-2001-0076"
-name = "Apple QuickTime Player 4.1.2 Plugin Remote Buffer Overflow PoC"
+name = "Apple QuickTime Player 4.1.2 HREF 参数缓冲区溢出 PoC"
 severity = "high"
 tags = ["ave-2001-0076"]
 vuln_id = [
@@ -15,15 +15,23 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/poc.html"
+path = "/{{BaseURL}}/quicktime_poc.html"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["QuickTime"]
+words = [
+    "embed",
+    "quicktime",
+    "href",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

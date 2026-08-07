@@ -1,15 +1,10 @@
 [info]
-author = "AVE"
-description = "部署 CGI 脚本向 stderr 写入 4075 字节数据触发 Apache 2.0.39/2.0.40 mod_cgi 读写死锁，验证服务是否因死锁导致挂起"
+author = "ave"
+description = "验证目标 Apache HTTP Server 是否运行存在 mod_cgi 拒绝服务漏洞的版本（2.0.39/2.0.40）。该漏洞由 CGI 脚本向 stderr 输出大量数据引发 httpd 与 CGI 子进程间的读写死锁，导致服务器挂起和内存耗尽。通过 HTTP 请求触发漏洞 CGI 脚本，观察服务器是否出现死锁或响应异常。"
 id = "POC-AVE-2002-0417"
-name = "Apache HTTP Server mod_cgi 拒绝服务漏洞 PoC"
+name = "CVE-2002-1850 Apache mod_cgi STDERR Buffer DoS PoC"
 severity = "high"
-tags = [
-    "cve-2002-1850",
-    "apache",
-    "dos",
-    "mod_cgi",
-]
+tags = ["ave-2002-0417"]
 vuln_id = [
     "CVE-2002-1850",
     "AVE-2002-0417",
@@ -20,19 +15,23 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/cgi-bin/stderr_dos.cgi"
+path = "/{{BaseURL}}/dos_stderr_cgi.cgi"
 protocol = "http"
 
-[poc.requests.headers]
-User-Agent = "AVE/1.0"
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = false
+status = [200]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["hello world"]
-
-[[poc.requests.matchers]]
-expect = true
-status = [200]
-type = "status"
+words = [
+    "Context-Type",
+    "hello world",
+]
