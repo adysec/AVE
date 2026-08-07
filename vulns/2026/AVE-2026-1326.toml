@@ -1,0 +1,41 @@
+[basic]
+description = "python-cryptography 库在 49.0.0 版本之前的证书验证器存在名称约束绕过漏洞。当某个中间约束 CA 仅允许签发 DNS 名称 foo.example.com 的证书时，若叶子证书的 DNS SAN 中包含通配符名称 *.example.com，该库的 verifier 会错误地接受该证书链，从而允许绕过名称约束签发其他域名（如 bar.example.com）的有效证书。根本原因在于 DNSConstraint::matches 实现中，通配符模式被错误地视为匹配更具体的允许约束，而 *.example.com 实际可扩展为 foo.example.com 之外的任意同级域名。攻击者可通过构造包含过宽通配符 SAN 的叶子证书，利用中间 CA 的名称约束配置逃逸其授权范围，导致无效证书链被接受为有效。该漏洞影响所有使用 python-cryptography 进行 X.509 证书链验证的 Python 应用程序，可能导致中间 CA 被滥用于签发超出其授权范围的证书，CVSS 评分为 6.9，危害等级为中等。"
+published = "2026-08-03T22:16:52Z"
+remediation = "立即将 python-cryptography 升级到 49.0.0 或更高版本，以修复 DNSConstraint::matches 中通配符证书验证绕过漏洞。如使用 pip 管理，执行 pip install --upgrade cryptography>=49.0.0。若暂无法升级，建议在代码中绕过默认验证器，手动校验证书链中的 permittedSubtrees 约束，确保通配符证书不超出中间 CA 允许的 DNS 名称范围。"
+score = 6.9
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Python python-cryptography 通配符DNS名称证书验证绕过漏洞"
+updated = "2026-08-04T16:16:28Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69248",
+    "GHSA-m2h6-j472-rp4c",
+]
+ave_id = "AVE-2026-1326"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/pyca/cryptography/commit/4d035a4225965edeffd312079a510ef25fcfdcb2",
+    "https://github.com/pyca/cryptography/pull/14888",
+    "https://github.com/pyca/cryptography/security/advisories/GHSA-m2h6-j472-rp4c",
+    "https://github.com/CVEProject/cvelistV5/blob/ecf42c524346a5c0444f5293c684b6080cbff2d3/cves/2026/69xxx/CVE-2026-69248.json",
+    "https://github.com/cisagov/vulnrichment/blob/a6813569605c0b32bd9b1b6284ff40fb89f816e7/2026/69xxx/CVE-2026-69248.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eda6f9f68e3be16431e4e13ed5bafbf65426f7ea/SSVC/data/2026/CVE-2026-69248.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/d7b8760a59fb9d9b22a9acf40d5f81f7bd1439c8/data/2026/CVE-2026-69248.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/vex/cve/2026/CVE-2026-69248.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eda6f9f68e3be16431e4e13ed5bafbf65426f7ea/CVE/data/2026/CVE-2026-69248.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/osv/cve/2026/UBUNTU-CVE-2026-69248.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69248.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/71559fab65173e9b4d2fc5d02e87ed28f3a5c28b/CVE-2026/CVE-2026-692xx/CVE-2026-69248.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/pypi/cryptography/CVE-2026-69248.yml",
+]
