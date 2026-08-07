@@ -1,0 +1,42 @@
+[basic]
+description = "Linux 内核 Xilinx UART PS（cdns_uart）串口驱动中存在不当锁定漏洞，可在特定竞态条件下引发系统死锁。具体而言，cdns_uart_isr 中断处理函数与 cdns_uart_console_write 控制台写函数之间存在循环锁依赖：CPU 0 在中断上下文中持有 port lock 并调用 printk，而 CPU 1 在执行 console_write 时尝试获取同一把锁。此前的修复尝试通过在 port->sysrq 未设置时不加锁来规避，但若 cdns_uart_console_write 在 sysrq 标志位设置前运行，仍会尝试获取 port lock，从而导致死锁。具有本地低权限访问权限的攻击者可通过触发 SysRq 功能或制造串口中断与控制台输出的竞态条件，使系统进入不可用状态，造成拒绝服务（DoS）影响。该漏洞影响使用 Xilinx Zynq MPSoC UART 控制器且运行受影响 Linux 内核版本的嵌入式设备及服务器系统，CVSS 评分为 5.5。"
+published = "2025-02-27T20:16:04Z"
+remediation = "建议将 Linux 内核升级至已修复的稳定版本：6.1.129、6.6.78、6.12.14 或更高版本。具体而言，运行 5.15 系列内核的系统应升级到 6.1.129 或更新版本，6.6 系列升级到 6.6.78 或更新版本，6.12 系列升级到 6.12.14 或更新版本。Debian 11 用户可通过 apt 安装 DLA-4102-1 安全更新（linux-6.1 包），Ubuntu 22.04 LTS 用户应应用 USN-7653-1 内核补丁。作为临时缓解措施，可在 /etc/sysctl.conf 中添加 kernel.sysrq=0 并执行 sysctl -p 禁用 SysRq 功能，防止触发循环锁依赖导致死锁。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 Xilinx UARTPS 串口驱动 improper locking 死锁漏洞"
+updated = "2026-06-17T08:44:22Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21820"]
+ave_id = "AVE-2025-0999"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/4410dba9807a17a93f649a9f5870ceaf30a675a3",
+    "https://git.kernel.org/stable/c/8ea0e7b3d7b8f2f0fc9db491ff22a0abe120801c",
+    "https://git.kernel.org/stable/c/9b88a7c4584ba67267a051069b8abe44fc9595b2",
+    "https://git.kernel.org/stable/c/b06f388994500297bb91be60ffaf6825ecfd2afe",
+    "https://git.kernel.org/stable/c/de5bd24197bd9ee37ec1e379a3d882bbd15c5065",
+    "https://git.kernel.org/stable/c/e22a97700901ba5e8bf8db68056a0d50f9440cae",
+    "https://lists.debian.org/debian-lts-announce/2025/03/msg00028.html",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2025/CVE-2025-21820.md",
+    "https://github.com/CVEProject/cvelistV5/blob/238621d97459787e3eb52f310357d8fe9d9352a4/cves/2025/21xxx/CVE-2025-21820.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/b2ba42294cda2660a4a9cab4c3c16c4275d7ba9c/CVE/data/2025/CVE-2025-21820.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21820.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5e8562b3a5799c26af53e6d5c536ab278b612e46/references/CveServices-CVE-2025-21820-2025-11-03-1402",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21820.json",
+    "https://github.com/opencve/opencve-kb/blob/970ddebd3969937ff7d948969cf1b08d095d8d06/2025/CVE-2025-21820.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21820.yaml",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21820.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21820",
+]
