@@ -1,0 +1,42 @@
+[basic]
+description = "Open WebUI 在终端文件预览功能中，通过 iframe 渲染来自终端服务器的 HTML 文件时，沙箱配置硬编码了 allow-same-origin 权限，导致同源策略完全失效。攻击者若拥有终端服务器访问权限的认证账户，可在该服务器上写入包含恶意脚本的 HTML 文件；当受害者在聊天界面触发该文件预览时，恶意脚本将在 Open WebUI 应用原点执行，读取 localStorage 中的会话令牌并外泄，从而实现账户完全接管。若受害者为管理员或拥有 workspace.functions 权限，攻击者可进一步实现服务器端代码执行。该漏洞影响 0.9.0 至 0.10.2 版本，仅对配置了终端服务器（TERMINAL_SERVER_CONNECTIONS）的实例生效，且默认未开启 Content-Security-Policy 的部署存在风险，已通过升级至 0.11.0 版本修复。"
+published = "2026-08-04T20:16:55Z"
+remediation = "将 Open WebUI 升级到 0.11.0 或更高版本（提交 65a5fad7b，合并请求 #26907）。该修复版本将 `serveUrl` 预览路径的 iframe 沙箱配置与 `iframeSandboxAllowSameOrigin` 用户设置对齐，默认不再授予 `allow-same-origin` 权限，预览内容将在 opaque origin 下加载，无法访问父窗口的 `localStorage` 会话令牌。如暂时无法升级，可在 `TERMINAL_SERVER_CONNECTIONS` 中移除所有终端服务器配置，或通过 `TERMINAL_PROXY_HEADERS` 设置严格的 Content-Security-Policy（如 `default-src 'none'`），阻止 HTML 文件预览中的脚本执行。"
+score = 8.2
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Open WebUI 同源跨站脚本账户接管漏洞"
+updated = "2026-08-05T15:17:10Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-70486",
+    "GHSA-3xpf-xq7r-v8c5",
+]
+ave_id = "AVE-2026-1381"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/open-webui/open-webui/commit/65a5fad7b97db99d490d81f4e0860282c3a4543c",
+    "https://github.com/open-webui/open-webui/pull/26907",
+    "https://github.com/open-webui/open-webui/releases/tag/v0.11.0",
+    "https://github.com/open-webui/open-webui/security/advisories/GHSA-3xpf-xq7r-v8c5",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2026/CVE-2026-70486.md",
+    "https://github.com/CVEProject/cvelistV5/blob/267746f06da0549b629237cff9797b213439c6c9/cves/2026/70xxx/CVE-2026-70486.json",
+    "https://github.com/cisagov/vulnrichment/blob/e3e81a70be976a84379e90d28c2a78774f2d6094/2026/70xxx/CVE-2026-70486.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e9d9b9e8f0cec249d0b02d488b7a1cd8b6f01325/SSVC/data/2026/CVE-2026-70486.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e9d9b9e8f0cec249d0b02d488b7a1cd8b6f01325/CVE/data/2026/CVE-2026-70486.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/fd83d7300ad2d6d69a40586722d4416f017c1bdf/data/2026/CVE-2026-70486.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-70486.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/800e0951ee534700ac309055ede267b068e5fc70/CVE-2026/CVE-2026-704xx/CVE-2026-70486.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/pypi/open-webui/CVE-2026-70486.yml",
+    "https://github.com/anchore/cve-data-enrichment/blob/f95ed70ff4572bede3f68dd12496edb1151d4685/data/anchore/2026/CVE-2026-70486.json",
+]
