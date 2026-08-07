@@ -1,0 +1,41 @@
+[basic]
+description = 'ip-address 是一款用于解析和操作 IPv4 及 IPv6 地址的 JavaScript 库。在 10.1.1 至 10.2.1 版本中，库内 `isInSubnet` 方法在开头包含一个前缀长度比较守卫：当目标地址的子网掩码比参考范围的掩码更短时直接返回 `false`。由于该子网掩码直接来自解析输入中的 CIDR 后缀，攻击者只需在 IP 地址后附加类似 `/0` 的 CIDR 后缀，即可完全抑制特殊用途分类判断，导致 `isLoopback()`、`isPrivate()`、`isLinkLocal()`、`isCGNAT()`、`isMulticast()`、`isUnspecified()`、`isBroadcast()`、`isULA()` 及 `getType()` 等方法将内部地址错误地报告为"普通地址"，而 `correctForm()` 和 `address` 仍返回真实的内部目标地址。依赖这些方法构建网络安全信任边界决策的应用（例如用于阻止服务端请求伪造 SSRF 的过滤器）可能因此将内部目标视为外部地址而放行请求，导致攻击者通过向应用提交携带 CIDR 后缀的裸地址字符串，诱使服务器向攻击者原本无法直接访问的 loopback 服务或云元数据端点发起请求，进而实现 SSRF 攻击。该漏洞同时影响 Address4 和 Address6 的几乎所有分类器，受影响版本为 10.1.1 至 10.2.1，官方已在 10.2.2 版本中修复，建议升级至修复版本。'
+published = "2026-08-03T20:17:30Z"
+remediation = "标签中。<value>建议将 ip-address 库升级至 10.2.2 版本。通过 npm 执行 `npm install ip-address@10.2.2` 或 `npm update ip-address` 完成更新，新版本引入 isHostInSubnet() 方法，使 isLoopback()、isPrivate()、isLinkLocal() 等分类方法不再受 CIDR 后缀影响。若当前无法立即升级，可在调用上述分类方法前，先通过 addressMinusSuffix 属性剥离地址中的 CIDR 后缀再重新解析，例如 `new Address4(new Address4(userInput).addressMinusSuffix)`，以此作为临时缓解措施。此外，建议在 SSRF 防护中对请求目标进行 DNS 解析后二次校验实际连接 IP，防范 DNS 重绑定与重定向攻击。"
+score = 6.9
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "ip-address CIDR后缀特殊用途地址分类绕过漏洞"
+updated = "2026-08-04T18:16:56Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69198",
+    "GHSA-4xrf-jv44-h6hh",
+]
+ave_id = "AVE-2026-1308"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/beaugunderson/ip-address/commit/488fe9bc7c35363b4b090494fc38c266d217740d",
+    "https://github.com/beaugunderson/ip-address/releases/tag/v10.2.2",
+    "https://github.com/beaugunderson/ip-address/security/advisories/GHSA-4xrf-jv44-h6hh",
+    "https://github.com/CVEProject/cvelistV5/blob/4e0204724bf51491275a1083acc85ba506a05438/cves/2026/69xxx/CVE-2026-69198.json",
+    "https://github.com/cisagov/vulnrichment/blob/1ec26b4bfdf4d4994876319583b66cbf88277812/2026/69xxx/CVE-2026-69198.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/520aa4b3e74e2392f3887b15716f0194af1dfca3/SSVC/data/2026/CVE-2026-69198.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/9c2043d9854f41df91b0a88593da9d4c87579f0b/data/2026/CVE-2026-69198.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/vex/cve/2026/CVE-2026-69198.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/osv/cve/2026/UBUNTU-CVE-2026-69198.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/520aa4b3e74e2392f3887b15716f0194af1dfca3/CVE/data/2026/CVE-2026-69198.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69198.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/ip-address/CVE-2026-69198.yml",
+    "https://github.com/neuvector/vul-source/blob/e94d2524613f6577724db8c44514240e3c9e74f6/ubuntu-cve-tracker/active/CVE-2026-69198",
+]
