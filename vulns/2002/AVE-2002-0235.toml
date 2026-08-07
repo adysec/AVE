@@ -1,10 +1,10 @@
 [basic]
-description = "EZNE.NET EasyBoard 2000 1.27 (即 EZboard) 存在远程缓冲区溢出漏洞，攻击者可通过向 ezboard.cgi、ezman.cgi 或 ezadmin.cgi 发送包含超长 boundary 值的 multipart Content-Type 头触发缓冲区溢出，进而实现远程任意代码执行。该漏洞影响 EasyBoard 2000 1.27 版本，攻击者无需身份认证即可远程利用，CVSS 评分 7.5（高危），影响机密性、完整性和可用性。攻击者通过构造畸形的 multipart 请求，在处理 boundary 参数时触发栈缓冲区溢出，劫持程序控制流执行任意代码。ExploitDB 已公开 PoC (EDB-21287)，攻击者可直接利用实现远程代码执行。"
+description = "EasyBoard 2000 1.27（EZboard）存在缓冲区溢出漏洞，远程攻击者可通过向 ezboard.cgi、ezman.cgi 或 ezadmin.cgi 发送包含超长 boundary 值的 multipart Content-Type 请求头触发溢出，从而执行任意代码或导致服务拒绝。该漏洞影响使用 EasyBoard 2000 1.27 版本的论坛系统，攻击者无需身份认证即可在目标服务器上执行未授权操作，危害等级高。CVSS v3 评分 7.5，攻击向量为网络，攻击复杂度低，无需交互即可利用。"
 published = "2002-05-29T04:00:00Z"
-remediation = "建议立即升级至 EasyBoard 2000 1.28 及以上版本或迁移至现代论坛系统（如 Discuz!、phpBB）。若无法升级，请在 Web 服务器层面配置规则拦截 multipart Content-Type 中超长 boundary 值（限制长度 ≤ 256 字节），或在 Web 服务器配置中禁用/删除 ezboard.cgi、ezman.cgi、ezadmin.cgi 三个易受攻击的 CGI 脚本。同时建议在 WAF 层面添加规则拦截包含异常长 boundary 参数的 multipart 请求。若业务允许，建议彻底下线该组件并迁移至维护中的论坛系统。"
+remediation = '由于该软件厂商未发布官方补丁，需手动修复：将 ezboard.cgi、ezman.cgi、ezadmin.cgi 中的 sprintf(boundary, "--%s", delim) 改为 sprintf(boundary, "--%.200s", delim)，限制 boundary 参数长度以防止栈溢出；或直接应用 ExploitDB 提供的 ezboard-fix.pl 二进制补丁脚本对三个 CGI 文件进行修复。若无法立即修补，可在前端部署 WAF 或反向代理，过滤 Content-Type 中过长的 boundary 值作为临时缓解措施，并建议迁移至维护活跃的替代论坛系统。'
 score = 7.5
 severity = "HIGH"
-sources = ["exploitdb"]
+sources = ["tenable"]
 title = "EZNE.NET Ezboard 2000 远程缓冲区溢出漏洞"
 updated = "2026-06-16T21:57:06Z"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-0263"]
 ave_id = "AVE-2002-0235"
 
 [meta]
-collected_at = "2026-07-28T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.iss.net/security_center/static/8162.php",
     "http://www.securityfocus.com/bid/4068",
     "https://www.exploit-db.com/exploits/21287",
-    "https://github.com/CVEProject/cvelistV5/blob/f38c5fdc2d5ae016cb5ff615cdaf3941dc98e9f4/cves/2002/0xxx/CVE-2002-0263.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/205083faf6b3f186002bb501f7178bdd84048b96/CVE/data/2002/CVE-2002-0263.json",
+    "https://github.com/CVEProject/cvelistV5/blob/f44a116d4d536826c4e2d2e60db49f9e9faec5a2/cves/2002/0xxx/CVE-2002-0263.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9cadf2781966b46cf2833362970d0629a97c0767/CVE/data/2002/CVE-2002-0263.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-0263",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-0263.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2002-0263.json",
-    "https://github.com/opencve/opencve-kb/blob/1838da7604055c8895f6f79e31255e78a27012a4/2002/CVE-2002-0263.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b4e8e071ec72e458e6fba462e799cbd376c49627/CVE-2002/CVE-2002-02xx/CVE-2002-0263.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/094d6382e9f2b76e665247588266e58be890fb67/2002/0xxx/CVE-2002-0263.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2002-0263.json",
+    "https://github.com/opencve/opencve-kb/blob/d8cfe5c32558c23ee3b71eef8e37a92f425802dd/2002/CVE-2002-0263.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2dd45b48e0efa0fde64742f95da829dc45ea506c/CVE-2002/CVE-2002-02xx/CVE-2002-0263.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/fc76707fefe5e24b3da95d21a7724ebb2a7c3d53/2002/0xxx/CVE-2002-0263.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2002/0xxx/CVE-2002-0263.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2002/0xxx/CVE-2002-0263.json",
 ]
