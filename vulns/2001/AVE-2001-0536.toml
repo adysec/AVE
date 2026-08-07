@@ -1,11 +1,11 @@
 [basic]
-description = "cgiCentral WebStore 400/400CS 4.14 的 ws_mail.cgi 脚本中存在任意命令执行漏洞。远程已认证的 WebStore 管理员可通过在 kill 参数中注入 shell 元字符（如分号、管道符等）绕过输入过滤，导致系统执行攻击者指定的任意命令。攻击者利用该漏洞可完全控制目标服务器，获取敏感数据或进行横向移动。该漏洞影响 WebStore 400 及 400CS 版本，CVSS 评分 7.5，危害等级高。目前官方已发布修复建议，建议用户升级至最新版本或对 kill 参数进行严格过滤。"
+description = "cgiCentral WebStore 400 的 ws_mail.cgi 脚本存在任意命令执行漏洞，该脚本在处理 kill 参数时直接将用户输入传递给 system() 函数执行，未对 shell 元字符进行任何过滤或转义。具有 WebStore 管理员认证权限的远程攻击者可通过在 kill 参数中注入 shell 元字符（如分号），在 Web 服务器上执行任意系统命令。成功利用该漏洞可导致攻击者完全控制服务器主机，窃取敏感数据或进一步渗透内网。此外，若与认证绕过漏洞（Bugtraq ID 2860）结合使用，远程未授权攻击者也可能借此获得服务器访问权限。该漏洞影响 WebStore 400 及 400CS 版本 4.14，CVSS 评分为 7.5，危害等级为高。cgiCentral 已发布安全更新修复此漏洞，管理员应升级到最新版本并加强对管理员账户的权限管控。"
 published = "2001-06-12T04:00:00Z"
-remediation = "该漏洞影响已停止维护的 cgiCentral WebStore 400/400CS 4.14，厂商未发布安全补丁。建议立即停用 ws_mail.cgi 脚本或移除该 CGI 文件；将 WebStore 迁移至受支持的替代购物车系统；在 Web 服务器层面限制对 /cgi-bin/ 目录的访问权限，仅允许受信 IP 访问管理后台。"
+remediation = "建议立即停用或删除 cgiCentral WebStore 400 中的 ws_mail.cgi 脚本，该脚本通过 kill 参数直接调用 system() 导致任意命令执行。若业务必须保留，请在 Web 服务器层面配置规则拦截包含分号、反引号、$()、管道符等 Shell 元字符的 kill 参数请求，并将管理员后台访问限制为可信 IP 范围（如内网 IP 或 VPN 网段）。鉴于该产品已停止维护多年，强烈建议尽快迁移至现代维护中的电商平台（如 Magento、Shopify、WooCommerce 等），并在迁移前部署 WAF 规则针对性防护该 CGI 接口。"
 score = 7.5
 severity = "HIGH"
-sources = ["exploitdb"]
-title = "cgiCentral WebStore 400 任意命令执行漏洞"
+sources = ["tenable"]
+title = "cgiCentral WebStore 400 远程代码执行漏洞"
 updated = "2026-06-16T21:56:05Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-1343"]
 ave_id = "AVE-2001-0536"
 
 [meta]
-collected_at = "2026-07-27T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/2861",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6685",
     "https://www.exploit-db.com/exploits/20916",
-    "https://github.com/CVEProject/cvelistV5/blob/0db929612f090dc6aa0346061c42364c4634c480/cves/2001/1xxx/CVE-2001-1343.json",
+    "https://github.com/CVEProject/cvelistV5/blob/8d761288c12d1a9bf761b0c5cf276b970a7806ba/cves/2001/1xxx/CVE-2001-1343.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6120c40ff117bee56ffec7d2c1707dc537c2f66/CVE/data/2001/CVE-2001-1343.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-1343",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/5ea14f17ec38fb7850c23056beec64877fabc5b1/2001/1xxx/CVE-2001-1343.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bb772dcb04525a1a88049530e1b1081f8633cb88/CVE/data/2001/CVE-2001-1343.json",
-    "https://github.com/github/advisory-database/blob/d91e95989ea5d3a9186ceb621d53a71dff03cab4/advisories/unreviewed/2022/04/GHSA-5jxq-vjr3-45cr/GHSA-5jxq-vjr3-45cr.json",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/dangerous_cgis.nasl",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-1343.json",
-    "https://github.com/SpeeDr00t/speedr00t.github.com/blob/0380f0c2190556fabe90257cb6c0034a42f68951/securityfocus/0x3000/2861/info.html",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_151000_151100.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-1343.json",
+    "https://github.com/opencve/opencve-kb/blob/ab57f0f5941edfcae5978f583ee8f5b3de27e9c0/2001/CVE-2001-1343.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2dd45b48e0efa0fde64742f95da829dc45ea506c/CVE-2001/CVE-2001-13xx/CVE-2001-1343.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/364fb6b2840611305c33288c80adac14e2962032/2001/1xxx/CVE-2001-1343.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/1xxx/CVE-2001-1343.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/1xxx/CVE-2001-1343.json",
 ]
