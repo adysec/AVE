@@ -1,0 +1,39 @@
+[basic]
+description = "Linux 内核的流量控制（net/sched）子系统 cls_api 模块中存在空指针解引用漏洞。tcf_exts_miss_cookie_base_alloc() 调用 xa_alloc_cyclic() 时，若分配成功后发生循环，函数返回值为 1，但该值被错误地视为失败状态。上层调用链 fl_change() 将返回值 1 解释为成功，随后调用 tcf_exts_validate_ex() 与 tcf_action_init()，此时因 exts->actions 已被置为 NULL 而触发空指针解引用，导致内核崩溃。该漏洞影响 Linux 内核网络调度器（流量分类/过滤功能），具备本地权限的恶意用户可通过构造特定的流量控制规则变更请求触发此问题，造成拒绝服务（内核 Panic）。CVSS 评分为 5.5，危害等级为中等。SUSE Linux Enterprise 15 SP6/SP7 等发行版已发布安全更新修复该漏洞。"
+published = "2025-03-12T10:15:18Z"
+remediation = "建议立即升级 Linux 内核至包含该修复的版本。Linux 6.6.x 用户应升级至 6.6.80 或更高版本，6.12.x 用户应升级至 6.12.17 或更高版本，6.13.x 用户应升级至 6.13.5 或更高版本；上游修复提交为 de4b679aa3b4、3e4c56cf4187、3c74b5787caf、071ed42cff4f。Ubuntu 用户请执行 apt update && apt upgrade 安装 USN-7703-1 安全更新，SUSE SLES15/SLES_SAP15 用户请安装 SUSE-SU-2025:01951-1 或 SUSE-SU-2025:1177-1 安全补丁，RHEL 9 用户应升级至 kernel-5.14.0-503 系列的最新 errata 版本。如短期内无法升级内核，可移除 CAP_NET_ADMIN capability 或禁用 unprivileged user namespaces，以限制非特权用户对 TC 过滤器（cls_flower）的写入权限作为临时缓解。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel net/sched cls_api 空指针解引用漏洞"
+updated = "2026-06-17T08:44:27Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21857"]
+ave_id = "AVE-2025-1014"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/071ed42cff4fcdd89025d966d48eabef59913bf2",
+    "https://git.kernel.org/stable/c/3c74b5787caf59bb1e9c5fe0a360643a71eb1e8a",
+    "https://git.kernel.org/stable/c/3e4c56cf41876ef2a82f0877fe2a67648f8632b8",
+    "https://git.kernel.org/stable/c/de4b679aa3b4da7ec34f639df068b914f20e3c3c",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2025/CVE-2025-21857.md",
+    "https://github.com/CVEProject/cvelistV5/blob/793c861eee2bfce2d12c8abaee815ef2812aeda8/cves/2025/21xxx/CVE-2025-21857.json",
+    "https://github.com/cisagov/vulnrichment/blob/a6813569605c0b32bd9b1b6284ff40fb89f816e7/2025/21xxx/CVE-2025-21857.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eda6f9f68e3be16431e4e13ed5bafbf65426f7ea/SSVC/data/2025/CVE-2025-21857.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eda6f9f68e3be16431e4e13ed5bafbf65426f7ea/CVE/data/2025/CVE-2025-21857.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21857.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21857.json",
+    "https://github.com/opencve/opencve-kb/blob/c7e70dbcda287de423b2adfe9b31c773b45b426e/2025/CVE-2025-21857.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21857.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21857.yaml",
+]
