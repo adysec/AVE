@@ -1,11 +1,11 @@
 [basic]
-description = 'ThinkPHP 3.2.4 之前版本存在访问控制错误漏洞，攻击者可通过构造特制的 HTTP 请求，利用 `public//?s=index/\think\app/invokefunction` 路由绕过权限检查，直接调用 `call_user_func_array` 函数执行任意系统命令。该漏洞影响使用 ThinkPHP 框架的 Open Source BMS v1.1.1 等应用，攻击者无需身份认证即可远程利用，CVSS 评分 8.8，危害等级高。'
+description = 'ThinkPHP 3.2.4 及之前版本存在远程命令执行漏洞，主要影响使用该框架开发的 Open Source BMS v1.1.1 等应用。漏洞原理在于 ThinkPHP 框架的路由机制允许攻击者通过构造特殊的 URL（`public//?s=index/\think\app/invokefunction&function=call_user_func_array&vars[0]=system&vars[1][]=`）直接调用框架内部的 `call_user_func_array` 函数，进而执行任意系统命令。由于漏洞利用无需身份认证，攻击条件仅为目标系统运行受影响版本的 ThinkPHP 且可通过网络访问。攻击者可利用此漏洞获取服务器权限，造成严重的信息泄露、数据篡改及服务中断等危害。该漏洞 CVSS v3.1 评分为 8.8，属于高危级别，影响的 CWE 类型包括代码注入（CWE-94）和认证绕过（CWE-306）。'
 published = "2019-02-24T18:29:00Z"
-remediation = '升级 ThinkPHP 至 3.2.4 或更高版本，该版本修复了 /think/app/invokefunction 路由的访问控制缺陷。如无法立即升级，可在应用入口处拦截包含 think\app/invokefunction 的请求路径。'
+remediation = '建议将 ThinkPHP 框架升级至 3.2.4 或更高版本。若无法立即升级，可通过在 WAF 防火墙中拦截包含 "invokefunction" 及 "call_user_func_array" 关键字的 HTTP 请求作为临时缓解措施。'
 score = 8.8
 severity = "HIGH"
-sources = ["kev"]
-title = "ThinkPHP 远程命令执行漏洞"
+sources = ["nuclei"]
+title = "ThinkPHP 远程代码执行漏洞"
 updated = "2026-06-17T02:43:02Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2019-9082"]
 ave_id = "AVE-2019-1682"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,13 +28,13 @@ urls = [
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2019-9082",
     "https://www.exploit-db.com/exploits/46488",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2019/CVE-2019-9082.yaml",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2019/CVE-2019-9082.md",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2019/CVE-2019-9082.md",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/high/CVE-2019-9082.yaml",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/high/cve-2019-9082-4292.yaml",
-    "https://github.com/cisagov/vulnrichment/blob/6ff73fb4bb99974a2b535c179f337dd820550366/2019/9xxx/CVE-2019-9082.json",
+    "https://github.com/cisagov/vulnrichment/blob/e3e81a70be976a84379e90d28c2a78774f2d6094/2019/9xxx/CVE-2019-9082.json",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2019/CVE-2019-9082.md",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2019/CVE-2019-9082.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/16f8cf2a3c129bb57f3727599f3730e6001c1186/SSVC/data/2019/CVE-2019-9082.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f31dd31e2f478f1e13347f1843c21f10f282a83b/SSVC/data/2019/CVE-2019-9082.json",
     "https://github.com/CharanRayudu/Custom-Nuclei-Templates/blob/6418cf9ac43a7d4121d979ae9afb12f54511729e/CVE-2019-9082.yaml",
     "https://github.com/PwnAwan/CVEs/blob/967839a1f3dd2e43c3ca7af98749ae1712e69a04/2019/CVE-2019-9082.md",
     "https://github.com/projectdiscovery/nuclei-templates-ai/blob/d476b10507a31f8cf4e68e148600e8de71a53d49/2019/CVE-2019-9082.yaml",
