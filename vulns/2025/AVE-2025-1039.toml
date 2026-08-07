@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核内存故障处理子系统存在缺陷，在迁移包含硬件错误（poisoned）的内存页时，`unmap_poisoned_folio()` 函数未能正确设置 `TTU_HWPOISON` 标志。此前提交将 `TTU_IGNORE_HWPOISON` 替换为 `TTU_HWPOISON` 以防止访问错误页时发送 SIGBUS 信号，但在匿名页迁移过程中，取消映射操作需要设置该标志以正确处理 poisoned folio，而原有策略位于 `hwpoison_user_mappings` 中位置不当。攻击者需具备本地低权限，通过触发内存页迁移操作（如热插拔内存或迁移页面）即可在内核日志中触发警告，导致系统可用性受影响。该漏洞影响 Linux 内核 6.13.0-rc1 及相关版本，CVSS 评分 5.5，危害等级中危。上游已通过补丁将标志更新策略移至 `unmap_poisoned_folio` 函数内以修复此问题。"
+published = "2025-04-01T16:15:21Z"
+remediation = "建议升级 Linux 内核至修复版本 6.12.19、6.13.7 或 6.14 及以后版本，可通过各发行版官方包管理器获取对应内核更新包并重启系统生效。如短期内无法升级，可临时禁用内存热插拔功能，避免在存在内存错误页时执行页面迁移操作，以降低内核 try_to_unmap_one 警告触发概率。使用 Ubuntu 24.04 LTS 的系统需特别关注 linux 及 linux-aws 等内核子包的版本更新。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel 内存管理 中毒页面迁移拒绝服务漏洞"
+updated = "2026-06-17T08:44:34Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21907"]
+ave_id = "AVE-2025-1039"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/425c12c076e6fc6b2cb04b9f960319d31dcabc76",
+    "https://git.kernel.org/stable/c/608cc7deb428f1122ed426060233622ebf667b6e",
+    "https://git.kernel.org/stable/c/b81679b1633aa43c0d973adfa816d78c1ed0d032",
+    "https://github.com/CVEProject/cvelistV5/blob/9d7a36673f1bb2c673dcce0f4cb7592e8a55c52a/cves/2025/21xxx/CVE-2025-21907.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/24fd852826426077fab5deff7dee8e1c33b7de89/CVE/data/2025/CVE-2025-21907.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21907.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21907.yaml",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/c9d2df1ca6a644222999e57cc00bd3742d4ae6f9/tracker/CVE/2025/CVE-2025-21907.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21907.json",
+    "https://github.com/opencve/opencve-kb/blob/6d26d78400c4747b58ec582f74fbcb84b4d8d834/2025/CVE-2025-21907.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21907",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2025-21907",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2025/21xxx/CVE-2025-21907.json",
+]
