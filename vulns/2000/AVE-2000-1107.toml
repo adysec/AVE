@@ -1,11 +1,11 @@
 [basic]
-description = "Recourse ManTrap 1.6 版本存在特定处理缺陷，当攻击者进入进程的当前工作目录 /proc/self/cwd 并执行 pwd 命令时，工具会异常崩溃并泄露错误信息。这个漏洞影响 Early 2000 年代的网络安全监控工具，攻击者无需认证即可利用该漏洞来检测目标系统是否为蜜罐系统，从而规避安全监控。在蜜罐/沙箱环境中，这种探测行为可能导致安全分析人员的误判，影响整体安全态势感知。漏洞 CVSS 评分 2.1，分类为低危，但其信息披露性质可能被恶意攻击者用作安全防御系统探测工具，在网络安全监控场景中具有潜在危害。"
+description = "Recourse ManTrap 1.6 存在蜜罐识别漏洞，其 `cd` 到 `/proc/self/cwd` 目录后执行 `pwd` 命令时会生成错误信息，导致攻击者能够据此判断当前系统为蜜罐（honeypot）环境而非真实业务主机。该漏洞影响使用 Recourse ManTrap 1.6 版本部署的蜜罐系统，攻击条件为攻击者已获得目标系统的交互式 shell 或命令执行权限。利用方式简单，仅需执行上述两条命令即可通过错误输出特征检测蜜罐，从而绕过诱骗环境、规避入侵检测并直接针对真实资产发起攻击。"
 published = "2001-01-09T05:00:00Z"
-remediation = "建议立即停用 Recourse ManTrap 1.6 等已停止维护的老旧蜜罐产品，迁移至现代主动维护的蜜罐解决方案（如 Cowrie、Dionaea、Honeypot.py 等）。若短期无法迁移，可通过以下缓解措施降低风险：1) 在蜜罐系统中挂载 procfs 时添加 hidepid=2 参数（mount -o remount,hidepid=2 /proc），限制非特权用户访问 /proc/self/cwd；2) 使用 chroot 或容器技术隔离蜜罐 shell 环境，禁止攻击者执行 pwd 等探测命令；3) 在网络层面部署流量镜像与行为分析，替代依赖单一蜜罐系统的检测逻辑。参考厂商后续回复（Bugtraq 20001107）建议升级至修复版本，但该产品已于 2002 年随 Recourse 被 Symantec 收购后停止维护，无可用补丁，唯一彻底方案为替换产品。"
+remediation = "升级 Recourse ManTrap 至 2.0 或更高版本。Recourse Technologies 已于 2000 年 11 月发布 ManTrap 2.0 官方修复包，解决了 jail 环境中 /proc/self/cwd 路径处理不当导致的 honeypot 检测漏洞。建议联系 Recourse Technologies 获取升级包并安装。如暂无法升级，可临时在 ManTrap jail 的 shell 启动脚本中覆盖 pwd 命令，当检测到当前路径为 /proc/self/cwd 时返回正常目录信息而非错误，或通过修改 jail 的 proc 文件系统挂载配置确保该路径行为一致。同时应在 cage 部署后严格监控 cage 内进程列表，防止攻击者利用其他指纹手段识别蜜罐环境。鉴于 ManTrap 已停止维护，长期建议迁移至新一代蜜罐系统。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "Recourse ManTrap 蜜罐信息泄露漏洞"
+sources = ["avd"]
+title = "Recourse ManTrap 蜜罐检测信息泄露漏洞"
 updated = "2026-06-16T21:53:14Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1142"]
 ave_id = "AVE-2000-1107"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-11/0100.html",
     "http://marc.info/?l=bugtraq&m=97349791405580&w=2",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5949",
-    "https://github.com/CVEProject/cvelistV5/blob/3ea93936438a97f1459a1dd6e83719dbfc798be2/cves/2000/1xxx/CVE-2000-1142.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4a364075e0f1d18be5590f7700d143d985f1789f/CVE/data/2000/CVE-2000-1142.json",
+    "https://github.com/CVEProject/cvelistV5/blob/ff7e569387aea0062ce3b3b0a6555166b4aa491f/cves/2000/1xxx/CVE-2000-1142.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/694379c8a953b4d106540076b482d281ae9c2bda/CVE/data/2000/CVE-2000-1142.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1142",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1142.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1142.json",
-    "https://github.com/opencve/opencve-kb/blob/cf9f26fab3bbc76af663e922f8ccf4da465b1866/2000/CVE-2000-1142.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/5ff0b9e6ad0b51b419967392a23ca6a8c4176810/CVE-2000/CVE-2000-11xx/CVE-2000-1142.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/1b97942de7f8736fb9dac77c314951b8b2cd2867/2000/1xxx/CVE-2000-1142.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1142.json",
+    "https://github.com/opencve/opencve-kb/blob/1bc0670cecb45de26e5d9d30012d7fcae91f215c/2000/CVE-2000-1142.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f5446ab1422bc50f191f3eb4d0c7a25d007c51de/CVE-2000/CVE-2000-11xx/CVE-2000-1142.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/900a3670ef971f3fb80084697643cb41250f878f/2000/1xxx/CVE-2000-1142.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1142.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/6ccaaffc515caa9809eafc85eced3a0696abe41f/content/CVE-2000-1142.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/91be9eb9295258fcf9346546d639e773f775edc3/content/CVE-2000-1142.md",
 ]
