@@ -1,0 +1,39 @@
+[basic]
+description = "Linux内核CDX子系统中，driver_override_show()函数存在释放后使用（UAF）漏洞。该函数属于DEVICE_ATTR_RW机制，与driver_override_store()可同时在sysfs中并发执行；由于show函数读取cdx_dev->driver_override时未加锁，而store函数内部调用driver_set_override()会加锁并可能释放原有字符串，两者存在竞争条件，导致读取已释放的内核内存指针。该漏洞影响使用CDX总线驱动的Linux内核系统，本地低权限用户可通过持续读取/sysfs中的device属性文件触发竞争，进而泄露内核地址信息，为后续内核内存破坏利用提供信息基础。此漏洞由静态分析工具检测发现，修复方案为在show函数中增加device_lock()保护。"
+published = "2025-04-01T16:15:22Z"
+remediation = "建议将 Linux 内核升级至已包含修复补丁的版本：Ubuntu 24.04 LTS 用户请升级到 6.8.0-84.84 或更高版本（执行 apt update && apt upgrade linux-image-generic）；Ubuntu 22.04 LTS 用户目前仍受影响，建议通过 Ubuntu Pro 获取安全更新或升级内核至 linux-aws 6.8.0-1039.41~22.04.1。上游内核用户请升级到 6.6.83、6.12.19、6.13.7 或 6.14 之后的版本，或应用 git.kernel.org 的补丁 commit 0439d541aa8d3444ad41c39e39eb71acb57acde3。如无法立即升级，可临时限制对 /sys/bus/cdx/devices/*/driver_override 文件的访问权限以降低本地提权风险。"
+score = 7
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux kernel CDX 驱动 Use-After-Free 漏洞"
+updated = "2026-07-30T06:21:56Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21915"]
+ave_id = "AVE-2025-1042"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0439d541aa8d3444ad41c39e39eb71acb57acde3",
+    "https://git.kernel.org/stable/c/8473135f89c0949436a22adb05b8cece2fb3da91",
+    "https://git.kernel.org/stable/c/91d44c1afc61a2fec37a9c7a3485368309391e0b",
+    "https://git.kernel.org/stable/c/d7b339bbc887bcfc1a5b620bfc70c6fbb8f733bf",
+    "https://github.com/CVEProject/cvelistV5/blob/218bad847444129ddbebfeea62eb92fdb08e16d7/cves/2025/21xxx/CVE-2025-21915.json",
+    "https://github.com/cisagov/vulnrichment/blob/10c94f89f03c3b907c56c910af2b209ea5aae7bc/2025/21xxx/CVE-2025-21915.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ec48735dfbcbc981aa038a6c8bc606e4fdbd898/SSVC/data/2025/CVE-2025-21915.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ec48735dfbcbc981aa038a6c8bc606e4fdbd898/CVE/data/2025/CVE-2025-21915.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21915.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21915.json",
+    "https://github.com/opencve/opencve-kb/blob/5bbd99d97db717bad32ae459bda1c65e7b37a2b4/2025/CVE-2025-21915.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21915.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21915",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/c9d2df1ca6a644222999e57cc00bd3742d4ae6f9/tracker/CVE/2025/CVE-2025-21915.json",
+]
