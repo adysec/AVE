@@ -1,0 +1,42 @@
+[basic]
+description = 'Flowise 的 `executeJavaScriptCode()` 函数存在沙箱逃逸漏洞，位于 `packages/components/src/utils.ts` 第 1755 行。该函数使用 JavaScript 展开运算符合并默认安全配置与用户传入的 `nodeVMOptions`，导致认证用户可覆盖 `require.builtin` 为 `["*"]`，重新启用被禁止的 `child_process`、`fs` 等内置模块。攻击者通过自定义函数节点引入 `flowise-components/dist/src/utils.js`，再次调用 `executeJavaScriptCode()` 并传入恶意配置，在嵌套 VM 中调用 `require("child_process")` 执行任意系统命令，获取 root 权限。漏洞影响 Flowise 3.0.5 至 3.1.1 所有版本，CVSS 4.0 评分 9.4（严重），已在 3.1.3 版本修复。任意持有有效 API Key 的认证用户均可远程利用，可读取加密密钥、JWT 签名密钥并建立持久化访问。'
+published = "2026-08-04T16:16:29Z"
+remediation = "立即升级 Flowise 至 3.1.3 或更高版本（修复版本），通过 docker pull flowiseai/flowise:latest 更新容器镜像并重新部署。若暂时无法升级，可在反向代理层面限制 /api/v1/node-custom-function 接口仅允许可信 IP 访问，并撤销非必要的 API 密钥以降低攻击面。"
+score = 9.4
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Flowise Flowise NodeVM 沙箱逃逸远程代码执行漏洞"
+updated = "2026-08-04T19:16:53Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69254",
+    "GHSA-3769-jgqc-cxm7",
+]
+ave_id = "AVE-2026-1339"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/FlowiseAI/Flowise/commit/3086cb7e323bb96c5a581d3232ef975b0d92183d",
+    "https://github.com/FlowiseAI/Flowise/pull/6306",
+    "https://github.com/FlowiseAI/Flowise/releases/tag/flowise@3.1.3",
+    "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-3769-jgqc-cxm7",
+    "https://github.com/CVEProject/cvelistV5/blob/6965489bbb0e546f402d9f723160a02c114a0639/cves/2026/69xxx/CVE-2026-69254.json",
+    "https://github.com/cisagov/vulnrichment/blob/c6d6017c1734775509208d9f591135a5edeb91e2/2026/69xxx/CVE-2026-69254.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/SSVC/data/2026/CVE-2026-69254.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/CVE/data/2026/CVE-2026-69254.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69254.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise/CVE-2026-69254.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/10af4013c239913b9e2b28873060d55f8f810752/CVE-2026/CVE-2026-692xx/CVE-2026-69254.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise-components/CVE-2026-69254.yml",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/baaabdeedc4b09f0484f180f040071dd4f95812b/nvd/2026/CRITICAL/CVE-2026-69254/README.md",
+    "https://github.com/TMA84/cvealert/blob/28d98e023aa8fad90c20ec94b202da55048de4bf/content/posts/cve-2026-69254.md",
+]
