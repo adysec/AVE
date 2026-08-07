@@ -1,0 +1,41 @@
+[basic]
+description = 'Linux 内核 uprobes 子系统的 `uprobe_write_opcode()` 函数在处理共享零页（zeropage）时存在缺陷。当本地低权限用户通过 `userfaultfd` 的 `UFFDIO_ZEROPAGE` 操作将零页映射到进程地址空间，并利用 BPF uprobe 多链接功能触发 uprobe 断点写入时，内核 RSS 计数和页面引用计数会出现不一致，导致 "Bad page state" 和 "Bad rss-counter state" 错误，最终引发系统崩溃或内核 panic。该漏洞影响启用 uprobes 功能的 Linux 内核版本，攻击者需要本地访问权限，成功利用可造成拒绝服务。'
+published = "2025-03-27T15:15:56Z"
+remediation = "升级 Linux 内核至以下已修复版本之一：6.1.130、6.6.81、6.12.18、6.13.6 或 6.14 及以上版本。可通过系统包管理器执行更新，例如 Debian/Ubuntu 使用 apt install linux-image-$(uname -r) 安装最新内核包后重启系统。若暂时无法升级内核，可通过 sysctl 限制 bpf_uprobe_multi_link 的使用权限，仅允许特权用户加载 BPF uprobe 程序，以降低本地特权进程利用该漏洞触发内核崩溃的风险。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux kernel uprobes 拒绝服务漏洞"
+updated = "2026-06-17T08:44:31Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21881"]
+ave_id = "AVE-2025-1027"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0b6f19714588cf2366b0364234f97ba963688f63",
+    "https://git.kernel.org/stable/c/13cca2b73e2b0ec3ea6d6615d615395621d22752",
+    "https://git.kernel.org/stable/c/54011fc94422f094eaf47555284de70a4bc32bb9",
+    "https://git.kernel.org/stable/c/bddf10d26e6e5114e7415a0e442ec6f51a559468",
+    "https://git.kernel.org/stable/c/c4cb2bfa99513311886c1eb5c1c2ac26f3338a6e",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21881.md",
+    "https://github.com/CVEProject/cvelistV5/blob/8d761288c12d1a9bf761b0c5cf276b970a7806ba/cves/2025/21xxx/CVE-2025-21881.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21881.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6120c40ff117bee56ffec7d2c1707dc537c2f66/CVE/data/2025/CVE-2025-21881.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5e8562b3a5799c26af53e6d5c536ab278b612e46/references/CveServices-CVE-2025-21881-2025-11-03-1326",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21881.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21881",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/c9d2df1ca6a644222999e57cc00bd3742d4ae6f9/tracker/CVE/2025/CVE-2025-21881.json",
+    "https://github.com/CVEProject/cve-reference-ingest/blob/393f83f2da01cda48569d55854284faae9a2c7a8/references/contrib1-CveServices-CVE-2025-21881-2025-11-03-1326",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21881.json",
+]
