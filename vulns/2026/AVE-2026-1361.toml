@@ -1,0 +1,51 @@
+[basic]
+description = '''
+标签之间
+4. 纯文本，无 Markdown 格式
+
+让我再精简一下，确保流畅且符合要求：
+
+Flowise 的 Python 代码验证器存在 Unicode 同形字绕过漏洞，攻击者可使用 Unicode 数学粗体字母（如 U+1D41A）替换关键标识符中的 ASCII 字母，绕过 JavaScript 正则表达式单词边界黑名单限制。由于 JS 正则的 \b 仅识别 ASCII 字符边界，而 Python 3 在解析时会对标识符进行 NFKC 规范化，因此 __cl𝐚ss__、__subcl𝐚sses__ 等变体可被解析为 __class__ 等危险标识符，从而绕过验证。该漏洞影响 Flowise 3.1.2 及之前版本中的 CSV_Agent 和 Airtable_Agent 组件，任何能访问使用这些代理的公开聊天流的用户均可触发。攻击者可通过向 LLM 发送包含同形字的指令或设置 customReadCSV 参数，使验证通过的恶意代码在 Pyodide 中执行，并通过 JS 模块互操作在 Flowise 主机上执行任意操作系统命令，导致完全系统 compromise。CVSS 评分 9.5（严重），Flowise 已在 3.1.3 版本中修复。
+
+这个版本更详细，涵盖了所有要求的方面。<value>Flowise 的 Python 代码验证器存在 Unicode 同形字绕过漏洞，攻击者可使用 Unicode 数学粗体字母（如 U+1D41A）替换关键标识符中的 ASCII 字母，绕过 JavaScript 正则表达式单词边界黑名单限制。由于 JS 正则的 \b 仅识别 ASCII 字符边界，而 Python 3 在解析时会对标识符进行 NFKC 规范化，因此 __cl𝐚ss__、__subcl𝐚sses__ 等变体可被解析为 __class__ 等危险标识符，从而绕过验证。该漏洞影响 Flowise 3.1.2 及之前版本中的 CSV_Agent 和 Airtable_Agent 组件，任何能访问使用这些代理的公开聊天流的用户均可触发。攻击者可通过向 LLM 发送包含同形字的指令或设置 customReadCSV 参数，使验证通过的恶意代码在 Pyodide 中执行，并通过 JS 模块互操作在 Flowise 主机上执行任意操作系统命令，导致完全系统沦陷。CVSS 评分 9.5（严重），Flowise 已在 3.1.3 版本中修复。
+'''
+published = "2026-08-04T18:16:57Z"
+remediation = "立即将 Flowise 升级至 3.1.3 或更高版本。可通过 npm 执行 `npm install flowise@3.1.3 flowise-components@3.1.3` 完成更新，或从 https://github.com/FlowiseAI/Flowise/releases/tag/flowise@3.1.3 下载对应版本。3.1.3 版本已完全移除存在漏洞的 CSVAgent、AirtableAgent 组件以及 pythonCodeValidator.ts 验证器和 pyodide 依赖（参见 PR #6499，commit f4e2794），从根本上消除了 Unicode 同形字绕过导致的远程代码执行路径。升级后请确认实例中不再使用 CSVAgent 和 AirtableAgent 节点，并审查已部署的 chatflow 是否包含相关组件。如暂时无法升级，建议在防火墙或反向代理层禁止外部访问 `/api/v1/prediction/{chatflowId}` 接口，仅允许内网可信 IP 访问，以降低未授权用户利用公共 chatflow 执行任意 OS 命令的风险。"
+score = 9.5
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Flowise 大模型工作流构建工具 代码验证器Unicode同形字符绕过远程代码执行漏洞"
+updated = "2026-08-04T20:16:53Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-70470",
+    "GHSA-52fh-8v99-63c2",
+]
+ave_id = "AVE-2026-1361"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/FlowiseAI/Flowise/commit/f4e2794f6a576b94578f2fdafbf49c2fb304626c",
+    "https://github.com/FlowiseAI/Flowise/pull/6499",
+    "https://github.com/FlowiseAI/Flowise/releases/tag/flowise@3.1.3",
+    "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-52fh-8v99-63c2",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2026/CVE-2026-70470.md",
+    "https://github.com/CVEProject/cvelistV5/blob/65901e40282906f934598f80273eccfd4fe4813d/cves/2026/70xxx/CVE-2026-70470.json",
+    "https://github.com/cisagov/vulnrichment/blob/8c7fdea3bf2582d42ade99496d8da2c6b3b68bfa/2026/70xxx/CVE-2026-70470.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2a776b6f76e44ac82fb11077419ff697225eaf6c/SSVC/data/2026/CVE-2026-70470.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2a776b6f76e44ac82fb11077419ff697225eaf6c/CVE/data/2026/CVE-2026-70470.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-70470.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise/CVE-2026-70470.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/0a80f9b51044ff7d242f7696687f9d0e2ab628da/CVE-2026/CVE-2026-704xx/CVE-2026-70470.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise-components/CVE-2026-70470.yml",
+    "https://github.com/TMA84/cvealert/blob/5f094b198b6481974e11e6b044a950e30df9117d/content/posts/cve-2026-70470.md",
+]
