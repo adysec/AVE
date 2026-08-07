@@ -1,0 +1,45 @@
+[basic]
+description = "Guzzle 是一个可扩展的 PHP HTTP 客户端库。在 7.15.2 之前和 8.0.0 版本中，SetCookie::matchesDomain() 方法在处理非标准书写的 IP 地址（如十六进制格式 0x7f000001、百分号转义格式 192.168.0.%31 等）时，未能正确识别其为 IP 字面量，导致 cookie 的 Domain 属性保留子域名作用域。当应用程序启用 cookie 支持，并使用这些非标准格式寻址源站，且存在以该格式结尾的子域名时，攻击者可利用此漏洞：攻击者控制的服务器可向客户端发送带有 Domain=0x7f000001 的 Set-Cookie 响应头，该 cookie 随后会被添加到指向真实地址 127.0.0.1 的请求中，导致会话标识符或令牌泄露给非预期的主机，或使攻击者能够劫持会话、篡改应用状态。该漏洞影响使用 Guzzle 处理 cookie 的 PHP 应用程序，但仅在使用非标准 IP 格式寻址且存在同后缀子域名的网络环境中可被利用。"
+published = "2026-08-03T21:16:42Z"
+remediation = "立即升级 Guzzle 至 7.15.2 或 8.0.1 版本，官方补丁已修复非规范 Cookie 域名的子域范围匹配漏洞。如暂无法升级，应为每个主机或信任边界使用独立的 CookieJar，避免在多个主机间共享；禁止使用 0x 前缀十六进制、八进制或百分号转义的 IP 地址形式访问源站，统一使用标准点分十进制格式（如 127.0.0.1）；在请求传入 Guzzle 前及每次重定向时，拒绝包含百分号转义字节或非 ASCII 字节的主机名，以关闭相关攻击面。"
+score = 6.5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Guzzle HTTP 客户端 Cookie 子域范围绕过会话泄露漏洞"
+updated = "2026-08-04T16:16:28Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69245",
+    "GHSA-f7vp-7xgx-4w4r",
+]
+ave_id = "AVE-2026-1319"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/guzzle/guzzle/commit/3aeea0406aab88cbbd86531313d7cebf8ae149a4",
+    "https://github.com/guzzle/guzzle/commit/744101956d78b7c1384d0cbf379db13e859167bf",
+    "https://github.com/guzzle/guzzle/pull/3907",
+    "https://github.com/guzzle/guzzle/pull/3908",
+    "https://github.com/guzzle/guzzle/releases/tag/7.15.2",
+    "https://github.com/guzzle/guzzle/releases/tag/8.0.1",
+    "https://github.com/guzzle/guzzle/security/advisories/GHSA-f7vp-7xgx-4w4r",
+    "https://github.com/CVEProject/cvelistV5/blob/793c861eee2bfce2d12c8abaee815ef2812aeda8/cves/2026/69xxx/CVE-2026-69245.json",
+    "https://github.com/cisagov/vulnrichment/blob/0195ba1665b2ec55b1629afd5e58ecf442a6bac4/2026/69xxx/CVE-2026-69245.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/17f3104e7e566a2b867ac9837178693be6792765/SSVC/data/2026/CVE-2026-69245.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/ee330aafa7f5fa0787d8cfd76846dce962a78060/data/2026/CVE-2026-69245.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/vex/cve/2026/CVE-2026-69245.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/osv/cve/2026/UBUNTU-CVE-2026-69245.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/17f3104e7e566a2b867ac9837178693be6792765/CVE/data/2026/CVE-2026-69245.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69245.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/71559fab65173e9b4d2fc5d02e87ed28f3a5c28b/CVE-2026/CVE-2026-692xx/CVE-2026-69245.json",
+    "https://github.com/neuvector/vul-source/blob/e94d2524613f6577724db8c44514240e3c9e74f6/ubuntu-cve-tracker/active/CVE-2026-69245",
+]
