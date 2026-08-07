@@ -1,10 +1,10 @@
 [basic]
-description = "Matt Wright 开发的 download.cgi 1.0 版本存在路径遍历漏洞。远程攻击者可通过向 f 参数提交包含 `..` 的恶意请求，绕过路径限制读取服务器上的任意文件，导致敏感信息泄露。该漏洞无需认证即可利用，攻击复杂度低，影响广泛使用该 CGI 脚本的 Web 服务器。"
+description = "Matt Wright's download.cgi 1.0 存在路径遍历漏洞，远程攻击者可通过在 f 参数中注入 ..（点号斜杠）序列绕过目录限制，读取服务器上的任意敏感文件，如 /etc/passwd 等系统配置文件。该漏洞无需身份验证即可利用，影响运行该脚本的 Web 服务器，攻击者可借此获取敏感信息，CVSS 评分 5.0，危害等级中等。"
 published = "1999-09-09T04:00:00Z"
-remediation = '立即将 download.cgi 升级至 2.0 或更高版本（该版本已修复路径遍历问题），或彻底移除该脚本并替换为现代文件下载方案。如无法升级，须在脚本中对 `f` 参数进行输入过滤，拒绝包含 `../`、`..\` 或空字节的请求，并限制可访问目录范围。同时建议在 Web 服务器层面（如 Apache 的 `mod_rewrite`）拦截包含 `..` 的 URL 请求作为纵深防御。'
+remediation = "建议从 Web 服务器中彻底移除 Matt Wright 的 download.cgi 1.0 脚本，或替换为维护中的文件下载组件。如确需保留该脚本，应对 f 参数进行严格校验：禁止包含 ..（点号点号）路径遍历字符，只允许指定白名单目录内的文件访问，并使用 realpath() 解析后验证文件是否位于白名单范围内。同时将 cgi-bin 目录权限设置为最小必要权限，禁止脚本对系统敏感目录（如 /etc、/etc/passwd）进行读取操作。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
+sources = ["tenable"]
 title = "Matt Wright download.cgi 任意文件读取漏洞"
 updated = "2026-06-16T21:50:18Z"
 
@@ -17,20 +17,20 @@ aliases = ["CVE-1999-1377"]
 ave_id = "AVE-1999-1091"
 
 [meta]
-collected_at = "2026-07-20T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://pulhas.org/phrack/55/P55-07.html",
-    "https://github.com/CVEProject/cvelistV5/blob/36911ad057245f7d02822794db0f459d9b4c9b8f/cves/1999/1xxx/CVE-1999-1377.json",
+    "https://github.com/CVEProject/cvelistV5/blob/89a678d7660107e867c9c982c57f25892eb8691e/cves/1999/1xxx/CVE-1999-1377.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/b2ba42294cda2660a4a9cab4c3c16c4275d7ba9c/CVE/data/1999/CVE-1999-1377.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-1999/CVE-1999-1377",
-    "https://github.com/yarencheng/cve-devops-playground/blob/470a5f1c0d1bd36cd0a6327cda49cf96a1474588/content/CVE-1999-1377.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/3012e5f1cf9bcfe839897275a956236aed334269/CVE/data/1999/CVE-1999-1377.json",
-    "https://github.com/github/advisory-database/blob/fc4ea30e7f21aebcdcc3fac6ec198138ebd3f7f5/advisories/unreviewed/2022/04/GHSA-q74x-f7gq-p3xf/GHSA-q74x-f7gq-p3xf.json",
-    "https://github.com/xqcyberscore/nvt/blob/978f6a9acb495d7d669239530ffe6da5d631f4da/pre2008/dangerous_cgis.nasl",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/1999/CVE-1999-1377.json",
-    "https://github.com/leego972/titanai/blob/afa5b2310463aae5781d3fd9408071bf38e79806/data/raw/corpus_D_cyber/nvd_cve_000767.txt",
-    "https://github.com/security-commits/security-patches-dataset/blob/e93fcdcc8c9b91785f962a06d66b7ee623780245/data/cve-details/year/1999.csv",
-    "https://github.com/nomi-sec/NVD-Exploit-List-Ja/blob/b82432e7d59d95db9f183c0cefa7744595784afa/1999.tsv",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-1999-1377.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-1999/CVE-1999-13xx/CVE-1999-1377.json",
+    "https://github.com/opencve/opencve-kb/blob/3c6f793bd332ed77a946f83c124783cd166df6c4/1999/CVE-1999-1377.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/dd84e105135ebc6d291c634554dfe4af2f7ccfc5/1999/1xxx/CVE-1999-1377.md",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/eea3fe9ad73cbd16019f281b6be5c1157adb8059/api/1999/CVE-1999-1377.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/1999/1xxx/CVE-1999-1377.json",
 ]
