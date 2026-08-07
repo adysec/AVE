@@ -1,0 +1,42 @@
+[basic]
+description = "Flowise 是一个用于构建 AI 应用的低代码平台。该漏洞存在于 SQLite Record Manager 节点中，节点代码将用户可控的 additionalConfig 参数展开并放置在默认数据库路径之后，导致攻击者可通过 additionalConfig.database 覆盖 SQLite 数据库写入路径。在发布的 Docker 镜像以 root 身份运行的条件下，经过身份验证的攻击者可利用此漏洞将 SQLite 数据库写入 /etc/chromium/exploit.conf 等系统路径；同时通过精心构造 tableName 和 namespace 参数，将 shell 语法注入到数据库文件中。当 Flowise 通过 Puppeteer 启动 Chromium 浏览器时，Chromium 会加载 /etc/chromium/*.conf 配置文件，进而执行其中嵌入的命令，导致远程代码执行。此漏洞影响 Flowise 3.1.2 及之前版本，CVSS 评分 9.4（严重），已在新版本 3.1.3 中修复。"
+published = "2026-08-04T17:17:01Z"
+remediation = "立即升级到 Flowise 3.1.3 或更高版本，该版本修复了 SQLite Record Manager 节点的 additionalConfig 可覆盖数据库路径导致任意文件写入的问题。如暂时无法升级，应限制使用 SQLite Record Manager 节点的 Chatflow 仅对可信用户开放，同时在容器运行时配置非 root 用户运行 Flowise 服务，避免攻击者将恶意 SQLite 数据库写入系统目录并通过 Puppeteer 启动的 Chromium 触发代码执行。"
+score = 9.4
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Flowise 低代码平台 SQLite Record Manager 远程代码执行漏洞"
+updated = "2026-08-04T19:16:53Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69259",
+    "GHSA-x3hf-7cj6-3r4m",
+]
+ave_id = "AVE-2026-1352"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/FlowiseAI/Flowise/commit/d07186844263bad057008863037466aff7c3390f",
+    "https://github.com/FlowiseAI/Flowise/pull/6464",
+    "https://github.com/FlowiseAI/Flowise/releases/tag/flowise@3.1.3",
+    "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-x3hf-7cj6-3r4m",
+    "https://github.com/CVEProject/cvelistV5/blob/fae6e0ba9e4560b18a9a7d21eafc8a817ce0b9cb/cves/2026/69xxx/CVE-2026-69259.json",
+    "https://github.com/cisagov/vulnrichment/blob/20bf823bcbd8984b569afe89e283e51152fd3213/2026/69xxx/CVE-2026-69259.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6120c40ff117bee56ffec7d2c1707dc537c2f66/SSVC/data/2026/CVE-2026-69259.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6120c40ff117bee56ffec7d2c1707dc537c2f66/CVE/data/2026/CVE-2026-69259.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69259.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise/CVE-2026-69259.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2dd45b48e0efa0fde64742f95da829dc45ea506c/CVE-2026/CVE-2026-692xx/CVE-2026-69259.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise-components/CVE-2026-69259.yml",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/baaabdeedc4b09f0484f180f040071dd4f95812b/nvd/2026/CRITICAL/CVE-2026-69259/README.md",
+    "https://github.com/TMA84/cvealert/blob/28d98e023aa8fad90c20ec94b202da55048de4bf/content/posts/cve-2026-69259.md",
+]
