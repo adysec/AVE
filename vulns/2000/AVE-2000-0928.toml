@@ -1,11 +1,11 @@
 [basic]
-description = "OpenSSH SSH客户端2.3.0之前版本未正确禁用X11转发或agent转发功能，恶意SSH服务器可利用此漏洞获取客户端X11显示访问权限并窥探X11事件，或获取ssh-agent的访问权限，导致敏感信息泄露。攻击者只需搭建恶意SSH服务器并诱导用户连接即可实施攻击，无需任何认证，CVSS评分7.5，危害等级高。"
+description = "OpenSSH SSH客户端在2.3.0版本之前未能正确禁用X11转发及ssh-agent转发功能。未经身份认证的远程攻击者可搭建恶意SSH服务器，当合法用户使用受影响版本的SSH客户端连接至该恶意服务器时，攻击者可通过X11转发获取目标用户X11显示的访问权限并窃取X11事件数据，或通过ssh-agent转发获取ssh-agent的访问权限，进而利用agent转发在其他系统中进行身份验证或执行未授权操作。该漏洞影响所有使用OpenSSH 2.3.0之前版本的SSH客户端用户，CVSS评分为7.5，危害等级为高。"
 published = "2001-01-09T05:00:00Z"
-remediation = "升级 OpenSSH 客户端至 2.3.0 或更高版本，该版本默认禁用 X11 转发和 agent 转发。如无法升级，连接不可信 SSH 服务器时使用 `-x` 参数禁用 X11 转发、使用 `-a` 参数禁用 agent 转发，或在 `~/.ssh/config` 中设置 `ForwardX11 no` 和 `ForwardAgent no` 作为临时缓解措施。"
+remediation = "建议将 OpenSSH SSH 客户端升级至 2.3.0 或更高版本，该版本已修复 X11 和 ssh-agent 转发在受信任环境下未被正确限制的问题。同时检查 ssh_config 配置文件，确保未在全局范围内启用 ForwardX11 或 ForwardAgent，或通过 TrustedUserCAKeys/Matchers 机制严格限制仅向可信主机转发显示与代理权限。如短期内无法升级，可临时在 ssh_config 中显式设置 ForwardX11 no 与 ForwardAgent no 以阻断攻击面。"
 score = 7.5
 severity = "HIGH"
-sources = ["epss"]
-title = "OpenSSH SSH客户端 X11转发与agent转发权限访问漏洞"
+sources = ["avd"]
+title = "OpenSSH SSH客户端 X11及代理转发未授权访问漏洞"
 updated = "2026-06-16T21:53:18Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1169"]
 ave_id = "AVE-2000-0928"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -33,14 +33,14 @@ urls = [
     "http://www.redhat.com/support/errata/RHSA-2000-111.html",
     "http://www.securityfocus.com/bid/1949",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5517",
-    "https://github.com/CVEProject/cvelistV5/blob/3eae031b5df6a3c6a1cc304f5e054cd002eb1bd6/cves/2000/1xxx/CVE-2000-1169.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e089fbede0f95f2d4df85cd26008124a09d73dc8/cves/2000/1xxx/CVE-2000-1169.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1169",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2850e862cb7837f03ec4af0066c4f9f10414e805/CVE/data/2000/CVE-2000-1169.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9cadf2781966b46cf2833362970d0629a97c0767/CVE/data/2000/CVE-2000-1169.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1169.json",
-    "https://github.com/opencve/opencve-kb/blob/bd9fe5c6ad63a26e0384af877431750bd67b40cc/2000/CVE-2000-1169.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1169.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c45038e15e6e81771cce5512f28070ebf02ca969/2000/1xxx/CVE-2000-1169.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-11xx/CVE-2000-1169.json",
+    "https://github.com/opencve/opencve-kb/blob/db96875ac5ac7d5604926ae5714d3a05b58a674d/2000/CVE-2000-1169.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1169.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/28c11efbbe2ece133aeda47abdfc148f7512ec85/2000/1xxx/CVE-2000-1169.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2dd45b48e0efa0fde64742f95da829dc45ea506c/CVE-2000/CVE-2000-11xx/CVE-2000-1169.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1169.json",
     "https://github.com/justakazh/CVE_Database/blob/06bd07f32c89b43f30d59ff450dfbb661e471cbe/2000/CVE-2000-1169.json",
 ]
