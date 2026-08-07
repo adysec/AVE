@@ -1,10 +1,10 @@
 [basic]
-description = "Apache HTTP Server 2.0.39 及 2.0.40 版本的 mod_cgi 模块存在死锁漏洞，当 CGI 脚本向标准错误输出（stderr）发送大量数据时，httpd 进程与 CGI 脚本之间会发生读写死锁，导致 Apache 服务挂起并持续消耗内存资源。本地用户以及可能的远程攻击者可利用此漏洞造成拒绝服务。该漏洞影响 Apache 2.0.39 和 2.0.40 版本，CVSS 评分 7.5，危害等级高。"
+description = "Apache HTTP Server 2.0.39 和 2.0.40 版本的 mod_cgi 模块存在拒绝服务漏洞。当 CGI 脚本向 stderr 输出大量数据时，httpd 进程与 CGI 子进程之间的读写缓冲区会出现死锁，导致服务器进程挂起并持续消耗内存，最终引发拒绝服务。该漏洞可由本地用户或远程攻击者利用，通过触发产生大量 stderr 输出的 CGI 脚本即可实施攻击。受影响版本包括 Apache 2.0.39 和 2.0.40，CVSS v3.1 评分 7.5，危害等级为高。"
 published = "2002-12-31T05:00:00Z"
-remediation = "升级 Apache HTTP Server 至 2.0.43 或更高版本，该版本修复了 mod_cgi 中 CGI 脚本向 stderr 输出大量数据导致 httpd 与 CGI 进程间读写死锁的问题。如无法升级，可在 httpd.conf 中限制 CGI 脚本资源使用（RLimitMEM 和 RLimitCPU），或禁用不必要的 CGI 功能作为临时缓解措施。"
+remediation = "将 Apache HTTP Server 升级至 2.0.44 或更高版本，该修复版本已修正 mod_cgi 模块在 CGI 脚本向 stderr 输出过量数据时导致 httpd 与 CGI 进程之间发生死锁并耗尽内存的问题。建议优先升级至当前受支持的稳定版本 2.4.68。如短期内无法升级，可临时在 httpd.conf 中限制 CGI 脚本的执行权限，仅允许受信任的脚本执行，并监控 Web 服务器进程的内存使用情况，当发现 httpd 进程内存异常增长时立即重启服务以缓解拒绝服务攻击的影响。"
 score = 7.5
 severity = "HIGH"
-sources = ["redhat"]
+sources = ["exploitdb"]
 title = "Apache HTTP Server mod_cgi 拒绝服务漏洞"
 updated = "2026-06-16T22:00:10Z"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-1850"]
 ave_id = "AVE-2002-0417"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -32,14 +32,14 @@ urls = [
     "http://www.securityfocus.com/bid/5787",
     "http://www.securityfocus.com/bid/8725",
     "https://www.exploit-db.com/exploits/21854",
-    "https://github.com/CVEProject/cvelistV5/blob/2e429c9a0087eb0ee678d77c344076eb39564d19/cves/2002/1xxx/CVE-2002-1850.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a6c3378408e019d0dc051e6d11f7eb3d66abc66c/cves/2002/1xxx/CVE-2002-1850.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-1850",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/604ddf5b05f9e8ce70a7b6f9716ba166db0bd437/CVE/data/2002/CVE-2002-1850.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f31dd31e2f478f1e13347f1843c21f10f282a83b/CVE/data/2002/CVE-2002-1850.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-1850.json",
-    "https://github.com/opencve/opencve-kb/blob/34eb3a7695e83b6a33083dbe114e8beca526a149/2002/CVE-2002-1850.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/67c5e994e49225faeedb88198d627dbdd922374c/2002/1xxx/CVE-2002-1850.md",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2002-1850.json",
-    "https://github.com/aquasecurity/vuln-list-debian/blob/338375e9291959a955b9c4f1b7794c4836fe2985/tracker/CVE/2002/CVE-2002-1850.json",
+    "https://github.com/opencve/opencve-kb/blob/ec517b60abdc2464cb36bd910facacf8fe8c502b/2002/CVE-2002-1850.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/d9abb9c5d8ad8d5de942eaa0ba4c3295bd84fdd2/2002/1xxx/CVE-2002-1850.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2002-1850.json",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/84a384b819986ec191690bb7ca8e108c6be28f15/tracker/CVE/2002/CVE-2002-1850.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2002/1xxx/CVE-2002-1850.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3a7c0c4aa01967d2633d808f80f3fcd65491b947/CVE-2002/CVE-2002-18xx/CVE-2002-1850.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/800e0951ee534700ac309055ede267b068e5fc70/CVE-2002/CVE-2002-18xx/CVE-2002-1850.json",
 ]
