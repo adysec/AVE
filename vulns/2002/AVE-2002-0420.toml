@@ -1,12 +1,12 @@
 [basic]
-description = "CGIscript.net 的 csMailto.cgi 脚本存在远程命令执行漏洞，由于程序未对用户通过 form-attachment 字段提交的输入进行充分过滤，远程攻击者可通过在表单附件字段中注入 shell 元字符（如管道符、分号等）来执行任意系统命令。该漏洞影响使用 csMailto 组件的 Web 应用，攻击者无需身份认证即可利用，可能导致服务器被完全控制、敏感信息泄露或进一步横向移动。CVSS 评分 7.5，危害等级高。"
-published = "2002-08-12T04:00:00Z"
-remediation = "立即卸载或禁用 csMailto.cgi 脚本，该脚本已不再维护。如必须使用，需在脚本中对 form-attachment 字段做严格的输入过滤，禁止 shell 元字符（如 `;` `|` `` ` `` `$` 等）传入系统命令执行函数。建议迁移至现代邮件发送方案（如 PHP mail() 配合安全库）。"
-score = 7.5
-severity = "HIGH"
-sources = ["exploitdb"]
+description = "CGIScript.net 的 csMailto.cgi 脚本存在远程命令执行漏洞。该 Perl 脚本用于支持多个 mailto 表单，但其配置值存储在隐藏表单字段中。未经身份认证的远程攻击者可在脚本调用之间修改这些隐藏字段值，通过在 form-attachment 参数中注入 shell 元字符执行任意系统命令，还可利用 form-autoresponse 和 Email 参数将服务器文件通过邮件发送给任意收件人。该漏洞影响部署了 csMailto 脚本的 Web 服务器，攻击者无需任何凭据即可在受影响系统上执行任意操作。"
+published = "2002-08-12T00:00:00Z"
+remediation = "立即删除或停用服务器上的 csMailto.cgi 脚本，该脚本由已停止运营的 CGIScript.net 开发，官方不再提供安全补丁。如业务仍需使用邮件表单功能，应替换为现代且持续维护的替代方案（如 PHP mail() 函数配合严格输入过滤、或使用 Nginx/Apache 内置的邮件处理模块），并对所有用户输入进行严格的参数化过滤，禁止直接拼接 shell 命令。临时缓解措施包括在 Web 服务器配置中禁用 csMailto.cgi 的访问权限、在防火墙或 WAF 层面拦截包含 shell 元字符（如 ; | & $ `）的请求，并审计 Web 根目录下是否存在其他遗留的 CGIScript.net 产品。"
+score = 5
+severity = "MEDIUM"
+sources = ["tenable"]
 title = "CGIScript.net csMailto 远程命令执行漏洞"
-updated = "2026-06-16T21:58:03Z"
+updated = "2002-08-12T00:00:00Z"
 
 [exploit]
 exp_urls = []
@@ -17,23 +17,20 @@ aliases = ["CVE-2002-0749"]
 ave_id = "AVE-2002-0420"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "http://archives.neohapsis.com/archives/bugtraq/2002-04/0326.html",
-    "http://www.iss.net/security_center/static/8930.php",
-    "http://www.securityfocus.com/bid/4579",
     "https://www.exploit-db.com/exploits/21415",
-    "https://github.com/CVEProject/cvelistV5/blob/2e429c9a0087eb0ee678d77c344076eb39564d19/cves/2002/0xxx/CVE-2002-0749.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/604ddf5b05f9e8ce70a7b6f9716ba166db0bd437/CVE/data/2002/CVE-2002-0749.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0c8bbfa5dafac2180906ef79cc209076107ed977/cves/2002/0xxx/CVE-2002-0749.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/2a776b6f76e44ac82fb11077419ff697225eaf6c/CVE/data/2002/CVE-2002-0749.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-0749",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-0749.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2002-0749.json",
-    "https://github.com/opencve/opencve-kb/blob/30161b4638c37443322916a4d97a62c41686781e/2002/CVE-2002-0749.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/3a7c0c4aa01967d2633d808f80f3fcd65491b947/CVE-2002/CVE-2002-07xx/CVE-2002-0749.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/67c5e994e49225faeedb88198d627dbdd922374c/2002/0xxx/CVE-2002-0749.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2002-0749.json",
+    "https://github.com/opencve/opencve-kb/blob/94ccb4b8dfdc0d0c30a151eb55260e694d02887e/2002/CVE-2002-0749.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/0a80f9b51044ff7d242f7696687f9d0e2ab628da/CVE-2002/CVE-2002-07xx/CVE-2002-0749.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/97b3eba28d573b062ca7499df2c4d7877ce60c0c/2002/0xxx/CVE-2002-0749.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2002/0xxx/CVE-2002-0749.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2002/0xxx/CVE-2002-0749.json",
 ]
