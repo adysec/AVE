@@ -1,11 +1,11 @@
 [basic]
-description = "Fortinet FortiOS 存在默认配置漏洞，当设备配置使用 LDAP 进行用户认证时，系统未对 LDAP 服务器身份进行充分验证。同一子网内的未经身份认证的攻击者可通过伪造 LDAP 服务器响应，实施中间人攻击，诱使 FortiOS 设备将敏感认证信息（包括用户凭证）发送至攻击者控制的服务器，导致敏感信息泄露。该漏洞影响 FortiOS 全系列版本，攻击者只需与目标处于同一广播域即可利用，无需任何认证，CVSS 评分 6.5，危害等级中危。Fortinet 已在安全公告中建议用户启用 LDAP over TLS 并配置证书验证以缓解此漏洞。"
+description = "FortiOS 存在默认配置缺陷导致的 LDAP 中间人攻击信息泄露漏洞。由于系统未对 LDAP 服务启用严格身份验证，处于同一子网的未认证远程攻击者可冒充 LDAP 服务器，截获客户端与服务器之间的敏感认证信息，如用户凭证等。该漏洞影响 FortiOS 多个版本，攻击者仅需与目标设备处于同一局域网即可实施攻击，无需任何身份认证或用户交互。CVSS v3.1 评分为 6.5（MEDIUM），攻击向量为邻接网络，影响机密性但不影响完整性与可用性。"
 published = "2020-08-14T16:15:16Z"
-remediation = "升级 FortiOS 至 6.2.1 及以上版本，并在 CLI 中执行 config user ldap → edit <ldap-server> → set ca-cert <LDAP服务器证书> → set secure ldaps → set server-identity-check enable 以启用 LDAP 服务器身份校验。从 6.0.3-6.2.0 升级到 6.2.1 后不会自动启用该选项，需手动配置。如无法升级，可在同一子网内通过防火墙策略限制 LDAP 流量仅允许与可信服务器通信作为临时缓解。"
+remediation = "1. 升级至 FortiOS 6.2.1 或更高版本，全新安装时 server-identity-check 默认启用。2. 若从 6.0.3–6.2.0 升级至 6.2.1+，升级前后必须手动启用 LDAP server-identity-check，否则升级本身无法消除该漏洞。3. 登录 CLI 执行：config user ldap → edit <ldap-server> → set ca-cert <证书名称> → set secure ldaps → set server-identity-check enable，确保 LDAP 服务器证书已正确配置且通信使用 LDAPS。4. 如暂无法升级，可在网络层通过防火墙隔离 LDAP 服务器所在网段，阻止同网段未授权主机访问，作为临时缓解措施。"
 score = 6.5
 severity = "MEDIUM"
-sources = ["kev"]
-title = "Fortinet FortiOS 默认配置致LDAP仿冒信息泄露漏洞"
+sources = ["nuclei"]
+title = "Fortinet FortiOS LDAP 服务器身份验证绕过信息泄露漏洞"
 updated = "2026-06-17T02:37:54Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2019-5591"]
 ave_id = "AVE-2019-1309"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,15 +25,15 @@ urls = [
     "https://www.fortiguard.com/psirt/FG-IR-19-037",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2019-5591",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2019/CVE-2019-5591.yaml",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2019/CVE-2019-5591.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/c908bbff86d2944f8f8a39e75f549a966c642420/2019/CVE-2019-5591.json",
-    "https://github.com/cisagov/vulnrichment/blob/2e0e3782ab192a0dba6edbe5e9deeb3c79e8414c/2019/5xxx/CVE-2019-5591.json",
-    "https://github.com/arschlochnop/VulnWatchdog/blob/96acb02a8d6942d7cdf496f8d887cd0035972f4b/data/by-cve/CVE-2019-5591.md",
-    "https://github.com/sari3l/Poc-Monitor/blob/ed3533775a9ade21f1577e57c130e65e8f80898c/2019/CVE-2019-5591.json",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2019/CVE-2019-5591.md",
+    "https://github.com/cisagov/vulnrichment/blob/1ec26b4bfdf4d4994876319583b66cbf88277812/2019/5xxx/CVE-2019-5591.json",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/3b422ed0d017dbeb8b5f23ae7875b968a3ad40f7/data/by-cve/CVE-2019-5591.md",
+    "https://github.com/sari3l/Poc-Monitor/blob/e8773d2555b221c9e2557e8a08a99f7f4626e9c8/2019/CVE-2019-5591.json",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2019/CVE-2019-5591.md",
-    "https://github.com/arschlochnop/VulnWatchdog/blob/96acb02a8d6942d7cdf496f8d887cd0035972f4b/data/2019/CVE-2019-5591-ayewo_fortios-ldap-mitm-poc-CVE-2019-5591.md",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/3b422ed0d017dbeb8b5f23ae7875b968a3ad40f7/data/2019/CVE-2019-5591-ayewo_fortios-ldap-mitm-poc-CVE-2019-5591.md",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2019/CVE-2019-5591.json",
     "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2019/CVE-2019-5591.rules",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2019-5591.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2019-5591.json",
+    "https://github.com/adampielak/nuclei-templates/blob/b57ecc6b8ffb1c84e23c2ccdc378c360302972c5/nuclei-v3/C/CVE-2019-5591.yaml",
     "https://github.com/ayewo/fortios-ldap-mitm-poc-CVE-2019-5591",
 ]
