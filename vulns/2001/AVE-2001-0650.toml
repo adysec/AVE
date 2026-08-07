@@ -1,10 +1,10 @@
 [basic]
-description = "Netscape Fasttrack Server 4.1 的缓存模块存在资源消耗型拒绝服务漏洞。远攻击者无需身份认证，通过网络可达即可触发，攻击条件为可向目标服务器持续发送大量不存在的 URL 请求。由于缓存模块会对每个未命中项进行资源分配与缓存处理，大量的无效 URL 请求将导致服务器内存等缓存资源被迅速耗尽，进而使服务器无法正常处理合法用户的访问请求，造成拒绝服务。该漏洞影响面为运行 Netscape Fasttrack Server 4.1 的所有平台，危害等级中危（CVSS 5.0），攻击者仅需构造大量恶意请求即可实施拒绝服务攻击。"
+description = "Netscape Fasttrack Server 4.1 的缓存模块存在资源耗尽漏洞，未经身份认证的远程攻击者可通过向目标服务器连续发送大量指向不存在资源的 HTTP 请求来触发该漏洞。服务器在处理这些无效请求时，缓存模块会不断尝试缓存不存在的 URL，导致内存、CPU 及磁盘 I/O 资源被大量消耗，最终引发拒绝服务，使正常用户无法访问服务。该漏洞影响 Netscape Fasttrack Server 4.1 及同系列 iPlanet FastTrack/Enterprise 4.1 产品，攻击者无需任何凭据即可实施攻击，仅需具备网络连通性即可利用自动化工具持续发起请求。"
 published = "2001-03-26T05:00:00Z"
-remediation = "该漏洞源于缓存模块对大量不存在 URL（如 .html）的请求进行缓存且不及时释放，导致服务器内存被耗尽、响应迟缓。厂商已明确回复 Fasttrack Server 不适用于生产环境，且不会修复此问题，因此**无官方补丁可用**。强烈建议立即停用该产品，迁移至受支持的 iPlanet/Netscape Enterprise Server 4.1 SP5 或后续维护的 Web 服务器（如 Sun Java System Web Server），并设置合理的缓存上限与缓存回收策略。如无法立即迁移，应在前端部署反向代理（如 Nginx）并开启请求速率限制，同时在防火墙或路由器上配置访问控制列表（ACL），仅允许可信来源 IP 访问该服务，将其限制在内网隔离区，以降低被利用的风险。"
+remediation = "Netscape 官方已确认该漏洞不提供修复补丁（FastTrack Server 4.1 设计上不适用于生产环境，厂商拒绝发布修复）。受影响产品（Netscape FastTrack Server 4.1 for Windows NT 4.0）已全面终止支持（EOL），无后续安全更新。建议立即将 Web 服务迁移至受支持的服务器产品（如 Apache、Nginx 或 Microsoft IIS 当前支持版本）。如短期内无法完成迁移，应在服务器前端部署反向代理或 WAF（如 ModSecurity），配置规则限制对不存在 URL 的异常高频请求，并监控服务器内存与缓存模块的资源占用情况以提前发现异常。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
+sources = ["epss"]
 title = "Netscape Fasttrack Server 4.1 缓存模块拒绝服务漏洞"
 updated = "2026-06-16T21:53:48Z"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0175"]
 ave_id = "AVE-2001-0650"
 
 [meta]
-collected_at = "2026-08-06T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=98035833331446&w=2",
     "http://www.securityfocus.com/bid/2273",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5985",
-    "https://github.com/CVEProject/cvelistV5/blob/ad23a84307831b745d27b34af84abc59130b2cd5/cves/2001/0xxx/CVE-2001-0175.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4c1d71175e32f1e731b0a7d2c22a87887c3669cd/CVE/data/2001/CVE-2001-0175.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0e947e3b857b8c6a4563d0922ad99a93265311a3/cves/2001/0xxx/CVE-2001-0175.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9cadf2781966b46cf2833362970d0629a97c0767/CVE/data/2001/CVE-2001-0175.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0175",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0175.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0175.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0175.json",
-    "https://github.com/opencve/opencve-kb/blob/edbeec8f0d16e85a3e6ef588978e47a49091e51a/2001/CVE-2001-0175.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/353abf5c18895cee7a7860cfcca22d54b4bee560/2001/0xxx/CVE-2001-0175.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0175.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/0a80f9b51044ff7d242f7696687f9d0e2ab628da/CVE-2001/CVE-2001-01xx/CVE-2001-0175.json",
+    "https://github.com/opencve/opencve-kb/blob/db96875ac5ac7d5604926ae5714d3a05b58a674d/2001/CVE-2001-0175.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/28c11efbbe2ece133aeda47abdfc148f7512ec85/2001/0xxx/CVE-2001-0175.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0175.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0175.json",
 ]
