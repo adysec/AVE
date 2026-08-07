@@ -1,11 +1,11 @@
 [basic]
-description = "YaBB（Yet Another Bulletin Board）1 Gold SP1 及更早版本中的 YaBB.cgi 存在跨站脚本（XSS）漏洞。远程攻击者无需身份认证即可通过向 num 参数注入恶意脚本代码，当其他用户访问包含该参数的错误页面时，注入的脚本将在受害者浏览器中执行，导致敏感信息泄露、会话劫持或恶意操作。攻击条件简单，仅需构造特制 URL 诱使用户点击即可触发。"
+description = "Yet Another Bulletin Board（YaBB）1 Gold SP1 及更早版本的 YaBB.cgi 脚本中存在跨站脚本（XSS）漏洞。远程攻击者可通过在请求的 `num` 参数中注入恶意 JavaScript 脚本代码，构造特制 URL 发送给 YaBB 论坛用户；当用户访问该链接时，论坛在生成错误提示页面时未对 `num` 参数进行任何过滤，导致攻击者提供的脚本代码直接嵌入到响应页面中并在用户浏览器中执行。攻击者可借此窃取论坛用户的 Cookie 等认证凭据，进而劫持用户会话、以合法用户身份执行任意操作。该漏洞影响所有运行受影响版本 YaBB 的网站，CVSS 评分为 7.5，危害等级为高危。YaBB 官方已发布修复版本，管理员应尽快升级至 YaBB 1 Gold SP2 或更高版本以消除该风险。"
 published = "2002-10-04T04:00:00Z"
-remediation = "升级 YaBB 至 1 Gold SP2 或更高版本，该版本已修复 YaBB.cgi 中 num 参数未过滤导致的 XSS 漏洞。如无法升级，编辑 YaBB.cgi 源码，对 num 参数进行 HTML 实体编码（如将 < 替换为 &lt;），或部署 WAF 规则拦截包含 <script> 等恶意标签的 num 参数请求。"
+remediation = "将 YaBB 升级至 1 Gold SP2 或更高版本（如 YaBB 2.x/3.x），新版本对 YaBB.cgi 中 num 参数进行了输入过滤和 HTML 编码，可防止脚本注入错误页面。如无法立即升级，可临时修改 YaBB.cgi 中对 num 参数的输出逻辑，在显示错误信息前使用 htmlspecialchars() 等函数对参数值进行编码，阻断脚本执行。同时建议在 Apache 或 Nginx 层通过 WAF 规则拦截包含 &lt;script&gt; 标签的 URL 请求，作为过渡缓解措施。"
 score = 7.5
 severity = "HIGH"
-sources = ["exploitdb"]
-title = "YaBB YaBB.cgi 跨站脚本漏洞"
+sources = ["tenable"]
+title = "YaBB 1 Gold SP1 跨站脚本攻击"
 updated = "2026-06-16T21:58:27Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2002-0955"]
 ave_id = "AVE-2002-0489"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.iss.net/security_center/static/9408.php",
     "http://www.securityfocus.com/bid/5078",
     "https://www.exploit-db.com/exploits/21573",
-    "https://github.com/CVEProject/cvelistV5/blob/b37ddadc32d456372cb07846a95b411ce7a32d9f/cves/2002/0xxx/CVE-2002-0955.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/37be0559d0574b93d433d6c01d9f77ea4c420519/CVE/data/2002/CVE-2002-0955.json",
+    "https://github.com/CVEProject/cvelistV5/blob/218bad847444129ddbebfeea62eb92fdb08e16d7/cves/2002/0xxx/CVE-2002-0955.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ec48735dfbcbc981aa038a6c8bc606e4fdbd898/CVE/data/2002/CVE-2002-0955.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-0955",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-0955.json",
-    "https://github.com/olbat/nvdcve/blob/fe7f195231342e1e88104679c53c965e9a67ac35/nvdcve/CVE-2002-0955.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e9b51a58e4ac0e6b00dc38147f459707e98ae056/CVE-2002/CVE-2002-09xx/CVE-2002-0955.json",
-    "https://github.com/opencve/opencve-kb/blob/5d2b90135469e518b8bd9c7142a1d639da966b67/2002/CVE-2002-0955.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/1d7706ed603ab73481cbc20e5bea092e02e7c9be/2002/0xxx/CVE-2002-0955.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2002-0955.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/63a532b725792b89ea32ae40fb744f9c8a9ba2df/CVE-2002/CVE-2002-09xx/CVE-2002-0955.json",
+    "https://github.com/opencve/opencve-kb/blob/5bbd99d97db717bad32ae459bda1c65e7b37a2b4/2002/CVE-2002-0955.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1942bcdb9701d268432416f93669c664bcd7b212/2002/0xxx/CVE-2002-0955.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2002/0xxx/CVE-2002-0955.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2002/0xxx/CVE-2002-0955.json",
 ]
