@@ -1,0 +1,42 @@
+[basic]
+description = "Open WebUI 是一款可自托管的 AI 平台。在 0.10.0 至 0.11.0 版本中，`backend/open_webui/routers/folders.py` 内的 `DELETE /api/v1/folders/{id}` 接口存在授权逻辑缺陷：删除操作的级联逻辑绑定的是文件夹所有者的 ID，但子文件夹的授权检查仅要求调用者具备继承的写入权限，而非所有者或管理员身份，而根文件夹却要求所有权或管理员权限。当文件夹共享功能开启（`user.permissions.sharing.folders`，默认关闭），且受害者以写入权限向攻击者共享文件夹后，攻击者可利用该漏洞永久删除所有者共享文件夹内及整个子目录树下的全部聊天记录与消息；若在请求中设置 `delete_contents=false`，还可强制将所有者聊天记录移出文件夹，造成未授权的数据重定位。Open WebUI 0.11.0 已统一修复该问题，要求根文件夹和子文件夹的删除操作均仅限所有者或管理员执行。"
+published = "2026-08-04T21:16:38Z"
+remediation = "将 Open WebUI 升级至 0.11.0 或更高版本以彻底修复该漏洞，修复提交见 https://github.com/open-webui/open-webui/commit/915ef7d0798d3175819cedbb2f62d7bf0db78c98，发布页见 https://github.com/open-webui/open-webui/releases/tag/v0.11.0。如暂时无法升级，应在系统配置中关闭文件夹共享功能（将 `user.permissions.sharing.folders` 设置为 `false`），并审查现有共享文件夹权限，移除不必要的写入协作者，以降低数据被恶意删除的风险。"
+score = 8.1
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Open WebUI 共享文件夹越权删除漏洞"
+updated = "2026-08-05T15:17:12Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-70494",
+    "GHSA-3cg5-48j3-v4gv",
+]
+ave_id = "AVE-2026-1389"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/open-webui/open-webui/commit/915ef7d0798d3175819cedbb2f62d7bf0db78c98",
+    "https://github.com/open-webui/open-webui/pull/27003",
+    "https://github.com/open-webui/open-webui/releases/tag/v0.11.0",
+    "https://github.com/open-webui/open-webui/security/advisories/GHSA-3cg5-48j3-v4gv",
+    "https://github.com/CVEProject/cvelistV5/blob/b0ae64d398af575cc8fc4dbcb672decf1c29c5b8/cves/2026/70xxx/CVE-2026-70494.json",
+    "https://github.com/cisagov/vulnrichment/blob/120beb0c7e841b5baa49e42f909e2b46b302b304/2026/70xxx/CVE-2026-70494.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d8a3a899d1eefc2c1649de96e2290c55d12029cb/SSVC/data/2026/CVE-2026-70494.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d8a3a899d1eefc2c1649de96e2290c55d12029cb/CVE/data/2026/CVE-2026-70494.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/fd83d7300ad2d6d69a40586722d4416f017c1bdf/data/2026/CVE-2026-70494.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-70494.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/59fcb0e6f5e022cbcf3d6b6e8dfa8ab050c85b5f/CVE-2026/CVE-2026-704xx/CVE-2026-70494.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/pypi/open-webui/CVE-2026-70494.yml",
+    "https://github.com/anchore/cve-data-enrichment/blob/f95ed70ff4572bede3f68dd12496edb1151d4685/data/anchore/2026/CVE-2026-70494.json",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/7519bb15618d2f809a2240db9441bd69717eaf0e/nvd/2026/HIGH/CVE-2026-70494/README.md",
+]
