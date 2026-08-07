@@ -1,0 +1,42 @@
+[basic]
+description = "tags as required.<value>Flowise 是一个用于构建自定义大语言模型流程的拖放式用户界面。在 3.1.3 版本之前，其未身份认证的 POST /api/v1/prediction/:id 端点接收请求体中的 overrideConfig 对象，并在未检查 apiOverrideStatus 的情况下，将该对象无条件展开（spread）到 packages/server/src/utils/buildChatflow.ts 和 packages/server/src/utils/index.ts 中的内部 flowConfig 与 flowData 对象中。未经身份认证的攻击者利用此漏洞，可向任意公开的 chatflow 执行上下文中注入任意属性，覆盖 chatId、sessionId、chatHistory 等敏感值，并控制由 flow 节点消费的 $flow.* 模板变量所解析的值。攻击者可劫持用户会话、污染跨会话数据、操控聊天历史记录，甚至通过 API 执行提示词注入。此漏洞影响所有启用了公开 chatflow 的 Flowise 实例（3.1.3 版本之前），攻击者仅需向预测接口发送携带恶意 overrideConfig 的 HTTP 请求即可利用，无需身份认证或权限。"
+published = "2026-08-04T17:17:01Z"
+remediation = "立即将 Flowise 升级至 3.1.3 或更高版本，该版本已修复 `packages/server/src/utils/buildChatflow.ts` 和 `packages/server/src/utils/index.ts` 中未受 `apiOverrideStatus` 保护的 `overrideConfig` 展开问题。如暂无法升级，应为所有 chatflow 配置 API 密钥并禁用公开访问，或在反向代理层面对 `/api/v1/prediction/:id` 端点实施访问控制，仅允许可信来源调用。"
+score = 8.8
+severity = "HIGH"
+sources = ["ghsa"]
+title = "FlowiseAI Flowise 未授权属性注入漏洞"
+updated = "2026-08-05T16:17:01Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69258",
+    "GHSA-6vh2-wg4h-4vwj",
+]
+ave_id = "AVE-2026-1349"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/FlowiseAI/Flowise/commit/23b997ee5ef9e269b628bad0f56f1ecb86bd2fca",
+    "https://github.com/FlowiseAI/Flowise/pull/6279",
+    "https://github.com/FlowiseAI/Flowise/releases/tag/flowise@3.1.3",
+    "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-6vh2-wg4h-4vwj",
+    "https://github.com/CVEProject/cvelistV5/blob/305043f74d74b13fcda473fa8c09412222702db2/cves/2026/69xxx/CVE-2026-69258.json",
+    "https://github.com/cisagov/vulnrichment/blob/20bf823bcbd8984b569afe89e283e51152fd3213/2026/69xxx/CVE-2026-69258.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6120c40ff117bee56ffec7d2c1707dc537c2f66/SSVC/data/2026/CVE-2026-69258.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6120c40ff117bee56ffec7d2c1707dc537c2f66/CVE/data/2026/CVE-2026-69258.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69258.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/eef52fea7af77a8f6b5f92aa912a8e222e2fa711/reports/2026-08-04/TIER_2_CVE-2026-69258.md",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise/CVE-2026-69258.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2dd45b48e0efa0fde64742f95da829dc45ea506c/CVE-2026/CVE-2026-692xx/CVE-2026-69258.json",
+    "https://github.com/TMA84/cvealert/blob/28d98e023aa8fad90c20ec94b202da55048de4bf/content/posts/cve-2026-69258.md",
+    "https://github.com/opencve/opencve-kb/blob/584f9c91b04cfd0482dc15445d1f8eb7179ba8b7/2026/CVE-2026-69258.json",
+]
