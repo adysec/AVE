@@ -1,0 +1,39 @@
+[basic]
+description = "Linux 内核网络子系统存在引用计数管理不当漏洞。在内核套接字（kernel socket）生命周期跟踪机制中，套接字在 pernet_operations->exit() 期间被拆除时，其释放可能因 qdisc 或设备队列中仍存有待发送数据包而被延迟，导致引用计数错误并触发 use-after-free 条件。该漏洞影响所有支持网络命名空间的 Linux 内核版本，本地低权限攻击者可通过在受影响的网络命名空间中执行特制操作，利用该漏洞实现本地权限提升，获取内核级执行权限。漏洞成因在于内核未正确持有 net->passive 引用，导致网络命名空间清理过程中出现引用计数失衡。"
+published = "2025-03-27T15:15:56Z"
+remediation = "升级 Linux 内核至已修复版本：Ubuntu 24.04 LTS 执行 apt update && apt install linux-image-generic -y 安装 6.8.0-100.100 或更高版本后重启；Debian 13 升级至 6.13.6 以后版本；RHEL/CentOS Stream 升级至 6.14 或更高版本。临时缓解：执行 sysctl user.max_user_namespaces=0 或编辑 /etc/sysctl.conf 添加 user.max_user_namespaces=0 后执行 sysctl -p，限制非特权用户创建网络命名空间以降低本地攻击面。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核网络子系统引用计数漏洞"
+updated = "2026-07-30T06:21:54Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21884"]
+ave_id = "AVE-2025-1028"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/2668e038800b946d269f96ec1b258c01930a242c",
+    "https://git.kernel.org/stable/c/4ceb0bd4ffd009821b585ce6a8033b12b59fb5fb",
+    "https://git.kernel.org/stable/c/5c70eb5c593d64d93b178905da215a9fd288a4b5",
+    "https://git.kernel.org/stable/c/c31a732fac46b00b95b78fcc9c37cb48dd6f2e0c",
+    "https://github.com/CVEProject/cvelistV5/blob/305043f74d74b13fcda473fa8c09412222702db2/cves/2025/21xxx/CVE-2025-21884.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6120c40ff117bee56ffec7d2c1707dc537c2f66/CVE/data/2025/CVE-2025-21884.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21884.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21884.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21884",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/c9d2df1ca6a644222999e57cc00bd3742d4ae6f9/tracker/CVE/2025/CVE-2025-21884.json",
+    "https://github.com/opencve/opencve-kb/blob/cdfb9c2c3a0c170c2be11717df100bd0a2167fe3/2025/CVE-2025-21884.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21884.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21884",
+    "https://github.com/MatALass/anssi-vulnerability-intelligence/blob/77a0771d93df03375a6a04965087efb0123e795f/data/raw/anssi_snapshot/first/CVE-2025-21884",
+]
