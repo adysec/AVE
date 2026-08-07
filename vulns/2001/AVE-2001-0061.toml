@@ -1,10 +1,10 @@
 [basic]
-description = "AT&T WinVNC（Virtual Network Computing）客户端 3.3.3r7 及更早版本存在缓冲区溢出漏洞。远程攻击者可搭建恶意 VNC 服务器，当目标客户端连接该服务器时，服务器发送特制的 RFB 协议连接失败数据包（rfbConnFailed），并在其中携带超长的原因字符串（reason string）。客户端在处理该数据包时未对字符串长度进行充分边界检查，导致栈缓冲区溢出。成功利用该漏洞可在目标系统上执行任意代码，且无需身份认证。该漏洞影响 RealVNC 3.3.7 及以下版本，攻击条件要求目标客户端主动连接到攻击者控制的恶意 VNC 服务器，利用复杂度较高但危害严重，可完全破坏目标系统的机密性、完整性和可用性。"
+description = "AT&T WinVNC（Virtual Network Computing）客户端3.3.3r7及更早版本存在缓冲区溢出漏洞。远程攻击者可通过向目标客户端发送包含超长reason字符串的特制rfbConnFailed数据包，触发缓冲区溢出并远程执行任意代码。该漏洞影响所有使用受影响版本WinVNC客户端的用户，攻击者无需身份认证即可发起利用，但需要诱骗用户连接到恶意VNC服务器。成功利用可导致攻击者完全控制目标系统，包括查看屏幕内容、控制鼠标键盘以及执行任意命令。由于需要用户主动连接攻击者控制的服务器，攻击复杂度较高，但一旦成功将造成严重的信息泄露和系统沦陷风险。"
 published = "2001-05-03T04:00:00Z"
-remediation = "升级到 RealVNC/WinVNC 3.3.7 或更高版本，该版本已修复 `_vstprintf` 调用中未限制缓冲区长度的缺陷。对于无法立即升级的系统，可临时采取以下缓解措施：在防火墙中限制对 VNC 客户端发起主动连接的外部 IP，避免客户端连接到不可信服务器；或修改源码中 `vncviewer/vnc_winsrc/Log.cpp` 文件，将 `_vstprintf(line, format, ap)` 替换为 `_vsntprintf(line, sizeof(line) - sizeof(TCHAR), format, ap)` 以限制字符串写入长度，重新编译后部署。"
+remediation = "立即升级 RealVNC 客户端至 3.3.8 或更高版本（vncviewer.exe），该版本已修复 rfbConnFailed 数据包中的缓冲区溢出漏洞。如使用 AT&T WinVNC，同样需升级至 3.3.3r8 及更新版本。如暂时无法升级，应在防火墙或主机 ACL 中限制 VNC 客户端仅允许连接至受信任的 VNC 服务器（5900/5901/5902 端口），并禁用客户端自动重连功能，避免自动向恶意服务器发起连接。同时可考虑在终端上部署入侵检测规则，监控异常的 RFB 协议流量。"
 score = 7.6
 severity = "HIGH"
-sources = ["cve"]
+sources = ["epss"]
 title = "AT&T WinVNC 客户端缓冲区溢出漏洞"
 updated = "2026-06-16T21:53:47Z"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0167"]
 ave_id = "AVE-2001-0061"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/2305",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6025",
     "https://www.exploit-db.com/exploits/16489",
-    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2001/CVE-2001-0167.md",
-    "https://github.com/CVEProject/cvelistV5/blob/c77fff35609ce3594a3cffb2b3b0994cbb03c5f2/cves/2001/0xxx/CVE-2001-0167.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2e34647e2cb70f634f637d7ffe35fe3375a62e16/CVE/data/2001/CVE-2001-0167.json",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2001/CVE-2001-0167.md",
+    "https://github.com/CVEProject/cvelistV5/blob/6965489bbb0e546f402d9f723160a02c114a0639/cves/2001/0xxx/CVE-2001-0167.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1fee701bbb734582e3d59b764d6d3df80b9ea779/CVE/data/2001/CVE-2001-0167.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0167",
     "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2001/CVE-2001-0167.rules",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0167.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0167.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0167.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2001/CVE-2001-0167.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-01xx/CVE-2001-0167.json",
-    "https://github.com/opencve/opencve-kb/blob/ed0864e87bec515a12f89ab060c3cbb0a6a56af5/2001/CVE-2001-0167.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/10af4013c239913b9e2b28873060d55f8f810752/CVE-2001/CVE-2001-01xx/CVE-2001-0167.json",
+    "https://github.com/opencve/opencve-kb/blob/dea28c76d2bb882d2a39e50cdffbf575e4222640/2001/CVE-2001-0167.json",
 ]
