@@ -1,11 +1,11 @@
 [basic]
-description = "Recourse ManTrap 1.6 是一款用于检测 ManTrap 根kit 的安全工具，但其自身存在严重的安全漏洞。当攻击者获取到系统根权限时，可以利用该工具的 crash 或 fsdb 等功能访问 /dev/mem 和原始磁盘设备等低级系统资源。这种权限绕过行为允许攻击者深入读取系统内存，识别 ManTrap 进程的存在并对其进行操控，甚至可以直接修改任意数据文件。攻击者通过这种手段可以隐藏自己的根kit活动、破坏安全检测机制、窃取敏感数据或破坏系统完整性。该漏洞影响早期版本的 Recourse ManTrap 产品，攻击者需要首先获取系统控制权，但一旦达到该条件，后果将极其严重。美国国家安全局曾在2002年披露过类似类型的漏洞，充分暴露了基于root权限的安全检测工具本身可能被逆转为攻击工具的风险。当前尽管该产品已基本退出历史，但类似的设计缺陷仍广泛存在于其他安全工具中，提醒安全从业者必须对权限管理进行更严格的验证和隔离。（58字）"
+description = "Recourse ManTrap 1.6 版本存在本地安全绕过漏洞，攻击者在获取系统 root 权限后，可利用 crash、fsdb 等系统调试工具读取 /dev/mem 内存设备及原始磁盘设备，从而识别正在运行的 ManTrap 蜜罐进程或篡改系统中的任意数据文件。该漏洞影响部署了 Recourse ManTrap 1.6 的安全监控环境，攻击条件为攻击者已具备目标主机的 root 访问权限。成功利用该漏洞可绕过 ManTrap 的安全隔离机制，导致攻击者获取敏感进程信息或破坏关键数据文件完整性，CVSS 评分为 4.6，危害等级为中等。"
 published = "2001-01-09T05:00:00Z"
-remediation = 'Recourse ManTrap 1.6 已停止维护，厂商 Recourse Technologies 未发布修复补丁。建议立即迁移至 GMER、RootkitRevealer 或 chkrootkit 等仍在维护的现代反Rootkit工具，并完整扫描系统；如暂时无法替换，应卸载 ManTrap 的 crash 和 fsdb 工具，通过 sysctl 配置 kernel.yama.ptrace_scope=2 限制进程访问 /dev/mem，并在内核启动参数中加入 "iomem=relaxed" 限制或挂载 /dev/mem 为只读，以阻止未授权读取原始磁盘设备。同时建议检查系统中是否存在未授权root访问，消除攻击面。'
+remediation = "Recourse Technologies 已发布 Mantrap 2.0 修复此漏洞，建议立即联系厂商升级至该版本。但 'crash' 工具漏洞在 2.0 版本中仍未修复，攻击者仍可通过该工具识别 cage 外进程并获取 PID 以终止 cage 进程。临时缓解措施包括：在 cage 内移除或限制 crash 和 fsdb 工具的使用权限，通过访问控制列表限制对 /dev/mem 和原始磁盘设备的读取，将蜜罐系统严格隔离于生产网络并配置防火墙规则，同时启用远程日志记录并监控 rti_??? 进程的异常终止事件。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Recourse ManTrap 任意数据文件读取与篡改漏洞"
+sources = ["avd"]
+title = "Recourse ManTrap 本地信息泄露与任意文件修改漏洞"
 updated = "2026-06-16T21:53:15Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1145"]
 ave_id = "AVE-2000-1112"
 
 [meta]
-collected_at = "2026-07-29T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-11/0100.html",
     "http://marc.info/?l=bugtraq&m=97349791405580&w=2",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5950",
-    "https://github.com/CVEProject/cvelistV5/blob/b3c35d89abde60a88f7cb8e626161de34dd6ab36/cves/2000/1xxx/CVE-2000-1145.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bcbdb8ae7a9ef1c1e1ea2320e0a3f339a967446e/CVE/data/2000/CVE-2000-1145.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4e0204724bf51491275a1083acc85ba506a05438/cves/2000/1xxx/CVE-2000-1145.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/520aa4b3e74e2392f3887b15716f0194af1dfca3/CVE/data/2000/CVE-2000-1145.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1145",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1145.json",
-    "https://github.com/olbat/nvdcve/blob/add906b6a8ba20fd533c6fdd7f023c73e6090f3a/nvdcve/CVE-2000-1145.json",
-    "https://github.com/opencve/opencve-kb/blob/fa386d759f2a771540ca69b5fc06cb6091dcd950/2000/CVE-2000-1145.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/8a3e2d14c2e04b1bff1df5344192e8356dcd6b1d/CVE-2000/CVE-2000-11xx/CVE-2000-1145.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/1b97942de7f8736fb9dac77c314951b8b2cd2867/2000/1xxx/CVE-2000-1145.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1145.json",
+    "https://github.com/opencve/opencve-kb/blob/e5af8daab864aca812036b55e8697ef88b3aad4f/2000/CVE-2000-1145.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f5446ab1422bc50f191f3eb4d0c7a25d007c51de/CVE-2000/CVE-2000-11xx/CVE-2000-1145.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/968cedcc8bde6c68dbbfeb39e8922a8904786491/2000/1xxx/CVE-2000-1145.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1145.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/1811750a5b6a37290aff484954f5ab77b0ca64a7/content/CVE-2000-1145.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/91be9eb9295258fcf9346546d639e773f775edc3/content/CVE-2000-1145.md",
 ]
