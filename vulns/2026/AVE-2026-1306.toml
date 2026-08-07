@@ -1,0 +1,41 @@
+[basic]
+description = "ip-address 是一个用于 JavaScript 解析和操作 IPv4/IPv6 地址的库。该库的 Address4 组件在解析带有前导零的八位数字段（如 `012.0.0.1`）时，将其以十进制方式解码为 `12.0.0.1`，而 WHATWG URL 主机解析器、`inet_aton` 及 `getaddrinfo` 等网络解析函数则会将其作为八进制解码为 `10.0.0.1`。库内部与网络栈对同一地址的解析结果存在分歧，导致基于 Address4 的地址分类方法（如 `isPrivate()`、`isLoopback()`、`isInSubnet()` 等）全部基于错误解码后的地址进行计算。若应用程序依赖这些方法构建网络信任边界（如 SSRF 防护过滤器），会将内部目标误判为外部地址并放行请求，从而使攻击者能够向 loopback 服务、云元数据端点等内部地址发起服务器端请求伪造攻击。该漏洞影响 ip-address 10.3.0 及之前所有版本，利用方式为在用户可控的 URL 地址中使用前导零格式的 IPv4 地址，无需特殊应用配置即可触发。修复方式为升级至 10.3.1 版本，该版本在 Address4 解析时拒绝包含前导零的八位数字段，使其行为与 Address6 及网络解析器保持一致。"
+published = "2026-08-03T20:17:29Z"
+remediation = '立即将 ip-address 库升级至 10.3.1 或更高版本，修复 Address4 对前导零八位字节的误解析问题。升级后 Address4.isValid() 将拒绝前导零格式输入，构造函数会抛出 AddressError。若暂无法升级，应在解析前手动过滤主机地址中所有以零开头且包含多位数字的八位字节，例如使用正则表达式 /^0\d/ 检测并拒绝此类输入，防止内部目标被误判为外部地址绕过 SSRF 防护。注意仅靠地址校验不足以完全防御 SSRF，仍需结合 DNS 解析验证和重定向检查。'
+score = 7.7
+severity = "HIGH"
+sources = ["ghsa"]
+title = "ip-address Address4 前导零IP地址解析不一致SSRF和信任边界绕过漏洞"
+updated = "2026-08-04T15:16:41Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69192",
+    "GHSA-mwp4-54f8-5fhr",
+]
+ave_id = "AVE-2026-1306"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/beaugunderson/ip-address/commit/56368cb3d66c73ba0ee9b6b834fd31b22c2fd71e",
+    "https://github.com/beaugunderson/ip-address/releases/tag/v10.3.1",
+    "https://github.com/beaugunderson/ip-address/security/advisories/GHSA-mwp4-54f8-5fhr",
+    "https://github.com/CVEProject/cvelistV5/blob/4e0204724bf51491275a1083acc85ba506a05438/cves/2026/69xxx/CVE-2026-69192.json",
+    "https://github.com/cisagov/vulnrichment/blob/1ec26b4bfdf4d4994876319583b66cbf88277812/2026/69xxx/CVE-2026-69192.json",
+    "https://github.com/rmyndharis/OpenWA/blob/0a0e3140db8319bef1bd7c2ecc7029e91262a3c7/.trivyignore",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/520aa4b3e74e2392f3887b15716f0194af1dfca3/SSVC/data/2026/CVE-2026-69192.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/9c2043d9854f41df91b0a88593da9d4c87579f0b/data/2026/CVE-2026-69192.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/vex/cve/2026/CVE-2026-69192.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/osv/cve/2026/UBUNTU-CVE-2026-69192.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/520aa4b3e74e2392f3887b15716f0194af1dfca3/CVE/data/2026/CVE-2026-69192.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/eef52fea7af77a8f6b5f92aa912a8e222e2fa711/reports/2026-08-03/TIER_2_CVE-2026-69192.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69192.json",
+]
