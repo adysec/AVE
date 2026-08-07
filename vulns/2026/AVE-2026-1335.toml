@@ -1,0 +1,42 @@
+[basic]
+description = "Flowise 低权限 API 密钥跨工作区未授权文件访问与删除漏洞。该漏洞存在于 Flowise 的 /api/v1/files 路由中，该路由仅通过 feat:files 功能门控进行保护，未在 GET 或 DELETE 请求上强制执行权限检查。因此，组织内任何持有低权限 API 密钥的已认证用户，即使其权限与文件操作无关，也可通过调用 GET /api/v1/files 列出同一组织下其他工作空间存储的文件，并通过 DELETE /api/v1/files?path=... 删除其他工作空间的任意文件。具体而言，getAllFiles 接口直接使用 activeOrganizationId 递归列出组织存储根目录下的所有文件，而 deleteFile 接口虽读取 activeWorkspaceId 但仅用于存储配额记账，实际删除操作基于 activeOrganizationId 与用户可控的路径组合执行，完全忽略了 activeWorkspaceId 的访问限制。该漏洞破坏了组织内工作空间之间的文件访问隔离，可导致未授权文件浏览和恶意篡改，影响所有 3.1.3 之前版本的 Flowise 部署。"
+published = "2026-08-04T16:16:28Z"
+remediation = "立即将 Flowise 升级至 3.1.3 或更高版本。该版本修复了 `/api/v1/files` 路由缺少权限校验的问题，在 GET 和 DELETE 请求中增加了 `checkPermission(...)` 检查，确保 API 密钥仅能访问所属工作区的文件。如短期内无法升级，可通过反向代理限制低权限 API 密钥访问 `/api/v1/files` 端点，或仅向管理员账户授予 `feat:files` 功能权限，降低跨工作空间文件泄露和删除的风险。"
+score = 7.2
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Flowise 文件管理接口 越权访问与删除漏洞"
+updated = "2026-08-04T17:17:00Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69252",
+    "GHSA-wp74-f5hh-5f3r",
+]
+ave_id = "AVE-2026-1335"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/FlowiseAI/Flowise/commit/bc22bf8baec95b6a3d6e1b3563b4f03491cd6fbb",
+    "https://github.com/FlowiseAI/Flowise/pull/6435",
+    "https://github.com/FlowiseAI/Flowise/releases/tag/flowise@3.1.3",
+    "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-wp74-f5hh-5f3r",
+    "https://github.com/CVEProject/cvelistV5/blob/6965489bbb0e546f402d9f723160a02c114a0639/cves/2026/69xxx/CVE-2026-69252.json",
+    "https://github.com/cisagov/vulnrichment/blob/a6813569605c0b32bd9b1b6284ff40fb89f816e7/2026/69xxx/CVE-2026-69252.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1fee701bbb734582e3d59b764d6d3df80b9ea779/SSVC/data/2026/CVE-2026-69252.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1fee701bbb734582e3d59b764d6d3df80b9ea779/CVE/data/2026/CVE-2026-69252.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69252.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise/CVE-2026-69252.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/10af4013c239913b9e2b28873060d55f8f810752/CVE-2026/CVE-2026-692xx/CVE-2026-69252.json",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/baaabdeedc4b09f0484f180f040071dd4f95812b/nvd/2026/HIGH/CVE-2026-69252/README.md",
+    "https://github.com/TMA84/cvealert/blob/28d98e023aa8fad90c20ec94b202da55048de4bf/content/posts/cve-2026-69252.md",
+    "https://github.com/opencve/opencve-kb/blob/2bb646dc8642e6778e5b9d400b1c71fd6b41495f/2026/CVE-2026-69252.json",
+]
