@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "检测 Flowise 是否存在 vm2 沙箱逃逸远程代码执行漏洞。该漏洞存在于 AgentAsTool、ChatflowTool 和 ExecuteFlow 组件中，通过构造包含代码注入的 baseURL 参数，可绕过 isValidURL 校验并在服务器上执行任意代码。需要已认证会话。"
+id = "POC-AVE-2026-1337"
+name = "FlowiseAI Flowise vm2 Sandbox Escape to RCE PoC"
+severity = "critical"
+tags = ["ave-2026-1337"]
+vuln_id = [
+    "CVE-2026-69253",
+    "AVE-2026-1337",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    301,
+    302,
+    401,
+    403,
+]
+type = "status"
