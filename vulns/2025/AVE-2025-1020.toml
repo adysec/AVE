@@ -1,0 +1,43 @@
+[basic]
+description = "Linux 内核 TCP 协议栈中存在安全路径（secpath）引用泄漏漏洞。当系统使用 IPcomp6 进行 TCP 通信时，若创建一对网络命名空间并运行基本 TCP 测试后删除该命名空间对，secpath 结构体会因未被及时释放而 lingering 在 skb 上，导致 xfrm_state 引用计数无法清零，从而在删除 netns 时触发内核 WARN 或 NULL 指针引用，造成本地拒绝服务。该漏洞影响配置 IPsec/IPcomp 的 Linux 内核系统，CVSS 评分 7.8（高危）。攻击者需具备本地访问权限并创建/删除网络命名空间才能触发，利用过程中向目标发送特制的 IPv6 数据包可延迟释放 secpath，最终导致内核崩溃或拒绝服务。Linux 内核已在后续补丁中修复此问题，建议升级至最新稳定版本。"
+published = "2025-03-12T10:15:19Z"
+remediation = "立即升级 Linux 内核至修复版本：5.19 系列用户升级至 6.1.130，6.2-6.5 系列升级至 6.6.80，6.7-6.12 系列升级至 6.12.17，6.13 系列升级至 6.13.5，6.14 用户升级至稳定正式版。Debian 用户执行 apt upgrade linux-image 安装 DSA-5900 安全更新，RHEL/CentOS 用户安装 RHSA-2025:20518 内核补丁，SUSE 用户安装 SUSE-SU-2025:1177-1 或 SUSE-SU-2025:01951-1 内核更新。如无法立即升级，应通过 sysctl 或 systemd 限制非特权用户创建和删除网络命名空间，减少本地攻击面，并持续监控内核日志中 xfrm6_tunnel_net_exit 的 WARN 信息。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux kernel TCP 协议栈 secpath 引用计数错误漏洞"
+updated = "2026-07-30T06:21:41Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21864"]
+ave_id = "AVE-2025-1020"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/69cafd9413084cd5012cf5d7c7ec6f3d493726d9",
+    "https://git.kernel.org/stable/c/87858bbf21da239ace300d61dd209907995c0491",
+    "https://git.kernel.org/stable/c/9b6412e6979f6f9e0632075f8f008937b5cd4efd",
+    "https://git.kernel.org/stable/c/cd34a07f744451e2ecf9005bb7d24d0b2fb83656",
+    "https://git.kernel.org/stable/c/f1d5e6a5e468308af7759cf5276779d3155c5e98",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-019113.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-082556.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21864.md",
+    "https://github.com/0xMarcio/cve/blob/ee87fc3b7f9bdf8e6cbf7a66cdd1abf948d5f124/2025/CVE-2025-21864.md",
+    "https://github.com/CVEProject/cvelistV5/blob/6965489bbb0e546f402d9f723160a02c114a0639/cves/2025/21xxx/CVE-2025-21864.json",
+    "https://github.com/cisagov/vulnrichment/blob/a6813569605c0b32bd9b1b6284ff40fb89f816e7/2025/21xxx/CVE-2025-21864.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1fee701bbb734582e3d59b764d6d3df80b9ea779/SSVC/data/2025/CVE-2025-21864.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1fee701bbb734582e3d59b764d6d3df80b9ea779/CVE/data/2025/CVE-2025-21864.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21864.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21864.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5e8562b3a5799c26af53e6d5c536ab278b612e46/references/CveServices-CVE-2025-21864-2025-11-03-1326",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21864.json",
+]
