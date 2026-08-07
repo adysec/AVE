@@ -1,11 +1,11 @@
 [basic]
-description = "imwheel 工具包中的 imwheel-solo 程序存在符号链接攻击漏洞。该程序在处理用户主目录下的 .imwheelrc 配置文件时，未对符号链接进行安全校验，本地攻击者可在该文件中预创建指向任意系统文件的符号链接，诱使 imwheel-solo 按当前运行用户权限对其写入或覆盖，从而修改任意文件内容。该漏洞影响安装 imwheel 软件包的本地系统，攻击者需具备本地访问权限并诱导目标用户或特权进程触发程序执行，属于典型的本地符号链接竞争类漏洞，CVSS 评分为 2.1，危害等级较低。"
+description = "imwheel 包中的 imwheel-solo 程序存在符号链接（symlink）攻击漏洞，本地用户可通过创建指向目标文件的符号链接作为 .imwheelrc 配置文件，诱使程序在处理时向该文件写入内容，从而修改系统任意文件。该漏洞影响安装了 imwheel 软件的 Linux 系统，攻击条件为攻击者已在目标主机上拥有本地访问权限，无需额外身份认证即可利用。成功利用可导致文件完整性被破坏，进而可能用于提升权限或篡改系统配置。"
 published = "2001-08-31T04:00:00Z"
-remediation = "建议升级 imwheel 到修复符号链接跟随问题的后续版本（1.0 及以后），并收紧本地权限配置：对 ~/.imwheelrc 设置 `chmod 600 ~/.imwheelrc`、`chmod 700 ~` 限制属主读写，避免使用符号链接指向该文件；切勿以 root 身份运行 imwheel-solo，改以普通用户执行；同时将配置文件从 /tmp 等共享可写目录移出，并定期检查相关目录内是否存在指向敏感文件的符号链接。"
+remediation = "升级 imwheel 至已修复符号链接漏洞的版本，确保 imwheel-solo 在读取 ~/.imwheelrc 文件时不再跟随符号链接。临时缓解措施：删除 imwheel-solo 的 setuid 位（chmod -s /usr/bin/imwheel-solo），或使用符号链接保护机制（mount -o bind, nosuid, noexec 挂载 /tmp）防止攻击者利用 .imwheelrc 符号链接修改系统文件。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "imwheel imwheel-solo 符号链接攻击任意文件修改漏洞"
+sources = ["avd"]
+title = "imwheel imwheel-solo 符号链接本地文件篡改漏洞"
 updated = "2026-06-16T21:53:20Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1190"]
 ave_id = "AVE-2000-0932"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=95984116811100&w=2",
     "http://www.iss.net/security_center/static/4941.php",
     "http://www.redhat.com/support/errata/RHSA-2000-016.html",
-    "https://github.com/CVEProject/cvelistV5/blob/e409cc3aa72de0994d4d1b2baf38bcac39a42cdc/cves/2000/1xxx/CVE-2000-1190.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/003831a52157fd63351f2c9a1ee0ba9350abc5b2/CVE/data/2000/CVE-2000-1190.json",
+    "https://github.com/CVEProject/cvelistV5/blob/a6c3378408e019d0dc051e6d11f7eb3d66abc66c/cves/2000/1xxx/CVE-2000-1190.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f31dd31e2f478f1e13347f1843c21f10f282a83b/CVE/data/2000/CVE-2000-1190.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1190",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1190.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-1190.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/93d966ccbf562a1a0fe2dcab2089012ce2b11591/CVE-2000/CVE-2000-11xx/CVE-2000-1190.json",
-    "https://github.com/opencve/opencve-kb/blob/47bb69b00d30a4ddac9a224d4b4672d3efbf78ef/2000/CVE-2000-1190.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/1xxx/CVE-2000-1190.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1190.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/800e0951ee534700ac309055ede267b068e5fc70/CVE-2000/CVE-2000-11xx/CVE-2000-1190.json",
+    "https://github.com/opencve/opencve-kb/blob/ec517b60abdc2464cb36bd910facacf8fe8c502b/2000/CVE-2000-1190.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/cd90277053a061943a42bd9eb5e7a1ee22f10bdd/2000/1xxx/CVE-2000-1190.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1190.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1190.json",
 ]
