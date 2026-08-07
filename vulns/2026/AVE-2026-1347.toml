@@ -1,0 +1,42 @@
+[basic]
+description = "Flowise的HTTP安全模块(httpSecurity.ts)未在检查deny list之前对IPv4映射的IPv6地址（如::ffff:127.0.0.1、::ffff:169.254.169.254）进行规范化处理。由于ipaddr.js对这类地址返回'ipv6'类型，而deny list中的IPv4 CIDR规则为'ipv4'类型，两者kind不匹配导致所有IPv4 CIDR拒绝检查被完全跳过。攻击者若能控制Flowise所访问主机名的DNS解析，可设置AAAA记录指向目标IPv4地址的IPv4映射格式，从而绕过SSRF保护向AWS元数据服务、内部网络服务及本地主机发送请求，窃取IAM凭据或访问敏感内部资源。该漏洞影响所有至v3.1.1的Flowise版本，已在v3.1.3中修复。"
+published = "2026-08-04T17:17:00Z"
+remediation = "立即将 Flowise 升级至 v3.1.3 或更高版本，该版本修复了 HTTP 安全模块未对 IPv4 映射 IPv6 地址进行规范化的问题。升级前可通过在 Nginx/Caddy 等反向代理层禁用 AAAA DNS 解析或拦截包含 ::ffff: 前缀的 IPv6 地址作为临时缓解措施，阻止攻击者利用 AAAA 记录绕过 SSRF 防护访问内网及云元数据服务。"
+score = 7.6
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Flowise Flowise SSRF防护绕过漏洞"
+updated = "2026-08-04T17:17:00Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69257",
+    "GHSA-c6xh-wv4j-ppv5",
+]
+ave_id = "AVE-2026-1347"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/FlowiseAI/Flowise/commit/0fc769208395641c1411ccdb9c81416e54802155",
+    "https://github.com/FlowiseAI/Flowise/pull/6431",
+    "https://github.com/FlowiseAI/Flowise/releases/tag/flowise@3.1.3",
+    "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-c6xh-wv4j-ppv5",
+    "https://github.com/CVEProject/cvelistV5/blob/8d761288c12d1a9bf761b0c5cf276b970a7806ba/cves/2026/69xxx/CVE-2026-69257.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e6120c40ff117bee56ffec7d2c1707dc537c2f66/CVE/data/2026/CVE-2026-69257.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69257.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise/CVE-2026-69257.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2dd45b48e0efa0fde64742f95da829dc45ea506c/CVE-2026/CVE-2026-692xx/CVE-2026-69257.json",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/baaabdeedc4b09f0484f180f040071dd4f95812b/nvd/2026/HIGH/CVE-2026-69257/README.md",
+    "https://github.com/TMA84/cvealert/blob/28d98e023aa8fad90c20ec94b202da55048de4bf/content/posts/cve-2026-69257.md",
+    "https://github.com/opencve/opencve-kb/blob/cdfb9c2c3a0c170c2be11717df100bd0a2167fe3/2026/CVE-2026-69257.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/91be9eb9295258fcf9346546d639e773f775edc3/content/CVE-2026-69257.md",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/a2b01f141127c5a6fd05d93ff8ae512e5f421351/api/2026/CVE-2026-69257.json",
+]
