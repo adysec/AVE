@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "验证 Linux Kernel 2.2.x/2.4.x /proc 文件系统本地信息泄露漏洞。通过检查 /proc/self/environ 文件内容是否包含敏感环境变量信息，确认系统是否存在该漏洞。该漏洞允许本地用户在 setuid 程序执行前打开 /proc/self 下的文件条目并持有文件描述符，导致 setuid 程序执行后无法修改已打开文件条目的所有权和权限，攻击者可继续读取敏感信息。"
+id = "POC-AVE-2003-0108"
+name = "CVE-2003-0501 Linux Kernel /proc 信息泄露 PoC"
+severity = "low"
+tags = ["ave-2003-0108"]
+vuln_id = [
+    "CVE-2003-0501",
+    "AVE-2003-0108",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/proc/self/environ"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "PWD=",
+    "HOME=",
+    "USER=",
+]
