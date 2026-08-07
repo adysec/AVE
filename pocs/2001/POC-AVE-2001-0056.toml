@@ -1,8 +1,12 @@
+[exploit]
+exp_urls = ["https://www.exploit-db.com/exploits/20528"]
+poc_urls = ["https://www.exploit-db.com/exploits/20528"]
+
 [info]
 author = "ave"
-description = "通过构造特制 JavaScript URL 触发 WMP ActiveX 控件跨域验证绕过，验证目标是否存在漏洞"
+description = "检测 Windows Media Player 7.0 ActiveX 控件 JavaScript URL 远程代码执行漏洞。该漏洞允许远程攻击者通过构造包含 javascript: 协议的 URL，在 Internet Explorer 中执行任意命令。攻击者需诱导用户访问包含恶意 ActiveX 控件的网页，成功利用后可执行任意脚本或读取用户文件系统。"
 id = "POC-AVE-2001-0056"
-name = "Microsoft Windows Media Player 7.0 ActiveX 跨域绕过 PoC"
+name = "CVE-2001-0148 PoC"
 severity = "high"
 tags = ["ave-2001-0056"]
 vuln_id = [
@@ -15,15 +19,17 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/poc.html"
+path = "/{{BaseURL}}"
 protocol = "http"
 
-[poc.requests.body]
-content = ""
-type = "raw"
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = ["WMP ActiveX"]
+words = [
+    "6BF52A52-394A-11D3-B153-00C04F79FAA6",
+    "launchURL",
+]
