@@ -1,10 +1,10 @@
 [basic]
-description = "ProFTPD 1.2.0rc2 版本存在内存泄漏漏洞，远程攻击者无需身份认证即可通过发送大量 USER 命令消耗服务器内存资源，导致服务响应缓慢甚至崩溃，造成拒绝服务。若服务器安装配置不当，攻击者还可利用 SIZE 命令触发同样的内存泄漏问题。该漏洞影响 ProFTPD 1.2.0rc2 版本，CVSS 评分 5.0，危害等级中危。建议升级至 1.2.0rc3 或更高版本以修复此漏洞。"
+description = "ProFTPD 1.2.0rc2 存在内存泄漏漏洞（CWE-401），远程攻击者无需身份认证即可通过向目标 FTP 服务器连续发送大量 USER 命令触发该漏洞，导致服务器进程内存持续增长而无法释放，最终引发拒绝服务。若服务器配置不当，发送 SIZE 命令同样可以触发内存泄漏。该漏洞影响运行 ProFTPD 1.2.0rc2 版本的 Linux/Unix 系统，攻击者只需建立到 FTP 服务端口 21 的 TCP 连接并重复发送特制 FTP 命令，即可耗尽服务器内存资源，使合法用户无法正常使用 FTP 服务。ExploitDB 已有公开 PoC（EDB-ID: 241）验证该漏洞可利用性。"
 published = "2001-03-12T05:00:00Z"
-remediation = "升级 ProFTPD 至 1.2.1 或更高版本，该漏洞已在 1.2.0 正式版及后续版本中修复。如无法立即升级，可在配置文件中限制单个 IP 的连接速率和最大 USER 命令次数，或通过防火墙限制对 FTP 端口的访问以降低攻击面。"
+remediation = "建议立即升级 ProFTPD 至 1.2.0 正式版或更高版本（如 1.2.1/1.2.2 等），修复内存泄漏缺陷。若暂时无法升级，可在 proftpd.conf 中设置 `MaxLoginAttempts 3` 限制 USER 命令尝试次数，并配置 `TimeoutLogin 30` 缩短登录超时时间，减少恶意连接占用内存；同时在防火墙层面限制单 IP 并发 FTP 连接数（如 iptables: `-A INPUT -p tcp --dport 21 -m connlimit --connlimit-above 10 -j REJECT`），缓解拒绝服务攻击。"
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
+sources = ["epss"]
 title = "ProFTPD 1.2.0rc2 内存泄漏拒绝服务漏洞"
 updated = "2026-06-16T21:53:44Z"
 
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0136"]
 ave_id = "AVE-2001-0053"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -31,14 +31,14 @@ urls = [
     "http://www.securityfocus.com/archive/1/152206",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5801",
     "https://www.exploit-db.com/exploits/241",
-    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2001/CVE-2001-0136.md",
-    "https://github.com/CVEProject/cvelistV5/blob/9c6bb4d80b2633b04c3d95cd11fee4b8b1b012c2/cves/2001/0xxx/CVE-2001-0136.json",
-    "https://github.com/anchore/nvd-data-overrides/blob/152c4988e6630edbe300b2d9554f35d9c7963812/data/2001/CVE-2001-0136.json",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2001/CVE-2001-0136.md",
+    "https://github.com/CVEProject/cvelistV5/blob/89a678d7660107e867c9c982c57f25892eb8691e/cves/2001/0xxx/CVE-2001-0136.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/3185decd4974fd632046fe2bcfefaac11de4556f/data/2001/CVE-2001-0136.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0136",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/559ec87f609d31af7a4580139706f217d81d7a2e/CVE/data/2001/CVE-2001-0136.json",
-    "https://github.com/OWASP/Nettacker/blob/9fa9645b65f00e77232e97bd139abd2895569e6a/docs/Modules.md",
-    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/4709d2cbd3a3d8c1f80eac233d785d5a127e7498/CVEs/2001/CVE-2001-0136.md",
-    "https://github.com/anchore/cve-data-enrichment/blob/7c77ebcc357386c71db522f18fa574b7642f74e0/data/anchore/2001/CVE-2001-0136.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/7c0ef39a22957afc03910342f675d7ccbcb3511f/CVE/data/2001/CVE-2001-0136.json",
+    "https://github.com/OWASP/Nettacker/blob/0c8b53827836d58e1629ea47d006d0d8b3150fbb/docs/Modules.md",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/ee706ddc87b1bbd56e8aaed72d82adee4d745364/CVEs/2001/CVE-2001-0136.md",
+    "https://github.com/anchore/cve-data-enrichment/blob/e66a055508fe00cafa53e7f94ccbdeb07c7172ea/data/anchore/2001/CVE-2001-0136.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2001/CVE-2001-0136.md",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0136.json",
 ]
