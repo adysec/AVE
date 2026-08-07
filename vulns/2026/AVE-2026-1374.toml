@@ -1,0 +1,42 @@
+[basic]
+description = "Open WebUI 是一个可扩展的自托管 AI 平台。在 0.9.6 至 0.11.0 版本中，当启用了 Playwright 网页加载引擎（WEB_LOADER_ENGINE=playwright）时，系统仅对用户提交的顶层页面 URL 执行地址验证，而页面加载后由 JavaScript 发起的子资源请求（如图片、脚本、样式表、AJAX 请求等）则完全绕过验证机制。任意已认证用户（无需管理员权限）可通过提交恶意 URL 触发网页抓取或 RAG 文档摄入，使 Playwright 浏览器向内部网络地址发起请求，读取云实例元数据（169.254.169.254）、同网络容器服务或绑定了内网地址的 API 等敏感信息。由于浏览器返回的完整 DOM 会包含从内部服务获取的数据，攻击者可通过 web-search 或文档摄入结果获取这些信息，实现内网信息横向读取。该漏洞由 SafePlaywrightURLLoader 组件的请求拦截器缺陷导致，其仅对 document 类型的请求进行验证并过早返回，忽略了所有其他资源类型的请求。官方已在 0.11.0 版本中通过提交 bef63a2ae 修复此问题，升级至 0.11.0 可完全解决该问题，无需额外配置修改。"
+published = "2026-08-04T20:16:54Z"
+remediation = '立即将 Open WebUI 升级至 0.11.0 或更高版本（对应 commit bef63a2ae），该版本对所有子资源请求和重定向请求增加了全局地址验证，同时通过 service_workers="block" 和 WebSocket 路由处理器阻止绕过验证器的路径。如无法立即升级，可临时将 WEB_LOADER_ENGINE 环境变量设为非 playwright 的值以禁用 Playwright 加载器，避免子资源请求绕过地址检查。'
+score = 7.7
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Open WebUI 服务器端请求伪造漏洞"
+updated = "2026-08-05T16:17:02Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-70479",
+    "GHSA-w2rx-84hp-gg95",
+]
+ave_id = "AVE-2026-1374"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/open-webui/open-webui/commit/bef63a2ae915571d50d2722a635e8bfa753d7877",
+    "https://github.com/open-webui/open-webui/pull/27526",
+    "https://github.com/open-webui/open-webui/releases/tag/v0.11.0",
+    "https://github.com/open-webui/open-webui/security/advisories/GHSA-w2rx-84hp-gg95",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2026/CVE-2026-70479.md",
+    "https://github.com/CVEProject/cvelistV5/blob/2ed40ac6388b6b0944090d1b83263695e50f7b65/cves/2026/70xxx/CVE-2026-70479.json",
+    "https://github.com/cisagov/vulnrichment/blob/9f2635e41b440c54a9faab293f8a5836ca6093fc/2026/70xxx/CVE-2026-70479.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ec48735dfbcbc981aa038a6c8bc606e4fdbd898/CVE/data/2026/CVE-2026-70479.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1ec48735dfbcbc981aa038a6c8bc606e4fdbd898/SSVC/data/2026/CVE-2026-70479.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-70479.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/485354b91740f3a138561e440c19b7a203f3c378/reports/2026-08-04/TIER_3_CVE-2026-70479.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/63a532b725792b89ea32ae40fb744f9c8a9ba2df/CVE-2026/CVE-2026-704xx/CVE-2026-70479.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/pypi/open-webui/CVE-2026-70479.yml",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/baaabdeedc4b09f0484f180f040071dd4f95812b/nvd/2026/HIGH/CVE-2026-70479/README.md",
+]
