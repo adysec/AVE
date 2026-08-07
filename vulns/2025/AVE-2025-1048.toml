@@ -1,0 +1,39 @@
+[basic]
+description = "Linux内核HID子系统的hid-steam驱动在设备移除过程中存在use-after-free漏洞。当hid-steam设备被卸载时，用于拦截hidraw访问的client_hdev资源需要被清理，该过程可能触发延迟工作来重新附加输入设备；尽管清理操作会取消延迟工作，但这一操作在client_hdev本身释放之前执行，导致释放后的资源被重新调度引用，形成释放后重用条件。攻击者需要具备本地低权限访问权限（PR:L），并通过物理或虚拟方式触发hid-steam设备的插拔操作来利用该竞争条件，成功利用后可导致系统崩溃或在内核上下文中执行任意代码，实现本地权限提升（C:H/I:H/A:H）。该漏洞影响所有使用hid-steam驱动的Linux内核版本。"
+published = "2025-04-01T16:15:23Z"
+remediation = "升级 Linux 内核到修复版本：6.6.83、6.12.19 或 6.13.7 及以上。Debian/Ubuntu 执行 apt upgrade linux-image-*，RHEL/CentOS 执行 dnf update kernel，Arch Linux 执行 pacman -Syu linux。升级后重启系统验证 uname -r 显示新版本号。如暂无法升级，可临时执行 modprobe -r hid_steam 卸载该驱动模块以消除风险。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux hid-steam 设备驱动程序 use-after-free 漏洞"
+updated = "2026-06-17T08:44:37Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21923"]
+ave_id = "AVE-2025-1048"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/026714ec7546de741826324a6a1914c91024d06c",
+    "https://git.kernel.org/stable/c/a899adf7063c6745aaff1ec869f3c7f6329ed0a1",
+    "https://git.kernel.org/stable/c/e53fc232a65f7488ab75d03a5b95f06aaada7262",
+    "https://git.kernel.org/stable/c/ea3f18d2f02629653b7bfe42607737ccd1343e54",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21923.md",
+    "https://github.com/CVEProject/cvelistV5/blob/9a8a3c32015143180dac972cdde44f1ded37f1dd/cves/2025/21xxx/CVE-2025-21923.json",
+    "https://github.com/cisagov/vulnrichment/blob/bfb1ed18d84de445aef9dfa712f1cbc54ae73923/2025/21xxx/CVE-2025-21923.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9b3ccc0b6aa4a9f3405ce9f43548bd95edfa1060/SSVC/data/2025/CVE-2025-21923.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9b3ccc0b6aa4a9f3405ce9f43548bd95edfa1060/CVE/data/2025/CVE-2025-21923.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21923.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21923.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21923.json",
+    "https://github.com/opencve/opencve-kb/blob/8d954d282b5a38a70a9479de4dda4f83464980a2/2025/CVE-2025-21923.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21923.yaml",
+]
