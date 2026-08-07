@@ -1,12 +1,12 @@
 [basic]
-description = 'FreeBSD 4.1.1 及更早版本中的 ppp 工具未能正确遵循 "nat deny_incoming" 命令配置的访问限制规则，导致远程攻击者无需任何身份认证即可通过网络绕过 NAT 防护策略，直接连接目标系统。该漏洞允许攻击者访问本应被拒绝的内部网络服务，造成信息泄露、数据篡改或服务中断等后果。攻击者只需能够向目标发送网络数据包即可触发，利用门槛极低。'
-published = "2001-01-09T05:00:00Z"
-remediation = "升级 FreeBSD 至 4.1.1-STABLE 或 3.5.1-STABLE 及以上版本（2000-10-30 之后）；或下载官方补丁（FreeBSD-SA-00:70）对 /usr/src/usr.sbin/ppp/nat_cmd.c 应用补丁后重新编译安装 ppp。临时缓解措施：在 PPP 网关上使用 ipfw(8) 或 ipf(8) 等真实包过滤器替代 ppp 内置的 deny_incoming 功能，按安全策略明确拒绝入站流量。"
-score = 7.5
-severity = "HIGH"
-sources = ["epss"]
-title = "FreeBSD ppp 工具访问控制绕过漏洞"
-updated = "2026-06-16T21:53:18Z"
+description = 'FreeBSD 4.1.1 及更早版本中的 ppp 网络实用程序未能正确执行"nat deny_incoming"命令所配置的访问控制规则，导致远程攻击者能够绕过该限制直接连接到目标系统。该漏洞影响使用 ppp 建立网络连接并启用 NAT 地址转换功能的 FreeBSD 主机，攻击者无需经过身份认证，只要网络可达即可利用此缺陷发起未经授权的 TCP/IP 连接，进而可能进一步渗透系统内部网络或访问受限服务，造成敏感信息泄露或后续攻击入口的暴露。'
+published = "2001-01-09T00:00:00Z"
+remediation = "升级 FreeBSD 系统至 4.2-RELEASE 或更高版本以修复 ppp 的 nat deny_incoming 绕过问题。如暂无法升级，可执行如下操作：下载并应用官方补丁 ppp.patch，进入 /usr/src/usr.sbin/ppp 目录执行 patch -p < /path/to/ppp.patch，然后运行 make depend && make all install 重新编译安装。临时缓解措施是在 PPP 网关上启用 ipfw(8) 或 ipf(8) 防火墙，配置规则拒绝所有未明确允许的外部传入连接，以弥补 ppp NAT 过滤失效的风险。"
+score = 5
+severity = "MEDIUM"
+sources = ["avd"]
+title = "FreeBSD ppp 访问控制绕过漏洞"
+updated = "2001-01-09T00:00:00Z"
 
 [exploit]
 exp_urls = []
@@ -17,22 +17,19 @@ aliases = ["CVE-2000-1167"]
 ave_id = "AVE-2000-1128"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "http://www.osvdb.org/1655",
-    "http://www.securityfocus.com/bid/1974",
-    "https://exchange.xforce.ibmcloud.com/vulnerabilities/5584",
-    "https://github.com/CVEProject/cvelistV5/blob/160b2769d023cca3bba96db1842bf8222b2e286a/cves/2000/1xxx/CVE-2000-1167.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/2850e862cb7837f03ec4af0066c4f9f10414e805/CVE/data/2000/CVE-2000-1167.json",
+    "https://github.com/CVEProject/cvelistV5/blob/f44a116d4d536826c4e2d2e60db49f9e9faec5a2/cves/2000/1xxx/CVE-2000-1167.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9cadf2781966b46cf2833362970d0629a97c0767/CVE/data/2000/CVE-2000-1167.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1167",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1167.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1167.json",
-    "https://github.com/opencve/opencve-kb/blob/bd9fe5c6ad63a26e0384af877431750bd67b40cc/2000/CVE-2000-1167.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/c45038e15e6e81771cce5512f28070ebf02ca969/2000/1xxx/CVE-2000-1167.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-11xx/CVE-2000-1167.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1167.json",
+    "https://github.com/opencve/opencve-kb/blob/d8cfe5c32558c23ee3b71eef8e37a92f425802dd/2000/CVE-2000-1167.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/fc76707fefe5e24b3da95d21a7724ebb2a7c3d53/2000/1xxx/CVE-2000-1167.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2dd45b48e0efa0fde64742f95da829dc45ea506c/CVE-2000/CVE-2000-11xx/CVE-2000-1167.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1167.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1167.json",
 ]
