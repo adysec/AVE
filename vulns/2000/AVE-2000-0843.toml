@@ -1,43 +1,11 @@
 [basic]
-description = '''
-PostgreSQL 在系统表 pg_shadow 与 pg_pwd 中以明文形式存储用户账号和密码信息。具有足够数据库权限的本地攻击者可通过直接查询或访问这些系统表获取敏感凭据，进而登录数据库并读取、篡改或删除数据。该漏洞影响 PostgreSQL 6.3.2 和 6.5.3 等早期版本。攻击者通常需要先获得操作系统层面的有效账户或数据库角色权限，才能执行相关查询操作。建议将 PostgreSQL 升级至修复版本，并对数据库用户权限进行最小化配置，以降低敏感信息泄露风险。"""
-```
-
-Wait, it seems like the description field got corrupted with some template/thinking content mixed in. The actual value part starts with `<value>PostgreSQL...` but there's garbage before it.
-
-So the task is clear: provide a clean, proper Chinese description for the `description` field.
-
-Requirements:
-- ≥50 Chinese characters
-- Cover: vulnerability principle (plaintext password storage), affected versions/products (PostgreSQL 6.3.2/6.5.3), attack conditions (local, requires sufficient privileges, no authentication needed for the attack itself)
-- Translate NVD English description to fluent Chinese
-- Supplement with local data technical details
-- Don't fabricate URLs or version numbers
-
-Current description in the TOML is actually decent but it seems the parser/extractor failed because of the garbage content before `<value>`. But I should provide a clean, proper description.
-
-Let me write a good description:
-
-PostgreSQL 数据库系统在系统表 pg_shadow 和 pg_pwd 中以明文形式存储用户账号及密码信息，存在敏感凭据泄露漏洞。具有足够数据库权限的本地攻击者可直接查询这些系统表获取明文密码，进而登录数据库并读取、篡改或删除数据。该漏洞影响 PostgreSQL 6.3.2 和 6.5.3 等早期版本。根据 CVSS 评分 4.6，攻击需本地访问权限且需要具备足够的数据库权限（Au:N），攻击复杂度低。建议升级至修复版本，并使用加密认证方式替代明文密码存储。
-
-Let me count characters... That's definitely >50 characters. Let me verify it covers all requirements:
-- 漏洞原理: 明文存储密码，查询系统表获取凭据 ✓
-- 影响范围: PostgreSQL 6.3.2 和 6.5.3 ✓
-- 攻击条件: 本地访问，需要足够数据库权限 ✓
-- 中文 ✓
-- ≥50字 ✓
-
-This looks good. I should output it in the required format.
-
-Wait, I need to be careful about the output format. The instructions say:
-"你可以先简要分析，但**最终答案必须**放在一对 <value>...
-'''
+description = "PostgreSQL 6.3.2 和 6.5.3 版本在系统上以明文形式存储数据库用户名和密码，分别保存在 pg_shadow 和 pg_pwd 系统文件中，未进行任何加密保护。该漏洞影响早期 Linux/Unix 平台上的 PostgreSQL 数据库部署，CVSS v2 评分 4.6。攻击条件要求攻击者已具备对数据库服务器文件系统的读取权限（如通过本地 shell 访问、Web 目录遍历或其他本地漏洞获取），可直接读取上述系统文件获取数据库管理员和普通用户的明文凭据。利用方式极为简单，攻击者无需网络交互或身份认证，仅需在操作系统层面访问数据库数据目录，即可通过 cat、more 或类似命令提取完整密码哈希乃至明文，进而直接登录数据库，造成数据泄露、数据篡改或数据库服务中断等严重后果。"
 published = "2001-08-31T04:00:00Z"
-remediation = "升级 PostgreSQL 至 7.2 或更高版本，使用 CREATE USER/ALTER USER 的 ENCRYPTED 选项并将 pg_hba.conf 中的认证方式配置为 md5，确保密码以 MD5 加密形式存储而非明文。"
+remediation = "立即将 PostgreSQL 升级至 7.0 及以上版本，修复敏感数据以明文存储的系统表。同时修改 pg_hba.conf，将本地认证方式改为 md5 或 ident，并设置 pg_shadow 文件权限为 0600、属主为 postgres 用户，禁止普通用户读取。若无法立即升级，可临时通过 chmod 600 限制 pg_pwd 与 pg_shadow 文件访问权限，并清理 web 目录下可能泄露的旧备份文件，降低本地提权风险。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["epss"]
-title = "PostgreSQL 数据库明文存储密码漏洞"
+sources = ["avd"]
+title = "PostgreSQL 6.3.2/6.5.3 明文存储密码漏洞"
 updated = "2026-06-16T21:53:21Z"
 
 [exploit]
@@ -49,7 +17,7 @@ aliases = ["CVE-2000-1199"]
 ave_id = "AVE-2000-0843"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
@@ -58,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/1139",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4364",
     "https://www.exploit-db.com/exploits/19875",
-    "https://github.com/CVEProject/cvelistV5/blob/cbc8909f965784fa84e604f999ad78ba1a862d6c/cves/2000/1xxx/CVE-2000-1199.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/d9d0e44f54f90ad1b4ec106b1cac94be29b99757/CVE/data/2000/CVE-2000-1199.json",
+    "https://github.com/CVEProject/cvelistV5/blob/25d2835389cb063fdfa4c6ce4f2eac179227ec45/cves/2000/1xxx/CVE-2000-1199.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6383c78237400b01eaca440114073e7df0a76cff/CVE/data/2000/CVE-2000-1199.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1199",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1199.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1199.json",
-    "https://github.com/opencve/opencve-kb/blob/c9ca0c7ecb65f7366b1a83938dcd1c80cf9c2d0e/2000/CVE-2000-1199.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-11xx/CVE-2000-1199.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/8e09cd003036511dff025515f28920f1d343007b/2000/1xxx/CVE-2000-1199.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1199.json",
+    "https://github.com/opencve/opencve-kb/blob/4253d71437b592b80706a60adec05f5ce57e70d5/2000/CVE-2000-1199.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/59fcb0e6f5e022cbcf3d6b6e8dfa8ab050c85b5f/CVE-2000/CVE-2000-11xx/CVE-2000-1199.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c2821f0ce67377f90a12397deb247f48f678f016/2000/1xxx/CVE-2000-1199.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1199.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1199.json",
 ]
