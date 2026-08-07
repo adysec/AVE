@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 Aktivate 1.03 的 catgy.cgi 脚本是否存在 desc 参数跨站脚本漏洞。该脚本在处理 desc 参数时未对用户输入进行充分过滤和输出编码，导致远程攻击者可注入任意 JavaScript 代码并在受害者浏览器中执行。本 PoC 通过向 desc 参数发送测试标记并检测响应是否未经编码直接回显该标记来确认漏洞存在"
+id = "POC-AVE-2001-0490"
+name = "Aktivate 1.03 catgy.cgi 跨站脚本漏洞检测"
+severity = "medium"
+tags = ["ave-2001-0490"]
+vuln_id = [
+    "CVE-2001-1212",
+    "AVE-2001-0490",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/catgy.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "desc=XSS_TEST_AVE20010490"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["XSS_TEST_AVE20010490"]

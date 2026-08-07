@@ -1,0 +1,42 @@
+[basic]
+description = """Flowise 是用于构建大语言模型流程的拖拽式用户界面工具。在 3.1.3 版本之前，其 CSVAgent 组件（CSVAgent.ts）存在 Python 代码注入漏洞。该组件通过 `file.split(',').pop()` 提取用户上传的 CSV 文件数据，且未对内容进行任何校验，直接将提取结果以字符串模板的形式拼接进可执行的 Python 代码中（`base64_string = "${base64String}"`），随后调用 Pyodide 执行。由于 `validatePythonCodeForDataFrame()` 的拒绝列表仅对后续 LLM 生成的代码进行校验，未覆盖这段初始代码块，因此攻击者可通过在 CSV 数据中注入闭合引号及后续 Python 代码，利用 Pyodide 的 `js` 桥接功能访问宿主 Node.js 进程，进而加载 `child_process` 模块并在 Flowise 容器中以 root 权限执行任意操作系统命令，实现远程代码执行。该漏洞影响所有使用了受影响 CSVAgent 组件的 Flowise 实例，攻击者只需拥有登录凭据并创建包含恶意 CSV 内容的对话流即可触发利用。Flowise 已在 3.1.3 版本中修复此漏洞。"""
+published = "2026-08-04T17:17:00Z"
+remediation = "立即升级 Flowise 至 3.1.3 或更高版本，官方已通过 commit f4e2794 修复 CSVAgent 中的代码注入漏洞。若暂时无法升级，建议在防火墙或反向代理层面禁用 CSV Agent 节点的文件上传功能，或限制对 /api/v1/chatflows 接口的未授权访问，以阻止攻击者利用 Pyodide js 桥接执行任意操作系统命令。"
+score = 9.2
+severity = "CRITICAL"
+sources = ["ghsa"]
+title = "Flowise 低代码平台 CSVAgent 远程代码执行漏洞"
+updated = "2026-08-04T20:16:53Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69255",
+    "GHSA-vmv7-4m6c-3cg5",
+]
+ave_id = "AVE-2026-1342"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/FlowiseAI/Flowise/commit/f4e2794f6a576b94578f2fdafbf49c2fb304626c",
+    "https://github.com/FlowiseAI/Flowise/pull/6499",
+    "https://github.com/FlowiseAI/Flowise/releases/tag/flowise%403.1.3",
+    "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-vmv7-4m6c-3cg5",
+    "https://github.com/CVEProject/cvelistV5/blob/d77e46bafed7ce82e7eabeb0d491762382725743/cves/2026/69xxx/CVE-2026-69255.json",
+    "https://github.com/cisagov/vulnrichment/blob/c6d6017c1734775509208d9f591135a5edeb91e2/2026/69xxx/CVE-2026-69255.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/SSVC/data/2026/CVE-2026-69255.json",
+    "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/23fc8082c342e7d1d0cc68bb1f16336986277de8/proposals/nvd/CVE-2026-69255.proposal.yaml",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/CVE/data/2026/CVE-2026-69255.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69255.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise/CVE-2026-69255.yml",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/10af4013c239913b9e2b28873060d55f8f810752/CVE-2026/CVE-2026-692xx/CVE-2026-69255.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/flowise-components/CVE-2026-69255.yml",
+    "https://github.com/zzzteph/low-hanging-vulns/blob/baaabdeedc4b09f0484f180f040071dd4f95812b/nvd/2026/CRITICAL/CVE-2026-69255/README.md",
+]
