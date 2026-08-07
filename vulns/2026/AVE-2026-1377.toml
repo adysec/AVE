@@ -1,0 +1,42 @@
+[basic]
+description = "Open WebUI 的 OAuth 令牌交换端点存在身份认证绕过漏洞。当 `ENABLE_OAUTH_TOKEN_EXCHANGE=True` 时，`/oauth/{provider}/token/exchange` 接口接受攻击者提交的原始 OAuth 提供商访问令牌，仅通过调用提供商的 userinfo 端点验证令牌有效性，但未验证该令牌是由哪个 OAuth 客户端签发的。由于 userinfo 端点仅返回令牌是否有效而不返回签发客户端信息，任何持有同一提供商下任意客户端签发的访问令牌的攻击者，均可将其兑换为 Open WebUI 会话，实现对目标账户的完全接管。该漏洞影响 0.8.0 至 0.11.0 版本，攻击者可诱骗已注册用户在攻击者控制的第三方 OAuth 应用上登录以获取令牌，且无需受害者与 Open WebUI 交互。成功利用后攻击者可获得目标账户的全部权限，若目标为管理员则直接获得管理员会话。该漏洞已在 0.11.0 版本中通过 RFC 7662 令牌内省机制修复，部署时需同时设置 `OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS` 环境变量以限制可信客户端。CVSS v3.1 评分为 8.1（高危）。"
+published = "2026-08-04T20:16:55Z"
+remediation = "立即将 Open WebUI 升级至 0.11.0 或更高版本，并在环境变量中设置 OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS，仅允许受信任的 OAuth 客户端 ID 进行令牌交换；对于不支持 RFC 7662 令牌自省的服务提供商（如 Google、GitHub、Microsoft Entra ID、Feishu），必须将 ENABLE_OAUTH_TOKEN_EXCHANGE 设为 False 以彻底禁用令牌交换功能，无法通过管理界面动态修改该配置。"
+score = 8.1
+severity = "HIGH"
+sources = ["ghsa"]
+title = "Open WebUI OAuth令牌交换账户劫持漏洞"
+updated = "2026-08-06T05:17:07Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-70482",
+    "GHSA-rq84-p6rr-vf89",
+]
+ave_id = "AVE-2026-1377"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/open-webui/open-webui/commit/b190dcf3caa00dc8b7b9c7312828298d9143f60d",
+    "https://github.com/open-webui/open-webui/commit/c4332be71e6e9c314e8a13b9d2819a6932561630",
+    "https://github.com/open-webui/open-webui/releases/tag/v0.11.0",
+    "https://github.com/open-webui/open-webui/security/advisories/GHSA-rq84-p6rr-vf89",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2026/CVE-2026-70482.md",
+    "https://github.com/CVEProject/cvelistV5/blob/2ed40ac6388b6b0944090d1b83263695e50f7b65/cves/2026/70xxx/CVE-2026-70482.json",
+    "https://github.com/cisagov/vulnrichment/blob/bfb1ed18d84de445aef9dfa712f1cbc54ae73923/2026/70xxx/CVE-2026-70482.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9b3ccc0b6aa4a9f3405ce9f43548bd95edfa1060/SSVC/data/2026/CVE-2026-70482.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/9b3ccc0b6aa4a9f3405ce9f43548bd95edfa1060/CVE/data/2026/CVE-2026-70482.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-70482.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/63a532b725792b89ea32ae40fb744f9c8a9ba2df/CVE-2026/CVE-2026-704xx/CVE-2026-70482.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/pypi/open-webui/CVE-2026-70482.yml",
+    "https://github.com/anchore/cve-data-enrichment/blob/f95ed70ff4572bede3f68dd12496edb1151d4685/data/anchore/2026/CVE-2026-70482.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/485354b91740f3a138561e440c19b7a203f3c378/reports/2026-08-04/TIER_2_CVE-2026-70482.md",
+]
