@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核 BPF 子系统中存在一处竞态条件漏洞，源于 BPF map 的 freeze_mutex 在 mmap 操作期间被不当持有。该互斥锁原本用于防止 map_freeze() 与带有可写权限的内存映射操作之间发生冲突，但实现方式在持有锁的同时执行完整的 mm 和 VMA 操作，导致锁持有时间过长，且可能引发死锁。本地低权限攻击者若具备对该系统的有限访问权限，可通过精心构造的 BPF map 内存映射请求触发该竞争条件，导致系统不可用（高可用性影响）。该漏洞影响使用 BPF 功能的 Linux 内核版本，需通过更新内核至修复版本解决。"
+published = "2025-03-12T10:15:18Z"
+remediation = "升级 Linux 内核至已修复版本：5.10.237、5.15.181、6.1.135、6.6.80、6.12.17 或 6.13.5 及更高版本，可通过发行版包管理器执行更新（如 apt upgrade linux-image、yum update kernel），或直接应用上游补丁 271e49f8a58e。如暂时无法升级，可通过 sysctl 设置 kernel.unprivileged_bpf_disabled=1 及 kernel.kptr_restrict=2 限制未授权 BPF 操作作为临时缓解。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux内核 BPF 拒绝服务漏洞"
+updated = "2026-07-14T13:17:24Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21853"]
+ave_id = "AVE-2025-1010"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0d90d9e154144a3a80e9fc0eb9b21b7fc990f68f",
+    "https://git.kernel.org/stable/c/271e49f8a58edba65bc2b1250a0abaa98c4bfdbe",
+    "https://git.kernel.org/stable/c/29cfda62ab4d92ab94123813db49ab76c1e61b29",
+    "https://git.kernel.org/stable/c/2ce31c97c219b4fe797749f950274f246eb88c49",
+    "https://git.kernel.org/stable/c/4759acbd44d24a69b7b14848012ec4201d6c5501",
+    "https://git.kernel.org/stable/c/bc27c52eea189e8f7492d40739b7746d67b65beb",
+    "https://git.kernel.org/stable/c/d95607a5f2f9bb08194c9deaf4a5f3e8ba59a9d4",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-019113.html",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2025/CVE-2025-21853.md",
+    "https://github.com/0xMarcio/cve/blob/8bc21e001936acb7383ce82840b519a1f9fea751/2025/CVE-2025-21853.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b20b81eada7bd9a58e87ab370820ba656b7c3788/cves/2025/21xxx/CVE-2025-21853.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/17f3104e7e566a2b867ac9837178693be6792765/CVE/data/2025/CVE-2025-21853.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21853.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5e8562b3a5799c26af53e6d5c536ab278b612e46/references/CveServices-CVE-2025-21853-2025-11-03-1337",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5e8562b3a5799c26af53e6d5c536ab278b612e46/references/CveServices-CVE-2025-21853-2025-11-03-1326",
+    "https://github.com/opencve/opencve-kb/blob/9f17f88f6c8f1ba4f694908911d0d965707533fb/2025/CVE-2025-21853.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21853.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21853.yaml",
+]
