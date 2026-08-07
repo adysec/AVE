@@ -1,0 +1,44 @@
+[basic]
+description = "Linux 内核 PowerPC 架构的代码补丁（code-patching）基础设施在分配文本补丁区域时，错误地将该区域标记为 VM_ALLOC 标志。VM_ALLOC 标志专用于 vmalloc() 分配的内存，而 text_area_cpu_up() 所分配的区域并非 vmalloc 内存，实际通过 map_kernel_page() 按需直接映射，并无对应的 VM 标志表示此使用方式，应不传递任何标志以使该区域立即可用。在启用 KASAN（内核地址消毒器）的 PowerPC 平台（如 PowerMac G4）上，当内核执行 BPF JIT 编译或代码补丁操作时，KASAN 会将该区域标记为无效内存（KASAN_VMALLOC_INVALID），导致在 copy_to_kernel_nofault 等内存复制操作中触发越界访问报告，造成系统崩溃或拒绝服务。该漏洞影响 Linux 内核 6.13-rc6 及之前版本，CVSS 评分为 5.5（中等）。"
+published = "2025-03-12T10:15:19Z"
+remediation = "升级 Linux 内核至以下已修复版本之一：5.4.291、5.10.235、5.15.179、6.1.130、6.6.80、6.12.17 或 6.13.5 及更高版本。修复提交为 d262a192d38e，将 arch/powerpc/lib/code-patching.c 中 text_area_cpu_up() 函数调用的 get_vm_area(PAGE_SIZE, VM_ALLOC) 改为 get_vm_area(PAGE_SIZE, 0)，消除 KASAN 对文本修补区域的错误标记。如无法立即升级，可通过内核启动参数禁用 KASAN 作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel PowerPC 代码补丁权限提升漏洞"
+updated = "2026-06-17T08:44:29Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21866"]
+ave_id = "AVE-2025-1022"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/2d542f13d26344e3452eee77613026ce9b653065",
+    "https://git.kernel.org/stable/c/2e6c80423f201405fd65254e52decd21663896f3",
+    "https://git.kernel.org/stable/c/6847b3e40bb963e57b61d1cc6fe84cb37b9d3d4c",
+    "https://git.kernel.org/stable/c/8d06e9208184b2851fa79a3a39d6860320c8bdf8",
+    "https://git.kernel.org/stable/c/97de5852058a299ba447cd9782fe96488d30108b",
+    "https://git.kernel.org/stable/c/c905a3053518212a1017e50bd2be3bee59305bb0",
+    "https://git.kernel.org/stable/c/d262a192d38e527faa5984629aabda2e0d1c4f54",
+    "https://git.kernel.org/stable/c/f8d4c5b653c1bc0df56e15658bbf64fc359adc4e",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21866.md",
+    "https://github.com/CVEProject/cvelistV5/blob/6965489bbb0e546f402d9f723160a02c114a0639/cves/2025/21xxx/CVE-2025-21866.json",
+    "https://github.com/cisagov/vulnrichment/blob/c6d6017c1734775509208d9f591135a5edeb91e2/2025/21xxx/CVE-2025-21866.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/SSVC/data/2025/CVE-2025-21866.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21866.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/CVE/data/2025/CVE-2025-21866.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5e8562b3a5799c26af53e6d5c536ab278b612e46/references/CveServices-CVE-2025-21866-2025-11-03-1326",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21866.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21866.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21866",
+]
