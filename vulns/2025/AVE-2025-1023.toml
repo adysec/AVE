@@ -1,0 +1,42 @@
+[basic]
+description = "Linux 内核的 BPF 子系统中，bpf_prog_test_run_xdp() 函数在调用 bpf_test_init() 时，若传入的 user_data 参数值小于以太网头部长度（ETH_HLEN），会导致后续 eth_skb_pkt_type() 访问不包含以太网头部的 skb 数据，从而触发 use-after-free 内存安全漏洞。该漏洞影响所有支持 eBPF/XDP 程序测试运行的 Linux 内核版本，具有本地低权限攻击面，攻击者可通过构造恶意 BPF 程序测试运行请求，触发内核访问已释放的内存区域，进而造成拒绝服务或实现本地权限提升。漏洞的根本原因是内核未对用户传入的 user_data 长度进行有效性校验，导致后续网络设备类型解析时访问无效内存。"
+published = "2025-03-27T14:15:47Z"
+remediation = "升级 Linux 内核至已修复版本：stable 6.1.130、6.6.80、6.12.17、6.13.5 或 6.14+，可通过发行版包管理器（apt/yum/dnf）安装对应安全更新。如暂无法升级，可通过设置 kernel.unprivileged_bpf_disabled=1 禁用非特权 BPF 程序加载，或通过 seccomp 限制进程对 bpf() 系统调用的访问权限作为临时缓解。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux kernel BPF 释放后使用漏洞"
+updated = "2026-07-14T13:17:26Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21867"]
+ave_id = "AVE-2025-1023"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1a9e1284e87d59b1303b69d1808d310821d6e5f7",
+    "https://git.kernel.org/stable/c/6b3d638ca897e099fa99bd6d02189d3176f80a47",
+    "https://git.kernel.org/stable/c/972bafed67ca73ad9a56448384281eb5fd5c0ba3",
+    "https://git.kernel.org/stable/c/d56d8a23d95100b65f40438639dd82db2af81c11",
+    "https://git.kernel.org/stable/c/f615fccfc689cb48977d275ac2e391297b52392b",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-019113.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21867.md",
+    "https://github.com/0xMarcio/cve/blob/ee87fc3b7f9bdf8e6cbf7a66cdd1abf948d5f124/2025/CVE-2025-21867.md",
+    "https://github.com/CVEProject/cvelistV5/blob/6965489bbb0e546f402d9f723160a02c114a0639/cves/2025/21xxx/CVE-2025-21867.json",
+    "https://github.com/cisagov/vulnrichment/blob/c6d6017c1734775509208d9f591135a5edeb91e2/2025/21xxx/CVE-2025-21867.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/SSVC/data/2025/CVE-2025-21867.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21867.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0daef57a87012a08ddad59d6dae428ace45174e6/CVE/data/2025/CVE-2025-21867.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21867.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/5e8562b3a5799c26af53e6d5c536ab278b612e46/references/CveServices-CVE-2025-21867-2025-11-03-1326",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21867.json",
+]
