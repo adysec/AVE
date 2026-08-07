@@ -1,12 +1,12 @@
 [basic]
-description = "ColdFusion MX 缺失模板处理模块存在跨站脚本（XSS）漏洞。当远程用户请求不存在的 ColdFusion 模板文件时，服务器会返回 404 错误页面，并将请求中的模板名称直接嵌入到响应内容中，但未对模板名称参数进行任何过滤或转义。未经身份认证的远程攻击者可通过构造包含恶意脚本的 HTTP 请求，将 JavaScript 代码注入到 404 错误消息的页面中。当其他用户访问该页面时，恶意脚本会在其浏览器中执行，导致会话劫持、Cookie 窃取或页面内容篡改等后果。该漏洞影响 Macromedia ColdFusion MX 6.0 版本，攻击者仅需向目标服务器发送特制 URL 即可触发，无需身份认证或特殊权限。由于 ColdFusion MX 广泛应用于企业 Web 应用开发，受影响站点数量众多。"
-published = "2002-12-31T05:00:00.000"
-remediation = "升级 ColdFusion MX 至 6.1 或更高版本，或安装 Macromedia 针对此漏洞发布的安全热修复补丁（参考 Macromedia 支持说明 ID 23047）。临时缓解措施：在 ColdFusion Administrator 中自定义 Missing Template 错误页面，确保错误消息不反射用户输入的 URL 参数内容，或在 Web 服务器（如 IIS/Apache）层面配置自定义 404 错误页面，阻断 ColdFusion MX 默认的 Missing Template Handler 输出。"
-score = 4.3
+description = "Macromedia ColdFusion MX（即 ColdFusion 6.0）的 404 错误页面存在跨站脚本（XSS）漏洞。当用户访问不存在的模板文件（Missing Template）时，服务器生成的 404 错误信息会将未经验证过滤的请求 URL 或参数内容直接回显到错误页面中，且未对特殊字符进行 HTML 实体编码。攻击者只需构造包含恶意脚本代码的 URL 链接，诱导受害者点击，即可在受害者的浏览器会话中执行任意脚本，进而窃取会话 Cookie、劫持会话或实施钓鱼攻击。该漏洞危害中等，攻击无需任何认证，任何运行受影响版本 ColdFusion 的 Web 服务器均可能被利用。官方已建议升级到不受影响的版本并对 404 错误页面输出进行严格过滤以规避该风险。"
+published = "2002-12-31T00:00:00Z"
+remediation = "建议升级到 ColdFusion MX 官方发布的修复版本（6.1 及更高版本），该版本已修复缺失模板 404 错误页面未正确转义用户输入的问题，防止脚本注入。若无法立即升级，可在 Web 服务器（IIS/Apache）层面对 404 错误页面进行自定义重写，确保所有返回的错误信息对用户可输入内容进行 HTML 实体编码；同时在应用程序入口处对 URL 参数和路径进行过滤，剔除小于号、大于号等危险字符；并配置安全头（如开启 HttpOnly、Content-Security-Policy）以降低脚本注入后的利用影响。此为 2002 年旧漏洞，常年无补丁治理的场景建议直接迁移至受支持的 ColdFusion 版本。"
+score = 5
 severity = "MEDIUM"
 sources = ["exploitdb"]
-title = "Macromedia ColdFusion MX 跨站脚本漏洞"
-updated = "2026-06-16T21:59:48.550"
+title = "Macromedia ColdFusion MX 模板缺失页面跨站脚本漏洞"
+updated = "2002-12-31T00:00:00Z"
 
 [exploit]
 exp_urls = []
@@ -17,24 +17,20 @@ aliases = ["CVE-2002-1700"]
 ave_id = "AVE-2002-0656"
 
 [meta]
-collected_at = "2026-08-06T00:00:00Z"
+collected_at = "2026-08-07T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "http://online.securityfocus.com/archive/1/277487",
-    "http://www.macromedia.com/v1/Handlers/index.cfm?ID=23047",
-    "http://www.securityfocus.com/bid/5011",
-    "https://exchange.xforce.ibmcloud.com/vulnerabilities/9360",
     "https://www.exploit-db.com/exploits/21548",
     "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2002/CVE-2002-1700.md",
-    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2002/1xxx/CVE-2002-1700.json",
+    "https://github.com/CVEProject/cvelistV5/blob/e4fe257e02d6ecdcb83f2a0bd1ddf47878d0f58d/cves/2002/1xxx/CVE-2002-1700.json",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2002/CVE-2002-1700.md",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2002/CVE-2002-1700.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/4a3292363e1c82650dc766bf14277e5bdb8c78c9/CVE/data/2002/CVE-2002-1700.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/a07446c9841eff2cadbd30b5a823ea70c1834a2b/CVE/data/2002/CVE-2002-1700.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2002/CVE-2002-1700",
-    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/ee520f0614c8287baf69a7128eb5b93e879b445d/CVEs/2002/CVE-2002-1700.md",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/3080d87f73e663ce3742fcfbca9ee2ea57d7f5cc/CVEs/2002/CVE-2002-1700.md",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2002/CVE-2002-1700.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2002/CVE-2002-1700.md",
-    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2002-1700.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2002-1700.json",
 ]
