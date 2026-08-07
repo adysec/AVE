@@ -1,0 +1,41 @@
+[basic]
+description = "PostCSS 在解析 CSS 文件并生成 source map 时，若未设置 `from` 选项，其 `PreviousMap.loadFile()` 方法对 `sourceMappingURL` 的路径遍历防护会失效。此前针对 GHSA-6g55-p6wh-862q 的修复仅在 `cssFile` 存在时才拦截绝对路径与 `..` 目录遍历，但在 `from` 未设置时 `cssFile` 为空，导致攻击者可通过 CSS 注释中的 `/*# sourceMappingURL=/absolute/path/x.map */` 或 `../` 穿越路径读取任意 `.map` 文件。受影响版本涵盖 PostCSS 8.5.19 至 8.5.22，任何在不设置 `from` 选项的情况下处理不可信 CSS 的场景均可能受影响，如在线 CSS 编辑器、代码压缩或 Lint 服务、以字符串形式输入 CSS 的构建步骤等。攻击者只需提供包含恶意 sourceMappingURL 的 CSS 内容，即可触发 PostCSS 通过 `readFileSync` 读取目标路径下的 source map 文件，并将其中的 `sources`（文件系统路径）与 `sourcesContent`（源代码内容）泄露到生成的 source map 中，造成敏感路径与源码信息外泄。建议升级至 PostCSS 8.5.19 或更高版本以修复此问题。"
+published = "2026-08-03T17:16:46Z"
+remediation = "升级 PostCSS 到 8.5.19 或更高版本（执行 npm install postcss@^8.5.19 或 yarn upgrade postcss）。如暂无法立即升级，应在调用 postcss().process(css) 时始终显式设置 from 选项指向当前处理文件，或禁用 source map 功能（map: false），以阻止攻击者通过 sourceMappingURL 读取任意 .map 文件。"
+score = 6.3
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "PostCSS sourceMappingURL 路径遍历漏洞"
+updated = "2026-08-05T14:58:45Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-69153",
+    "GHSA-fxqj-rqcc-2cmp",
+]
+ave_id = "AVE-2026-1302"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/postcss/postcss/commit/7beca139e70f9075c6b19700fcb00dd8033e5da8",
+    "https://github.com/postcss/postcss/releases/tag/8.5.19",
+    "https://github.com/postcss/postcss/security/advisories/GHSA-fxqj-rqcc-2cmp",
+    "https://github.com/CVEProject/cvelistV5/blob/ff7e569387aea0062ce3b3b0a6555166b4aa491f/cves/2026/69xxx/CVE-2026-69153.json",
+    "https://github.com/cisagov/vulnrichment/blob/1ec26b4bfdf4d4994876319583b66cbf88277812/2026/69xxx/CVE-2026-69153.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/694379c8a953b4d106540076b482d281ae9c2bda/SSVC/data/2026/CVE-2026-69153.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/vex/cve/2026/CVE-2026-69153.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/8a540cf866daa91fc45d85a41dac7f793f2b4217/osv/cve/2026/UBUNTU-CVE-2026-69153.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/694379c8a953b4d106540076b482d281ae9c2bda/CVE/data/2026/CVE-2026-69153.json",
+    "https://github.com/nautobot/nautobot/blob/c833c574cc850a3e81f254e745e8e715e3f88105/changes/9354.security",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2026-69153.json",
+    "https://github.com/neuvector/vul-source/blob/e94d2524613f6577724db8c44514240e3c9e74f6/ubuntu-cve-tracker/active/CVE-2026-69153",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f5446ab1422bc50f191f3eb4d0c7a25d007c51de/CVE-2026/CVE-2026-691xx/CVE-2026-69153.json",
+]
