@@ -1,0 +1,44 @@
+[basic]
+description = "Linux 内核 GPIO 聚合器（gpio-aggregator）驱动存在竞争条件漏洞，其 `new_device_store` 和 `delete_device_store` 回调函数在访问模块全局资源（如 `gpio_aggregator_lock`）时未持有模块引用计数。当内核模块 gpio-aggregator 正在被加载或卸载时，若攻击者通过 sysfs 接口并发写入 `/sys/bus/platform/drivers/gpio-aggregator/new_device` 或 `delete_device`，可能触发模块卸载与设备注册之间的竞态。具体而言，若 ID 已从 `gpio_aggregator_idr` 分配但 `platform_device_register` 尚未完成，并发卸载可能导致设备无法正确注销，从而遗留悬空的 platform device 和 GPIO forwarder，引发链表破坏（list_del corruption）、内核 panic 或系统不稳定。该漏洞影响运行受影响版本 Linux 内核的系统，攻击者需要具备本地权限且在高权限模块卸载窗口期内触发竞态，可导致系统拒绝服务（DoS）。CVSS v3.1 评分为 4.7（MEDIUM）。"
+published = "2025-04-01T16:15:25Z"
+remediation = "建议将 Linux 内核升级至已修复该漏洞的稳定版本。对于 Ubuntu 用户，请运行 `sudo apt update && sudo apt upgrade` 更新至最新的内核补丁版本（如 USN-7511-1 涉及的版本）；Debian 用户请参考 DSA-5900-1 升级内核软件包。若无法立即升级，可通过 `modprobe -r gpio-aggregator` 卸载该模块或在内核配置中禁用 gpio-aggregator 驱动以消除风险。"
+score = 4.7
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 GPIO 聚合器驱动模块卸载竞争条件漏洞"
+updated = "2026-06-17T08:44:40Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21943"]
+ave_id = "AVE-2025-1056"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/12f65d1203507f7db3ba59930fe29a3b8eee9945",
+    "https://git.kernel.org/stable/c/56281a76b805b5ac61feb5d580139695a22f87f0",
+    "https://git.kernel.org/stable/c/807789018186cf508ceb3a1f8f02935cd195717b",
+    "https://git.kernel.org/stable/c/8fb07fb1bba91d45846ed8605c3097fe67a7d54c",
+    "https://git.kernel.org/stable/c/9334c88fc2fbc6836b307d269fcc1744c69701c0",
+    "https://git.kernel.org/stable/c/d99dc8f7ea01ee1b21306e0eda8eb18a4af80db6",
+    "https://git.kernel.org/stable/c/fd6aa1f8cbe0979eb66ac32ebc231bf0b10a2117",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21943.md",
+    "https://github.com/CVEProject/cvelistV5/blob/b35f301de874c7dec819a9a8705ce0347638fa93/cves/2025/21xxx/CVE-2025-21943.json",
+    "https://github.com/cisagov/vulnrichment/blob/e3e81a70be976a84379e90d28c2a78774f2d6094/2025/21xxx/CVE-2025-21943.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f31dd31e2f478f1e13347f1843c21f10f282a83b/SSVC/data/2025/CVE-2025-21943.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21943.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/f31dd31e2f478f1e13347f1843c21f10f282a83b/CVE/data/2025/CVE-2025-21943.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21943.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/91ece4b64c50642397da36724a41d94be4de3a9d/references/CveServices-CVE-2025-21943-2025-11-03-1327",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/91ece4b64c50642397da36724a41d94be4de3a9d/references/CveServices-CVE-2025-21943-2025-11-03-1337",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21943.json",
+]
