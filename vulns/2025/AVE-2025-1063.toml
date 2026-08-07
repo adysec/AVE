@@ -1,0 +1,42 @@
+[basic]
+description = "Linux 内核 MHI 总线驱动程序的 PCI 通用子模块存在不当锁定漏洞（CWE-667）。当设备在恢复操作期间不可用时，恢复工作程序会调用 pci_reset_function() 重置 PCI 设备，而该函数内部会先获取 device_lock() 再执行重置。由于恢复工作程序是异步调度的，若 device_lock() 已被持有者占用（例如 PM shutdown() 或 suspend() 回调期间驱动核心持有该锁），恢复工作程序将因等待锁而被阻塞，从而导致系统死锁。该漏洞影响运行受影响 Linux 内核版本的本地系统，低权限本地攻击者可通过触发设备故障并在系统关机或挂起期间利用该竞争条件导致系统死锁，进而造成拒绝服务。CVSS 评分 5.5，危害等级为中危。Linux 内核社区已通过将 pci_reset_function() 替换为 pci_try_reset_function() 来修复此问题，该函数在无法获取锁时返回 -EAGAIN 而非阻塞等待。"
+published = "2025-04-01T16:15:26Z"
+remediation = "建议将 Linux 内核升级至已修复该漏洞的最新稳定版本。Ubuntu 用户可通过执行 `sudo apt update && sudo apt upgrade` 安装 USN-7511-1 或 USN-7605-1 更新；Debian 用户请升级至 DSA-5900-1 补丁版本。对于自定义内核，需将 MHI 驱动 recovery_work 中的 `pci_reset_function()` 替换为 `pci_try_reset_function()` 以消除死锁风险。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 MHI PCI 通用驱动 死锁拒绝服务漏洞"
+updated = "2026-06-17T08:44:41Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21951"]
+ave_id = "AVE-2025-1063"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1f9eb7078bc6b5fb5cbfbcb37c4bc01685332b95",
+    "https://git.kernel.org/stable/c/62505657475c245c9cd46e42ac01026d1e61f027",
+    "https://git.kernel.org/stable/c/7746f3bb8917fccb4571a576f3837d80fc513054",
+    "https://git.kernel.org/stable/c/7a5ffadd54fe2662f5c99cdccf30144d060376f7",
+    "https://git.kernel.org/stable/c/985d3cf56d8745ca637deee273929e01df449f85",
+    "https://git.kernel.org/stable/c/a321d163de3d8aa38a6449ab2becf4b1581aed96",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21951.md",
+    "https://github.com/CVEProject/cvelistV5/blob/25d2835389cb063fdfa4c6ce4f2eac179227ec45/cves/2025/21xxx/CVE-2025-21951.json",
+    "https://github.com/cisagov/vulnrichment/blob/120beb0c7e841b5baa49e42f909e2b46b302b304/2025/21xxx/CVE-2025-21951.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d8a3a899d1eefc2c1649de96e2290c55d12029cb/SSVC/data/2025/CVE-2025-21951.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d8a3a899d1eefc2c1649de96e2290c55d12029cb/CVE/data/2025/CVE-2025-21951.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21951.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21951.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/91ece4b64c50642397da36724a41d94be4de3a9d/references/CveServices-CVE-2025-21951-2025-11-03-1327",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21951.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21951",
+]
