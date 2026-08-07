@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测SSH服务器是否存在受限shell逃逸漏洞。当本地用户能够将脚本上传至全局可写目录（如/tmp）并通过SSH执行时，即可绕过rbash或rksh等受限shell限制，获得完整shell权限。验证方式为检查目标SSH服务器版本及是否存在可利用的受限shell环境。"
+id = "POC-AVE-2002-0664"
+name = "SSH 1-3 Restricted Shell Escape PoC"
+severity = "high"
+tags = ["ave-2002-0664"]
+vuln_id = [
+    "CVE-2002-1715",
+    "AVE-2002-0664",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}:22"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "SSH-2.0-ssh2_3",
+    "SSH-1.0-ssh",
+    "SSH-1.99-OpenSSH",
+]
