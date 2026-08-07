@@ -1,28 +1,48 @@
 [info]
-author = "AVE"
-description = "检测 Microsys CyberPatrol 注册信息泄露漏洞。CyberPatrol 4.0 客户端向 cybercentral.microsys.com 以 HTTP POST 提交注册信息时，信用卡号仅用简单替换密码编码，其余字段（邮箱、姓名、地址、电话等）均为明文传输，攻击者可嗅探网络流量获取敏感信息。"
+author = "ave"
+description = "验证 Microsys CyberPatrol 注册信息是否以弱编码或明文在网络中传输，检测信用卡号等敏感数据的保护机制"
 id = "POC-AVE-2000-0828"
-name = "CVE-2000-1173 PoC"
+name = "Microsys CyberPatrol Insecure Registration PoC"
 severity = "medium"
-tags = ["cve-2000-1173"]
+tags = ["ave-2000-0828"]
 vuln_id = [
     "CVE-2000-1173",
     "AVE-2000-0828",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/register.cgi"
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/register"
 protocol = "http"
+
+[poc.requests.body]
+content = "CARD=4111111111111111&EMAIL=test@test.com&EXP=1225&NAME=Test+User&ADDR1=123+Main+St&CITY=Anytown&PHONE=5551234"
+type = "form"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+User-Agent = "CyberPatROL/4.0"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
 words = [
-    "CyberPatrol",
-    "registration",
+    "z",
+    "{",
+    "x",
+    "y",
+]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "EMAIL",
+    "CARD",
+    "NAME",
 ]
