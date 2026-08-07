@@ -1,0 +1,44 @@
+[basic]
+description = "Linux 内核 mm/migrate_device 子系统中存在释放后使用漏洞。当设备内存迁移操作在 migrate_device_finalize() 函数中执行时，无论迁移成功还是失败，目标 folio 的 memcg_data 可能已被清零或未正确设置，但代码仍错误地调用 folio_putback_lru() 将其添加至 LRU 链表，导致内存控制组代码在处理该 folio 时触发无效引用，可能引发内核崩溃或权限提升。该漏洞影响支持异构内存管理（HMM）及设备私有内存迁移的 Linux 内核版本，攻击者需在目标系统具有本地低权限访问权限，且无需用户交互即可通过触发特定内存迁移路径（如 hmm-tests 中的设备私有内存迁移场景）利用此漏洞，造成拒绝服务或潜在的本地权限提升风险。"
+published = "2025-03-12T10:15:19Z"
+remediation = "升级 Linux 内核至各发行版最新安全版本：Red Hat Enterprise Linux 9 安装 kernel-5.14.0-427.18.1.el9_5 或更高版本（RHSA-2025:20518）；Ubuntu 22.04/24.04 安装 5.15.0-125-generic 或 6.8.0-35-generic 及更高版本；SUSE Linux Enterprise 15 SP6/SP7 安装 5.14.0-427.18.1 或更高版本（SUSE-SU-2025:01967-1）。重启系统使新内核生效。若无法立即重启，可通过 cgroup v2 限制设备内存迁移的触发频率作为临时缓解。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 设备内存迁移 释放后使用漏洞"
+updated = "2026-07-14T13:17:25Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21861"]
+ave_id = "AVE-2025-1017"
+
+[meta]
+collected_at = "2026-08-07T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/069dd21ea8262204f94737878389c2815a054a9e",
+    "https://git.kernel.org/stable/c/20fb6fc51863fbff7868de8b5f6d249d2094df1f",
+    "https://git.kernel.org/stable/c/3f9240d59e9a95d19f06120bfd1d0e681c6c0ac7",
+    "https://git.kernel.org/stable/c/41cddf83d8b00f29fd105e7a0777366edc69a5cf",
+    "https://git.kernel.org/stable/c/4f52f7c50f5b6f5eeb06823e21fe546d90f9c595",
+    "https://git.kernel.org/stable/c/61fa824e304ed162fe965f64999068e6fcff2059",
+    "https://git.kernel.org/stable/c/64397b0cb7c09e3ef3f9f5c7c17299c4eebd3875",
+    "https://git.kernel.org/stable/c/78f579cb7d825134e071a1714d8d0c4fd0ffe459",
+    "https://cert-portal.siemens.com/productcert/html/ssa-019113.html",
+    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2025/CVE-2025-21861.md",
+    "https://github.com/0xMarcio/cve/blob/8bc21e001936acb7383ce82840b519a1f9fea751/2025/CVE-2025-21861.md",
+    "https://github.com/CVEProject/cvelistV5/blob/9ee7ff0847dec8782cb2290ed23de86aa203a362/cves/2025/21xxx/CVE-2025-21861.json",
+    "https://github.com/cisagov/vulnrichment/blob/a6813569605c0b32bd9b1b6284ff40fb89f816e7/2025/21xxx/CVE-2025-21861.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eda6f9f68e3be16431e4e13ed5bafbf65426f7ea/SSVC/data/2025/CVE-2025-21861.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21861.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/eda6f9f68e3be16431e4e13ed5bafbf65426f7ea/CVE/data/2025/CVE-2025-21861.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21861.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21861.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21861",
+]
