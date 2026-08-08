@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "检测目标是否存在 Kaseya VSA 未认证凭据泄露漏洞。通过访问 /dl.asp 页面验证是否返回包含 'Download Agent' 标题及 mkDefault.asp?id= 参数，该页面可泄露 Agent_Guid 和 AgentPassword，进而获取 sessionId Cookie 绕过认证。"
+id = "POC-AVE-2021-1408"
+name = "Kaseya VSA < 9.5.7 Credential Disclosure via Windows Agent PoC"
+severity = "critical"
+tags = ["ave-2021-1408"]
+vuln_id = [
+    "CVE-2021-30116",
+    "AVE-2021-1408",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/dl.asp"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "<title>Download Agent</title>",
+    "mkDefault.asp?id=",
+]
