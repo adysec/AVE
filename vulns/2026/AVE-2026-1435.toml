@@ -1,0 +1,76 @@
+[basic]
+description = '''
+## 1. Summary
+
+The S3 redirect callback strips `X-Amz-Security-Token` when a redirect changes scheme or host, but it does not strip IBM IAM bearer authorization or customer-provided encryption keys. Two independently validated paths remain:
+
+- a same-host HTTPS-to-HTTP redirect preserves `Authorization: Bearer ...` and exposes a reusable IBM IAM token to the plaintext network path;
+- a cross-origin redirect preserves SSE-C and copy-source SSE-C key headers.
+
+The High rating is driven by the reusable IBM IAM bearer token. The SSE-C cross-origin disclosure is a secondary confidentiality issue. The meaningful threat is a trusted endpoint, gateway, or accelerator that emits an unsafe redirect, followed by an adjacent/on-path observer; describing the originally configured endpoint itself as the attacker would be weak because that endpoint already receives the request secrets.
+
+## 2. Affected Assets & Attack Surface
+
+- S3 redirect policy: `backend/s3/s3.go:1345-1379`
+- IBM IAM signer: `backend/s3/ibm_signer.go:28-40`
+- SSE-C key preparation: `backend/s3/s3.go:1821-1837`
+- Affected operations: requests carrying IBM IAM authorization, SSE-C keys, or copy-source SSE-C keys
+- Confirmed affected version: `<= v1.74.0-240-ga0c09f138`
+
+## 3. Technical Root Cause Analysis
+
+`s3CheckRedirect` applies a one-header denylist:
+
+```go
+if s3RedirectCrossesHost(req, via) {
+    req.Header.Del(\"X-Amz-Security-Token\")
+}
+```
+
+Go removes `Authorization` on some hostname changes, but preserves it for a same-host redirect and does not treat a scheme downgrade as sufficient reason to remove it. Go also has no generic knowledge that the SSE-C headers contain raw encryption keys. The rclone callback recognizes the STS token but not these additional origin-bound secrets.
+
+## 4. Proof-of-Concept & Evidence
+
+Using the actual redirect callback:
+
+1. An HTTPS endpoint redirected to HTTP on the same hostname.
+2. The plaintext destination received the planted IBM bearer token and SSE-C headers.
+3. A separate redirect to an unrelated hostname caused Go to remove `Authorization`, but the destination still received both SSE-C key headers.
+4. In both cases, rclone removed the planted STS token, proving that the S3-specific callback executed while omitting the other secret classes.
+
+The related [GHSA-gx4c-2hqx-cw2r](https://github.com/rclone/rclone/security/advisories/GHSA-gx4c-2hqx-cw2r) covers the STS downgrade path and confirms that rclone treats scheme changes as a credential boundary. It does not cover the IBM bearer or SSE-C variants retained here.
+
+## 5. Impact Assessment
+
+A captured IBM bearer token can authorize reads, writes, and deletes within its IAM scope. A disclosed SSE-C key can expose corresponding ciphertext available to the recipient; copy-source keys can expose protected source objects. The exact impact is limited by token policy and the attacker's access to encrypted objects.
+
+## 6. Remediation Guidance
+
+- Reject every HTTPS-to-HTTP redirect before replay.
+- Do not automatically follow secret-bearing cross-origin redirects.
+- On any scheme, host, or effective-port change, remove all authorization, cookies, session tokens, SSE-C fields, copy-source SSE-C fields, and provider-specific credentials.
+- Where redirects are required, allowlist exact destinations and reconstruct/re-sign a new request.
+- Add redirect tests for every secret header class and for scheme, hostname, subdomain, and port changes.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "rclone: S3 Redirect Sanitization Omits IBM IAM Bearer Tokens and SSE-C Keys"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-8mxv-9xhp-86h4"]
+ave_id = "AVE-2026-1435"
+
+[meta]
+collected_at = "2026-08-08T11:13:08Z"
+status = "completed"
+
+[references]
+urls = []
