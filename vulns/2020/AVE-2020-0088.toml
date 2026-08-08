@@ -1,11 +1,11 @@
 [basic]
-description = "SolarWinds Orion API 存在身份认证绕过漏洞（CWE-288/CWE-306），远程未经身份认证的攻击者可直接绕过认证机制执行任意 API 命令，进而实现远程代码执行，完全控制目标 SolarWinds 实例。该漏洞影响 SolarWinds Orion Platform 2019.4 HF 5、2020.2（无补丁版本）及 2020.2 HF 1 版本，攻击无需任何权限与用户交互，CVSS 评分 9.8，危害等级严重。攻击者只需向目标 API 接口发送特制 HTTP 请求即可触发漏洞，已被 CISA 列入已知被利用漏洞目录（KEV），建议立即升级至修复版本。"
+description = "SolarWinds Orion API 存在认证绕过漏洞（CWE-288/CWE-306），攻击者无需身份验证即可绕过认证机制直接执行 API 命令，该漏洞是 SUNBURST 供应链攻击链的核心组成部分。受影响版本包括 SolarWinds Orion Platform 2019.4 HF 5、2020.2 未安装 hotfix 的版本以及 2020.2 HF 1，涵盖网络性能监控器（NPM）、网络配置管理器（NCM）、服务器与应用监控器（SAM）等多个产品模块。攻击者只需通过网络远程访问目标系统即可利用此漏洞，无需认证凭据或用户交互（CVSS 3.1 向量 AV:N/AC:L/PR:N/UI:N），通过构造特制的 API 请求直接调用 Orion API 执行任意命令，成功利用后可完全控制 SolarWinds 实例，进而窃取敏感数据、横向渗透内网，并可部署 TEARDROP、RAINDROP 等后续恶意载荷。该漏洞已于 2020 年 12 月被确认在野外遭到利用，CISA 于 2021 年 11 月将其列入已知被利用漏洞目录（KEV），SolarWinds 建议受影响用户升级至 2020.2.5 版本以彻底修复。"
 published = "2020-12-29T22:15:12Z"
-remediation = "立即将 SolarWinds Orion Platform 升级至 2020.2.5 版本（2019.4 分支用户升级至 2019.4.2），下载地址为 customerportal.solarwinds.com。如无法立即升级，可临时部署 SupernovaMitigation 脚本（下载地址：https://downloads.solarwinds.com/solarwinds/Support/SupernovaMitigation.zip）作为缓解措施。同时将 Orion Platform 部署于防火墙之后，限制其互联网出站访问，仅开放必要端口和连接。"
+remediation = "建议立即将受影响的 SolarWinds Orion Platform 升级至 2020.2.5 版本（2019.4 HF 5 用户可升级至 2019.4.2），升级包可从 customerportal.solarwinds.com 下载。如暂无法升级，可下载 SolarWinds 提供的 SUPERNOVA 临时缓解脚本 (https://downloads.solarwinds.com/solarwinds/Support/SupernovaMitigation.zip) 部署至所有 Orion Web 服务器。同时应将 Orion 服务器置于防火墙隔离区域，禁用对外互联网访问，仅允许必需的内部端口通信，并监控 Orion API 异常调用行为。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
-title = "SolarWinds Orion API 远程代码执行漏洞"
+sources = ["nuclei"]
+title = "SolarWinds Orion API 身份验证绕过漏洞"
 updated = "2026-06-17T02:47:26Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2020-10148"]
 ave_id = "AVE-2020-0088"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,15 +27,15 @@ urls = [
     "https://www.kb.cert.org/vuls/id/843464",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2020-10148",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2020/CVE-2020-10148.yaml",
-    "https://github.com/trickest/cve/blob/7ade3449b58b8e2c679712dc3af64bbd8e638364/2020/CVE-2020-10148.md",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2020/CVE-2020-10148.md",
     "https://github.com/al0ne/suricata-rules/blob/ce4569bfe08b6884c9dd29f4bb09b712aeff467c/CVE/CVE-2020-10148/CVE-2020-10148",
     "https://github.com/al0ne/suricata-rules/blob/ce4569bfe08b6884c9dd29f4bb09b712aeff467c/CVE/CVE-2020-10148/README.md",
     "https://github.com/MrWQ/vulnerability-paper/blob/fcbdb421b62aef6ccac59a1887d94687f4faf9d6/bugs/SolarWinds_Orion_API_远程代码执行漏洞（CVE-2020-10148）.md",
     "https://github.com/gobysec/GobyVuls/blob/a5de8e3be10d51a94e0977ecd8086c176251229f/SolarWinds/CVE-2020-10148/README.md",
     "https://github.com/sepehrdaddev/zap-scripts/blob/2b63b02ca79cc7f0023cdbab72c5c6c774354b07/active/CVE-2020-10148.js",
     "https://github.com/sudohyak/suricata-rules/blob/33928d291812926c07379e895a2075fbfc84b459/CVE-2020-10148/CVE-2020-10148",
-    "https://github.com/sari3l/Poc-Monitor/blob/5f7b2444b1b2b1b019b434748bbb88035c2136a4/2020/CVE-2020-10148.json",
-    "https://github.com/rix4uni/cvemapping/blob/23441ec855d45e03157b693d7c6d0ff023fe3af5/2020/CVE-2020-10148/CVE-2020-10148.py",
+    "https://github.com/sari3l/Poc-Monitor/blob/9fb698dfcb3f2814922f9029c645ee84da7f6945/2020/CVE-2020-10148.json",
+    "https://github.com/rix4uni/cvemapping/blob/cb811bd91763b78b74dd83fd709962c2f5fe4983/2020/CVE-2020-10148/CVE-2020-10148.py",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2020/CVE-2020-10148.md",
     "https://github.com/B1anda0/CVE-2020-10148",
     "https://github.com/rdoix/CVE-2020-10148-Solarwinds-Orion",
