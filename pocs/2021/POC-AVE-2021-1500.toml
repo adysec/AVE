@@ -1,0 +1,25 @@
+[info]
+author = "ave"
+description = "检测 Google Chrome V8 引擎类型混淆漏洞（CVE-2021-30551）。V8 在处理 HTMLEmbedElement 属性拦截器时存在逻辑缺陷，当 JavaScript 对象正在执行属性赋值操作期间，拦截器可能触发同步子帧加载并执行用户 JavaScript 代码，导致对象原型链损坏。攻击者可构造特制 HTML 页面利用 JIT 编译器的类型推断机制将普通 JavaScript 对象误当作数组处理，实现越界读写内存。该 PoC 提供包含 exploit 代码的 HTML 页面，需在 Chrome 91.0.4472.101 之前的版本中打开验证。"
+id = "POC-AVE-2021-1500"
+name = "Google Chrome V8 Type Confusion PoC"
+severity = "high"
+tags = ["ave-2021-1500"]
+vuln_id = [
+    "CVE-2021-30551",
+    "AVE-2021-1500",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["setPropertyViaEmbed"]
