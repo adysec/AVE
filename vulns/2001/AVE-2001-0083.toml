@@ -1,12 +1,12 @@
 [basic]
-description = 'Carey Internet Services Commerce.cgi 2.0.1 存在目录遍历漏洞。攻击者无需身份认证，通过向 commerce.cgi 发送包含 ".."（点号穿越）序列的 page 参数，即可绕过目录限制读取服务器上的任意文件。该漏洞影响运行 commerce.cgi 2.0.1 的 Web 服务器，攻击条件宽松，仅需构造恶意 HTTP 请求即可触发。CVSS 评分为 5.0，危害等级为中等。'
-published = "2001-06-02T04:00:00Z"
-remediation = "建议立即升级 commerce.cgi 至 2.0.2 或更高版本（修复了目录遍历漏洞）。若无法升级，需在 CGI 代码中对 page 参数实施严格输入验证：过滤 ../ 等路径遍历字符，限制访问仅限于 Web 根目录下的合法文件。同时配置 Web 服务器（如 Apache）启用 mod_security 或类似 WAF 规则拦截包含 .. 的请求，并将 CGI 脚本运行用户权限降至最低，禁止访问敏感系统目录。"
+description = 'carey internets services 开发的 commerce.cgi 脚本 2.0.1 版本存在目录遍历（Directory Traversal）漏洞。由于该 CGI 脚本在处理用户提交的查询参数时，未对包含路径分隔符与"../"之类的特殊字符进行充分的过滤与规范化处理，远程攻击者无需身份认证，仅需通过 Web 请求在 URL 参数中构造包含多个"../"的相对路径，即可突破脚本所在目录的访问限制，从而越权读取目标服务器上任意位置的敏感文件，例如系统配置文件、密码文件或应用源码等。此类漏洞通常配合同路径下的其他 CGI 功能或脚本（如该产品套件中的其他脚本）进一步被利用，扩大攻击影响面。该漏洞影响所有部署了 carey.cgi 2.0.1 版本的网站服务器，CVSS 综合评分较低，危害级别属于中低危，攻击者获取到的任意文件读取能力在特定环境下可进一步演变为信息泄露甚至代码执行，需通过升级到已修复该问题的版本或对参数输入进行严格过滤来加以防范。'
+published = "2001-06-02T00:00:00Z"
+remediation = '立即停用并升级 commerce.cgi 至官方最新版本（若厂商已停止维护，建议停用该脚本并迁移至现代替代方案）。若无法立即升级，应在 Web 服务器层面对该脚本目录配置访问控制，仅允许受信任来源访问，并通过反向代理对其请求的路径参数进行过滤，阻断包含 "../"、"\.." 及空字节编码（如 %2e%2e%2f）的输入；同时升级 CGI 脚本网关（mod_cgi 等）并加固防火墙策略，防止任意目录文件被读取。'
 score = 5
 severity = "MEDIUM"
-sources = ["cve"]
-title = "Carey Internet Services commerce.cgi 目录遍历漏洞"
-updated = "2026-06-16T21:53:53Z"
+sources = ["epss"]
+title = "Carey Internet Services Commerce.cgi 2.0.1 目录遍历漏洞"
+updated = "2001-06-02T00:00:00Z"
 
 [exploit]
 exp_urls = []
@@ -17,22 +17,20 @@ aliases = ["CVE-2001-0210"]
 ave_id = "AVE-2001-0083"
 
 [meta]
-collected_at = "2026-08-06T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "http://www.securityfocus.com/archive/1/162259",
-    "http://www.securityfocus.com/bid/2361",
     "https://www.exploit-db.com/exploits/20623",
-    "https://github.com/CVEProject/cvelistV5/blob/7a64d14d4e99e9e15688962dcc640f9e44c67eb2/cves/2001/0xxx/CVE-2001-0210.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/d547588420a9a1d22d6d9d3bde1463155fe33c31/CVE/data/2001/CVE-2001-0210.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0421602eb9f824909ec57dc4d45f5f29ad208960/cves/2001/0xxx/CVE-2001-0210.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e3a952725679170163af143c035b04e3631dbf4a/CVE/data/2001/CVE-2001-0210.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0210",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0210.json",
-    "https://github.com/olbat/nvdcve/blob/336c506d8c2ab5b6ec8e55edc2021c49b3be8e2c/nvdcve/CVE-2001-0210.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-02xx/CVE-2001-0210.json",
-    "https://github.com/opencve/opencve-kb/blob/b290a4630bf00bc86efda07bc07c03b933274d3f/2001/CVE-2001-0210.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/8aab22d02785f79271894073fc1a1d558c4aae6b/2001/0xxx/CVE-2001-0210.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0210.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/ed6afb6b9d568bf2517b58310158382f003b6ae6/CVE-2001/CVE-2001-02xx/CVE-2001-0210.json",
+    "https://github.com/opencve/opencve-kb/blob/a4c7bc7808a0d273e4769fd820598c9a6e959ca7/2001/CVE-2001-0210.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/52dd33919d034b1e65c4c9c0bf6fc21ba3f5f175/2001/0xxx/CVE-2001-0210.md",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0210.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0210.json",
 ]
