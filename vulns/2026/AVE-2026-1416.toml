@@ -1,0 +1,41 @@
+[basic]
+description = "rclone 在 1.75.0 版本之前，其共享 HTTP CONNECT 辅助函数（lib/proxy/http.go）在解析代理服务器的 CONNECT 响应时，使用无限制缓冲读取器调用 http.ReadResponse，未对响应头大小设置上限。用户必须配置并使用 HTTP 代理连接 rclone，此时恶意或已被入侵的代理服务器，或控制明文 HTTP 代理链路的主动在途攻击者，可发送超大 HTTP CONNECT 响应头（如包含 2 MiB 数据的 X-Fill 头），导致 rclone 进程内存持续增长直至耗尽崩溃。该漏洞属于资源耗尽型拒绝服务，影响所有通过 HTTP 代理连接 FTP/SFTP 远程的 rclone 实例。由于 SFTP 在 SSH 服务器身份验证之前即到达该解析器，目标主机密钥验证无法限制恶意代理；而 HTTPS 代理连接会在解析响应前先对代理进行身份验证，因此普通在途攻击者受到限制。rclone 已在 1.75.0 版本中修复此问题。"
+published = "2026-08-05T21:16:58Z"
+remediation = "立即将 rclone 升级到 1.75.0 或更高版本，该版本对 HTTP CONNECT 响应头大小施加了限制并增加了握手超时。如暂无法升级，可通过配置不使用 HTTP/SOCKS 代理，或改用 HTTPS 代理并启用代理认证，以阻断中间人注入超大响应头的攻击路径。同时限制并发连接数并监控 rclone 进程内存使用，发现异常增长及时重启服务。"
+score = 5.9
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "rclone HTTP CONNECT 响应头无限制解析内存耗尽拒绝服务漏洞"
+updated = "2026-08-06T14:16:42Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-71310",
+    "GHSA-xhf4-832v-7xcr",
+]
+ave_id = "AVE-2026-1416"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/rclone/rclone/commit/21d8cd3b92cd81d987f485051d454ea675d91a2b",
+    "https://github.com/rclone/rclone/releases/tag/v1.75.0",
+    "https://github.com/rclone/rclone/security/advisories/GHSA-xhf4-832v-7xcr",
+    "https://github.com/CVEProject/cvelistV5/blob/4fa082fe458d8fa95596028e75b13159b2e52c11/cves/2026/71xxx/CVE-2026-71310.json",
+    "https://github.com/cisagov/vulnrichment/blob/53f84311e318e04e4e0c2f4de1a727bb1d59e897/2026/71xxx/CVE-2026-71310.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/205c8e3e39f36df585e48ab32df04c8b50234719/SSVC/data/2026/CVE-2026-71310.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/205c8e3e39f36df585e48ab32df04c8b50234719/CVE/data/2026/CVE-2026-71310.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/493ad886fae47ae251719ddf025a91da31944e75/vex/cve/2026/CVE-2026-71310.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/493ad886fae47ae251719ddf025a91da31944e75/osv/cve/2026/UBUNTU-CVE-2026-71310.json",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2026-71310.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/38035ead458ebef55cc9f348372e0f29df3ef52e/CVE-2026/CVE-2026-713xx/CVE-2026-71310.json",
+    "https://github.com/neuvector/vul-source/blob/6f5e0003ac0597749dcdac9f62aa9677ac851d0d/ubuntu-cve-tracker/active/CVE-2026-71310",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/go/github.com/rclone/rclone/CVE-2026-71310.yml",
+]
