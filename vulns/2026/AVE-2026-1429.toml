@@ -1,0 +1,156 @@
+[basic]
+description = '''
+**Target:** gitpython-developers/GitPython
+**Tested:** HEAD `07e80555` (2026-07-25), latest release 3.1.55, `git version 2.50.1`
+**Reported instances:** 2 exploitable, from a sweep of 14 unguarded call sites
+
+## Summary
+
+GitPython blocks dangerous git options through `Git.check_unsafe_options()`, gated per method by an `allow_unsafe_options` parameter. That guard is applied **per call site**, so any API that forwards `**kwargs` into a git command without calling it passes caller-controlled options straight to git.
+
+A mechanical sweep of every method that forwards `**kwargs` into a `.git.<command>(...)` call found **14 sites with no guard**. Two reach a git option that takes a filesystem path:
+
+| # | Call site | git option | Impact |
+|---|---|---|---|
+| 1 | `IndexFile.checkout()` → `git checkout-index` | `--prefix=<path>` | arbitrary file **overwrite** with repository-controlled content |
+| 2 | `TagReference.create()` → `git tag` | `-F <file>` / `--file=<file>` | arbitrary file **read**, returned in-band |
+
+This is the same defect class already fixed in `Commit.count()` (GHSA-p538-c434-8v24), `Repo.archive()` and `Git.ls_remote()` (GHSA-956x-8gvw-wg5v). Both instances below are still present at HEAD.
+
+---
+
+## Instance 1 — `IndexFile.checkout()`: arbitrary file overwrite
+
+`git/index/base.py:1210` accepts `**kwargs` and forwards them with no guard:
+
+```python
+def checkout(self, paths=None, force=False, fprogress=lambda *args: None, **kwargs):
+    ...
+    proc = self.repo.git.checkout_index(*args, **kwargs)   # line 1331
+    ...
+    proc = self.repo.git.checkout_index(args, **kwargs)    # line 1349
+```
+
+There is no `allow_unsafe_options` parameter and no `check_unsafe_options()` call in the method.
+
+`git checkout-index` accepts `--prefix=<string>`, prepended to every output path. It is not confined to the working tree, so an absolute prefix writes tracked file contents anywhere the process can write, and `-f` overwrites what is already there.
+
+### Reproduction
+
+```python
+from git import Repo
+Repo(\"/path/to/repo\").index.checkout(prefix=\"/tmp/target_dir/\", a=True, f=True)
+```
+
+Observed (`poc/poc_checkout_index.py`) — no exception raised, files land outside the repository:
+
+```
+[ALLOWED] no UnsafeOptionError raised
+files written outside the repo: ['f.txt']
+  f.txt: 'hi\n'
+```
+
+Overwrite of a pre-existing file (`poc/poc_ci_overwrite.py`) — the victim file held `ORIGINAL-DO-NOT-CLOBBER\n` before the call:
+
+```
+[ALLOWED] no exception
+victim content now: 'hi\n'
+OVERWRITTEN: True
+```
+
+### Why this rates High
+
+Both halves of the write are attacker-influenced:
+
+- **Destination** — the `prefix` kwarg.
+- **Content** — the bytes written are repository blobs, so anyone who can land a file in the repository (a pull-request branch, a mirrored or untrusted repository, an agent-cloned repository) controls exactly what is written.
+
+Commit a file named `authorized_keys`, `.bashrc`, `config` or `post-checkout`, choose the matching prefix (`~/.ssh/`, `~/`, `.git/hooks/`), and the write becomes code execution as the service account.
+
+For comparison within this project: GHSA-fjr4-x663-mwxc (arbitrary file overwrite via `git diff --output`) is rated High, and GHSA-p538-c434-8v24 (arbitrary file *truncation* via `git rev-list --output`) is rated Medium. `--prefix` supplies full content control, so it sits at or above the former.
+
+---
+
+## Instance 2 — `TagReference.create()`: arbitrary file read
+
+`git/refs/tag.py:88` forwards `**kwargs` into `git tag` with no guard, and the signature advertises the passthrough:
+
+```python
+def create(cls, repo, path, reference=\"HEAD\", logmsg=None, force=False, **kwargs):
+    \"\"\"...
+    :param kwargs:
+        Additional keyword arguments to be passed to :manpage:`git-tag(1)`.
+    \"\"\"
+```
+
+`git tag` accepts `-F <file>` / `--file=<file>`, which reads the tag message from an arbitrary path. The annotated tag object stores that content and GitPython returns it to the caller via `TagReference.tag.message`, so the file contents come back in-band.
+
+### Reproduction
+
+```python
+from git import Repo
+from git.refs.tag import TagReference
+
+t = TagReference.create(Repo(\"/path/to/repo\"), \"x\", force=True, a=True, F=\"/etc/passwd\")
+print(t.tag.message)
+```
+
+Observed (`poc/poc_tag_F.py`), reading a canary file outside the repository:
+
+```
+[ALLOWED] no UnsafeOptionError raised
+>>> tag message recovered from arbitrary path: 'TAG-READ-CANARY-98765\nsecond-line-secret'
+```
+
+Impact is a read at the privileges of the process. I am not claiming code execution for this instance. The signing options (`-s`, `-u`/`--local-user`) do invoke gpg from the same unguarded kwargs, but I did not develop that into command execution and make no claim about it.
+
+---
+
+## Sweep results — the other 12 sites
+
+Reported so the fix can be scoped once rather than per report. `poc/sweep.py` reproduces this list.
+
+| Call site | git command | Assessment |
+|---|---|---|
+| `IndexFile.from_tree()` | `read-tree` | `--index-output=<path>` looked reachable but is **neutralised**: GitPython appends its own `--index-output` after the caller's kwargs and git honours the last occurrence. Verified — victim file unchanged (`poc/poc_readtree.py`) |
+| `IndexFile.remove()` | `rm` | `--pathspec-from-file` only reads a pathspec; no write or disclosure primitive found |
+| `IndexFile.move()` | `mv` | same |
+| `HEAD.reset()` | `reset` | same |
+| `HEAD.checkout()` | `checkout` | same |
+| `Head.delete()`, `RemoteReference.delete()` | `branch` | no path-taking option found |
+| `Repo.merge_base()` | `merge-base` | no path-taking option found |
+| `Repo._get_untracked_files()` | `status` | no path-taking option found |
+| `Remote.set_url()`, `Remote.create()`, `Remote.update()` | `remote` | URL handling already addressed by GHSA-94p4-4cq8-9g67 |
+
+## Suggested remediation
+
+**Immediate:** add `allow_unsafe_options: bool = False` to both methods and gate `Git._option_candidates(args, kwargs)` against new lists — `unsafe_git_checkout_index_options = [\"--prefix\"]` (consider `--temp`) and `unsafe_git_tag_options = [\"--file\", \"-F\"]` (consider `-s`, `-u`/`--local-user`, `--cleanup`) — matching the pattern used in `Repo.archive()` and `Commit.count()`.
+
+**Structural:** this defect has now been fixed four times in four places (`Repo.archive()`, `Git.ls_remote()`, `Commit.count()`, and the two here), because the guard is opt-in per method: every new `**kwargs`-forwarding API starts unguarded and stays that way until someone reports it. Enforcing the check centrally in `Git._call_process()` — each git invocation consults a per-command unsafe-option table unless the caller opts out — would make new call sites safe by default rather than by review, and would close the remaining sites in the table above at the same time.
+
+## Disclosure
+
+Reported privately via GitHub private vulnerability reporting.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "GitPython: Unguarded git option forwarding in IndexFile.checkout() and TagReference.create() enables arbitrary file overwrite and arbitrary file read"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-3f7w-8rr8-f37f"]
+ave_id = "AVE-2026-1429"
+
+[meta]
+collected_at = "2026-08-08T10:00:30Z"
+status = "completed"
+
+[references]
+urls = []
