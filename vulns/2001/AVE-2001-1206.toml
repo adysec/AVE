@@ -1,11 +1,11 @@
 [basic]
-description = "标签之间。<value>Solaris 8 操作系统中的 pam_ldap 认证模块存在严重安全漏洞，远程攻击者可通过提供空密码绕过系统身份认证机制。该漏洞影响使用 LDAP 目录服务的 Solaris 8 系统，攻击者无需任何凭据即可获取未授权访问权限，从而进一步危及系统的机密性、完整性和可用性。CVSS 评分达到满分 10.0，危害等级为严重。攻击者仅需通过网络向目标系统的登录认证服务发送空密码即可利用此漏洞，实现无认证登录并获得系统权限。"
+description = "Solaris 8 系统的 pam_ldap 认证模块存在安全绕过漏洞，攻击者可在远程无需身份认证的情况下，通过发送空密码（NULL password）绕过 LDAP 身份验证机制，直接以任意用户身份登录系统。该漏洞影响 Solaris 8 操作系统上使用 pam_ldap 模块进行 LDAP 集中认证的配置，攻击条件要求目标系统启用并配置了 pam_ldap 认证模块且允许空密码通过认证。利用方式简单，攻击者仅需在登录时提交空密码字段即可成功绕过身份验证，获得未授权访问权限，可能导致敏感数据泄露、系统被完全控制等严重后果，CVSS 评分 10.0，危害等级极为严重。"
 published = "2001-05-03T04:00:00Z"
-remediation = "建议立即安装 Sun Microsystems 发布的 Solaris 8 安全补丁 111308-01 或更高版本修复版本（可通过 `patchadd` 命令安装）。如暂时无法打补丁，可编辑 `/etc/pam.conf` 配置文件，在 pam_ldap 模块行添加 `use_first_pass` 参数强制要求密码输入，或临时禁用 pam_ldap 认证改用本地账户认证作为缓解措施。"
+remediation = "安装 Sun Security Bulletin #50234 发布的补丁 108528-01（适用于 Solaris 8 SPARC 及 x86 平台），该补丁修复 pam_ldap 模块允许空密码绕过认证的问题，补丁将确保 pam_ldap 拒绝空密码后进行后续认证验证。以 root 身份执行 patchadd 命令应用补丁，并重启系统使更新生效。如暂无法安装补丁，可在 /etc/pam.conf 中临时注释掉使用 pam_ldap.so.1 的认证行，改为使用本地文件系统认证作为缓解措施。"
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "Sun Solaris 8 pam_ldap 身份验证绕过漏洞"
+sources = ["epss"]
+title = "Sun Solaris PAM LDAP 空密码认证绕过漏洞"
 updated = "2026-06-16T21:53:59Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0269"]
 ave_id = "AVE-2001-1206"
 
 [meta]
-collected_at = "2026-08-07T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2001-02/0344.html",
     "http://www.osvdb.org/6030",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6440",
-    "https://github.com/CVEProject/cvelistV5/blob/d72682f50b6e616a0ca6e4d967321d3f0b91312f/cves/2001/0xxx/CVE-2001-0269.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/520aa4b3e74e2392f3887b15716f0194af1dfca3/CVE/data/2001/CVE-2001-0269.json",
+    "https://github.com/CVEProject/cvelistV5/blob/3f7fc422a13de6307a524e4f369c4dd1f0ffdb0a/cves/2001/0xxx/CVE-2001-0269.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6db47a55dc9dc28b639dc9943d75929e5e8aa84a/CVE/data/2001/CVE-2001-0269.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0269",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0269.json",
-    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0269.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/f5446ab1422bc50f191f3eb4d0c7a25d007c51de/CVE-2001/CVE-2001-02xx/CVE-2001-0269.json",
-    "https://github.com/opencve/opencve-kb/blob/941f295b22d4d1723274a878945c138b5a7f8d90/2001/CVE-2001-0269.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/bbfa07622c37da2d5dd90f9022a8c76fe2cd309a/2001/0xxx/CVE-2001-0269.md",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2001-0269.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/7109f9882bc6779c6f740681151297503b560158/CVE-2001/CVE-2001-02xx/CVE-2001-0269.json",
+    "https://github.com/opencve/opencve-kb/blob/5fa762f5e09def294caee101d7cb93cfaeb7487c/2001/CVE-2001-0269.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/695ffbcb4f415d04ebae825ae29f01ccf71e4043/2001/0xxx/CVE-2001-0269.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0269.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0269.json",
 ]
