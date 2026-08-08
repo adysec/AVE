@@ -1,0 +1,44 @@
+[basic]
+description = "Linux 内核 QCOM PDR（Platform Determination and Recovery）驱动中存在潜在的僵局漏洞。当客户端进程 A 调用 pdr_add_lookup() 添加服务查找并调度定位器工作后，进程 B 接收到新的服务器数据包并调用 pdr_locator_new_server()，将 pdr->locator_init_complete 设为 true，进程 A 检测到该标志后尝试获取 list_lock 并查询域列表，但响应被排队到同一有序工作队列 qmi->wq 中，导致进程 B 无法完成新服务器请求工作并释放 list_lock，从而产生僵局并引发超时。该漏洞影响使用 Qualcomm 平台且运行受影响内核版本的设备，本地攻击者需具有低权限访问权限即可触发，成功利用可导致服务查找超时、系统不稳定或拒绝服务。修复方案是移除不必要的列表迭代，避免在同一工作上下文中重复执行定位器工作。"
+published = "2025-04-08T09:15:25Z"
+remediation = "将 Linux 内核升级至修复版本：Debian 12 升级到 6.1.133-1 或更高版本（DSA-5900-1），Debian 11 升级到 5.10.237-1 或 6.1.137-1~deb11u1（DLA-4178-1/DLA-4193-1），Ubuntu 22.04 LTS 升级到 5.15.0-142.152 或更高版本，Ubuntu 24.04 LTS 升级到 6.8.0-84.84 或更高版本。上游 stable 系列请升级到 5.10.236、5.15.180、6.1.132、6.6.85、6.12.21 或 6.13.9 及之后版本。如无法立即升级内核，可通过禁用不必要的高通 PDR 服务或更新 QMI 固件作为临时缓解措施。上游补丁提交为 https://git.kernel.org/stable/c/2eeb03ad9f42dfece63051be2400af487ddb96d2"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核高通 PDR 驱动死锁拒绝服务漏洞"
+updated = "2026-06-17T08:44:50Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-22014"]
+ave_id = "AVE-2025-1094"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/02612f1e4c34d94d6c8ee75bf7d254ed697e22d4",
+    "https://git.kernel.org/stable/c/0a566a79aca9851fae140536e0fc5b0853c90a90",
+    "https://git.kernel.org/stable/c/2eeb03ad9f42dfece63051be2400af487ddb96d2",
+    "https://git.kernel.org/stable/c/72a222b6af10c2a05a5fad0029246229ed8912c2",
+    "https://git.kernel.org/stable/c/daba84612236de3ab39083e62c9e326a654ebd20",
+    "https://git.kernel.org/stable/c/f2bbfd50e95bc117360f0f59e629aa03d821ebd6",
+    "https://git.kernel.org/stable/c/f4489260f5713c94e1966e5f20445bff262876f4",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-22014.md",
+    "https://github.com/CVEProject/cvelistV5/blob/6de1ac46a6bc7dd04a60973e76010effc2fd367d/cves/2025/22xxx/CVE-2025-22014.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/ee62e060e83e6a11ea4146cd2414a687a1124004/CVE/data/2025/CVE-2025-22014.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-22014.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-22014-2025-11-03-1338",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-22014-2025-11-03-1328",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-22014.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-22014",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/9ec1f42cd252a998d9af88a8ad82c72909c004bd/tracker/CVE/2025/CVE-2025-22014.json",
+    "https://github.com/CVEProject/cve-reference-ingest/blob/a6ff3276ef97ed8afa7e7b84bc4f509e150f9a2b/references/contrib1-CveServices-CVE-2025-22014-2025-11-03-1328",
+]
