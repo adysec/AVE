@@ -1,0 +1,39 @@
+[basic]
+description = "Linux 内核 accel/qaic 子系统的 qaic_validate_req() 函数中存在整数溢出漏洞。该函数使用 u64 类型变量处理用户空间通过 qaic_attach_slice_bo_ioctl() 传入的偏移量与大小参数，由于未对加法运算进行溢出检查，攻击者可通过构造特制的偏移量与大小参数组合触发整数回绕，导致计算出远超实际缓冲区大小的 DMA 描述符长度。此漏洞影响 Linux 内核 6.4 至 6.6.84、6.12.20、6.13.8 等版本。攻击者需在本地具有低权限访问 /dev/accel/accelN 设备节点，通过两次 ioctl 调用即可触发，无需用户交互或特殊权限。成功利用后，DMA_TO_DEVICE 类型的 slice 可导致设备读取约 4 GiB 的宿主机内存并复制到加速器内存，造成大规模内核数据泄露；DMA_FROM_DEVICE 类型的 slice 则可在 8 KiB 缓冲区之外写入约 4 GiB 的攻击者控制数据，实现内核内存越界写，进而可被利用进行控制流劫持和权限提升，最终导致系统崩溃或特权获取。"
+published = "2025-04-03T08:15:15Z"
+remediation = '升级 Linux 内核至 6.6.85、6.12.21、6.13.9 或 6.14 及以上版本，修复补丁（commit 67d15c7aa086）通过 check_add_overflow() 消除了 qaic_validate_req() 中的整数溢出。Ubuntu 24.04 LTS 用户应安装 linux 6.8.0-84.84 或更高版本，Ubuntu 24.10 用户应安装 6.11.0-28.28 或更高版本。如系统未使用 Qualcomm AI 加速器硬件，可在启动参数中追加 "modprobe.blacklist=qaic" 以禁用 qaic 驱动模块作为临时缓解措施，限制本地低权限用户通过 qaic_attach_slice_bo_ioctl() 触发整数溢出导致的内核内存损坏。'
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 qaic 整数溢出漏洞"
+updated = "2026-07-30T06:22:02Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-22001"]
+ave_id = "AVE-2025-1087"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/4b2a170c25862ad116bd31be6b9841646b4862e8",
+    "https://git.kernel.org/stable/c/57fae0c505f49bb1e3d5660cd2cc49697ed85f7c",
+    "https://git.kernel.org/stable/c/67d15c7aa0864dfd82325c7e7e7d8548b5224c7b",
+    "https://git.kernel.org/stable/c/b362fc904d264a88b4af20baae9e82491c285e9c",
+    "https://github.com/CVEProject/cvelistV5/blob/4fa082fe458d8fa95596028e75b13159b2e52c11/cves/2025/22xxx/CVE-2025-22001.json",
+    "https://github.com/cisagov/vulnrichment/blob/53f84311e318e04e4e0c2f4de1a727bb1d59e897/2025/22xxx/CVE-2025-22001.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e1cbe143690bb47370af7fa5b465982662d83ca8/SSVC/data/2025/CVE-2025-22001.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e1cbe143690bb47370af7fa5b465982662d83ca8/CVE/data/2025/CVE-2025-22001.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-22001.json",
+    "https://github.com/fankh/vulnerability-poc/blob/b434e35071b4a0416c7ba01b785985b73fcdd6fc/2025/CVE-2025-22001/README.md",
+    "https://github.com/opencve/opencve-kb/blob/59b386f397d30a98edee337c60ca2f09767f3961/2025/CVE-2025-22001.json",
+    "https://github.com/fankh/vulnerability-poc/blob/b434e35071b4a0416c7ba01b785985b73fcdd6fc/2025/CVE-2025-22001/poc.py",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2025-22001.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-22001.yaml",
+]
