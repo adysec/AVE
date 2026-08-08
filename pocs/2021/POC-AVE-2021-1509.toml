@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "检测目标是否运行存在 CVE-2021-30632 漏洞的 Google Chrome V8 引擎。该漏洞为 V8 Turbofan JIT 编译器中的类型混淆问题：当全局属性映射（property map）在代码被优化后被原地修改时，已优化的代码未能正确反优化，导致后续加载函数访问属性时发生类型混淆，进而触发堆内存越界写入。攻击者通过构造包含恶意 JavaScript 代码的 HTML 页面，诱使目标使用受影响版本的 Chrome（低于 93.0.4577.82）访问该页面即可触发漏洞，最终实现远程代码执行。CVSSv3.1 评分 8.8。"
+id = "POC-AVE-2021-1509"
+name = "CVE-2021-30632 Chrome V8 JIT Type Confusion PoC"
+severity = "high"
+tags = ["ave-2021-1509"]
+vuln_id = [
+    "CVE-2021-30632",
+    "AVE-2021-1509",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2021-30632.html"
+protocol = "http"
+
+[poc.requests.headers]
+Accept = "text/html,application/xhtml+xml"
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "V8 type confusion",
+    "CVE-2021-30632",
+]
