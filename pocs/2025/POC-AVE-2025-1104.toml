@@ -1,0 +1,24 @@
+[info]
+author = "ave"
+description = "验证 Linux kernel tracing 子系统 use-after-free 漏洞(CVE-2025-22035)。该漏洞存在于 function_graph 追踪器切换过程中，当 iter->private 被释放后未置为 NULL 时，旧追踪器回调函数仍可能访问已释放的内存。攻击者需具备本地低权限访问 tracefs 的权限，通过并发执行 tracer 切换与 trace 文件读取来触发竞态条件。本检测通过检查 tracefs 文件系统关键文件的可访问性来验证漏洞触发环境是否存在。"
+id = "POC-AVE-2025-1104"
+name = "CVE-2025-22035 Linux Kernel tracing UAF PoC"
+severity = "high"
+tags = ["ave-2025-1104"]
+vuln_id = [
+    "CVE-2025-22035",
+    "AVE-2025-1104",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/sys/kernel/debug/tracing/current_tracer"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["nop"]
