@@ -1,0 +1,38 @@
+[basic]
+description = "Linux 内核中 Hyper-V 帧缓冲（hyperv_fb）驱动程序存在释放后使用漏洞。当 Hyper-V 帧缓冲设备被解绑时，驱动程序强制释放帧缓冲，若该帧缓冲仍在使用中会触发内核警告并导致资源泄漏。本地低权限攻击者可通过反复绑定/解绑帧缓冲设备触发该漏洞，造成内核内存损坏，进而实现本地权限提升或系统拒绝服务。该漏洞影响所有使用 Hyper-V 虚拟显卡的 Linux 内核版本，CVSS 评分 7.8，危害等级高。攻击者需要具有本地登录权限并能够加载/卸载内核模块。修复方式为将帧缓冲释放操作移至 fb_ops.fb_destroy 回调函数，由帧缓冲框架优雅处理释放流程，并使用 devm_register_framebuffer 替代手动注册/注销。"
+published = "2025-04-01T16:15:28Z"
+remediation = "建议立即升级 Linux 内核至 6.6.30、6.8.9、6.9.1 或更高版本（包含修复提交 fbdev: hyperv_fb: Allow graceful removal of framebuffer）。各发行版用户请安装对应安全更新：Ubuntu 22.04/24.04 执行 `apt update && apt install linux-image-generic`，RHEL/CentOS 执行 `yum update kernel`，Debian 执行 `apt update && apt install linux-image-amd64`。无法立即升级时，可在 Hyper-V 虚拟机中禁用 framebuffer 设备（`echo 0 > /sys/bus/vmbus/devices/*/remove` 卸载 hyperv_fb 模块）作为临时缓解措施。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 fbdev hyperv_fb 本地权限提升漏洞"
+updated = "2026-07-30T06:22:01Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21976"]
+ave_id = "AVE-2025-1076"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/4545e2aa121aea304d33903099c03e29ed4fe50a",
+    "https://git.kernel.org/stable/c/a7b583dc99c6cf4a96877017be1d08247e1ef2c7",
+    "https://git.kernel.org/stable/c/ea2f45ab0e53b255f72c85ccd99e2b394fc5fceb",
+    "https://github.com/CVEProject/cvelistV5/blob/8bc8a0ae2b638c6bd0905145e3d7ed80cf7263dc/cves/2025/21xxx/CVE-2025-21976.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4f71088838277718d2901a7dc572e088482a6823/CVE/data/2025/CVE-2025-21976.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-21976.yaml",
+    "https://github.com/opencve/opencve-kb/blob/2a6f3836466e9af768b241ff416248e9d77b4120/2025/CVE-2025-21976.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21976.json",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2025-21976.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21976",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/033f049c0c7ab9e18c6c1985b4d5d05fe006653c/tracker/CVE/2025/CVE-2025-21976.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2025/21xxx/CVE-2025-21976.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-21976",
+]
