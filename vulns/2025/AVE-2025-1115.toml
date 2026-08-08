@@ -1,0 +1,40 @@
+[basic]
+description = "Linux 内核 IBM Virtual Ethernet (ibmveth) 驱动中的 veth_pool_store 函数存在同步缺陷，未使用 rtnl_mutex 对函数调用进行互斥保护，导致多线程环境下可重复调用 napi_disable。具有本地权限的攻击者可通过向 /sys/devices/vio/30000002/pool*/* 路径快速写入多个状态文件，触发 veth_pool_store 与 ibmveth_close、ibmveth_open 之间的并发竞态，造成内核挂起和系统拒绝服务。该漏洞影响使用 ibmveth 网卡驱动的 Linux 内核版本，CVSS v3.1 评分 5.5，危害等级中等。"
+published = "2025-04-16T15:15:58Z"
+remediation = "升级 Linux 内核至包含该补丁的最新稳定版本（6.14 或各发行版安全更新）。Ubuntu 用户执行 apt update && apt upgrade linux-image，SUSE 用户执行 zypper patch --category security。如无法立即升级，可通过限制对 /sys/devices/vio/*/pool*/* 的并发写入权限或设置内核参数禁用 ibmveth 的多队列池并发操作作为临时缓解。该补丁通过 rtnl_mutex 同步 veth_pool_store 与 close/open 路径，消除多次调用 napi_disable 导致的死锁挂起。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 ibmveth 网络驱动竞争条件拒绝服务漏洞"
+updated = "2026-06-17T08:44:56Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-22053"]
+ave_id = "AVE-2025-1115"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/053f3ff67d7feefc75797863f3d84b47ad47086f",
+    "https://git.kernel.org/stable/c/0a2470e3ecde64fc7e3781dc474923193621ae67",
+    "https://git.kernel.org/stable/c/1e458c292f4c687dcf5aad32dd4836d03cd2191f",
+    "https://git.kernel.org/stable/c/86cc70f5c85dc09bf7f3e1eee380eefe73c90765",
+    "https://git.kernel.org/stable/c/8a88bb092f4208355880b9fdcc69d491aa297595",
+    "https://github.com/CVEProject/cvelistV5/blob/ec24b3a165225fc7f9466471e44eba2d61985bf9/cves/2025/22xxx/CVE-2025-22053.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/b75785f583c68234b3184dada0242fa582de0999/CVE/data/2025/CVE-2025-22053.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-22053.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-22053",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/1123a42d2775e62bcce72fce78e2dc8086846776/tracker/CVE/2025/CVE-2025-22053.json",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2025-22053.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-22053",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-22053.yaml",
+    "https://github.com/MatALass/anssi-vulnerability-intelligence/blob/77a0771d93df03375a6a04965087efb0123e795f/data/raw/anssi_snapshot/first/CVE-2025-22053",
+    "https://github.com/opencve/opencve-kb/blob/2996cb7bbaff80da7c930ad32f3da15c6ade4cea/2025/CVE-2025-22053.json",
+]

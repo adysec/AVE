@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "检测目标页面是否包含 IE 5 JavaScript 本地文件枚举漏洞的利用代码。攻击者可在 HTML 页面中嵌入 script 标签，通过 src 参数引用本地文件路径（如 file:///C:/windows/win.ini），并利用 onError 事件处理程序监控文件加载结果来判断文件是否存在，从而枚举本地文件系统上的敏感文件。"
+id = "POC-AVE-2002-0752"
+name = "Microsoft Internet Explorer 5 JavaScript Local File Enumeration PoC"
+severity = "medium"
+tags = ["ave-2002-0752"]
+vuln_id = [
+    "CVE-2002-2031",
+    "AVE-2002-0752",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "file:///",
+    "onerror",
+    "createElement('script')",
+]
