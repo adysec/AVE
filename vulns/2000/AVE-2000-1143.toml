@@ -1,11 +1,11 @@
 [basic]
-description = "Check Point FireWall-1 防火墙产品存在拒绝服务漏洞，未经身份认证的远程攻击者可通过向目标设备的 264 端口发送大量数据包（即泛洪攻击）来触发该漏洞。由于 FireWall-1 在处理到达 264 端口的异常高流量时缺乏适当的速率限制和资源保护机制，攻击者发送的数据包洪流会持续占用目标系统大量 CPU 资源，导致防火墙性能急剧下降甚至完全停止响应网络流量，从而造成合法用户的网络访问中断，影响范围包括所有部署了受影响版本 Check Point FireWall-1 的企业网络边界安全防护。该漏洞利用条件极为简单：攻击者仅需在网络中能够访问目标 FireWall-1 的 264 端口即可发起攻击，无需任何身份验证凭据，攻击复杂度低，危害等级中等。Check Point 已通过发布安全更新修复了该漏洞，管理员应尽快升级至修复版本，并考虑在网络边界对 264 端口实施访问控制限制以降低被利用的风险。"
+description = "Check Point FireWall-1 防火墙软件存在拒绝服务漏洞，其 TCP 端口 264 缺少流量控制机制。未经身份认证的远程攻击者可通过向目标系统持续发送大量数据包发起泛洪攻击，导致设备 CPU 占用率急剧升高，造成防火墙服务中断、网络流量处理延迟或完全停止响应。该漏洞影响部署了 FireWall-1 的安全网关和管理服务器，攻击者无需任何凭据即可在远程利用此漏洞，利用方式简单且效果直接。"
 published = "2001-08-31T04:00:00Z"
-remediation = "升级到 Check Point 已修复该漏洞的 FireWall-1 后续版本（FireWall-1 4.1 SP8 或更高版本），并确保已应用最新安全补丁包。在边界路由器或上游设备上配置 ACL 规则，阻断外部对端口 264 的未授权访问。如无法立即升级，可在防火墙层面设置速率限制（rate limiting）以控制流入端口 264 的数据包速率，并启用异常流量检测告警。建议同时检查 FireWall-1 日志中是否存在来自单一源 IP 的大规模连接请求，及时封禁可疑来源。"
+remediation = "升级到 Check Point FireWall-1 FP1 或更高版本，该版本已修复端口 264 洪水攻击导致的高 CPU 消耗问题。如无法立即升级，请在 FireWall-1 管理控制台中的 Security Policy 内添加规则：对来自外部不可信网络的 TCP 端口 264 流量设置连接数限制和速率限制，或直接禁止外部对端口 264 的访问。同时启用 FireWall-1 的 DoS 防护功能（包括 SYN 攻击防护和连接速率限制），并持续监控防火墙 CPU 使用率，一旦发现异常升高立即阻断源 IP。"
 score = 5
 severity = "MEDIUM"
-sources = ["epss"]
-title = "Check Point FireWall-1 拒绝服务漏洞"
+sources = ["avd"]
+title = "Check Point Firewall-1 拒绝服务漏洞"
 updated = "2026-06-16T21:53:22Z"
 
 [exploit]
@@ -17,20 +17,20 @@ aliases = ["CVE-2000-1201"]
 ave_id = "AVE-2000-1143"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://archives.neohapsis.com/archives/bugtraq/2000-07/0085.html",
-    "https://github.com/CVEProject/cvelistV5/blob/9c6bb4d80b2633b04c3d95cd11fee4b8b1b012c2/cves/2000/1xxx/CVE-2000-1201.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/559ec87f609d31af7a4580139706f217d81d7a2e/CVE/data/2000/CVE-2000-1201.json",
+    "https://github.com/CVEProject/cvelistV5/blob/752a3d81e3915589f1603fd2284133d8ca92093b/cves/2000/1xxx/CVE-2000-1201.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6383c78237400b01eaca440114073e7df0a76cff/CVE/data/2000/CVE-2000-1201.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1201",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1201.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1201.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-12xx/CVE-2000-1201.json",
-    "https://github.com/opencve/opencve-kb/blob/045dd815c5c9edb2f848de9196b8b22db27288ca/2000/CVE-2000-1201.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/8e09cd003036511dff025515f28920f1d343007b/2000/1xxx/CVE-2000-1201.md",
-    "https://github.com/aquasecurity/vuln-list-nvd/blob/f785f3444159263c9afde232b5456d1f01686673/api/2000/CVE-2000-1201.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1201.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/59fcb0e6f5e022cbcf3d6b6e8dfa8ab050c85b5f/CVE-2000/CVE-2000-12xx/CVE-2000-1201.json",
+    "https://github.com/opencve/opencve-kb/blob/d75777256d9f777c09736cf2245cbda99b9caec2/2000/CVE-2000-1201.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c2821f0ce67377f90a12397deb247f48f678f016/2000/1xxx/CVE-2000-1201.md",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/59fb61bc6ded1f9b3c4acac289acc9bf47dd995e/api/2000/CVE-2000-1201.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1201.json",
 ]
