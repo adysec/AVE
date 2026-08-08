@@ -1,0 +1,42 @@
+[basic]
+description = "Linux 内核 LoongArch 架构存在 DMA 内存对齐配置不当漏洞。系统中 ARCH_DMA_MINALIGN 默认值为 1，但部分龙芯架构专用设备（如 APBDMA）需要 16 字节对齐的 DMA 缓冲区。当分配的内存缓冲区长度过小时，硬件在写入缓存行（cacheline）时可能发生错误，导致缓存一致性问题、数据损坏或系统崩溃。具有本地低权限访问权限的攻击者可通过向 DMA 操作提交特制的小尺寸缓冲区，触发缓存行错误写入，进而可能导致内核内存损坏、信息泄露或权限提升。该漏洞影响运行 Linux 内核的龙芯架构系统，CVSS v3.1 评分为 7.8。龙芯架构社区已通过将 ARCH_DMA_MINALIGN 从默认值 1 提升至 16 以修复此问题，需升级内核至包含该补丁的版本以彻底消除风险。"
+published = "2025-04-16T15:15:58Z"
+remediation = "升级到 Linux kernel 6.1.134 或更高版本，该版本已将 LoongArch 架构的 ARCH_DMA_MINALIGN 从 1 增加到 16，修复了 DMA 缓冲区对齐不足导致的 cacheline 写入错误问题。受影响系统还可通过重新编译内核，在 arch/loongarch/include/asm/cache.h 中添加 #define ARCH_DMA_MINALIGN 16 作为临时缓解措施，确保 kmalloc 分配的 DMA 缓冲区满足 APBDMA 等设备的 16 字节对齐要求。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 LoongArch 架构 DMA 内存对齐本地权限提升漏洞"
+updated = "2026-07-30T06:22:08Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-22049"]
+ave_id = "AVE-2025-1114"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/1d0def2d1658666ec1f32c9495df60e7411e3c82",
+    "https://git.kernel.org/stable/c/279ec25c2df49fba1cd9488f2ddd045d9cb2112e",
+    "https://git.kernel.org/stable/c/4103cfe9dcb88010ae4911d3ff417457d1b6a720",
+    "https://git.kernel.org/stable/c/8b82aea3666f8f2c78f86148d78aea99c46e0f82",
+    "https://git.kernel.org/stable/c/bfff341cac7c650e6ca8d10503725992f5564d0f",
+    "https://git.kernel.org/stable/c/f39af67f03b564b763b06e44cb960c10a382d54a",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/cd4a01a42d95af497d54c028c2f468527d995ec5/2025/CVE-2025-22049.md",
+    "https://github.com/CVEProject/cvelistV5/blob/aad84e20dbc4f3f38b6d0674df1febab806c3906/cves/2025/22xxx/CVE-2025-22049.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/b75785f583c68234b3184dada0242fa582de0999/CVE/data/2025/CVE-2025-22049.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-22049.yaml",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-22049.md",
+    "https://github.com/opencve/opencve-kb/blob/2996cb7bbaff80da7c930ad32f3da15c6ade4cea/2025/CVE-2025-22049.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-22049-2025-11-03-1329",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-22049.json",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2025-22049.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-22049",
+]
