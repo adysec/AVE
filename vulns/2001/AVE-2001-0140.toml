@@ -1,11 +1,11 @@
 [basic]
-description = "Linux 内核 2.2.x 和 2.4.x 版本的 sysctl 系统调用在处理负数参数时存在边界检查缺陷，本地攻击者可通过向 sysctl 传递负数参数越界读取内核内存，泄露敏感信息并可能进一步提权。该漏洞影响 Linux 2.2.x 和 2.4.x 系列内核，攻击者需具备本地用户权限并能调用 sysctl 系统调用，通过构造负数参数触发内核内存越界读取，获取内核内存中的敏感数据（如指针、凭据等），进而结合其他技术实现权限提升。CVSS 评分 4.6（本地攻击/低复杂度/无需认证/部分机密性/完整性/可用性影响）。"
+description = "Linux kernel 2.2.x 与 2.4.x 的 sysctl() 系统调用存在内存越界读取漏洞，本地用户可向 sysctl 调用传入负数参数作为 name 长度或索引值，导致内核从非预期内存地址读取数据，从而泄露内核内存内容，并可能借此进一步提权获取系统更高权限。该漏洞攻击条件为需要本地用户权限（无法远程利用），无需认证即可触发，属于本地提权与信息泄露类漏洞。攻击者只需以普通用户身份调用 sysctl() 并构造恶意负数值即可触发越界读取，存在公开的 PoC 利用代码。"
 published = "2001-05-03T04:00:00Z"
-remediation = "升级到 Linux 内核 2.4.6 或更高版本，并应用安全补丁 RHSA-2001-013。修改 `/proc/sys` 目录下的系统调用参数验证逻辑，禁止 sysctl() 函数接受负值参数。实施临时缓解措施：限制本地用户权限，加强内核内存访问控制，并禁用不必要的 sysctl 服务以防止本地提权。"
+remediation = "tags.<value>建议立即升级 Linux 内核至修复版本：2.2 系列升级至 2.2.19 及以上，2.4 系列升级至 2.4.1 及以上。对应发行版用户可安装官方安全补丁，Red Hat 用户安装 RHSA-2001-013 提供的内核补丁包，Caldera 用户安装 CSSA-2001-009 公告对应补丁。该补丁修复了 sysctl() 调用对 name 参数负数校验缺失的问题，阻止利用负参数越界读取内核内存。如无法立即升级，可采取临时缓解措施：严格限制本地用户与 shell 登录权限，仅向可信用户开放系统访问；禁止非特权用户加载内核模块；并结合系统加固（如启用 SELinux、收紧 /proc/sys 读写权限）降低本地提权风险。"
 score = 4.6
 severity = "MEDIUM"
-sources = ["redhat"]
-title = "Linux 内核 sysctl() 内存读取漏洞 (CVE-2001-0316)"
+sources = ["cve"]
+title = "Linux Kernel sysctl() 内核内存读取漏洞"
 updated = "2026-06-16T21:54:05Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0316"]
 ave_id = "AVE-2001-0140"
 
 [meta]
-collected_at = "2026-07-23T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -29,14 +29,14 @@ urls = [
     "http://www.securityfocus.com/bid/2364",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6079",
     "https://www.exploit-db.com/exploits/20626",
-    "https://github.com/CVEProject/cvelistV5/blob/2c72b537371947a8374cf9848353741736f9e49d/cves/2001/0xxx/CVE-2001-0316.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0421602eb9f824909ec57dc4d45f5f29ad208960/cves/2001/0xxx/CVE-2001-0316.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6383c78237400b01eaca440114073e7df0a76cff/CVE/data/2001/CVE-2001-0316.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0316",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2001-0316.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bae3e1da022eb7a639aee03446096716b0c4798f/CVE/data/2001/CVE-2001-0316.json",
-    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2022/04/GHSA-h36r-qvg6-h4vh/GHSA-h36r-qvg6-h4vh.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0316.json",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--9bea150a-1b3a-4d14-8126-029689822475.json",
-    "https://github.com/shamedgh/confine/blob/a75dad3ad336e6258a42cd1ce4af061eea68ed76/cve.files/cveToFile.json.type.csv",
-    "https://github.com/x-s-g/Vuln-Intro/blob/aa42031a1aaff880d1d582777ef18a1a29cbebc3/Dataset/Dataset/CVE_list.txt",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0316.json",
+    "https://github.com/opencve/opencve-kb/blob/d75777256d9f777c09736cf2245cbda99b9caec2/2001/CVE-2001-0316.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/c2821f0ce67377f90a12397deb247f48f678f016/2001/0xxx/CVE-2001-0316.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/59fcb0e6f5e022cbcf3d6b6e8dfa8ab050c85b5f/CVE-2001/CVE-2001-03xx/CVE-2001-0316.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0316.json",
+    "https://github.com/yarencheng/cve-devops-playground/blob/91be9eb9295258fcf9346546d639e773f775edc3/content/CVE-2001-0316.md",
 ]
