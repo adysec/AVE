@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核 nfsd 组件存在引用计数泄漏漏洞。在将 dl_recall 委托回调排入回调队列前，代码已为 dl_stid 增加引用计数，但若 nfsd4_run_cb 排队失败，该引用计数无法被回调函数释放，导致 nfs4_stid 对象持续泄漏。攻击者可通过向 NFS 服务器发起大量需要委托回调的 NFSv4 操作请求，反复触发该错误路径，逐步耗尽服务器内核内存资源，最终导致拒绝服务。该漏洞影响运行受影响 Linux 内核版本的内核 NFS 服务器，CVSSv3 评分为 7.5。修复方式为检查 nfsd4_run_cb 返回值，在失败时调用 nfs4_put_stid 正确释放引用计数。"
+published = "2025-04-16T15:15:55Z"
+remediation = "升级 Linux 内核至以下安全版本以修复此漏洞：5.10.236、5.15.180、6.1.134、6.6.87、6.12.23、6.13.11 或更高版本。Ubuntu 22.04 LTS 用户可执行 `sudo apt update && sudo apt upgrade linux-image-generic` 升级至 5.15.0-1083.89 及更高版本；Ubuntu 20.04 FIPS 用户需安装 5.15.0-1114.123~20.04.1 或更高版本。如无法立即升级内核，可临时通过在防火墙限制 NFS 服务端口（2049/tcp、2049/udp）访问范围至受信任网络，缓解未授权 NFS 客户端触发 dl_recall 回调队列失败导致的 nfs4_stid 内存泄漏风险。"
+score = 7.5
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux 内核 nfsd 引用计数未释放漏洞"
+updated = "2026-07-30T06:22:04Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-22025"]
+ave_id = "AVE-2025-1098"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/133f5e2a37ce08c82d24e8fba65e0a81deae4609",
+    "https://git.kernel.org/stable/c/230ca758453c63bd38e4d9f4a21db698f7abada8",
+    "https://git.kernel.org/stable/c/63b91c8ff4589f5263873b24c052447a28e10ef7",
+    "https://git.kernel.org/stable/c/9a81cde8c7ce65dd90fb47ceea93a45fc1a2fbd1",
+    "https://git.kernel.org/stable/c/b874cdef4e67e5150e07eff0eae1cbb21fb92da1",
+    "https://git.kernel.org/stable/c/cad3479b63661a399c9df1d0b759e1806e2df3c8",
+    "https://git.kernel.org/stable/c/cdb796137c57e68ca34518d53be53b679351eb86",
+    "https://git.kernel.org/stable/c/d96587cc93ec369031bcd7658c6adc719873c9fd",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-22025.md",
+    "https://github.com/0xMarcio/cve/blob/6a9007ae677250fbb80356f711c38dc5807b7f4c/2025/CVE-2025-22025.md",
+    "https://github.com/CVEProject/cvelistV5/blob/5be78f48139c72a338a40473366abbf7074cc88e/cves/2025/22xxx/CVE-2025-22025.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0776717a55dd7fe85f7b8a5d01546188b2a8934d/CVE/data/2025/CVE-2025-22025.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-22025.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-22025-2025-11-03-1328",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-22025-2025-11-03-1338",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-22025.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-22025.yaml",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-22025",
+]
