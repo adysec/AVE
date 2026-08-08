@@ -1,0 +1,38 @@
+[basic]
+description = "Apache Airflow 1.10.10及更早版本在使用CeleryExecutor作为执行器时，Celery任务消息未经过身份验证即被处理。当攻击者能够直接连接到消息中间件（如Redis或RabbitMQ）时，可向Celery任务队列中注入恶意的任务消息（如airflow.executors.celery_executor.execute_command），导致Celery worker进程在接收并处理该消息时执行攻击者构造的任意操作系统命令，从而实现远程代码执行。该漏洞影响所有使用CeleryExecutor并暴露Redis或RabbitMQ消息中间件的Airflow部署，攻击者无需身份认证即可利用。Apache Software Foundation已于2020年7月发布安全公告，并在Airflow 1.10.11版本中修复了此问题。"
+published = "2020-07-17T00:15:10Z"
+remediation = "立即升级 Apache Airflow 至 1.10.11 或更高版本，官方在该版本中已修复 CeleryExecutor 的命令注入漏洞。如暂时无法升级，应在防火墙或安全组层面严格限制 Redis/RabbitMQ 消息队列代理的访问权限，仅允许 Airflow Scheduler 与 Worker 所在主机连接，阻断外部直接连接 Broker 的路径。同时建议评估将 CeleryExecutor 迁移至 KubernetesExecutor 或 LocalExecutor，以消除该攻击面。升级完成后请重启所有 Airflow 服务组件使补丁生效。"
+score = 9.8
+severity = "CRITICAL"
+sources = ["nuclei"]
+title = "Apache Airflow 操作系统命令注入漏洞"
+updated = "2026-06-17T02:51:11Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2020-11981"]
+ave_id = "AVE-2020-0057"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://lists.apache.org/thread.html/r7255cf0be3566f23a768e2a04b40fb09e52fcd1872695428ba9afe91%40%3Cusers.airflow.apache.org%3E",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/main/network/cves/2020/CVE-2020-11981.yaml",
+    "https://github.com/trickest/cve/blob/cd4a01a42d95af497d54c028c2f468527d995ec5/2020/CVE-2020-11981.md",
+    "https://github.com/vulhub/vulhub/blob/aeaf65793f147f29bd50841ef77f4e9cad07ecc7/airflow/CVE-2020-11981/README.md",
+    "https://github.com/vulhub/vulhub/blob/aeaf65793f147f29bd50841ef77f4e9cad07ecc7/airflow/CVE-2020-11981/README.zh-cn.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/2f0d7f3eb665a36e15aa5706f94c9fb3ae05ab42/2020/CVE-2020-11981.json",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/e70dd0abd4b155493f0c401fe6c8323b710487cf/network/cves/2020/CVE-2020-11981.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/CVE-2020-11981.yaml",
+    "https://github.com/wgpsec/AboutSecurity/blob/f3c8574e6fa1f9c1cd5aeaba5a209af796107b34/Vuln/middleware/airflow/CVE-2020-11981.md",
+    "https://github.com/Threekiii/Awesome-POC/blob/0f9e22b660cb1ea12c1c3668f9128d93e08da412/Web应用漏洞/Apache Airflow Celery 消息中间件命令执行 CVE-2020-11981.md",
+    "https://github.com/Threekiii/Vulnerability-Wiki/blob/b32b83c01eabac4d6b4b334852be9cff76ba67ee/docs-base/docs/webapp/Apache-Airflow-Celery-消息中间件命令执行-CVE-2020-11981.md",
+    "https://github.com/SleepingBag945/dddd/blob/4c428a7c171275bfbb5fa72c2fb4bd7b48f4ff4a/common/config/pocs/CVE-2020-11981.yaml",
+    "https://github.com/Evillm/CVE-2020-11981-PoC",
+]
