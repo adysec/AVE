@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核 proc 子系统中存在竞争条件导致的释放后使用（Use-After-Free）漏洞，位于 proc_get_inode() 函数。当内核模块被卸载（rmmod）的同时，进程通过 /proc/XXX 路径查找并实例化 inode 时，pde->proc_ops 指针所指向的模块内存已被释放，但代码仍会解引用该指针调用 proc_read_iter 等回调函数，从而触发释放后使用，导致内核崩溃或权限提升。该漏洞影响未使用 use_pde/unuse_pde() 保护机制的内核版本，攻击者需具备本地低权限访问权限，可通过加载并快速卸载内核模块，同时访问对应 /proc 条目触发竞争条件，最终可能实现本地特权提升。CVSS 评分 7.8，危害等级高。"
+published = "2025-04-03T08:15:15Z"
+remediation = "建议将 Linux 内核升级至已修复版本：5.10 系列升级到 5.10.236 或更高版本，5.15 系列升级到 5.15.180 或更高版本，6.1 系列升级到 6.1.132 或更高版本，6.6 系列升级到 6.6.85 或更高版本，6.12 系列升级到 6.12.21 或更高版本，6.13 系列升级到 6.13.9 或更高版本。如暂无法立即升级，可通过以下措施临时缓解：启用内核模块签名验证（设置 kernel.modules_disabled=1 或 module.sig_enforce=1），限制本地用户权限，仅允许可信用户访问系统，并通过 chmod 限制 /proc 目录下敏感文件的访问权限，禁止非授权用户加载内核模块。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux kernel proc 子系统释放后使用竞争条件本地提权漏洞"
+updated = "2026-07-14T13:17:28Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21999"]
+ave_id = "AVE-2025-1086"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/4b0b8445b6fd41e6f62ac90547a0ea9d348de3fa",
+    "https://git.kernel.org/stable/c/63b53198aff2e4e6c5866a4ff73c7891f958ffa4",
+    "https://git.kernel.org/stable/c/64dc7c68e040251d9ec6e989acb69f8f6ae4a10b",
+    "https://git.kernel.org/stable/c/654b33ada4ab5e926cd9c570196fefa7bec7c1df",
+    "https://git.kernel.org/stable/c/966f331403dc3ed04ff64eaf3930cf1267965e53",
+    "https://git.kernel.org/stable/c/eda279586e571b05dff44d48e05f8977ad05855d",
+    "https://git.kernel.org/stable/c/ede3e8ac90ae106f0b29cd759aadebc1568f1308",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-019113.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21999.md",
+    "https://github.com/0xMarcio/cve/blob/2ece7fed57916ea5b4f9e283e61bef144d8eee65/2025/CVE-2025-21999.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4fa082fe458d8fa95596028e75b13159b2e52c11/cves/2025/21xxx/CVE-2025-21999.json",
+    "https://github.com/cisagov/vulnrichment/blob/53f84311e318e04e4e0c2f4de1a727bb1d59e897/2025/21xxx/CVE-2025-21999.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e1cbe143690bb47370af7fa5b465982662d83ca8/SSVC/data/2025/CVE-2025-21999.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21999.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e1cbe143690bb47370af7fa5b465982662d83ca8/CVE/data/2025/CVE-2025-21999.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21999.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-21999-2025-11-03-1328",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-21999-2025-11-03-1338",
+]
