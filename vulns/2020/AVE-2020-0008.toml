@@ -1,11 +1,11 @@
 [basic]
-description = ".NET Framework 的 XOML 解析器在处理 SharePoint 工作流时存在代码注入漏洞，由于未能正确验证用户输入，导致攻击者可构造特制的 XOML 文件注入恶意代码。远程攻击者只需向目标 SharePoint 服务器发送包含恶意 XOML 的请求即可触发该漏洞，无需任何身份认证。成功利用后攻击者可实现远程代码执行，完全控制目标服务器。该漏洞影响 Microsoft .NET Framework 4.6/4.7/4.8 及 SharePoint 相关组件，CVSS 评分 9.8，危害等级严重。Microsoft 已在 2020 年 1 月安全更新中修复此漏洞。"
+description = "Microsoft .NET Framework 远程代码执行注入漏洞（CVE-2020-0646）存在于 SharePoint 工作流功能中。当 .NET Framework 未能正确验证通过 `webpartpages.asmx` 服务的 `ValidateWorkflowMarkupAndCreateSupportObjects` SOAP 接口提交的 XOML（XAML Object Model）工作流标记输入时，攻击者可通过构造恶意的 XOML 载荷，利用 `CallExternalMethodActivity` 的 `MethodName` 属性注入代码执行原语，从而在服务器上执行任意系统命令。该漏洞影响安装了 .NET Framework 3.0/3.5/4.x 各版本的 Windows 7、8.1、10 及 Windows Server 2008 至 2019 等系统，CVSS v3.1 评分高达 9.8（严重）。攻击者无需身份验证即可通过网络向 SharePoint 站点发送特制的 SOAP 请求触发漏洞，实现远程代码执行并完全控制目标服务器。Microsoft 已于 2020 年 2 月安全更新中修复此漏洞，CISA 亦将其列入已知被利用漏洞目录。"
 published = "2020-01-14T23:15:33Z"
-remediation = "立即安装 Microsoft 2020 年 1 月安全更新，为受影响 Windows 版本上的 .NET Framework 4.6/4.7/4.8 打补丁，通过 Windows Update 或 Microsoft Update Catalog 获取更新。对于 SharePoint 环境，作为临时缓解措施，可在 Web.config 中禁用 Workflow XOML 解析功能，限制非信任用户提交工作流定义。"
+remediation = "立即安装 Microsoft 2020 年 1 月安全更新，修复 .NET Framework 远程代码执行漏洞（CVE-2020-0646）。受影响系统请根据版本安装对应累积更新：.NET Framework 4.8 安装 KB4534132，4.7.2 安装 KB4534276，4.6.2/4.7/4.7.1 安装 KB4534273，3.5/4.5.2 安装 KB4534276；或通过 Windows Update 自动更新至最新补丁。SharePoint 环境还需同步应用 SharePoint 安全更新（KB4490031）。临时缓解措施：在防火墙层限制对 SharePoint/_layouts/ 路径的外部访问，禁用不必要的 Workflow Manager 服务，并将 .NET Framework 应用程序的 AppPool 权限降级为最低权限运行，同时启用 IIS 请求筛选以拦截含危险 XOML 标记的入站请求。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
-title = "Microsoft SharePoint .NET Framework 远程代码执行漏洞"
+sources = ["nuclei"]
+title = "Microsoft SharePoint 远程代码执行漏洞"
 updated = "2026-06-17T02:46:15Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2020-0646"]
 ave_id = "AVE-2020-0008"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,13 +27,13 @@ urls = [
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2020-0646",
     "https://www.exploit-db.com/exploits/48275",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/code/cves/2020/CVE-2020-0646.yaml",
-    "https://github.com/trickest/cve/blob/7ade3449b58b8e2c679712dc3af64bbd8e638364/2020/CVE-2020-0646.md",
-    "https://github.com/projectdiscovery/nuclei-templates/blob/e9f0fe7fa4f5c548bbd1a4d3b65d0f181021e664/code/cves/2020/CVE-2020-0646.yaml",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2020/CVE-2020-0646.md",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/147ec4c5c6b23a49577ae3add487357168624ba0/code/cves/2020/CVE-2020-0646.yaml",
     "https://github.com/MrWQ/vulnerability-paper/blob/fcbdb421b62aef6ccac59a1887d94687f4faf9d6/bugs/CVE-2020-0646_SharePoint_RCE_-_POC.md",
     "https://github.com/SexyBeast233/SecBooks/blob/eca538546bd6b8eaade595fc9d79ffbecc4d842a/【公众号文章】bugs/CVE-2020-0646 SharePoint RCE - POC.md",
-    "https://github.com/cisagov/vulnrichment/blob/380f533205c12eeaa5a8c27e3ae790586a72a402/2020/0xxx/CVE-2020-0646.json",
+    "https://github.com/cisagov/vulnrichment/blob/678d17bcfa8b8ea8c4c5ba0955db9cb325f5e0f1/2020/0xxx/CVE-2020-0646.json",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2020/CVE-2020-0646.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/37be0559d0574b93d433d6c01d9f77ea4c420519/SSVC/data/2020/CVE-2020-0646.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8c9d47e9557df614f7298b810b5ff61b919d2e0f/SSVC/data/2020/CVE-2020-0646.json",
     "https://github.com/PwnAwan/CVEs/blob/967839a1f3dd2e43c3ca7af98749ae1712e69a04/2020/CVE-2020-0646.md",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2020/CVE-2020-0646.md",
     "https://github.com/shengshengli/vulnerability-paper/blob/356d4303c0ab4465259ea068b0de38b4fade9be3/bugs/CVE-2020-0646 SharePoint RCE - POC.md",
