@@ -1,11 +1,11 @@
 [basic]
-description = "Microsoft SQL Server Reporting Services（SSRS）在错误处理页面请求时存在反序列化漏洞（CWE-502）。已认证的远程攻击者可向目标 SSRS 服务器发送特制的页面请求，触发不安全的 .NET 反序列化，从而在目标系统上以 SSRS 服务账户权限执行任意代码。该漏洞影响 Microsoft SQL Server 2008/2012/2014/2016/2017 等多个版本的 Reporting Services，CVSS 评分 8.8，危害等级高。Microsoft 已在 2020 年 2 月安全更新中修复此漏洞。"
+description = "Microsoft SQL Server Reporting Services（SSRS）存在远程代码执行漏洞，其根本原因是 SSRS 在处理页面请求时对 ASP.NET ViewState 数据进行不安全的反序列化操作。攻击者可通过向 SSRS 实例的 ReportViewer.aspx 页面提交特制的恶意 ViewState 载荷，触发 LosFormatter 反序列化机制，从而在目标服务器上执行任意系统命令。该漏洞影响 Microsoft SQL Server 2012 SP4、2014 SP3 以及 2016 SP2（CU/GDR）等多个版本，CVSS v3.1 评分为 8.8，危害等级为高危。成功利用此漏洞需要攻击者具备目标服务器的低权限凭据或匿名访问权限，攻击复杂度低且无需用户交互。攻击者可通过 NTLM 认证或匿名方式访问 ReportServer/pages/ReportViewer.aspx 路径，将包含 ysoserial 生成的 TypeConfuseDelegate 恶意载荷注入到 __VIEWSTATE 字段中，通过 POST 请求发送至目标服务器触发反序列化，最终获得与 SSRS 服务进程同等权限的远程代码执行能力。该漏洞已在野外被广泛利用，CISA 已将其列入已知被利用漏洞目录，Microsoft 已于 2020 年 2 月发布安全更新进行修复。"
 published = "2020-02-11T22:15:13Z"
-remediation = "立即安装 Microsoft 2020 年 2 月安全更新，具体补丁编号对应 SQL Server 版本：SQL Server 2012 SP4 (KB4532097)、SQL Server 2014 SP3 (KB4532098)、SQL Server 2016 SP2 (KB4532099)。如无法立即打补丁，可在 IIS 中限制对 ReportServer 虚拟目录的访问权限，仅允许受信任 IP 访问，并禁用 SSRS 中不必要的自定义身份验证扩展作为临时缓解措施。"
+remediation = "立即安装 Microsoft 2020 年 2 月安全更新修复此 SSRS ViewState 反序列化 RCE 漏洞：SQL Server 2016 SP2 CU11 安装 KB4535706，SP2 GDR 安装 KB4532097；SQL Server 2014 SP3 CU4 安装 KB4535288，SP3 GDR 安装 KB4532095；SQL Server 2012 SP4 GDR 安装 KB4532098。补丁可通过 Windows Update 自动安装，或从 Microsoft Update Catalog 下载离线包手动部署。如暂时无法打补丁，可在防火墙层面限制 SSRS 服务端口（默认 80/443）仅允许可信 IP 访问，或在 Reporting Services 配置中禁用不必要的扩展插件以降低攻击面。"
 score = 8.8
 severity = "HIGH"
-sources = ["kev"]
-title = "Microsoft SQL Server Reporting Services 远程执行代码漏洞"
+sources = ["nuclei"]
+title = "Microsoft SQL Server Reporting Services 远程代码执行漏洞"
 updated = "2026-06-17T02:46:11Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2020-0618"]
 ave_id = "AVE-2020-0006"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,9 +28,9 @@ urls = [
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2020-0618",
     "https://www.exploit-db.com/exploits/48816",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2020/CVE-2020-0618.yaml",
-    "https://github.com/trickest/cve/blob/7ade3449b58b8e2c679712dc3af64bbd8e638364/2020/CVE-2020-0618.md",
-    "https://github.com/nomi-sec/PoC-in-GitHub/blob/ab6f9d01ebd789d88d6c9c80d2c4801a89e1f38f/2020/CVE-2020-0618.json",
-    "https://github.com/projectdiscovery/nuclei-templates/blob/e9f0fe7fa4f5c548bbd1a4d3b65d0f181021e664/http/cves/2020/CVE-2020-0618.yaml",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2020/CVE-2020-0618.md",
+    "https://github.com/nomi-sec/PoC-in-GitHub/blob/f01a904c11bf7fca8d097ea79321a26e81ed894c/2020/CVE-2020-0618.json",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/147ec4c5c6b23a49577ae3add487357168624ba0/http/cves/2020/CVE-2020-0618.yaml",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/high/CVE-2020-0618.yaml",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/high/cve-2020-0618-4339.yaml",
     "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/high/cve-2020-0618-4334.yaml",
