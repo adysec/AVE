@@ -1,11 +1,11 @@
 [basic]
-description = "IBM HTTP Server SSL 模块 (IBMHSSSB) 1.0 版本中的 ikeyman 组件存在 CLASSPATH 环境变量配置不当漏洞。该组件将用户自定义的 CLASSPATH 目录置于系统目录之前，导致本地恶意用户可通过植入木马 Ikeyman 类文件，在以 root 权限运行 ikeyman 时实现任意代码执行并提权至 root。该漏洞影响 IBM HTTP Server SSL 模块 1.0 版本，CVSS 评分 7.2（高危），攻击向量为本地，需低权限用户交互，可完全破坏系统机密性、完整性和可用性。"
+description = "IBM IBMHSSSB 1.0 中捆绑的 ikeyman 工具存在本地权限提升漏洞。由于 ikeyman 在设置 CLASSPATH 环境变量时，将用户自定义目录置于系统目录之前，导致 Java 类加载时优先从用户可控路径读取类文件。恶意本地用户可在该目录中放置同名的木马 Ikeyman 类，当管理员或特权用户以 root 身份运行 ikeyman 时，恶意类被优先加载并执行任意代码，从而实现权限提升并以 root 身份执行任意命令。该漏洞攻击条件为本地用户具有可写目录权限并能诱使特权用户运行 ikeyman 工具，危害严重，可能造成系统完全被控制。"
 published = "2001-08-31T04:00:00Z"
-remediation = "升级 IBM HTTP Server SSL Server Bundle (IBMHSSSB) 至修复版本或应用 IBM 官方安全补丁（参考 BID 1092/X-Force 4235），修正 ikeyman 组件的 CLASSPATH 环境变量排序问题，确保系统目录优先于用户目录；若无法立即升级，可通过限制本地用户写入权限、移除用户自定义 CLASSPATH 路径或禁用 ikeyman 服务作为临时缓解措施。"
+remediation = "建议立即升级 IBM HTTP Server（IBMHSSSB）至 1.0 之后的安全修复版本，或停止使用受影响的 ikeyman 组件。若无法立即升级，应修复启动脚本，确保 /usr/bin/ikeyman 在设置 CLASSPATH 时始终将系统类目录（如 /usr/IBMIHS 自带的类路径）置于用户目录之前，禁止把用户可控目录（如 $HOME/.CLASSPATH、当前目录 .）混入其中，并在调用前显式校验 CLASSPATH 内容、移除一切用户可写目录。同时限制 ikeyman 仅由受信任的维护账户执行，杜绝普通本地用户以 root 权限运行，从而阻断通过植入木马 Ikeyman 类实现提权的路径。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "IBM IBMHSSSB 1.0 代码执行漏洞"
+sources = ["avd"]
+title = "IBM IBMHSSSB ikeyman 本地权限提升漏洞"
 updated = "2026-06-16T21:53:22Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1202"]
 ave_id = "AVE-2000-1144"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -25,14 +25,14 @@ urls = [
     "http://www.securityfocus.com/archive/1/54073",
     "http://www.securityfocus.com/bid/1092",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/4235",
-    "https://github.com/CVEProject/cvelistV5/blob/285830d3bc68381daeff2169c3b0a4500df03b19/cves/2000/1xxx/CVE-2000-1202.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/dd1c73c7d44a762cc5a69d15ad07fe20976d7aec/CVE/data/2000/CVE-2000-1202.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0421602eb9f824909ec57dc4d45f5f29ad208960/cves/2000/1xxx/CVE-2000-1202.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6383c78237400b01eaca440114073e7df0a76cff/CVE/data/2000/CVE-2000-1202.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1202",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1202.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-1202.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/e60bb3a306b43cc668d535cff411b9566d5ecc1b/CVE-2000/CVE-2000-12xx/CVE-2000-1202.json",
-    "https://github.com/opencve/opencve-kb/blob/94607cd5f476edf9a266e633e1be7e43ab890e1c/2000/CVE-2000-1202.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/1xxx/CVE-2000-1202.md",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1202.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/ed6afb6b9d568bf2517b58310158382f003b6ae6/CVE-2000/CVE-2000-12xx/CVE-2000-1202.json",
+    "https://github.com/opencve/opencve-kb/blob/d75777256d9f777c09736cf2245cbda99b9caec2/2000/CVE-2000-1202.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/52dd33919d034b1e65c4c9c0bf6fc21ba3f5f175/2000/1xxx/CVE-2000-1202.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1202.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1202.json",
 ]
