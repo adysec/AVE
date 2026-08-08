@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "检测目标 Windows 2000 IIS 5.0 服务器是否启用了 Internet Printing ISAPI 扩展（.printer）。该扩展存在缓冲区溢出漏洞（CVE-2001-0241），远程攻击者可通过发送超长打印请求触发栈缓冲区溢出并劫持执行流程，最终在系统上下文中执行任意代码获取最高权限。本检测通过访问 .printer 路径验证漏洞组件是否存在，不会对目标造成损害。"
+description = "检测 Windows 2000 IIS 5.0 的 Internet Printing ISAPI 扩展（.printer）缓冲区溢出漏洞。通过向目标发送对 NULL.printer 的 HTTP GET 请求，验证 .printer ISAPI 扩展是否可被正常访问，若返回 200 则表明该扩展已启用并可能受此缓冲区溢出漏洞影响。"
 id = "POC-AVE-1999-1562"
-name = "CVE-2001-0241 Windows IIS 5.0 ISAPI .printer 缓冲区溢出检测"
+name = "CVE-2001-0241 PoC"
 severity = "critical"
 tags = ["ave-1999-1562"]
 vuln_id = [
@@ -15,10 +15,14 @@ logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/null.printer"
+path = "/null.printer"
 protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
 
 [[poc.requests.matchers]]
 expect = true
-status = [404]
+part = "body"
+status = [200]
 type = "status"
