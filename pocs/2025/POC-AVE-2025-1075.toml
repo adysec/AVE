@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "验证 Linux 内核 MCTP 数据包重组 frag_list 未取消共享导致的内存泄漏漏洞。该漏洞存在于 net/mctp/route.c 的 mctp_frag_queue 重组逻辑中，当使用 MCTP-over-USB 驱动时，skb_clone 会导致 frag_list 被多个数据包共享，引发错误重组和内存泄漏。"
+id = "POC-AVE-2025-1075"
+name = "CVE-2025-21972 PoC"
+severity = "high"
+tags = ["ave-2025-1075"]
+vuln_id = [
+    "CVE-2025-21972",
+    "AVE-2025-1075",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+X-MCTP-Test = "CVE-2025-21972"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Linux"]
