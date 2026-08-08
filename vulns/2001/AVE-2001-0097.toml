@@ -1,12 +1,12 @@
 [basic]
-description = "OpenBSD 2.x 版本及更早版本的 FTP 守护进程 ftpd 中的 glob() 函数存在缓冲区溢出漏洞。远程攻击者无需身份验证，即可通过向目标 FTP 服务器发送包含花括号（{}）序列的超长模式字符串，触发 g_opendir、g_lstat、g_stat 以及 glob2、glob3 等函数中 glob0 缓冲区的溢出，进而执行任意系统命令。该漏洞影响基于 BSD 的 FTP 服务器，攻击者可利用其获得目标系统的完全控制权。CVSS 评分为 10.0，危害等级为严重，OpenBSD 已在 2.8 版本中修复此问题。"
-published = "2001-06-18T04:00:00.000"
-remediation = "立即升级 OpenBSD 至 2.8 或更高版本以修复 ftpd glob() 缓冲区溢出漏洞。若暂时无法升级，可通过注释 inetd.conf 中 ftpd 行来禁用 FTP 服务，并在防火墙层面限制 21 端口入站访问作为临时缓解措施。"
+description = "OpenBSD 2.x 及更早版本的内置 FTP 守护进程 ftpd 中的 glob() 函数存在缓冲区溢出漏洞。该漏洞源于 BSD 系列 FTP 服务器在处理文件名通配符模式（glob pattern）时未对包含花括号 {} 序列的超长输入进行边界检查，导致 g_opendir、g_lstat、g_stat 以及 glob0 缓冲区等多个函数发生堆栈溢出。未经身份验证的远程攻击者可通过向 FTP 服务器发送包含超长 {} 通配符模式的恶意 FTP 命令（如 LIST、NLST、STAT 等触发 glob 函数调用的命令），利用缓冲区溢出执行任意系统命令，完全接管目标服务器。该漏洞影响 OpenBSD 2.x 至 2.7 版本，CVSS 评分 10.0，危害等级严重，攻击条件简单，无需认证即可利用。"
+published = "2001-06-18T04:00:00Z"
+remediation = "建议立即升级 OpenBSD 到 2.8 或更高版本，该版本已修复 glob(3) 库中的缓冲区溢出及 ftpd 对 glob 调用的限制问题。若暂无法升级完整版本，可依次应用官方补丁：在 /usr/src 目录执行 patch -p0 &lt; 025_glob.patch 修复 glob 库，再进入 libexec/ftpd 执行 make obj &amp;&amp; make depend &amp;&amp; make &amp;&amp; make install，并重建 libc：cd /usr/src/lib/libc &amp;&amp; make -DNOMAN install；如无需 FTP 服务，可通过注释 inetd.conf 中 ftp 行或移除 /etc/inetd.conf 中的 ftp 条目禁用 ftpd 作为临时缓解措施。"
 score = 10
 severity = "CRITICAL"
-sources = ["cve"]
-title = "OpenBSD ftpd glob() 缓冲区溢出漏洞"
-updated = "2026-06-16T21:53:57.480"
+sources = ["epss"]
+title = "OpenBSD ftpd glob() 远程缓冲区溢出漏洞"
+updated = "2026-06-16T21:53:57Z"
 
 [exploit]
 exp_urls = []
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0247"]
 ave_id = "AVE-2001-0097"
 
 [meta]
-collected_at = "2026-08-06T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.securityfocus.com/bid/2548",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/6332",
     "https://www.exploit-db.com/exploits/20733",
-    "https://github.com/trickest/cve/blob/83d149a838ef5225bf2dfe00b356732e080c7055/2001/CVE-2001-0247.md",
-    "https://github.com/CVEProject/cvelistV5/blob/316b61870d1ace84a248a4e6c4f8802fe9d4e563/cves/2001/0xxx/CVE-2001-0247.json",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2001/CVE-2001-0247.md",
+    "https://github.com/CVEProject/cvelistV5/blob/d104555a36cb37e29f12e17c61cd931df5a81688/cves/2001/0xxx/CVE-2001-0247.json",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2001/CVE-2001-0247.md",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0247",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2001/CVE-2001-0247.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/67e88304703c10b9750253fd05ab77419f3daa1f/CVE/data/2001/CVE-2001-0247.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e875764a6fbbccfafca6ba9474061a7299b8ce29/CVE/data/2001/CVE-2001-0247.json",
     "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2001/CVE-2001-0247.md",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/dde218104d183b4531b1e275856d67b12288f14d/2001/0xxx/CVE-2001-0247.md",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/1e8f3e986204a8b5031b0e80f03c45bd691a44c2/2001/0xxx/CVE-2001-0247.md",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0247.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0247.json",
 ]
