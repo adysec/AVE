@@ -1,0 +1,65 @@
+[basic]
+description = """
+...
+```
+This looks like the description was incorrectly combined with other content. The `<value>` tag appears inside the description string, which is wrong.
+
+I need to provide just the clean description content without the extra CVSS/PoC notes.
+
+Let me craft a proper description:
+- Microsoft Windows 2000 Telnet服务存在句柄资源泄漏漏洞
+- 未经身份认证的远程攻击者可通过连续发起大量Telnet会话连接并立即终止的方式
+- 触发服务内部句柄资源泄漏，导致系统可用句柄资源逐渐耗尽
+- 最终使Telnet服务无法响应合法请求，造成拒绝服务
+- 影响运行Telnet服务的Windows 2000系统
+- 攻击条件：远程、无需认证、网络可达即可
+- CVSS v2 5.0 MEDIUM
+
+Wait, the description field should NOT contain CVSS info - that's in the score/severity fields. It also shouldn't contain PoC/EXP info. It should be just the vulnerability description.
+
+Let me write a clean one:
+
+Microsoft Windows 2000 Telnet 服务存在句柄资源泄漏漏洞。未经身份认证的远程攻击者可通过向目标系统连续发起大量 Telnet 会话连接并立即断开的方式，触发服务内部的句柄资源泄漏，导致系统可用句柄资源逐渐耗尽，最终使 Telnet 服务无法响应合法请求，造成拒绝服务。该漏洞影响运行 Telnet 服务的 Windows 2000 系统，攻击条件宽松——仅需目标开放 Telnet 端口且网络可达，攻击复杂度低，无需任何认证凭据。攻击者可通过简单脚本批量发起连接并断开，持续消耗系统资源。
+
+That's well over 50 Chinese characters and covers all required aspects.
+
+The user wants me to output just the value inside <value> tags.
+
+Wait, looking at the "校验发现的错误" it says "description: description 字段为空". But the TOML clearly has content. Maybe the triple-quoted string with embedded newlines and the `<value>` tag at the end caused parsing issues? Or maybe the Rust parser saw it as empty because of some encoding issue? Regardless, I need to provide a clean description string value.
+
+The output format says: "只输出 <value>..."""
+published = "2001-07-21T04:00:00Z"
+remediation = '安装 Microsoft 安全公告 MS01-031 发布的安全补丁 KB299553，修复 Windows 2000 Telnet 服务的句柄泄漏漏洞，补丁确保 Telnet 会话终止时系统资源被正确释放。受影响版本为 Windows 2000 Professional/Server/Advanced Server（需安装 Service Pack 1 或 Service Pack 2 后打补丁，或直接升级至 Windows 2000 Service Pack 3，该补丁已内置其中）。如短期内无法安装补丁，可暂时在防火墙中禁用 TCP 23 端口的入站访问，或通过"管理工具"中的"服务"控制台停止 Telnet 服务（TlntSvr），以阻止远程攻击者利用该漏洞发起拒绝服务攻击。'
+score = 5
+severity = "MEDIUM"
+sources = ["cve"]
+title = "Microsoft Windows 2000 Telnet 服务拒绝服务漏洞"
+updated = "2026-06-16T21:54:08Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2001-0346"]
+ave_id = "AVE-2001-0729"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://docs.microsoft.com/en-us/security-updates/securitybulletins/2001/ms01-031",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/6668",
+    "https://github.com/CVEProject/cvelistV5/blob/5be78f48139c72a338a40473366abbf7074cc88e/cves/2001/0xxx/CVE-2001-0346.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/0776717a55dd7fe85f7b8a5d01546188b2a8934d/CVE/data/2001/CVE-2001-0346.json",
+    "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0346",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0346.json",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2001-0346.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/b1889b6313473bbf379d553c295219530c64131c/CVE-2001/CVE-2001-03xx/CVE-2001-0346.json",
+    "https://github.com/opencve/opencve-kb/blob/9d9cee1fc61eee0137c87a74ed9431aac866a8e4/2001/CVE-2001-0346.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/2fa307de887852a370cdad75bf1877ed32b908ac/2001/0xxx/CVE-2001-0346.md",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0346.json",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0346.json",
+]
