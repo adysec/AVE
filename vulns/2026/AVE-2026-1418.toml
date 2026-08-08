@@ -1,0 +1,41 @@
+[basic]
+description = "rclone 在 SFTP 后端将远程文件路径插入 PowerShell hash 命令时，其转义函数仅对 ASCII 单引号（U+0027）进行转义，但 PowerShell 会将 U+2018、U+2019、U+201A、U+201B 四种 Unicode smart quotes 也视为单引号分隔符。攻击者若能在 SFTP 服务端创建或重命名包含此类 smart quote 的文件名，即可在路径字面量中注入并闭合引号，附加任意 PowerShell 语句，以受害 SSH 账户的权限执行命令。该漏洞影响 rclone 1.75.0 之前版本，成功利用可导致任意代码执行、文件窃取或篡改、凭据访问及横向移动等后果。攻击者无需获取 SSH 凭据或交互式 shell，仅需具备远程文件命名权限，并在触发服务端哈希计算（如 rclone hash 操作）时即可完成利用。建议升级至 rclone v1.75.0 修复。"
+published = "2026-08-05T21:16:58Z"
+remediation = "立即升级 rclone 到 v1.75.0 或更高版本，该版本修复了 PowerShell 智能引号转义绕过漏洞。如无法立即升级，临时将 SFTP 远程配置中的命令 shell 从 PowerShell 切换为 cmd，或禁用 server-side hashing 功能，并避免从不可信来源同步或创建文件。"
+score = 8
+severity = "HIGH"
+sources = ["ghsa"]
+title = "rclone SFTP 服务器端 PowerShell 智能引号注入远程代码执行漏洞"
+updated = "2026-08-07T05:17:03Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-71312",
+    "GHSA-2m8m-jhrm-w6j2",
+]
+ave_id = "AVE-2026-1418"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/rclone/rclone/commit/e122fba1a57641b63a580aa26c026903a84e2e88",
+    "https://github.com/rclone/rclone/releases/tag/v1.75.0",
+    "https://github.com/rclone/rclone/security/advisories/GHSA-2m8m-jhrm-w6j2",
+    "https://github.com/CVEProject/cvelistV5/blob/c1aa21a07e1964888700209700f49dcbdcc17555/cves/2026/71xxx/CVE-2026-71312.json",
+    "https://github.com/cisagov/vulnrichment/blob/53f84311e318e04e4e0c2f4de1a727bb1d59e897/2026/71xxx/CVE-2026-71312.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/205c8e3e39f36df585e48ab32df04c8b50234719/CVE/data/2026/CVE-2026-71312.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/205c8e3e39f36df585e48ab32df04c8b50234719/SSVC/data/2026/CVE-2026-71312.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/493ad886fae47ae251719ddf025a91da31944e75/vex/cve/2026/CVE-2026-71312.json",
+    "https://github.com/canonical/ubuntu-security-notices/blob/493ad886fae47ae251719ddf025a91da31944e75/osv/cve/2026/UBUNTU-CVE-2026-71312.json",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2026-71312.json",
+    "https://github.com/alan-turing-institute/cyber-threat-observatory/blob/485354b91740f3a138561e440c19b7a203f3c378/reports/2026-08-05/TIER_3_CVE-2026-71312.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/38035ead458ebef55cc9f348372e0f29df3ef52e/CVE-2026/CVE-2026-713xx/CVE-2026-71312.json",
+    "https://github.com/neuvector/vul-source/blob/6f5e0003ac0597749dcdac9f62aa9677ac851d0d/ubuntu-cve-tracker/active/CVE-2026-71312",
+]
