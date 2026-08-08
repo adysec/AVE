@@ -1,11 +1,11 @@
 [basic]
-description = "Red Hat Linux 的 usermode 软件包中 userhelper 程序存在权限提升漏洞，该程序以 root 权限执行非 setuid 程序而未激活 glibc 的安全检查机制。攻击者可通过设置 LANG 或 LC_ALL 环境变量，利用 glibc 格式化字符串漏洞（CVE-2000-0844）以 root 权限执行任意代码。该漏洞影响 Red Hat Linux 系统，攻击条件为攻击者能够控制环境变量，利用方式为构造包含格式化字符串 specifier 的恶意环境变量触发漏洞。"
+description = "Red Hat Linux 系统中 usermode 软件包内的 userhelper 程序以 root 权限执行非 setuid 程序，但在执行前调用 setuid(0) 使实际用户 ID 与有效用户 ID 均变为 0，导致 glibc 的安全检查机制被完全绕过。由于 glibc 在处理本地化环境变量时存在格式字符串漏洞（CVE-2000-0844），攻击者可通过精心构造 LANG 或 LC_ALL 环境变量向 glibc 注入格式字符串利用代码，在 userhelper 调用非特权程序（如 kbdrate）时实现任意代码执行并获取 root 权限。该漏洞影响 Red Hat Linux 6.2/7.0 等版本，攻击者需具有目标系统的本地登录权限（如控制台登录），CVSS 评分为 7.2（高危），危害等级严重。Red Hat 已于 2000 年 9 月通过 RHSA-2000:075 安全公告发布补丁修复此漏洞。"
 published = "2000-09-30T04:00:00Z"
-remediation = "立即安装 Red Hat 安全更新 RHSA-2000-075，升级 usermode 包至修复版本（rpm -Uvh usermode-*.rpm）。若无法立即更新，可临时将 LANG 和 LC_ALL 环境变量置空或设为 C，以阻止通过格式字符串漏洞利用 userhelper 的攻击路径。更新后验证 userhelper 不再以 root 权限执行非 setuid 程序。"
+remediation = "Red Hat Linux 系统应立即应用 RHSA-2000:075 安全公告补丁，升级 usermode 包至修复版本，并同步更新 glibc 至补丁版本。如暂无法安装补丁，可临时通过 PAM 配置禁用 userhelper 对 consolehelper 的调用，或修改 /etc/pam.d/userhelper 限制其使用范围。此外，建议将系统 LANG 和 LC_ALL 环境变量默认设置为 C 或 POSIX，避免 setuid 程序继承恶意 locale 设置，从而阻断格式化字符串漏洞的利用路径。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "Red Hat Linux userhelper 格式字符串漏洞"
+sources = ["avd"]
+title = "Red Hat Linux usermode 本地权限提升漏洞"
 updated = "2026-06-16T21:53:22Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1207"]
 ave_id = "AVE-2000-0936"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=97063854808796&w=2",
     "http://www.linux-mandrake.com/en/security/2000/MDKSA-2000-059.php3",
     "http://www.redhat.com/support/errata/RHSA-2000-075.html",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2000/CVE-2000-1207.md",
-    "https://github.com/CVEProject/cvelistV5/blob/38590de6b24a9e23ae9a8ab63556f3ebbcbcf955/cves/2000/1xxx/CVE-2000-1207.json",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2000/CVE-2000-1207.md",
+    "https://github.com/CVEProject/cvelistV5/blob/d9e7b2d5ad52071878d0982aa0f9c02214cf0733/cves/2000/1xxx/CVE-2000-1207.json",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2000/CVE-2000-1207.md",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2000/CVE-2000-1207.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/908f27ce56b05b89bd69be9a1ba710270fd64008/CVE/data/2000/CVE-2000-1207.json",
-    "https://github.com/anchore/nvd-data-overrides/blob/0c8dd71e3ecd7211889d43b088995c7a1a3f2c10/data/2000/CVE-2000-1207.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/dc5a1626a2c4eb42e596358831c9619042be273c/CVE/data/2000/CVE-2000-1207.json",
+    "https://github.com/anchore/nvd-data-overrides/blob/fd83d7300ad2d6d69a40586722d4416f017c1bdf/data/2000/CVE-2000-1207.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1207",
-    "https://github.com/anchore/cve-data-enrichment/blob/27a74eedb9de5512b284a88a513f48696206fede/data/anchore/2000/CVE-2000-1207.json",
+    "https://github.com/anchore/cve-data-enrichment/blob/f95ed70ff4572bede3f68dd12496edb1151d4685/data/anchore/2000/CVE-2000-1207.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1207.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-1207.md",
 ]
