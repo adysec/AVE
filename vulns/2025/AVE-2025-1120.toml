@@ -1,0 +1,45 @@
+[basic]
+description = "Linux 内核的 UDP 协议栈实现中存在整数溢出漏洞。当应用程序通过 setsockopt() 系统调用将套接字的 SO_RCVBUF 选项设置为 INT_MAX 时，在 udp_destruct_common() 函数释放套接字接收队列时会累积 skb->truesize，随后将总大小传递给 udp_rmem_release() 函数进行内存核算调整。由于该函数接受有符号整数参数，总大小发生回绕导致溢出，使得 sk->sk_forward_alloc 变为负数，最终导致 UDP 内存使用量持续增长且永不释放。攻击者可通过本地低权限运行恶意程序，反复创建并关闭设置了超大接收缓冲区的 UDP 套接字，触发内核 UDP 内存核算泄漏，造成系统内存耗尽并引发间歇性数据包丢弃，影响系统网络服务的可用性。"
+published = "2025-04-16T15:15:59Z"
+remediation = "升级 Linux 内核至包含修复补丁的稳定版本。上游修复已合入各稳定分支：5.4 系列请升级至 5.4.301 或更高版本，5.10 系列请升级至 5.10.246，5.15 系列请升级至 5.15.195，6.1 系列请升级至 6.1.134，6.6 系列请升级至 6.6.87，6.12 系列请升级至 6.12.23，6.13 系列请升级至 6.13.11，6.14 系列请升级至 6.14.2。主流发行版用户可通过系统包管理器更新：Ubuntu 22.04 LTS 升级至 5.15.0-170.180，Ubuntu 24.04 LTS 升级至 6.8.0-86.87，Ubuntu 24.10 升级至 6.11.0-28.28，Ubuntu 25.04 升级至 6.14.0-22.22。Debian 12 用户请安装 dsa-5907 公告中的更新内核。如当前运行版本仍受影响且无法立即升级，可临时通过 sysctl 限制 UDP 接收缓冲区大小以降低触发风险：执行 echo 16777216 > /proc/sys/net/ipv4/udp_rmem_min 将最低接收缓冲区限制调低，避免应用程序设置过大 SO_RCVBUF 触发整数溢出。重启后可通过 cat /proc/net/sockstat | grep UDP 确认 UDP mem 字段不再异常增长。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 UDP 内存管理整数溢出漏洞"
+updated = "2026-06-17T08:44:57Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-22058"]
+ave_id = "AVE-2025-1120"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/13550273171f5108b1ac572d8f72f4256ab92854",
+    "https://git.kernel.org/stable/c/3836029448e76c1e6f77cc5fe0adc09b018b5fa8",
+    "https://git.kernel.org/stable/c/9122fec396950cc866137af7154b1d0d989be52e",
+    "https://git.kernel.org/stable/c/a116b271bf3cb72c8155b6b7f39083c1b80dcd00",
+    "https://git.kernel.org/stable/c/aeef6456692c6f11ae53d278df64f1316a2a405a",
+    "https://git.kernel.org/stable/c/c3ad8c30b6b109283d2643e925f8e65f2e7ab34e",
+    "https://git.kernel.org/stable/c/c4bac6c398118fba79e32b1cd01db22dbfe29fbf",
+    "https://git.kernel.org/stable/c/d9c8266ce536e8314d84370e983afcaa36fb19cf",
+    "https://git.kernel.org/stable/c/df207de9d9e7a4d92f8567e2c539d9c8c12fd99d",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/cd4a01a42d95af497d54c028c2f468527d995ec5/2025/CVE-2025-22058.md",
+    "https://github.com/CVEProject/cvelistV5/blob/c97f17c8d88f8904053a3f5316d71924e00d56ab/cves/2025/22xxx/CVE-2025-22058.json",
+    "https://github.com/cisagov/vulnrichment/blob/a351f6e294a9d87335a55efa2995f1a256e1e0a9/2025/22xxx/CVE-2025-22058.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6db47a55dc9dc28b639dc9943d75929e5e8aa84a/SSVC/data/2025/CVE-2025-22058.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-22058.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6db47a55dc9dc28b639dc9943d75929e5e8aa84a/CVE/data/2025/CVE-2025-22058.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-22058-2025-11-03-1329",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-22058.json",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2025-22058.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-22058",
+]
