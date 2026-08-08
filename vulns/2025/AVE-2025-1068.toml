@@ -1,0 +1,35 @@
+[basic]
+description = "Linux 内核 CIFS（SMB 客户端）文件系统在解析 closetimeo 挂载选项时存在整数溢出漏洞（CWE-190）。closetimeo 参数为 u32 类型，本应在其上限校验完成之前进行处理，但该值在校验前即被从秒（seconds）转换为内核时间单位 jiffies，当用户提供的挂载参数过大时会发生整数溢出回绕，导致后续超时控制逻辑异常。该漏洞影响 Linux 内核 5.15.107 至 6.14 之前的多个版本分支，涉及 Debian 12、SUSE Linux Enterprise 15 等发行版内核。攻击者需具备本地的挂载权限（低权限、PR:L），在挂载 CIFS/SMB 共享时构造并传入过大的 closetimeo 参数即可触发，无需用户交互。CVSS v3.1 评分为 5.5，属中危，成功利用主要造成可用性影响（可用性高度受损），可能引发 CIFS 会话管理异常或系统拒绝服务。该漏洞由 Linux 验证中心（linuxtesting.org）通过 SVACE 自动分析工具发现，官方已在 6.13.8、6.12.20、6.6.84、6.1.132、5.15.180 等稳定版内核及 SUSE、Debian 安全更新中修复。"
+published = "2025-04-02T00:00:00Z"
+remediation = "此漏洞源于 cifs 文件系统处理 closetimeo 挂载参数时，u32 值在秒转 jiffies 过程中先于上限校验发生整数溢出，属于本地权限可达的拒绝服务风险。官方修复已合入 Linux 内核 6.14 及各稳定分支，请升级内核至以下修复版本：5.15.180 及以上、6.1.132 及以上、6.6.84 及以上、6.12.20 及以上、6.13.8 及以上（Debian 系统可参考 DSA-5900-1，SUSE 可参考 SUSE-SU-2025:01614-1/01964-1/01951-1 等公告安装对应内核更新包）。无法立即升级时，可在挂载 CIFS/SMB 共享时避免使用 closetimeo 参数（或仅设置合理的较小值），并确保仅受信任的 root 用户可执行 mount 操作；同时避免挂载不受信任的服务器以降低受攻击面，并在更新后重启系统使新内核生效。"
+score = 5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 CIFS 文件系统 closetimeo 挂载选项整数溢出漏洞"
+updated = "2025-04-02T00:00:00Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21962"]
+ave_id = "AVE-2025-1068"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21962.md",
+    "https://github.com/0xMarcio/cve/blob/fc5597c8065a1490bb4aa3ceac7c4f57a4d3db2a/2025/CVE-2025-21962.md",
+    "https://github.com/CVEProject/cvelistV5/blob/0421602eb9f824909ec57dc4d45f5f29ad208960/cves/2025/21xxx/CVE-2025-21962.json",
+    "https://github.com/cisagov/vulnrichment/blob/0a61aa4bfcb382160e788a4fdf055f4ce3b1bb54/2025/21xxx/CVE-2025-21962.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e3a952725679170163af143c035b04e3631dbf4a/SSVC/data/2025/CVE-2025-21962.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e3a952725679170163af143c035b04e3631dbf4a/CVE/data/2025/CVE-2025-21962.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21962.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21962.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/91ece4b64c50642397da36724a41d94be4de3a9d/references/CveServices-CVE-2025-21962-2025-11-03-1327",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21962.json",
+]
