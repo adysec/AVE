@@ -1,11 +1,11 @@
 [basic]
-description = "Windows 2000 加密文件系统（EFS）在加密文件后未能正确销毁原始文件备份及临时文件，导致加密文件的明文内容可能被恢复。该漏洞影响 Windows 2000 系统上所有使用 EFS 功能加密的文件，攻击者需具备本地访问权限（如物理接触或已入侵的受限账户），无需身份验证即可利用。攻击者可通过磁盘恢复工具或直接读取系统临时目录中残留的未加密备份文件，获取原始敏感数据，造成机密信息泄露。"
+description = "Windows 2000 加密文件系统（EFS）在对文件进行加密后，未能正确销毁过程中产生的临时备份文件。具有本地访问权限的攻击者可通过访问系统临时目录，恢复这些未被彻底清除的加密文件备份，从而绕过 EFS 加密保护，直接获取敏感文件的原始明文内容。该漏洞影响 Windows 2000 操作系统中所有启用 EFS 功能加密的文件，攻击者仅需具备目标系统的本地登录权限，无需网络访问即可完成利用，可能导致机要信息泄露。"
 published = "2001-06-02T04:00:00Z"
-remediation = "建议立即安装 Windows 2000 Service Pack 2 或更高版本（KB296316），该补丁修复了 EFS 加密过程中临时备份文件 efs0.tmp 未彻底清除的问题，确保加密完成后明文临时文件被安全覆写而非仅标记为可用。临时缓解措施：对于敏感文件，应在已加密的文件夹内直接创建新文件，而非先创建明文文件再加密，以避免生成明文临时备份；同时使用 BitLocker 或其他全盘加密方案对整个磁盘进行加密，防止通过磁盘工具直接读取残余明文数据。由于 Windows 2000 已终止支持，强烈建议迁移至仍在接收安全更新的 Windows 版本。"
+remediation = "安装 Microsoft 针对 CVE-2001-0261 发布的安全更新补丁，修复 EFS 临时文件未安全删除的问题。如暂时无法打补丁，使用 cipher /w 命令安全擦除磁盘空闲空间以覆盖 efs0.tmp 残留数据，或对敏感文件所在分区执行完全格式化后重新加密。建议升级至 Windows XP 或更高版本以获得完整的 EFS 安全保护。"
 score = 2.1
 severity = "LOW"
-sources = ["cve"]
-title = "Microsoft Windows 2000 EFS 敏感信息泄露漏洞"
+sources = ["epss"]
+title = "微软 Windows 2000 加密文件系统信息泄露漏洞"
 updated = "2026-06-16T21:53:59Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0261"]
 ave_id = "AVE-2001-0688"
 
 [meta]
-collected_at = "2026-08-07T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://marc.info/?l=bugtraq&m=98027311214976&w=2",
     "http://www.securityfocus.com/bid/2243",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5973",
-    "https://github.com/CVEProject/cvelistV5/blob/89a678d7660107e867c9c982c57f25892eb8691e/cves/2001/0xxx/CVE-2001-0261.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/7c0ef39a22957afc03910342f675d7ccbcb3511f/CVE/data/2001/CVE-2001-0261.json",
+    "https://github.com/CVEProject/cvelistV5/blob/ec24b3a165225fc7f9466471e44eba2d61985bf9/cves/2001/0xxx/CVE-2001-0261.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/edda342140f2a1933f7c4bc3c9edebb15182bd3b/CVE/data/2001/CVE-2001-0261.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0261",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0261.json",
-    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0261.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-02xx/CVE-2001-0261.json",
-    "https://github.com/opencve/opencve-kb/blob/3c6f793bd332ed77a946f83c124783cd166df6c4/2001/CVE-2001-0261.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/dd84e105135ebc6d291c634554dfe4af2f7ccfc5/2001/0xxx/CVE-2001-0261.md",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2001-0261.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/7109f9882bc6779c6f740681151297503b560158/CVE-2001/CVE-2001-02xx/CVE-2001-0261.json",
+    "https://github.com/opencve/opencve-kb/blob/ca4504e24ac55a2cf7bf41b8211951918493a49f/2001/CVE-2001-0261.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/dfe9b92c9a400be9283cbaf39856a35a6be58505/2001/0xxx/CVE-2001-0261.md",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0261.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0261.json",
 ]
