@@ -1,11 +1,11 @@
 [basic]
-description = "Linux 发行版（如 RedHat 6.1）及 IRIX 6.5.18 中 lpr 软件包的行式打印机守护进程（lpd）存在认证绕过漏洞。lpd 在验证客户端权限时，将本地主机反向解析的主机名与 gethostname 返回的打印服务器主机名进行比对，攻击者可通过篡改攻击 IP 的 DNS 记录，使反向解析结果与目标打印服务器主机名一致，从而绕过访问控制，以 root 权限远程执行任意命令。该漏洞 CVSS 评分 10.0，危害等级严重，影响范围广泛。"
+description = "Linux 系统的 lpd（行式打印机守护进程）在 lpr 软件包中对客户端进行身份验证时，通过反向 DNS 解析获取本地主机名，并将其与 gethostname 返回的打印服务器主机名进行比较以决定是否允许访问。由于该验证逻辑存在缺陷，未经身份认证的远程攻击者可通过修改自身 IP 地址对应的 DNS 反向解析记录，将主机名伪装成受信任的打印服务器主机名，从而绕过访问控制限制。该漏洞影响 RedHat 6.1、IRIX 6.5.18 等多个 Linux/UNIX 操作系统的 lpr 包，攻击者利用后可执行任意命令，CVSS 评分高达 10.0，危害等级严重。"
 published = "2000-01-08T05:00:00Z"
-remediation = "Red Hat Linux 系统应立即通过 Red Hat Network 或本地镜像升级 lpr 软件包至 RHSA-2000-002 勘误表修复版本，或直接升级到 Red Hat 6.2 及更高版本。IRIX 6.5.x 系统应安装 SGI 安全补丁 20021104-01-P。如暂时无法打补丁，可在防火墙中禁用 TCP 515 端口的对外访问，或通过 /etc/hosts.lpd 和 /etc/hosts.equiv 文件严格限制允许打印的主机，必要时临时停止 lpd 服务以减少攻击面。"
+remediation = "建议立即升级 lpr 包至修复版本（RedHat 6.1 升级至 lpr-0.48-1 或更高版本，IRIX 6.5.18 应用 SGI 安全补丁 1738）。若无法升级，请在防火墙层面封锁 TCP 515 端口（lpd 服务端口），并在 /etc/hosts.lpd 中严格限制允许连接的打印服务器主机名，禁止依赖反向 DNS 解析进行认证。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "RedHat Linux lpd 远程命令执行漏洞"
+sources = ["avd"]
+title = "RedHat Linux lpd 身份认证绕过漏洞"
 updated = "2026-06-16T21:53:24Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1221"]
 ave_id = "AVE-2000-0846"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -30,14 +30,14 @@ urls = [
     "http://www.securityfocus.com/bid/927",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/3840",
     "https://www.exploit-db.com/exploits/19722",
-    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2000/CVE-2000-1221.md",
-    "https://github.com/CVEProject/cvelistV5/blob/8f86f3866df0d1c5d8aff409ea4847883047cbe6/cves/2000/1xxx/CVE-2000-1221.json",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2000/CVE-2000-1221.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4fa082fe458d8fa95596028e75b13159b2e52c11/cves/2000/1xxx/CVE-2000-1221.json",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2000/CVE-2000-1221.md",
     "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2000/CVE-2000-1221.md",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1221",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/a8ca4b37f0ada74ec6b08db2309dab894440907e/CVE/data/2000/CVE-2000-1221.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e1cbe143690bb47370af7fa5b465982662d83ca8/CVE/data/2000/CVE-2000-1221.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2000/CVE-2000-1221.md",
     "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2000/CVE-2000-1221.md",
-    "https://github.com/opencve/opencve-kb/blob/2f1dc3c74795bf8c2a96508a614db2a7dd079182/2000/CVE-2000-1221.json",
+    "https://github.com/opencve/opencve-kb/blob/ae39565c982bea06aed0346b6b07feb01ce59b32/2000/CVE-2000-1221.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1221.json",
 ]
