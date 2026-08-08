@@ -1,12 +1,12 @@
 [basic]
-description = "IBM Net.Commerce 2.0/3.x/4.x 及 IBM Websphere Commerce Suite 4.1.1 及更早版本的 orderdspc.d2w 宏中存在 SQL 注入漏洞。远程攻击者可通过向 report 功能的 order_rn 参数中插入恶意 SQL 查询语句，绕过认证执行任意数据库操作，导致敏感数据泄露或数据篡改。该漏洞无需身份认证即可利用，攻击复杂度低，CVSS 评分 7.5，危害等级高。"
-published = "2001-05-03T04:00:00Z"
-remediation = "IBM Net.Commerce 系列（2.0/3.x/4.x）及 WebSphere Commerce Suite 4.1.1 及更早版本已停止维护，官方不再提供安全补丁。建议立即升级至 IBM 当前支持的 WebSphere Commerce 版本，或迁移至现代电子商务平台。如无法升级，应在 Web 服务器或应用层对 order_rn 参数实施严格的输入过滤，禁止包含 SQL 关键字和特殊字符，并限制 report 功能仅授权用户访问。"
-score = 7.5
-severity = "HIGH"
-sources = ["exploitdb"]
-title = "IBM Net.Commerce SQL 注入漏洞"
-updated = "2026-06-16T21:54:05Z"
+description = "IBM Net.Commerce 2.0/3.x/4.x 及 WebSphere Commerce Suite 4.1.1 及更早版本中的 orderdspc.d2w 宏存在 SQL 注入漏洞。远程攻击者无需身份认证，即可通过向目标服务器发送特制的 HTTP 请求，在 orderdspc.d2w 报表功能的 order_rn 参数中插入恶意 SQL 语句，从而执行任意数据库查询。该漏洞可导致攻击者获取数据库中敏感信息，包括管理员账户及加密密码，并进一步将权限提升至 DB2INST1 数据库账户，甚至可能以该账户身份执行任意操作系统命令。IBM 已在 Net.Commerce 3.2 及 WebSphere Commerce Suite 4.1 中修复了其自带的易受攻击宏，但用户自定义宏仍可能存在类似风险。"
+published = "2001-05-03T00:00:00Z"
+remediation = "升级 IBM Net.Commerce 至 3.2 版本或升级 WebSphere Commerce Suite 至 4.1 及以上版本，如条件允许直接迁移至 5.1 版本彻底消除 Net.Data 宏风险。同时审计所有自定义创建的 Net.Data 宏文件，禁止直接在宏中拼接用户可控参数至 SQL 查询语句，必要时采用参数化查询或预编译语句进行重构。若短期内无法升级，应在 Web 服务器层面通过 URL 过滤规则拦截对 /ExecMacro/orderdspc.d2w/report 路径的访问请求，或关闭该报告宏的执行权限作为临时缓解。"
+score = 5
+severity = "MEDIUM"
+sources = ["cve"]
+title = "IBM WebSphere Commerce Suite orderdspc.d2w SQL注入漏洞"
+updated = "2001-05-03T00:00:00Z"
 
 [exploit]
 exp_urls = []
@@ -17,24 +17,20 @@ aliases = ["CVE-2001-0319"]
 ave_id = "AVE-2001-0142"
 
 [meta]
-collected_at = "2026-07-22T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
-    "http://archives.neohapsis.com/archives/bugtraq/2001-02/0072.html",
-    "http://www-4.ibm.com/software/webservers/commerce/netcomletter.html",
-    "http://www.securityfocus.com/bid/2350",
-    "https://exchange.xforce.ibmcloud.com/vulnerabilities/6067",
     "https://www.exploit-db.com/exploits/20618",
-    "https://github.com/trickest/cve/blob/ed228d55b7972f63e700a35a54fbcd94064b9ade/2001/CVE-2001-0319.md",
-    "https://github.com/CVEProject/cvelistV5/blob/21e8713bd16ad152d6b946e7bfcd11df673c4829/cves/2001/0xxx/CVE-2001-0319.json",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2001/CVE-2001-0319.md",
+    "https://github.com/CVEProject/cvelistV5/blob/d82e5c34e202659b473673c98a88b282a14a29be/cves/2001/0xxx/CVE-2001-0319.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0319",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/03de0f4bc3d6ed449f7108b4761b99fb0c8c56d7/CVE/data/2001/CVE-2001-0319.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/dc5a1626a2c4eb42e596358831c9619042be273c/CVE/data/2001/CVE-2001-0319.json",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2001/CVE-2001-0319.md",
-    "https://github.com/rhuitl/uClinux/blob/0486e80a025dccbe4a2213715a2ab8a5063ea86b/user/nessus/nessus-plugins/scripts/netcommerce_sql.nasl",
-    "https://github.com/github/advisory-database/blob/e6b10ee602769bd7be4675bf10e3382c1f100e32/advisories/unreviewed/2022/04/GHSA-9cwj-6gfj-h53r/GHSA-9cwj-6gfj-h53r.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/jdkoftinoff/mb-linux-msli/blob/8adb103e34af9ff1d8d122e9ee2a1808836f0a14/uClinux-dist/user/snort/drop-rules/sid-msg.map",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150800_150900.json",
+    "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2001/CVE-2001-0319.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0319.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/52dd33919d034b1e65c4c9c0bf6fc21ba3f5f175/2001/0xxx/CVE-2001-0319.md",
+    "https://github.com/opencve/opencve-kb/blob/562f76644f205648190d7eb57990875d8a2f97d0/2001/CVE-2001-0319.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0319.json",
 ]

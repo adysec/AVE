@@ -1,11 +1,11 @@
 [basic]
-description = "Sitecore CMS 7.0 至 7.2 及 Sitecore XP 7.5 至 8.2 版本的 Security.AntiCSRF 模块中存在 .NET 反序列化漏洞。未经身份认证的远程攻击者可通过向目标系统发送特制的 HTTP POST 请求，在 __CSRFTOKEN 参数中携带恶意的序列化 .NET 对象触发该漏洞，导致远程代码执行。攻击者无需任何认证即可利用，危害严重，CVSS 评分 9.8。"
+description = "Sitecore CMS 7.0 至 7.2 及 Sitecore XP 7.5 至 8.2 的 Sitecore.Security.AntiCSRF（anti CSRF）模块存在反序列化漏洞。未经身份认证的远程攻击者可在 HTTP POST 请求的 __CSRFTOKEN 参数中注入恶意的序列化 .NET 对象，当服务器端对该参数进行反序列化处理时触发任意代码执行。该漏洞无需认证、利用复杂度低，攻击者可直接获取服务器权限并完全控制目标系统。CVSS 评分 9.8，危害等级严重。Sitecore 官方已发布安全补丁修复该漏洞。"
 published = "2019-05-31T21:29:06Z"
-remediation = "升级 Sitecore XP 至 8.2 Update-1 或更高版本（8.2 Update-7 为推荐稳定版），或升级 Sitecore CMS 至 8.2 Update-1 及以上版本。该漏洞通过 HTTP POST 参数 __CSRFTOKEN 传递序列化 .NET 对象触发，如无法立即升级，可在反向代理或 WAF 层面拦截包含 __CSRFTOKEN 参数的外部请求作为临时缓解措施。"
+remediation = "立即升级 Sitecore XP 至 8.2 Update-7 或更高版本（8.x 分支），或升级至 9.0 Update-2 或更高版本（9.x 分支）。若无法立即升级，可通过 WAF 规则拦截包含序列化 .NET 对象的 __CSRFTOKEN POST 参数请求，或在 IIS 中禁用受影响的 AntiCSRF 模块相关端点（/sitecore/shell/Applications/Security/CreateNewUser/CreateNewUser.aspx 等）作为临时缓解措施。参考 Sitecore 官方补丁 KB0334035 获取完整修复包。"
 score = 9.8
 severity = "CRITICAL"
-sources = ["kev"]
-title = "Sitecore CMS和Sitecore XP 反序列化远程代码执行漏洞"
+sources = ["nuclei"]
+title = "Sitecore CMS 和 Sitecore XP 反序列化远程代码执行漏洞"
 updated = "2026-06-17T02:44:46Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2019-9874"]
 ave_id = "AVE-2019-1685"
 
 [meta]
-collected_at = "2026-08-03T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "https://www.synacktiv.com/ressources/advisories/Sitecore_CSRF_deserialize_RCE.pdf",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2019-9874",
     "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2019/CVE-2019-9874.yaml",
-    "https://github.com/trickest/cve/blob/7d40e7d94b41c478b4d1a654c7bc3bcf34fa7beb/2019/CVE-2019-9874.md",
-    "https://github.com/0xMarcio/cve/blob/0cbbfd20018b392e9b69a82c4ac1297203bfeefd/2019/CVE-2019-9874.md",
-    "https://github.com/projectdiscovery/nuclei-templates/blob/e9f0fe7fa4f5c548bbd1a4d3b65d0f181021e664/http/cves/2019/CVE-2019-9874.yaml",
-    "https://github.com/CVEProject/cvelistV5/blob/8491df4167cab37455be87043bbd4187ade74c40/cves/2019/9xxx/CVE-2019-9874.json",
-    "https://github.com/cisagov/vulnrichment/blob/6ff73fb4bb99974a2b535c179f337dd820550366/2019/9xxx/CVE-2019-9874.json",
-    "https://github.com/0x727/FingerprintHub/blob/5784554659c9500df8525e8db4f986630a56d8a1/plugins/sitecore/experience_platform/CVE-2019-9874.yaml",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/16f8cf2a3c129bb57f3727599f3730e6001c1186/CVE/data/2019/CVE-2019-9874.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/16f8cf2a3c129bb57f3727599f3730e6001c1186/SSVC/data/2019/CVE-2019-9874.json",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2019/CVE-2019-9874.md",
+    "https://github.com/0xMarcio/cve/blob/2ece7fed57916ea5b4f9e283e61bef144d8eee65/2019/CVE-2019-9874.md",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/a59bc25d9f5ca1e2e0b6dfb956fc7eb7fed93b96/http/cves/2019/CVE-2019-9874.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/d82e5c34e202659b473673c98a88b282a14a29be/cves/2019/9xxx/CVE-2019-9874.json",
+    "https://github.com/cisagov/vulnrichment/blob/698a395e0721ebd78f8b73ae4526132e595d2564/2019/9xxx/CVE-2019-9874.json",
+    "https://github.com/0x727/FingerprintHub/blob/b3b0b04ddffeb4e4ef4cf727feceae2f4993325c/plugins/sitecore/experience_platform/CVE-2019-9874.yaml",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/dc5a1626a2c4eb42e596358831c9619042be273c/CVE/data/2019/CVE-2019-9874.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/dc5a1626a2c4eb42e596358831c9619042be273c/SSVC/data/2019/CVE-2019-9874.json",
     "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2019/CVE-2019-9874.rules",
-    "https://github.com/youki992/VscanPlus/blob/714a0e276a538a22c1a6215c71458a8b59a920ef/pocs_yml/nucleiFiles/http/cves/2019/CVE-2019-9874.yaml",
+    "https://github.com/adampielak/nuclei-templates/blob/b57ecc6b8ffb1c84e23c2ccdc378c360302972c5/nuclei-v3/C/CVE-2019-9874.yaml",
 ]
