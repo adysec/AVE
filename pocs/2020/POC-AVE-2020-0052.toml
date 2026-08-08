@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "检测 Micro Focus Operations Bridge Manager 2020.05 及以下版本是否存在远程代码执行漏洞。该漏洞存在于 UCMDB 组件中，攻击者需以合法应用用户身份认证后才能利用。本 PoC 通过访问 /ucmdb-api/connect 端点检查响应特征来确认目标是否存在漏洞。"
+id = "POC-AVE-2020-0052"
+name = "Micro Focus Operation Bridge Manager Remote Code Execution PoC"
+severity = "high"
+tags = ["ave-2020-0052"]
+vuln_id = [
+    "CVE-2020-11853",
+    "AVE-2020-0052",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ucmdb-api/connect"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["HttpUcmdbServiceProviderFactoryImpl"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["ServerVersion=11.6.0"]
