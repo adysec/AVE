@@ -1,0 +1,57 @@
+[basic]
+description = '''
+` tag.
+
+Let me construct a proper description:
+
+Linux 内核 bnxt 以太网驱动存在逻辑缺陷，当多缓冲 XDP（mb-xdp）模式启用且报文处理返回 XDP_PASS 时，bnxt_xdp_build_skb() 函数在将 xdp_buff 转换为 sk_buff 的过程中，向 xdp_update_skb_shared_info() 传递了错误的 truesize 参数。由于 napi_build_skb() 已在此之前清空了 skb_shared_info 结构，函数错误地使用了已失效的 nr_frags 字段计算 truesize，导致 sk_buff 的大小信息与实际分片数据不匹配，进而触发内核 skb_try_coalesce() 警告并影响 IP 分片重组流程，造成系统拒绝服务。该漏洞影响所有使用 bnxt 网卡驱动并加载 XDP 多缓冲程序的 Linux 内核系统，攻击者无需认证即可通过向目标接口发送大尺寸特制报文（需接口 MTU 设为 9000 字节以上）远程触发内核异常，最终导致系统崩溃或服务中断。CVSS 3.1 评分为 7.5，危害等级为高危。
+
+Let me count characters... This looks well over 50 characters.
+
+Wait, I need to be careful. The current description in the TOML has:
+```
+description = """
+tags.CVE-2025-21961 是 Linux 内核 bnxt 网卡驱动的逻辑缺陷...
+<value>Linux 内核 bnxt 网卡驱动存在一处可由远程触发的拒绝服务（DoS）漏洞...
+```
+
+The error says "description: description 字段为空" which is strange because the field is not empty. But looking at the format, it seems like the Rust parser might be choking on the XML-like `<value>` tags inside the description string, or the multiline string format is causing issues.
+
+Actually, looking more carefully at the task requirements: "只输出 <value>...
+'''
+published = "2025-04-01T16:15:27Z"
+remediation = "建议立即将 Linux 内核升级至包含修复补丁的版本：主线 6.14 及以上，或 6.12.20+、6.13.8+ 稳定分支（对应补丁 commit 为 19107e71be330dbccb9f8f9f4cf0a9abeadad802、b4679807c6083ade4d47f03f80da891afcb6ef62、9f7b2aa5034e24d3c49db73d5f760c0435fe31c2）；发行版用户请安装厂商已修复的内核包，例如 SUSE 对应 SUSE-SU-2025:01614-1 等安全公告中的更新内核，Debian/Ubuntu/RHEL 用户安装各自仓库最新安全内核并重启系统。若无法立即升级，作为临时缓解措施：在启用 bnxt 网卡的 XDP 多缓冲（multi-buffer）且返回 XDP_PASS 的部署中，暂时移除或禁用该接口上的 XDP 程序，或将接口 MTU 调低至 1500 以下避免触发多缓冲收包路径，同时建议开启 panic_on_warn 监控与告警以尽早发现异常。"
+score = 7.5
+severity = "HIGH"
+sources = ["msrc"]
+title = "eth: bnxt: fix truesize for mb-xdp-pass case 漏洞"
+updated = "2026-07-30T06:21:59Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21961"]
+ave_id = "AVE-2025-1067"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/19107e71be330dbccb9f8f9f4cf0a9abeadad802",
+    "https://git.kernel.org/stable/c/9f7b2aa5034e24d3c49db73d5f760c0435fe31c2",
+    "https://git.kernel.org/stable/c/b4679807c6083ade4d47f03f80da891afcb6ef62",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21961.md",
+    "https://github.com/CVEProject/cvelistV5/blob/752a3d81e3915589f1603fd2284133d8ca92093b/cves/2025/21xxx/CVE-2025-21961.json",
+    "https://github.com/cisagov/vulnrichment/blob/0a61aa4bfcb382160e788a4fdf055f4ce3b1bb54/2025/21xxx/CVE-2025-21961.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6383c78237400b01eaca440114073e7df0a76cff/SSVC/data/2025/CVE-2025-21961.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/6383c78237400b01eaca440114073e7df0a76cff/CVE/data/2025/CVE-2025-21961.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21961.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21961.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2025-21961.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-21961",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/84a384b819986ec191690bb7ca8e108c6be28f15/tracker/CVE/2025/CVE-2025-21961.json",
+]
