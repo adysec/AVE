@@ -1,0 +1,41 @@
+[basic]
+description = "Kong 的 docker-kong 部署方案（通过 2.0.3 版本）在默认配置下，其 Admin Rest API 端口可能监听在除 127.0.0.1 之外的其他网络接口上。当用户通过 docker-compose 部署 Kong 时，若未遵循安全文档中的网络层访问限制配置，Admin API 将暴露给外部网络。未经身份认证的远程攻击者可直接访问该 API 接口，执行未授权操作，包括创建/删除服务、路由、消费者、插件等，从而完全控制 API 网关。该漏洞影响 docker-compose 模板的默认配置，Kong 官方已通过文档改进提醒用户正确配置网络访问限制，以仅允许本地回环地址访问 Admin API，CVSS v3.1 评分 9.8（严重）。"
+published = "2020-04-12T17:15:10Z"
+remediation = "升级 Kong Docker 镜像至 2.0.4 或更高版本。在 docker-compose.yml 或 docker run 命令中将 Admin API 端口 8001 和 8444 仅绑定到 127.0.0.1，即将端口映射改为 127.0.0.1:8001:8001 和 127.0.0.1:8444:8444，而非 0.0.0.0:8001。同时在 kong.conf 中设置 admin_listen = 127.0.0.1:8001 确保 Admin API 仅监听本地回环接口。通过防火墙规则限制外部主机对 8001 端口的访问，仅允许受信任的管理节点连接。如使用 Kong Enterprise，启用 Admin API 的 RBAC 认证机制作为纵深防御。"
+score = 9.8
+severity = "CRITICAL"
+sources = ["nuclei"]
+title = "Kong Admin API 未授权访问漏洞"
+updated = "2026-06-17T02:50:39Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2020-11710"]
+ave_id = "AVE-2020-0049"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/Kong/docker-kong/commit/dfa095cadf7e8309155be51982d8720daf32e31c",
+    "https://github.com/Kong/docs.konghq.com/commit/d693827c32144943a2f45abc017c1321b33ff611",
+    "https://github.com/Kong/docs.konghq.com/commit/e99cf875d875dd84fdb751079ac37882c9972949",
+    "https://github.com/Kong/kong",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2020/CVE-2020-11710.yaml",
+    "https://github.com/trickest/cve/blob/cd4a01a42d95af497d54c028c2f468527d995ec5/2020/CVE-2020-11710.md",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/e70dd0abd4b155493f0c401fe6c8323b710487cf/http/cves/2020/CVE-2020-11710.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/CVE-2020-11710.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/info/cve-2020-11710-4418.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/cve-2020-11710-4421.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/cve-2020-11710-4422.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/cve-2020-11710-4423.yaml",
+    "https://github.com/ExpLangcn/NucleiTP/blob/2b7ecb9031a6eda4f272793045f29b339d8e0cce/CVES/critical/cve-2020-11710-4424.yaml",
+    "https://github.com/wgpsec/AboutSecurity/blob/f3c8574e6fa1f9c1cd5aeaba5a209af796107b34/Vuln/middleware/kong/CVE-2020-11710.md",
+    "https://github.com/shadow1ng/fscan/blob/bf036fd9b272a56d493796badcf0a269f0a83ec0/webscan/pocs/kong-cve-2020-11710-unauth.yml",
+    "https://github.com/RandomRobbieBF/kong-pwn",
+]
