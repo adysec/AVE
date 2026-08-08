@@ -1,11 +1,11 @@
 [basic]
-description = "ISC BIND 8 的 TSIG（事务签名）处理代码中存在堆缓冲区溢出漏洞。远程攻击者无需身份认证即可通过向目标 DNS 服务器发送特制的 TSIG 签名数据包触发该溢出，进而执行任意代码获取 root 权限。该漏洞影响运行 BIND 8.2.x 版本的 DNS 服务器，攻击条件宽松，仅需目标服务器启用 TSIG 功能且暴露于网络即可发起攻击。由于 BIND 是互联网上广泛使用的 DNS 服务器软件，此漏洞潜在影响范围极广，CVSS 评分高达 10.0，危害等级为严重。攻击者成功利用后可完全控制 DNS 服务器，对互联网域名解析服务造成重大威胁。ISC 已在后续版本中修复此漏洞。"
+description = "ISC BIND 8.2.x 版本在处理事务签名（TSIG）的代码中存在堆缓冲区溢出漏洞。未经身份验证的远程攻击者可通过向目标 DNS 服务器发送特制的 TSIG 请求数据包触发该溢出，由于 BIND 以 root 权限运行，成功利用后可获得目标系统的 root 权限，实现完全接管。该漏洞影响 BIND 8.2.x 全系列版本，攻击复杂度低且无需任何认证凭据，CVSS 评分 10.0，危害等级严重。攻击者可通过构造畸形 TSIG 记录覆盖内存关键区域，最终执行任意代码或造成服务拒绝。ISC 已发布安全公告建议升级至 BIND 9.x 或应用相应补丁。"
 published = "2001-02-12T05:00:00Z"
-remediation = '建议立即将 BIND 8.2.x 升级至 BIND 9.16.x 或更高受支持的稳定版本（BIND 8.x 已停止维护，无法获得官方安全补丁）。如需临时缓解，可在 named.conf 配置文件中注释或删除所有 "keys" 及 "allow-transfer" 相关的 TSIG 密钥配置项，并重新加载配置（rndc reconfig），以禁用 TSIG 功能阻止远程利用；同时通过防火墙限制 UDP/TCP 53 端口仅对授权的辅助 DNS 服务器开放，禁止外部主机的区域传输请求，直至完成版本升级。'
+remediation = "建议立即将 BIND 升级到 8.2.2 或更新版本以修复 TSIG 堆缓冲区溢出漏洞。若无法立即升级，可临时禁用 TSIG 签名验证功能，或通过防火墙限制对 DNS 端口的访问，仅允许可信 IP 进行交互。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "ISC BIND 8.2.x TSIG 远程堆缓冲区溢出漏洞"
+sources = ["avd"]
+title = "ISC BIND 8 TSIG 远程堆缓冲区溢出漏洞"
 updated = "2026-06-16T21:53:29Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0010"]
 ave_id = "AVE-2001-0007"
 
 [meta]
-collected_at = "2026-08-06T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -28,14 +28,14 @@ urls = [
     "http://www.redhat.com/support/errata/RHSA-2001-007.html",
     "http://www.securityfocus.com/bid/2302",
     "https://www.exploit-db.com/exploits/280",
-    "https://github.com/trickest/cve/blob/15eaa178baaf955987a866a2c9d91dc02a2fb4aa/2001/CVE-2001-0010.md",
-    "https://github.com/CVEProject/cvelistV5/blob/663b7221ac0c437440bcbb2f29bd619793e09cad/cves/2001/0xxx/CVE-2001-0010.json",
+    "https://github.com/trickest/cve/blob/cd4a01a42d95af497d54c028c2f468527d995ec5/2001/CVE-2001-0010.md",
+    "https://github.com/CVEProject/cvelistV5/blob/fb55086abc4833933badf7b389c0de2abc242903/cves/2001/0xxx/CVE-2001-0010.json",
     "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2001/CVE-2001-0010.md",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0010",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bd3fb132c1b8a95ef2bcf26b230a07f7c9700666/CVE/data/2001/CVE-2001-0010.json",
-    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/853fff3f588474906eaaeec56c4eeef32edfc06c/CVEs/2001/CVE-2001-0010.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1b728ea01def60fd48fecebca175ef1fd4461ca7/CVE/data/2001/CVE-2001-0010.json",
+    "https://github.com/Ch4120N/Ch4120N-CVE-Pulse/blob/dec5aa0bce8a7fd256c5dc3bd1a39609127f2830/CVEs/2001/CVE-2001-0010.md",
     "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2001/CVE-2001-0010.md",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0010.json",
     "https://github.com/brenonevs/prs-pentest/blob/001cf17eedeb4aad73618d3140ca1f5dc93e69b3/CVEs & POCs/2001/CVE-2001-0010.md",
-    "https://github.com/opencve/opencve-kb/blob/3979a7633898f20f850131e08d621fa27d545855/2001/CVE-2001-0010.json",
+    "https://github.com/opencve/opencve-kb/blob/bbf28581590e9efb7e7c7c221b879a9eef4f31f6/2001/CVE-2001-0010.json",
 ]
