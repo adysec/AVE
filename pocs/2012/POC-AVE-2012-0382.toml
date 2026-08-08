@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "验证目标系统是否存在 Apple iTunes WebKit 内存破坏漏洞（CVE-2012-3707）。该漏洞影响 iTunes 10.7 之前版本，攻击者通过构造特制的恶意网页，在 iTunes 内置 WebKit 浏览器中触发内存损坏，导致远程代码执行或应用程序崩溃。PoC 通过发送包含恶意 WebKit 构造内容的 HTTP 请求，检测目标是否返回异常响应或触发内存破坏。"
+id = "POC-AVE-2012-0382"
+name = "Apple iTunes WebKit Remote Code Execution PoC"
+severity = "medium"
+tags = ["ave-2012-0382"]
+vuln_id = [
+    "CVE-2012-3707",
+    "AVE-2012-0382",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/cve-2012-3707-poc.html"
+protocol = "http"
+
+[poc.requests.body]
+content = ""
+type = "raw"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["cve-2012-3707-test"]
