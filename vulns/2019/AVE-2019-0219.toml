@@ -1,0 +1,37 @@
+[basic]
+description = "PHPSHE 1.7 的 include/plugin/payment/alipay/pay.php 文件中存在 SQL 注入漏洞，该文件在处理支付宝支付回调时未对参数 id 进行有效的过滤与校验，直接将用户可控的输入拼接进 SQL 查询语句，导致攻击者可构造特制的恶意请求注入任意 SQL 代码。由于该漏洞无需任何身份认证即可利用，远程攻击者可通过向存在漏洞的目标站点发送包含恶意参数的请求，实现数据库信息窃取、绕过权限校验，甚至进一步结合堆叠查询等方式获取服务器权限与数据。该漏洞影响 PHPSHE 1.7 及更低版本，CVSS 3.0 评分为 9.8，危害等级严重，官方已推出修复版本，建议用户及时升级或对 pay.php 中 id 参数进行严格过滤。"
+published = "2019-03-14T02:29:00Z"
+remediation = "由于 PHPSHE 官方已停止维护且未发布安全补丁，需手动修复。修改 `include/plugin/payment/alipay/pay.php`，对 `id` 参数添加严格校验：使用 `intval()` 强制转为整数，例如将 `$order_id = isset($_GET['id']) ? $_GET['id'] : '';` 改为 `$order_id = isset($_GET['id']) ? intval($_GET['id']) : 0;`，并确保后续 SQL 查询使用该整型变量而非原始字符串。如不需要支付宝支付功能，可直接删除 `include/plugin/payment/alipay/` 整个目录。临时缓解措施：在 Web 服务器（如 Nginx/Apache）的 WAF 规则中拦截对 `pay.php` 的 `id` 参数中包含特殊字符（反引号、单引号、union、select 等）的请求。"
+score = 9.8
+severity = "CRITICAL"
+sources = ["nuclei"]
+title = "PHPSHE PHPSHE 1.7 pay.php SQL注入漏洞"
+updated = "2026-06-17T02:44:18Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2019-9762"]
+ave_id = "AVE-2019-0219"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://gitee.com/koyshe/phpshe/issues/ITC0C",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2019/CVE-2019-9762.yaml",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2019/CVE-2019-9762.md",
+    "https://github.com/projectdiscovery/nuclei-templates/blob/a59bc25d9f5ca1e2e0b6dfb956fc7eb7fed93b96/http/cves/2019/CVE-2019-9762.yaml",
+    "https://github.com/CVEProject/cvelistV5/blob/0421602eb9f824909ec57dc4d45f5f29ad208960/cves/2019/9xxx/CVE-2019-9762.json",
+    "https://github.com/0x727/FingerprintHub/blob/b3b0b04ddffeb4e4ef4cf727feceae2f4993325c/plugins/phpshe/phpshe/CVE-2019-9762.yaml",
+    "https://github.com/CVEDB/Poc-Git/blob/0275aeb329b0747c9a1d46160c921eae06095557/2019/CVE-2019-9762.md",
+    "https://github.com/kaismax/CVE-Poc/blob/6d8c93dabf674cea102713781cc534d577412357/2019/CVE-2019-9762.md",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e3a952725679170163af143c035b04e3631dbf4a/CVE/data/2019/CVE-2019-9762.json",
+    "https://github.com/crowdsecurity/hub/blob/3f5617993760e458beac3d2fbee49541fff2893c/appsec-rules/crowdsecurity/vpatch-CVE-2019-9762.yaml",
+    "https://github.com/ARPSyndicate/suricata-vedas/blob/fe24794ad36564b5bbc7c69101525011387b8650/2019/CVE-2019-9762.rules",
+    "https://github.com/adampielak/nuclei-templates/blob/b57ecc6b8ffb1c84e23c2ccdc378c360302972c5/nuclei-v3/C/CVE-2019-9762.yaml",
+]
