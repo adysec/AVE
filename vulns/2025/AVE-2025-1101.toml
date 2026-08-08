@@ -1,0 +1,40 @@
+[basic]
+description = "Linux 内核媒体子系统的 vimc（Virtual Media Controller）测试驱动中存在拒绝服务漏洞。当调用 vimc_streamer_pipeline_terminate() 终止媒体管线时，该函数会对已停止或未启动的实体（entity）错误地调用 .s_stream() 操作。v4l2-subdev 核心层的 call_s_stream() 函数包含检查机制，会检测对未启动子设备的 .s_stream() 调用并触发内核警告。攻击者需在本地系统拥有低权限访问权限，通过触发特定的媒体管线启动与终止序列，可导致内核产生警告信息，在高权限上下文下可能引发系统不稳定或拒绝服务。该漏洞影响包含 vimc 测试驱动的 Linux 内核版本，CVSS v3.1 评分为 5.5（中危）。"
+published = "2025-04-16T15:15:55Z"
+remediation = "建议升级 Linux 内核至 6.13 或更高版本（含该修复提交 36cef585e2a3），或应用稳定内核分支回港补丁：6.12.19+、6.11.11+、6.6.87+、6.1.126+、5.15.184+、5.10.239+、5.4.291+。Ubuntu 25.04 用户执行 `apt update && apt install linux-image-6.14.0-22-generic` 并重启；Debian 12 升级至 6.1.126+；RHEL 9 等待 RHSA 公告应用 kernel-5.14.0-503.el9+；如无法立即升级，可禁用 VIMC 测试驱动（`modprobe -r vimc && echo 'blacklist vimc' > /etc/modprobe.d/vimc.conf`）作为临时缓解。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 vimc 拒绝服务漏洞"
+updated = "2026-06-17T08:44:52Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-22028"]
+ave_id = "AVE-2025-1101"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/36cef585e2a31e4ddf33a004b0584a7a572246de",
+    "https://git.kernel.org/stable/c/6f6064dab4dcfb7e34a395040a0c9dc22cc8765d",
+    "https://git.kernel.org/stable/c/7a58d4c4cf8ff60ab1f93399deefaf6057da91c7",
+    "https://git.kernel.org/stable/c/845e9286ff99ee88cfdeb2b748f730003a512190",
+    "https://git.kernel.org/stable/c/a505075730d23ccc19fc4ac382a0ed73b630c057",
+    "https://github.com/CVEProject/cvelistV5/blob/d104555a36cb37e29f12e17c61cd931df5a81688/cves/2025/22xxx/CVE-2025-22028.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e875764a6fbbccfafca6ba9474061a7299b8ce29/CVE/data/2025/CVE-2025-22028.json",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-22028.json",
+    "https://github.com/opencve/opencve-kb/blob/76b7c02be966f589c7cc64bbe75709fb0219802c/2025/CVE-2025-22028.json",
+    "https://github.com/NUS-Curiosity/KernJC/blob/798845a541a5396395c7e0c1670cb4872dac7105/db/vuln_desc/2025/CVE-2025-22028.yaml",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/9ec1f42cd252a998d9af88a8ad82c72909c004bd/tracker/CVE/2025/CVE-2025-22028.json",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2025-22028.json",
+    "https://github.com/TonneauBenjamin/ANSSI_Project/blob/f0e2d5e8be75f0351e759642d04d728399b4faa9/data/raw/first/CVE-2025-22028",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2025/22xxx/CVE-2025-22028.json",
+    "https://github.com/GingaShift/Anssi-Vulnerability-Intelligence/blob/5e1cffb341ca5a500e965d4cda39bf8603e2ff16/data/offline_prof/first/CVE-2025-22028",
+]
