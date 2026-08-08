@@ -1,11 +1,11 @@
 [basic]
-description = "GCC 和 G++ 编译器 3.3.3 及更早版本中的 -ftrapv 编译选项未能正确处理所有类型的整数溢出情况，导致使用该选项编译的应用程序在运行时仍可能因整数溢出而存在安全漏洞。攻击者可利用此缺陷触发未定义行为，导致程序崩溃或潜在的信息泄露、权限提升。该漏洞影响范围广泛，涉及所有使用受影响 GCC/G++ 版本编译的应用程序，攻击条件低，无需身份认证即可远程利用。"
+description = "GCC 和 G++ 编译器 3.3.3 及更早版本中提供的 `-ftrapv` 编译选项存在整数溢出检测不完整的安全缺陷。该选项本应在检测到有符号整数加法、减法、乘法溢出时触发陷阱并调用 abort() 终止程序，但 libgcc 运行时库中的溢出检测例程（如 `__mulvsi3`、`__subvsi3` 等）实现了错误的检测算法，无法正确识别所有有符号整数溢出情形，尤其是乘法溢出在大量情况下无法被捕获。这意味着开发者使用 `-ftrapv` 选项编译应用程序后，误以为其已受到溢出保护，但实际上程序仍可能存在整数溢出漏洞。攻击者可利用这些未被检测到的溢出条件触发缓冲区溢出、内存损坏或远程代码执行等安全问题。该漏洞影响所有使用 3.3.3 及更早版本 GCC/G++ 编译并依赖 `-ftrapv` 选项进行溢出保护的应用，补丁已于 2003 年 7 月 6 日提交并包含在 GCC 3.4.0 版本中。"
 published = "2000-11-01T05:00:00Z"
-remediation = "建议将 gcc 和 g++ 升级至 3.4.0 或更高版本，该版本已修复 libgcc2.c 中 __mulvsi3、__mulvdi3、__subvsi3、__subvdi3 及 __absvdi2 等整数溢出检测例程的错误实现，使 -ftrapv 选项能正确拦截有符号整数溢出。如短期内无法升级，请勿依赖 -ftrapv 作为整数溢出防护手段，改用编译器警告（-Woverflow）及代码层面的显式边界检查进行缓解。"
+remediation = "升级 gcc/g++ 至 3.4.0 或更高版本，该漏洞的修复补丁已于 2003 年 7 月 6 日由 Roger Sayle 提交并随 3.4.0 发布。临时缓解措施为在编译时移除 -ftrapv 选项，改用编译器内置函数（如 __builtin_add_overflow）或在应用代码中手动校验算术运算结果，避免依赖存在缺陷的 -ftrapv 机制检测有符号整数溢出。"
 score = 7.5
 severity = "HIGH"
-sources = ["epss"]
-title = "GNU GCC 编译器整数溢出漏洞"
+sources = ["avd"]
+title = "GNU GCC g++ 编译器整数溢出防护不足漏洞"
 updated = "2026-06-16T21:53:24Z"
 
 [exploit]
@@ -17,21 +17,21 @@ aliases = ["CVE-2000-1219"]
 ave_id = "AVE-2000-0853"
 
 [meta]
-collected_at = "2026-08-05T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
     "http://gcc.gnu.org/ml/gcc-bugs/2002-05/msg00198.html",
     "http://www.kb.cert.org/vuls/id/540517",
-    "https://github.com/CVEProject/cvelistV5/blob/90ce235668535187d033418a98446c7a08506c82/cves/2000/1xxx/CVE-2000-1219.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/eef981a35a6293dd42587dac1f9be4de4ae1256e/CVE/data/2000/CVE-2000-1219.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4fa082fe458d8fa95596028e75b13159b2e52c11/cves/2000/1xxx/CVE-2000-1219.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/8c9d47e9557df614f7298b810b5ff61b919d2e0f/CVE/data/2000/CVE-2000-1219.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1219",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1219.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2000-1219.json",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2000/CVE-2000-12xx/CVE-2000-1219.json",
-    "https://github.com/opencve/opencve-kb/blob/2f1dc3c74795bf8c2a96508a614db2a7dd079182/2000/CVE-2000-1219.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/8eabcabeccc08fd880f454fd53f7419ecf9a8d7e/2000/1xxx/CVE-2000-1219.md",
-    "https://github.com/aquasecurity/vuln-list-debian/blob/c6e457224984003aac7610b750677033fb679879/tracker/CVE/2000/CVE-2000-1219.json",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2000-1219.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/5365b557c2b7d7a6027d1c8153847f51b77378a1/CVE-2000/CVE-2000-12xx/CVE-2000-1219.json",
+    "https://github.com/opencve/opencve-kb/blob/64e89c2240aba4dd382baf72e9c8c41b988f3f12/2000/CVE-2000-1219.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/412bcbadef1d6b42e74926069eed4ac2c94b1e19/2000/1xxx/CVE-2000-1219.md",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/033f049c0c7ab9e18c6c1985b4d5d05fe006653c/tracker/CVE/2000/CVE-2000-1219.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2000/1xxx/CVE-2000-1219.json",
 ]
