@@ -1,0 +1,79 @@
+[basic]
+description = '''
+` tags.
+
+Also need to make sure the description is ≥50 characters in Chinese.
+
+Let me craft the description:
+
+"Electron 框架的 shell.openPath() API 在处理文件路径时未正确拒绝包含嵌入空字节的路径字符串。使用 Electron 39.x、40.x、41.x（在 39.8.6、40.9.0、41.1.1 及 42.0.0-beta.1 之前版本）构建的跨平台桌面应用程序受影响。当应用程序仅执行字符串级别的文件路径验证（如检查文件扩展名）而未进行底层文件系统检查时，攻击者可通过构造包含空字节的特制路径绕过验证，使 shell.openPath() 打开与预期不同的文件，可能导致敏感文件被意外打开。"
+
+Wait, the description also needs to mention attack conditions: local attack, requires user interaction, low privileges needed.
+
+Let me refine:
+
+"Electron 框架的 shell.openPath() API 未拒绝包含嵌入空字节的文件路径。影响 Electron 39.x、40.x、41.x 版本（修复版本为 39.8.6、40.9.0、41.1.1 及 42.0.0-beta.1）。本地低权限攻击者需诱骗用户打开包含恶意文件路径的应用，当应用仅对路径执行字符串验证（如检查扩展名）而未进行文件系统校验时，攻击者可通过嵌入空字节绕过验证，使 shell.openPath() 打开非预期的文件，造成信息泄露或数据篡改。"
+
+Wait, I should be careful about mentioning specific versions - the instructions say "不要编造 URL 或具体版本号（除非 presearch 数据中有）". The NVD data does mention the versions, so it's fine.
+
+Also, I should note that the CVSS vector shows AV:L (Local), AC:H (High complexity), PR:L (Low privileges), UI:R (Required user interaction).
+
+Let me write a good description:
+
+"Electron 框架的 shell.openPath() API 在处理文件路径时未正确拒绝包含嵌入空字节的路径字符串。该漏洞影响 Electron 39.x、40.x、41.x 版本（修复版本为 39.8.6、40.9.0、41.1.1 及 42.0.0-beta.1），使用受影响版本构建的跨平台桌面应用程序均存在风险。攻击需在本地环境中进行，要求用户交互（如打开恶意文件），攻击者仅需低权限即可构造包含嵌入空字节的特制文件路径。当应用程序对路径仅执行字符串级别的验证（例如检查文件扩展名）而未通过底层文件系统 API 进行实际校验时，攻击者可绕过验证逻辑，使 shell.openPath() 打开与验证通过的文件不同的文件，可能导致敏感文件被意外打开或篡改。"
+
+Let me count characters - that's well over 50 Chinese characters.
+
+Actually, looking at the current TOML, the description field seems to have some broken content. Let me look more carefully at what was provided. The current TOML shows:
+
+```
+description = """
+标签之间
+
+让我组织一下内容：
+...
+```
+
+This looks like the description was accidentally replaced with some internal thinking text. I need to replace it with the actual description.
+
+Also, the error mentions "TOML 包含未转义的 \0" - this is likely from the remediation field or somewhere else. But my task is specifically to fix the description field.
+
+Let me just provide the clean description text.<value>Electron 框架的 shell.openPath() API 在处理文件路径时未正确拒绝包含嵌入空字节的路径字符串。该漏洞影响 Electron 39.x、40.x、41.x 版本（修复版本为 39.8.6、40.9.0、41.1.1 及 42.0.0-beta.1），使用受影响版本构建的跨平台桌面应用程序均存在风险。攻击需在本地环境中进行，要求用户交互（如打开包含恶意路径的文件），攻击者仅需低权限即可构造包含嵌入空字节的特制文件路径。当应用程序对路径仅执行字符串级别的验证（例如检查文件扩展名）而未通过底层文件系统 API 进行实际校验时，攻击者可绕过验证逻辑，使 shell.openPath() 打开与验证通过的文件不同的文件，可能导致敏感文件被意外打开或篡改。
+'''
+published = "2026-08-05T16:17:04Z"
+remediation = '''将 Electron 升级至 39.8.6、40.9.0、41.1.1 或 42.0.0-beta.1 及更高版本。应用开发者应在调用 shell.openPath() 前主动校验文件路径，拒绝包含空字节（\0）的输入，例如：if (filePath.includes('\0')) throw new Error('invalid path')。同时建议改用 fs.existsSync()、fs.stat() 等文件系统 API 对目标文件做实际存在性校验，而非仅依赖字符串匹配，从根本上消除路径校验绕过风险。'''
+score = 6
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "Electron shell.openPath 路径校验绕过漏洞"
+updated = "2026-08-06T05:17:08Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = [
+    "CVE-2026-70603",
+    "GHSA-5c9j-mhmv-5xgx",
+]
+ave_id = "AVE-2026-1405"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://github.com/electron/electron/security/advisories/GHSA-5c9j-mhmv-5xgx",
+    "https://github.com/CVEProject/cvelistV5/blob/ede3aa837898af32c727f0fc3e6f01b384762f6e/cves/2026/70xxx/CVE-2026-70603.json",
+    "https://github.com/cisagov/vulnrichment/blob/3b0cb959273d46e7d0926bf1ad448c4b72e79e92/2026/70xxx/CVE-2026-70603.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4f71088838277718d2901a7dc572e088482a6823/CVE/data/2026/CVE-2026-70603.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/4f71088838277718d2901a7dc572e088482a6823/SSVC/data/2026/CVE-2026-70603.json",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2026-70603.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/886afa37bd28752ed0323185b6b6d68ecf52717c/CVE-2026/CVE-2026-706xx/CVE-2026-70603.json",
+    "https://github.com/Tabll/gemnasium-db/blob/c00b77b72354bb37bd3250c4c11eeb56ab3de206/npm/electron/CVE-2026-70603.yml",
+    "https://github.com/TMA84/cvealert/blob/99833fbfd1344468d110ec5ab3d395b070403157/content/posts/cve-2026-70603.md",
+    "https://github.com/aquasecurity/vuln-list-nvd/blob/5a598077c87583dd5ca77602aa6f2f3dcf52c453/api/2026/CVE-2026-70603.json",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/033f049c0c7ab9e18c6c1985b4d5d05fe006653c/tracker/CVE/2026/CVE-2026-70603.json",
+]
