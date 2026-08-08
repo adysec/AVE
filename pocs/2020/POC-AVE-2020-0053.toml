@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "检测 Micro Focus UCMDB 远程代码执行漏洞（CVE-2020-11854）。该漏洞影响 Operation Bridge Manager、Operations Bridge (containerized) 和 Application Performance Management 的多个版本。攻击者可通过未授权端点获取服务器信息并利用硬编码凭据执行任意代码，CVSS 评分 9.8。"
+id = "POC-AVE-2020-0053"
+name = "Micro Focus UCMDB Remote Code Execution PoC"
+severity = "critical"
+tags = ["ave-2020-0053"]
+vuln_id = [
+    "CVE-2020-11854",
+    "AVE-2020-0053",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/ucmdb-api/connect"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["HttpUcmdbServiceProviderFactoryImpl"]
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["ServerVersion=11.6.0"]
