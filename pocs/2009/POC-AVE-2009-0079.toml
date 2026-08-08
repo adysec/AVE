@@ -1,0 +1,39 @@
+[info]
+author = "ave"
+description = "验证目标是否存在点击劫持漏洞。检测方法：通过HTTP响应头判断目标页面是否允许被嵌入iframe，若允许则可能存在点击劫持风险。该漏洞为Adobe Flash Player及Adobe AIR的UI redress攻击，攻击者可构造透明覆盖层诱骗用户点击隐藏链接或完成对话框。"
+id = "POC-AVE-2009-0079"
+name = "CVE-2009-1867 Adobe Flash Player Clickjacking PoC"
+severity = "medium"
+tags = ["ave-2009-0079"]
+vuln_id = [
+    "CVE-2009-1867",
+    "AVE-2009-0079",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+[[poc.requests.matchers]]
+expect = false
+part = "header"
+type = "word"
+words = ["X-Frame-Options"]
+
+[[poc.requests.matchers]]
+expect = false
+part = "header"
+type = "word"
+words = ["Content-Security-Policy"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
