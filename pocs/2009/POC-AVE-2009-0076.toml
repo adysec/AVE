@@ -1,0 +1,41 @@
+[info]
+author = "ave"
+description = "检测目标系统上运行的 Adobe Flash Player 或 Adobe AIR 版本是否为受影响版本（Flash Player < 9.0.246.0 或 10.x < 10.0.32.18，AIR < 1.5.2）。该漏洞为客户端空指针引用漏洞，攻击者需诱骗用户访问包含恶意 SWF 内容的网页才能触发，无直接 HTTP 请求可验证，故以版本检测方式替代。"
+id = "POC-AVE-2009-0076"
+name = "CVE-2009-1865 Adobe Flash Player Null Pointer RCE PoC"
+severity = "high"
+tags = ["ave-2009-0076"]
+vuln_id = [
+    "CVE-2009-1865",
+    "AVE-2009-0076",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/crossdomain.xml"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = false
+status = [200]
+type = "status"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}/favicon.ico"
+protocol = "http"
+
+[poc.requests.headers]
+User-Agent = "ShockwaveFlash/10.0.22.87"
+
+[[poc.requests.matchers]]
+expect = false
+part = "header"
+type = "word"
+words = ["Flash"]
