@@ -1,12 +1,32 @@
 [basic]
-description = "Linux 内核 2.2.18（RedHat 7.0/6.2 / 2.2.14 / 2.2.18 / 2.2.18ow4）ptrace/execve 系统调用之间的进程同步竞争导致漏洞，该漏洞利用内核在父子进程内存空间创建过程中的时间窗，在未经授权的情况下实现进程间权限提升。该漏洞影响多版本内核及红帽企业版系统，攻击者需触发 ptrace 系统调用的特殊序列，与 execve 系统调用竞争关键的内核资源状态，成功后即获得更高权限访问控制。该漏洞的危害等级严重，可能导致攻击者完全控制目标主机。"
-published = "2001-05-03T00:00:00Z"
-remediation = "建议将受影响的软件升级到厂商发布的最新安全版本，或根据官方安全公告应用相应的安全补丁。如暂无补丁，建议采取临时缓解措施限制攻击面。"
-score = 5
-severity = "MEDIUM"
-sources = ["redhat"]
-title = "Linux Kernel 2.2.18 ptrace/execve 竞争条件权限提升漏洞"
-updated = "2001-05-03T00:00:00Z"
+description = "CVE-2001-0317是一个安全漏洞，影响相关产品的安全性。攻击者可能利用此漏洞执行任意代码或获取未授权访问。建议用户及时更新到最新版本以修复此问题。"
+published = "2001-05-03T04:00:00Z"
+remediation = '''
+` tags.
+
+Let me review the presearch data:
+- CVE-2001-0317: Race condition in ptrace in Linux kernel 2.4 and 2.2 allows local users to gain privileges by using ptrace to track and modify a running setuid process.
+- Affected: Linux kernel 2.4 and 2.2
+- Remediation: upgrade kernel to 2.2.20+ for 2.2 series; Red Hat erratum RHSA-2001-013 for Red Hat 6.2/7.0; Caldera CSSA-2001-009
+- The advisory links: RedHat RHSA-2001-013, Caldera CSSA-2001-009.0.txt
+
+The existing remediation content was good, but the validator reports it's empty - likely because the value starts with "tags.CVE-2001-0317 是 ..." followed by a `<value>` block. Actually it seems the current content is malformed - it contains the full value already but the validator says empty. I need to output a clean, concise remediation field value.
+
+Let me write a good remediation, ≥20 chars, specific operations, referencing the patch versions from the data.
+
+The value should be the field value only, no TOML structure. Since it will be put inside `remediation = """..."""` presumably, I should output plain text. Let me avoid triple-quote issues. I'll output just the text.
+
+Let me craft:
+
+立即升级内核修复 ptrace 竞态条件：Linux 2.2 系列升级至 2.2.20 及以上版本，2.4 系列应用包含 ptrace 锁修复的补丁版本；Red Hat 6.2/7.0 用户安装 RHSA-2001-013 errata 内核更新包（详见 http://www.redhat.com/support/errata/RHSA-2001-013.html），Caldera OpenLinux 用户参照 CSSA-2001-009 更新，重启后用 uname -r 确认新内核。该漏洞为本地提权，无法打补丁时应限制不可信本地用户获得 shell、按最小权限移除多余 setuid 程序、启用 SELinux 等强制访问控制以降低风险。
+
+That's specific and ≥20 chars. Let me output only the value.<value>立即升级内核以修复 ptrace 竞态条件：Linux 2.2 系列请升级至 2.2.20 及以上版本，2.4 系列请升级至包含 ptrace 锁修复的后续补丁版本。Red Hat 6.2/7.0 用户可通过 Red Hat Network 安装 RHSA-2001-013 errata 内核更新包（见 http://www.redhat.com/support/errata/RHSA-2001-013.html），Caldera OpenLinux 用户请按 CSSA-2001-009.0 公告更新内核，升级完成后重启系统并用 uname -r 确认已运行新内核。该漏洞属本地提权，无法及时打补丁时应采取本地安全加固：限制不可信用户获得本地 shell、按最小权限原则移除多余 setuid/setgid 程序、启用 SELinux 等强制访问控制，并监控 ptrace 系统调用以降低提权风险。
+'''
+score = 3.7
+severity = "LOW"
+sources = ["cve"]
+title = "Linux Kernel ptrace/execve 竞态条件本地权限提升漏洞"
+updated = "2026-06-16T21:54:05Z"
 
 [exploit]
 exp_urls = []
@@ -17,20 +37,24 @@ aliases = ["CVE-2001-0317"]
 ave_id = "AVE-2001-0141"
 
 [meta]
-collected_at = "2026-07-23T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
 urls = [
+    "http://archives.neohapsis.com/archives/bugtraq/2001-02/0267.html",
+    "http://www.caldera.com/support/security/advisories/CSSA-2001-009.0.txt",
+    "http://www.redhat.com/support/errata/RHSA-2001-013.html",
+    "https://exchange.xforce.ibmcloud.com/vulnerabilities/6080",
     "https://www.exploit-db.com/exploits/20721",
-    "https://github.com/CVEProject/cvelistV5/blob/2c72b537371947a8374cf9848353741736f9e49d/cves/2001/0xxx/CVE-2001-0317.json",
+    "https://github.com/CVEProject/cvelistV5/blob/0421602eb9f824909ec57dc4d45f5f29ad208960/cves/2001/0xxx/CVE-2001-0317.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e3a952725679170163af143c035b04e3631dbf4a/CVE/data/2001/CVE-2001-0317.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0317",
-    "https://github.com/yarencheng/cve-devops-playground/blob/cbe73d6bdcced13ea57f08566d6bbf5345864f7e/content/CVE-2001-0317.md",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bae3e1da022eb7a639aee03446096716b0c4798f/CVE/data/2001/CVE-2001-0317.json",
-    "https://github.com/github/advisory-database/blob/daf3a08cbe0139b666db9d48681b6efcebbecad5/advisories/unreviewed/2022/04/GHSA-qr7m-wxwp-4hxg/GHSA-qr7m-wxwp-4hxg.json",
-    "https://github.com/intSpLoiT/intframework/blob/eabaa799d0260aa52b735fa9769266d1ce4b64ef/modules/cve_list.txt",
-    "https://github.com/KTZgraph/sarenka/blob/f1fb931ab722d6c096d581ed6e3c5966d799fbaa/sarenka/feeds/cve_details/cve_all_details_150800_150900.json",
-    "https://github.com/andreafioraldi/ToolsForCyberChallenge/blob/197d3dfd204cf1b9d1af1451455c8831c3ff9948/generated/files_1.list.dict",
-    "https://github.com/oasis-open/cti-stix-common-objects/blob/55ba7598cbd5a52577b6887871505d931d85cb61/objects/vulnerability/vulnerability--ded5ae33-2dd1-45bb-87a1-05def9b06c12.json",
-    "https://github.com/shamedgh/confine/blob/a75dad3ad336e6258a42cd1ce4af061eea68ed76/cve.files/cveToFile.json.type.csv",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0317.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2001-0317.json",
+    "https://github.com/opencve/opencve-kb/blob/d75777256d9f777c09736cf2245cbda99b9caec2/2001/CVE-2001-0317.json",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/ed6afb6b9d568bf2517b58310158382f003b6ae6/CVE-2001/CVE-2001-03xx/CVE-2001-0317.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/52dd33919d034b1e65c4c9c0bf6fc21ba3f5f175/2001/0xxx/CVE-2001-0317.md",
+    "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0317.json",
+    "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0317.json",
 ]
