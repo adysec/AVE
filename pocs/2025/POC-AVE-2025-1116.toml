@@ -1,0 +1,34 @@
+[info]
+author = "ave"
+description = "Linux 内核 arcnet 驱动 com20020pci_probe() 空指针解引用漏洞验证。该漏洞为本地内核 NULL Pointer Dereference（CWE-476），当 devm_kasprintf() 内存分配失败返回 NULL 时，代码未检查直接解引用导致内核崩溃。由于该漏洞需要特定硬件（com20020 PCI 网卡）及本地触发条件，无公开可用 PoC。"
+id = "POC-AVE-2025-1116"
+name = "CVE-2025-22054 PoC"
+severity = "medium"
+tags = ["ave-2025-1116"]
+vuln_id = [
+    "CVE-2025-22054",
+    "AVE-2025-1116",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+path = "/proc/version"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = ["Linux"]
+
+[[poc.requests]]
+path = "/boot/config-$(uname -r)"
+protocol = "file"
+
+[[poc.requests.matchers]]
+expect = false
+part = "body"
+type = "word"
+words = ["CONFIG_ARCNET_COM20020_PCI"]

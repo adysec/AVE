@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "检测 Kong Docker 部署的 Admin API 未授权访问漏洞（CVE-2020-11710）。Kong 的 docker-kong 在 2.0.3 及之前版本默认将 Admin API 端口（8001）绑定到 0.0.0.0 而非 127.0.0.1，导致未经认证的远程攻击者可直接访问 Admin API 并完全控制 API 网关。本 PoC 通过向目标发送 HTTP GET 请求至 /status 路径，检查响应状态码及响应体中是否包含 Kong 状态信息特征字符串来验证漏洞是否存在。"
+id = "POC-AVE-2020-0049"
+name = "Kong Admin API 未授权访问 PoC"
+severity = "critical"
+tags = ["ave-2020-0049"]
+vuln_id = [
+    "CVE-2020-11710",
+    "AVE-2020-0049",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/status"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "server",
+    "version",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
