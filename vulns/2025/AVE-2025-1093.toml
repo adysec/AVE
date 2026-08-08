@@ -1,0 +1,44 @@
+[basic]
+description = "Linux内核RDMA hns驱动在分配bt页并映射缓冲区页时运行for循环，当处理超过100GB的大缓冲区内存注册（MR）时，循环迭代次数过多导致CPU无法被调度而触发watchdog软锁定。该漏洞影响搭载华为RoCE V2网卡（hns_roce_hw_v2）的Linux系统，具有本地低权限的攻击者可通过注册超大内存区域调用ib_uverbs_reg_mr接口，触发hem_list_alloc_mid_bt或hns_roce_hem_list_find_mtt等函数中的深度循环，造成CPU持续卡死超过22秒，最终导致系统拒绝服务。"
+published = "2025-04-08T09:15:24Z"
+remediation = "升级Linux内核至包含修复 commit 25655580136de59ec89f09089dd28008ea440fc9 的稳定版本，具体为：5.10.236 及以上、5.15.180 及以上、6.1.132 及以上、6.6.85 及以上、6.12.21 及以上、6.13.9 及以上。如使用发行版，请安装对应内核安全更新包（Debian/Ubuntu 安装 linux-image 最新安全版本，RHEL/CentOS 安装相应内核 errata）。如暂时无法升级内核，临时缓解措施是避免在 RDMA/hns 驱动上分配超过 100GB 的大内存区域（MR），或通过内核启动参数禁用 hns_roce 驱动以消除攻击面，待维护窗口期完成内核升级。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux 内核 RDMA HNS 驱动软锁定漏洞"
+updated = "2026-06-17T08:44:50Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-22010"]
+ave_id = "AVE-2025-1093"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/13a52f6c9ff99f7d88f81da535cb4e85eade662b",
+    "https://git.kernel.org/stable/c/25655580136de59ec89f09089dd28008ea440fc9",
+    "https://git.kernel.org/stable/c/4104b0023ff66b5df900d23dbf38310893deca79",
+    "https://git.kernel.org/stable/c/461eb4ddede266df8f181f578732bb01742c3fd6",
+    "https://git.kernel.org/stable/c/975355faba56c0751292ed15a90c3e2c7dc0aad6",
+    "https://git.kernel.org/stable/c/9ab20fec7a1ce3057ad86afd27bfd08420b7cd11",
+    "https://git.kernel.org/stable/c/efe544462fc0b499725364f90bd0f8bbf16f861a",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-22010.md",
+    "https://github.com/CVEProject/cvelistV5/blob/c1aa21a07e1964888700209700f49dcbdcc17555/cves/2025/22xxx/CVE-2025-22010.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/ee62e060e83e6a11ea4146cd2414a687a1124004/CVE/data/2025/CVE-2025-22010.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-22010.md",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-22010-2025-11-03-1328",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-22010-2025-11-03-1338",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-22010.json",
+    "https://github.com/opencve/opencve-kb/blob/1d89b940458757bda5a55f298c654a5ffdc9ec39/2025/CVE-2025-22010.json",
+    "https://github.com/imSkows/Cyber-Vulnerability-Analysis-Data/blob/db26c44c5f45c25514223a46675daec7eea03092/data/first/CVE-2025-22010",
+    "https://github.com/aquasecurity/vuln-list-debian/blob/9ec1f42cd252a998d9af88a8ad82c72909c004bd/tracker/CVE/2025/CVE-2025-22010.json",
+]
