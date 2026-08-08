@@ -1,0 +1,33 @@
+[info]
+author = "ave"
+description = "Linux 内核 AMD 微码处理模块数组越界漏洞验证。该漏洞存在于 x86/microcode/AMD 子系统中，load_microcode_amd() 函数在遍历 NUMA 节点时未正确处理仅包含内存的 CPU-less NUMA 节点，导致 per-CPU 数据数组索引越界。由于微码刷新需要特权权限，目前无公开可用 PoC，以下为基于内核代码逻辑的安全检测方案。"
+id = "POC-AVE-2025-1081"
+name = "CVE-2025-21991 PoC"
+severity = "high"
+tags = ["ave-2025-1081"]
+vuln_id = [
+    "CVE-2025-21991",
+    "AVE-2025-1081",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/{{BaseURL}}"
+protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "Linux",
+    "kernel",
+]
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"

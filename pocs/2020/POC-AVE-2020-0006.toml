@@ -1,49 +1,30 @@
 [info]
-author = "AVE"
-description = "检测目标 SSRS 服务器是否存在 ReportViewer.aspx 页面，该页面存在 NavigationCorrector$ViewState 参数反序列化漏洞（CVE-2020-0618）。攻击者可利用 LosFormatter 反序列化在服务账户权限下执行任意代码。"
+author = "ave"
+description = "检测目标是否运行存在 CVE-2020-0618 漏洞的 Microsoft SQL Server Reporting Services 实例。通过访问 ReportServer/Pages/ReportViewer.aspx 页面并检查响应中是否包含 'View Report' 文本且 HTTP 状态码为 200，可判断 SSRS 服务是否正常运行且可能受影响。该漏洞源于 SSRS 对 ASP.NET ViewState 数据的不安全反序列化处理，攻击者可通过提交恶意 ViewState 载荷实现远程代码执行。"
 id = "POC-AVE-2020-0006"
-name = "Microsoft SQL Server Reporting Services ViewState Deserialization RCE PoC"
+name = "Microsoft SQL Server Reporting Services 远程代码执行漏洞 PoC"
 severity = "high"
-tags = [
-    "cve-2020-0618",
-    "ssrs",
-    "deserialization",
-    "rce",
-]
+tags = ["ave-2020-0006"]
 vuln_id = [
     "CVE-2020-0618",
     "AVE-2020-0006",
 ]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "GET"
-path = "/{{BaseURL}}/ReportServer/pages/ReportViewer.aspx"
+path = "/{{BaseURL}}/ReportServer/Pages/ReportViewer.aspx"
 protocol = "http"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
 
 [[poc.requests.matchers]]
 expect = true
 part = "body"
 type = "word"
-words = [
-    "ReportViewer",
-    "__VIEWSTATE",
-    "NavigationCorrector",
-]
-
-[[poc.requests]]
-method = "GET"
-path = "/{{BaseURL}}/Reports/pages/ReportViewer.aspx"
-protocol = "http"
-
-[[poc.requests.matchers]]
-expect = true
-part = "body"
-type = "word"
-words = [
-    "ReportViewer",
-    "__VIEWSTATE",
-    "NavigationCorrector",
-]
+words = ["view report"]
