@@ -1,28 +1,37 @@
 [info]
 author = "ave"
-description = "AVE-2020-0106 verification"
+description = "PoC/EXP for verification"
 id = "POC-AVE-2020-0106"
-name = "PoC for AVE-2020-0106"
-severity = "medium"
+name = "Sonatype Nexus Repository Manager Java EL 注入 RCE PoC"
+severity = "high"
 tags = ["ave-2020-0106"]
-vuln_id = ["AVE-2020-0106"]
+vuln_id = [
+    "CVE-2020-10199",
+    "AVE-2020-0106",
+]
 
 [poc]
-logic = "any"
+logic = "all"
 
 [[poc.requests]]
 method = "POST"
-path = "/{{BaseURL}}/service/extdirect"
+path = "/service/rest/beta/repositories/go/group"
 protocol = "http"
-
-[poc.requests.body]
-content = '{"action":"coreui_User","method":"update","data":[{"userId":"test"}],"type":"rpc","tid":1}'
-type = "json"
 
 [poc.requests.headers]
 Content-Type = "application/json"
+Cookie = "NX-ANTI-CSRF-TOKEN=1; NXSESSIONID=1"
+NX-ANTI-CSRF-TOKEN = "1"
+X-Nexus-UI = "true"
+X-Requested-With = "XMLHttpRequest"
 
 [[poc.requests.matchers]]
 expect = true
-status = [200]
+part = "body"
+type = "word"
+words = ["A9999"]
+
+[[poc.requests.matchers]]
+expect = true
+status = [400]
 type = "status"
