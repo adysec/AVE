@@ -1,0 +1,45 @@
+[basic]
+description = "Linux内核DRM子系统的radeon显卡驱动中，radeon_vce_cs_parse()函数存在未初始化变量安全问题。当攻击者通过ioctl()系统调用向该函数提交特制的命令流，且首个命令为编码操作（case 0x03000001）时，函数会试图将尚未被赋值的tmp变量作为size参数传递给radeon_vce_cs_reloc()，导致传递给底层函数的参数值不可预测。该漏洞影响使用radeon显卡及对应内核驱动的Linux系统，攻击者需具备本地用户权限，可通过构造异常命令流触发该漏洞，进而可能导致系统拒绝服务或未定义行为。Linux Verification Center通过静态分析工具SVACE发现此问题，修复方案是将tmp变量初始化为0，确保radeon_vce_cs_reloc()能及时捕获此类异常输入。"
+published = "2025-04-03T08:15:15Z"
+remediation = "建议将 Linux 内核升级至包含补丁 commit 2d52de55f9ee7aaee0e09ac443f77855989c6b68 的稳定版本：Debian 11 升级至 5.10.237-1（DLA-4178-1）或 6.1.137-1（DLA-4193-1），Debian 12 升级至 6.1.133-1（DSA-5900-1），Ubuntu 20.04 升级至 5.4.0-218.238，Ubuntu 22.04 升级至 5.15.0-142.152，Ubuntu 24.04 升级至 6.8.0-84.84。如暂无法立即升级，可通过内核启动参数 modprobe.blacklist=radeon 禁用 radeon 模块，或通过 udev 规则限制本地用户对 /dev/dri/card* 设备的访问权限作为临时缓解措施。"
+score = 5.5
+severity = "MEDIUM"
+sources = ["msrc"]
+title = "Linux Kernel Radeon DRM 未初始化变量使用漏洞"
+updated = "2026-06-17T08:44:48Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-21996"]
+ave_id = "AVE-2025-1084"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0effb378ebce52b897f85cd7f828854b8c7cb636",
+    "https://git.kernel.org/stable/c/3ce08215cad55c10a6eeeb33d3583b6cfffe3ab8",
+    "https://git.kernel.org/stable/c/5b4d9d20fd455a97920cf158dd19163b879cf65d",
+    "https://git.kernel.org/stable/c/78b07dada3f02f77762d0755a96d35f53b02be69",
+    "https://git.kernel.org/stable/c/9b2da9c673a0da1359a2151f7ce773e2f77d71a9",
+    "https://git.kernel.org/stable/c/dd1801aa01bba1760357f2a641346ae149686713",
+    "https://git.kernel.org/stable/c/dd8689b52a24807c2d5ce0a17cb26dc87f75235c",
+    "https://git.kernel.org/stable/c/f5e049028124f755283f2c07e7a3708361ed1dc8",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://github.com/trickest/cve/blob/8c4eb2837c857f4cda9b4ed4ab227a0668647438/2025/CVE-2025-21996.md",
+    "https://github.com/CVEProject/cvelistV5/blob/4fa082fe458d8fa95596028e75b13159b2e52c11/cves/2025/21xxx/CVE-2025-21996.json",
+    "https://github.com/cisagov/vulnrichment/blob/678d17bcfa8b8ea8c4c5ba0955db9cb325f5e0f1/2025/21xxx/CVE-2025-21996.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e1cbe143690bb47370af7fa5b465982662d83ca8/SSVC/data/2025/CVE-2025-21996.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/e1cbe143690bb47370af7fa5b465982662d83ca8/CVE/data/2025/CVE-2025-21996.json",
+    "https://github.com/mabitoski/cve_submodules/blob/44ad7e2705b3aef1b2ffaf64bd47596c10a6c2e4/2025/CVE-2025-21996.md",
+    "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2025/CVE-2025-21996.json",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-21996-2025-11-03-1338",
+    "https://github.com/CVEProject/cve-reference-ingest-data/blob/15875e38c24c86204461d6dc47d7cf27de83e320/references/CveServices-CVE-2025-21996-2025-11-03-1328",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2025-21996.json",
+]
