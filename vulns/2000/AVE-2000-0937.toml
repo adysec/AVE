@@ -1,11 +1,11 @@
 [basic]
-description = "BSD 系统 lpr/lpd 打印服务存在格式字符串漏洞，位于 printjob.c 文件中 startprinting() 函数的 syslog 调用不当，直接使用了来自 checkremote() 函数的格式化字符串参数。本地低权限用户可通过构造包含格式说明符的特制输入触发该漏洞，向系统日志输出恶意数据并篡改内存，从而获取 root 级别权限。该漏洞影响基于 BSD 的 lpr/lpd 软件包，攻击者需具备本地访问权限即可利用，CVSS v3 评分 7.2，危害等级高。攻击者可借此实现对目标系统的完全控制，进而进一步渗透内网或横向移动。"
+description = "BSD lpr/lpd 打印服务存在格式化字符串漏洞，位于 printjob.c 的 startprinting() 函数中。该函数将 checkremote() 返回的字符串直接作为 syslog() 的格式字符串传递，未对格式说明符进行转义。本地低权限用户可通过发送包含 %n、%x 等格式字符的特制打印请求，触发 lpd 守护进程解析非法格式串，从而造成内存读取或写入，最终实现权限提升至 lpd 权限。该漏洞影响所有基于 BSD 的 lpr/lpd 软件包，包括 NetBSD、FreeBSD 及 OpenBSD 等早期版本。攻击者无需身份认证，在本地即可发起利用，危害等级高。"
 published = "2002-08-12T04:00:00Z"
-remediation = '建议更新 NetBSD 系统至已修复该漏洞的安全版本。对于仍在使用旧版 lpd 服务的系统，应修改 printjob.c 中的 startprinting() 函数，将 syslog() 调用改为使用固定格式字符串（如 syslog(LOG_ERR, "%s", message)）以消除格式化字符串漏洞，或直接禁用不必要的 lpd 服务以降低风险。'
+remediation = "建议升级 NetBSD 至 1.5 或更高版本（已修复该格式化字符串漏洞），或应用厂商发布的 lpr/lpd 补丁包。若无法立即升级，可暂时禁用 lpd 服务（注释 /etc/inetd.conf 中 printer 行并重启 inetd），或限制本地用户对打印队列目录的写入权限作为临时缓解措施。"
 score = 7.2
 severity = "HIGH"
-sources = ["cve"]
-title = "NetBSD lpr/lpd 打印服务格式字符串本地权限提升漏洞"
+sources = ["avd"]
+title = "NetBSD lpr lpd 格式字符串权限提升漏洞"
 updated = "2026-06-16T21:53:23Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2000-1208"]
 ave_id = "AVE-2000-0937"
 
 [meta]
-collected_at = "2026-08-02T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -27,14 +27,14 @@ urls = [
     "http://www.iss.net/security_center/static/5286.php",
     "http://www.redhat.com/support/errata/RHSA-2000-066.html",
     "http://www.securityfocus.com/bid/1711",
-    "https://github.com/CVEProject/cvelistV5/blob/a4cc8a55779a13aab23d5f0d0cd6e52496b071eb/cves/2000/1xxx/CVE-2000-1208.json",
+    "https://github.com/CVEProject/cvelistV5/blob/4255a6ca3de713c68aa87adea68dabef8309d38c/cves/2000/1xxx/CVE-2000-1208.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2000/CVE-2000-1208",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/22bf0a843f1870af65d30413f104d6fa91f5e1f4/CVE/data/2000/CVE-2000-1208.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/d1fa54ef5490585c1bfffa554680a87159ddf8cb/CVE/data/2000/CVE-2000-1208.json",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2000/CVE-2000-1208.json",
-    "https://github.com/opencve/opencve-kb/blob/60d4dcdd76d8e53a83b4df7025d6bb3623e1d439/2000/CVE-2000-1208.json",
-    "https://github.com/olbat/nvdcve/blob/9b1777f43cb72006ac01427b6823146d45a3862a/nvdcve/CVE-2000-1208.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/aa26e43cea95c9f8fa4c03fce1cced7c702a4035/2000/1xxx/CVE-2000-1208.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/6ffe41ed17f28a5cc4ca179538df7b0072158276/CVE-2000/CVE-2000-12xx/CVE-2000-1208.json",
+    "https://github.com/opencve/opencve-kb/blob/c545951057f2519503a1fa6d6d68fa1a5906f762/2000/CVE-2000-1208.json",
+    "https://github.com/olbat/nvdcve/blob/7bc9b867d9432dd98ba48c5f757dc43b5388968a/nvdcve/CVE-2000-1208.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/725a0ee9edd4fe8d1b22187c3a43c7a0f47c6748/2000/1xxx/CVE-2000-1208.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/886afa37bd28752ed0323185b6b6d68ecf52717c/CVE-2000/CVE-2000-12xx/CVE-2000-1208.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2000/1xxx/CVE-2000-1208.json",
-    "https://github.com/yarencheng/cve-devops-playground/blob/67f0cd4c1596148edc70751caa01ad7684d5c638/content/CVE-2000-1208.md",
+    "https://github.com/yarencheng/cve-devops-playground/blob/5d82618844b7e318810784b38748531fdfa40755/content/CVE-2000-1208.md",
 ]
