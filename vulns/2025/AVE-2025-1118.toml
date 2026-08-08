@@ -1,0 +1,46 @@
+[basic]
+description = "Linux kernel netfilter 子系统中 nft_tunnel 模块的 geneve_opt 解析逻辑存在类型混淆导致的堆越界写入漏洞。当处理多个 NFTA_TUNNEL_KEY_OPTS_GENEVE 属性时，代码在计算下一个 geneve_opt 结构位置时未按字节单位进行指针加法，而是在加法前错误地进行类型转换，导致向堆内存越界写入数据。攻击者可在本地系统以低权限用户身份构造特制的 netlink 消息触发该漏洞，进而在内核上下文中执行任意代码，实现权限提升或拒绝服务攻击。该漏洞影响包含 netfilter 子系统且使用了 nft_tunnel 模块的 Linux 内核版本，本地攻击者可利用此漏洞获取系统 root 权限。"
+published = "2025-04-16T15:15:59Z"
+remediation = "将 Linux 内核升级至已修复该漏洞的稳定版本：5.10.236、5.15.180、6.1.134、6.6.87、6.12.23、6.13.11 或 6.14.2 及以上。各主流发行版应通过官方包管理器安装内核安全更新（如 Debian/Ubuntu 执行 apt upgrade linux-image，RHEL/CentOS 执行 dnf update kernel，SUSE 执行 zypper update kernel），安装后重启系统使新内核生效。如短期内无法升级，可通过 sysctl 临时禁用 nf_tables 的 tunnel 对象类型（nft add table inet test; nft delete table inet test）以降低攻击面，但此措施仅作应急使用，需尽快完成内核升级。"
+score = 7.8
+severity = "HIGH"
+sources = ["msrc"]
+title = "Linux kernel netfilter nft_tunnel 堆越界写漏洞"
+updated = "2026-07-14T13:17:30Z"
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["CVE-2025-22056"]
+ave_id = "AVE-2025-1118"
+
+[meta]
+collected_at = "2026-08-08T00:00:00Z"
+status = "completed"
+
+[references]
+urls = [
+    "https://git.kernel.org/stable/c/0a93a710d6df334b828ea064c6d39fda34f901dc",
+    "https://git.kernel.org/stable/c/1b755d8eb1ace3870789d48fbd94f386ad6e30be",
+    "https://git.kernel.org/stable/c/28d88ee1e1cc8ac2d79aeb112717b97c5c833d43",
+    "https://git.kernel.org/stable/c/31d49eb436f2da61280508d7adf8c9b473b967aa",
+    "https://git.kernel.org/stable/c/446d94898c560ed2f61e26ae445858a4c4830762",
+    "https://git.kernel.org/stable/c/708e268acb3a446ad2a8a3d2e9bd41cc23660cd6",
+    "https://git.kernel.org/stable/c/a263d31c8c92e5919d41af57d9479cfb66323782",
+    "https://git.kernel.org/stable/c/ca2adfc03cd6273f0b589fe65afc6f75e0fe116e",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00030.html",
+    "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+    "https://cert-portal.siemens.com/productcert/html/ssa-019113.html",
+    "https://github.com/trickest/cve/blob/cd4a01a42d95af497d54c028c2f468527d995ec5/2025/CVE-2025-22056.md",
+    "https://github.com/0xMarcio/cve/blob/ae291ebbdb503ad445246c64deb6487935f86f37/2025/CVE-2025-22056.md",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/d922fa6c306960ea2d5c1537dcbb54094874a62a/data/by-cve/CVE-2025-22056.md",
+    "https://github.com/sari3l/Poc-Monitor/blob/4d6ddbb0bbe76a1c63ad0583d0e9fa72d6179142/2025/CVE-2025-22056.json",
+    "https://github.com/CVEProject/cvelistV5/blob/ec24b3a165225fc7f9466471e44eba2d61985bf9/cves/2025/22xxx/CVE-2025-22056.json",
+    "https://github.com/arschlochnop/VulnWatchdog/blob/d922fa6c306960ea2d5c1537dcbb54094874a62a/data/2025/CVE-2025-22056-henrymartin262_CVE-2025-22056-exploit.md",
+    "https://github.com/cisagov/vulnrichment/blob/a351f6e294a9d87335a55efa2995f1a256e1e0a9/2025/22xxx/CVE-2025-22056.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/edda342140f2a1933f7c4bc3c9edebb15182bd3b/SSVC/data/2025/CVE-2025-22056.json",
+    "https://github.com/xairy/linux-kernel-exploitation/blob/1120e9cea80c6039b8c8151bde6067c2cd76daa4/README.md",
+    "https://github.com/rix4uni/cvemapping/blob/ba6143c5c8f6c498a90c58fd79b47c25ca595426/2025/CVE-2025-22056/README.md",
+]
