@@ -1,11 +1,11 @@
 [basic]
-description = "Borland/Inprise InterBase 4.0、5.0 及 6.0 版本的数据库服务器内置了一个隐藏的后门账户（Backdoor Account），该账户带有已知的默认凭据。由于这些版本在安装时硬编码了该特权账户且无法通过常规手段清除，未经身份认证的远程攻击者可利用该后门账户直接登录数据库服务器，并通过调用存储过程（stored procedures）对服务器上的任意文件进行覆盖或写入操作，进而导致任意文件覆盖、数据篡改乃至系统完全受控。由于该漏洞无需任何认证即可远程触发，CVSS 评分为 10.0，危害等级为严重。受影响范围覆盖 Borland/Inprise InterBase 4.0 至 6.0 全系列版本，未进行相应版本升级或后门账户清理的部署环境均存在被入侵风险。"
+description = 'Borland/Inprise Interbase 4.0、5.0 及 6.0 数据库服务器存在硬编码后门账户（用户名通常为 "SYSDBA"，密码为 "masterkey"），未经身份认证的远程攻击者可利用该默认账户直接连接数据库，并通过执行存储过程（stored procedures）向服务器文件系统写入任意内容，实现文件覆盖或植入后门。该漏洞影响所有启用默认配置的 Interbase 服务器实例，攻击者无需任何凭据即可在远程利用，可导致服务器被完全接管、敏感数据泄露或服务中断。CVSS 评分 10.0，危害等级严重。建议立即修改默认密码或升级至修复版本。'
 published = "2001-02-12T05:00:00Z"
-remediation = '由于该漏洞自 Interbase 6.0 之前版本就存在已知的后门账户（用户名 "politically"、密码 "correct"），建议立即升级到受支持的版本或应用厂商提供的安全补丁。具体操作：1) 联系 Borland/Embarcadero 获取该漏洞的官方补丁并部署，或升级至不再包含默认后门的版本；2) 若无法立即升级，需通过配置文件或数据库用户管理禁用或删除名为 "politically" 的后门账户，并删除对应的存储过程权限；3) 限制弱口令账户 Min 与 Politically 的登录，在防火墙/访问控制层仅允许可信 IP 访问 Interbase 服务端端口（默认 3050），禁止远程执行存储过程；4) 针对远程攻击者可利用存储过程覆盖任意文件的特性，撤销 guest/后门账户对文件系统相关存储过程的执行权限。'
+remediation = "建议立即停止使用 Interbase 4.0/5.0/6.0 版本，将其迁移至已修复该问题的 Firebird 或更新版本的 Interbase 数据库。若无法立即迁移，必须在网络防火墙上配置访问控制列表 (ACL)，封禁远程访问数据库端口（默认 3050），仅允许受信 IP 连接以缓解后门被利用的风险。"
 score = 10
 severity = "CRITICAL"
-sources = ["epss"]
-title = "Borland/Inprise Interbase 数据库服务器后门账号漏洞"
+sources = ["avd"]
+title = "Borland Interbase 数据库后门账户远程任意文件覆盖漏洞"
 updated = "2026-06-16T21:53:28Z"
 
 [exploit]
@@ -17,7 +17,7 @@ aliases = ["CVE-2001-0008"]
 ave_id = "AVE-2001-0005"
 
 [meta]
-collected_at = "2026-08-06T00:00:00Z"
+collected_at = "2026-08-08T00:00:00Z"
 status = "completed"
 
 [references]
@@ -26,14 +26,14 @@ urls = [
     "http://www.securityfocus.com/bid/2192",
     "https://exchange.xforce.ibmcloud.com/vulnerabilities/5911",
     "https://www.exploit-db.com/exploits/20537",
-    "https://github.com/CVEProject/cvelistV5/blob/ad23a84307831b745d27b34af84abc59130b2cd5/cves/2001/0xxx/CVE-2001-0008.json",
-    "https://github.com/Patrowl/PatrowlHearsData/blob/bd3fb132c1b8a95ef2bcf26b230a07f7c9700666/CVE/data/2001/CVE-2001-0008.json",
+    "https://github.com/CVEProject/cvelistV5/blob/de28ee877455a046955070a5c3a8447a5dcd3f32/cves/2001/0xxx/CVE-2001-0008.json",
+    "https://github.com/Patrowl/PatrowlHearsData/blob/1b728ea01def60fd48fecebca175ef1fd4461ca7/CVE/data/2001/CVE-2001-0008.json",
     "https://github.com/LiuCan01/cve-list-pro/blob/78b55511cee3604c22d518e32822f0435d0cacc0/cve-list/CVE-2001/CVE-2001-0008",
     "https://github.com/nomi-sec/NVD-Database/blob/23dc120c34402aaa65883c51c1d03b3cb02c20cb/2001/CVE-2001-0008.json",
-    "https://github.com/olbat/nvdcve/blob/2aff155da1d1b98876d6e9c312b912d434f32dca/nvdcve/CVE-2001-0008.json",
-    "https://github.com/opencve/opencve-kb/blob/3563307faac29cd78316d24dffd5b35b4d38cc65/2001/CVE-2001-0008.json",
-    "https://github.com/HORKimhab/poc-cve-collection/blob/e3f82cb4abb129ac4e65ce1b058ead82032d2595/2001/0xxx/CVE-2001-0008.md",
-    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/2045bff4b424e5738e99702781803fdc8b55ff87/CVE-2001/CVE-2001-00xx/CVE-2001-0008.json",
+    "https://github.com/olbat/nvdcve/blob/aea18474d4ab97b12521ebedab21d6cf4fa5e991/nvdcve/CVE-2001-0008.json",
+    "https://github.com/opencve/opencve-kb/blob/8ae2493264fa59919108f4993cc18983922ae9cc/2001/CVE-2001-0008.json",
+    "https://github.com/HORKimhab/poc-cve-collection/blob/936162ee27ea516e7941d627b375c85572cad5a0/2001/0xxx/CVE-2001-0008.md",
+    "https://github.com/fkie-cad/nvd-json-data-feeds/blob/bd1d11ca4f0740c4e3789bdc2f219a1d48325906/CVE-2001/CVE-2001-00xx/CVE-2001-0008.json",
     "https://github.com/CVEProject/cvelist-dev/blob/5b8fbb570438e8094550205589cc6f1d122acc94/2001/0xxx/CVE-2001-0008.json",
     "https://github.com/CyberSecAI/cve_info/blob/03b7e36424574a3a9ba5fd13480a326b666a1046/2001/0xxx/CVE-2001-0008.json",
 ]
