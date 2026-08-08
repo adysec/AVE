@@ -1,0 +1,138 @@
+[basic]
+description = '''
+## Vulnerability Details
+
+**File**: `backend/s3/s3.go`
+**Lines**: 1359-1380 (functions `s3CheckRedirect` / `s3RedirectCrossesHost`)
+
+### Root Cause
+Commit `e7b1eb774` (released in v1.74.3) added a `CheckRedirect` policy for
+the S3 HTTP client whose purpose is to strip the `X-Amz-Security-Token`
+header (the AWS STS session token) whenever a redirect chain \"crosses a
+host\", so the token isn't forwarded to an unintended origin.
+
+`s3RedirectCrossesHost` decides this purely by comparing `url.URL.Host`
+(hostname[:port]); it never looks at `url.URL.Scheme`. A redirect that keeps
+the exact same host:port but changes the scheme from `https://` to `http://`
+therefore compares as \"same host\" and `X-Amz-Security-Token` is *not*
+stripped — it is sent again, this time over plaintext HTTP.
+
+```go
+func s3RedirectCrossesHost(req *http.Request, via []*http.Request) bool {
+	if len(via) == 0 {
+		return false
+	}
+	host := via[0].URL.Host
+	for _, redirect := range via[1:] {
+		if redirect.URL.Host != host {
+			return true
+		}
+	}
+	return host != req.URL.Host
+}
+```
+
+### Attack Scenario
+1. The user configures an `s3` remote (or `--s3-endpoint` pointing at a
+   self-hosted/third-party S3-compatible service) using temporary
+   credentials that include an STS `session_token` (common for assumed-role
+   / CI / Kubernetes IRSA setups).
+2. The configured endpoint responds to a request with a 3xx redirect to the
+   *same* host:port but with `http://` instead of `https://` (TLS-front
+   misconfiguration, maintenance redirect, or a malicious/compromised
+   storage provider trying to harvest the token).
+3. rclone's S3 HTTP client follows the redirect and re-sends the request,
+   including `X-Amz-Security-Token`, over the now-unencrypted connection to
+   that same host.
+4. Any passive observer on that now-plaintext network path can read the STS
+   session token from the request headers.
+
+### Impact
+Disclosure of the AWS STS session token (`X-Amz-Security-Token`) in
+cleartext for the remainder of its validity window. This is the exact class
+of leak that `e7b1eb774` was written to close — it just doesn't cover the
+scheme-downgrade axis of \"crossing a host\".
+
+### Vulnerable Code
+```go
+func s3RedirectCrossesHost(req *http.Request, via []*http.Request) bool {
+	if len(via) == 0 {
+		return false
+	}
+	host := via[0].URL.Host
+	for _, redirect := range via[1:] {
+		if redirect.URL.Host != host {
+			return true
+		}
+	}
+	return host != req.URL.Host
+}
+```
+
+### Recommended Fix
+Also compare `URL.Scheme`, so a scheme downgrade on the same host is treated
+the same as a host change:
+
+```go
+func s3RedirectCrossesHost(req *http.Request, via []*http.Request) bool {
+	if len(via) == 0 {
+		return false
+	}
+	scheme, host := via[0].URL.Scheme, via[0].URL.Host
+	for _, redirect := range via[1:] {
+		if redirect.URL.Host != host || redirect.URL.Scheme != scheme {
+			return true
+		}
+	}
+	return host != req.URL.Host || scheme != req.URL.Scheme
+}
+```
+
+### Verification
+Added a unit test (`backend/s3/redirect_scheme_test.go`) that calls the real,
+unmodified `s3RedirectCrossesHost` / `s3CheckRedirect` with an
+`https://bucket.example.com` -> `http://bucket.example.com` redirect chain.
+
+On unpatched code (commit 16091ce365, current master / v1.74.3):
+- `s3RedirectCrossesHost` returns `false`
+- `s3CheckRedirect` leaves `X-Amz-Security-Token: SECRET-SESSION-TOKEN`
+  intact on the outgoing (plaintext) request.
+
+```
+=== RUN   TestSchemeDowngradeNotDetectedAsCrossHost
+    redirect_scheme_test.go:23: initial=https://bucket.example.com final=http://bucket.example.com s3RedirectCrossesHost=false
+--- PASS: TestSchemeDowngradeNotDetectedAsCrossHost (0.00s)
+```
+
+After applying the one-line fix above (also adding scheme comparison), the
+token is correctly stripped and all existing redirect tests
+(`TestClientRemovesSecurityTokenOnCrossHostRedirect`,
+`TestClientDoesNotRestoreSecurityTokenAfterCrossHostRedirect`,
+`TestClientKeepsSecurityTokenOnSameHostRedirect`,
+`TestClientStopsAfterTenRedirects`) continue to pass.
+
+A minimal fix commit is ready and can be pushed to a private fork once this
+report is acknowledged.
+'''
+published = ""
+remediation = "请参考官方安全公告，及时安装安全更新或升级到最新版本。"
+score = 5
+severity = "MEDIUM"
+sources = ["ghsa"]
+title = "rclone: S3 backend does not strip X-Amz-Security-Token on a same-host HTTPS->HTTP redirect"
+updated = ""
+
+[exploit]
+exp_urls = []
+poc_urls = []
+
+[id]
+aliases = ["GHSA-gx4c-2hqx-cw2r"]
+ave_id = "AVE-2026-1439"
+
+[meta]
+collected_at = "2026-08-08T11:53:13Z"
+status = "completed"
+
+[references]
+urls = []
